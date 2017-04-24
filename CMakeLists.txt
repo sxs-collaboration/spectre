@@ -11,3 +11,4 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(ProhibitInSourceBuild)
+include(SetBuildType)
