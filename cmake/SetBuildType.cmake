@@ -1,5 +1,5 @@
 
-# Distributed under the University of Illinois/NCSA Open Source License.
+# Distributed under the MIT License.
 # See LICENSE.txt for details.
 
 set(CMAKE_BUILD_TYPES "Debug" "Release" "RelWithDebInfo" "MinSizeRel")

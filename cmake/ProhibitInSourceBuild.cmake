@@ -1,5 +1,5 @@
 
-# Distributed under the University of Illinois/NCSA Open Source License.
+# Distributed under the MIT License.
 # See LICENSE.txt for details.
 
 string(REGEX REPLACE "^${CMAKE_SOURCE_DIR}/([^/]*)/?.*$" "\\1"
