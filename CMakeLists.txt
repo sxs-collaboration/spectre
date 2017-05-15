@@ -23,3 +23,5 @@ include(SetCxxStandard)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(SetupBoost)
+
+add_subdirectory(src)
