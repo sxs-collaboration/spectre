@@ -21,3 +21,5 @@ include(SetCxxStandard)
 # compile commands need to be accessible. CMake can write these to a
 # "compile_commands.json" file.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+include(SetupBoost)
