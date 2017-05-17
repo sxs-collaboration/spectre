@@ -17,6 +17,7 @@ include(ProhibitInSourceBuild)
 include(SetOutputDirectory)
 include(SetBuildType)
 include(SetCxxStandard)
+include(EnableWarnings)
 
 # In order to use certain code analysis tools like clang-tidy and cppcheck the
 # compile commands need to be accessible. CMake can write these to a
