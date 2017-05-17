@@ -12,6 +12,7 @@ site_name(HOSTNAME)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+include(CheckCompilerVersion)
 include(ProhibitInSourceBuild)
 include(SetOutputDirectory)
 include(SetBuildType)
