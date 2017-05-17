@@ -26,6 +26,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(SetupLibCXX)
 include(SetupClangFormat)
+include(SetupClangTidy)
 
 include(SetupBoost)
 
