@@ -34,3 +34,5 @@ include(SetupListTargets)
 include(SetupBoost)
 
 add_subdirectory(src)
+
+include(PrintUsefulCMakeInfo)
