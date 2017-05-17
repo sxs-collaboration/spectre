@@ -28,6 +28,7 @@ include(SetupLibCXX)
 include(SetupClangFormat)
 include(SetupClangTidy)
 include(SetupCppCheck)
+include(SetupSanitizers)
 
 include(SetupBoost)
 
