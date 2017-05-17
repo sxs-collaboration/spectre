@@ -1,0 +1,9 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+*:*/include/*
+*:*.def.h
+*:*.decl.h
+
+// Suppress unmatched suppressions
+unmatchedSuppression
