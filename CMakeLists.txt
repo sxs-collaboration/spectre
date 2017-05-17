@@ -29,6 +29,7 @@ include(SetupClangFormat)
 include(SetupClangTidy)
 include(SetupCppCheck)
 include(SetupSanitizers)
+include(SetupListTargets)
 
 include(SetupBoost)
 
