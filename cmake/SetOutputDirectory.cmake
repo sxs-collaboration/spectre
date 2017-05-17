@@ -1,0 +1,14 @@
+
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Set the directory where the library and executables are placed
+# The default can be overridden by specifying
+# `-D CMAKE_RUNTIME_OUTPUT_DIRECTORY=/path/`
+if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(
+      CMAKE_RUNTIME_OUTPUT_DIRECTORY
+      "${CMAKE_BINARY_DIR}/bin/"
+      CACHE STRING "Choose the directory where executables are placed" FORCE
+  )
+endif (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)

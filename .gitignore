@@ -1,0 +1,30 @@
+# Temporary editor files
+*~
+*.swp
+\#*\#
+.\#*
+.DS_Store
+.idea
+.dir-locals.el
+
+# TeX products
+*.aux
+*.log
+*.toc
+*.bbl
+*.bbg
+*.blg
+*.out
+*.bak
+*.bib
+
+# Python related files
+*.pyc
+.ipynb_checkpoints
+
+# charm++ runtime files
+charmrun.*
+
+# Observer output
+*.xmf
+*.h5
