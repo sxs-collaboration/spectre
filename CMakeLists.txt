@@ -34,6 +34,7 @@ include(SetupCppCheck)
 include(SetupSanitizers)
 include(SetupListTargets)
 
+include(SetupBlas)
 include(SetupBoost)
 include(SetupCatch)
 include(SetupHdf5)
