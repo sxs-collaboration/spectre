@@ -24,6 +24,15 @@ include(EnableWarnings)
 # "compile_commands.json" file.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(SetupLibCXX)
+include(SetupClangFormat)
+include(SetupClangTidy)
+include(SetupCppCheck)
+include(SetupSanitizers)
+include(SetupListTargets)
+
 include(SetupBoost)
 
 add_subdirectory(src)
+
+include(PrintUsefulCMakeInfo)
