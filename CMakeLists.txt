@@ -18,6 +18,9 @@ include(SetOutputDirectory)
 include(SetBuildType)
 include(SetCxxStandard)
 include(EnableWarnings)
+include(SetupBuildInfo)
+include(SetupCharm)
+include(SetupCharmProjections)
 
 # In order to use certain code analysis tools like clang-tidy and cppcheck the
 # compile commands need to be accessible. CMake can write these to a
@@ -32,6 +35,8 @@ include(SetupSanitizers)
 include(SetupListTargets)
 
 include(SetupBoost)
+include(SetupCatch)
+include(SetupPapi)
 
 add_subdirectory(src)
 
