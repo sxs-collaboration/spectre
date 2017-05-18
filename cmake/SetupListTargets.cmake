@@ -11,6 +11,6 @@ add_custom_target(
     VERBATIM
 )
 
-add_custom_target(targets COMMAND DEPENDS list_targets)
+add_custom_target(targets COMMAND DEPENDS list-targets)
 
-add_custom_target(list COMMAND DEPENDS list_targets)
+add_custom_target(list COMMAND DEPENDS list-targets)
