@@ -83,7 +83,7 @@ EXCLUDE                =
 
 EXCLUDE_SYMLINKS       = NO
 
-EXCLUDE_PATTERNS = */support/* */cmake/*
+EXCLUDE_PATTERNS = */support/* */cmake/* */README.md
 
 EXCLUDE_SYMBOLS = *detail* *brigand* std* PUP* YAML* charm* TEST_CASE*
 

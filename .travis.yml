@@ -1,0 +1,229 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# The online TravisCI configuration:
+#
+# General:
+# - Build only if .travis.yml is present: ON
+# - Build branch updates: ON
+# - Build pull request updates: ON
+# - Limit concurrent jobs: OFF
+#
+# Auto Cancellation:
+# - Auto cancel branch builds: ON
+# - Auto cancel pull request builds: ON
+#
+# Environment Variables:
+# - COVERALLS_TOKEN: Sign up to coveralls and link to GitHub. Add the
+#                    repository you want to display, and copy the repo_token.
+#                    The repo_token is what COVERALLS_TOKEN must be set to.
+# - SONAR_TOKEN: Setup your repository on SonarQUBE, then go to My Account
+#                and select Security. You can now generate a new token that
+#                will be used to upload SonarQUBE reports. This is the value
+#                that SONAR_TOKEN must be set to.
+# - ENCRYPTION_LABEL:
+#      The file encryption mechanism of TravisCI is used to encrypt the private
+#      SSH key we need to push to the gh-pages branch of the repository. Follow
+#      the instructions on Travis:
+#      https://docs.travis-ci.com/user/encrypting-files/
+#      to install the `travis` executable. You can then run
+#      `travis encrypt-file -r sxs-collaboration/spectre deploy_key`
+#      replacing `sxs-collaboration/spectre` with whatever repo you want. Here
+#      `deploy_key` is the SSH key added to the GitHub repo's Deploy Keys
+#      (see the GitHub docs for info on deploy keys). Once you've run the
+#      `encrypt-file` command you will have two environment variables appear,
+#      `encrypted_${ENCRYPTION_LABEL}_iv` and
+#      `encrypted_${ENCRYPTION_LABEL}_key` where ${ENCRYPTION_LABEL} is an
+#      alpha-numerical combination that you will set the Travis
+#      `ENCRYPTION_LABEL` environment variable to (you'll need to add this
+#      variable manually).
+#
+# Cron Jobs:
+# - Branch: develop, Interval: daily, Options: Always run
+
+language: cpp
+
+# To use Docker we need root access
+sudo: required
+
+services:
+- docker
+
+# Travis has a build matrix, the set of all build configurations tested.
+# The matrix is created from a product of all the
+# env:
+#   matrix:
+# configs and the compilers chosen. Individual configurations can be excluded
+# by using
+# matrix:
+#   exclude:
+#   - env: THE_ENV_VARAIBLES
+#   - compiler: THE_COMPILER
+# Explicit includes of configs are possible and used for macOS.
+env:
+  matrix:
+  - BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON
+  - BUILD_TYPE=Release
+
+compiler:
+- gcc
+- clang
+
+# macOS is easiest to add specific targets for. We target 10.11 Debug and 10.12
+# Release builds.
+matrix:
+  fast_finish: true
+  include:
+  - os: osx
+    env: BUILD_TYPE=Debug
+    osx_image: xcode7.3
+    compiler: clang
+  - os: osx
+    osx_image: xcode8.3
+    env: BUILD_TYPE=Release
+    compiler: clang
+
+
+# Travis allows caching of data between builds to reduce build times or perform
+# regression testing. We use ccache (https://ccache.samba.org/) to reduce
+# compilation time. SonarQUBE, a static analysis tool (https://sonarqube.com/)
+# also has a cache directory that needs to be managed.
+cache:
+  ccache: true
+  directories:
+      - $HOME/.sonar
+
+# For macOS we install all dependencies in the before_install step of Travis.
+# Unfortunately tapping homebrew/science causes brew to run update, which is
+# extremely slow. It would be nice to have some way of caching this. It might
+# be faster to install HDF5 from source if we have problems with build time
+# limits. The minimum version of macOS is set to 10.11 to avoid linking errors.
+# All dependencies are installed into the home directory. ccache is again used
+# to reduce build times.
+before_install:
+  - export CHARM_PATCH=v6.7.patch
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      export CHARM_VERSION=6.7.1;
+      export BLAZE_VERSION=3.1;
+      export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11;
+      cd $HOME;
+      brew tap homebrew/science;
+      brew install ccache;
+      PATH=/usr/local/opt/ccache/libexec:$PATH;
+      brew install hdf5;
+
+      git clone https://github.com/philsquared/Catch.git;
+
+      git clone https://github.com/edouarda/brigand.git;
+
+      wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-${BLAZE_VERSION}.tar.gz;
+      tar -xzf blaze-${BLAZE_VERSION}.tar.gz;
+
+      ccache -z;
+      wget http://charm.cs.illinois.edu/distrib/charm-${CHARM_VERSION}.tar.gz;
+      tar -xzf charm-${CHARM_VERSION}.tar.gz;
+      cd ./charm-${CHARM_VERSION};
+      ./build charm++ multicore-darwin-x86_64 clang -j2 -O0 $SPECTRE_MIN_MACOS;
+      git apply $TRAVIS_BUILD_DIR/support/Charm/${CHARM_PATCH};
+      ccache -s;
+      cd $HOME;
+
+      ccache -z;
+      git clone https://github.com/jbeder/yaml-cpp.git;
+      cd ./yaml-cpp;
+      mkdir lib;
+      cd ./lib;
+      cmake -DBUILD_SHARED_LIBS=ON ../;
+      make -j2;
+      ccache -s;
+      cd $HOME;
+    fi
+
+# We use different configs for Linux and macOS. For Linux we use a Docker
+# container to build SpECTRE, and build natively on macOS.
+# The ENCRYPTED_KEY_VAR and ENCRYPTED_IV_VAR are used to retrieve the encrypted
+# variables from TravisCI without showing the encrypt ID (which could be public
+# without losing much, if any security). The SONAR_TOKEN and COVERALLS_TOKEN are
+# secret env variable set in the TravisCI configuration.
+#
+# Linux:
+# Use the folder ${HOME}/docker to hold the directories we need copied into the
+# Docker image and also the Dockerfiles that are in the `containers` directory
+# of the repo. The initial directory is inside the ${TRAVIS_BUILD_DIR}. We move
+# the repo into the docker directory, and then copy in cached files. The
+# known_hosts is copied in so that the image has push access to gh-pages in
+# a secure manner. The GH_PAGES variables are used for automatic deployment of
+# documentation to GitHub pages.
+#
+# macOS:
+# The variable ${TRAVIS_BUILD_DIR} points to the cloned repository, not what
+# we would normally call the build dir, but actually the source dir.
+script:
+- ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
+- ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
+- if [ ${TRAVIS_OS_NAME} = linux ]; then
+    cp -vr containers ${HOME}/docker
+    && cd ${HOME}
+    && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
+    && cp -r ${HOME}/.ccache ${HOME}/docker/ccache
+    && cp -r $HOME/.sonar ${HOME}/docker/sonar
+    && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
+    && docker build
+        --build-arg CXXFLAGS="-Werror"
+        --build-arg COVERAGE=${COVERAGE}
+        --build-arg BUILD_TYPE=${BUILD_TYPE}
+        --build-arg CC=${CC}
+        --build-arg CXX=${CXX}
+        --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH}
+        --build-arg TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER}
+        --build-arg TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
+        --build-arg TRAVIS_JOB_ID=${TRAVIS_JOB_ID}
+        --build-arg TRAVIS_TAG=${TRAVIS_TAG}
+        --build-arg TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}
+        --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT}
+        --build-arg TRAVIS_SECURE_ENV_VARS=${TRAVIS_SECURE_ENV_VARS}
+        --build-arg TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}
+        --build-arg ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
+        --build-arg ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
+        --build-arg SONAR_TOKEN=${SONAR_TOKEN}
+        --build-arg SONARQUBE=${SONARQUBE}
+        --build-arg GH_PAGES_REPO="git@github.com:sxs-collaboration/spectre.git"
+        --build-arg GH_PAGES_SOURCE_BRANCH="develop"
+        --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
+        --build-arg CHARM_PATCH=${CHARM_PATCH}
+        -t ${TRAVIS_REPO_SLUG}
+        -f ${HOME}/docker/Dockerfile.travis
+        ${HOME}/docker/
+    && rm -rf ${HOME}/.ccache
+    && CON=$(docker run -d ${TRAVIS_REPO_SLUG} /bin/bash)
+    && docker cp ${CON}:/root/.ccache ${HOME}/
+    && docker cp ${CON}:/root/.sonar ${HOME}/
+    && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
+                 ${HOME}/docker/spectre;
+  else
+    cd $HOME
+    && mkdir build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
+    && cd ./build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
+    && ccache -z
+    && cmake -D CHARM_ROOT=$HOME/charm-${CHARM_VERSION}
+             -D CATCH_ROOT=$HOME/Catch
+             -D YAMLCPP_ROOT=$HOME/yaml-cpp/
+             -D BRIGAND_ROOT=$HOME/brigand
+             -D CMAKE_EXE_LINKER_FLAGS="${SPECTRE_MIN_MACOS}"
+             ${TRAVIS_BUILD_DIR}
+    && make -j2
+    && make test
+    && ccache -s;
+  fi
+
+# After a successful build the results are pushed to codecov.io, which doesn't
+# use a token but instead tracks the repository name on GitHub. This allows it
+# to report before being merged instead of after merging like Coveralls.
+after_success:
+- if [ ${TRAVIS_OS_NAME} = linux ]
+  && [ ${CC} = gcc ]
+  && [ ${COVERAGE} = ON ]; then
+    cd ${HOME}/docker/spectre;
+    bash <(curl -s https://codecov.io/bash) ||
+         echo "Codecov did not collect coverage reports";
+  fi
