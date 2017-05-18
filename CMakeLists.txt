@@ -33,6 +33,7 @@ include(SetupClangTidy)
 include(SetupCppCheck)
 include(SetupSanitizers)
 include(SetupListTargets)
+include(SetupDoxygen)
 
 include(SetupBlas)
 include(SetupBoost)
