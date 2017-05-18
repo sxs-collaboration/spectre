@@ -37,7 +37,8 @@ if(LIBCXX_INCLUDE_DIRS AND LIBCXX_LIBRARIES AND LIBCXXABI_LIBRARIES)
   set (LIBCXX_FIND_QUIETLY TRUE)
 endif()
 
-find_path(LIBCXX_INCLUDE_DIR NAMES cxxabi.h HINTS ${LIBCXX_ROOT}/include
+find_path(LIBCXX_INCLUDE_DIR NAMES cmath
+    HINTS ${LIBCXX_ROOT}/include/c++/v1
     /usr/include/c++/v1
     $ENV{LIBCXX_ROOT}/include/c++/v1)
 
