@@ -32,6 +32,7 @@ include(SetupSanitizers)
 include(SetupListTargets)
 
 include(SetupBoost)
+include(SetupPapi)
 
 add_subdirectory(src)
 
