@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.3.2)
 
-project(SpECTRE VERSION 0.0.0 LANGUAGES CXX)
+project(SpECTRE VERSION 0.0.0 LANGUAGES CXX C)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -36,6 +36,7 @@ include(SetupListTargets)
 
 include(SetupBoost)
 include(SetupCatch)
+include(SetupHdf5)
 include(SetupPapi)
 
 add_subdirectory(src)
