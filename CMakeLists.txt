@@ -39,6 +39,7 @@ include(SetupBoost)
 include(SetupCatch)
 include(SetupHdf5)
 include(SetupPapi)
+include(SetupYamlCpp)
 
 add_subdirectory(src)
 
