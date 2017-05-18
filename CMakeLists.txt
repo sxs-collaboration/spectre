@@ -35,6 +35,7 @@ include(SetupSanitizers)
 include(SetupListTargets)
 
 include(SetupBoost)
+include(SetupCatch)
 include(SetupPapi)
 
 add_subdirectory(src)
