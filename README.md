@@ -11,3 +11,7 @@ SpECTRE is being developed in support of our collaborative Simulating
 eXtreme Spacetimes (SXS) research program into the multi-messenger
 astrophysics of neutron star mergers, core-collapse supernovae, and
 gamma-ray bursts.
+
+## Viewing Documentation
+
+The documentation can be viewed [here](https://sxs-collaboration.github.io/spectre/).
