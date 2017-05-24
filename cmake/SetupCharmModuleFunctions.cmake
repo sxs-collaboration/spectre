@@ -9,7 +9,7 @@ function(add_charm_mainmodule MAIN_MODULE)
       OUTPUT ${MAIN_MODULE}.decl.h ${MAIN_MODULE}.def.h
       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${MAIN_MODULE}.ci
       COMMAND ${CHARM_COMPILER} -no-charmrun
-      ${CMAKE_SOURCE_DIR}/${MAIN_MODULE}.ci
+      ${CMAKE_CURRENT_SOURCE_DIR}/${MAIN_MODULE}.ci
   )
 endfunction()
 

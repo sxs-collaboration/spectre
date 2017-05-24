@@ -1,0 +1,8 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+mainmodule RunTests {
+  mainchare RunTests {
+    entry RunTests(CkArgMsg * msg);
+  };
+};
