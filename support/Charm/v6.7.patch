@@ -1,0 +1,187 @@
+diff --git a/src/scripts/charmc b/src/scripts/charmc
+index 27720c2a3..00174b02e 100755
+--- a/src/scripts/charmc
++++ b/src/scripts/charmc
+@@ -1816,7 +1816,7 @@ if test -n "$BALANCER"
+ then
+     echo "extern void LBDefaultCreate(const char *);" >> $modInitSrc
+ fi
+-echo "void _registerExternalModules(char **argv) {" >> $modInitSrc
++echo "void _registerExternalModules(char **argv) {static_cast<void>(argv);" >> $modInitSrc
+ for module in $MODULES; do
+     [ -n "$VERBOSE" ] && echo "Adding registration for module $module"
+     echo "  _register$module();" >> $modInitSrc
+@@ -1858,7 +1858,7 @@ fi
+ echo "}" >> $modInitSrc
+ 
+ # creating projections
+-echo "void _createTraces(char **argv) {" >> $modInitSrc
++echo "void _createTraces(char **argv) {static_cast<void>(argv);" >> $modInitSrc
+ for trace in $TRACEMODE; do
+     [ -n "$VERBOSE" ] && echo "Adding registration for trace $trace"
+     echo "extern void _createTrace$trace(char **argv);" >> $modInitSrc
+diff --git a/src/util/pup.h b/src/util/pup.h
+index a660ccc75..beebfddf0 100644
+--- a/src/util/pup.h
++++ b/src/util/pup.h
+@@ -55,6 +55,7 @@ class bar {
+ #define __CK_PUP_H
+ 
+ #include <stdio.h> /*<- for "FILE *" */
++#include <type_traits>
+ 
+ #ifndef __cplusplus
+ #error "Use pup_c.h for C programs-- pup.h is for C++ programs"
+@@ -696,6 +697,11 @@ public:
+     PUPable_decl_inside_template(SINGLE_ARG(className))   \
+     PUPable_operator_inside(SINGLE_ARG(className))
+ 
++#define PUPable_decl_base_template(baseClassName, className)   \
++  PUPable_decl_inside_base_template(SINGLE_ARG(baseClassName), \
++                                    SINGLE_ARG(className))     \
++      PUPable_operator_inside(SINGLE_ARG(className))
++
+ //PUPable_decl for classes inside a namespace: inside body
+ #define PUPable_decl_inside(className) \
+ private: \
+@@ -716,6 +722,22 @@ public: \
+     static void register_PUP_ID(const char* name) { \
+         my_PUP_ID=register_constructor(name,call_PUP_constructor);}
+ 
++#define PUPable_decl_inside_base_template(baseClassName, className)      \
++ private:                                                                \
++  static PUP::able *call_PUP_constructor(void) {                         \
++    return new className((CkMigrateMessage *)0);                         \
++  }                                                                      \
++  static PUP::able::PUP_ID my_PUP_ID;                                    \
++                                                                         \
++ public:                                                                 \
++  virtual const PUP::able::PUP_ID &get_PUP_ID(void) const {              \
++    return my_PUP_ID;                                                    \
++  }                                                                      \
++  static void register_PUP_ID(const char *name) {                        \
++    my_PUP_ID =                                                          \
++        baseClassName::register_constructor(name, call_PUP_constructor); \
++  }
++
+ //PUPable_decl for classes inside a namespace: in header at file scope
+ #define PUPable_decl_outside(className) \
+      PUPable_operator_outside(className)
+@@ -751,6 +773,20 @@ public:\
+ 		{my_PUP_ID=register_constructor(name,\
+ 		              className::call_PUP_constructor);}
+ 
++#define PUPable_def_specialized_template(className) \
++template <>\
++	PUP::able *className::call_PUP_constructor(void) \
++		{ return new className((CkMigrateMessage *)0);}\
++template <>\
++	const PUP::able::PUP_ID &className::get_PUP_ID(void) const\
++		{ return className::my_PUP_ID; }\
++template <>\
++	PUP::able::PUP_ID className::my_PUP_ID;\
++template <>\
++	void className::register_PUP_ID(const char* name)\
++		{my_PUP_ID=register_constructor(name,\
++		              className::call_PUP_constructor);}
++
+ //Definitions to include exactly once at file scope
+ #define PUPable_def_template(className) \
+ 	template<> PUP::able::PUP_ID className::my_PUP_ID = 0;
+@@ -900,11 +936,29 @@ template<class T> inline void PUParray(PUP::er &p,T *t,int n) { \
+ /**
+   Default operator|: call pup routine.
+ */
+-template<class T>
+-inline void operator|(PUP::er &p,T &t) { 
+-	p.syncComment(PUP::sync_begin_object);
+-	t.pup(p);
+-	p.syncComment(PUP::sync_end_object); 
++namespace charm_pup_details {
++
++template <typename... Ts>
++struct make_void {
++  using type = void;
++};
++template <typename... Ts>
++using void_t = typename make_void<Ts...>::type;
++
++template <typename T, typename U = void>
++struct is_pupable : std::false_type{};
++
++template <typename T>
++struct is_pupable<
++    T, void_t<decltype(std::declval<T>().pup(std::declval<PUP::er &>()))>>
++    : std::true_type {};
++
++}  // namespace charm_pup_details
++template <class T, typename std::enable_if<charm_pup_details::is_pupable<T>::value, int>::type = 0>
++inline void operator|(PUP::er &p, T &t) {
++  p.syncComment(PUP::sync_begin_object);
++  t.pup(p);
++  p.syncComment(PUP::sync_end_object);
+ }
+ 
+ /**
+diff --git a/src/util/pup_stl.h b/src/util/pup_stl.h
+index ef122b7bc..79c0dbd82 100644
+--- a/src/util/pup_stl.h
++++ b/src/util/pup_stl.h
+@@ -48,8 +48,8 @@ namespace PUP {
+   inline void PUP_stl_container(er &p,container &c);
+   template <class container,class dtype>
+   inline void PUP_stl_map(er &p,container &c);
+-  template <class T>
+-  inline void operator|(er &p,typename std::vector<T> &v);
++  template <class T, class A>
++  inline void operator|(er &p,typename std::vector<T, A> &v);
+   template <class T>
+   inline void operator|(er &p,typename std::list<T> &v);
+   template <class V,class T,class Cmp>
+@@ -143,17 +143,10 @@ namespace PUP {
+   inline void PUP_stl_container(er &p,container &c) {
+     p.syncComment(sync_begin_array);
+     int nElem=PUP_stl_container_size(p,c);
+-    if (p.isUnpacking()) 
+-      { //Unpacking: Extract each element and push_back:
+-	c.resize(0);
+-	for (int i=0;i<nElem;i++) {
+-	  p.syncComment(sync_item);
+-	  dtype n;
+-	  p|n;
+-	  c.push_back(n);
+-	} 
+-      }
+-    else PUP_stl_container_items<container, dtype>(p,c);
++    if (p.isUnpacking()) {  // Unpacking: Extract each element and push_back:
++      c.resize(nElem);
++    }
++    PUP_stl_container_items<container, dtype>(p, c);
+     p.syncComment(sync_end_array);
+   }
+   //Map objects don't have a "push_back", while vector and list
+@@ -174,9 +167,21 @@ namespace PUP {
+     p.syncComment(sync_end_list);
+   }
+ 
+-  template <class T> 
+-  inline void operator|(er &p,typename std::vector<T> &v)
+-  { PUP_stl_container<std::vector<T>,T>(p,v); }
++  template <class T, class A>
++  inline void operator|(er &p, typename std::vector<T, A> &v) {
++    if (std::is_arithmetic<T>::value) {
++      int number_of_elements = PUP_stl_container_size(p, v);
++      if (p.isUnpacking()) {
++        if (v.size() != number_of_elements) {
++          v.resize(static_cast<size_t>(number_of_elements));
++          v.shrink_to_fit();
++        }
++      }
++      PUParray(p, v.data(), number_of_elements);
++    } else {
++      PUP_stl_container<std::vector<T, A>, T>(p, v);
++    }
++  }
+   template <class T> 
+   inline void operator|(er &p,typename std::list<T> &v)
+   { PUP_stl_container<std::list<T>,T>(p,v); }
