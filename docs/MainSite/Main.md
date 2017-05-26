@@ -1,0 +1,22 @@
+\cond NEVER
+Distributed under the MIT License.
+See LICENSE.txt for details.
+\endcond
+\mainpage Documentation Overview
+
+<div class="toc">
+Table of Contents
+<ul>
+<li class="level1"><a href="#intro_sec">Introduction </a></li>
+<li class="level1"><a href="installation.html">Installation </a></li>
+<li class="level1"><a href="doc_coverage/index.html">Documentation Coverage </a></li>
+</ul>
+</div>
+
+Introduction {#intro_sec}
+==============================================================================
+
+This is the introduction.
+
+We need an introduction because we don't have one...
+
