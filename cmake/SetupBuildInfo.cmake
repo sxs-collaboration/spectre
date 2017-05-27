@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+find_package(Git REQUIRED)
+
 configure_file(
     ${CMAKE_SOURCE_DIR}/src/Informer/InfoFromBuild.cpp
     ${CMAKE_BINARY_DIR}/Informer/InfoFromBuild.cpp
