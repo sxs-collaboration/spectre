@@ -18,7 +18,7 @@ See LICENSE.txt for details.
 * Orientation:<br>
   The information of how the Logical Coordinates between Blocks are related.
 
-* \ref BlockNeighbor "Block Neighbor":<br>
+* ref BlackNeighbor "Block Neighbor":<br>
   The identity and Orientation of a neighbor of a given Block.
   
 * Direction:<br>
@@ -34,7 +34,7 @@ See LICENSE.txt for details.
   such that the Segment's interval is \f$[-1 + 2*(N/D), -1 + 2*(N+1)/D]\f$ where N is the integer label and
   D is \f$2^{(\textrm{Refinement Level})}\f$.
 
-* \ref SegmentId "Segment Identifier":<br>
+* ref SegmentId "Segment Identifier":<br>
   The Refinement Level and an integer labeling a Segment.
 
 * Element:<br>
@@ -42,7 +42,7 @@ See LICENSE.txt for details.
   logical coordinate. The properties of the Element
   are inherited from the block, i.e. it is self-similar to the Block.
 
-* \ref ElementId "Element Identifier":<br>
+* ref ElementId "Element Identifier":<br>
   The Block Identifier containing the Element and a Segment Identifier
   in each logical coordinate axis.
 
@@ -55,7 +55,7 @@ See LICENSE.txt for details.
 * Internal Boundary:<br>
   A boundary that is not an External Boundary.
 
-* \ref Neighbors "Face Neighbors" (Rename C++ Neighbors class to FaceNeighbors):<br>
+* ref Neighbors "Face Neighbors" (Rename C++ Neighbors class to FaceNeighbors):<br>
   The identities and Orientation of the neighbors in a particular direction of a given Element. 
 
 * External Boundary Condition:<br>

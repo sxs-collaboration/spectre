@@ -250,7 +250,7 @@
  * </table>
  *
  * \example
- * \snippet Test_H5.cpp willfail_example_for_dev_doc
+ * snippet Test_H5.cpp willfail_example_for_dev_doc
  *
  * ### Debugging Tests in GDB or LLDB
  *
