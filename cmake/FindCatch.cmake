@@ -3,7 +3,9 @@
 
 find_path(
     CATCH_INCLUDE_DIR
+    PATH_SUFFIXES single_include include
     NAMES catch.hpp
+    HINTS ${CATCH_ROOT}
     DOC "catch include dir"
 )
 
