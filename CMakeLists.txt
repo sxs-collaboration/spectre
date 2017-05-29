@@ -36,6 +36,7 @@ include(SetupDoxygen)
 
 include(SetupBlas)
 include(SetupBoost)
+include(SetupBrigand)
 include(SetupCatch)
 include(SetupHdf5)
 include(SetupPapi)
