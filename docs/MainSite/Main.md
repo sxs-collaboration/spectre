@@ -10,6 +10,7 @@ Table of Contents
 <li class="level1"><a href="#intro_sec">Introduction </a></li>
 <li class="level1"><a href="installation.html">Installation </a></li>
 <li class="level1"><a href="doc_coverage/index.html">Documentation Coverage </a></li>
+<li class="level1"><a href="unit-test-coverage/index.html">Unit Test Coverage </a></li>
 </ul>
 </div>
 

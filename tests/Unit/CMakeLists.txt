@@ -23,3 +23,18 @@ target_link_libraries(
 
 spectre_add_catch_tests(${executable})
 
+# Setup code coverage for unit tests
+if(COVERAGE)
+  # Setup unit test coverage target.
+  setup_target_for_coverage(
+      Unit
+      ${CMAKE_BINARY_DIR}/docs/html
+      unit-test-coverage
+      ${CMAKE_CTEST_COMMAND}
+      DEPENDS ${executable}
+      IGNORE_COV
+      '${CMAKE_BINARY_DIR}/Informer/InfoFromBuild.cpp'
+      '${CMAKE_SOURCE_DIR}/tests/*'
+  )
+endif()
+
