@@ -1,0 +1,174 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# We derive from the SpECTRE build environment Docker image which contains all
+# the dependencies that are needed to compile SpECTRE. Deriving off the build
+# environment Docker image is substantially faster than installing compilers
+# and other dependencies each time we run a build.
+#
+# The spectrebuildenv Docker image is generated using the Dockerfile.buildenv
+# by running (as root):
+# docker build  -t sxscollaboration/spectrebuildenv:latest \
+#               -f ./spectre/containers/Dockerfile.buildenv .
+#
+# For those who are maintaining the build env, see that Dockerfile for
+# instructions on pushing to the SXS collaboration DockerHub account.
+FROM sxscollaboration/spectrebuildenv:latest
+
+# All ARG variables are passed into Docker as a
+# `--build-arg VARIABLE_NAME=VARIABLE_VALUE`
+ARG COVERAGE=OFF
+ARG CC
+ARG CXX
+ARG CXXFLAGS
+ARG BUILD_TYPE
+ARG DOCUMENTATION_ONLY
+
+# Environment variables used for test and documentation code coverage analysis
+ARG TRAVIS_BRANCH
+ARG TRAVIS_JOB_NUMBER
+ARG TRAVIS_PULL_REQUEST
+ARG TRAVIS_JOB_ID
+ARG TRAVIS_TAG
+ARG TRAVIS_REPO_SLUG
+ARG TRAVIS_COMMIT
+ARG TRAVIS_EVENT_TYPE
+ARG TRAVIS_SECURE_ENV_VARS
+ARG ENCRYPTED_KEY
+ARG ENCRYPTED_IV
+ARG SONAR_TOKEN
+ARG SONARQUBE
+ARG GH_PAGES_REPO
+ARG GH_PAGES_SOURCE_BRANCH
+ARG COVERALLS_TOKEN
+ARG CHARM_PATCH
+
+# Copy the spectre repo from the TravisCI disk into the Docker image /work
+# directory
+COPY spectre /work/spectre
+
+# We need the GitHub host added to known_hosts. It is safer to copy in the
+# known_hosts from Travis than to add the REPO host automatically, since that
+# could be changed to point anywhere.
+RUN mkdir /root/.ssh
+COPY known_hosts /root/.ssh/known_hosts
+
+# Copy ccache from TravisCI cached data (we cache the ccache cache between
+# builds) to the Docker image
+COPY ccache /root/.ccache
+
+# Copy sonar files into Docker image
+COPY sonar /root/.sonar
+
+# Apply Charm++ patch
+WORKDIR /work/charm
+RUN git apply /work/spectre/support/Charm/${CHARM_PATCH}
+
+# Create build directory
+RUN mkdir /work/build_${BUILD_TYPE}_${CC}
+WORKDIR /work/build_${BUILD_TYPE}_${CC}
+
+RUN ccache -z
+
+RUN bash -c ". /etc/profile.d/lmod.sh; \
+    export PATH=$PATH:/work/spack/bin; \
+    . /work/spack/share/spack/setup-env.sh; \
+    spack load blaze; \
+    spack load brigand; \
+    spack load catch; \
+    cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+          -D CMAKE_C_COMPILER=${CC} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
+          -D CHARM_ROOT=/work/charm/multicore-linux64-${CC} \
+          -D USE_CCACHE=ON \
+          -D COVERAGE=${COVERAGE} \
+          ../spectre/"
+
+# TravisCI currently has 2 cores for a job, so we build on 2.
+RUN if [ ${SONARQUBE} ] \
+    && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
+    && [ ${TRAVIS_EVENT_TYPE} = cron ] \
+    && [ ${CC} = gcc ]; then \
+      /work/sonarqube/build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
+        --out-dir sonar-output make -j2; \
+    else \
+      make -j2; \
+    fi
+RUN ccache -s
+
+RUN make test
+
+# Check documentation output for warnings write to stdout and to file so we
+# can search the file for warnings
+RUN if [ "${CC}" = "gcc" ] && [ $BUILD_TYPE = Debug ]; then \
+      make doc | tee doxygen.log; \
+      ! grep 'warning' ./doxygen.log; \
+    fi
+
+RUN if [ "${CC}" = "gcc" ] && [ ${COVERAGE} = ON ]; then \
+      make unit-test-coverage; \
+      if [ ${TRAVIS_SECURE_ENV_VARS} = true ]; then \
+        cd /work/spectre; \
+        coveralls-lcov -v --repo-token ${COVERALLS_TOKEN} /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \
+        cd /work/build_${BUILD_TYPE}_${CC}; \
+      fi; \
+    else \
+      touch /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \
+    fi
+
+# We use cron jobs to deploy to gh-pages
+# Since this still runs all jobs we only actually build documentation
+# for one job but let the others run tests, i.e.
+# we add documentation only for one specific build matrix entry.
+RUN if [ ${CC} = gcc ] \
+    && [ ${TRAVIS_EVENT_TYPE} = cron ] \
+    && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
+    && [ ${COVERAGE} ] \
+    && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
+    && [ ${TRAVIS_PULL_REQUEST} = false ]; then \
+      if [ ${SONARQUBE} ]; then \
+        # We run unit test coverage before running sonar so we also get data on
+        # code coverage. Here ${TRAVIS_REPO_SLUG}=sxs-collaboration/spectre
+        # The SONAR_TOKEN variable is an env variable set in the TravisCI config
+        # that is not visible in the build logs and provides secure access to
+        # the SXS collaboration SpECTRE project on SonarQUBE.
+        # The sonar.host.url is set to where the Sonar server is running, which
+        # we use sonarqube.com for since it is available for open-source
+        # projects.
+        /work/sonarqube/sonar-scanner-2.8/bin/sonar-scanner \
+            -Dsonar.projectKey=spectre \
+            -Dsonar.projectName=spectre \
+            -Dsonar.projectVersion=${TRAVIS_COMMIT} \
+            -Dsonar.branch=/${TRAVIS_BRANCH} \
+            -Dsonar.links.homepage=http://github.com/${TRAVIS_REPO_SLUG} \
+            -Dsonar.links.ci=https://travis-ci.org/${TRAVIS_REPO_SLUG} \
+            -Dsonar.links.scm=https://github.com/${TRAVIS_REPO_SLUG} \
+            -Dsonar.links.issue=https://github.com/${TRAVIS_REPO_SLUG}/issues \
+            -Dsonar.sources=/work/spectre \
+            -Dsonar.exclusions=build/CMakeFiles/**,build/doc/**,tests/** \
+            -Dsonar.cfamily.build-wrapper-output=/work/build_${BUILD_TYPE}_${CC}/sonar-output \
+            -Dsonar.host.url=https://sonarqube.com \
+            -Dsonar.cfamily.gcov.reportsPath=/work/build_${BUILD_TYPE}_${CC}/tmp \
+            -Dsonar.organization=sxs-collaboration \
+            -Dsonar.login=${SONAR_TOKEN}; \
+      fi; \
+
+      # We intentionally run doc-coverage after sonar so sonar does not check
+      # the documentation coverage.
+      make doc-coverage; \
+
+      # the encrypted key is created using:
+      # travis encrypt-file -r sxs-collaboration/spectre deploy_key
+      # See:
+      # https://gist.github.com/domenic/ec8b0fc8ab45f39403dd
+      # https://docs.travis-ci.com/user/encrypting-files/
+      openssl aes-256-cbc -K $ENCRYPTED_KEY -iv $ENCRYPTED_IV \
+              -in /work/spectre/.travis/deploy_key.enc \
+              -out /root/.ssh/id_rsa -d; \
+      chmod 600 /root/.ssh/id_rsa; \
+
+      cd /work; \
+      git clone "$GH_PAGES_REPO" gh-pages; \
+    fi
+RUN /work/spectre/.travis/TravisPushDocumentation.sh

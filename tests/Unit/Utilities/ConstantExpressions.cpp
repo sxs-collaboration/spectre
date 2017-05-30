@@ -16,6 +16,8 @@ void TestT() {
   const T eight = 8;
   const T sixteen = 16;
 
+  CHECK((one == two_to_the(zero)));
+
   static_assert(one == two_to_the(zero),
                 "Failed test Unit.Utilities.ConstantExpressions");
   static_assert(two == two_to_the(one),

@@ -88,7 +88,7 @@ PAPI counters is given below.
 
 To provide a concrete example of tracing and analyzing hardware PMUs using PAPI
 for only a subset of functions in an Action we will profile the function
-`ScalarWaveEquations<Dim>::compute_volume_dt_u`. There are several helper
+`ScalarWaveEquations<Dim>::%compute_volume_dt_u`. There are several helper
 functions provided in `Utilities/PAPI.hpp` that will come in useful. To start
 the PAPI counters and record the time at the beginning of the function we call
 
