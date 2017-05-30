@@ -44,66 +44,68 @@ if (DOXYGEN_FOUND)
 
   if (PYTHONINTERP_FOUND AND LCOV AND GENHTML AND SED)
     include(FindPythonModule)
-    find_python_module(coverxygen TRUE)
+    find_python_module(coverxygen FALSE)
     # Use [coverxygen](https://github.com/psycofdj/coverxygen) to check
     # the level of documentation coverage.
-    set(DOX_COVERAGE_OUTPUT "${CMAKE_BINARY_DIR}/docs/html/doc_coverage/")
-    add_custom_target(
-        doc-coverage
+    if(${PY_COVERXYGEN})
+      set(DOX_COVERAGE_OUTPUT "${CMAKE_BINARY_DIR}/docs/html/doc_coverage/")
+      add_custom_target(
+          doc-coverage
 
-        COMMAND ${PYTHON_EXECUTABLE}
-        -m coverxygen
-        --xml-dir ${CMAKE_BINARY_DIR}/docs/xml
-        --src-dir ${CMAKE_SOURCE_DIR}
-        --output ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
+          COMMAND ${PYTHON_EXECUTABLE}
+          -m coverxygen
+          --xml-dir ${CMAKE_BINARY_DIR}/docs/xml
+          --src-dir ${CMAKE_SOURCE_DIR}
+          --output ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
 
-        COMMAND
-        ${LCOV} --summary ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
+          COMMAND
+          ${LCOV} --summary ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
 
-        COMMAND
-        ${GENHTML} --legend
-        --no-function-coverage
-        --no-branch-coverage
-        --title `cd ${CMAKE_SOURCE_DIR} && git rev-parse HEAD`
-        ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
-        -o ${DOX_COVERAGE_OUTPUT}
+          COMMAND
+          ${GENHTML} --legend
+          --no-function-coverage
+          --no-branch-coverage
+          --title `cd ${CMAKE_SOURCE_DIR} && git rev-parse HEAD`
+          ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
+          -o ${DOX_COVERAGE_OUTPUT}
 
-        COMMAND
-        find ${DOX_COVERAGE_OUTPUT} -type f -print
-        | xargs file
-        | grep text
-        | cut -f1 -d:
-        | xargs ${SED} -i'.bak' 's/LCOV - code coverage report/
-        SpECTRE Documentation Coverage Report/g'
+          COMMAND
+          find ${DOX_COVERAGE_OUTPUT} -type f -print
+          | xargs file
+          | grep text
+          | cut -f1 -d:
+          | xargs ${SED} -i'.bak' 's/LCOV - code coverage report/
+          SpECTRE Documentation Coverage Report/g'
 
-        COMMAND find ${DOX_COVERAGE_OUTPUT} -type f -print | xargs file
-        | grep text
-        | cut -f1 -d:
-        | xargs ${SED} -i'.bak' 's^<td class="headerItem">Test:</td>^
-        <td class="headerItem">Commit:</td>^g'
+          COMMAND find ${DOX_COVERAGE_OUTPUT} -type f -print | xargs file
+          | grep text
+          | cut -f1 -d:
+          | xargs ${SED} -i'.bak' 's^<td class="headerItem">Test:</td>^
+          <td class="headerItem">Commit:</td>^g'
 
-        COMMAND find ${DOX_COVERAGE_OUTPUT} -type f -print | xargs file
-        | grep text
-        | cut -f1 -d:
-        | xargs ${SED} -i'.bak' 's^<td class="headerValue">\\\([a-z0-9]\\{40\\}\\\)^
-        <td class="headerValue"><a target="_blank"
-        href="https://github.com/sxs-collaboration/spectre/commit/\\1">\\1</a>^g'
+          COMMAND find ${DOX_COVERAGE_OUTPUT} -type f -print | xargs file
+          | grep text
+          | cut -f1 -d:
+          | xargs ${SED} -i'.bak' 's^<td class="headerValue">\\\([a-z0-9]\\{40\\}\\\)^
+          <td class="headerValue"><a target="_blank"
+          href="https://github.com/sxs-collaboration/spectre/commit/\\1">\\1</a>^g'
 
-        # Delete backup files created by sed
-        COMMAND find ${DOX_COVERAGE_OUTPUT} -type f -name \"*.bak\" -print
-        | xargs file | grep text | cut -f1 -d: | xargs rm
+          # Delete backup files created by sed
+          COMMAND find ${DOX_COVERAGE_OUTPUT} -type f -name \"*.bak\" -print
+          | xargs file | grep text | cut -f1 -d: | xargs rm
 
-        DEPENDS
-        ${PROJECT_BINARY_DIR}/docs/DoxyfileXml
-        ${SPECTRE_DOXYGEN_GROUPS}
-        doc-xml
+          DEPENDS
+          ${PROJECT_BINARY_DIR}/docs/DoxyfileXml
+          ${SPECTRE_DOXYGEN_GROUPS}
+          doc-xml
 
-        # Set work directory for target
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+          # Set work directory for target
+          WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 
-        COMMENT "SpECTRE Documentation Coverage"
-    )
-  endif()
-else()
+          COMMENT "SpECTRE Documentation Coverage"
+      )
+    endif(${PY_COVERXYGEN})
+  endif(PYTHONINTERP_FOUND AND LCOV AND GENHTML AND SED)
+else(DOXYGEN_FOUND)
   message(WARNING "Doxygen is needed to build the documentation.")
-endif ()
+endif (DOXYGEN_FOUND)
