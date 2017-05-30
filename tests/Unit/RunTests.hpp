@@ -3,9 +3,12 @@
 
 #pragma once
 
+#include <charm++.h>
+
 #include "tests/Unit/RunTests.decl.h"
 
+/// Main executable for running the unit tests.
 class RunTests : public CBase_RunTests {
  public:
-  explicit RunTests(CkArgMsg* msg);
+  [[noreturn]] explicit RunTests(CkArgMsg* msg);
 };

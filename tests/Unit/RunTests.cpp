@@ -7,12 +7,19 @@
 
 #include <catch.hpp>
 
+#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Informer/InfoFromBuild.hpp"
+#include "Parallel/Abort.hpp"
+#include "Parallel/Exit.hpp"
+
 RunTests::RunTests(CkArgMsg* msg) {
+  printf("%s", info_from_build().c_str());
+  enable_floating_point_exceptions();
   int result = Catch::Session().run(msg->argc, msg->argv);
   if (0 == result) {
-    CkExit();
+    Parallel::exit();
   }
-  CkAbort("A catch test has failed.");
+  Parallel::abort("A catch test has failed.");
 }
 
 #include "tests/Unit/RunTests.def.h"
