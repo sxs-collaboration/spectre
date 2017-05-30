@@ -1,3 +1,10 @@
+[//]: # (Distributed under the MIT License.)
+[//]: # (See LICENSE.txt for details.)
+
+[![Build Status](https://travis-ci.org/sxs-collaboration/spectre.svg?branch=master)](https://travis-ci.org/sxs-collaboration/spectre)
+[![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
+[![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
+
 ## What is SpECTRE?
 
 SpECTRE is an open-source code for multi-scale, multi-physics problems
@@ -14,4 +21,5 @@ gamma-ray bursts.
 
 ## Viewing Documentation
 
-The documentation can be viewed [here](https://sxs-collaboration.github.io/spectre/).
+The documentation can be viewed
+[here](https://sxs-collaboration.github.io/spectre/).
