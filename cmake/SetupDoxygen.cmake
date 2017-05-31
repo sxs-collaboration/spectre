@@ -47,7 +47,7 @@ if (DOXYGEN_FOUND)
     find_python_module(coverxygen FALSE)
     # Use [coverxygen](https://github.com/psycofdj/coverxygen) to check
     # the level of documentation coverage.
-    if(${PY_COVERXYGEN})
+    if(NOT "${PY_COVERXYGEN}" STREQUAL "")
       set(DOX_COVERAGE_OUTPUT "${CMAKE_BINARY_DIR}/docs/html/doc_coverage/")
       add_custom_target(
           doc-coverage
@@ -56,6 +56,12 @@ if (DOXYGEN_FOUND)
           -m coverxygen
           --xml-dir ${CMAKE_BINARY_DIR}/docs/xml
           --src-dir ${CMAKE_SOURCE_DIR}
+          --output ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
+
+          COMMAND ${LCOV}
+          --remove ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
+          '${CMAKE_SOURCE_DIR}/src/Executables/*'
+          '${CMAKE_SOURCE_DIR}/tests/*'
           --output ${CMAKE_BINARY_DIR}/docs/tmp/doc_coverage.info
 
           COMMAND
@@ -104,7 +110,7 @@ if (DOXYGEN_FOUND)
 
           COMMENT "SpECTRE Documentation Coverage"
       )
-    endif(${PY_COVERXYGEN})
+    endif(NOT "${PY_COVERXYGEN}" STREQUAL "")
   endif(PYTHONINTERP_FOUND AND LCOV AND GENHTML AND SED)
 else(DOXYGEN_FOUND)
   message(WARNING "Doxygen is needed to build the documentation.")

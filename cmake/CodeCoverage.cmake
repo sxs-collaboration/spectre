@@ -109,6 +109,7 @@ function(SETUP_TARGET_FOR_COVERAGE
       --remove ${OUTPUT}.total.info '*/c++/*' '*/include/*'
       '*/boost/*' '*/charm/*' '*.decl.h' '*.def.h'
       '*/STDIN' '*/tut/*' '*/moduleinit*'
+      '${CMAKE_SOURCE_DIR}/src/Executables/*'
       ${ARG_IGNORE_COV}
       --output-file ${OUTPUT}.filtered.info
       # Generate HTML report
