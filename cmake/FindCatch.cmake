@@ -1,9 +1,12 @@
 # From: https://github.com/cinemast/libjson-rpc-cpp
 # Copyright (C) 2011-2016 Peter Spiess-Knafl
 
+# SpECTRE modifications:
+# - add PATH_SUFFIXES to find_path
+
 find_path(
     CATCH_INCLUDE_DIR
-    PATH_SUFFIXES single_include include
+    PATH_SUFFIXES single_include include catch
     NAMES catch.hpp
     HINTS ${CATCH_ROOT}
     DOC "catch include dir"
