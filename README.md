@@ -1,7 +1,7 @@
 [//]: # (Distributed under the MIT License.)
 [//]: # (See LICENSE.txt for details.)
 
-[![Build Status](https://travis-ci.org/sxs-collaboration/spectre.svg?branch=master)](https://travis-ci.org/sxs-collaboration/spectre)
+[![Build Status](https://travis-ci.org/sxs-collaboration/spectre.svg?branch=develop)](https://travis-ci.org/sxs-collaboration/spectre)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
 
