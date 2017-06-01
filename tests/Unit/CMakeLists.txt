@@ -5,20 +5,22 @@ set(executable RunTests)
 
 set(SPECTRE_TESTS "TestFramework.cpp")
 
+add_subdirectory(ErrorHandling)
 add_subdirectory(Utilities)
 
 add_charm_mainmodule(${executable})
 
 add_executable(
-        ${executable}
-        ${executable}.cpp
-        ${executable}.decl.h
-        ${executable}.def.h
-        ${SPECTRE_TESTS}
+    ${executable}
+    ${executable}.cpp
+    ${executable}.decl.h
+    ${executable}.def.h
+    ${SPECTRE_TESTS}
 )
 
 target_link_libraries(
-        ${executable}
+    ${executable}
+    ErrorHandling
 )
 
 spectre_add_catch_tests(${executable})
