@@ -1,6 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# If you change this file please push a new image to DockerHub so that the
+# new image is used for testing. To build a new image run:
+# docker build  -t sxscollaboration/spectrebuildenv:latest
+#               -f ./Dockerfile.buildenv .
+# and then to push to DockerHub:
+# docker push sxscollaboration/spectrebuildenv
+# If you do not have permission to push to DockerHub please coordinate with
+# someone who does. Since changes to this image effect our testing
+# infrastructure it is important all changes be carefully reviewed.
+
 FROM ubuntu:17.04
 
 ARG CHARM_GIT_TAG=v6.7.1
@@ -64,7 +74,7 @@ RUN printf "\n  openssl:\n    paths:\n      openssl@1.0.2g: /usr\n\
 RUN echo "export PATH=\$PATH:/work/spack/bin" >> /root/.bashrc
 RUN echo '. /work/spack/share/spack/setup-env.sh' >> /root/.bashrc
 RUN export PATH=$PATH:/work/spack/bin
-RUN /work/spack/bin/spack install catch
+RUN /work/spack/bin/spack install catch@1.6.1
 RUN /work/spack/bin/spack install brigand@master
 RUN /work/spack/bin/spack install blaze
 

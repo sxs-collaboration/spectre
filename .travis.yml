@@ -113,6 +113,9 @@ before_install:
       brew install hdf5;
 
       git clone https://github.com/philsquared/Catch.git;
+      cd Catch;
+      git checkout v1.6.1;
+      cd ../;
 
       git clone https://github.com/edouarda/brigand.git;
 

@@ -14,7 +14,7 @@ See LICENSE.txt for details.
 * BLAS
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
-* [Catch](https://github.com/philsquared/Catch)
+* [Catch](https://github.com/philsquared/Catch) (v1.6.1 or older)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 

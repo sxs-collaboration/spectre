@@ -3,7 +3,7 @@
 
 set(executable RunTests)
 
-set(SPECTRE_TESTS "")
+set(SPECTRE_TESTS "TestFramework.cpp")
 
 add_subdirectory(Utilities)
 
