@@ -3,6 +3,7 @@
 
 set(ERROR_HANDLING_TESTS
     ErrorHandling/AbortWithErrorMessage.cpp
+    ErrorHandling/AssertAndError.cpp
     ErrorHandling/FloatingPointExceptions.cpp)
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${ERROR_HANDLING_TESTS}" PARENT_SCOPE)
