@@ -97,15 +97,15 @@ function(SETUP_TARGET_FOR_COVERAGE
       COMMAND ${TEST_RUNNER} ${ARG_TESTRUNNER_ARGS}
       # Capture lcov counters
       COMMAND ${LCOV} --gcov-tool ${GCOV} --capture
-      --rc lcov_branch_coverage=1 --directory .
+      --rc lcov_branch_coverage=0 --directory .
       --output-file ${OUTPUT}.test.info
       # Combine trace files
-      COMMAND ${LCOV} --gcov-tool ${GCOV} --rc lcov_branch_coverage=1
+      COMMAND ${LCOV} --gcov-tool ${GCOV} --rc lcov_branch_coverage=0
       --add-tracefile ${OUTPUT}.base.info
       --add-tracefile ${OUTPUT}.test.info
       --output-file ${OUTPUT}.total.info
       # Filter out unwanted files
-      COMMAND ${LCOV} --gcov-tool ${GCOV} --rc lcov_branch_coverage=1
+      COMMAND ${LCOV} --gcov-tool ${GCOV} --rc lcov_branch_coverage=0
       --remove ${OUTPUT}.total.info '*/c++/*' '*/include/*'
       '*/boost/*' '*/charm/*' '*.decl.h' '*.def.h'
       '*/STDIN' '*/tut/*' '*/moduleinit*'
@@ -113,7 +113,7 @@ function(SETUP_TARGET_FOR_COVERAGE
       ${ARG_IGNORE_COV}
       --output-file ${OUTPUT}.filtered.info
       # Generate HTML report
-      COMMAND ${GENHTML} --legend --branch-coverage --demangle-cpp
+      COMMAND ${GENHTML} --legend --demangle-cpp
       --title `cd ${CMAKE_SOURCE_DIR} && git rev-parse HEAD`
       -o ${OUTPUT} ${OUTPUT}.filtered.info
       # Customize page headers in generated html to own
