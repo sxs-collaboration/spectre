@@ -4,6 +4,8 @@ See LICENSE.txt for details.
 \endcond
 # Developer's Guide {#dev_guide}
 
+- \ref spectre_build_system "The build system" and how to add dependencies,
+  unit tests, and executables.
 - \ref writing_good_dox "Writing good documentation" is key for long term
   maintainability of the project
 - \ref code_review_guide "Guidelines for code review." All code merged into
