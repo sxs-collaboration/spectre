@@ -6,6 +6,7 @@ set(executable RunTests)
 set(SPECTRE_TESTS "TestFramework.cpp")
 
 add_subdirectory(ErrorHandling)
+add_subdirectory(Parallel)
 add_subdirectory(Utilities)
 
 add_charm_mainmodule(${executable})

@@ -4,7 +4,7 @@
 set(library ErrorHandling)
 
 set(library_sources
-    FloatingPointExceptions.cpp
-)
+    AbortWithErrorMessage.cpp
+    FloatingPointExceptions.cpp)
 
 add_library(${library} ${library_sources})

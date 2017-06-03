@@ -5,6 +5,8 @@ Language:        Cpp
 BasedOnStyle:  Google
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
+PointerAlignment: Left
+DerivePointerAlignment: false
 IncludeCategories:
   - Regex:           '^<.*'
     Priority:        1
