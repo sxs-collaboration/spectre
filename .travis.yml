@@ -111,6 +111,11 @@ before_install:
       brew install ccache;
       PATH=/usr/local/opt/ccache/libexec:$PATH;
       brew install hdf5;
+      brew install jemalloc;
+
+      git clone https://github.com/hfp/libxsmm.git;
+      cd libxsmm && mkdir build && cd build && make -f ../Makefile;
+      cd $HOME;
 
       git clone https://github.com/philsquared/Catch.git;
       cd Catch;
@@ -212,6 +217,7 @@ script:
              -D CATCH_ROOT=$HOME/Catch
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D BRIGAND_ROOT=$HOME/brigand
+             -D LIBXSMM_ROOT=$HOME/libxsmm/build
              -D CMAKE_EXE_LINKER_FLAGS="${SPECTRE_MIN_MACOS}"
              ${TRAVIS_BUILD_DIR}
     && make -j2

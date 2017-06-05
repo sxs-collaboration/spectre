@@ -42,6 +42,8 @@ include(SetupBoost)
 include(SetupBrigand)
 include(SetupCatch)
 include(SetupHdf5)
+include(SetupJemalloc)
+include(SetupLIBXSMM)
 include(SetupPapi)
 include(SetupYamlCpp)
 
