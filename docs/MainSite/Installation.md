@@ -17,6 +17,7 @@ See LICENSE.txt for details.
 * [Catch](https://github.com/philsquared/Catch) (v1.6.1 or older)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
+* [LIBXSMM](https://github.com/hfp/libxsmm)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
 
@@ -82,6 +83,7 @@ install the dependencies using
 spack install brigand@master
 spack install catch
 spack install jemalloc # or from your package manager
+spack install libxsmm
 spack install yaml-cpp@develop
 ```
 

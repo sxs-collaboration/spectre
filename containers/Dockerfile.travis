@@ -76,6 +76,7 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
     spack load blaze; \
     spack load brigand; \
     spack load catch; \
+    spack load libxsmm; \
     cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
           -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_CXX_COMPILER=${CXX} \
