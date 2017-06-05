@@ -27,6 +27,9 @@ RUN apt-get install -y libboost-all-dev libyaml-cpp-dev
 RUN apt-get update -y
 RUN apt-get install -y libc++-dev libc++1 libc++abi-dev
 
+# Install jemalloc
+RUN apt-get update -y && apt-get install -y libjemalloc1 libjemalloc-dev
+
 # Install ccache to cache compilations for reduced compile time
 RUN apt-get install -y ccache
 

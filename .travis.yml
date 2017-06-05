@@ -111,6 +111,7 @@ before_install:
       brew install ccache;
       PATH=/usr/local/opt/ccache/libexec:$PATH;
       brew install hdf5;
+      brew install jemalloc;
 
       git clone https://github.com/philsquared/Catch.git;
       cd Catch;
