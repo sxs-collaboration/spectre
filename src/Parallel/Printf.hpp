@@ -11,6 +11,8 @@
 #include <string>
 #include <type_traits>
 
+#include "Utilities/TypeTraits.hpp"
+
 namespace Parallel {
 namespace detail {
 /*!
@@ -36,6 +38,9 @@ inline constexpr T stream_object_to_string(T&& t) {
 template <typename T,
           typename std::enable_if_t<std::is_class<T>::value>* = nullptr>
 inline std::string stream_object_to_string(T&& t) {
+  static_assert(tt::is_streamable<std::stringstream, T>::value,
+                "Cannot stream type and therefore it cannot be printed. Please "
+                "define a stream operator for the type.");
   std::stringstream ss;
   ss << t;
   return ss.str();

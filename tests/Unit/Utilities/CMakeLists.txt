@@ -1,9 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-list(APPEND UTILITIES_TESTS Utilities/ConstantExpressions.cpp)
+set(UTILITIES_TESTS
+    Utilities/BoostHelpers.cpp
+    Utilities/ConstantExpressions.cpp
+    Utilities/MakeArray.cpp
+    Utilities/StdHelpers.cpp
+    Utilities/TypeTraits.cpp)
 
-# CMake cannot append to a list in the parent scope
-list(APPEND UTILITIES_TESTS ${SPECTRE_TESTS})
-set(SPECTRE_TESTS "${UTILITIES_TESTS}" PARENT_SCOPE)
+set(SPECTRE_TESTS "${SPECTRE_TESTS};${UTILITIES_TESTS}" PARENT_SCOPE)
 
