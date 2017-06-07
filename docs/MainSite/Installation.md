@@ -12,6 +12,7 @@ See LICENSE.txt for details.
 * [Charm++](http://charm.cs.illinois.edu/) (must be compiled from source)
 * [Git](https://git-scm.com/)
 * BLAS
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview)
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
 * [Catch](https://github.com/philsquared/Catch) (v1.6.1 or older)
@@ -80,6 +81,7 @@ substituting your version number and path in.
 Once you have Spack installed and configured with OpenSSL and LMod you can
 install the dependencies using
 ```
+spack install blaze
 spack install brigand@master
 spack install catch
 spack install jemalloc # or from your package manager
