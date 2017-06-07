@@ -10,8 +10,10 @@
 #include <charm++.h>
 #include <pup.h>
 
+#include "ErrorHandling/Error.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Serialize.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /*!
  * \ingroup TestingFramework
@@ -57,4 +59,46 @@
 template <typename T>
 T serialize_and_deserialize(const T& t) {
   return deserialize<T>(serialize<T>(t).data());
+}
+
+/// Test for copy semantics assuming operator== is implement correctly
+template <typename T,
+          typename std::enable_if<tt::has_equivalence<T>::value, int>::type = 0>
+void test_copy_semantics(const T& a) {
+  static_assert(std::is_copy_assignable<T>::value,
+                "Class is not copy assignable.");
+  static_assert(std::is_copy_constructible<T>::value,
+                "Class is not copy constructible.");
+  T b = a;
+  CHECK(b == a);
+  // Intentionally not a reference to force invocation of copy constructor
+  const T c(a);  // NOLINT
+  CHECK(c == a);
+  // Check self-assignment
+  b = b;  // NOLINT
+  CHECK(b == a);
+}
+
+/// Test for move semantics assuming operator== is implement correctly
+template <typename T,
+          typename std::enable_if<tt::has_equivalence<T>::value, int>::type = 0>
+void test_move_semantics(T& a, const T& comparison) {
+  static_assert(std::is_move_assignable<T>::value,
+                "Class is not move assignable.");
+  static_assert(std::is_move_constructible<T>::value,
+                "Class is not move constructible.");
+  static_assert(std::is_default_constructible<T>::value,
+                "Cannot use test_move_semantics if a class is not default "
+                "constructible.");
+  if (&a == &comparison or a != comparison) {
+    // We use ERROR instead of ASSERT (which we normally should be using) to
+    // guard against someone writing tests in Release mode where ASSERTs don't
+    // show up.
+    ERROR("'a' and 'comparison' must be distinct (but equal in value) objects");
+  }
+  T b;
+  b = std::move(a);
+  CHECK(b == comparison);
+  T c(std::move(b));
+  CHECK(c == comparison);
 }
