@@ -12,5 +12,6 @@ See LICENSE.txt for details.
   master must follow these requirements.
 - \ref code_concepts "Concepts" used throughout the code are defined here
   for reference.
+- \ref template_metaprogramming "Template Metaprogramming"
 - \ref profiling_with_projections "Profiling With Charm++ Projections" and PAPI
   for optimizing performance
