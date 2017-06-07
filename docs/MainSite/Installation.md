@@ -81,7 +81,7 @@ Once you have Spack installed and configured with OpenSSL and LMod you can
 install the dependencies using
 ```
 spack install brigand@master
-spack install catch
+spack install catch@1.6.1
 spack install jemalloc # or from your package manager
 spack install libxsmm
 spack install yaml-cpp@develop
