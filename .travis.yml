@@ -221,7 +221,7 @@ script:
              -D CMAKE_EXE_LINKER_FLAGS="${SPECTRE_MIN_MACOS}"
              ${TRAVIS_BUILD_DIR}
     && make -j2
-    && make test
+    && ctest --output-on-failure
     && ccache -s;
   fi
 
