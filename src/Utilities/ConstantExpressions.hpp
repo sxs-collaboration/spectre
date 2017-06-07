@@ -16,7 +16,8 @@
 /// \param n the power of two to compute.
 /// \return 2^n
 template <typename T,
-          typename = typename std::enable_if<std::is_integral<T>::value>::type>
+          std::enable_if_t<std::is_integral<T>::value and
+                           not std::is_same<bool, T>::value>* = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
   return static_cast<T>(1) << n;
 }
