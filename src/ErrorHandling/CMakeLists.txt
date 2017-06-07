@@ -8,3 +8,6 @@ set(library_sources
     FloatingPointExceptions.cpp)
 
 add_library(${library} ${library_sources})
+
+# ${library} is considered a core library on which all executables depend
+set(SPECTRE_CORE_LIBRARIES "${SPECTRE_CORE_LIBRARIES};${library}" PARENT_SCOPE)

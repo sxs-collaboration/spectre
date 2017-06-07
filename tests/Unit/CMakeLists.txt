@@ -21,7 +21,7 @@ add_executable(
 
 target_link_libraries(
     ${executable}
-    ErrorHandling
+    ${SPECTRE_LIBRARIES}
 )
 
 spectre_add_catch_tests(${executable})
