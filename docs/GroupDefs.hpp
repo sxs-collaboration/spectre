@@ -40,6 +40,11 @@
  */
 
 /*!
+ * \defgroup DataStructures Data Structures
+ * \brief Various useful data structures used in SpECTRE
+ */
+
+/*!
  * \defgroup DomainCreators Domain Creators
  * A collection of different computational domains.
  */
