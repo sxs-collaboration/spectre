@@ -6,6 +6,7 @@ set(UTILITIES_TESTS
     Utilities/ConstantExpressions.cpp
     Utilities/MakeArray.cpp
     Utilities/StdHelpers.cpp
+    Utilities/TaggedTuple.cpp
     Utilities/TypeTraits.cpp)
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${UTILITIES_TESTS}" PARENT_SCOPE)
