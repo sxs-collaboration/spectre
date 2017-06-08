@@ -102,3 +102,14 @@ void test_move_semantics(T& a, const T& comparison) {
   T c(std::move(b));
   CHECK(c == comparison);
 }
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Get the streamed output `c` as a `std::string`
+ */
+template <typename Container>
+std::string get_output(const Container& c) {
+  std::ostringstream os;
+  os << c;
+  return os.str();
+}
