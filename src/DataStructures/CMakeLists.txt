@@ -4,7 +4,9 @@
 set(LIBRARY DataStructures)
 
 set(LIBRARY_SOURCES
-    DataVector.cpp)
+    DataVector.cpp
+    Index.cpp
+    )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 

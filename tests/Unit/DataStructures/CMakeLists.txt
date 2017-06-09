@@ -2,6 +2,8 @@
 # See LICENSE.txt for details.
 
 set(DATA_STRUCTURES_TESTS
-    DataStructures/DataVector.cpp)
+    DataStructures/DataVector.cpp
+    DataStructures/Index.cpp
+    )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${DATA_STRUCTURES_TESTS}" PARENT_SCOPE)
