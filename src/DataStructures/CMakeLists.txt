@@ -6,6 +6,7 @@ set(LIBRARY DataStructures)
 set(LIBRARY_SOURCES
     DataVector.cpp
     Index.cpp
+    IndexIterator.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
