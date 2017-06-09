@@ -5,6 +5,7 @@ set(UTILITIES_TESTS
     Utilities/BoostHelpers.cpp
     Utilities/ConstantExpressions.cpp
     Utilities/MakeArray.cpp
+    Utilities/PrettyType.cpp
     Utilities/StdHelpers.cpp
     Utilities/TaggedTuple.cpp
     Utilities/TypeTraits.cpp)
