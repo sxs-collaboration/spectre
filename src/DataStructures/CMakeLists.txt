@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
     IndexIterator.cpp
     Matrix.cpp
     SliceIterator.cpp
+    StripeIterator.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

@@ -7,6 +7,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/IndexIterator.cpp
     DataStructures/Matrix.cpp
     DataStructures/SliceIterator.cpp
+    DataStructures/StripeIterator.cpp
     )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${DATA_STRUCTURES_TESTS}" PARENT_SCOPE)
