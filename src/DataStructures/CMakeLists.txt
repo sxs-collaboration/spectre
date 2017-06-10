@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     DataVector.cpp
     Index.cpp
     IndexIterator.cpp
+    Matrix.cpp
     SliceIterator.cpp
     )
 

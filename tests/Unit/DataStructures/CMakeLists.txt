@@ -5,6 +5,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/DataVector.cpp
     DataStructures/Index.cpp
     DataStructures/IndexIterator.cpp
+    DataStructures/Matrix.cpp
     DataStructures/SliceIterator.cpp
     )
 
