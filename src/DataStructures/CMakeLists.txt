@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     DataVector.cpp
     Index.cpp
     IndexIterator.cpp
+    SliceIterator.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
