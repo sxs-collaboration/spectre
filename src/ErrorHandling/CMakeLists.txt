@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(library ErrorHandling)
+set(LIBRARY ErrorHandling)
 
-set(library_sources
+set(LIBRARY_SOURCES
     AbortWithErrorMessage.cpp
     FloatingPointExceptions.cpp)
 
-add_library(${library} ${library_sources})
+add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
-# ${library} is considered a core library on which all executables depend
-set(SPECTRE_CORE_LIBRARIES "${SPECTRE_CORE_LIBRARIES};${library}" PARENT_SCOPE)
+# ${LIBRARY} is considered a core library on which all executables depend
+set(SPECTRE_CORE_LIBRARIES "${SPECTRE_CORE_LIBRARIES};${LIBRARY}" PARENT_SCOPE)
