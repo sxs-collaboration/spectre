@@ -7,6 +7,7 @@ set(SPECTRE_TESTS "TestFramework.cpp")
 
 add_subdirectory(DataStructures)
 add_subdirectory(ErrorHandling)
+add_subdirectory(Numerical)
 add_subdirectory(Parallel)
 add_subdirectory(Utilities)
 
