@@ -15,3 +15,4 @@ See LICENSE.txt for details.
 - \ref template_metaprogramming "Template Metaprogramming"
 - \ref profiling_with_projections "Profiling With Charm++ Projections" and PAPI
   for optimizing performance
+- \ref writing_unit_tests "Writing Unit Tests"
