@@ -4,6 +4,7 @@
 set(UTILITIES_TESTS
     Utilities/BoostHelpers.cpp
     Utilities/ConstantExpressions.cpp
+    Utilities/FakeVirtual.cpp
     Utilities/MakeArray.cpp
     Utilities/PrettyType.cpp
     Utilities/StdHelpers.cpp
