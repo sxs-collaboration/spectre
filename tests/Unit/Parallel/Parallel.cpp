@@ -29,6 +29,7 @@ TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   c_string1[0] = 'a';
   c_string1[1] = 'b';
   c_string1[2] = 'f';
+  c_string1[3] = '\0';
   constexpr const char* const c_string2 = {"a o e u"};
   Parallel::printf("%d %lld %s %s %s %s\n", -100, 3000000000, TestStream{},
                    c_string0, c_string1, c_string2);
