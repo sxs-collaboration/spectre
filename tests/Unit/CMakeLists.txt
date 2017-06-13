@@ -5,6 +5,7 @@ set(executable RunTests)
 
 set(SPECTRE_TESTS "TestFramework.cpp")
 
+add_subdirectory(DataStructures)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Parallel)
 add_subdirectory(Utilities)
@@ -21,7 +22,7 @@ add_executable(
 
 target_link_libraries(
     ${executable}
-    ErrorHandling
+    ${SPECTRE_LIBRARIES}
 )
 
 spectre_add_catch_tests(${executable})

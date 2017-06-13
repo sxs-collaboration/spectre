@@ -38,6 +38,7 @@ include(SetupDoxygen)
 include(CodeCoverageDetection)
 
 include(SetupBlas)
+include(SetupBlaze)
 include(SetupBoost)
 include(SetupBrigand)
 include(SetupCatch)

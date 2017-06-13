@@ -214,14 +214,15 @@ script:
     && cd ./build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
     && ccache -z
     && cmake -D CHARM_ROOT=$HOME/charm-${CHARM_VERSION}
-             -D CATCH_ROOT=$HOME/Catch
-             -D YAMLCPP_ROOT=$HOME/yaml-cpp/
+             -D BLAZE_ROOT=$HOME/blaze-${BLAZE_VERSION}/
              -D BRIGAND_ROOT=$HOME/brigand
+             -D CATCH_ROOT=$HOME/Catch
              -D LIBXSMM_ROOT=$HOME/libxsmm/build
+             -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D CMAKE_EXE_LINKER_FLAGS="${SPECTRE_MIN_MACOS}"
              ${TRAVIS_BUILD_DIR}
     && make -j2
-    && make test
+    && ctest --output-on-failure
     && ccache -s;
   fi
 

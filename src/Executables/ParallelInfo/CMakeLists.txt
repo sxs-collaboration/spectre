@@ -1,9 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(executable ParallelInfo)
+set(EXECUTABLE ParallelInfo)
 
 add_executable(
-    ${executable}
-    ${executable}.cpp
+    ${EXECUTABLE}
+    ${EXECUTABLE}.cpp
 )

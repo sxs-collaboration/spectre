@@ -98,7 +98,7 @@ RUN if [ ${SONARQUBE} ] \
     fi
 RUN ccache -s
 
-RUN make test
+RUN ctest --output-on-failure
 
 # Check documentation output for warnings write to stdout and to file so we
 # can search the file for warnings

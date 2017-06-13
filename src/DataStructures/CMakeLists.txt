@@ -1,11 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY ErrorHandling)
+set(LIBRARY DataStructures)
 
 set(LIBRARY_SOURCES
-    AbortWithErrorMessage.cpp
-    FloatingPointExceptions.cpp)
+    DataVector.cpp)
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
