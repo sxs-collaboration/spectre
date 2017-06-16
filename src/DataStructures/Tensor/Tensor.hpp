@@ -9,6 +9,8 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Expressions/Contract.hpp"
+#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -100,6 +102,11 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// Typelist of the \ref SpacetimeIndex "TensorIndexType"'s that the
   /// Tensor has
   using index_list = typelist<Indices...>;
+  /// The type of the TensorExpression that would represent this Tensor in a
+  /// tensor expression.
+  template <typename ArgsLs>
+  using TE = TensorExpression<Tensor<X, Symm, tmpl::list<Indices...>>, X, Symm,
+                              tmpl::list<Indices...>, ArgsLs>;
 
   Tensor() = default;
   ~Tensor() = default;
@@ -107,6 +114,29 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   Tensor(Tensor&&) noexcept = default;  // NOLINT
   Tensor& operator=(const Tensor&) = default;
   Tensor& operator=(Tensor&&) noexcept = default;  // NOLINT
+
+  /// \cond HIDDEN_SYMBOLS
+  /// Constructor from a TensorExpression.
+  ///
+  /// \tparam LhsIndices the indices on the LHS of the tensor expression
+  /// \tparam T the type of the TensorExpression
+  /// \param tensor_expression the tensor expression being evaluated
+  template <typename... LhsIndices, typename T,
+            std::enable_if_t<std::is_base_of<Expression, T>::value>* = nullptr>
+  Tensor(const T& tensor_expression, tmpl::list<LhsIndices...> /*meta*/) {
+    static_assert(
+        sizeof...(LhsIndices) == sizeof...(Indices),
+        "When calling evaluate<...>(...) you must pass the same "
+        "number of indices as template parameters as there are free "
+        "indices on the resulting tensor. For example, auto F = "
+        "evaluate<_a_t, _b_t>(G); if G has 2 free indices and you want "
+        "the LHS of the equation to be F_{ab} rather than F_{ba}.");
+    for (size_t i = 0; i < size(); ++i) {
+      data_[i] = tensor_expression.template get<LhsIndices...>(  // NOLINT
+          structure::get_canonical_tensor_index(i));
+    }
+  }
+  /// \endcond
 
   /// Initialize a Vector with the value in the std::initializer_list
   ///
@@ -211,6 +241,33 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
                   "the number of tensor indices specified must match the rank "
                   "of the tensor");
     return gsl::at(data_, structure::template get_storage_index<N...>());
+  }
+  // @}
+
+  // @{
+  /// Retrieve a TensorExpression object with the index structure passed in
+  template <typename... N,
+            std::enable_if_t<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
+                             tmpl::is_set<N...>::value>* = nullptr>
+  SPECTRE_ALWAYS_INLINE constexpr TE<tmpl::list<N...>> operator()(
+      N... /*meta*/) const {
+    return TE<tmpl::list<N...>>(*this);
+  }
+
+  template <typename... N,
+            std::enable_if_t<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
+                             not tmpl::is_set<N...>::value>* = nullptr>
+  SPECTRE_ALWAYS_INLINE constexpr auto operator()(N... /*meta*/) const
+      -> decltype(
+          TensorExpressions::fully_contracted<
+              TE, replace_indices<tmpl::list<N...>, repeated<tmpl::list<N...>>>,
+              tmpl::int32_t<0>,
+              tmpl::size<repeated<tmpl::list<N...>>>>::apply(*this)) {
+    using args_list = tmpl::list<N...>;
+    using repeated_args_list = repeated<args_list>;
+    return TensorExpressions::fully_contracted<
+        TE, replace_indices<args_list, repeated_args_list>, tmpl::int32_t<0>,
+        tmpl::size<repeated_args_list>>::apply(*this);
   }
   // @}
 
