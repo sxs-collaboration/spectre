@@ -18,19 +18,22 @@ Stylistic Items:
 Can use `clang-format -style=google`.
 * CamelCase: class names, type names, namespaces, template
 parameters, file names, and directory names.
-* snake_case: (meta)function and (meta)variables names.
+* snake_case: function, variable, metafunction and metavariable names.
 * SCREAMING_SNAKE_CASE: macros.
+* Name unused function parameters `/*parameter_name*/` or `/*meta*/` for TMP
+  cases
+* Type aliases that wrap type traits have a trailing `_t` following the STL
 * Member variables of classes (not structs!) have a trailing underscore. See
 [Google](https://google.github.io/styleguide/cppguide.html#Variable_Names).
-* Types NOT specified in the name (e.g. `double* pd_blah` is bad)
+* Do NOT encode type-information in a variable name (e.g. not `double* pd_blah`)
 * Header order: hpp corresponding to cpp, blank line, STL and externals,
 blank line, SpECTRE includes
 * Header order is alphabetical
 * Template definitions in header files are separated from the declaration of
-the class by the following line, which contains exactly 70 equal signs
+the class by the following line, which contains exactly 64 equal signs
 
 ``` cpp
-// ======================================================================
+// ================================================================
 ```
 
 * No blank lines surrounding Doxygen group comments (`//\@{` and `//\@}`).
