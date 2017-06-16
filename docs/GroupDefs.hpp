@@ -150,6 +150,11 @@
  */
 
 /*!
+ * \defgroup NumericalAlgorithms Numerical Algorithms
+ * \brief Generic numerical algorithms
+ */
+
+/*!
  * \defgroup NumericalFluxes Numerical Fluxes
  * A collection of numerical fluxes used by discontinuous Galerkin methods.
  */

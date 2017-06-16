@@ -2,6 +2,8 @@
 // See LICENSE.txt for details.
 
 mainmodule RunTests {
+  initnode void register_derived_classes_for_pup_stl_cpp11();
+
   mainchare RunTests {
     entry RunTests(CkArgMsg * msg);
   };

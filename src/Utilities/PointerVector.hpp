@@ -95,12 +95,14 @@ struct PointerVector
   inline PointerVector& operator%=(const blaze::Vector<VT, TF>& rhs);
 
   template <typename Other>
-  inline blaze::EnableIf_<blaze::IsNumeric<Other>, PointerVector>& operator*=(
-      Other rhs);
+  inline std::enable_if_t<blaze::IsNumeric<Other>::value,
+                          PointerVector<Type, AF, PF, TF>>&
+  operator*=(Other rhs);
 
   template <typename Other>
-  inline blaze::EnableIf_<blaze::IsNumeric<Other>, PointerVector>& operator/=(
-      Other rhs);
+  inline std::enable_if_t<blaze::IsNumeric<Other>::value,
+                          PointerVector<Type, AF, PF, TF>>&
+  operator/=(Other rhs);
   //@}
 
   /*!\name Utility functions */
@@ -127,48 +129,38 @@ struct PointerVector
 
  private:
   template <typename VT>
-  struct VectorizedAssign {
-    enum : bool {
-      value = blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-              blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value
-    };
-  };
+  using VectorizedAssign = std::integral_constant<
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
-  struct VectorizedAddAssign {
-    enum : bool {
-      value = blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-              blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-              blaze::HasSIMDAdd<Type, blaze::ElementType_<VT>>::value
-    };
-  };
+  using VectorizedAddAssign = std::integral_constant<
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+          blaze::HasSIMDAdd<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
-  struct VectorizedSubAssign {
-    enum : bool {
-      value = blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-              blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-              blaze::HasSIMDSub<Type, blaze::ElementType_<VT>>::value
-    };
-  };
+  using VectorizedSubAssign = std::integral_constant<
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+          blaze::HasSIMDSub<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
-  struct VectorizedMultAssign {
-    enum : bool {
-      value = blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-              blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-              blaze::HasSIMDMult<Type, blaze::ElementType_<VT>>::value
-    };
-  };
+  using VectorizedMultAssign = std::integral_constant<
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+          blaze::HasSIMDMult<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
-  struct VectorizedDivAssign {
-    enum : bool {
-      value = blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-              blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-              blaze::HasSIMDDiv<Type, blaze::ElementType_<VT>>::value
-    };
-  };
+  using VectorizedDivAssign = std::integral_constant<
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+          blaze::HasSIMDDiv<Type, blaze::ElementType_<VT>>::value>;
 
   //! The number of elements packed within a single SIMD element.
   enum : size_t { SIMDSIZE = blaze::SIMDTrait<ElementType>::size };
@@ -194,52 +186,57 @@ struct PointerVector
   BLAZE_ALWAYS_INLINE void stream(size_t index, const SIMDType& value) noexcept;
 
   template <typename VT>
-  inline blaze::DisableIf_<VectorizedAssign<VT>> assign(
+  inline std::enable_if_t<not(
+      PointerVector<Type, AF, PF, TF>::template VectorizedAssign<VT>::value)>
+  assign(const blaze::DenseVector<VT, TF>& rhs);
+
+  template <typename VT>
+  inline std::enable_if_t<(VectorizedAssign<VT>::value)> assign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::EnableIf_<VectorizedAssign<VT>> assign(
-      const blaze::DenseVector<VT, TF>& rhs);
+  inline std::enable_if_t<not(
+      PointerVector<Type, AF, PF, TF>::template VectorizedAddAssign<VT>::value)>
+  addAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::DisableIf_<VectorizedAddAssign<VT>> addAssign(
-      const blaze::DenseVector<VT, TF>& rhs);
-
-  template <typename VT>
-  inline blaze::EnableIf_<VectorizedAddAssign<VT>> addAssign(
+  inline std::enable_if_t<(VectorizedAddAssign<VT>::value)> addAssign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
   inline void addAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::DisableIf_<VectorizedSubAssign<VT>> subAssign(
-      const blaze::DenseVector<VT, TF>& rhs);
+  inline std::enable_if_t<not(
+      PointerVector<Type, AF, PF, TF>::template VectorizedSubAssign<VT>::value)>
+  subAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::EnableIf_<VectorizedSubAssign<VT>> subAssign(
+  inline std::enable_if_t<(VectorizedSubAssign<VT>::value)> subAssign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
   inline void subAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::DisableIf_<VectorizedMultAssign<VT>> multAssign(
-      const blaze::DenseVector<VT, TF>& rhs);
+  inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF>::
+                                  template VectorizedMultAssign<VT>::value)>
+  multAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::EnableIf_<VectorizedMultAssign<VT>> multAssign(
+  inline std::enable_if_t<(VectorizedMultAssign<VT>::value)> multAssign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
   inline void multAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::DisableIf_<VectorizedDivAssign<VT>> divAssign(
-      const blaze::DenseVector<VT, TF>& rhs);
+  inline std::enable_if_t<not(
+      PointerVector<Type, AF, PF, TF>::template VectorizedDivAssign<VT>::value)>
+  divAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline blaze::EnableIf_<VectorizedDivAssign<VT>> divAssign(
+  inline std::enable_if_t<(VectorizedDivAssign<VT>::value)> divAssign(
       const blaze::DenseVector<VT, TF>& rhs);
   //@}
 
@@ -384,7 +381,7 @@ operator%=(const blaze::Vector<VT, TF>& rhs) {
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename Other>
-inline blaze::EnableIf_<blaze::IsNumeric<Other>,
+inline std::enable_if_t<blaze::IsNumeric<Other>::value,
                         PointerVector<Type, AF, PF, TF>>&
 PointerVector<Type, AF, PF, TF>::operator*=(Other rhs) {
   blaze::smpAssign(*this, (*this) * rhs);
@@ -393,7 +390,7 @@ PointerVector<Type, AF, PF, TF>::operator*=(Other rhs) {
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename Other>
-inline blaze::EnableIf_<blaze::IsNumeric<Other>,
+inline std::enable_if_t<blaze::IsNumeric<Other>::value,
                         PointerVector<Type, AF, PF, TF>>&
 PointerVector<Type, AF, PF, TF>::operator/=(Other rhs) {
   BLAZE_USER_ASSERT(rhs != Other(0), "Division by zero detected");
@@ -530,8 +527,9 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::stream(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::DisableIf_<typename PointerVector<
-    Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedAssign<VT>>
+inline std::enable_if_t<
+    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
+        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -549,8 +547,8 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::EnableIf_<typename PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                            VectorizedAssign<VT>>
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
+                             VectorizedAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
 
@@ -601,8 +599,9 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::DisableIf_<typename PointerVector<
-    Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedAddAssign<VT>>
+inline std::enable_if_t<
+    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
+        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedAddAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::addAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -622,8 +621,8 @@ PointerVector<Type, AF, PF, TF>::addAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::EnableIf_<typename PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                            VectorizedAddAssign<VT>>
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
+                             VectorizedAddAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::addAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
@@ -674,8 +673,9 @@ inline void PointerVector<Type, AF, PF, TF>::addAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::DisableIf_<typename PointerVector<
-    Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedSubAssign<VT>>
+inline std::enable_if_t<
+    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
+        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedSubAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::subAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -695,8 +695,8 @@ PointerVector<Type, AF, PF, TF>::subAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::EnableIf_<typename PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                            VectorizedSubAssign<VT>>
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
+                             VectorizedSubAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::subAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
@@ -747,8 +747,9 @@ inline void PointerVector<Type, AF, PF, TF>::subAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::DisableIf_<typename PointerVector<
-    Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedMultAssign<VT>>
+inline std::enable_if_t<
+    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
+        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedMultAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::multAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -768,8 +769,8 @@ PointerVector<Type, AF, PF, TF>::multAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::EnableIf_<typename PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                            VectorizedMultAssign<VT>>
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
+                             VectorizedMultAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::multAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
@@ -822,8 +823,9 @@ inline void PointerVector<Type, AF, PF, TF>::multAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::DisableIf_<typename PointerVector<
-    Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedDivAssign<VT>>
+inline std::enable_if_t<
+    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
+        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedDivAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::divAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -843,8 +845,8 @@ PointerVector<Type, AF, PF, TF>::divAssign(
 
 template <typename Type, bool AF, bool PF, bool TF>
 template <typename VT>
-inline blaze::EnableIf_<typename PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                            VectorizedDivAssign<VT>>
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
+                             VectorizedDivAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF>::divAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);

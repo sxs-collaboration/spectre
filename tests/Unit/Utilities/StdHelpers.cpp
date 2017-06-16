@@ -12,15 +12,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
-
-namespace {
-template <typename Container>
-std::string get_output(const Container& c) {
-  std::ostringstream os;
-  os << c;
-  return os.str();
-}
-}  // namespace
+#include "tests/Unit/TestHelpers.hpp"
 
 TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   // We don't test unordered containers because the order of the output depends

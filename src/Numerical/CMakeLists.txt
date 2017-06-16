@@ -1,16 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY DataStructures)
+set(LIBRARY NumericalAlgorithms)
 
-set(LIBRARY_SOURCES
-    DataVector.cpp
-    Index.cpp
-    IndexIterator.cpp
-    Matrix.cpp
-    SliceIterator.cpp
-    StripeIterator.cpp
-    )
+set(LIBRARY_SOURCES)
+
+add_subdirectory(Spectral)
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
