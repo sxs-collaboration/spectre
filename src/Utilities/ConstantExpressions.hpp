@@ -122,6 +122,13 @@ make_array_from_list() {
       std::make_integer_sequence<size_t, tmpl::size<Ls>::value>{});
 }
 
+template <typename TypeForZero,
+          std::enable_if_t<not tt::is_a_v<tmpl::list, TypeForZero>>* = nullptr>
+inline constexpr std::array<std::decay_t<TypeForZero>, 0>
+make_array_from_list() {
+  return std::array<std::decay_t<TypeForZero>, 0>{{}};
+}
+
 namespace detail {
 template <typename Ls, size_t... indices,
           typename std::enable_if<
