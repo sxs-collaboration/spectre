@@ -8,10 +8,13 @@
 
 #include <type_traits>
 
-#include "Utilities/Blaze.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+namespace blaze {
+struct Expression;
+}  // namespace blaze
 
 /// \ingroup ConstantExpressions
 /// Compute 2 to the n for integral types.

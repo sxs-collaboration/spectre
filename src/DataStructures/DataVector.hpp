@@ -17,6 +17,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/PointerVector.hpp"
 
+#include <blaze/math/dense/CustomVector.h>
+
 /// \cond HIDDEN_SYMBOLS
 namespace PUP {
 class er;
