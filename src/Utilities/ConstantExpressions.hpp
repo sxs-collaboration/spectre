@@ -8,10 +8,13 @@
 
 #include <type_traits>
 
-#include "Utilities/Blaze.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+namespace blaze {
+struct Expression;
+}  // namespace blaze
 
 /// \ingroup ConstantExpressions
 /// Compute 2 to the n for integral types.
@@ -120,6 +123,13 @@ inline constexpr std::array<std::decay_t<decltype(tmpl::front<Ls>::value)>,
 make_array_from_list() {
   return detail::make_array_from_list_helper<Ls>(
       std::make_integer_sequence<size_t, tmpl::size<Ls>::value>{});
+}
+
+template <typename TypeForZero,
+          std::enable_if_t<not tt::is_a_v<tmpl::list, TypeForZero>>* = nullptr>
+inline constexpr std::array<std::decay_t<TypeForZero>, 0>
+make_array_from_list() {
+  return std::array<std::decay_t<TypeForZero>, 0>{{}};
 }
 
 namespace detail {

@@ -89,10 +89,7 @@ static_assert(array_equal(replace_at<1>(array1, 5.0),
 // Test make_array_from_list
 static_assert(
     array_equal(std::array<size_t, 3>{{1, 2, 5}},
-                make_array_from_list < tmpl::integral_list < size_t,
-                1,
-                2,
-                5 >> ()),
+                make_array_from_list<tmpl::integral_list<size_t, 1, 2, 5>>()),
     "Failed testing make_array_from_list");
 
 TEST_CASE("Unit.Utilities.ConstantExpressions", "[Unit][Utilities]") {

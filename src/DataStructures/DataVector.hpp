@@ -39,11 +39,17 @@ class DataVector {
     return 0;
   }
   /// \endcond
+ public:
+  using value_type = double;
+  using allocator_type = std::allocator<value_type>;
+  using size_type = size_t;
+  using difference_type = std::ptrdiff_t;
 
+ private:
   /// The type of the "pointer" used internally
   using InternalDataVector_t = PointerVector<double>;
   /// The type used to store the data in
-  using InternalStorage_t = std::vector<double>;
+  using InternalStorage_t = std::vector<double, allocator_type>;
 
  public:
   /// Create with the given size and value.
@@ -90,11 +96,11 @@ class DataVector {
 
   // @{
   /// Access ith element
-  double& operator[](const size_t i) {
+  double& operator[](const size_type i) {
     ASSERT(i < size_, "i = " << i << ", size = " << size_);
     return data_[i];  // NOLINT
   }
-  const double& operator[](const size_t i) const {
+  const double& operator[](const size_type i) const {
     ASSERT(i < size_, "i = " << i << ", size = " << size_);
     return data_[i];  // NOLINT
   }

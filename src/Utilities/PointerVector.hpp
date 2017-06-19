@@ -8,6 +8,128 @@
 
 #include "Utilities/Blaze.hpp"
 
+#include <blaze/math/CustomVector.h>
+#include <blaze/util/typetraits/RemoveConst.h>
+
+#define SPECTRE_BLAZE_ALLOCATOR(_TYPE_T, _SIZE_V) new _TYPE_T[_SIZE_V]
+#define SPECTRE_BLAZE_DEALLOCATOR blaze::ArrayDelete()
+
+namespace blaze {
+template <typename ST>
+struct AddScalar {
+ public:
+  explicit inline AddScalar(ST scalar) : scalar_(scalar) {}
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const {
+    return a + scalar_;
+  }
+
+  template <typename T>
+  static constexpr bool simdEnabled() {
+    return blaze::HasSIMDAdd<T, ST>::value;
+  }
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+    return a + set(scalar_);
+  }
+
+ private:
+  ST scalar_;
+};
+
+template <typename VT, bool TF, typename Scalar,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+decltype(auto) operator+(const blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
+  return forEach(~vec, AddScalar<Scalar>(scalar));
+}
+
+template <typename Scalar, typename VT, bool TF,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+decltype(auto) operator+(Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
+  return forEach(~vec, AddScalar<Scalar>(scalar));
+}
+
+template <typename VT, bool TF, typename Scalar,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+VT& operator+=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
+  (~vec) = (~vec) + scalar;
+  return ~vec;
+}
+
+template <typename ST>
+struct SubScalarRhs {
+ public:
+  explicit inline SubScalarRhs(ST scalar) : scalar_(scalar) {}
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const {
+    return a - scalar_;
+  }
+
+  template <typename T>
+  static constexpr bool simdEnabled() {
+    return blaze::HasSIMDSub<T, ST>::value;
+  }
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+    return a - set(scalar_);
+  }
+
+ private:
+  ST scalar_;
+};
+
+template <typename ST>
+struct SubScalarLhs {
+ public:
+  explicit inline SubScalarLhs(ST scalar) : scalar_(scalar) {}
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const {
+    return scalar_ - a;
+  }
+
+  template <typename T>
+  static constexpr bool simdEnabled() {
+    return blaze::HasSIMDSub<T, ST>::value;
+  }
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+    return set(scalar_) - a;
+  }
+
+ private:
+  ST scalar_;
+};
+
+template <typename VT, bool TF, typename Scalar,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+decltype(auto) operator-(const blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
+  return forEach(~vec, SubScalarRhs<Scalar>(scalar));
+}
+
+template <typename VT, bool TF, typename Scalar,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+decltype(auto) operator-(Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
+  return forEach(~vec, SubScalarLhs<Scalar>(scalar));
+}
+
+template <typename VT, bool TF, typename Scalar,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
+  (~vec) = (~vec) - scalar;
+  return ~vec;
+}
+}  // namespace blaze
+/// \endcond
+
 /*!
  * \ingroup Utilities
  * \brief A raw pointer endowed with expression template support via the Blaze
@@ -298,7 +420,8 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator=(const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  blaze::smpAssign(*this, ~rhs);
+  using namespace blaze;
+  smpAssign(*this, ~rhs);
   return *this;
 }
 
@@ -307,7 +430,8 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator+=(const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  blaze::smpAddAssign(*this, ~rhs);
+  using namespace blaze;
+  smpAddAssign(*this, ~rhs);
   return *this;
 }
 
@@ -316,7 +440,8 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator-=(const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  blaze::smpSubAssign(*this, ~rhs);
+  using namespace blaze;
+  smpSubAssign(*this, ~rhs);
   return *this;
 }
 
@@ -333,7 +458,8 @@ operator*=(const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(MultType);
 
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  blaze::smpMultAssign(*this, ~rhs);
+  using namespace blaze;
+  smpMultAssign(*this, ~rhs);
   return *this;
 }
 
@@ -350,7 +476,8 @@ operator/=(const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(DivType);
 
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  blaze::smpDivAssign(*this, ~rhs);
+  using namespace blaze;
+  smpDivAssign(*this, ~rhs);
   return *this;
 }
 
@@ -384,7 +511,8 @@ template <typename Other>
 inline std::enable_if_t<blaze::IsNumeric<Other>::value,
                         PointerVector<Type, AF, PF, TF>>&
 PointerVector<Type, AF, PF, TF>::operator*=(Other rhs) {
-  blaze::smpAssign(*this, (*this) * rhs);
+  using namespace blaze;
+  smpAssign(*this, (*this) * rhs);
   return *this;
 }
 
@@ -394,8 +522,8 @@ inline std::enable_if_t<blaze::IsNumeric<Other>::value,
                         PointerVector<Type, AF, PF, TF>>&
 PointerVector<Type, AF, PF, TF>::operator/=(Other rhs) {
   BLAZE_USER_ASSERT(rhs != Other(0), "Division by zero detected");
-
-  blaze::smpAssign(*this, (*this) / rhs);
+  using namespace blaze;
+  smpAssign(*this, (*this) / rhs);
   return *this;
 }
 

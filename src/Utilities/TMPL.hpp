@@ -422,6 +422,46 @@ using remove_duplicates =
     fold<Ls, list<>, detail::remove_duplicates_helper<_state, _element>>;
 }
 
+namespace brigand {
+template <bool>
+struct conditional;
+
+template <>
+struct conditional<true> {
+  template <typename T, typename F>
+  using type = T;
+};
+
+template <>
+struct conditional<false> {
+  template <typename T, typename F>
+  using type = F;
+};
+
+template <bool B, typename T, typename F>
+using conditional_t = typename conditional<B>::template type<T, F>;
+}
+
+namespace brigand {
+template <bool>
+struct branch_if;
+
+template <>
+struct branch_if<true> {
+  template <typename T, typename F>
+  using type = typename detail::apply<T>::type;
+};
+
+template <>
+struct branch_if<false> {
+  template <typename T, typename F>
+  using type = typename detail::apply<F>::type;
+};
+
+template <bool B, typename T, typename F>
+using branch_if_t = typename branch_if<B>::template type<T, F>;
+}
+
 namespace tmpl = brigand;
 
 /// \ingroup Utilities
