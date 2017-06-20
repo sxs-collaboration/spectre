@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(SPECTRE_UNIT_SPECTRAL_TESTS
+    Numerical/Spectral/DefiniteIntegral.cpp
     Numerical/Spectral/LegendreGaussLobatto.cpp)
 
 set(SPECTRE_UNIT_NUMERICAL_TESTS
