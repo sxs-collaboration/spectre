@@ -10,6 +10,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/StripeIterator.cpp
     DataStructures/Tensor.cpp
     DataStructures/TensorExpressions.cpp
+    DataStructures/Variables.cpp
     )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${DATA_STRUCTURES_TESTS}" PARENT_SCOPE)
