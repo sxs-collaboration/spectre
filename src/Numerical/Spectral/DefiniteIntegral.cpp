@@ -7,7 +7,9 @@
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
 
-namespace {
+namespace Basis {
+namespace lgl {
+namespace detail {
 
 template <size_t Dim>
 DataVector integrate_over_last_dimension(const DataVector& f,
@@ -21,13 +23,13 @@ DataVector integrate_over_last_dimension(const DataVector& f,
          w.data(), 1, 0., integrated_data.data(), 1);
   return integrated_data;
 }
-}  // namespace
+}  // namespace detail
 
 template <size_t Dim>
 double definite_integral(const DataVector& f, const Index<Dim>& extents) noexcept{
   ASSERT(f.size() == extents.product(),
          "size = " << f.size() << ", product = " << extents.product());
-  return definite_integral(integrate_over_last_dimension(f, extents),
+  return definite_integral(detail::integrate_over_last_dimension(f, extents),
                            extents.slice_away(Dim - 1));
 }
 
@@ -40,5 +42,10 @@ double definite_integral<>(const DataVector& f, const Index<1>& extents) noexcep
   return ddot_(N, w.data(), 1, f.data(), 1);
 }
 
-template double definite_integral<2>(const DataVector&, const Index<2>&);
-template double definite_integral<3>(const DataVector&, const Index<3>&);
+}  // namespace lgl
+}  // namespace Basis
+
+template double Basis::lgl::definite_integral<2>(const DataVector&,
+                                                 const Index<2>&);
+template double Basis::lgl::definite_integral<3>(const DataVector&,
+                                                 const Index<3>&);
