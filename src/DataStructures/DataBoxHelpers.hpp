@@ -1,0 +1,134 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+/// \file
+/// Defines class
+
+#pragma once
+
+#include "DataStructures/DataBox.hpp"
+#include "Utilities/BoostHelpers.hpp"
+
+/// \cond
+template <typename X, typename Symm, typename IndexLs>
+class Tensor;
+
+class DataVector;
+/// \endcond
+
+template <typename Tag, typename = void>
+struct get_tag_from_variant_databox;
+
+template <typename Tag>
+struct get_tag_from_variant_databox<
+    Tag, std::enable_if_t<std::is_base_of<db::DataBoxTag, Tag>::value>>
+    : boost::static_visitor<db::item_type<Tag>> {
+  template <typename DataBox_t>
+  constexpr db::item_type<Tag> operator()(DataBox_t& box) const {
+    return box.template get<Tag>();
+  }
+};
+
+template <typename TagType>
+struct get_tag_from_variant_databox<
+    TagType,
+    std::enable_if_t<not std::is_base_of<db::DataBoxTag, TagType>::value>>
+    : boost::static_visitor<TagType> {
+  explicit get_tag_from_variant_databox(std::string name)
+      : var_name(std::move(name)) {}
+  template <typename DataBox_t>
+  constexpr TagType operator()(DataBox_t& box) const {
+    return db::get_tag_from_box<TagType>(box, var_name);
+  }
+
+ private:
+  const std::string var_name;
+};
+
+namespace DataBoxHelpers_detail {
+template <typename Tags, typename TagLs,
+          std::enable_if_t<(tmpl::size<Tags>::value == 1)>* = nullptr>
+auto get_tensor_from_box(const db::DataBox<TagLs>& box,
+                         const std::string& tag_name) {
+  using tag = tmpl::front<Tags>;
+  if (db::get_tag_name<tag>() != tag_name) {
+    ERROR("Could not find the tag named \"" << tag_name << "\" in the DataBox");
+  }
+  return box.template get<tag>().get_vector_of_data();
+}
+
+template <typename Tags, typename TagLs,
+          std::enable_if_t<(tmpl::size<Tags>::value > 1)>* = nullptr>
+auto get_tensor_from_box(const db::DataBox<TagLs>& box,
+                         const std::string& tag_name) {
+  using tag = tmpl::front<Tags>;
+  return db::get_tag_name<tag>() == tag_name
+             ? box.template get<tag>().serialize()
+             : get_tensor_from_box<tmpl::pop_front<Tags>>(box, tag_name);
+}
+
+template <typename T>
+using is_a_tensor = tt::is_a<Tensor, T>;
+}  // namespace DataBoxHelpers_detail
+
+template <typename TagsLs>
+auto get_tensor_from_box(const db::DataBox<TagsLs>& box,
+                         const std::string& tag_name) {
+  using tags =
+      tmpl::filter<TagsLs, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
+                                      tmpl::bind<db::item_type, tmpl::_1>>>;
+  return DataBoxHelpers_detail::get_tensor_from_box<tags>(box, tag_name);
+}
+
+// namespace DataBoxHelpers_detail {
+// template <typename Tags, typename TagsLs,
+//          std::enable_if_t<(tmpl::size<Tags>::value == 1)>* = nullptr>
+// auto get_tensor_norm_from_box(
+//    const db::DataBox<TagsLs>& box,
+//    const std::pair<std::string, TypeOfNorm>& tag_name) {
+//  using tag = tmpl::front<Tags>;
+//  if (db::get_tag_name<tag>() != tag_name.first) {
+//    ERROR("Could not find the tag named \"" << tag_name.first
+//                                            << "\" in the DataBox");
+//  }
+//  return compute_norm_core(box.template get<tag>(), tag_name.second);
+//}
+//
+// template <typename Tags, typename TagsLs,
+//          std::enable_if_t<(tmpl::size<Tags>::value > 1)>* = nullptr>
+// auto get_tensor_norm_from_box(
+//    const db::DataBox<TagsLs>& box,
+//    const std::pair<std::string, TypeOfNorm>& tag_name) {
+//  using tag = tmpl::front<Tags>;
+//  if (db::get_tag_name<tag>() != tag_name.first) {
+//    return get_tensor_norm_from_box<tmpl::pop_front<Tags>>(box, tag_name);
+//  }
+//  return compute_norm_core(box.template get<tag>(), tag_name.second);
+//}
+//}  // namespace DataBoxHelpers_detail
+
+// template <typename TagsLs>
+// auto get_tensor_norm_from_box(
+//    const db::DataBox<TagsLs>& box,
+//    const std::pair<std::string, TypeOfNorm>& tag_name) {
+//  using tags =
+//      tmpl::filter<TagsLs, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
+//                                      tmpl::bind<db::item_type, tmpl::_1>>>;
+//
+//  return DataBoxHelpers_detail::get_tensor_norm_from_box<tags>(box, tag_name);
+//}
+
+struct get_tensor_from_variant_box
+    : boost::static_visitor<
+          std::pair<std::vector<std::string>, std::vector<DataVector>>> {
+  explicit get_tensor_from_variant_box(std::string name)
+      : var_name(std::move(name)) {}
+  template <typename DataBox_t>
+  std::pair<std::vector<std::string>, std::vector<DataVector>> operator()(
+      DataBox_t& box) const {
+    return get_tensor_from_box(box, var_name);
+  }
+
+ private:
+  const std::string var_name;
+};
