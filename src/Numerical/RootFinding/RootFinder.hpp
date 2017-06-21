@@ -1,6 +1,8 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
 
 /// \file
-/// Declares function find_root_by_brents_method
+/// Declares function find_root_of_function
 
 #pragma once
 
@@ -8,7 +10,6 @@
 #include <limits>
 
 #include <boost/math/tools/toms748_solve.hpp>
-
 
 /*! \ingroup Functors
  *  \brief Finds the root of the function f with the TOMS_748 method.
@@ -23,14 +24,18 @@ double find_root_of_function(Function f, const double lower_bound,
                              const size_t max_iterations = 100) {
   boost::uintmax_t max_iter = max_iterations;
 
-  // This solver requires tol to be passed as a termination condition. This is
-  // equivalent to the convergence criteria used by the GSL
+  // This solver requires tol to be passed as a termination condition. This
+  // termination condition is equivalent to the convergence criteria used by the
+  // GSL
   auto tol = [absolute_tolerance, relative_tolerance](double lhs, double rhs) {
     return (fabs(lhs - rhs) <=
             absolute_tolerance +
                 relative_tolerance * fmin(fabs(lhs), fabs(rhs)));
   };
-  auto result = boost::math::tools::toms748_solve(f, lower_bound, upper_bound,
+  // Lower and upper bound are shifted by absolute tolerance so that the root
+  // find does not fail if upper or lower bound are equal to the root within
+  // tolerance
+  auto result = boost::math::tools::toms748_solve(f, lower_bound-absolute_tolerance, upper_bound+absolute_tolerance,
                                                   tol, max_iter);
   return result.first + 0.5 * (result.second - result.first);
 }

@@ -43,11 +43,13 @@ include(SetupBlaze)
 include(SetupBoost)
 include(SetupBrigand)
 include(SetupCatch)
+include(SetupGsl)
 include(SetupHdf5)
 include(SetupJemalloc)
 include(SetupLIBXSMM)
 include(SetupPapi)
 include(SetupYamlCpp)
+
 
 enable_testing(true)
 include(SpectreAddCatchTests)
@@ -63,3 +65,4 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)
+

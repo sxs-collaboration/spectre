@@ -2,7 +2,9 @@
 # See LICENSE.txt for details.
 
 set(SPECTRE_UNIT_ROOT_FINDER_TESTS
-  Numerical/RootFinding/Test_OneDRootFinder.cpp)
+    Numerical/RootFinding/Test_OneDRootFinder.cpp
+    Numerical/RootFinding/Test_QuadraticEquation.cpp
+   )
 
 set(SPECTRE_UNIT_NUMERICAL_TESTS "${SPECTRE_UNIT_NUMERICAL_TESTS};${SPECTRE_UNIT_ROOT_FINDER_TESTS}"
     PARENT_SCOPE)

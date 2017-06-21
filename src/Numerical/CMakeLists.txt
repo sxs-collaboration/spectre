@@ -6,6 +6,7 @@ set(LIBRARY NumericalAlgorithms)
 set(LIBRARY_SOURCES)
 
 add_subdirectory(Spectral)
+add_subdirectory(RootFinding)
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
