@@ -110,7 +110,7 @@ using get_type_from_deferred = typename get_type_from_deferred_impl<T>::type;
  *
  * \example
  * Construction of a Deferred with an object followed by mutation:
- * \snippet Deferred.cpp deferred_with_update
+ * \snippet Test_Deferred.cpp deferred_with_update
  * @tparam Rt the type being stored
  */
 template <typename Rt>
@@ -146,14 +146,14 @@ class Deferred {
  *
  * \example
  * The examples below use the following functions:
- * \snippet Deferred.cpp functions_used
+ * \snippet Test_Deferred.cpp functions_used
  * To create a Deferred using a function object use:
- * \snippet Deferred.cpp make_deferred_with_function_object
+ * \snippet Test_Deferred.cpp make_deferred_with_function_object
  * or using a regular function:
- * \snippet Deferred.cpp make_deferred_with_function
+ * \snippet Test_Deferred.cpp make_deferred_with_function
  *
  * It is also possible to pass Deferred objects to a deferred function call:
- * \snippet Deferred.cpp make_deferred_with_deferred_arg
+ * \snippet Test_Deferred.cpp make_deferred_with_deferred_arg
  * in which case the first function will be evaluated just before the second
  * function is evaluated.
  *

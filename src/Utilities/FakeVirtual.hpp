@@ -42,7 +42,7 @@
 /// \endcode
 ///
 /// \example
-/// \snippet FakeVirtual.cpp fake_virtual_example
+/// \snippet Test_FakeVirtual.cpp fake_virtual_example
 #define DEFINE_FAKE_VIRTUAL(function)                                          \
   /* This struct is only needed for producing an error if the function */      \
   /* is not overridden in the derived class. */                                \

@@ -32,7 +32,7 @@ struct TaggedTuple {
    * \requires `std::is_convertible_v<Args, typename Tags::type>...` is `true`
    *
    * \example
-   * \snippet TaggedTuple.cpp construction_example
+   * \snippet Test_TaggedTuple.cpp construction_example
    */
   template <typename... Args>
   explicit TaggedTuple(Args&&... args) : data_(std::forward<Args>(args)...) {}
@@ -48,7 +48,7 @@ struct TaggedTuple {
    * \brief Retrieve a stored object with tag `Tag`
    *
    * \example
-   * \snippet TaggedTuple.cpp get_example
+   * \snippet Test_TaggedTuple.cpp get_example
    *
    * \tparam Tag the tag of the object to retrieve
    * \return reference to the object held in the tuple

@@ -82,7 +82,7 @@ using bool_constant = std::integral_constant<bool, B>;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp conjunction_example
+/// \snippet Test_TypeTraits.cpp conjunction_example
 /// \see std::conjunction, disjunction, std::disjunction
 template <class...>
 struct conjunction : std::true_type {};
@@ -129,7 +129,7 @@ constexpr bool conjunction_v = conjunction<B...>::value;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp disjunction_example
+/// \snippet Test_TypeTraits.cpp disjunction_example
 /// \see std::disjunction, conjunction, std::conjunction
 template <class...>
 struct disjunction : std::false_type {};
@@ -167,7 +167,7 @@ constexpr bool disjunction_v = disjunction<B...>::value;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp negation_example
+/// \snippet Test_TypeTraits.cpp negation_example
 /// \see std::negation
 /// \tparam B the ::bool_constant to negate
 template <class B>
@@ -196,7 +196,7 @@ struct negation : bool_constant<!B::value> {};
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp void_t_example
+/// \snippet Test_TypeTraits.cpp void_t_example
 /// \see std::void_t
 /// \tparam Ts the set of types
 template <typename... Ts>
@@ -242,7 +242,7 @@ namespace tt {
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_std_array_example
+/// \snippet Test_TypeTraits.cpp is_std_array_example
 /// \see is_a
 /// \tparam T the type to check
 template <typename T>
@@ -287,7 +287,7 @@ using is_std_array_t = typename is_std_array<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_a_example
+/// \snippet Test_TypeTraits.cpp is_a_example
 /// \see is_std_array
 /// \tparam T type to check
 /// \tparam U the type that T might be a template specialization of
@@ -334,7 +334,7 @@ using is_a_t = typename is_a<U, Args...>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_iterable_example
+/// \snippet Test_TypeTraits.cpp is_iterable_example
 /// \see has_size
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -383,7 +383,7 @@ using is_iterable_t = typename is_iterable<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_comparable_example
+/// \snippet Test_TypeTraits.cpp is_comparable_example
 /// \see has_equivalence has_inequivalence
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -439,7 +439,7 @@ std::integral_constant<std::size_t, N> array_size_impl(
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp array_size_example
+/// \snippet Test_TypeTraits.cpp array_size_example
 /// \tparam Array the whose size should be stored in value of array_size
 template <typename Array>
 using array_size =
@@ -474,7 +474,7 @@ using array_size =
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp has_equivalence_example
+/// \snippet Test_TypeTraits.cpp has_equivalence_example
 /// \see is_comparable has_inequivalence
 /// \tparam T the type we want to know if it has operator==
 template <typename T, typename = cpp17::void_t<>>
@@ -522,7 +522,7 @@ using has_equivalence_t = typename has_equivalence<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp has_equivalence_example
+/// \snippet Test_TypeTraits.cpp has_equivalence_example
 /// \see is_comparable has_equivalence
 /// \tparam T the type we want to know if it has operator!=
 template <typename T, typename U = void>
@@ -570,7 +570,7 @@ using has_inequivalence_t = typename has_inequivalence<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_callable_example
+/// \snippet Test_TypeTraits.cpp is_callable_example
 /// \see std::is_callable
 /// \tparam TT the class to check
 /// \tparam TArgs the args passed to operator()
@@ -635,7 +635,7 @@ using is_callable_t = typename is_callable<T, Args...>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_hashable_example
+/// \snippet Test_TypeTraits.cpp is_hashable_example
 /// \see std::hash std::equal_to
 /// \tparam T type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -686,7 +686,7 @@ using is_hashable_t = typename is_hashable<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_maplike_example
+/// \snippet Test_TypeTraits.cpp is_maplike_example
 /// \see std::map std::unordered_map is_a
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -737,7 +737,7 @@ using is_maplike_t = typename is_maplike<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_streamable_example
+/// \snippet Test_TypeTraits.cpp is_streamable_example
 /// \see std::cout std::ifstream std::sstream std::ostream
 /// \tparam S the stream type, e.g. std::stringstream or std::ostream
 /// \tparam T the type we want to know if it has operator<<
@@ -789,7 +789,7 @@ using is_streamable_t = typename is_streamable<S, T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_string_like_example
+/// \snippet Test_TypeTraits.cpp is_string_like_example
 /// \see std::string std::is_same
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -840,7 +840,7 @@ using is_string_like_t = typename is_string_like<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp has_pup_member_example
+/// \snippet Test_TypeTraits.cpp has_pup_member_example
 /// \see is_pupable
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -888,7 +888,7 @@ using has_pup_member_t = typename has_pup_member<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp is_pupable_example
+/// \snippet Test_TypeTraits.cpp is_pupable_example
 /// \see has_pup_member
 /// \tparam T the type to check
 template <typename T, typename U = void>
@@ -936,7 +936,7 @@ using is_pupable_t = typename is_pupable<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp has_get_clone_example
+/// \snippet Test_TypeTraits.cpp has_get_clone_example
 /// \see has_clone
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>, typename = void>
@@ -996,7 +996,7 @@ using has_get_clone_t = typename has_get_clone<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp has_clone_example
+/// \snippet Test_TypeTraits.cpp has_clone_example
 /// \see has_get_clone
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>, typename = void>
@@ -1051,7 +1051,7 @@ using has_clone_t = typename has_clone<T>::type;
 /// \endcode
 ///
 /// \example
-/// \snippet TypeTraits.cpp has_size_example
+/// \snippet Test_TypeTraits.cpp has_size_example
 /// \see is_iterable
 /// \tparam T the type to check
 template <typename T, typename = cpp17::void_t<>>
@@ -1090,7 +1090,7 @@ using has_size_t = typename has_size<T>::type;
  * cpp17::bool_constant
  *
  * \example
- * \snippet TypeTraits.cpp is_integer_example
+ * \snippet Test_TypeTraits.cpp is_integer_example
  * \see std::is_integral std::is_arithmetic std::is_floating_point
  */
 template <typename I>

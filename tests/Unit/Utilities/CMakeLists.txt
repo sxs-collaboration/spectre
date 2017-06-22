@@ -2,15 +2,16 @@
 # See LICENSE.txt for details.
 
 set(UTILITIES_TESTS
-    Utilities/BoostHelpers.cpp
-    Utilities/ConstantExpressions.cpp
-    Utilities/Deferred.cpp
-    Utilities/FakeVirtual.cpp
-    Utilities/MakeArray.cpp
-    Utilities/PrettyType.cpp
-    Utilities/StdHelpers.cpp
-    Utilities/TaggedTuple.cpp
-    Utilities/TypeTraits.cpp)
+    Utilities/Test_BoostHelpers.cpp
+    Utilities/Test_ConstantExpressions.cpp
+    Utilities/Test_Deferred.cpp
+    Utilities/Test_FakeVirtual.cpp
+    Utilities/Test_MakeArray.cpp
+    Utilities/Test_PrettyType.cpp
+    Utilities/Test_StdHelpers.cpp
+    Utilities/Test_TaggedTuple.cpp
+    Utilities/Test_TypeTraits.cpp
+    )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${UTILITIES_TESTS}" PARENT_SCOPE)
 
