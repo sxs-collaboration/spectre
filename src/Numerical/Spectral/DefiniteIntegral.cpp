@@ -45,7 +45,9 @@ double definite_integral<>(const DataVector& f, const Index<1>& extents) noexcep
 }  // namespace lgl
 }  // namespace Basis
 
+/// \cond
 template double Basis::lgl::definite_integral<2>(const DataVector&,
                                                  const Index<2>&);
 template double Basis::lgl::definite_integral<3>(const DataVector&,
                                                  const Index<3>&);
+/// \endcond
