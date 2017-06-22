@@ -23,6 +23,11 @@
 /// Contains details of the implementation of Tensor
 namespace Tensor_detail {
 namespace detail {
+template <typename = void>
+SPECTRE_ALWAYS_INLINE constexpr auto compute_collapsed_index_impl() noexcept {
+  return 0;
+}
+
 template <typename>
 SPECTRE_ALWAYS_INLINE constexpr auto compute_collapsed_index_impl(
     std::size_t i) noexcept {
@@ -133,12 +138,8 @@ compute_collapsed_index(I... i) noexcept {
                 "The number of tensor indices passed to "
                 "compute_collapsed_index does not match the rank of the "
                 "tensor.");
-  return detail::compute_collapsed_index_impl<IndexLs>(
-      static_cast<std::size_t>(i)...);
-}
-
-SPECTRE_ALWAYS_INLINE constexpr size_t compute_collapsed_index() noexcept {
-  return 0;
+  return static_cast<size_t>(detail::compute_collapsed_index_impl<IndexLs>(
+      static_cast<std::size_t>(i)...));
 }
 
 /// \ingroup Tensor
@@ -295,8 +296,9 @@ struct Structure {
       const N... args) noexcept {
     static_assert(sizeof...(Indices) == sizeof...(N),
                   "the number arguments must be equal to rank_");
-    return gsl::at(make_array_from_list<collapsed_to_storage_list>(),
-                   compute_collapsed_index<index_list>(args...));
+    return gsl::at(
+        make_array_from_list<collapsed_to_storage_list>(),
+        compute_collapsed_index<index_list>(static_cast<size_t>(args)...));
   }
   /// Get storage_index
   /// \param tensor_index the tensor_index of which to get the storage_index
@@ -308,7 +310,7 @@ struct Structure {
                    compute_collapsed_index(tensor_index, Structure::dims()));
   }
 
-  template <int... N>
+  template <int... N, std::enable_if_t<(sizeof...(N) > 0)>* = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t
   get_storage_index() noexcept {
     static_assert(sizeof...(Indices) == sizeof...(N),
