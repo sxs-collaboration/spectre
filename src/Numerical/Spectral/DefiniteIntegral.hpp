@@ -1,3 +1,5 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
 
 /// \file
 /// Defines function definite_integral.

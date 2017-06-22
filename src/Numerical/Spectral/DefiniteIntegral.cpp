@@ -1,3 +1,5 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
 
 #include "Numerical/Spectral/DefiniteIntegral.hpp"
 
@@ -26,7 +28,8 @@ DataVector integrate_over_last_dimension(const DataVector& f,
 }  // namespace detail
 
 template <size_t Dim>
-double definite_integral(const DataVector& f, const Index<Dim>& extents) noexcept{
+double definite_integral(const DataVector& f,
+                         const Index<Dim>& extents) noexcept {
   ASSERT(f.size() == extents.product(),
          "size = " << f.size() << ", product = " << extents.product());
   return definite_integral(detail::integrate_over_last_dimension(f, extents),
@@ -34,7 +37,8 @@ double definite_integral(const DataVector& f, const Index<Dim>& extents) noexcep
 }
 
 template <>
-double definite_integral<>(const DataVector& f, const Index<1>& extents) noexcept{
+double definite_integral<>(const DataVector& f,
+                           const Index<1>& extents) noexcept {
   const size_t N = f.size();
   ASSERT(N == extents.product(),
          "N = " << N << ", product = " << extents.product());
