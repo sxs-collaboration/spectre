@@ -377,9 +377,10 @@ TEST_CASE("Unit.DataStructures.Tensor.StreamBad", "[DataStructures][Unit]") {
 
 TEST_CASE("Unit.DataStructures.Tensor.RankAndSize", "[DataStructures][Unit]") {
   {
-    Scalar<double> scalar{};
+    Scalar<double> scalar{2.8};
     CHECK(scalar.multiplicity(0_st) == 1);  // 0 can be a pointer
     CHECK(scalar.symmetries() == (std::array<int, 0>{}));
+    CHECK(scalar.get() == 2.8);
   }
 
   {
