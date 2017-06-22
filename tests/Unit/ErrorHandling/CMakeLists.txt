@@ -2,8 +2,9 @@
 # See LICENSE.txt for details.
 
 set(ERROR_HANDLING_TESTS
-    ErrorHandling/AbortWithErrorMessage.cpp
-    ErrorHandling/AssertAndError.cpp
-    ErrorHandling/FloatingPointExceptions.cpp)
+    ErrorHandling/Test_AbortWithErrorMessage.cpp
+    ErrorHandling/Test_AssertAndError.cpp
+    ErrorHandling/Test_FloatingPointExceptions.cpp
+    )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${ERROR_HANDLING_TESTS}" PARENT_SCOPE)
