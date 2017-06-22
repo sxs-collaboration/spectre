@@ -80,6 +80,7 @@ RUN export PATH=$PATH:/work/spack/bin
 RUN /work/spack/bin/spack install catch@1.6.1
 RUN /work/spack/bin/spack install brigand@master
 RUN /work/spack/bin/spack install blaze
+RUN /work/spack/bin/spack install gsl%gcc
 RUN /work/spack/bin/spack install libxsmm
 
 # Download and build the Charm++ version used by SpECTRE
@@ -98,4 +99,5 @@ WORKDIR /work
 RUN echo 'spack load catch' >> /root/.bashrc
 RUN echo 'spack load brigand' >> /root/.bashrc
 RUN echo 'spack load blaze' >> /root/.bashrc
+RUN echo 'spack load gsl' >> /root/.bashrc
 RUN echo 'spack load libxsmm' >> /root/.bashrc
