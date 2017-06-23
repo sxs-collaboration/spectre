@@ -104,29 +104,64 @@ you require features such as packages installed with different compilers.
 
 ### Building SpECTRE
 
-* Ensure you have all dependencies installed. See
-"Installing Dependencies Using Spack" for one method.
-* Install [Charm++](http://charm.cs.illinois.edu/software)
- for your machine. Further details
- [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
-* Clone [SpECTRE](https://github.com/sxs-collaboration/spectre)
-* Apply the Charm++ patch for your version *after* building Charm++ by running
-`git apply SPECTRE_ROOT/support/Charm/vx.y.z.patch` in the Charm++ directory
-* `mkdir build && cd build`
-* The compiler used for Charm++ and SpECTRE must be the same, otherwise you will
-  receive undefined references errors during linking.
-  You will only need to worry about this if you explicitly specified a
-  compiler when building Charm++. When compiling SpECTRE you
-  can specify the compiler to CMake using, for example
+After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
+Follow these steps:
+
+1.  Clone [SpECTRE](https://github.com/sxs-collaboration/spectre) into
+    `SPECTRE_ROOT`, a directory of your choice.
+2.  Install Charm++:
+  * Clone [Charm++](http://charm.cs.illinois.edu/software) into `CHARM_DIR`,
+    again a directory of your choice.
+  * In `CHARM_DIR`, run
+    `git checkout v6.7.1` to switch to a supported, stable release of Charm++.
+  * Charm++ is compiled by running
+    `./build charm++ ARCH OPTIONS`.
+    To figure out the correct target architecture and options, you can simply
+    run `./build`; the script will then ask you questions to guide you towards
+    the correct settings (see notes below for additional details).
+    Then compile Charm++.
+    The Charm++ build will be located in a new directory,
+    `CHARM_DIR/ARCH_OPTS`, whose name may (or may not) have some of the options
+    appended to the architecture.
+  * The SpECTRE repo contains a patch that must be applied to Charm++ *after*
+    Charm++ has been compiled. While still in `CHARM_DIR`, apply this patch by
+    running
+    `git apply SPECTRE_ROOT/support/Charm/v6.7.patch`.
+3.  Return to `SPECTRE_ROOT`, and create a build dir by running
+    `mkdir build && cd build`
+4.  Build SpECTRE with
+    `cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT`
+    then
+    `make -jN`
+    to compile the code.
+5.  Run the tests with
+    `make %RunTests && ctest`.
+
+**Notes**:
+* For more details on building Charm++, see the directions
+  [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
+  The correct target is `charm++` and, for a personal machine, the
+  correct target architecture is likely to be `multicore-linux64`
+  (or `multicore-darwin-x86_64` on macOS).
+  On an HPC system, the correct Charm++ target architecture depends on the
+  machine's inter-node communication architecture. We will be providing specific
+  instructions for various HPC systems.
+* Both Charm++ and SpECTRE must be compiled using the same compiler,
+  otherwise you will receive undefined reference errors while linking SpECTRE.
+  When compiling Charm++ you can specify the compiler using, for example,
+  ```
+  ./build charm++ ARCH clang
+  ```
+  When compiling SpECTRE you can specify the compiler to CMake using,
+  for example,
   ```
   cmake -D CMAKE_CXX_COMPILER=clang++ \
         -D CMAKE_C_COMPILER=clang \
         -D CMAKE_Fortran_COMPILER=gfortran \
-        -D CHARM_ROOT=/path/to/charm/BUILD_DIR SPECTRE_ROOT
+        -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT
   ```
-* `cmake -D CHARM_ROOT=/path/to/charm/BUILD_DIR SPECTRE_ROOT`
-* `make list` to see all available targets
-* Run tests by running `make %RunTests && ctest`
+* Inside the SpECTRE build directory, use `make list` to see all available
+  targets. This list can be refreshed by running CMake again.
 
 ### Code Coverage Analysis
 
