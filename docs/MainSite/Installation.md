@@ -58,32 +58,33 @@ as outlined below is a supported alternative to Docker images.
 
 #### Installing Dependencies Using Spack
 
-All the dependencies of SpECTRE can be installed from Spack. To setup Spack,
-first install LMod on your system. On macOS LMod can be installed via
-[brew](https://brew.sh/) and then sourcing the LMod shell script in your
-`~/.bash_profile` by adding
-`. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`. On Ubuntu LMod can
-be installed by running `sudo apt-get install -y lmod` and then adding
-`. /etc/profile.d/lmod.sh` to your `~/.bashrc` file. On Arch Linux run
-`yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to your `~/.bashrc`.
-Instructions for other Linux distros are available online.
+SpECTRE's dependencies can be installed with
+[Spack](https://github.com/LLNL/spack), a package manager tailored for HPC use.
+Install Spack by cloning it into `SPACK_DIR` (a directory of your choice),
+then add `SPACK_DIR/bin` to your `PATH`.
 
-Clone [Spack](https://github.com/LLNL/spack) and add `spack/bin` to your path.
-Run `openssl version` and note the version number, for example `1.1.0e`.
-Next run `which openssl` and note the path, for example `/usr/bin`.
-Open `~/.spack/package.yaml` (you may need to create it) in your favourite
-text editor and add
-```
-packages:
-    openssl:
-        paths:
-            openssl@1.1.0e: /usr
-        buildable: False
-```
-substituting your version number and path in.
+For security, it is good practice to make Spack use the system's OpenSLL
+rather than allow it to install a new copy — see Spack's documentation for
+[instructions](https://spack.readthedocs.io/en/latest/getting_started.html#openssl).
 
-Once you have Spack installed and configured with OpenSSL and LMod you can
-install the dependencies using
+Spack works well with a module environment. We recommend
+[LMod](https://github.com/TACC/Lmod), which is available on many systems:
+* On macOS, install LMod from [brew](https://brew.sh/), then source the LMod
+  shell script by adding `. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`
+  to your `.bash_profile`.
+* On Ubuntu, run `sudo apt-get install -y lmod` and add
+  `. /etc/profile.d/lmod.sh` to your `.bashrc`.
+* On Arch Linux, run `yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to
+  your `.bashrc`,
+* On Fedora/RHEL, GNU Environment Modules comes out-of-the-box and works equally
+  well.
+* Instructions for other Linux distros are available online.
+
+To use modules with Spack, enable Spack's shell support by adding
+`. SPACK_DIR/share/spack/setup-env.sh` to your `.bash_profile` or `.bashrc`.
+
+Once you have Spack installed and configured with OpenSSL and LMod, you can
+install the SpECTRE dependencies using
 ```
 spack install blaze
 spack install brigand@master
@@ -93,17 +94,11 @@ spack install jemalloc # or from your package manager
 spack install libxsmm
 spack install yaml-cpp@develop
 ```
-
-Next, run `ls spack/share/spack/modules` add one entry of
-```
-module use /path/to/spack/share/spack/modules/YOUR_OS_VERSION_INFO
-```
-for each `YOUR_OS_VERSION_INFO` inside `spack/share/spack/modules` to your
-`~/.bash_profile` or `~.bashrc`.
-
 You can also install CMake, OpenBLAS, Boost, and HDF5 from Spack.
 To load the packages you've installed from Spack run `spack load PACKAGE`,
-or use the `module load` command. Spack allows very flexible configurations and
+or (equivalently) use the `module load` command.
+
+**Note**: Spack allows very flexible configurations and
 it is recommended you read the [documentation](https://spack.readthedocs.io) if
 you require features such as packages installed with different compilers.
 
