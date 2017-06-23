@@ -11,6 +11,7 @@
 
 #include <libxsmm.h>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace blas_detail {
@@ -88,6 +89,14 @@ inline void dgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
                    const double* A, const size_t& LDA, const double* B,
                    const size_t& LDB, const double& BETA, double* C,
                    const size_t& LDC) {
+  ASSERT('N' == TRANSA or 'n' == TRANSA or 'T' == TRANSA or 't' == TRANSA or
+             'C' == TRANSA or 'c' == TRANSA,
+         "TRANSA must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
+  ASSERT('N' == TRANSB or 'n' == TRANSB or 'T' == TRANSB or 't' == TRANSB or
+             'C' == TRANSB or 'c' == TRANSB,
+         "TRANSB must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
   blas_detail::dgemm_(
       TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
       gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
@@ -100,6 +109,14 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
                          const double& ALPHA, const double* A,
                          const size_t& LDA, const double* B, const size_t& LDB,
                          const double& BETA, double* C, const size_t& LDC) {
+  ASSERT('N' == TRANSA or 'n' == TRANSA or 'T' == TRANSA or 't' == TRANSA or
+             'C' == TRANSA or 'c' == TRANSA,
+         "TRANSA must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
+  ASSERT('N' == TRANSB or 'n' == TRANSB or 'T' == TRANSB or 't' == TRANSB or
+             'C' == TRANSB or 'c' == TRANSB,
+         "TRANSB must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
   const int m = gsl::narrow_cast<int>(M), n = gsl::narrow_cast<int>(N),
             k = gsl::narrow_cast<int>(K), lda = gsl::narrow_cast<int>(LDA),
             ldb = gsl::narrow_cast<int>(LDB), ldc = gsl::narrow_cast<int>(LDC);
@@ -136,6 +153,10 @@ inline void dgemv_(const char& TRANS, const size_t& M, const size_t& N,
                    const double& ALPHA, const double* A, const size_t& LDA,
                    const double* X, const size_t& INCX, const double& BETA,
                    double* Y, const size_t& INCY) {
+  ASSERT('N' == TRANS or 'n' == TRANS or 'T' == TRANS or 't' == TRANS or
+             'C' == TRANS or 'c' == TRANS,
+         "TRANS must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
   // INCX and INCY are allowed to be negative by BLAS, but we never
   // use them that way.  If needed, they can be changed here, but then
   // code providing values will also have to be changed to int to

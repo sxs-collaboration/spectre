@@ -151,7 +151,7 @@ using is_tensor_index_type_t = typename is_tensor_index_type<T>::type;
 /// if it's contravariant and vice-versa
 ///
 /// Here is an example of how to use ::change_index_up_lo
-/// \snippet Tensor.cpp change_up_lo
+/// \snippet Test_Tensor.cpp change_up_lo
 ///
 /// \tparam Index the \ref SpacetimeIndex "TensorIndexType" to change
 template <typename Index>
