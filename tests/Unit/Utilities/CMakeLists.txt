@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(UTILITIES_TESTS
+    Utilities/Test_Blas.cpp
     Utilities/Test_BoostHelpers.cpp
     Utilities/Test_ConstantExpressions.cpp
     Utilities/Test_Deferred.cpp
