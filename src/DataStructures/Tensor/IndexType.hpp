@@ -35,6 +35,11 @@ struct Logical {};
 struct Grid {};
 struct Inertial {};
 struct Distorted {};
+
+/// This ordered list is needed to determine the ordering of frames
+/// for jacobians.
+using ordered_frame_list = typelist<Logical, Grid, Inertial, Distorted>;
+
 }  // namespace Frame
 
 /// \cond HIDDEN_SYMBOLS
