@@ -315,4 +315,24 @@ using iAA = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>,
                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>>>;
+
+namespace detail {
+template <size_t Dim, typename Frame1, typename Frame2>
+struct inverse_jacobian_impl {
+  static_assert(tmpl::index_of<Frame::ordered_frame_list, Frame1>::value <
+                    tmpl::index_of<Frame::ordered_frame_list, Frame2>::value,
+                "Inverse Jacobian must go other direction.");
+  using type = Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                      typelist<SpatialIndex<Dim, UpLo::Up, Frame1>,
+                               SpatialIndex<Dim, UpLo::Lo, Frame2>>>;
+};
+}  // namespace detail
+
+template <size_t Dim, typename Frame1, typename Frame2>
+using InverseJacobian =
+    typename detail::inverse_jacobian_impl<Dim, Frame1, Frame2>::type;
+
+template <typename DataType, size_t SpatialDim, typename Fr>
+using Point = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
+                     index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
 }  // namespace tnsr
