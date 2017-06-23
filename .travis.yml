@@ -94,12 +94,11 @@ cache:
       - $HOME/.sonar
 
 # For macOS we install all dependencies in the before_install step of Travis.
-# Unfortunately tapping homebrew/science causes brew to run update, which is
-# extremely slow. It would be nice to have some way of caching this. It might
-# be faster to install HDF5 from source if we have problems with build time
-# limits. The minimum version of macOS is set to 10.11 to avoid linking errors.
-# All dependencies are installed into the home directory. ccache is again used
-# to reduce build times.
+# Unfortunately installing ccache and jemalloc from brew causes a brew update,
+# which is extremely slow. For some reason ccache isn't building correctly when
+# cloned and installed. The minimum version of macOS is set to 10.11 to avoid
+# linking errors. All dependencies are installed into the home directory.
+# ccache is used to reduce build times.
 before_install:
   - export CHARM_PATCH=v6.7.patch
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
@@ -123,14 +122,16 @@ before_install:
       ccache -s;
       cd $HOME;
 
+      ccache -z;
       git clone https://github.com/hfp/libxsmm.git;
       cd libxsmm && mkdir build && cd build && make -f ../Makefile;
+      ccache -s;
       cd $HOME;
 
       git clone https://github.com/philsquared/Catch.git;
       cd Catch;
       git checkout v1.6.1;
-      cd ../;
+      cd $HOME;
 
       git clone https://github.com/edouarda/brigand.git;
 
