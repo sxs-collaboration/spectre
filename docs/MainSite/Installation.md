@@ -4,37 +4,41 @@ See LICENSE.txt for details.
 \endcond
 # Installation {#installation}
 
-### Requirements:
+### Dependencies
+
+#### Required:
 
 * [GCC](https://gcc.gnu.org/) 5.2 or later,
 [Clang](https://clang.llvm.org/) 3.6 or later, or AppleClang 6.0 or later
 * [CMake](https://cmake.org/) 3.3.2 or later
 * [Charm++](http://charm.cs.illinois.edu/) (must be compiled from source)
 * [Git](https://git-scm.com/)
-* BLAS
+* BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview)
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
-* [Catch](https://github.com/philsquared/Catch) (v1.6.1 or older)
+* [Catch](https://github.com/philsquared/Catch) v1.6.1 or older
+* [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * [LIBXSMM](https://github.com/hfp/libxsmm)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
-
-### Optional:
-* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) for
-documentation generation
+#### Optional:
+* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
+  documentation
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
-[gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) for checking code coverage
-* [coverxygen](https://github.com/psycofdj/coverxygen) for checking
-documentation coverage
-* [PAPI](http://icl.utk.edu/papi/)
-* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html)
-* [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/)
-* [Cppcheck](http://cppcheck.sourceforge.net/)
+  [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
+  coverage
+* [coverxygen](https://github.com/psycofdj/coverxygen) — to check documentation
+  coverage
+* [PAPI](http://icl.utk.edu/papi/) — to access hardware performance counters
+* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) — to format C++
+  code in a clear and consistent fashion
+* [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
+* [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
 
-### Using Docker to Compile SpECTRE
+#### Using Docker to Compile SpECTRE
 
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
@@ -52,7 +56,7 @@ Linux machine. Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
 as outlined below is a supported alternative to Docker images.
 
-### Installing Dependencies Using Spack
+#### Installing Dependencies Using Spack
 
 All the dependencies of SpECTRE can be installed from Spack. To setup Spack,
 first install LMod on your system. On macOS LMod can be installed via
@@ -84,6 +88,7 @@ install the dependencies using
 spack install blaze
 spack install brigand@master
 spack install catch@1.6.1
+spack install gsl
 spack install jemalloc # or from your package manager
 spack install libxsmm
 spack install yaml-cpp@develop
