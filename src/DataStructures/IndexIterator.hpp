@@ -12,7 +12,7 @@
 /// IndexIterator iterates over a unique set of Index.
 ///
 /// \example
-/// \snippet IndexIterator.cpp index_iterator_example
+/// \snippet Test_IndexIterator.cpp index_iterator_example
 ///
 /// Each integer of the Index will vary from 0 to extents[d] - 1,
 /// with the lowest dimension varying the fastest.

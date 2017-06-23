@@ -60,10 +60,10 @@ struct is_tensor<Tensor<X, Symm, IndexLs>> : std::true_type {};
  * a scalar with no indices.
  *
  * \example
- * \snippet Tensor.cpp scalar
- * \snippet Tensor.cpp spatial_vector
- * \snippet Tensor.cpp spacetime_vector
- * \snippet Tensor.cpp rank_3_122
+ * \snippet Test_Tensor.cpp scalar
+ * \snippet Test_Tensor.cpp spatial_vector
+ * \snippet Test_Tensor.cpp spacetime_vector
+ * \snippet Test_Tensor.cpp rank_3_122
  *
  * \tparam X the type held
  * \tparam Symm the ::Symmetry of the indices
@@ -141,7 +141,7 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// Initialize a Vector with the value in the std::initializer_list
   ///
   /// \example
-  /// \snippet Tensor.cpp init_vector
+  /// \snippet Test_Tensor.cpp init_vector
   /// \param data the values of the individual components of the Vector
   template <size_t NumberOfIndices = sizeof...(Indices),
             std::enable_if_t<(NumberOfIndices == 1)>* = nullptr>
