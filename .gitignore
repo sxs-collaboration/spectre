@@ -35,3 +35,6 @@ charmrun.*
 # Ignore deploy SSH keys and other TravisCI related files
 .travis/deploy_key
 coverage.info
+
+# ClangFormat git hook file
+.clang_format_diff.patch
