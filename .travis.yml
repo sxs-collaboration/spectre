@@ -110,6 +110,7 @@ before_install:
       brew install ccache;
       PATH=/usr/local/opt/ccache/libexec:$PATH;
       brew install jemalloc;
+      brew install gsl;
 
       ccache -z;
       mkdir $HOME/hdf5;
