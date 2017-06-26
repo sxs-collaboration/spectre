@@ -6,6 +6,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace VariablesTestTags_detail {
@@ -217,4 +218,44 @@ TEST_CASE("Unit.DataStructures.Variables.Serialization",
           "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> v(1, -3.0);
   CHECK(v == serialize_and_deserialize(v));
+}
+
+TEST_CASE("Unit>DataStructures.Variables.SliceVariables",
+          "[DataStructures][Unit]") {
+  Variables<typelist<VariablesTestTags_detail::vector>> vars(24, 0.);
+  const size_t x_extents = 2, y_extents = 3, z_extents = 4,
+               vec_size = VariablesTestTags_detail::vector::type::size();
+  Index<3> extents({{2, 3, 4}});
+  for (size_t s = 0; s < vars.size(); ++s) {
+    *(vars.data() + s) = s;
+  }
+  Variables<typelist<VariablesTestTags_detail::vector>>
+      expected_vars_sliced_in_x(y_extents * z_extents, 0.),
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+      expected_vars_sliced_in_z(x_extents * y_extents, 0.);
+  const size_t x_offset = 1, y_offset = 2, z_offset = 1;
+  for (size_t s = 0; s < expected_vars_sliced_in_x.size(); ++s) {
+    *(expected_vars_sliced_in_x.data() + s) = x_offset + s * x_extents;
+  }
+  for (size_t i = 0; i < vec_size; ++i) {
+    for (size_t x = 0; x < x_extents; ++x) {
+      for (size_t z = 0; z < z_extents; ++z) {
+        *(expected_vars_sliced_in_y.data() + x +
+          x_extents * (z + z_extents * i)) =
+            i * extents.product() + x + x_extents * (y_offset + z * y_extents);
+      }
+    }
+  }
+  for (size_t i = 0; i < vec_size; ++i) {
+    for (size_t x = 0; x < x_extents; ++x) {
+      for (size_t y = 0; y < y_extents; ++y) {
+        *(expected_vars_sliced_in_z.data() + x +
+          x_extents * (y + y_extents * i)) =
+            i * extents.product() + x + x_extents * (y + y_extents * z_offset);
+      }
+    }
+  }
+  CHECK(data_on_slice(vars, extents, 0, x_offset) == expected_vars_sliced_in_x);
+  CHECK(data_on_slice(vars, extents, 1, y_offset) == expected_vars_sliced_in_y);
+  CHECK(data_on_slice(vars, extents, 2, z_offset) == expected_vars_sliced_in_z);
 }
