@@ -58,7 +58,7 @@ struct ResetComputeItems;
  * \ingroup TypeTraits DataBox
  * \brief Determines if a type `T` is as db::DataBox
  *
- * \effects Inherits form std::true_type if `T` is a specialization of
+ * \effects Inherits from std::true_type if `T` is a specialization of
  * db::DataBox, otherwise inherits from std::false_type
  * \example
  */
@@ -175,9 +175,9 @@ struct create_dependency_graph<
  * \ingroup DataBoxGroup
  * \brief A DataBox stores objects that can be retrieved by using Tags
  * \warning
- * The order of the tags in DataBoxes returned by functions depends on
- * implementation-defined behavior, and therefore should not be
- * specified in source files.  If explicitly naming a DataBox type is
+ * The order of the tags in DataBoxes returned by create and create_from depends
+ * on implementation-defined behavior, and therefore should not be
+ * specified in source files. If explicitly naming a DataBox type is
  * necessary they should be generated using get_databox_list.
  *
  * @tparam TagsLs a metasequence
@@ -231,7 +231,7 @@ class DataBox<TagsLs<Tags...>> {
   static constexpr auto create(Args&&... args);
 
   /*!
-   * \brief Helper function called by db::create to call the constructor
+   * \brief Helper function called by db::create_from to call the constructor
    *
    * \requires `tt::is_a<::typelist, AddTags>::value` is true,
    * `tt::is_a<::typelist, AddComputeItems>::value` is true,
@@ -284,6 +284,7 @@ class DataBox<TagsLs<Tags...>> {
    */
   template <typename T>
   constexpr item_type<T>& mutate() noexcept {
+    static_assert(not db::is_compute_item_v<T>, "Cannot mutate a compute item");
     return data_.template get<T>().mutate();
   }
 
@@ -423,13 +424,12 @@ template <typename RemoveTags, typename AddTags, typename AddComputeItems,
           typename Box, typename... Args>
 constexpr auto DataBox<TagsLs<Tags...>>::create_from(const Box& box,
                                                      Args&&... args) {
-  static_assert(tt::is_a<::db::DataBox, Box>::value,
+  static_assert(tt::is_a_v<::db::DataBox, Box>,
                 "create_from must receive a DataBox as its first argument");
-  static_assert(tt::is_a<tmpl::list, RemoveTags>::value,
+  static_assert(tt::is_a_v<tmpl::list, RemoveTags>,
                 "RemoveTags must by a typelist");
-  static_assert(tt::is_a<tmpl::list, AddTags>::value,
-                "AddTags must by a typelist");
-  static_assert(tt::is_a<tmpl::list, AddComputeItems>::value,
+  static_assert(tt::is_a_v<tmpl::list, AddTags>, "AddTags must by a typelist");
+  static_assert(tt::is_a_v<tmpl::list, AddComputeItems>,
                 "AddComputeItems must by a typelist");
   static_assert(
       tmpl::all<AddComputeItems, is_compute_item<tmpl::_1>>::value,
@@ -532,7 +532,7 @@ struct DataBoxAddHelper {
 
   // add_variables_tags_to_box is used to add the Tensor's inside a Variables
   // object into the DataBox. If the Tag does not hold a Variables then we
-  // have nothing to add, otherwise we recurse through the Variables we need
+  // have nothing to add, otherwise we recurse through the Tensors we need
   // added. Currently this uses the same infrastructure as the ComputeItems that
   // return variables, but it would be more efficient to not deal with it that
   // way and just add them directly. However, then there could be issues with
@@ -657,8 +657,10 @@ struct ResetComputeItems {
     // Reset me first
     reset_compute_item<current_vertex>(data);
     // Reset what depends on me next
-    using outgoing_edges =
-        tmpl::outgoing_edges<DependencyGraph, current_vertex>;
+    using outgoing_edges = tmpl::branch_if_t<
+        tmpl::size<typename current_vertex::argument_tags>::value == 0,
+        tmpl::list<>,
+        tmpl::bind<tmpl::outgoing_edges, DependencyGraph, current_vertex>>;
     using next_vertices =
         tmpl::transform<outgoing_edges, tmpl::get_destination<tmpl::_1>>;
     ResetComputeItems<DependencyGraph, next_vertices>::apply(data);
@@ -696,20 +698,25 @@ using AddTags = tmpl::flatten<typelist<Tags...>>;
 template <typename... Tags>
 using AddComputeItemsTags = tmpl::flatten<typelist<Tags...>>;
 
-/*! \ingroup DataBoxGroup
- *  \brief Create a new DataBox
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Create a new DataBox
  *
- *  \details
- *  Creates a new DataBox holding types Tags::type filled with the arguments
- *  passed to the function. Compute items must be added so that the dependencies
- *  of a compute item are added before the compute item. For example, say you
- *  have compute items `A` and `B` where `B` depends on `A`, then you must
- *  add them using `db::AddComputeItemsTags<A, B>`.
+ * \details
+ * Creates a new DataBox holding types Tags::type filled with the arguments
+ * passed to the function. Compute items must be added so that the dependencies
+ * of a compute item are added before the compute item. For example, say you
+ * have compute items `A` and `B` where `B` depends on `A`, then you must
+ * add them using `db::AddComputeItemsTags<A, B>`.
  *
- *  \example
- *  \snippet Test_DataBox.cpp create_databox
- *  \see new_data_box
- *  \tparam AddTags the tags of the args being added
+ * \example
+ * \snippet Test_DataBox.cpp create_databox
+ *
+ * \see create_from get_tags_from_box
+ *
+ * \tparam AddTags the tags of the args being added
+ * \tparam AddComputeItems list of \ref ComputeItemTag "compute item tags" to
+ * add to the DataBox
  *  \param args the data to be added to the DataBox
  */
 template <typename AddTags, typename AddComputeItems = typelist<>,
@@ -736,14 +743,17 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
  * \snippet Test_DataBox.cpp create_from_remove
  * Adding an item is done using:
  * \snippet Test_DataBox.cpp create_from_add_item
- * Adding an compute item is done using:
+ * Adding a compute item is done using:
  * \snippet Test_DataBox.cpp create_from_add_item
  *
  * \see create DataBox get_tags_from_box
+ *
  * \tparam RemoveTags typelist of Tags to remove
  * \tparam AddTags typelist of Tags corresponding to the arguments to be added
+ * \tparam AddComputeItems list of \ref ComputeItemTag "compute item tags" to
+ * add to the DataBox
  * \param box the DataBox the new box should be based off
- * \param args the items or compute items to add to the DataBox
+ * \param args the values for the items to add to the DataBox
  * \return DataBox like `box` but altered by RemoveTags and AddTags
  */
 template <typename RemoveTags, typename AddTags = typelist<>,
@@ -768,25 +778,17 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
 namespace detail {
 template <typename Type, typename Tags, typename TagLs,
           std::enable_if_t<(tmpl::size<Tags>::value == 0)>* = nullptr>
-[[noreturn]] const Type& get_tag_from_box(const DataBox<TagLs>& /*box*/,
-                                          const std::string& tag_name) {
-  std::stringstream tags_in_box;
-  tmpl::for_each<TagLs>([&tags_in_box](auto t) {
-    tags_in_box << "  " << decltype(t)::type::label << "\n";
-  });
-  ERROR("Could not find the tag named \""
-        << tag_name << "\" in the DataBox either because the type that the tag "
-                       "returns does not match the type expected, "
-        << pretty_type::get_name<Type>()
-        << ", or because it is not in the DataBox and there are no other tags "
-           "of the expected type in the DataBox. Available tag names are:\n"
-        << tags_in_box.str());
+[[noreturn]] const Type& get_item_from_box(const DataBox<TagLs>& /*box*/,
+                                           const std::string& /*tag_name*/) {
+  static_assert(tmpl::size<Tags>::value != 0,
+                "No items with the requested type were found in the DataBox");
+  ERROR("Cannot ever reach this function.");
 }
 
 template <typename Type, typename Tags, typename TagLs,
           std::enable_if_t<(tmpl::size<Tags>::value == 1)>* = nullptr>
-const Type& get_tag_from_box(const DataBox<TagLs>& box,
-                             const std::string& tag_name) {
+const Type& get_item_from_box(const DataBox<TagLs>& box,
+                              const std::string& tag_name) {
   using Tag = tmpl::front<Tags>;
   if (get_tag_name<Tag>() != tag_name) {
     std::stringstream tags_in_box;
@@ -802,22 +804,39 @@ const Type& get_tag_from_box(const DataBox<TagLs>& box,
 
 template <typename Type, typename Tags, typename TagLs,
           std::enable_if_t<(tmpl::size<Tags>::value > 1)>* = nullptr>
-constexpr const Type& get_tag_from_box(const DataBox<TagLs>& box,
-                                       const std::string& tag_name) {
+constexpr const Type& get_item_from_box(const DataBox<TagLs>& box,
+                                        const std::string& tag_name) {
   using Tag = tmpl::front<Tags>;
   return get_tag_name<Tag>() == tag_name
              ? box.template get<Tag>()
-             : get_tag_from_box<Type, tmpl::pop_front<Tags>>(box, tag_name);
+             : get_item_from_box<Type, tmpl::pop_front<Tags>>(box, tag_name);
 }
 }  // namespace detail
 
-/// \ingroup DataBoxGroup
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Retrieve an item from the DataBox that has a tag with label `tag_name`
+ * and type `Type`
+ *
+ * \details
+ * The type that the tag represents must be of the type `Type`, and the tag must
+ * have the label `tag_name`. The function iterates over all tags in the DataBox
+ * `box` that have the type `Type` searching linearly for one whose `label`
+ * matches `tag_name`.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp get_item_from_box
+ *
+ * \tparam Type the type of the tag with the `label` `tag_name`
+ * \param box the DataBox through which to search
+ * \param tag_name the `label` of the tag to retrieve
+ */
 template <typename Type, typename TagLs>
-constexpr const Type& get_tag_from_box(const DataBox<TagLs>& box,
-                                       const std::string& tag_name) {
+constexpr const Type& get_item_from_box(const DataBox<TagLs>& box,
+                                        const std::string& tag_name) {
   using tags = tmpl::filter<
       TagLs, std::is_same<tmpl::bind<item_type, tmpl::_1>, tmpl::pin<Type>>>;
-  return detail::get_tag_from_box<Type, tags>(box, tag_name);
+  return detail::get_item_from_box<Type, tags>(box, tag_name);
 }
 
 namespace detail {
@@ -856,7 +875,7 @@ struct Apply<TagsLs<Tags...>> {
  *  \brief Apply the function `f` with argument Tags `TagLs` from DataBox `box`
  *
  *  \details
- *  Apply the function `f` with arugments that are of type `Tags::type` where
+ *  Apply the function `f` with arguments that are of type `Tags::type` where
  *  `Tags` is defined as `TagLs<Tags...>`. The arguments to `f` are retrieved
  *  from the DataBox `box`.
  *
@@ -879,14 +898,15 @@ struct Apply<TagsLs<Tags...>> {
  *  \endcode
  *
  *  \example
- *  TODO(): make example
+ *  \snippet Test_DataBox.cpp apply_example
+ *
  *  \see apply_with_box DataBox
  *  \tparam TagsLs typelist of Tags in the order that they are to be passed to
  *  `f`
  *  \param f the function to apply
  *  \param box the DataBox out of which to retrieve the Tags and to pass to `f`
  *  \param args the arguments to pass to the function that are not in the
- *  DataBox, box
+ *  DataBox, `box`
  */
 template <typename TagsLs, typename F, typename... BoxTags, typename... Args>
 inline constexpr auto apply(F f, const DataBox<BoxTags...>& box,
@@ -900,7 +920,7 @@ inline constexpr auto apply(F f, const DataBox<BoxTags...>& box,
  *  and `box` as the first argument
  *
  *  \details
- *  Apply the function `f` with arugments that are of type `Tags::type` where
+ *  Apply the function `f` with arguments that are of type `Tags::type` where
  *  `Tags` is defined as `TagLs<Tags...>`. The arguments to `f` are retrieved
  *  from the DataBox `box` and the first argument passed to `f` is the DataBox.
  *
@@ -920,18 +940,19 @@ inline constexpr auto apply(F f, const DataBox<BoxTags...>& box,
  *  `sizeof...(Tags)` arguments of types `typename Tags::type...`, and
  *  `sizeof...(Args)` arguments of types `Args...`,
  *  \code
- *  result = func((box, box.get<Tags>()..., args...);
+ *  result = func(box, box.get<Tags>()..., args...);
  *  \endcode
  *
  *  \example
- *  TODO(): make example
+ *  \snippet Test_DataBox.cpp apply_with_box_example
+ *
  *  \see apply DataBox
  *  \tparam TagsLs typelist of Tags in the order that they are to be passed to
  *  `f`
  *  \param f the function to apply
  *  \param box the DataBox out of which to retrieve the Tags and to pass to `f`
  *  \param args the arguments to pass to the function that are not in the
- *  DataBox, box
+ *  DataBox, `box`
  */
 template <typename TagsLs, typename F, typename... BoxTags, typename... Args>
 inline constexpr auto apply_with_box(F f, const DataBox<BoxTags...>& box,
@@ -957,10 +978,10 @@ struct filter_helper {
  * tags `DataBoxTagsLs` in order to keep the tags in `KeepTagsLs`
  *
  * \example
- * \snippet Test_DataBox.cpp keep_these_tags
+ * \snippet Test_DataBox.cpp remove_tags_from_keep_tags
  */
 template <typename DataBoxTagsLs, typename KeepTagsLs>
-using keep_these_tags =
+using remove_tags_from_keep_tags =
     tmpl::filter<DataBoxTagsLs,
                  detail::filter_helper<tmpl::pin<KeepTagsLs>, tmpl::_1>>;
 

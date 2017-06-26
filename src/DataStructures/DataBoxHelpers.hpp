@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines class
+/// Defines helper classes and functions for manipulating DataBox's and items
 
 #pragma once
 
@@ -17,10 +17,10 @@ class DataVector;
 /// \endcond
 
 template <typename Tag, typename = void>
-struct get_tag_from_variant_databox;
+struct get_item_from_variant_databox;
 
 template <typename Tag>
-struct get_tag_from_variant_databox<
+struct get_item_from_variant_databox<
     Tag, std::enable_if_t<std::is_base_of<db::DataBoxTag, Tag>::value>>
     : boost::static_visitor<db::item_type<Tag>> {
   template <typename DataBox_t>
@@ -30,15 +30,15 @@ struct get_tag_from_variant_databox<
 };
 
 template <typename TagType>
-struct get_tag_from_variant_databox<
+struct get_item_from_variant_databox<
     TagType,
     std::enable_if_t<not std::is_base_of<db::DataBoxTag, TagType>::value>>
     : boost::static_visitor<TagType> {
-  explicit get_tag_from_variant_databox(std::string name)
+  explicit get_item_from_variant_databox(std::string name)
       : var_name(std::move(name)) {}
   template <typename DataBox_t>
   constexpr TagType operator()(DataBox_t& box) const {
-    return db::get_tag_from_box<TagType>(box, var_name);
+    return db::get_item_from_box<TagType>(box, var_name);
   }
 
  private:
