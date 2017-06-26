@@ -225,7 +225,7 @@ TEST_CASE("Unit>DataStructures.Variables.SliceVariables",
   Variables<typelist<VariablesTestTags_detail::vector>> vars(24, 0.);
   const size_t x_extents = 2, y_extents = 3, z_extents = 4,
                vec_size = VariablesTestTags_detail::vector::type::size();
-  Index<3> extents({{2, 3, 4}});
+  Index<3> extents(x_extents, y_extents, z_extents);
   for (size_t s = 0; s < vars.size(); ++s) {
     vars.data()[s] = s;
   }
