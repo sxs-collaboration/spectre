@@ -13,8 +13,9 @@
 #include "DataStructures/Variables.hpp"
 
 /*! \ingroup DataStructures
- *  \brief Slices the data within `vars` to a codimension 1 slice in the
- * `sliced_dim` dimension. Which surface to slice to is determined by `slice_point`.
+ * \brief Slices the data within `vars` to a codimension 1 slice. The
+ * slice has a constant grid coordinate in direction `sliced_dim`, and slices
+ * the volume through the point `slice_point` of this coordinate.
  *
  * \return Variables class sliced to a hypersurface.
  */
