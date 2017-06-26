@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(DataStructures)
+add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Executables)
 add_subdirectory(Numerical)
