@@ -4,37 +4,41 @@ See LICENSE.txt for details.
 \endcond
 # Installation {#installation}
 
-### Requirements:
+### Dependencies
+
+#### Required:
 
 * [GCC](https://gcc.gnu.org/) 5.2 or later,
 [Clang](https://clang.llvm.org/) 3.6 or later, or AppleClang 6.0 or later
 * [CMake](https://cmake.org/) 3.3.2 or later
 * [Charm++](http://charm.cs.illinois.edu/) (must be compiled from source)
 * [Git](https://git-scm.com/)
-* BLAS
+* BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview)
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
-* [Catch](https://github.com/philsquared/Catch) (v1.6.1 or older)
+* [Catch](https://github.com/philsquared/Catch) v1.6.1 or older
+* [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * [LIBXSMM](https://github.com/hfp/libxsmm)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
-
-### Optional:
-* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) for
-documentation generation
+#### Optional:
+* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
+  documentation
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
-[gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) for checking code coverage
-* [coverxygen](https://github.com/psycofdj/coverxygen) for checking
-documentation coverage
-* [PAPI](http://icl.utk.edu/papi/)
-* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html)
-* [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/)
-* [Cppcheck](http://cppcheck.sourceforge.net/)
+  [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
+  coverage
+* [coverxygen](https://github.com/psycofdj/coverxygen) — to check documentation
+  coverage
+* [PAPI](http://icl.utk.edu/papi/) — to access hardware performance counters
+* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) — to format C++
+  code in a clear and consistent fashion
+* [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
+* [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
 
-### Using Docker to Compile SpECTRE
+#### Using Docker to Compile SpECTRE
 
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
@@ -52,81 +56,112 @@ Linux machine. Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
 as outlined below is a supported alternative to Docker images.
 
-### Installing Dependencies Using Spack
+#### Installing Dependencies Using Spack
 
-All the dependencies of SpECTRE can be installed from Spack. To setup Spack,
-first install LMod on your system. On macOS LMod can be installed via
-[brew](https://brew.sh/) and then sourcing the LMod shell script in your
-`~/.bash_profile` by adding
-`. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`. On Ubuntu LMod can
-be installed by running `sudo apt-get install -y lmod` and then adding
-`. /etc/profile.d/lmod.sh` to your `~/.bashrc` file. On Arch Linux run
-`yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to your `~/.bashrc`.
-Instructions for other Linux distros are available online.
+SpECTRE's dependencies can be installed with
+[Spack](https://github.com/LLNL/spack), a package manager tailored for HPC use.
+Install Spack by cloning it into `SPACK_DIR` (a directory of your choice),
+then add `SPACK_DIR/bin` to your `PATH`.
 
-Clone [Spack](https://github.com/LLNL/spack) and add `spack/bin` to your path.
-Run `openssl version` and note the version number, for example `1.1.0e`.
-Next run `which openssl` and note the path, for example `/usr/bin`.
-Open `~/.spack/package.yaml` (you may need to create it) in your favourite
-text editor and add
-```
-packages:
-    openssl:
-        paths:
-            openssl@1.1.0e: /usr
-        buildable: False
-```
-substituting your version number and path in.
+For security, it is good practice to make Spack use the system's OpenSLL
+rather than allow it to install a new copy — see Spack's documentation for
+[instructions](https://spack.readthedocs.io/en/latest/getting_started.html#openssl).
 
-Once you have Spack installed and configured with OpenSSL and LMod you can
-install the dependencies using
+Spack works well with a module environment. We recommend
+[LMod](https://github.com/TACC/Lmod), which is available on many systems:
+* On macOS, install LMod from [brew](https://brew.sh/), then source the LMod
+  shell script by adding `. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`
+  to your `.bash_profile`.
+* On Ubuntu, run `sudo apt-get install -y lmod` and add
+  `. /etc/profile.d/lmod.sh` to your `.bashrc`.
+* On Arch Linux, run `yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to
+  your `.bashrc`,
+* On Fedora/RHEL, GNU Environment Modules comes out-of-the-box and works equally
+  well.
+* Instructions for other Linux distros are available online.
+
+To use modules with Spack, enable Spack's shell support by adding
+`. SPACK_DIR/share/spack/setup-env.sh` to your `.bash_profile` or `.bashrc`.
+
+Once you have Spack installed and configured with OpenSSL and LMod, you can
+install the SpECTRE dependencies using
 ```
 spack install blaze
 spack install brigand@master
 spack install catch@1.6.1
+spack install gsl
 spack install jemalloc # or from your package manager
 spack install libxsmm
 spack install yaml-cpp@develop
 ```
-
-Next, run `ls spack/share/spack/modules` add one entry of
-```
-module use /path/to/spack/share/spack/modules/YOUR_OS_VERSION_INFO
-```
-for each `YOUR_OS_VERSION_INFO` inside `spack/share/spack/modules` to your
-`~/.bash_profile` or `~.bashrc`.
-
 You can also install CMake, OpenBLAS, Boost, and HDF5 from Spack.
 To load the packages you've installed from Spack run `spack load PACKAGE`,
-or use the `module load` command. Spack allows very flexible configurations and
+or (equivalently) use the `module load` command.
+
+**Note**: Spack allows very flexible configurations and
 it is recommended you read the [documentation](https://spack.readthedocs.io) if
 you require features such as packages installed with different compilers.
 
 ### Building SpECTRE
 
-* Ensure you have all dependencies installed. See
-"Installing Dependencies Using Spack" for one method.
-* Install [Charm++](http://charm.cs.illinois.edu/software)
- for your machine. Further details
- [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
-* Clone [SpECTRE](https://github.com/sxs-collaboration/spectre)
-* Apply the Charm++ patch for your version *after* building Charm++ by running
-`git apply SPECTRE_ROOT/support/Charm/vx.y.z.patch` in the Charm++ directory
-* `mkdir build && cd build`
-* The compiler used for Charm++ and SpECTRE must be the same, otherwise you will
-  receive undefined references errors during linking.
-  You will only need to worry about this if you explicitly specified a
-  compiler when building Charm++. When compiling SpECTRE you
-  can specify the compiler to CMake using, for example
+After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
+Follow these steps:
+
+1.  Clone [SpECTRE](https://github.com/sxs-collaboration/spectre) into
+    `SPECTRE_ROOT`, a directory of your choice.
+2.  Install Charm++:
+  * Clone [Charm++](http://charm.cs.illinois.edu/software) into `CHARM_DIR`,
+    again a directory of your choice.
+  * In `CHARM_DIR`, run
+    `git checkout v6.7.1` to switch to a supported, stable release of Charm++.
+  * Charm++ is compiled by running
+    `./build charm++ ARCH OPTIONS`.
+    To figure out the correct target architecture and options, you can simply
+    run `./build`; the script will then ask you questions to guide you towards
+    the correct settings (see notes below for additional details).
+    Then compile Charm++.
+    The Charm++ build will be located in a new directory,
+    `CHARM_DIR/ARCH_OPTS`, whose name may (or may not) have some of the options
+    appended to the architecture.
+  * The SpECTRE repo contains a patch that must be applied to Charm++ *after*
+    Charm++ has been compiled. While still in `CHARM_DIR`, apply this patch by
+    running
+    `git apply SPECTRE_ROOT/support/Charm/v6.7.patch`.
+3.  Return to `SPECTRE_ROOT`, and create a build dir by running
+    `mkdir build && cd build`
+4.  Build SpECTRE with
+    `cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT`
+    then
+    `make -jN`
+    to compile the code.
+5.  Run the tests with
+    `make %RunTests && ctest`.
+
+**Notes**:
+* For more details on building Charm++, see the directions
+  [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
+  The correct target is `charm++` and, for a personal machine, the
+  correct target architecture is likely to be `multicore-linux64`
+  (or `multicore-darwin-x86_64` on macOS).
+  On an HPC system, the correct Charm++ target architecture depends on the
+  machine's inter-node communication architecture. We will be providing specific
+  instructions for various HPC systems.
+* Both Charm++ and SpECTRE must be compiled using the same compiler,
+  otherwise you will receive undefined reference errors while linking SpECTRE.
+  When compiling Charm++ you can specify the compiler using, for example,
+  ```
+  ./build charm++ ARCH clang
+  ```
+  When compiling SpECTRE you can specify the compiler to CMake using,
+  for example,
   ```
   cmake -D CMAKE_CXX_COMPILER=clang++ \
         -D CMAKE_C_COMPILER=clang \
         -D CMAKE_Fortran_COMPILER=gfortran \
-        -D CHARM_ROOT=/path/to/charm/BUILD_DIR SPECTRE_ROOT
+        -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT
   ```
-* `cmake -D CHARM_ROOT=/path/to/charm/BUILD_DIR SPECTRE_ROOT`
-* `make list` to see all available targets
-* Run tests by running `make %RunTests && ctest`
+* Inside the SpECTRE build directory, use `make list` to see all available
+  targets. This list can be refreshed by running CMake again.
 
 ### Code Coverage Analysis
 
