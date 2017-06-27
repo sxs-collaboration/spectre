@@ -19,17 +19,17 @@
  *
  * \return Variables class sliced to a hypersurface.
  */
-template <std::size_t VolumeDim, typename TagsLs>
-Variables<TagsLs> data_on_slice(const Variables<TagsLs>& vars,
-                                const Index<VolumeDim>& element_extents,
-                                const size_t& sliced_dim,
-                                const size_t& slice_point) {
+template <std::size_t VolumeDim, typename TagsList>
+Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
+                                  const Index<VolumeDim>& element_extents,
+                                  const size_t sliced_dim,
+                                  const size_t slice_point) {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
   const size_t volume_grid_points = vars.number_of_grid_points();
   const size_t number_of_independent_components =
       vars.number_of_independent_components;
-  Variables<TagsLs> interface_vars(interface_grid_points);
+  Variables<TagsList> interface_vars(interface_grid_points);
   const double* vars_data = vars.data();
   double* interface_vars_data = interface_vars.data();
   for (SliceIterator si(element_extents, sliced_dim, slice_point); si; ++si) {
