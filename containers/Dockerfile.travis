@@ -73,6 +73,7 @@ RUN ccache -z
 RUN bash -c ". /etc/profile.d/lmod.sh; \
     export PATH=$PATH:/work/spack/bin; \
     . /work/spack/share/spack/setup-env.sh; \
+    spack load gsl; \
     spack load blaze; \
     spack load brigand; \
     spack load catch; \
