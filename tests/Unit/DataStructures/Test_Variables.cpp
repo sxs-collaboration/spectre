@@ -10,15 +10,15 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace VariablesTestTags_detail {
-struct vector {
+struct vector : db::DataBoxTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
 
-struct scalar {
+struct scalar : db::DataBoxTag {
   using type = Scalar<DataVector>;
 };
 
-struct scalar2 {
+struct scalar2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
 };
 }  // namespace VariablesTestTags_detail

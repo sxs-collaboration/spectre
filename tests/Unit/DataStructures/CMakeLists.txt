@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(DATA_STRUCTURES_TESTS
+    DataStructures/Test_DataBox.cpp
     DataStructures/Test_DataVector.cpp
     DataStructures/Test_Index.cpp
     DataStructures/Test_IndexIterator.cpp

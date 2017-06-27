@@ -6,7 +6,7 @@
 
 #pragma once
 
-// #include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/TMPL.hpp"
@@ -21,16 +21,16 @@ template <typename TagsLs>
 class Variables;
 /// \endcond
 
-// namespace Tags {
-// template <typename TagsLs>
-// struct Variables : db::DataBoxTag {
-//  static_assert(tt::is_a<tmpl::list, TagsLs>::value,
-//                "The TagsLs passed to Tags::Variables is not a typelist");
-//  using tags_list = TagsLs;
-//  using type = ::Variables<TagsLs>;
-//  static constexpr db::DataBoxString_t label = "Variables";
-//};
-//}  // namespace Tags
+namespace Tags {
+template <typename TagsLs>
+struct Variables : db::DataBoxTag {
+  static_assert(tt::is_a<tmpl::list, TagsLs>::value,
+                "The TagsLs passed to Tags::Variables is not a typelist");
+  using tags_list = TagsLs;
+  using type = ::Variables<TagsLs>;
+  static constexpr db::DataBoxString_t label = "Variables";
+};
+}  // namespace Tags
 
 /// \cond
 template <typename TagsLs>
@@ -39,8 +39,8 @@ class Variables;
 
 /*!
  * \ingroup DataStructures
- * \brief A Variables holds a contiguous memory block with Tensors (or other
- * containers) pointing into it
+ * \brief A Variables holds a contiguous memory block with Tensors pointing
+ * into it
  */
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {
@@ -296,7 +296,6 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   add_reference_variable_data(typelist<Tags...>{});
   return *this;
 }
-/// \endcond
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
@@ -309,6 +308,7 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
     add_reference_variable_data(typelist<Tags...>{});
   }
 }
+/// \endcond
 
 template <typename... Tags>
 template <typename VT, bool VF>
@@ -322,6 +322,7 @@ Variables<tmpl::list<Tags...>>::Variables(
   add_reference_variable_data(typelist<Tags...>{});
 }
 
+/// \cond
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
@@ -334,6 +335,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   add_reference_variable_data(typelist<Tags...>{});
   return *this;
 }
+/// \endcond
 
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
