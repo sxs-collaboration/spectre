@@ -5,6 +5,7 @@ set(LIBRARY Domain)
 
 set(LIBRARY_SOURCES
     Direction.cpp
+    SegmentId.cpp
     Side.cpp
     )
 
