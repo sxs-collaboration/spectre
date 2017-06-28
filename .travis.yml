@@ -82,6 +82,9 @@ matrix:
     osx_image: xcode8.3
     env: BUILD_TYPE=Release
     compiler: clang
+  - os: linux
+    env: CHECK_COMMITS=true
+    compiler: clang
 
 
 # Travis allows caching of data between builds to reduce build times or perform
@@ -178,10 +181,17 @@ before_install:
 # macOS:
 # The variable ${TRAVIS_BUILD_DIR} points to the cloned repository, not what
 # we would normally call the build dir, but actually the source dir.
+#
+# What's the deal with all the &&?
+# TravisCI only sees the return code of the last command executed inside the
+# if block so a && between all the commands to execute returns the and of all
+# the results. Thus, if any individual step fails, the build is failed.
 script:
 - ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
 - ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
-- if [ ${TRAVIS_OS_NAME} = linux ]; then
+- if [ ${CHECK_COMMITS} = true ]; then
+    ./tools/CheckCommits.sh;
+  elif [ ${TRAVIS_OS_NAME} = linux ]; then
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
     && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
