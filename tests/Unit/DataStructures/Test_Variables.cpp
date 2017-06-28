@@ -220,7 +220,7 @@ TEST_CASE("Unit.DataStructures.Variables.Serialization",
   CHECK(v == serialize_and_deserialize(v));
 }
 
-TEST_CASE("Unit>DataStructures.Variables.SliceVariables",
+TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
           "[DataStructures][Unit]") {
   Variables<typelist<VariablesTestTags_detail::vector>> vars(24, 0.);
   const size_t x_extents = 2, y_extents = 3, z_extents = 4,
