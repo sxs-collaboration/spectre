@@ -28,7 +28,7 @@ include(SetupCharmProjections)
 # "compile_commands.json" file.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(SetupLibCXX)
+include(SetupLIBCXX)
 include(SetupClangFormat)
 include(SetupClangTidy)
 include(SetupCppCheck)
