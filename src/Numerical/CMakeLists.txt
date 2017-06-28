@@ -5,6 +5,7 @@ set(LIBRARY NumericalAlgorithms)
 
 set(LIBRARY_SOURCES)
 
+add_subdirectory(LinearAlgebra)
 add_subdirectory(RootFinding)
 add_subdirectory(Spectral)
 
