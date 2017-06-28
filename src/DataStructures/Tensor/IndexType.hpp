@@ -8,6 +8,7 @@
 
 #include <ostream>
 
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
