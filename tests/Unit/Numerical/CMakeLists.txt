@@ -3,8 +3,8 @@
 
 set(SPECTRE_UNIT_NUMERICAL_TESTS)
 
-add_subdirectory(Spectral)
 add_subdirectory(RootFinding)
+add_subdirectory(Spectral)
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${SPECTRE_UNIT_NUMERICAL_TESTS}"
     PARENT_SCOPE)
