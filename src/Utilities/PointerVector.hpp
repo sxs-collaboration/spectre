@@ -928,7 +928,7 @@ PointerVector<Type, AF, PF, TF>::multAssign(
     it += SIMDSIZE;
   }
   for (; i < ipos; i += SIMDSIZE, it += SIMDSIZE) {
-    store(i, load(i) * it.load());
+    store(i, load(i) * it.load());  // LCOV_EXCL_LINE
   }
   for (; i < size_; ++i, ++it) {
     v_[i] *= *it;
@@ -1004,7 +1004,7 @@ PointerVector<Type, AF, PF, TF>::divAssign(
     it += SIMDSIZE;
   }
   for (; i < ipos; i += SIMDSIZE, it += SIMDSIZE) {
-    store(i, load(i) / it.load());
+    store(i, load(i) / it.load());  // LCOV_EXCL_LINE
   }
   for (; i < size_; ++i, ++it) {
     v_[i] /= *it;

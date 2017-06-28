@@ -107,10 +107,12 @@ CollocationPointsAndWeights::CollocationPointsAndWeights(
       logical_coord += delta;
       iteration++;
       if (iteration > maxit) {
+        // LCOV_EXCL_START
         ERROR(
             "Legendre-Gauss-Lobatto computing collocation points exceeded "
             "maximum number of iterations ("
             << maxit << ") \n");
+        // LCOV_EXCL_STOP
       }
     } while (std::abs(delta) > tolerance * std::abs(logical_coord));
 
