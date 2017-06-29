@@ -99,13 +99,13 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         string(REGEX MATCH "(CATCH_)?(TEST_CASE_METHOD|SCENARIO|TEST_CASE)"
                TEST_TYPE "${TEST_NAME}")
 
-        string(REPLACE "${TEST_TYPE}(" "" 
+        string(REPLACE "${TEST_TYPE}(" ""
                TEST_FIXTURE "${TEST_TYPE_AND_FIXTURE}")
 
         # Get string parts of test definition
         string(REGEX MATCHALL "\"[^\"]+\"" TEST_STRINGS "${TEST_NAME}")
 
-        # Strip wrapping quotation marks of each element of the list 
+        # Strip wrapping quotation marks of each element of the list
         # TEST_STRINGS
         string(REGEX REPLACE "^\"(.*)\"$" "\\1" TEST_STRINGS "${TEST_STRINGS}")
         string(REPLACE "\";\"" ";" TEST_STRINGS "${TEST_STRINGS}")
