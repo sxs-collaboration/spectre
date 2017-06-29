@@ -115,16 +115,8 @@ before_install:
       brew install jemalloc;
       brew install gsl;
 
-      ccache -z;
-      mkdir $HOME/hdf5;
-      wget http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz;
-      tar -xzf hdf5-${HDF5_VERSION}.tar.gz;
-      cd ./hdf5-${HDF5_VERSION};
-      ./configure --enable-threadsafe --disable-hl --prefix=$HOME/hdf5;
-      make -j2;
-      make install -j2;
-      ccache -s;
-      cd $HOME;
+      brew tap homebrew/science;
+      brew install hdf5;
 
       ccache -z;
       git clone https://github.com/hfp/libxsmm.git;
@@ -239,7 +231,6 @@ script:
              -D BLAZE_ROOT=$HOME/blaze-${BLAZE_VERSION}/
              -D BRIGAND_ROOT=$HOME/brigand
              -D CATCH_ROOT=$HOME/Catch
-             -D HDF5_ROOT=$HOME/hdf5
              -D LIBXSMM_ROOT=$HOME/libxsmm/build
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D CMAKE_EXE_LINKER_FLAGS="${SPECTRE_MIN_MACOS}"
