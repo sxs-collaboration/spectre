@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(DOMAIN_TESTS
+    Domain/Test_Direction.cpp
     Domain/Test_Side.cpp
     )
 
