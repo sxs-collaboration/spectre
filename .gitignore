@@ -1,6 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# Build directories
+# Ignore build dirs named similarly to the example in the installation notes;
+# in general arbitrary names are possible and cannot all be ignored.
+/build*
+
 # Temporary editor files
 *~
 *.swp
