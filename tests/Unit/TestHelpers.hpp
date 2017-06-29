@@ -8,12 +8,37 @@
 
 #include <catch.hpp>
 #include <charm++.h>
+#include <csignal>
 #include <pup.h>
 
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond HIDDEN_SYMBOLS
+[[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
+  Parallel::abort("");
+}
+/// \endcond
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Mark a test as checking a call to ERROR
+ *
+ * \details
+ * In order to properly handle aborting with Catch versions newer than 1.6.1
+ * we must install a signal handler after Catch does, which means inside the
+ * TEST_CASE itself. The ERROR_TEST() macro should be the first line in the
+ * TEST_CASE.
+ *
+ * \example
+ * \snippet TestFramework.cpp error_test
+ */
+#define ERROR_TEST()                                      \
+  do {                                                    \
+    std::signal(SIGABRT, spectre_testing_signal_handler); \
+  } while (false)
 
 /*!
  * \ingroup TestingFramework
@@ -37,11 +62,15 @@
 #ifdef SPECTRE_DEBUG
 #define ASSERTION_TEST() \
   do {                   \
+    ERROR_TEST();        \
   } while (false)
 #else
 #include "Parallel/Abort.hpp"
-#define ASSERTION_TEST() \
-  Parallel::abort("### No ASSERT tests in release mode ###")
+#define ASSERTION_TEST()                                        \
+  do {                                                          \
+    ERROR_TEST();                                               \
+    Parallel::abort("### No ASSERT tests in release mode ###"); \
+  } while (false)
 #endif
 
 /*!

@@ -15,5 +15,6 @@
 
 // [[OutputRegex, Testing error]]
 [[noreturn]] TEST_CASE("Unit.ErrorHandling.Error", "[Unit][ErrorHandling]") {
+  ERROR_TEST();
   ERROR("Testing error");
 }
