@@ -42,7 +42,8 @@ void test_definite_integral_2d(const Index<2>& index_2d) {
   for (size_t a = 0; a < num_pts_in_x; ++a) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
       for (IndexIterator<2> index_it(index_2d); index_it; ++index_it) {
-        integrand.get()[index_it.offset()] = pow(x[index_it()[0]], a) * pow(y[index_it()[1]], b);
+        integrand.get()[index_it.offset()] =
+            pow(x[index_it()[0]], a) * pow(y[index_it()[1]], b);
       }
       if (0 == a % 2 and 0 == b % 2) {
         CHECK(4.0 / ((a + 1.0) * (b + 1.0)) ==
@@ -97,9 +98,12 @@ TEST_CASE("Unit.Numerical.Spectral.DefiniteIntegral", "[Functors][Unit]") {
       test_definite_integral_2d(Index<2>(n0, n1));
     }
   }
-  for (size_t n0 = min_extents; n0 <= std::min(6_st, Basis::lgl::maximum_number_of_pts); ++n0) {
-    for (size_t n1 = min_extents; n1 <= std::min(7_st, Basis::lgl::maximum_number_of_pts); ++n1) {
-      for (size_t n2 = min_extents; n2 <= std::min(8_st, Basis::lgl::maximum_number_of_pts); ++n2) {
+  for (size_t n0 = min_extents;
+       n0 <= std::min(6_st, Basis::lgl::maximum_number_of_pts); ++n0) {
+    for (size_t n1 = min_extents;
+         n1 <= std::min(7_st, Basis::lgl::maximum_number_of_pts); ++n1) {
+      for (size_t n2 = min_extents;
+           n2 <= std::min(8_st, Basis::lgl::maximum_number_of_pts); ++n2) {
         test_definite_integral_3d(Index<3>(n0, n1, n2));
       }
     }

@@ -35,7 +35,8 @@ double find_root_of_function(Function f, const double lower_bound,
   // Lower and upper bound are shifted by absolute tolerance so that the root
   // find does not fail if upper or lower bound are equal to the root within
   // tolerance
-  auto result = boost::math::tools::toms748_solve(f, lower_bound-absolute_tolerance, upper_bound+absolute_tolerance,
-                                                  tol, max_iter);
+  auto result = boost::math::tools::toms748_solve(
+      f, lower_bound - absolute_tolerance, upper_bound + absolute_tolerance,
+      tol, max_iter);
   return result.first + 0.5 * (result.second - result.first);
 }
