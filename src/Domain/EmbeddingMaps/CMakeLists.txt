@@ -1,14 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(EmbeddingMaps)
-
-set(LIBRARY Domain)
+set(LIBRARY EmbeddingMaps)
 
 set(LIBRARY_SOURCES
-    Direction.cpp
-    SegmentId.cpp
-    Side.cpp
+    Identity.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 
-class Data;
+class DataVector;
 template <typename X, typename Symm, typename IndexLs>
 class Tensor;
 
@@ -17,6 +17,8 @@ class Tensor;
 /// Scalar type
 template <typename T>
 using Scalar = Tensor<T, Symmetry<>, index_list<>>;
+
+
 
 /*!
  * \ingroup Tensor
@@ -328,11 +330,12 @@ struct inverse_jacobian_impl {
 };
 }  // namespace detail
 
+}  // namespace tnsr
+
 template <size_t Dim, typename Frame1, typename Frame2>
 using InverseJacobian =
-    typename detail::inverse_jacobian_impl<Dim, Frame1, Frame2>::type;
+    typename tnsr::detail::inverse_jacobian_impl<Dim, Frame1, Frame2>::type;
 
-template <typename DataType, size_t SpatialDim, typename Fr>
-using Point = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
+template <size_t SpatialDim, typename Fr>
+using Point = Tensor<double, tmpl::integral_list<std::int32_t, 1>,
                      index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
-}  // namespace tnsr
