@@ -3,6 +3,7 @@
 
 set(DOMAIN_TESTS
     Domain/Test_Direction.cpp
+    Domain/Test_SegmentId.cpp
     Domain/Test_Side.cpp
     )
 
