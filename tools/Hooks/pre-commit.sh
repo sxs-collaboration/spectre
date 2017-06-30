@@ -22,6 +22,13 @@ do
     fi
 done
 
+# If no files were added or modified we do not run any of the hooks. If we did
+# then rewording commits, and making empty commits would result in the hooks
+# searching the entire repository, which is not what we want in general.
+if [ -z "$commit_files" ]; then
+    exit 0
+fi
+
 ###############################################################################
 # Check the file size
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/CheckFileSize.py
@@ -85,12 +92,6 @@ fi
 ###############################################################################
 # Make sure all files have the license header in them.
 no_license_found=`grep -L "^.*Distributed under the MIT License" $commit_files`
-# If commit_files is empty, then no_license_found searches standard input,
-# which does not contain the license and is a false positive. This occurs when
-# rewording a commit message during interactive rebase.
-if [[ $commit_files = "" ]]; then
-    no_license_found=""
-fi
 if [[ $no_license_found != "" ]]; then
     echo "Did not find the license header in these files:"
     echo "$no_license_found"
