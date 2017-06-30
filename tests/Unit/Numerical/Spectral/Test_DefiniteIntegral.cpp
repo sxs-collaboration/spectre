@@ -87,7 +87,8 @@ void test_definite_integral_3d(const Index<3>& index_3d) {
 }
 }  // namespace
 
-TEST_CASE("Unit.Numerical.Spectral.DefiniteIntegral", "[Functors][Unit]") {
+TEST_CASE("Unit.Numerical.Spectral.DefiniteIntegral",
+          "[Numerical][Spectral][Unit]") {
   const size_t min_extents = 2;
   for (size_t n0 = min_extents; n0 <= Basis::lgl::maximum_number_of_pts; ++n0) {
     test_definite_integral_1d(Index<1>(n0));
