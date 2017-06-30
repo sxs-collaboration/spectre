@@ -9,6 +9,7 @@
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 
@@ -195,6 +196,7 @@ class C : public MultipleBase::Inherit {
 // class's function through the base class.
 // [[OutputRegex, is not registered with]]
 TEST_CASE("Unit.Utilities.FakeVirtual.Unregistered", "[Unit][Utilities]") {
+  ERROR_TEST();
   const std::unique_ptr<MultipleBase> c = std::make_unique<C>();
 
   c->deduced(1);

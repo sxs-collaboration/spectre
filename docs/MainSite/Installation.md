@@ -17,7 +17,7 @@ See LICENSE.txt for details.
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview)
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
-* [Catch](https://github.com/philsquared/Catch) v1.6.1 or older
+* [Catch](https://github.com/philsquared/Catch)
 * [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
@@ -88,7 +88,7 @@ install the SpECTRE dependencies using
 ```
 spack install blaze
 spack install brigand@master
-spack install catch@1.6.1
+spack install catch
 spack install gsl
 spack install jemalloc # or from your package manager
 spack install libxsmm

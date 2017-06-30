@@ -13,6 +13,8 @@
 #include "Parallel/Exit.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
+  std::set_terminate(
+      []() { Parallel::abort("Called terminate. Aborting..."); });
   printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
   int result = Catch::Session().run(msg->argc, msg->argv);

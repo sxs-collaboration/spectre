@@ -8,6 +8,7 @@
 #include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Literals.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 double multiply_by_two(const double value) { return 2.0 * value; }
@@ -276,6 +277,7 @@ TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
 // [[OutputRegex, Could not find the tag named "time__" in the DataBox]]
 TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
           "[Unit][DataStructures]") {
+  ERROR_TEST();
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                              test_databox_tags::Tag2>,
@@ -352,6 +354,7 @@ TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
 TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
           "[Unit][DataStructures]") {
+  ERROR_TEST();
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                              test_databox_tags::Tag2>,

@@ -346,6 +346,7 @@ TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
 
 // [[OutputRegex, Tensor dim\[0\] must be 1,2,3, or 4 for default axis_labels]]
 TEST_CASE("Unit.DataStructures.Tensor.BadDim1", "[DataStructures][Unit]") {
+  ERROR_TEST();
   Tensor<double, Symmetry<1>,
          index_list<SpacetimeIndex<5, UpLo::Lo, Frame::Grid>>>
       tensor_5{3.0};
@@ -355,6 +356,7 @@ TEST_CASE("Unit.DataStructures.Tensor.BadDim1", "[DataStructures][Unit]") {
 
 // [[OutputRegex, Tensor dim\[0\] must be 1,2, or 3 for default axis_labels]]
 TEST_CASE("Unit.DataStructures.Tensor.BadDim2", "[DataStructures][Unit]") {
+  ERROR_TEST();
   Tensor<double, Symmetry<1>,
          index_list<SpatialIndex<6, UpLo::Lo, Frame::Grid>>>
       tensor_6{3.0};
@@ -365,6 +367,7 @@ TEST_CASE("Unit.DataStructures.Tensor.BadDim2", "[DataStructures][Unit]") {
 // [[OutputRegex, Dimension mismatch: Tensor has dim = 4, but you specified 8
 // different labels in abcdefgh]]
 TEST_CASE("Unit.DataStructures.Tensor.StreamBad", "[DataStructures][Unit]") {
+  ERROR_TEST();
   Tensor<double, Symmetry<1, 2, 2>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
