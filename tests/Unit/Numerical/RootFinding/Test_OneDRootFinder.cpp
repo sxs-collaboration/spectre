@@ -5,9 +5,6 @@
 
 #include "Numerical/RootFinding/RootFinder.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wparentheses"
-
 namespace {
 double f_free(double x) { return 2.0 - x * x; }
 struct F {
@@ -55,4 +52,3 @@ TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.Bounds",
   CHECK(std::abs(root - sqrt(2)) / sqrt(2) < rel_tol);
 }
 
-#pragma GCC diagnostic pop
