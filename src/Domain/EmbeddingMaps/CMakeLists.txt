@@ -5,6 +5,8 @@ set(LIBRARY EmbeddingMaps)
 
 set(LIBRARY_SOURCES
     Identity.cpp
+    AffineMap.cpp
+    ProductMaps.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
