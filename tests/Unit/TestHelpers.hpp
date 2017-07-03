@@ -9,6 +9,7 @@
 #include <catch.hpp>
 #include <charm++.h>
 #include <csignal>
+#include <limits>
 #include <pup.h>
 
 #include "ErrorHandling/Error.hpp"
@@ -17,6 +18,24 @@
 #include "Utilities/TypeTraits.hpp"
 
 #define SPECTRE_TEST_CASE(m, n) TEST_CASE(m, n)  // NOLINT
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Set a default tolerance for floating-point number comparison
+ *
+ * \details
+ * Catch's default (relative) tolerance for comparing floating-point numbers is
+ * `std\:\:numeric_limits<float>\:\:epsilon() * 100`, or roughly \f$10^{-5}\f$.
+ * This tolerance is too loose for checking many scientific algorithms that
+ * rely on double precision floating-point accuracy, so we provide a tighter
+ * tighter tolerance through the `approx` static object.
+ *
+ * \example
+ * \snippet TestFramework.cpp approx_test
+ */
+// clang-tidy: static object creation may throw exception
+static Approx approx = Approx::custom().epsilon(    // NOLINT
+    std::numeric_limits<double>::epsilon() * 100);  // NOLINT
 
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
