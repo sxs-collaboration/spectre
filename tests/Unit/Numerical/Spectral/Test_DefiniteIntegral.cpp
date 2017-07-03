@@ -15,7 +15,6 @@
 
 namespace {
 void test_definite_integral_1d(const Index<1>& index_1d) {
-  Approx approx = Approx::custom().epsilon(1e-15);
   const size_t num_pts_in_x = index_1d[0];
   const DataVector& x = Basis::lgl::collocation_points(num_pts_in_x);
   Scalar<DataVector> integrand(num_pts_in_x);
@@ -33,7 +32,6 @@ void test_definite_integral_1d(const Index<1>& index_1d) {
 }
 
 void test_definite_integral_2d(const Index<2>& index_2d) {
-  Approx approx = Approx::custom().epsilon(1e-15);
   Mesh<2> extents(index_2d);
   const size_t num_pts_in_x = index_2d[0];
   const size_t num_pts_in_y = index_2d[1];
@@ -58,7 +56,6 @@ void test_definite_integral_2d(const Index<2>& index_2d) {
 }
 
 void test_definite_integral_3d(const Index<3>& index_3d) {
-  Approx approx = Approx::custom().epsilon(1e-15);
   Mesh<3> extents(index_3d);
   const size_t num_pts_in_x = index_3d[0];
   const size_t num_pts_in_y = index_3d[1];

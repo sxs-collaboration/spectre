@@ -9,7 +9,6 @@
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
   CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
-  Approx approx = Approx::custom().epsilon(1e-15);
 
   const auto xi0 = make_array<2>(0.0);
   const auto x0 = make_array<2>(0.0);
@@ -61,8 +60,6 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
                      const std::array<T, 3>& xi_hat,
                      const std::array<T, 3>& eta_hat,
                      const std::array<T, 3>& zeta_hat) {
-  Approx approx = Approx::custom().epsilon(1e-15);
-
   const std::array<T, 3> zero_logical{{0.0, 0.0, 0.0}};
   const std::array<T, 3> zero_grid{{0.0, 0.0, 0.0}};
   const std::array<T, 3> xi{{1.0, 0.0, 0.0}};

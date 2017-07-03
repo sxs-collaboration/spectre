@@ -146,7 +146,7 @@ template <typename T1, typename T2>
 void check_vectors(const T1& t1, const T2& t2) {
   CHECK(t1.size() == t2.size());
   for (size_t i = 0; i < t1.size(); ++i) {
-    CHECK(t1[i] == Approx(t2[i]).epsilon(1e-12));
+    CHECK(t1[i] == approx(t2[i]));
   }
 }
 }  // namespace

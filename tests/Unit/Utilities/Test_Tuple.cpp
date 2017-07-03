@@ -21,7 +21,6 @@ struct tuple_fold_plus {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.tuple_fold", "[Utilities][Unit]") {
-  Approx approx = Approx::custom().epsilon(1e-14);
   {
     /// [tuple_fold_lambda]
     const auto my_tupull = std::make_tuple(2, 7, -3.8, 20.9);
@@ -203,7 +202,6 @@ struct negate_if_sum_less {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.tuple_transform", "[Utilities][Unit]") {
-  Approx approx = Approx::custom().epsilon(1e-14);
   /// [tuple_transform]
   const auto my_tupull = std::make_tuple(2, 7, -3.8, 20.9);
   std::decay_t<decltype(my_tupull)> out_tupull;

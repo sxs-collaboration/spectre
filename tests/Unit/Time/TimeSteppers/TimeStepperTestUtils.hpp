@@ -73,8 +73,6 @@ void integrate_test(const Stepper& stepper, const double integration_time,
   auto analytic = [](double t) { return sin(t); };
   auto rhs = [](double v) { return sqrt(1. - square(v)); };
 
-  Approx approx = Approx::custom().epsilon(epsilon);
-
   const size_t num_steps = 800;
   const Slab slab = integration_time > 0
       ? Slab::with_duration_from_start(0., integration_time)
@@ -93,7 +91,8 @@ void integrate_test(const Stepper& stepper, const double integration_time,
 
   for (size_t i = 0; i < num_steps; ++i) {
     take_step(time, y, history, stepper, rhs, step_size);
-    CHECK(y == approx(analytic(time.value())));
+    // This check needs a looser tolerance for lower-order time steppers.
+    CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
 }
 
@@ -102,8 +101,6 @@ void integrate_variable_test(const Stepper& stepper,
                              const double epsilon) noexcept {
   auto analytic = [](double t) { return sin(t); };
   auto rhs = [](double v) { return sqrt(1. - square(v)); };
-
-  Approx approx = Approx::custom().epsilon(epsilon);
 
   const size_t num_steps = 800;
   const double average_step = 1. / num_steps;
@@ -122,7 +119,8 @@ void integrate_variable_test(const Stepper& stepper,
         (1. + 0.5 * sin(i)) * average_step);
 
     take_step(time, y, history, stepper, rhs, slab.duration());
-    CHECK(y == approx(analytic(time.value())));
+    // This check needs a looser tolerance for lower-order time steppers.
+    CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
 }
 
