@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/IntelDetails.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -281,13 +282,22 @@ struct Structure {
    * for that particular index.
    * Note that this ordering is implementation defined.
    */
-  SPECTRE_ALWAYS_INLINE static constexpr auto get_canonical_tensor_index(
-      const size_t storage_index) noexcept {
-    return gsl::at(
-        make_array_from_list<tmpl::conditional_t<
-            sizeof...(Indices) == 0, tmpl::list<tmpl::list<tmpl::size_t<0>>>,
-            storage_to_tensor_index_list>>(),
-        storage_index);
+  template <size_t Rank = sizeof...(Indices),
+            std::enable_if_t<Rank != 0>* = nullptr>
+  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, sizeof...(Indices)>
+  get_canonical_tensor_index(const size_t storage_index) noexcept {
+    return gsl::at(make_array_from_list<storage_to_tensor_index_list>(),
+                   storage_index);
+  }
+  template <size_t Rank = sizeof...(Indices),
+            std::enable_if_t<Rank == 0>* = nullptr>
+  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, 0>
+  get_canonical_tensor_index(const size_t storage_index) noexcept {
+    static_cast<void>(storage_index);
+    CASSERT(0 == storage_index,
+            "For a scalar the 0th storage index should be retrieved for "
+            "consistency.");
+    return std::array<size_t, 0>{};
   }
 
   /// Get storage_index
@@ -305,8 +315,7 @@ struct Structure {
   /// \param tensor_index the tensor_index of which to get the storage_index
   template <typename I>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(
-      const std::array<I, sizeof...(Indices) == 0 ? 1 : sizeof...(Indices)>&
-          tensor_index) noexcept {
+      const std::array<I, sizeof...(Indices)>& tensor_index) noexcept {
     return gsl::at(make_array_from_list<collapsed_to_storage_list>(),
                    compute_collapsed_index(tensor_index, Structure::dims()));
   }

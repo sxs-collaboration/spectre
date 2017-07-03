@@ -76,8 +76,7 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// The number of \ref SpacetimeIndex "TensorIndexType"'s
   ///
   /// Note: Scalars need to have 1 so we can still store their data.
-  static constexpr auto num_tensor_indices =
-      sizeof...(Indices) == 0 ? 1 : sizeof...(Indices);
+  static constexpr auto num_tensor_indices = sizeof...(Indices) == 0;
 
   /// The Tensor_detail::Structure for the particular tensor index structure
   ///
@@ -192,12 +191,12 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// \param tensor_index the index at which to get the data
   template <typename T>
   SPECTRE_ALWAYS_INLINE constexpr reference get(
-      const std::array<T, num_tensor_indices>& tensor_index) {
+      const std::array<T, sizeof...(Indices)>& tensor_index) {
     return gsl::at(data_, structure::get_storage_index(tensor_index));
   }
   template <typename T>
   SPECTRE_ALWAYS_INLINE constexpr const_reference get(
-      const std::array<T, num_tensor_indices>& tensor_index) const {
+      const std::array<T, sizeof...(Indices)>& tensor_index) const {
     return gsl::at(data_, structure::get_storage_index(tensor_index));
   }
   // @}
@@ -305,14 +304,12 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   // @{
   /// Given an iterator or storage index, get the canonical tensor index.
   /// For scalars this is defined to be std::array<int, 1>{{0}}
-  SPECTRE_ALWAYS_INLINE constexpr std::array<
-      size_t, sizeof...(Indices) == 0 ? 1 : sizeof...(Indices)>
+  SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, sizeof...(Indices)>
   get_tensor_index(const const_iterator& iter) noexcept {
     return structure::get_canonical_tensor_index(
         static_cast<size_t>(iter - begin()));
   }
-  SPECTRE_ALWAYS_INLINE static constexpr std::array<
-      size_t, sizeof...(Indices) == 0 ? 1 : sizeof...(Indices)>
+  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, sizeof...(Indices)>
   get_tensor_index(const size_t storage_index) noexcept {
     return structure::get_canonical_tensor_index(storage_index);
   }

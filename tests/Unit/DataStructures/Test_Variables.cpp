@@ -103,14 +103,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
       "--Dims:      ()\n"
       "--Locations: ()\n"
       "--Frames:    ()\n"
-      " T(0)=(-3)\n"
+      " T()=(-3)\n"
       "     Multiplicity: 1 Index: 0\n"
       "--Symmetry:  ()\n"
       "--Types:     ()\n"
       "--Dims:      ()\n"
       "--Locations: ()\n"
       "--Frames:    ()\n"
-      " T(0)=(-3)\n"
+      " T()=(-3)\n"
       "     Multiplicity: 1 Index: 0";
   CHECK(get_output(v) == expected_output);
 
