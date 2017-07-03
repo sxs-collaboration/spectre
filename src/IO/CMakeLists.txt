@@ -4,12 +4,14 @@
 set(LIBRARY IO)
 
 set(LIBRARY_SOURCES
+    Connectivity.cpp
     H5/Dat.cpp
     H5/File.cpp
     H5/Header.cpp
     H5/Helpers.cpp
     H5/OpenGroup.cpp
     H5/Version.cpp
+    VolumeDataFile.cpp
 )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

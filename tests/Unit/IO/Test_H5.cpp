@@ -736,3 +736,135 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
              "Failed to close file: '" << file_name2 << "'");
   }
 }
+
+SPECTRE_TEST_CASE("Unit.IO.H5.TopologyStreams", "[Unit][IO][H5]") {
+  CHECK(get_output(vis::detail::Topology::Line) == "Line"s);
+  CHECK(get_output(vis::detail::Topology::Quad) == "Quad"s);
+  CHECK(get_output(vis::detail::Topology::Hexahedron) == "Hexahedron"s);
+}
+
+SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile1D", "[Unit][IO][H5]") {
+  const std::string file_name("Unit.IO.H5.VolumeFile1D.h5");
+  constexpr double time{3.8};
+  const tnsr::I<DataVector, 1, Frame::Grid> grid_coords(
+      DataVector{0.0, 1.0, 2.0});
+  const Index<1> extents{3};
+  const std::string element_id{"[0][0]"};
+  const Scalar<DataVector> scalar(DataVector{0, 8, 4});
+  const tnsr::I<DataVector, 1, Frame::Grid> vector{
+      {{DataVector{3.8, 9.7, 2.8}}}};
+  std::unordered_map<
+      std::string, std::pair<std::vector<std::string>, std::vector<DataVector>>>
+      detyped_tensors;
+  detyped_tensors.emplace("scalar"s, scalar.get_vector_of_data());
+  detyped_tensors.emplace("vector"s, vector.get_vector_of_data());
+  detyped_tensors.emplace(
+      "weird_scalar"s,
+      std::make_pair(std::vector<std::string>{},
+                     std::vector<DataVector>{DataVector{9, 7, 4}}));
+  {
+    vis::VolumeFile my_file(file_name, 2);
+    my_file.write_xdmf_time(time);
+    my_file.write_element_connectivity_and_coordinates(time, grid_coords,
+                                                       extents, element_id);
+    my_file.write_element_data(detyped_tensors, extents, element_id);
+  }
+  // Test reading from the file
+  const hid_t file_id = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+  CHECK_H5(file_id, "Failed to open file: " << file_name);
+  CHECK(std::vector<std::string>{"[0][0]"} ==
+        h5::get_group_names(file_id, "/"));
+  CHECK(h5::contains_attribute(file_id, "/[0][0]", "Extents"));
+  CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
+  h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
+  CHECK(extents == h5::read_extents<1>(group.id(), "Extents"));
+  CHECK((DataVector{0, 1, 2}) == h5::read_data(group.id(), "x-coord"));
+  CHECK((DataVector{0, 8, 4}) == h5::read_data(group.id(), "scalar"));
+  CHECK((DataVector{3.8, 9.7, 2.8}) == h5::read_data(group.id(), "vector_x"));
+  CHECK((DataVector{9, 7, 4}) == h5::read_data(group.id(), "weird_scalar"));
+  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
+}
+
+SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile2D", "[Unit][IO][H5]") {
+  const std::string file_name("Unit.IO.H5.VolumeFile2D.h5");
+  constexpr size_t dim = 2;
+  vis::VolumeFile my_file(file_name, 2);
+  constexpr double time{3.8};
+  const tnsr::I<DataVector, dim, Frame::Grid> grid_coords{
+      {{DataVector{0.0, 1.0, 2.0, 0.0, 1.0, 2.0},
+        DataVector{-1.0, -1.0, -1.0, 0.2, 0.2, 0.2}}}};
+  const Index<dim> extents{3, 2};
+  const std::string element_id{"[0][0]"};
+  my_file.write_xdmf_time(time);
+  my_file.write_element_connectivity_and_coordinates(time, grid_coords, extents,
+                                                     element_id);
+  const Scalar<DataVector> scalar(DataVector{0, 8, 4, 7, 5, 2});
+  const tnsr::I<DataVector, dim, Frame::Grid> vector(
+      DataVector{3.8, 9.7, 2.8, 8.9, 2.4, 8.3});
+  std::unordered_map<
+      std::string, std::pair<std::vector<std::string>, std::vector<DataVector>>>
+      detyped_tensors;
+  detyped_tensors.emplace("scalar"s, scalar.get_vector_of_data());
+  detyped_tensors.emplace("vector"s, vector.get_vector_of_data());
+  my_file.write_element_data(detyped_tensors, extents, element_id);
+  // Test reading from the file
+  const hid_t file_id = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+  CHECK_H5(file_id, "Failed to open file: " << file_name);
+  CHECK(std::vector<std::string>{"[0][0]"} ==
+        h5::get_group_names(file_id, "/"));
+  CHECK(h5::contains_attribute(file_id, "/[0][0]", "Extents"));
+  CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
+  h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
+  CHECK(extents == h5::read_extents<dim>(group.id(), "Extents"));
+  CHECK(grid_coords.get<0>() == h5::read_data(group.id(), "x-coord"));
+  CHECK(grid_coords.get<1>() == h5::read_data(group.id(), "y-coord"));
+  CHECK(scalar.get() == h5::read_data(group.id(), "scalar"));
+  CHECK(vector.get<0>() == h5::read_data(group.id(), "vector_x"));
+  CHECK(vector.get<1>() == h5::read_data(group.id(), "vector_y"));
+  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
+}
+
+SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile3D", "[Unit][IO][H5]") {
+  const std::string file_name("Unit.IO.H5.VolumeFile3D.h5");
+  constexpr size_t dim = 3;
+  vis::VolumeFile my_file(file_name, 2);
+  constexpr double time{3.8};
+  const tnsr::I<DataVector, dim, Frame::Grid> grid_coords{
+      {{DataVector{0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0},
+        DataVector{-1.0, -1.0, -1.0, 0.2, 0.2, 0.2, -1.0, -1.0, -1.0, 0.2, 0.2,
+                   0.2},
+        DataVector{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.5,
+                   0.5}}}};
+  const Index<dim> extents{3, 2, 2};
+  const std::string element_id{"[0][0]"};
+  my_file.write_xdmf_time(time);
+  my_file.write_element_connectivity_and_coordinates(time, grid_coords, extents,
+                                                     element_id);
+  const Scalar<DataVector> scalar(
+      DataVector{0, 8, 4, 7, 5, 2, 8.9, 3.8, 39.0, 9.384, 38.2, 7.8});
+  const tnsr::I<DataVector, dim, Frame::Grid> vector(
+      DataVector{3.8, 9.7, 2.8, 8.9, 2.4, 8.3, 3.8, 9.7, 2.8, 8.9, 2.4, 8.3});
+  std::unordered_map<
+      std::string, std::pair<std::vector<std::string>, std::vector<DataVector>>>
+      detyped_tensors;
+  detyped_tensors.emplace("scalar"s, scalar.get_vector_of_data());
+  detyped_tensors.emplace("vector"s, vector.get_vector_of_data());
+  my_file.write_element_data(detyped_tensors, extents, element_id);
+  // Test reading from the file
+  const hid_t file_id = H5Fopen(file_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+  CHECK_H5(file_id, "Failed to open file: " << file_name);
+  CHECK(std::vector<std::string>{"[0][0]"} ==
+        h5::get_group_names(file_id, "/"));
+  CHECK(h5::contains_attribute(file_id, "/[0][0]", "Extents"));
+  CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
+  h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
+  CHECK(extents == h5::read_extents<dim>(group.id(), "Extents"));
+  CHECK(grid_coords.get<0>() == h5::read_data(group.id(), "x-coord"));
+  CHECK(grid_coords.get<1>() == h5::read_data(group.id(), "y-coord"));
+  CHECK(grid_coords.get<2>() == h5::read_data(group.id(), "z-coord"));
+  CHECK(scalar.get() == h5::read_data(group.id(), "scalar"));
+  CHECK(vector.get<0>() == h5::read_data(group.id(), "vector_x"));
+  CHECK(vector.get<1>() == h5::read_data(group.id(), "vector_y"));
+  CHECK(vector.get<2>() == h5::read_data(group.id(), "vector_z"));
+  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
+}
