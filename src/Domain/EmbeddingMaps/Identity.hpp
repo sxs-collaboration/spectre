@@ -14,6 +14,7 @@
 
 namespace EmbeddingMaps {
 
+/// \ingroup EmbeddingMaps
 /// Identity  map from \f$\xi \rightarrow x\f$.
 template <size_t Dim>
 class Identity : public EmbeddingMap<Dim, Dim> {
@@ -26,41 +27,25 @@ class Identity : public EmbeddingMap<Dim, Dim> {
   Identity& operator=(Identity&&) = default;
 
   Point<Dim, Frame::Grid> operator()(
-      const Point<Dim, Frame::Logical>& xi) const override {
-    Point<Dim, Frame::Grid> x{};
-    std::copy(xi.begin(), xi.end(), x.begin());
-    return x;
-  }
+      const Point<Dim, Frame::Logical>& xi) const override ;
 
   Point<Dim, Frame::Logical> inverse(
-      const Point<Dim, Frame::Grid>& x) const override {
-    Point<Dim, Frame::Logical> xi{};
-    std::copy(x.begin(), x.end(), xi.begin());
-    return xi;
-  }
+      const Point<Dim, Frame::Grid>& x) const override ;
 
   double jacobian(const Point<Dim, Frame::Logical>& /* xi */, const size_t ud,
-                  const size_t ld) const override {
-    ASSERT(ld < Dim, "ld = " << ld);
-    ASSERT(ud < Dim, "ud = " << ud);
-    return (ld == ud ? 1.0 : 0.0);
-  }
+                  const size_t ld) const override ;
 
   double inv_jacobian(const Point<Dim, Frame::Logical>& /* xi */,
-                      const size_t ud, const size_t ld) const override {
-    ASSERT(ld < Dim, "ld = " << ld);
-    ASSERT(ud < Dim, "ud = " << ud);
-    return (ld == ud ? 1.0 : 0.0);
-  }
+                      const size_t ud, const size_t ld) const override ;
 
-  std::unique_ptr<EmbeddingMap<Dim, Dim>> get_clone() const override {
-    return std::make_unique<Identity<Dim>>();
-  }
+  std::unique_ptr<EmbeddingMap<Dim, Dim>> get_clone() const override ;
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EmbeddingMap<Dim, Dim>), Identity);
+
   explicit Identity(CkMigrateMessage* /* m */) {}
-  void pup(PUP::er& p) override { EmbeddingMap<Dim, Dim>::pup(p); }  // NOLINT
+
+  void pup(PUP::er& p) override;
 };
 }  // namespace EmbeddingMaps
 

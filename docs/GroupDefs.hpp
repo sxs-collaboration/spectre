@@ -36,7 +36,6 @@
  *  jacobian of the maps.
  */
 
-
 /*!
  * \defgroup ConstantExpressions Constant Expressions
  * \brief Contains an assortment of constexpr functions

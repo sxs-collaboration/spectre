@@ -1,3 +1,5 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
 
 /// \file
 /// Defines the class templates ProductOf2Maps and ProductOf3Maps.
@@ -13,7 +15,8 @@
 
 namespace EmbeddingMaps {
 
-/// Product of two codimension=0 EmbeddingMaps.
+/// \ingroup EmbeddingMaps
+/// \brief Product of two codimension=0 EmbeddingMaps.
 ///
 /// \tparam Dim1 dimension of the domain and range of the first mapping.
 /// \tparam Dim2 dimension of the domain and range of the second mapping.
@@ -49,20 +52,17 @@ class ProductOf2Maps final : public EmbeddingMap<Dim1 + Dim2, Dim1 + Dim2> {
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EmbeddingMap<Dim1 + Dim2, Dim1 + Dim2>), ProductOf2Maps);
-  explicit ProductOf2Maps(CkMigrateMessage* /* m */)
-      : map1_(nullptr), map2_(nullptr) {}
-  void pup(PUP::er& p) override {  // NOLINT
-    EmbeddingMap<Dim1 + Dim2, Dim1 + Dim2>::pup(p);
-    p | map1_;
-    p | map2_;
-  }
+  explicit ProductOf2Maps(CkMigrateMessage* /* m */);
+
+  void pup(PUP::er& p) override;  // NOLINT
 
  private:
   std::unique_ptr<EmbeddingMap<Dim1, Dim1>> map1_;
   std::unique_ptr<EmbeddingMap<Dim2, Dim2>> map2_;
 };
 
-/// Product of three one-dimensional EmbeddingMaps.
+/// \ingroup EmbeddingMaps
+/// \brief Product of three one-dimensional EmbeddingMaps.
 class ProductOf3Maps final : public EmbeddingMap<3, 3> {
  public:
   ProductOf3Maps(const EmbeddingMap<1, 1>& map_1,
@@ -70,14 +70,15 @@ class ProductOf3Maps final : public EmbeddingMap<3, 3> {
                  const EmbeddingMap<1, 1>& map_3);
   ProductOf3Maps() = default;
   ~ProductOf3Maps() override = default;
-  /// Copy constructor for clone()
   ProductOf3Maps(const ProductOf3Maps& other);
   ProductOf3Maps& operator=(const ProductOf3Maps&) = delete;
   ProductOf3Maps(ProductOf3Maps&&) noexcept =  // NOLINT
       default;
   ProductOf3Maps& operator=(ProductOf3Maps&&) = default;
 
-  std::unique_ptr<EmbeddingMap<3, 3>> get_clone() const override;
+  std::unique_ptr<EmbeddingMap<3, 3>> get_clone() const override{
+    return std::make_unique<ProductOf3Maps>(*this);
+  }
 
   Point<3, Frame::Grid> operator()(
       const Point<3, Frame::Logical>& xi) const override;
@@ -93,13 +94,10 @@ class ProductOf3Maps final : public EmbeddingMap<3, 3> {
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EmbeddingMap<3, 3>), ProductOf3Maps);
-  explicit ProductOf3Maps(CkMigrateMessage* /* m */)
-      : map1_(nullptr), map2_(nullptr), map3_(nullptr) {}
-  void pup(PUP::er& p) override {  // NOLINT
-    p | map1_;
-    p | map2_;
-    p | map3_;
-  }
+
+  explicit ProductOf3Maps(CkMigrateMessage* /* m */);
+
+  void pup(PUP::er& p) override;
 
  private:
   std::unique_ptr<EmbeddingMap<1, 1>> map1_{nullptr};

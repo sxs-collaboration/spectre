@@ -4,9 +4,10 @@
 set(LIBRARY EmbeddingMaps)
 
 set(LIBRARY_SOURCES
-    Identity.cpp
     AffineMap.cpp
+    Identity.cpp
     ProductMaps.cpp
+    Rotation.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
