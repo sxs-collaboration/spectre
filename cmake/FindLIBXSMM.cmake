@@ -11,7 +11,7 @@ find_path(LIBXSMM_INCLUDE_DIRS libxsmm.h
     HINTS ${LIBXSMM_ROOT})
 
 find_library(LIBXSMM_LIBRARIES
-    NAMES libxsmm.a
+    NAMES xsmm
     PATH_SUFFIXES lib64 lib
     HINTS ${LIBXSMM_ROOT})
 
