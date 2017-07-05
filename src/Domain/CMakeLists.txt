@@ -6,6 +6,7 @@ add_subdirectory(EmbeddingMaps)
 set(LIBRARY Domain)
 
 set(LIBRARY_SOURCES
+    BlockNeighbor.cpp
     Direction.cpp
     ElementId.cpp
     Orientation.cpp
