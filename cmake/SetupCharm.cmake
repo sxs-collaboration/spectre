@@ -21,10 +21,11 @@ string(
     REGEX REPLACE "<FLAGS>" ""
     CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
 
+get_filename_component(CHARM_BINDIR ${CHARM_COMPILER} DIRECTORY)
 # In order to avoid problems when compiling in parallel we manually copy the
 # charmrun script over, rather than having charmc do it for us.
 configure_file(
-    "${CHARM_ROOT}/bin/charmrun"
+    "${CHARM_BINDIR}/charmrun"
     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/charmrun" COPYONLY
 )
 
