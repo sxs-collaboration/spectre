@@ -57,17 +57,18 @@ class SegmentId {
 std::ostream& operator<<(std::ostream& os, const SegmentId& id);
 
 /// Equivalence operator for SegmentId.
-bool operator==(const SegmentId& lhs, const SegmentId& rhs);
+bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept;
 
 /// Inequivalence operator for SegmentId.
-bool operator!=(const SegmentId& lhs, const SegmentId& rhs);
+bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept;
 
 //##############################################################################
 // INLINE DEFINITIONS
 //##############################################################################
 
 inline SegmentId SegmentId::id_of_parent() const {
-  ASSERT(0 != refinement_level_, "Called on root refinement level!");
+  ASSERT(0 != refinement_level_,
+         "Cannot call id_of_parent() on root refinement level!");
   // right-shifting index_ by 1 gives us floor(index_/2).
   // The parent has half as many segments as the child.
   return SegmentId(refinement_level_ - 1, index_ >> 1);
@@ -105,11 +106,11 @@ inline double SegmentId::endpoint(Side side) const {
 // hash_value is called by boost::hash and related functions.
 size_t hash_value(const SegmentId& s) noexcept;
 
-inline bool operator==(const SegmentId& lhs, const SegmentId& rhs) {
+inline bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept {
   return (lhs.refinement_level() == rhs.refinement_level() and
           lhs.index() == rhs.index());
 }
 
-inline bool operator!=(const SegmentId& lhs, const SegmentId& rhs) {
+inline bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept {
   return not(lhs == rhs);
 }
