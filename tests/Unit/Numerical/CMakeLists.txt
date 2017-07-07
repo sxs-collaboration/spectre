@@ -3,6 +3,7 @@
 
 set(SPECTRE_UNIT_NUMERICAL_TESTS)
 
+add_subdirectory(LinearAlgebra)
 add_subdirectory(RootFinding)
 add_subdirectory(Spectral)
 
