@@ -14,10 +14,16 @@ if (NOT EXISTS "${CHARM_ROOT}")
   )
 endif ()
 
-if (EXISTS "${CHARM_ROOT}/VERSION")
+find_path(
+    CHARM_INCLUDE_DIRS charm.h
+    PATH_SUFFIXES include
+    HINTS ${CHARM_ROOT}
+)
+
+if (EXISTS "${CHARM_INCLUDE_DIRS}/VERSION")
+  set(CHARM_VERSION_FILE_LOCATION "${CHARM_INCLUDE_DIRS}/VERSION")
+elseif(EXISTS "${CHARM_ROOT}/VERSION")
   set(CHARM_VERSION_FILE_LOCATION "${CHARM_ROOT}/VERSION")
-elseif(EXISTS "${CHARM_ROOT}/../VERSION")
-  set(CHARM_VERSION_FILE_LOCATION "${CHARM_ROOT}/../VERSION")
 else()
   message(FATAL_ERROR "Failed to find Charm++ version file")
 endif()
@@ -37,12 +43,19 @@ list(GET CHARM_VERSIONS_PARSED 2 CHARM_PATCH_VERSION)
 set(CHARM_VERSION
     "${CHARM_MAJOR_VERSION}.${CHARM_MINOR_VERSION}.${CHARM_PATCH_VERSION}")
 
-set(CHARM_INCLUDE_DIRS "${CHARM_ROOT}/include")
+find_library(CHARM_LIBCK
+    NAMES ck
+    PATH_SUFFIXES lib
+    HINTS ${CHARM_ROOT}
+)
+get_filename_component(CHARM_LIBRARIES ${CHARM_LIBCK} DIRECTORY)
 
-set(CHARM_LIBRARIES "${CHARM_ROOT}/lib")
-
-set(CHARM_COMPILER "${CHARM_ROOT}/bin/charmc"
-    CACHE PATH "The full-path to the charm++ compiler")
+find_program(CHARM_COMPILER
+    NAMES charmc
+    PATH_SUFFIXES bin
+    HINTS ${CHARM_ROOT}
+    DOC "The full-path to the charm++ compiler"
+)
 
 # Handle the QUIETLY and REQUIRED arguments and set CHARM_FOUND to TRUE if all
 # listed variables are TRUE
