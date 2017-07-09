@@ -14,10 +14,12 @@ std::ostream& operator<<(std::ostream& os, const Side& side) {
     case Side::Upper:
       os << "Upper";
       break;
-    default:
+    default:  // LCOV_EXCL_LINE
+      // LCOV_EXCL_START
       ERROR(
           "A Side that was neither Upper nor Lower was passed to the stream "
           "operator.");
+      // LCOV_EXCL_STOP
   }
   return os;
 }

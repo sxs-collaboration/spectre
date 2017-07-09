@@ -6,6 +6,7 @@ add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Executables)
 add_subdirectory(Numerical)
+add_subdirectory(Utilities)
 
 # Propagate core labraries up to global scope.
 set(SPECTRE_LIBRARIES

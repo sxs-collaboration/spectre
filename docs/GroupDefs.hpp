@@ -116,7 +116,7 @@
 
 /*!
  * \defgroup FileSystem File System
- * A light-weight file system library.
+ * \brief A light-weight file system library.
  */
 
 /*!
