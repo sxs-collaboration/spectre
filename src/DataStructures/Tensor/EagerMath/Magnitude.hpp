@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "ErrorHandling/Assert.hpp"
 
 /*!
  * \ingroup Tensor
@@ -18,7 +19,6 @@
  * \details
  * Computes the square root of the sum of the squares of the components of
  * the rank-1 tensor.
- *
  */
 template <typename Index>
 DataVector magnitude(
@@ -39,7 +39,6 @@ DataVector magnitude(
  * \details
  * Returns the square root of the input tensor contracted twice with the given
  * metric.
- *
  */
 template <typename Index0, typename Index1>
 DataVector magnitude(
@@ -50,9 +49,7 @@ DataVector magnitude(
                 "The indices of the tensor and metric must be the same, "
                 "except for their valence which must be opposite");
   ASSERT(tensor.get(0).size() == metric.get(0, 0).size(),
-         "The size of the DataVector in 'tensor' is not the same as the "
-         "DataVector "
-         "in 'metric'.");
+         "The DataVector in `tensor` and `metric` do not have the same size");
   DataVector magnitude_squared(tensor.template get<0>().size(), 0.);
   for (size_t a = 0; a < Index0::dim; ++a) {
     for (size_t b = 0; b < Index0::dim; ++b) {
