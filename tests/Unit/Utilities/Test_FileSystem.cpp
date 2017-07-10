@@ -7,6 +7,7 @@
 
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Literals.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 TEST_CASE("Unit.Utilities.FileSystem.get_parent_path", "[Unit][Utilities]") {
   /// [get_parent_path]
@@ -41,12 +42,14 @@ TEST_CASE("Unit.Utilities.FileSystem.get_file_name", "[Unit][Utilities]") {
 // [[OutputRegex, Failed to find a file in the given path: '/']]
 TEST_CASE("Unit.Utilities.FileSystem.get_file_name_error",
           "[Unit][Utilities]") {
+  ERROR_TEST();
   file_system::get_file_name("/");
 }
 
 // [[OutputRegex, Received an empty path]]
 TEST_CASE("Unit.Utilities.FileSystem.get_file_name_empty_path",
           "[Unit][Utilities]") {
+  ERROR_TEST();
   static_cast<void>(file_system::get_file_name(""));
 }
 
@@ -58,6 +61,7 @@ TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path", "[Unit][Utilities]") {
 // components does not exist. Relative path is]]
 TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path_nonexistent",
           "[Unit][Utilities]") {
+  ERROR_TEST();
   static_cast<void>(
       file_system::get_absolute_path("./get_absolute_path_nonexistent/"));
 }
@@ -81,6 +85,7 @@ TEST_CASE("Unit.Utilities.FileSystem.check_if_exists", "[Unit][Utilities]") {
 // [[OutputRegex, Failed to check if path points to a file because the path is
 // invalid.]]
 TEST_CASE("Unit.Utilities.FileSystem.is_file_error", "[Unit][Utilities]") {
+  ERROR_TEST();
   CHECK(file_system::is_file("./is_file_error"));
 }
 
@@ -88,6 +93,7 @@ TEST_CASE("Unit.Utilities.FileSystem.is_file_error", "[Unit][Utilities]") {
 // cannot be accessed. Either it does not exist or you do not have the
 // appropriate permissions.]]
 TEST_CASE("Unit.Utilities.FileSystem.file_size_error", "[Unit][Utilities]") {
+  ERROR_TEST();
   CHECK(file_system::file_size("./file_size_error.txt"));
 }
 
@@ -130,6 +136,7 @@ TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_empty_directory",
 // [[OutputRegex, Cannot create a directory that has no name]]
 TEST_CASE("Unit.Utilities.FileSystem.create_dir_error_cannot_be_empty",
           "[Unit][Utilities]") {
+  ERROR_TEST();
   file_system::create_directory(""s);
 }
 
@@ -140,6 +147,7 @@ TEST_CASE("Unit.Utilities.FileSystem.create_dir_root", "[Unit][Utilities]") {
 // [[OutputRegex, Could not delete file './rm_error_not_empty' because the
 // directory is not empty]]
 TEST_CASE("Unit.Utilities.FileSystem.rm_error_not_empty", "[Unit][Utilities]") {
+  ERROR_TEST();
   file_system::create_directory("./rm_error_not_empty");
   std::fstream file("./rm_error_not_empty/cause_error_in_rm.txt", file.out);
   file.close();
