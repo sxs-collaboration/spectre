@@ -17,15 +17,18 @@ if(NOT CHECK_SOURCE_DIR_WRITABLE_RESULT)
   configure_file(
       ${CMAKE_SOURCE_DIR}/tools/Hooks/pre-commit.sh
       ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit
+      @ONLY
   )
 
   configure_file(
       ${CMAKE_SOURCE_DIR}/tools/Hooks/ClangFormat.py
       ${CMAKE_SOURCE_DIR}/.git/hooks/ClangFormat.py
+      @ONLY
   )
 
   configure_file(
       ${CMAKE_SOURCE_DIR}/tools/Hooks/CheckFileSize.py
       ${CMAKE_SOURCE_DIR}/.git/hooks/CheckFileSize.py
+      @ONLY
   )
 endif()
