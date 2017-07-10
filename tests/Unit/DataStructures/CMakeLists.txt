@@ -11,6 +11,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/Test_StripeIterator.cpp
     DataStructures/Test_Tensor.cpp
     DataStructures/Test_TensorExpressions.cpp
+    DataStructures/Test_TensorMagnitude.cpp
     DataStructures/Test_Variables.cpp
     )
 
