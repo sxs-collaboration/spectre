@@ -8,6 +8,8 @@ set(LIBRARY_SOURCES
     Time.cpp
     )
 
+add_subdirectory(TimeSteppers)
+
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 # ${LIBRARY} is considered a core library on which all executables depend

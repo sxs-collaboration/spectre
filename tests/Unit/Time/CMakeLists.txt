@@ -6,5 +6,7 @@ set(TIME_TESTS
     Time/Test_Time.cpp
     )
 
+add_subdirectory(TimeSteppers)
+
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${TIME_TESTS}" PARENT_SCOPE)
 
