@@ -10,6 +10,7 @@ add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Numerical)
 add_subdirectory(Parallel)
+add_subdirectory(Time)
 add_subdirectory(Utilities)
 
 add_charm_mainmodule(${executable})

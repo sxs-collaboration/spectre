@@ -57,7 +57,7 @@
  * builds. This is done by adding this macro at the beginning for the test.
  *
  * \example
- * snippet Test_Time.cpp example_of_error_test
+ * \snippet Test_Time.cpp example_of_error_test
  */
 #ifdef SPECTRE_DEBUG
 #define ASSERTION_TEST() \
@@ -131,6 +131,46 @@ void test_move_semantics(T& a, const T& comparison) {
   T c(std::move(b));
   CHECK(c == comparison);
 }
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Function to test comparison operators.  Pass values with
+ * less < greater.
+ */
+template <typename T>
+void check_cmp(const T& less, const T& greater) {
+  CHECK(less == less);
+  CHECK_FALSE(less == greater);
+  CHECK(less != greater);
+  CHECK_FALSE(less != less);
+  CHECK(less < greater);
+  CHECK_FALSE(greater < less);
+  CHECK(greater > less);
+  CHECK_FALSE(less > greater);
+  CHECK(less <= greater);
+  CHECK_FALSE(greater <= less);
+  CHECK(greater >= less);
+  CHECK_FALSE(less >= greater);
+  CHECK(less <= less);
+  CHECK_FALSE(less < less);
+  CHECK(less >= less);
+  CHECK_FALSE(less > less);
+}
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Check a op b == c and also the op= version.
+ */
+#define CHECK_OP(a, op, b, c)   \
+  do {                          \
+    const auto& a_ = a;         \
+    const auto& b_ = b;         \
+    const auto& c_ = c;         \
+    CHECK(a_ op b_ == c_);      \
+    auto f = a_;                \
+    CHECK((f op## = b_) == c_); \
+    CHECK(f == c_);             \
+  } while (false)
 
 /*!
  * \ingroup TestingFramework
