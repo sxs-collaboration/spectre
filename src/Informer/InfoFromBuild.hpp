@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <iosfwd>
+#include <string>
 
 /*!
  * \ingroup Utilities
