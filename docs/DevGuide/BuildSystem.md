@@ -34,7 +34,8 @@ a particular set of components, e.g. `ctest -L Data` to run all tests inside
 the `Data` directory. Please see other unit tests and the
 [Catch documentation](https://github.com/philsquared/Catch) for more help on
 writing tests. There will also be a section in the dev guide on how to write
-effective tests.
+effective tests.  Unit tests should take as short a time as possible, with a
+goal of less than two seconds.
  
 You can check the unit test coverage of your code by installing all the optional
 components and then running `make unit-test-coverage` (after re-running CMake).
