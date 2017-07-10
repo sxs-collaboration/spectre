@@ -8,8 +8,7 @@ import re
 # All the timeout times for the different types of tests. The order here
 # matters. Whichever time is specified last is what will be used for the
 # test if it is of multiple types.
-default_tag_timeouts = [("unit", 2)]
-
+default_tag_timeouts = [("unit", 5)]
 
 def parse_source_file(file_name):
     file_string = open(file_name, "r").read()
