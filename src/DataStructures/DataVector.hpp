@@ -366,15 +366,14 @@ DataVector::DataVector(const blaze::Vector<VT, VF>& expression)
 
 template <typename VT, bool VF>
 DataVector& DataVector::operator=(const blaze::Vector<VT, VF>& expression) {
-  if (owning_) {
+  if (owning_ and (~expression).size() != size()) {
     size_ = (~expression).size();
     owned_data_ = InternalStorage_t(size_);
     data_ = decltype(data_){owned_data_.data(), size_};
-    data_ = expression;
-  } else {
+  } else if (not owning_) {
     ASSERT((~expression).size() == size(), "Must copy into same size");
-    data_ = expression;
   }
+  data_ = expression;
   return *this;
 }
 /// \endcond
