@@ -293,6 +293,19 @@ TEST_CASE("Unit.DataStructures.DataVector.Math", "[Unit][DataStructures]") {
   check_vectors(DataVector(num_pts, 2.0), test_assignment);
   test_assignment /= (DataVector(num_pts, 2.0) * DataVector(num_pts, 3.0));
   check_vectors(DataVector(num_pts, 1.0 / 3.0), test_assignment);
+
+  // Test assignment where the RHS is an expression that contains the LHS
+  DataVector x(num_pts, 4.);
+  x += sqrt(x);
+  check_vectors(DataVector(num_pts, 6.0), x);
+  x -= sqrt(x - 2.0);
+  check_vectors(DataVector(num_pts, 4.0), x);
+  x = sqrt(x);
+  check_vectors(DataVector(num_pts, 2.0), x);
+  x *= x;
+  check_vectors(DataVector(num_pts, 4.0), x);
+  x /= x;
+  check_vectors(DataVector(num_pts, 1.0), x);
 }
 
 // [[OutputRegex, Must copy into same size]]
