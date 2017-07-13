@@ -5,8 +5,11 @@
 function(check_and_add_cxx_flag FLAG_TO_CHECK)
   include(CheckCXXCompilerFlag)
   unset(CXX_FLAG_WORKS CACHE)
+  # In order to check for a -Wno-* flag in gcc, you have to check the
+  # -W* version instead.  See http://gcc.gnu.org/wiki/FAQ#wnowarning
+  string(REGEX REPLACE ^-Wno- -W FLAG_TO_CHECK_POSITIVE ${FLAG_TO_CHECK})
   set(CMAKE_REQUIRED_QUIET 1)
-  check_cxx_compiler_flag(${FLAG_TO_CHECK} CXX_FLAG_WORKS)
+  check_cxx_compiler_flag(${FLAG_TO_CHECK_POSITIVE} CXX_FLAG_WORKS)
   unset(CMAKE_REQUIRED_QUIET)
   if (CXX_FLAG_WORKS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG_TO_CHECK}" PARENT_SCOPE)
