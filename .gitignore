@@ -14,6 +14,7 @@
 .DS_Store
 .idea
 .dir-locals.el
+.vscode
 
 # TeX products
 *.aux
