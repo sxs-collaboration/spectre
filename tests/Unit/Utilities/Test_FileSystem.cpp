@@ -99,38 +99,32 @@ TEST_CASE("Unit.Utilities.FileSystem.file_size_error", "[Unit][Utilities]") {
 
 TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_directory",
           "[Unit][Utilities]") {
-  file_system::create_directory(
+  const std::string dir_one(
       "./create_and_rm_directory/nested///nested2/nested3///");
-  file_system::create_directory(
-      "./create_and_rm_directory/nested/nested2/nested4");
+  file_system::create_directory(dir_one);
+  CHECK(file_system::check_if_dir_exists(dir_one));
+  const std::string dir_two("./create_and_rm_directory/nested/nested2/nested4");
+  file_system::create_directory(dir_two);
+  CHECK(file_system::check_if_dir_exists(dir_two));
   std::fstream file(
       "./create_and_rm_directory//nested/nested2/nested4/check_if_exists.txt",
       file.out);
   file.close();
   // Check that creating an existing directory does nothing
-  file_system::create_directory(
-      "./create_and_rm_directory/nested/nested2/nested4");
-  CHECK(file_system::check_if_file_exists(
-      "./create_and_rm_directory/nested/nested2/nested4/check_if_exists.txt"));
+  file_system::create_directory(dir_two);
+  CHECK(file_system::check_if_dir_exists(dir_two));
+  CHECK(file_system::check_if_file_exists(dir_two + "/check_if_exists.txt"s));
   file_system::rm("./create_and_rm_directory"s, true);
-  const auto files = file_system::ls("./");
-  const bool dir_deleted = std::none_of(
-      files.begin(), files.end(), [](const std::string& file_name) {
-        return "create_and_rm_directory"s == file_name;
-      });
-  CHECK(dir_deleted);
+  CHECK_FALSE(file_system::check_if_dir_exists("./create_and_rm_directory"s));
 }
 
 TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_empty_directory",
           "[Unit][Utilities]") {
-  file_system::create_directory("./create_and_rm_empty_directory");
-  file_system::rm("./create_and_rm_empty_directory"s, false);
-  const auto files = file_system::ls("./");
-  const bool dir_deleted = std::none_of(
-      files.begin(), files.end(), [](const std::string& file_name) {
-        return "create_and_rm_directory"s == file_name;
-      });
-  CHECK(dir_deleted);
+  const std::string dir_name("./create_and_rm_empty_directory");
+  file_system::create_directory(dir_name);
+  CHECK(file_system::check_if_dir_exists(dir_name));
+  file_system::rm(dir_name, false);
+  CHECK_FALSE(file_system::check_if_dir_exists(dir_name));
 }
 
 // [[OutputRegex, Cannot create a directory that has no name]]
@@ -142,13 +136,16 @@ TEST_CASE("Unit.Utilities.FileSystem.create_dir_error_cannot_be_empty",
 
 TEST_CASE("Unit.Utilities.FileSystem.create_dir_root", "[Unit][Utilities]") {
   file_system::create_directory("/"s);
+  CHECK(file_system::check_if_dir_exists("/"s));
 }
 
 // [[OutputRegex, Could not delete file './rm_error_not_empty' because the
 // directory is not empty]]
 TEST_CASE("Unit.Utilities.FileSystem.rm_error_not_empty", "[Unit][Utilities]") {
   ERROR_TEST();
-  file_system::create_directory("./rm_error_not_empty");
+  const std::string dir_name("./rm_error_not_empty");
+  file_system::create_directory(dir_name);
+  CHECK(file_system::check_if_dir_exists(dir_name));
   std::fstream file("./rm_error_not_empty/cause_error_in_rm.txt", file.out);
   file.close();
   file_system::rm("./rm_error_not_empty"s, false);
