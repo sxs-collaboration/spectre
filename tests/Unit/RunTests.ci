@@ -7,4 +7,20 @@ mainmodule RunTests {
   mainchare RunTests {
     entry RunTests(CkArgMsg * msg);
   };
+
+  array [1D] TestArrayChare {
+    entry TestArrayChare();
+  };
+
+  chare TestChare {
+    entry TestChare();
+  };
+
+  group TestGroupChare {
+    entry TestGroupChare();
+  };
+
+  nodegroup TestNodeGroupChare {
+    entry TestNodeGroupChare();
+  };
 };

@@ -24,10 +24,8 @@ class BClassInTestTypeTraits {
   double operator()(const int /* unused */, const double /* unused */) {
     return 0.;
   }
-  void pup(PUP::er& /*unused*/) {}  // NOLINT
   std::unique_ptr<double> clone() const { return std::make_unique<double>(); }
 };
-inline void operator|(PUP::er& /*p*/, BClassInTestTypeTraits& /*B*/);  // NOLINT
 
 class CClassInTestTypeTraits {};
 
@@ -428,28 +426,6 @@ static_assert(not tt::is_string_like<int>::value,
 static_assert(not tt::is_string_like<short>::value,
               "Failed testing type trait is_string_like");
 /// [is_string_like_example]
-
-/// [has_pup_member_example]
-static_assert(tt::has_pup_member<BClassInTestTypeTraits>::value,
-              "Failed testing type trait has_pup_member");
-static_assert(tt::has_pup_member_t<BClassInTestTypeTraits>::value,
-              "Failed testing type trait has_pup_member");
-static_assert(tt::has_pup_member_v<BClassInTestTypeTraits>,
-              "Failed testing type trait has_pup_member");
-static_assert(not tt::has_pup_member<A>::value,
-              "Failed testing type trait has_pup_member");
-/// [has_pup_member_example]
-
-/// [is_pupable_example]
-static_assert(tt::is_pupable<BClassInTestTypeTraits>::value,
-              "Failed testing type trait is_pupable");
-static_assert(tt::is_pupable_t<BClassInTestTypeTraits>::value,
-              "Failed testing type trait is_pupable");
-static_assert(tt::is_pupable_v<BClassInTestTypeTraits>,
-              "Failed testing type trait is_pupable");
-static_assert(not tt::is_pupable<A>::value,
-              "Failed testing type trait is_pupable");
-/// [is_pupable_example]
 
 /// [has_get_clone_example]
 static_assert(tt::has_get_clone<std::unique_ptr<A>>::value,
