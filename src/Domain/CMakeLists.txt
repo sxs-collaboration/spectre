@@ -8,6 +8,7 @@ set(LIBRARY Domain)
 set(LIBRARY_SOURCES
     Direction.cpp
     ElementId.cpp
+    Orientation.cpp
     SegmentId.cpp
     Side.cpp
     )
