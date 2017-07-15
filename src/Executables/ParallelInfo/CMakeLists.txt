@@ -3,7 +3,19 @@
 
 set(EXECUTABLE ParallelInfo)
 
+set(EXECUTABLE_SOURCES
+    ParallelInfo.cpp
+    ${EXECUTABLE}.decl.h
+)
+
+add_charm_mainmodule(${EXECUTABLE})
+
 add_executable(
     ${EXECUTABLE}
-    ${EXECUTABLE}.cpp
+    ${EXECUTABLE_SOURCES}
+)
+
+target_link_libraries(
+    ${EXECUTABLE}
+    ErrorHandling
 )

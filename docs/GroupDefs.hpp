@@ -128,6 +128,21 @@
  */
 
 /*!
+ * \defgroup Executables Executables
+ * \brief A list of executables and how to use them
+ *
+ * <table class="doxtable">
+ * <tr>
+ * <th>Executable Name </th><th>Description </th>
+ * </tr>
+ * <tr>
+ * <td> \ref ParallelInfoExecutablePage "ParallelInfo" </td>
+ * <td> Executable for checking number of nodes, cores, etc.</td>
+ * </tr>
+ * </table>
+ */
+
+/*!
  * \defgroup FileSystem File System
  * \brief A light-weight file system library.
  */
