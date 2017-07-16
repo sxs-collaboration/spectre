@@ -28,7 +28,7 @@ TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
 
   test_copy_semantics(matrix);
   auto matrix_copy = matrix;
-  test_move_semantics(matrix, matrix_copy);
+  test_move_semantics(std::move(matrix), matrix_copy);
 }
 
 TEST_CASE("Unit.Serialization.Matrix",
