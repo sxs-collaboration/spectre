@@ -114,11 +114,11 @@ void test_copy_semantics(const T& a) {
 /// Test for move semantics assuming operator== is implement correctly
 template <typename T,
           typename std::enable_if<tt::has_equivalence<T>::value, int>::type = 0>
-void test_move_semantics(T& a, const T& comparison) {
-  static_assert(std::is_move_assignable<T>::value,
-                "Class is not move assignable.");
-  static_assert(std::is_move_constructible<T>::value,
-                "Class is not move constructible.");
+void test_move_semantics(T&& a, const T& comparison) {
+  static_assert(std::is_nothrow_move_assignable<T>::value,
+                "Class is not nothrow move assignable.");
+  static_assert(std::is_nothrow_move_constructible<T>::value,
+                "Class is not nothrow move constructible.");
   static_assert(std::is_default_constructible<T>::value,
                 "Cannot use test_move_semantics if a class is not default "
                 "constructible.");

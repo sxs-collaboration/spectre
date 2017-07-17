@@ -39,7 +39,7 @@ void test_1d() {
   // Test semantics:
   const auto custom_copy = custom1;
   test_copy_semantics(custom2);
-  test_move_semantics(custom1, custom_copy);
+  test_move_semantics(std::move(custom1), custom_copy);
 
   // Test serialization:
   serialize_and_deserialize(custom2);
@@ -143,7 +143,7 @@ void test_2d() {
   // Test semantics:
   const auto rotated_copy = rotated2d_neg_eta_pos_xi;
   test_copy_semantics(rotated2d_pos_eta_neg_xi);
-  test_move_semantics(rotated2d_neg_eta_pos_xi, rotated_copy);
+  test_move_semantics(std::move(rotated2d_neg_eta_pos_xi), rotated_copy);
 
   // Test serialization:
   serialize_and_deserialize(rotated_copy);
@@ -199,7 +199,7 @@ void test_3d() {
   // Test semantics:
   const auto custom_copy = custom_orientation;
   test_copy_semantics(aligned_orientation);
-  test_move_semantics(custom_orientation, custom_copy);
+  test_move_semantics(std::move(custom_orientation), custom_copy);
 
   // Test serialzation:
   serialize_and_deserialize(custom2);

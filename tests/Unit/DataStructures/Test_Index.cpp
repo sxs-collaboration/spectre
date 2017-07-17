@@ -49,5 +49,5 @@ TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
 
   test_copy_semantics(index_3d);
   auto index_3d_copy = index_3d;
-  test_move_semantics(index_3d, index_3d_copy);
+  test_move_semantics(std::move(index_3d), index_3d_copy);
 }

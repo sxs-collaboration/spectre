@@ -30,7 +30,7 @@ TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   test_copy_semantics(t);
   auto t_copy = t;
   CHECK(t_copy.is_owning());
-  test_move_semantics(t, t_copy);
+  test_move_semantics(std::move(t), t_copy);
   DataVector t_move_assignment = std::move(t_copy);
   CHECK(t_move_assignment.is_owning());
   DataVector t_move_constructor = std::move(t_move_assignment);
@@ -71,7 +71,7 @@ TEST_CASE("Unit.DataStructures.DataVector_Ref", "[DataStructures][Unit]") {
   test_copy_semantics(t);
   DataVector t_copy;
   t_copy.set_data_ref(t);
-  test_move_semantics(t, t_copy);
+  test_move_semantics(std::move(t), t_copy);
   DataVector t_move_assignment = std::move(t_copy);
   CHECK(not t_move_assignment.is_owning());
   DataVector t_move_constructor = std::move(t_move_assignment);
