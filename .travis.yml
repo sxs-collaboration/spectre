@@ -83,7 +83,12 @@ matrix:
     env: BUILD_TYPE=Release
     compiler: clang
   - os: linux
+    dist: trusty
     env: CHECK_COMMITS=true
+    compiler: clang
+  - os: linux
+    dist: trusty
+    env: CHECK_FILES=true
     compiler: clang
 
 
@@ -183,7 +188,8 @@ script:
 - ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
 - if [ ${CHECK_COMMITS} = true ]; then
     ./tools/CheckCommits.sh
-    && ./tools/CheckFiles.sh;
+  elif [ ${CHECK_FILES} = true ]; then
+    ./tools/CheckFiles.sh;
   elif [ ${TRAVIS_OS_NAME} = linux ]; then
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
