@@ -20,7 +20,7 @@ ARG PARALLEL_MAKE_ARG=-j2
 RUN apt-get update -y
 RUN apt-get install -y gcc g++ gfortran git cmake
 RUN apt-get install -y libopenblas-dev liblapack-dev libhdf5-dev libgsl0-dev
-RUN apt-get install -y clang clang-format iwyu lcov
+RUN apt-get install -y clang clang-format clang-tidy iwyu lcov cppcheck
 RUN apt-get install -y libboost-all-dev libyaml-cpp-dev
 
 # Update is needed to get libc++ correctly
