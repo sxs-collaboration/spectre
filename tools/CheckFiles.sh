@@ -17,10 +17,23 @@ found_long_lines=`
 find ./ -type f -name '*.[ch]pp' \
     | xargs grep --with-filename -n '.\{81,\}'`
 if [[ $found_long_lines != "" ]]; then
-    echo "This script can be run locally from the root source dir using:"
-    echo "./.travis/CheckFiles.sh"
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found lines over 80 characters:"
     echo "$found_long_lines"
+    exit 1
+fi
+
+###############################################################################
+# Check for iostream header
+found_iostream=`
+find ./ -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n '#include <iostream>'`
+if [[ $found_iostream != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    echo "Found iostream header in files:"
+    echo "$found_iostream"
     exit 1
 fi
 
@@ -33,8 +46,8 @@ find ./ -type f               \
      ! -path "./.git/*"       \
     | xargs grep -E '^.*'$'\t'`
 if [[ $found_tabs_files != "" ]]; then
-    echo "This script can be run locally from the root source dir using:"
-    echo "./.travis/CheckFiles.sh"
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found tabs in the following  files:"
     echo "$found_tabs_files" | GREP_COLOR='1;37;41' grep -F $'\t' $color_option
     exit 1
@@ -50,8 +63,8 @@ find ./ -type f             \
     | xargs grep -E '^.* +$'`
 echo
 if [[ $found_spaces_files != "" ]]; then
-    echo "This script can be run locally from the root source dir using:"
-    echo "./.travis/CheckFiles.sh"
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found white space at end of line in the following files:"
     echo "$found_spaces_files" | \
         GREP_COLOR='1;37;41' grep -E ' +$' $color_option
@@ -65,8 +78,8 @@ find ./ -type f                 \
      ! -path "*.git*"           \
     | xargs grep -E '^\+.*'$'\r'`
 if [[ $found_carriage_return_files != "" ]]; then
-    echo "This script can be run locally from the root source dir using:"
-    echo "./.travis/CheckFiles.sh"
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found carriage returns in the following files:"
     echo "$found_carriage_return_files" | \
         GREP_COLOR='1;37;41' grep -E '\r+$' $color_option
@@ -96,8 +109,8 @@ find ./ -type f                                                              \
      ! -name "*.clang-format"                                                \
     | xargs grep -L "^.*Distributed under the MIT License"`
 if [[ $files_without_license != "" ]]; then
-    echo "This script can be run locally from the root source dir using:"
-    echo "./.travis/CheckFiles.sh"
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Did not find a license in these files:"
     echo "$files_without_license"
     exit 1
