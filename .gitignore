@@ -15,6 +15,7 @@
 .idea
 .dir-locals.el
 .vscode
+compile_commands.json
 
 # TeX products
 *.aux
