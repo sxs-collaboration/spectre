@@ -71,6 +71,11 @@ compiler:
 
 # macOS is easiest to add specific targets for. We target 10.11 Debug and 10.12
 # Release builds.
+#
+# We also have separate targets for running shell scripts that enforce what
+# would normally be done as pre-push hooks, CHECK_COMMITS and CHECK_FILES
+#
+# We run two static analyzers, cppcheck and clang-tidy.
 matrix:
   fast_finish: true
   include:
@@ -89,6 +94,14 @@ matrix:
   - os: linux
     dist: trusty
     env: CHECK_FILES=true
+    compiler: clang
+  - os: linux
+    dist: trusty
+    env: RUN_CLANG_TIDY=true
+    compiler: clang
+  - os: linux
+    dist: trusty
+    env: RUN_CPPCHECK=true
     compiler: clang
 
 
@@ -186,9 +199,13 @@ before_install:
 script:
 - ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
 - ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
-- if [ ${CHECK_COMMITS} = true ]; then
-    ./tools/CheckCommits.sh
-  elif [ ${CHECK_FILES} = true ]; then
+- export UPSTREAM_REPO="https://github.com/sxs-collaboration/spectre.git"
+- export UPSTREAM_BRANCH="develop"
+- export GH_PAGES_REPO="git@github.com:sxs-collaboration/spectre.git"
+- export GH_PAGES_SOURCE_BRANCH="develop"
+- if [ "${CHECK_COMMITS}" == "true" ]; then
+    ./tools/CheckCommits.sh;
+  elif [ "${CHECK_FILES}" ==  "true" ]; then
     ./tools/CheckFiles.sh;
   elif [ ${TRAVIS_OS_NAME} = linux ]; then
     cp -vr containers ${HOME}/docker
@@ -216,9 +233,13 @@ script:
         --build-arg ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
         --build-arg SONAR_TOKEN=${SONAR_TOKEN}
         --build-arg SONARQUBE=${SONARQUBE}
-        --build-arg GH_PAGES_REPO="git@github.com:sxs-collaboration/spectre.git"
-        --build-arg GH_PAGES_SOURCE_BRANCH="develop"
+        --build-arg GH_PAGES_REPO=${GH_PAGES_REPO}
+        --build-arg GH_PAGES_SOURCE_BRANCH=${GH_PAGES_SOURCE_BRANCH}
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
+        --build-arg RUN_CLANG_TIDY=${RUN_CLANG_TIDY}
+        --build-arg RUN_CPPCHECK=${RUN_CPPCHECK}
+        --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
+        --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
         --build-arg CHARM_PATCH=${CHARM_PATCH}
         -t ${TRAVIS_REPO_SLUG}
         -f ${HOME}/docker/Dockerfile.travis

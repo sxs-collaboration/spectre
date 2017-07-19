@@ -36,8 +36,8 @@ if (PYTHONINTERP_FOUND)
 else()
   message(STATUS "Python: Not found")
 endif()
-if(CMAKE_CXX_CLANG_TIDY)
-  message(STATUS "Found clang-tidy: ${CMAKE_CXX_CLANG_TIDY}")
+if(CLANG_TIDY_BIN)
+  message(STATUS "Found clang-tidy: ${CLANG_TIDY_BIN}")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   message(
       STATUS

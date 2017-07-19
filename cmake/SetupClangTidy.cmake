@@ -10,7 +10,9 @@ if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       CLANG_TIDY_BIN
       NAMES "clang-tidy-${LLVM_VERSION}" "clang-tidy"
       HINTS ${COMPILER_PATH}
-  )
+      )
+elseif(CMAKE_CXX_CLANG_TIDY)
+  set(CLANG_TIDY_BIN "${CMAKE_CXX_CLANG_TIDY}")
 endif()
 
 # Remove the checks because:
@@ -23,6 +25,7 @@ if (CLANG_TIDY_BIN)
       ${CLANG_TIDY_BIN}
       -header-filter=${CMAKE_SOURCE_DIR}
       -checks=*,-llvm-header-guard,-google-runtime-int
+      -p ${CMAKE_BINARY_DIR}
       \${FILE}
   )
   set_target_properties(
