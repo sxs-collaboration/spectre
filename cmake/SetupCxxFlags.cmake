@@ -3,7 +3,7 @@
 
 set(
     CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG -D_GLIBCXX_DEBUG"
+    "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG"
 )
 
 # Always build with -g so we can view backtraces, etc. when production code
