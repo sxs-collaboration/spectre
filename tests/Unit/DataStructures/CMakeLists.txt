@@ -4,6 +4,7 @@
 set(DATA_STRUCTURES_TESTS
     DataStructures/Test_DataBox.cpp
     DataStructures/Test_DataVector.cpp
+    DataStructures/Test_DivideBy.cpp
     DataStructures/Test_Index.cpp
     DataStructures/Test_IndexIterator.cpp
     DataStructures/Test_Matrix.cpp
@@ -11,6 +12,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/Test_StripeIterator.cpp
     DataStructures/Test_Tensor.cpp
     DataStructures/Test_TensorExpressions.cpp
+    DataStructures/Test_TensorMagnitude.cpp
     DataStructures/Test_Variables.cpp
     )
 
