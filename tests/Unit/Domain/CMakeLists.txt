@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(DOMAIN_TESTS
+    Domain/Test_BlockNeighbor.cpp
     Domain/Test_Direction.cpp
     Domain/Test_EmbeddingMaps.cpp
     Domain/Test_ElementId.cpp
