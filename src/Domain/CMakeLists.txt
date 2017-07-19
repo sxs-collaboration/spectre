@@ -7,6 +7,7 @@ set(LIBRARY Domain)
 
 set(LIBRARY_SOURCES
     BlockNeighbor.cpp
+    DomainHelpers.cpp
     Direction.cpp
     ElementId.cpp
     Neighbors.cpp

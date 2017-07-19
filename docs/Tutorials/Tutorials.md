@@ -5,3 +5,4 @@ See LICENSE.txt for details.
 # Tutorials {#tutorials}
 
 - \ref visualization - How to visualize volume data
+- \ref tuts_orientations - How to determine orientations
