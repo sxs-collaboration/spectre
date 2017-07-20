@@ -12,6 +12,8 @@ add_subdirectory(Numerical)
 add_subdirectory(Parallel)
 add_subdirectory(Utilities)
 
+set(SPECTRE_TESTS "${SPECTRE_TESTS};Test_TestHelpers.cpp")
+
 add_charm_mainmodule(${executable})
 
 add_executable(
