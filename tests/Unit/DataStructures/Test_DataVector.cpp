@@ -168,6 +168,10 @@ TEST_CASE("Unit.DataStructures.DataVector.Math", "[Unit][DataStructures]") {
   check_vectors(nine - (one * nine), DataVector(num_pts, 0.0));
   check_vectors((one * nine) - nine, DataVector(num_pts, 0.0));
 
+  check_vectors(DataVector(num_pts, -1.0 / 9.0), -one / nine);
+  check_vectors(DataVector(num_pts, -8.0 / 9.0), -(nine - one) / nine);
+  check_vectors(DataVector(num_pts, 18.0), (one / 0.5) * nine);
+
   CHECK(-14 == min(val));
   CHECK(12 == max(val));
   check_vectors(DataVector{1, 2, 3, 4, 8, 12, 14}, abs(val));
