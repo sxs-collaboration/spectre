@@ -8,6 +8,7 @@ set(UTILITIES_TESTS
     Utilities/Test_Deferred.cpp
     Utilities/Test_FakeVirtual.cpp
     Utilities/Test_FileSystem.cpp
+    Utilities/Test_MakeArithmeticValue.cpp
     Utilities/Test_MakeArray.cpp
     Utilities/Test_PrettyType.cpp
     Utilities/Test_StdHelpers.cpp
