@@ -1,0 +1,16 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+mainmodule ParallelInfo {
+  mainchare ParallelInfo {
+    entry ParallelInfo(CkArgMsg * msg);
+    entry void start_node_group_check();
+    entry void end_report();
+  };
+  group PeGroupReporter {
+    entry PeGroupReporter(CkCallback&);
+  };
+  nodegroup NodeGroupReporter {
+    entry NodeGroupReporter(CkCallback&);
+  };
+};
