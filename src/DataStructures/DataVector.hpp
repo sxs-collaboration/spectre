@@ -45,6 +45,10 @@ class DataVector {
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
 
+  // The type alias ElementType is needed because blaze::IsInvertible<T> is not
+  // SFINAE friendly to an ElementType type alias
+  using ElementType = double;
+
  private:
   /// The type of the "pointer" used internally
   using InternalDataVector_t = PointerVector<double>;
