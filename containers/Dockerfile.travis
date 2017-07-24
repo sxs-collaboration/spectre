@@ -41,6 +41,10 @@ ARG SONARQUBE
 ARG GH_PAGES_REPO
 ARG GH_PAGES_SOURCE_BRANCH
 ARG COVERALLS_TOKEN
+ARG RUN_CLANG_TIDY
+ARG RUN_CPPCHECK
+ARG UPSTREAM_REPO
+ARG UPSTREAM_BRANCH
 ARG CHARM_PATCH
 
 # Copy the spectre repo from the TravisCI disk into the Docker image /work
@@ -87,28 +91,48 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
           -D COVERAGE=${COVERAGE} \
           ../spectre/"
 
+RUN if [ ${RUN_CPPCHECK} ]; then \
+      make cppcheck; \
+    fi
+
+RUN if [ ${RUN_CLANG_TIDY} ]; then \
+      /work/spectre/.travis/RunClangTidy.sh; \
+    fi
+
 # TravisCI currently has 2 cores for a job, so we build on 2.
 RUN if [ ${SONARQUBE} ] \
+    && [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
     && [ ${TRAVIS_EVENT_TYPE} = cron ] \
     && [ ${CC} = gcc ]; then \
       /work/sonarqube/build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
         --out-dir sonar-output make -j2; \
-    else \
+    elif [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ]; then \
       make -j2; \
     fi
 RUN ccache -s
 
-RUN ctest --output-on-failure
+RUN if [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+      ctest --output-on-failure; \
+    fi
 
 # Check documentation output for warnings write to stdout and to file so we
 # can search the file for warnings
-RUN if [ "${CC}" = "gcc" ] && [ $BUILD_TYPE = Debug ]; then \
+RUN if [ "${CC}" = "gcc" ] \
+    && [ $BUILD_TYPE = Debug ] \
+    && [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ]; then \
       make doc | tee doxygen.log; \
       ! grep 'warning' ./doxygen.log; \
     fi
 
-RUN if [ "${CC}" = "gcc" ] && [ ${COVERAGE} = ON ]; then \
+RUN if [ "${CC}" = "gcc" ] \
+    && [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ] \
+    && [ ${COVERAGE} = ON ]; then \
       make unit-test-coverage; \
       if [ ${TRAVIS_SECURE_ENV_VARS} = true ]; then \
         cd /work/spectre; \
@@ -124,6 +148,8 @@ RUN if [ "${CC}" = "gcc" ] && [ ${COVERAGE} = ON ]; then \
 # for one job but let the others run tests, i.e.
 # we add documentation only for one specific build matrix entry.
 RUN if [ ${CC} = gcc ] \
+    && [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ ${TRAVIS_EVENT_TYPE} = cron ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
     && [ ${COVERAGE} ] \
@@ -173,4 +199,9 @@ RUN if [ ${CC} = gcc ] \
       cd /work; \
       git clone "$GH_PAGES_REPO" gh-pages; \
     fi
-RUN /work/spectre/.travis/TravisPushDocumentation.sh
+
+# push documentation to GitHub pages
+RUN if  [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+      /work/spectre/.travis/TravisPushDocumentation.sh; \
+    fi

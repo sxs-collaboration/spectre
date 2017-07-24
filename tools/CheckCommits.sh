@@ -7,10 +7,47 @@
 # have spaces in them
 IFS=$'\n'
 
-# Get the last 300 commits and check those for bad messages. TravisCI doesn't
-# allow us to get develop (at least not easily) so we can't just find and check
-# the added commits.
-COMMIT_LINES=`git log -n 300 --oneline`
+# We get the list of commit messages to check. We only check commits that are
+# not on the develop branch. For non-Travis runs, from a user fork we assume
+# that the branch 'develop' exists and only check the commits since the HEAD
+# of the develop branch
+# On TravisCI we clone the upstream repository and use the UPSTREAM_BRANCH
+# (typically 'develop') to check for each upstream commit if it is on the
+# pull request branch, once we find a match we save that hash and
+# exit. This allows us to check only files currently being committed.
+# Note that the search is in reverse chronological order.
+COMMIT_LINES=''
+if [ -z $TRAVIS ];
+then
+    COMMIT_LINES=`git log develop..HEAD --oneline`
+else
+    WORK_DIR=`pwd`
+    git clone ${UPSTREAM_REPO} ${HOME}/spectre_upstream
+    cd ${HOME}/spectre_upstream
+    git checkout ${UPSTREAM_BRANCH}
+    COMMITS_ON_UPSTREAM=`git rev-list HEAD`
+    cd $WORK_DIR
+    # For each upstream commit we check if the commit is on this branch, once we
+    # find a match we save that hash and exit. This allows us to check only files
+    # currently being committed.
+    HEAD_COMMIT_HASH=''
+
+    for hash in ${COMMITS_ON_UPSTREAM}
+    do
+        if git cat-file -e $hash^{commit} 2> /dev/null
+        then
+            HEAD_COMMIT_HASH=$hash
+            break
+        fi
+    done
+
+    if [ -z $HEAD_COMMIT_HASH ];
+    then
+        echo "The branch is not branched from ${UPSTREAM_REPO}/${UPSTREAM_BRANCH}"
+        exit 1
+    fi
+    COMMIT_LINES=`git log ${HEAD_COMMIT_HASH}..HEAD --oneline`
+fi
 
 # For all commit messages, check if they start with one of the key words
 for commit_msg in $COMMIT_LINES
