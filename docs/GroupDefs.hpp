@@ -306,7 +306,33 @@
  */
 
 /*!
- * \defgroup TimeSteppers Time Steppers
+ * \defgroup TimeGroup Time
+ * \brief Code related to the representation of time during simulations.
+ *
+ * The time covered by a simulation is divided up into a sequence of
+ * adjacent, non-overlapping (except at endpoints) intervals referred
+ * to as "slabs".  The boundaries between slabs can be placed at
+ * arbitrary times.  Slabs, as represented in the code as the Slab
+ * class, provide comparison operators comparing slabs agreeing with
+ * the definition as a sequence of intervals.  Slabs that do not
+ * jointly belong to any such sequence should not be compared.
+ *
+ * The specific time is represented by the Time class, which encodes
+ * the slab containing the time and the fraction of the slab that has
+ * elapsed as an exact rational.  Times are comparable according to
+ * their natural time ordering, except for times belonging to
+ * incomparable slabs.
+ *
+ * Differences in time within a slab are represented as exact
+ * fractions of that slab by the TimeDelta class.  TimeDeltas are only
+ * meaningful within a single slab, with the exception that the ratio
+ * of objects with different slabs may be taken, resulting in an
+ * inexact floating-point result.  Longer intervals of time are
+ * represented using floating-point values.
+ */
+
+/*!
+ * \defgroup TimeSteppersGroup Time Steppers
  * A collection of ODE integrators primarily used for time stepping.
  */
 
