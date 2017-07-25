@@ -8,7 +8,7 @@
 #include "ErrorHandling/Assert.hpp"
 
 template <>
-Direction<1>::Direction(const size_t dimension, const Side side) {
+Direction<1>::Direction(const size_t dimension, const Side side) noexcept {
   ASSERT(
       0 == dimension,
       "dim = " << dimension << ", for Direction<1> only dim = 0 is allowed.");
@@ -17,7 +17,7 @@ Direction<1>::Direction(const size_t dimension, const Side side) {
 }
 
 template <>
-Direction<2>::Direction(const size_t dimension, const Side side) {
+Direction<2>::Direction(const size_t dimension, const Side side) noexcept {
   ASSERT(0 == dimension or 1 == dimension,
          "dim = " << dimension
                   << ", for Direction<2> only dim = 0 or dim = 1 are allowed.");
@@ -26,7 +26,7 @@ Direction<2>::Direction(const size_t dimension, const Side side) {
 }
 
 template <>
-Direction<3>::Direction(const size_t dimension, const Side side) {
+Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
   ASSERT(0 == dimension or 1 == dimension or 2 == dimension,
          "dim = " << dimension << ", for Direction<3> only dim = 0, dim = 1, "
                                   "or dim = 2 are allowed.");
