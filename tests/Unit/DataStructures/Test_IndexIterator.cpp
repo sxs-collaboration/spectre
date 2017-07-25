@@ -4,8 +4,10 @@
 #include <catch.hpp>
 
 #include "DataStructures/IndexIterator.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.DataStructures.IndexIterator", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.IndexIterator",
+                  "[DataStructures][Unit]") {
   /// [index_iterator_example]
   Index<3> elements(1, 2, 3);
   for (IndexIterator<3> index_it(elements); index_it; ++index_it) {

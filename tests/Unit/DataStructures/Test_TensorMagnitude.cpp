@@ -4,9 +4,10 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.DataStructures.Tensor.EuclideanMagnitude",
-          "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EuclideanMagnitude",
+                  "[DataStructures][Unit]") {
   // Check for DataVectors
   {
     const size_t npts = 2;
@@ -70,7 +71,8 @@ TEST_CASE("Unit.DataStructures.Tensor.EuclideanMagnitude",
   }
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.Magnitude", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Magnitude",
+                  "[DataStructures][Unit]") {
   // Check for DataVectors
   {
     const size_t npts = 2;

@@ -4,6 +4,7 @@
 #include <catch.hpp>
 
 #include "Utilities/MakeArray.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 struct NonCopyable {
@@ -16,7 +17,7 @@ struct NonCopyable {
 };
 }  // namespace
 
-TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   constexpr auto same_array = make_array<4>(7.8);
   CHECK((same_array == std::array<double, 4>{{7.8, 7.8, 7.8, 7.8}}));
   constexpr auto varying_array = make_array(3.2, 4.3, 5.4, 6.5, 7.8);

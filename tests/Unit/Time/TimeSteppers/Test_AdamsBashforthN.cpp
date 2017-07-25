@@ -4,9 +4,10 @@
 #include <cmath>
 
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
-TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const TimeSteppers::AdamsBashforthN stepper(order, false);
@@ -24,7 +25,8 @@ TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   }
 }
 
-TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
+                  "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
@@ -39,7 +41,8 @@ TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable", "[Unit][Time]") {
   }
 }
 
-TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
+                  "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
@@ -53,7 +56,8 @@ TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards", "[Unit][Time]") {
   }
 }
 
-TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability",
+                  "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     stability_test(TimeSteppers::AdamsBashforthN(order, false));

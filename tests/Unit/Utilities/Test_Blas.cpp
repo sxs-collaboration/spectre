@@ -8,8 +8,8 @@
 
 // [[OutputRegex, TRANSA must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]
-[[noreturn]] TEST_CASE("Unit.Utilities.Blas.dgemm_error_transa_false",
-                       "[Unit][Utilities]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Blas.dgemm_error_transa_false",
+                               "[Unit][Utilities]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   test_blas_asserts_for_bad_char::dgemm_error_transa_false();
@@ -19,8 +19,8 @@
 
 // [[OutputRegex, TRANSB must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]
-[[noreturn]] TEST_CASE("Unit.Utilities.Blas.dgemm_error_transb_false",
-                       "[Unit][Utilities]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Blas.dgemm_error_transb_false",
+                               "[Unit][Utilities]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   test_blas_asserts_for_bad_char::dgemm_error_transb_false();
@@ -30,8 +30,8 @@
 
 // [[OutputRegex, TRANSA must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]
-[[noreturn]] TEST_CASE("Unit.Utilities.Blas.dgemm_error_transa_true",
-                       "[Unit][Utilities]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Blas.dgemm_error_transa_true",
+                               "[Unit][Utilities]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   test_blas_asserts_for_bad_char::dgemm_error_transa_true();
@@ -41,8 +41,8 @@
 
 // [[OutputRegex, TRANSB must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]
-[[noreturn]] TEST_CASE("Unit.Utilities.Blas.dgemm_error_transb_true",
-                       "[Unit][Utilities]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Blas.dgemm_error_transb_true",
+                               "[Unit][Utilities]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   test_blas_asserts_for_bad_char::dgemm_error_transb_true();
@@ -52,8 +52,8 @@
 
 // [[OutputRegex, TRANS must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]
-[[noreturn]] TEST_CASE("Unit.Utilities.Blas.dgemv_error_trans",
-                       "[Unit][Utilities]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Blas.dgemv_error_trans",
+                               "[Unit][Utilities]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   test_blas_asserts_for_bad_char::dgemv_error_trans();

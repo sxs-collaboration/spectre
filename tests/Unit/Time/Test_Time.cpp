@@ -8,7 +8,7 @@
 #include "Time/Time.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   using rational_t = Time::rational_t;
 
   Approx approx =
@@ -109,7 +109,7 @@ TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   CHECK(get_output(Time(slab, rational_t(3, 5))) == slab_str + ":3/5");
 }
 
-TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
   const double tstart_d = 0.68138945475734402635;
   const double tend_d = 76.34481744714527451379;
   // Make sure we're using values that will trigger rounding errors.
@@ -177,13 +177,14 @@ TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
   }
 }
 
-TEST_CASE("Unit.Time.Time.serialization", "[Unit][Time][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Time.Time.serialization",
+                  "[Unit][Time][Serialization]") {
   const Slab slab(1.7, 2.4);
   const Time time = slab.start() + slab.duration() * 3 / 5;
   CHECK(time == serialize_and_deserialize(time));
 }
 
-TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
   using rational_t = TimeDelta::rational_t;
 
   Approx approx =
@@ -268,7 +269,8 @@ TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
   CHECK(get_output(TimeDelta(slab, rational_t(3, -5))) == slab_str + ":-3/5");
 }
 
-TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
+                  "[Unit][Time][Serialization]") {
   const Slab slab(1.7, 2.4);
   const TimeDelta dt = slab.duration() * 3 / 5;
   CHECK(dt == serialize_and_deserialize(dt));
@@ -281,7 +283,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 
 /// [example_of_error_test]
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.Init.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.Init.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), -1);
@@ -291,7 +293,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 /// [example_of_error_test]
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.Init.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.Init.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 2);
@@ -300,7 +302,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(1., 2.));
@@ -309,7 +311,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(-1., 0.));
@@ -318,7 +320,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(0., 2.));
@@ -327,7 +329,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.3", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0).with_slab(Slab(1., 2.));
@@ -336,7 +338,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.4", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.4", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0).with_slab(Slab(-1., 1.));
@@ -345,7 +347,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.5", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.5", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1).with_slab(Slab(-1., 0.));
@@ -354,7 +356,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.with_slab.6", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.with_slab.6", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1).with_slab(Slab(0., 2.));
@@ -363,7 +365,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.overlap", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.overlap", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1) < Time(Slab(0., 2.), 1);
@@ -372,7 +374,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't subtract times from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.subtraction.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.subtraction.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - Time(Slab(2., 3.), 0);
@@ -381,7 +383,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't subtract times from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.subtraction.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.subtraction.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1) - Time(Slab(-1., 0.), 0);
@@ -390,7 +392,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't subtract times from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.subtraction.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.subtraction.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(-1., 0.), 0) - Time(Slab(0., 1.), 1);
@@ -399,7 +401,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), 2);
@@ -408,7 +410,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), 2);
@@ -417,7 +419,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), -2);
@@ -426,7 +428,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.3", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), -2);
@@ -435,7 +437,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.4", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.4", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), 2);
@@ -444,7 +446,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.5", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.5", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), 2);
@@ -453,7 +455,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.6", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.6", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), -2);
@@ -462,7 +464,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.7", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.7", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), -2);
@@ -471,7 +473,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.8", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.8", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0);
@@ -480,7 +482,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.9", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.9", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0);
@@ -489,7 +491,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.10", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.10", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0);
@@ -498,7 +500,7 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Time.add_delta.11", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.add_delta.11", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0);
@@ -507,7 +509,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.inequalities.lt", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.lt",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) < TimeDelta(Slab(1., 2.), 0);
@@ -516,7 +519,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.inequalities.gt", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.gt",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) > TimeDelta(Slab(1., 2.), 0);
@@ -525,7 +529,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.inequalities.le", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.le",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) <= TimeDelta(Slab(1., 2.), 0);
@@ -534,7 +539,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't check cross-slab TimeDelta inequalities]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.inequalities.ge", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.inequalities.ge",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) >= TimeDelta(Slab(1., 2.), 0);
@@ -543,7 +549,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_time.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_time.0",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 2) + Time(Slab(0., 1.), 0);
@@ -552,7 +559,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Out of range slab fraction]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_time.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_time.1",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), -2) + Time(Slab(0., 1.), 0);
@@ -561,7 +569,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't move .* to slab]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_time.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_time.2",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(1., 2.), 0) + Time(Slab(0., 1.), 0);
@@ -570,7 +579,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't add TimeDeltas from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_delta.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.0",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0);
@@ -579,7 +589,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't add TimeDeltas from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_delta.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.1",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0);
@@ -588,7 +599,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't subtract TimeDeltas from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_delta.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.2",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0);
@@ -597,7 +609,8 @@ TEST_CASE("Unit.Time.TimeDelta.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't subtract TimeDeltas from different slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.TimeDelta.add_delta.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.TimeDelta.add_delta.3",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0);

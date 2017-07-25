@@ -16,6 +16,8 @@
 #include "Parallel/Serialize.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+#define SPECTRE_TEST_CASE(m, n) TEST_CASE(m, n)  // NOLINT
+
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
   Parallel::abort("");
@@ -29,8 +31,9 @@
  * \details
  * In order to properly handle aborting with Catch versions newer than 1.6.1
  * we must install a signal handler after Catch does, which means inside the
- * TEST_CASE itself. The ERROR_TEST() macro should be the first line in the
- * TEST_CASE.
+ * SPECTRE_TEST_CASE itself. The ERROR_TEST() macro should be the first line in
+ * the
+ * SPECTRE_TEST_CASE.
  *
  * \example
  * \snippet TestFramework.cpp error_test

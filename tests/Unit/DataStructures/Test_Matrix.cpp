@@ -7,7 +7,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
   Matrix matrix(3, 5, 1.0);
   CHECK(matrix.rows() == 3);
   CHECK(matrix.columns() == 5);
@@ -31,8 +31,8 @@ TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
   test_move_semantics(std::move(matrix), matrix_copy);
 }
 
-TEST_CASE("Unit.Serialization.Matrix",
-          "[DataStructures][Unit][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Serialization.Matrix",
+                  "[DataStructures][Unit][Serialization]") {
   Matrix matrix(3, 7, 1.0);
   CHECK(matrix == serialize_and_deserialize(matrix));
 }

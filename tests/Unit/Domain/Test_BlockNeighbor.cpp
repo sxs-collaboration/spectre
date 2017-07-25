@@ -6,7 +6,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
   BlockNeighbor<3> test_block_neighbor;

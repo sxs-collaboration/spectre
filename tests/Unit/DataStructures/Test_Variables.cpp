@@ -29,7 +29,7 @@ static_assert(
                              VariablesTestTags_detail::vector>>>::value,
     "Missing move semantics in Variables.");
 
-TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector,
                        VariablesTestTags_detail::scalar,
                        VariablesTestTags_detail::scalar2>>
@@ -117,8 +117,8 @@ TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 }
 
 // [[OutputRegex, Must copy into same size]]
-[[noreturn]] TEST_CASE("Unit.DataStructures.Variables.BadCopy",
-                       "[DataStructures][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.Variables.BadCopy",
+                               "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Variables<tmpl::list<VariablesTestTags_detail::vector,
@@ -131,7 +131,8 @@ TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 #endif
 }
 
-TEST_CASE("Unit.DataStructures.Variables.Move", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Move",
+                  "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> x(1, -2.0),
       z(2, -3.0);
   CHECK(&z.template get<VariablesTestTags_detail::vector>()[0][0] == z.data());
@@ -177,7 +178,8 @@ void check_vectors(const Variables<T1>& t1, const Variables<T2>& t2) {
 }
 }  // namespace
 
-TEST_CASE("Unit.DataStructures.Variables.Math", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Math",
+                  "[DataStructures][Unit]") {
   using test_variable_type =
       Variables<tmpl::list<VariablesTestTags_detail::vector,
                            VariablesTestTags_detail::scalar,
@@ -214,14 +216,14 @@ TEST_CASE("Unit.DataStructures.Variables.Math", "[DataStructures][Unit]") {
   CHECK(test_assignment2 == test_assignment);
 }
 
-TEST_CASE("Unit.DataStructures.Variables.Serialization",
-          "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
+                  "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> v(1, -3.0);
   CHECK(v == serialize_and_deserialize(v));
 }
 
-TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
-          "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
+                  "[DataStructures][Unit]") {
   Variables<typelist<VariablesTestTags_detail::vector>> vars(24, 0.);
   const size_t x_extents = 2, y_extents = 3, z_extents = 4,
                vec_size = VariablesTestTags_detail::vector::type::size();

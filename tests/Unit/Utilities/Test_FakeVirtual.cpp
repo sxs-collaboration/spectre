@@ -141,7 +141,7 @@ class B : public MultipleBase::Inherit {
 };
 }  // namespace
 
-TEST_CASE("Unit.Utilities.FakeVirtual", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FakeVirtual", "[Unit][Utilities]") {
   // Make sure the code example works
   {
     Derived d;
@@ -195,7 +195,8 @@ class C : public MultipleBase::Inherit {
 // Check that you get an error when trying to call an unregistered
 // class's function through the base class.
 // [[OutputRegex, is not registered with]]
-TEST_CASE("Unit.Utilities.FakeVirtual.Unregistered", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FakeVirtual.Unregistered",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   const std::unique_ptr<MultipleBase> c = std::make_unique<C>();
 

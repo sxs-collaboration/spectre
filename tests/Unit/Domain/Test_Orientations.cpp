@@ -207,7 +207,7 @@ void test_3d() {
 
 }  // namespace
 
-TEST_CASE("Unit.Domain.Orientations", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Orientations", "[Domain][Unit]") {
   test_1d();
   test_2d();
   test_3d();

@@ -4,6 +4,7 @@
 #include <catch.hpp>
 
 #include "Utilities/ConstantExpressions.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template<typename T>
@@ -92,7 +93,7 @@ static_assert(
                 make_array_from_list<tmpl::integral_list<size_t, 1, 2, 5>>()),
     "Failed testing make_array_from_list");
 
-TEST_CASE("Unit.Utilities.ConstantExpressions", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.ConstantExpressions", "[Unit][Utilities]") {
   CHECK((std::array<std::array<size_t, 3>, 3>{
             {std::array<size_t, 3>{{1, 2, 5}}, std::array<size_t, 3>{{8, 7, 2}},
              std::array<size_t, 3>{{3, 9, 0}}}}) ==

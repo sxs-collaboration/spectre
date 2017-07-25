@@ -28,7 +28,8 @@ void check_stripe_iterator_helper(StripeIterator s) {
 }
 }  // namespace
 
-TEST_CASE("Unit.DataStructures.StripeIterator", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.StripeIterator",
+                  "[DataStructures][Unit]") {
   size_t i = 0;
   for (StripeIterator s(Index<3>(3, 4, 5), 0); s; ++s) {
     CHECK(s.offset() == i);

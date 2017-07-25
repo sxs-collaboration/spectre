@@ -5,6 +5,7 @@
 
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 struct TestStream {
@@ -23,7 +24,7 @@ std::ostream& operator<<(std::ostream& os, const TestStream& t) {
 }  // namespace
 
 // [[OutputRegex, -100 3000000000 3.4 \(0,4,8,-7\) test 1 2 3 abf a o e u]]
-TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
+SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   const char c_string0[40] = {"test 1 2 3"};
   char* c_string1 = new char[80];
   c_string1[0] = 'a';
@@ -36,7 +37,7 @@ TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   delete[] c_string1;
 }
 
-TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel") {
+SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel") {
   CHECK(1 == Parallel::number_of_procs());
   CHECK(0 == Parallel::my_proc());
   CHECK(1 == Parallel::number_of_nodes());

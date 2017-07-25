@@ -5,9 +5,10 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Numerical/LinearAlgebra/Determinant.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
-          "[LinearAlgebra][Numerical][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
+                  "[LinearAlgebra][Numerical][Unit]") {
   Approx approx = Approx::custom().epsilon(1e-15);
 
   // Test determinant function on general (no symmetry) matrices:

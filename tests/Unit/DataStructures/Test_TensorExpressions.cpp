@@ -9,8 +9,10 @@
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Data.Tensor.Expression.AddSubtract", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.Data.Tensor.Expression.AddSubtract",
+                  "[DataStructures][Unit]") {
   Tensor<double, Symmetry<1, 1>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>>

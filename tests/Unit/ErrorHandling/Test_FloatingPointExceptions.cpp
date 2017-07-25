@@ -9,8 +9,8 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // [[OutputRegex, Floating point exception!]]
-TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
-          "[ErrorHandling][Unit]") {
+SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
+                  "[ErrorHandling][Unit]") {
   ERROR_TEST();
   enable_floating_point_exceptions();
   double x = -1.0;
@@ -19,8 +19,8 @@ TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
 }
 
 // [[OutputRegex, Floating point exception!]]
-TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Overflow",
-          "[ErrorHandling][Unit]") {
+SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Overflow",
+                  "[ErrorHandling][Unit]") {
   ERROR_TEST();
   enable_floating_point_exceptions();
   volatile double overflow = std::numeric_limits<double>::max();
@@ -29,8 +29,8 @@ TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Overflow",
 }
 
 // [[OutputRegex, Floating point exception!]]
-TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.DivByZero",
-          "[ErrorHandling][Unit]") {
+SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.DivByZero",
+                  "[ErrorHandling][Unit]") {
   ERROR_TEST();
   enable_floating_point_exceptions();
   volatile double div_by_zero = 1.0;
@@ -38,8 +38,8 @@ TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.DivByZero",
   CHECK(true);
 }
 
-TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
-          "[ErrorHandling][Unit]") {
+SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
+                  "[ErrorHandling][Unit]") {
   enable_floating_point_exceptions();
   disable_floating_point_exceptions();
   double x = -1.0;

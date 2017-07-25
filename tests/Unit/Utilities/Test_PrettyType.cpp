@@ -6,7 +6,8 @@
 #include "Utilities/PrettyType.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Utilities.PrettyType.Fundamental", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.Fundamental",
+                  "[Utilities][Unit]") {
   CHECK("char" == pretty_type::get_name<char>());
   CHECK("signed char" == pretty_type::get_name<signed char>());
   CHECK("unsigned char" == pretty_type::get_name<unsigned char>());
@@ -59,7 +60,7 @@ TEST_CASE("Unit.Utilities.PrettyType.Fundamental", "[Utilities][Unit]") {
   CHECK("char" == pretty_type::get_runtime_type_name('a'));
 }
 
-TEST_CASE("Unit.Utilities.PrettyType.Stl", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.Stl", "[Utilities][Unit]") {
   CHECK("std::string" == pretty_type::get_name<std::string>());
   CHECK("std::array<double, 4>" ==
         (pretty_type::get_name<std::array<double, 4>>()));

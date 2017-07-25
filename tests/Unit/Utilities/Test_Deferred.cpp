@@ -58,15 +58,15 @@ void deferred_as_argument_to_deferred() {
 }
 }  // namespace
 
-TEST_CASE("Unit.Utilities.Deferred", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.Deferred", "[Utilities][Unit]") {
   simple_deferred();
   single_call_deferred();
   deferred_as_argument_to_deferred();
 }
 
 // [[OutputRegex, Cannot mutate a computed Deferred]]
-[[noreturn]] TEST_CASE("Unit.Utilities.Deferred.FailAlter",
-                       "[Utilities][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Deferred.FailAlter",
+                               "[Utilities][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto def = make_deferred(func{});

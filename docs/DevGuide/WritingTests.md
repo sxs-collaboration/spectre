@@ -7,17 +7,17 @@ See LICENSE.txt for details.
 ## Testing Failure Cases
 
 Adding the "attribute" `// [[OutputRegex, Regular expression to match]]`
-before the `TEST_CASE` macro will force ctest to only pass the particular test
+before the `SPECTRE_TEST_CASE` macro will force ctest to only pass the particular test
 if the regular expression is found. This can be used to test error handling.
-When testing `ASSERT`s you must mark the `TEST_CASE` as `[[noreturn]]`,
+When testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as `[[noreturn]]`,
 add the macro `ASSERTION_TEST();` to the beginning of the test, and also have
 the test call `ERROR("Bad test end");` at the end of the test body.
 For example,
 
 ```cpp
 // [[OutputRegex, Must copy into same size]]
-[[noreturn]] TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
-                       "[DataStructures][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
+                               "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   DataVector data{1.43, 2.83, 3.94, 7.85};

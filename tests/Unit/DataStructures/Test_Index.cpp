@@ -8,7 +8,7 @@
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   Index<0> index_0d;
   CHECK(index_0d.product() == 1);
   Index<1> index_1d(3);
