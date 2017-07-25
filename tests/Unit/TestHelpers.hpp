@@ -138,6 +138,67 @@ void test_move_semantics(T&& a, const T& comparison) {
 #pragma GCC diagnostic pop
 }
 
+// Test for iterators
+template <typename Container>
+void test_iterators(Container& c) {
+  CHECK(std::distance(c.begin(), c.end()) == c.size());
+  CHECK(c.begin() == c.cbegin());
+  CHECK(c.end() == c.cend());
+
+  const auto& const_c = c;
+  CHECK(std::distance(const_c.begin(), const_c.end()) == const_c.size());
+  CHECK(const_c.begin() == const_c.cbegin());
+  CHECK(const_c.end() == const_c.cend());
+}
+
+// Test for reverse iterators
+template <typename Container>
+void test_reverse_iterators(Container& c) {
+  CHECK(std::distance(c.rbegin(), c.rend()) == c.size());
+
+  CHECK(c.rbegin() == c.crbegin());
+  CHECK(c.rend() == c.crend());
+
+  auto it = c.begin();
+  auto rit = c.rbegin();
+  auto end = c.end();
+  auto rend = c.rend();
+  auto cit = c.cbegin();
+  auto cend = c.cend();
+  auto crit = c.crbegin();
+  auto crend = c.crend();
+
+  for (size_t i = 0; i < c.size(); i++) {
+    CHECK(*it == *(std::prev(rend, 1)));
+    CHECK(*rit == *(std::prev(end, 1)));
+    CHECK(*cit == *(std::prev(crend, 1)));
+    CHECK(*crit == *(std::prev(cend, 1)));
+    it++;
+    rit++;
+    rend--;
+    end--;
+    crit++;
+    cit++;
+    crend--;
+    cend--;
+  }
+
+  const auto& const_c = c;
+  CHECK(std::distance(const_c.begin(), const_c.end()) == const_c.size());
+  auto c_it = const_c.begin();
+  auto c_rit = const_c.rbegin();
+  auto c_end = const_c.end();
+  auto c_rend = const_c.rend();
+  for (size_t i = 0; i < c.size(); i++) {
+    CHECK(*c_it == *(std::prev(c_rend, 1)));
+    CHECK(*c_rit == *(std::prev(c_end, 1)));
+    c_it++;
+    c_rit++;
+    c_rend--;
+    c_end--;
+  }
+}
+
 /*!
  * \ingroup TestingFramework
  * \brief Function to test comparison operators.  Pass values with
