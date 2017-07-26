@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
     BlockNeighbor.cpp
     Direction.cpp
     ElementId.cpp
+    Neighbors.cpp
     Orientation.cpp
     SegmentId.cpp
     Side.cpp
