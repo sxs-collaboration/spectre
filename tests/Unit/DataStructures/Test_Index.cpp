@@ -20,13 +20,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   CHECK(index_2d[1] == 4);
   CHECK(index_2d.slice_away(0)[0] == 4);
   CHECK(index_2d.slice_away(1)[0] == 4);
-  CHECK(index_2d.data()[0] == 4);
-  CHECK(index_2d.data()[1] == 4);
+  // clang-tidy: do not use pointer arithmetic
+  CHECK(index_2d.data()[0] == 4);  // NOLINT
+  CHECK(index_2d.data()[1] == 4);  // NOLINT
   Index<3> index_3d(1, 2, 3);
   CHECK(index_3d.product() == 6);
   for (size_t i = 0; i < 3; ++i) {
     CHECK(index_3d[i] == i + 1);
-    CHECK(index_3d.data()[i] == i + 1);
+    // clang-tidy: do not use pointer arithmetic
+    CHECK(index_3d.data()[i] == i + 1);  // NOLINT
   }
   CHECK(index_3d.slice_away(0)[0] == 2);
   CHECK(index_3d.slice_away(0)[1] == 3);
@@ -39,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   CHECK(index_3d.slice_away(2).product() == 2);
 
   // Check iterator
-  CHECK(6 == std::accumulate(index_3d.begin(), index_3d.end(), 0));
+  CHECK(6 == std::accumulate(index_3d.begin(), index_3d.end(), 0_st));
 
   // Check serialization
   CHECK(index_3d == serialize_and_deserialize(index_3d));
@@ -49,5 +51,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
 
   test_copy_semantics(index_3d);
   auto index_3d_copy = index_3d;
-  test_move_semantics(std::move(index_3d), index_3d_copy);
+  // clang-tidy: std::move of index_3d (trivial) does nothing
+  test_move_semantics(std::move(index_3d), index_3d_copy);  // NOLINT
 }

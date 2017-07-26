@@ -32,8 +32,7 @@
  * In order to properly handle aborting with Catch versions newer than 1.6.1
  * we must install a signal handler after Catch does, which means inside the
  * SPECTRE_TEST_CASE itself. The ERROR_TEST() macro should be the first line in
- * the
- * SPECTRE_TEST_CASE.
+ * the SPECTRE_TEST_CASE.
  *
  * \example
  * \snippet TestFramework.cpp error_test
@@ -115,9 +114,12 @@ void test_copy_semantics(const T& a) {
 }
 
 /// Test for move semantics assuming operator== is implement correctly
+/// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true
 template <typename T,
           typename std::enable_if<tt::has_equivalence<T>::value, int>::type = 0>
 void test_move_semantics(T&& a, const T& comparison) {
+  static_assert(std::is_rvalue_reference<decltype(a)>::value,
+                "Must move into test_move_semantics");
   static_assert(std::is_nothrow_move_assignable<T>::value,
                 "Class is not nothrow move assignable.");
   static_assert(std::is_nothrow_move_constructible<T>::value,
@@ -132,7 +134,8 @@ void test_move_semantics(T&& a, const T& comparison) {
     ERROR("'a' and 'comparison' must be distinct (but equal in value) objects");
   }
   T b;
-  b = std::move(a);
+  // clang-tidy: use std::forward instead of std::move
+  b = std::move(a);  // NOLINT
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wparentheses"
   CHECK(b == comparison);

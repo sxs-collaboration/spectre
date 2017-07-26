@@ -171,7 +171,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(1, 1) = .5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(2);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(2);
     for (size_t i = 0; i < 2; ++i) {
       for (size_t j = 0; j < 2; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -193,7 +193,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(2, 2) = 1.5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(3);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(3);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -222,7 +222,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(3, 3) = 3.0;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(4);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(4);
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -260,7 +260,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(4, 4) = 5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(5);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(5);
     for (size_t i = 0; i < 5; ++i) {
       for (size_t j = 0; j < 5; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -309,7 +309,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(5, 5) = 7.5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(6);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(6);
     for (size_t i = 0; i < 6; ++i) {
       for (size_t j = 0; j < 6; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));

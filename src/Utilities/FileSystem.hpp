@@ -136,4 +136,4 @@ std::vector<std::string> ls(const std::string& dir_name = "./");
  * behaves like `rm -r`, otherwise like `rm` but will delete an empty directory
  */
 void rm(const std::string& path, bool recursive);
-}  // namespace filesystem
+}  // namespace file_system

@@ -35,6 +35,7 @@
 #define ERROR(m)                                                 \
   do {                                                           \
     std::ostringstream avoid_name_collisions_ERROR;              \
+    /* clang-tidy: macro arg in parentheses */                   \
     avoid_name_collisions_ERROR << m; /* NOLINT */               \
     abort_with_error_message(__FILE__, __LINE__,                 \
                              avoid_name_collisions_ERROR.str()); \

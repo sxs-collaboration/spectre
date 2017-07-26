@@ -124,10 +124,10 @@ inline constexpr std::size_t compute_collapsed_index(
   static_assert(tt::is_integer_v<T>,
                 "The tensor index array must hold integer types.");
   static_assert(tt::is_integer_v<S>, "The dims array must hold integer types.");
-  return i < Rank
-             ? (tensor_index[i] +
-                dims[i] * compute_collapsed_index(tensor_index, dims, i + 1))
-             : 0;
+  return i < Rank ? (gsl::at(tensor_index, i) +
+                     gsl::at(dims, i) *
+                         compute_collapsed_index(tensor_index, dims, i + 1))
+                  : 0;
 }
 
 template <typename IndexLs, typename... I>

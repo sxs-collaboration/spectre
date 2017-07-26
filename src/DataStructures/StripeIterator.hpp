@@ -28,7 +28,7 @@ class StripeIterator {
   StripeIterator() = delete;
 
   /// Returns `true` if the iterator is valid
-  operator bool() const noexcept { return offset_ < size_; }
+  explicit operator bool() const noexcept { return offset_ < size_; }
 
   /// Increment to the next stripe.
   StripeIterator& operator++();

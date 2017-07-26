@@ -53,7 +53,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
   std::iota(t.begin(), t.end(), 4.3);
   DataVector t2;
   t2.set_data_ref(t);
-  CHECK(t == serialize_and_deserialize(std::move(t2)));
+  CHECK(t == serialize_and_deserialize(t2));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
@@ -101,7 +101,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
     CHECK(data_2[2] == 4.94);
     CHECK(data_2[3] == 8.85);
     DataVector owned_data;
-    owned_data = data_2_ref;
+    // clang-tidy: false positive, used after it was moved
+    owned_data = data_2_ref;  // NOLINT
     CHECK(owned_data[0] == 2.43);
     CHECK(owned_data[1] == 3.83);
     CHECK(owned_data[2] == 4.94);
@@ -167,7 +168,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   check_vectors(nine + nine, DataVector(num_pts, 18.0));
   check_vectors(nine + (one * nine), DataVector(num_pts, 18.0));
   check_vectors((one * nine) + nine, DataVector(num_pts, 18.0));
-  check_vectors(nine - nine, DataVector(num_pts, 0.0));
+  check_vectors(nine - DataVector(num_pts, 8.0), DataVector(num_pts, 1.0));
   check_vectors(nine - (one * nine), DataVector(num_pts, 0.0));
   check_vectors((one * nine) - nine, DataVector(num_pts, 0.0));
 

@@ -4,6 +4,7 @@
 #include <catch.hpp>
 
 #include "Domain/Direction.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
@@ -125,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
                                        upper_eta_2_hash, lower_eta_2_hash}};
   for (size_t i = 0; i < direction_2.size(); i++) {
     for (size_t j = i + 1; j < direction_2.size(); j++) {
-      CHECK(direction_2[i] != direction_2[j]);
+      CHECK(gsl::at(direction_2, i) != gsl::at(direction_2, j));
     }
   }
   std::array<size_t, 6> direction_3 = {{upper_xi_3_hash,   lower_xi_3_hash,
@@ -133,7 +134,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
                                        upper_zeta_3_hash, lower_zeta_3_hash}};
   for (size_t i = 0; i < direction_3.size(); i++) {
     for (size_t j = i + 1; j < direction_3.size(); j++) {
-      CHECK(direction_3[i] != direction_3[j]);
+      CHECK(gsl::at(direction_3, i) != gsl::at(direction_3, j));
     }
   }
 }

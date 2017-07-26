@@ -42,7 +42,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   CHECK(5 == v.size());
 
   auto& vector_in_v = v.get<VariablesTestTags_detail::vector>();
-  CHECK(-3.0 == v.data()[0]);
+  // clang-tidy: do not use pointer arithmetic
+  CHECK(-3.0 == v.data()[0]);  // NOLINT
   CHECK(-3.0 == vector_in_v.get(0)[0]);
 
   tnsr::I<DataVector, 3, Frame::Grid> another_vector(1_st, -5.0);
@@ -51,14 +52,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 
   vector_in_v = another_vector;
 
-  CHECK(-5.0 == v.data()[0]);
+  // clang-tidy: do not use pointer arithmetic
+  CHECK(-5.0 == v.data()[0]);  // NOLINT
   CHECK(-5.0 == vector_in_v.get(0)[0]);
 
   vector_in_v = tnsr::I<DataVector, 3, Frame::Grid>{1_st, -4.0};
 
-  CHECK(-4.0 == v.data()[0]);
-  CHECK(-4.0 == v.data()[1]);
-  CHECK(-4.0 == v.data()[2]);
+  // clang-tidy: do not use pointer arithmetic
+  CHECK(-4.0 == v.data()[0]);  // NOLINT
+  CHECK(-4.0 == v.data()[1]);  // NOLINT
+  CHECK(-4.0 == v.data()[2]);  // NOLINT
   CHECK(-4.0 == vector_in_v.get(0)[0]);
   CHECK(-4.0 == vector_in_v.get(1)[0]);
   CHECK(-4.0 == vector_in_v.get(2)[0]);
@@ -151,8 +154,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Move",
 #ifdef __clang__
 #pragma GCC diagnostic pop
 #endif  // defined(__clang__)
-  CHECK(
-      (x == Variables<tmpl::list<VariablesTestTags_detail::vector>>{2, -3.0}));
+  // clang-tidy: false positive 'x' used after it was moved
+  CHECK((x ==  // NOLINT
+         Variables<tmpl::list<VariablesTestTags_detail::vector>>{2, -3.0}));
   CHECK(&x.template get<VariablesTestTags_detail::vector>()[0][0] == x.data());
 }
 
@@ -163,7 +167,8 @@ void check_vectors(const Variables<T1>& t1, const blaze::Vector<VT, VF>& t2) {
   for (size_t i = 0; i < t1.size(); ++i) {
     // We've removed the subscript operator so people don't try to use that
     // and as a result we need to use the data() member function
-    CHECK(t1.data()[i] == Approx((~t2)[i]).epsilon(1e-14));
+    // clang-tidy: do not use pointer arithmetic
+    CHECK(t1.data()[i] == Approx((~t2)[i]).epsilon(1e-14));  // NOLINT
   }
 }
 
@@ -173,7 +178,8 @@ void check_vectors(const Variables<T1>& t1, const Variables<T2>& t2) {
   for (size_t i = 0; i < t1.size(); ++i) {
     // We've removed the subscript operator so people don't try to use that
     // and as a result we need to use the data() member function
-    CHECK(t1.data()[i] == Approx(t2.data()[i]).epsilon(1e-14));
+    // clang-tidy: do not use pointer arithmetic
+    CHECK(t1.data()[i] == Approx(t2.data()[i]).epsilon(1e-14));  // NOLINT
   }
 }
 }  // namespace
@@ -191,9 +197,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Math",
   check_vectors(test_variable_type{1, 12}, three + three + three + three);
   check_vectors(test_variable_type{1, 9}, three + (three + three));
 
-  check_vectors(test_variable_type{1, -6}, three - three - three - three);
-  check_vectors(test_variable_type{1, 3}, three - (three - three));
-  check_vectors(test_variable_type{1, 3}, three - three + three);
+  // clang-tidy: point sides of overloaded operator are equivalent
+  check_vectors(test_variable_type{1, -6},
+                three - three - three - three);                      // NOLINT
+  check_vectors(test_variable_type{1, 3}, three - (three - three));  // NOLINT
+  check_vectors(test_variable_type{1, 3}, three - three + three);    // NOLINT
   check_vectors(test_variable_type{1, 3}, three + three - three);
 
   test_variable_type test_assignment(three * 1.0);
@@ -229,7 +237,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
                vec_size = VariablesTestTags_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
   for (size_t s = 0; s < vars.size(); ++s) {
-    vars.data()[s] = s;
+    // clang-tidy: do not use pointer arithmetic
+    vars.data()[s] = s;  // NOLINT
   }
   Variables<typelist<VariablesTestTags_detail::vector>>
       expected_vars_sliced_in_x(y_extents * z_extents, 0.),
@@ -238,12 +247,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
   const size_t x_offset = 1, y_offset = 2, z_offset = 1;
 
   for (size_t s = 0; s < expected_vars_sliced_in_x.size(); ++s) {
-    expected_vars_sliced_in_x.data()[s] = x_offset + s * x_extents;
+    // clang-tidy: do not use pointer arithmetic
+    expected_vars_sliced_in_x.data()[s] = x_offset + s * x_extents;  // NOLINT
   }
   for (size_t i = 0; i < vec_size; ++i) {
     for (size_t x = 0; x < x_extents; ++x) {
       for (size_t z = 0; z < z_extents; ++z) {
-        expected_vars_sliced_in_y.data()[x + x_extents * (z + z_extents * i)] =
+        // clang-tidy: do not use pointer arithmetic
+        expected_vars_sliced_in_y
+            .data()[x + x_extents * (z + z_extents * i)] =  // NOLINT
             i * extents.product() + x + x_extents * (y_offset + z * y_extents);
       }
     }
@@ -251,7 +263,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
   for (size_t i = 0; i < vec_size; ++i) {
     for (size_t x = 0; x < x_extents; ++x) {
       for (size_t y = 0; y < y_extents; ++y) {
-        expected_vars_sliced_in_z.data()[x + x_extents * (y + y_extents * i)] =
+        // clang-tidy: do not use pointer arithmetic
+        expected_vars_sliced_in_z
+            .data()[x + x_extents * (y + y_extents * i)] =  // NOLINT
             i * extents.product() + x + x_extents * (y + y_extents * z_offset);
       }
     }

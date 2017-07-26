@@ -119,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Magnitude",
     // Check for doubles
     const tnsr::i<double, 1, Frame::Grid> one_d_covector{2};
     const tnsr::II<double, 1, Frame::Grid> inv_h = []() {
-      tnsr::II<double, 1, Frame::Grid> tensor;
+      tnsr::II<double, 1, Frame::Grid> tensor{};
       tensor.template get<0, 0>() = 4.;
       return tensor;
     }();
@@ -128,7 +128,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Magnitude",
 
     const tnsr::i<double, 3, Frame::Grid> three_d_covector{{{-3, 12, 4}}};
     const tnsr::II<double, 3, Frame::Grid> inv_g = []() {
-      tnsr::II<double, 3, Frame::Grid> tensor;
+      tnsr::II<double, 3, Frame::Grid> tensor{};
       tensor.get<0, 0>() = 2;
       tensor.get<0, 1>() = -3;
       tensor.get<0, 2>() = 4;
@@ -137,8 +137,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Magnitude",
       tensor.get<2, 2>() = 13;
       return tensor;
     }();
-    const double magnitude_three_d_covector =
-        magnitude(three_d_covector, inv_g);
     CHECK(magnitude(three_d_covector, inv_g) == sqrt(778.0));
   }
 }

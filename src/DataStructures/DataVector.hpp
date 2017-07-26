@@ -75,12 +75,15 @@ class DataVector {
   ~DataVector() = default;
 
   DataVector(const DataVector& rhs);
-  DataVector(DataVector&& rhs) noexcept = default;  // NOLINT
+  DataVector(DataVector&& rhs) noexcept = default;
   DataVector& operator=(const DataVector& rhs);
-  DataVector& operator=(DataVector&& rhs) noexcept;  // NOLINT
+  DataVector& operator=(DataVector&& rhs) noexcept;
 
+  // This is a converting constructor. clang-tidy complains that it's not
+  // explicit, but we want it to allow conversion.
+  // clang-tidy: mark as explicit (we want conversion to DataVector)
   template <typename VT, bool VF>
-  DataVector(const blaze::Vector<VT, VF>& expression);
+  DataVector(const blaze::Vector<VT, VF>& expression);  // NOLINT
 
   template <typename VT, bool VF>
   DataVector& operator=(const blaze::Vector<VT, VF>& expression);
@@ -102,10 +105,12 @@ class DataVector {
   /// Access ith element
   double& operator[](const size_type i) {
     ASSERT(i < size_, "i = " << i << ", size = " << size_);
+    // clang-tidy: do not use pointer arithmetic
     return data_[i];  // NOLINT
   }
   const double& operator[](const size_type i) const {
     ASSERT(i < size_, "i = " << i << ", size = " << size_);
+    // clang-tidy: do not use pointer arithmetic
     return data_[i];  // NOLINT
   }
   // @}
@@ -128,7 +133,7 @@ class DataVector {
   // @}
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p);
 
   // @{
   /// See the Blaze library documentation for details on these functions since
@@ -363,8 +368,7 @@ template <typename VT, bool VF>
 DataVector::DataVector(const blaze::Vector<VT, VF>& expression)
     : size_((~expression).size()),
       owned_data_((~expression).size()),
-      data_(owned_data_.data(), (~expression).size()),
-      owning_(true) {
+      data_(owned_data_.data(), (~expression).size()) {
   data_ = expression;
 }
 

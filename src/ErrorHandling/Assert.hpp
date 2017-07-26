@@ -38,6 +38,7 @@
   do {                                                              \
     if (!(a)) {                                                     \
       std::ostringstream avoid_name_collisions_ASSERT;              \
+      /* clang-tidy: macro arg in parentheses */                    \
       avoid_name_collisions_ASSERT << m; /* NOLINT */               \
       abort_with_error_message(#a, __FILE__, __LINE__,              \
                                avoid_name_collisions_ASSERT.str()); \
@@ -49,7 +50,8 @@
     if (false) {                                       \
       static_cast<void>(a);                            \
       std::ostringstream avoid_name_collisions_ASSERT; \
-      avoid_name_collisions_ASSERT << m;               \
+      /* clang-tidy: macro arg in parentheses */       \
+      avoid_name_collisions_ASSERT << m;  /* NOLINT */ \
       static_cast<void>(avoid_name_collisions_ASSERT); \
     }                                                  \
   } while (false)

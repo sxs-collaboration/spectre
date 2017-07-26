@@ -32,7 +32,7 @@ class SliceIterator {
   SliceIterator() = delete;
 
   /// Returns `true` if the iterator is valid
-  operator bool() const noexcept { return volume_offset_ < size_; }
+  explicit operator bool() const noexcept { return volume_offset_ < size_; }
 
   /// Step to the next grid point
   SliceIterator& operator++();

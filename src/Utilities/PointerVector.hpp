@@ -11,7 +11,9 @@
 #include <blaze/math/CustomVector.h>
 #include <blaze/util/typetraits/RemoveConst.h>
 
-#define SPECTRE_BLAZE_ALLOCATOR(_TYPE_T, _SIZE_V) new _TYPE_T[_SIZE_V]
+// clang-tidy: do not use pointer arithmetic
+#define SPECTRE_BLAZE_ALLOCATOR(_TYPE_T, _SIZE_V) \
+  new _TYPE_T[_SIZE_V]  // NOLINT
 #define SPECTRE_BLAZE_DEALLOCATOR blaze::ArrayDelete()
 
 namespace blaze {
@@ -151,22 +153,22 @@ struct PointerVector
     : public blaze::DenseVector<PointerVector<Type, AF, PF, TF>, TF> {
   /// \cond
  public:
-  typedef PointerVector<Type, AF, PF, TF> This;
-  typedef blaze::DenseVector<This, TF> BaseType;
-  typedef blaze::DynamicVector<blaze::RemoveConst_<Type>, TF> ResultType;
-  typedef PointerVector<Type, AF, PF, !TF> TransposeType;
-  typedef Type ElementType;
-  typedef blaze::SIMDTrait_<ElementType> SIMDType;
-  typedef const Type& ReturnType;
-  typedef const PointerVector& CompositeType;
+  using This = PointerVector<Type, AF, PF, TF>;
+  using BaseType = blaze::DenseVector<This, TF>;
+  using ResultType = blaze::DynamicVector<blaze::RemoveConst_<Type>, TF>;
+  using TransposeType = PointerVector<Type, AF, PF, !TF>;
+  using ElementType = Type;
+  using SIMDType = blaze::SIMDTrait_<ElementType>;
+  using ReturnType = const Type&;
+  using CompositeType = const PointerVector&;
 
-  typedef Type& Reference;
-  typedef const Type& ConstReference;
-  typedef Type* Pointer;
-  typedef const Type* ConstPointer;
+  using Reference = Type&;
+  using ConstReference = const Type&;
+  using Pointer = Type*;
+  using ConstPointer = const Type*;
 
-  typedef blaze::DenseIterator<Type, AF> Iterator;
-  typedef blaze::DenseIterator<const Type, AF> ConstIterator;
+  using Iterator = blaze::DenseIterator<Type, AF>;
+  using ConstIterator = blaze::DenseIterator<const Type, AF>;
 
   enum : bool { simdEnabled = blaze::IsVectorizable<Type>::value };
   enum : bool { smpAssignable = !blaze::IsSMPAssignable<Type>::value };
@@ -181,8 +183,14 @@ struct PointerVector
 
   /*!\name Data access functions */
   //@{
-  Type& operator[](const size_t i) noexcept { return v_[i]; }
-  const Type& operator[](const size_t i) const noexcept { return v_[i]; }
+  Type& operator[](const size_t i) noexcept {
+    // clang-tidy: do not use pointer arithmetic
+    return v_[i];  // NOLINT
+  }
+  const Type& operator[](const size_t i) const noexcept {
+    // clang-tidy: do not use pointer arithmetic
+    return v_[i];  // NOLINT
+  }
   inline Reference at(size_t index);
   inline ConstReference at(size_t index) const;
   Pointer data() noexcept { return v_; }
@@ -190,8 +198,14 @@ struct PointerVector
   Iterator begin() noexcept { return Iterator(v_); }
   ConstIterator begin() const noexcept { return ConstIterator(v_); }
   ConstIterator cbegin() const noexcept { return ConstIterator(v_); }
-  Iterator end() noexcept { return Iterator(v_ + size_); }
-  ConstIterator end() const noexcept { return ConstIterator(v_ + size_); }
+  Iterator end() noexcept {
+    // clang-tidy: do not use pointer arithmetic
+    return Iterator(v_ + size_);  // NOLINT
+  }
+  ConstIterator end() const noexcept {
+    // clang-tidy: do not use pointer arithmetic
+    return ConstIterator(v_ + size_);  // NOLINT
+  }
   ConstIterator cend() const noexcept { return ConstIterator(v_ + size_); }
   //@}
 
@@ -391,7 +405,8 @@ template <typename Type, bool AF, bool PF, bool TF>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator=(const Type& rhs) {
   for (size_t i = 0; i < size_; ++i) {
-    v_[i] = rhs;
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] = rhs;  // NOLINT
   }
   return *this;
 }
@@ -410,7 +425,8 @@ inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator=(const Other (&array)[N]) {
   ASSERT(size_ == N, "Invalid array size");
   for (size_t i = 0UL; i < N; ++i) {
-    v_[i] = array[i];
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] = array[i];  // NOLINT
   }
   return *this;
 }
@@ -420,8 +436,7 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator=(const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  using namespace blaze;
-  smpAssign(*this, ~rhs);
+  blaze::smpAssign(*this, ~rhs);
   return *this;
 }
 
@@ -430,8 +445,7 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator+=(const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  using namespace blaze;
-  smpAddAssign(*this, ~rhs);
+  blaze::smpAddAssign(*this, ~rhs);
   return *this;
 }
 
@@ -440,8 +454,7 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
 operator-=(const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  using namespace blaze;
-  smpSubAssign(*this, ~rhs);
+  blaze::smpSubAssign(*this, ~rhs);
   return *this;
 }
 
@@ -452,14 +465,13 @@ operator*=(const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
 
-  typedef blaze::MultTrait_<ResultType, blaze::ResultType_<VT>> MultType;
+  using MultType = blaze::MultTrait_<ResultType, blaze::ResultType_<VT>>;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(MultType, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(MultType);
 
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  using namespace blaze;
-  smpMultAssign(*this, ~rhs);
+  blaze::smpMultAssign(*this, ~rhs);
   return *this;
 }
 
@@ -470,14 +482,13 @@ operator/=(const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
 
-  typedef blaze::DivTrait_<ResultType, blaze::ResultType_<VT>> DivType;
+  using DivType = blaze::DivTrait_<ResultType, blaze::ResultType_<VT>>;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(DivType, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(DivType);
 
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
-  using namespace blaze;
-  smpDivAssign(*this, ~rhs);
+  blaze::smpDivAssign(*this, ~rhs);
   return *this;
 }
 
@@ -490,7 +501,7 @@ operator%=(const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
 
-  typedef blaze::CrossTrait_<ResultType, blaze::ResultType_<VT>> CrossType;
+  using CrossType = blaze::CrossTrait_<ResultType, blaze::ResultType_<VT>>;
 
   BLAZE_CONSTRAINT_MUST_BE_DENSE_VECTOR_TYPE(CrossType);
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(CrossType, TF);
@@ -511,8 +522,7 @@ template <typename Other>
 inline std::enable_if_t<blaze::IsNumeric<Other>::value,
                         PointerVector<Type, AF, PF, TF>>&
 PointerVector<Type, AF, PF, TF>::operator*=(Other rhs) {
-  using namespace blaze;
-  smpAssign(*this, (*this) * rhs);
+  blaze::smpAssign(*this, (*this) * rhs);
   return *this;
 }
 
@@ -522,8 +532,7 @@ inline std::enable_if_t<blaze::IsNumeric<Other>::value,
                         PointerVector<Type, AF, PF, TF>>&
 PointerVector<Type, AF, PF, TF>::operator/=(Other rhs) {
   BLAZE_USER_ASSERT(rhs != Other(0), "Division by zero detected");
-  using namespace blaze;
-  smpAssign(*this, (*this) / rhs);
+  blaze::smpAssign(*this, (*this) / rhs);
   return *this;
 }
 
@@ -556,9 +565,8 @@ BLAZE_ALWAYS_INLINE typename PointerVector<Type, AF, PF, TF>::SIMDType
 PointerVector<Type, AF, PF, TF>::load(size_t index) const noexcept {
   if (AF) {
     return loada(index);
-  } else {
-    return loadu(index);
   }
+  return loadu(index);
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -575,8 +583,8 @@ PointerVector<Type, AF, PF, TF>::loada(size_t index) const noexcept {
                         "Invalid vector access index");
   BLAZE_INTERNAL_ASSERT(checkAlignment(v_ + index),
                         "Invalid vector access index");
-
-  return loada(v_ + index);
+  // clang-tidy: do not use pointer arithmetic
+  return loada(v_ + index);  // NOLINT
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -589,8 +597,8 @@ PointerVector<Type, AF, PF, TF>::loadu(size_t index) const noexcept {
   BLAZE_INTERNAL_ASSERT(index < size_, "Invalid vector access index");
   BLAZE_INTERNAL_ASSERT(index + SIMDSIZE <= size_,
                         "Invalid vector access index");
-
-  return loadu(v_ + index);
+  // clang-tidy: do not use pointer arithmetic
+  return loadu(v_ + index);  // NOLINT
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -617,8 +625,8 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::storea(
                         "Invalid vector access index");
   BLAZE_INTERNAL_ASSERT(checkAlignment(v_ + index),
                         "Invalid vector access index");
-
-  storea(v_ + index, value);
+  // clang-tidy: do not use pointer arithmetic
+  storea(v_ + index, value);  // NOLINT
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -631,8 +639,8 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::storeu(
   BLAZE_INTERNAL_ASSERT(index < size_, "Invalid vector access index");
   BLAZE_INTERNAL_ASSERT(index + SIMDSIZE <= size_,
                         "Invalid vector access index");
-
-  storeu(v_ + index, value);
+  // clang-tidy: do not use pointer arithmetic
+  storeu(v_ + index, value);  // NOLINT
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -649,8 +657,8 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::stream(
                         "Invalid vector access index");
   BLAZE_INTERNAL_ASSERT(checkAlignment(v_ + index),
                         "Invalid vector access index");
-
-  stream(v_ + index, value);
+  // clang-tidy: do not use pointer arithmetic
+  stream(v_ + index, value);  // NOLINT
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -666,11 +674,14 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
                         "Invalid end calculation");
 
   for (size_t i = 0UL; i < ipos; i += 2UL) {
-    v_[i] = (~rhs)[i];
-    v_[i + 1UL] = (~rhs)[i + 1UL];
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] = (~rhs)[i];              // NOLINT
+    v_[i + 1UL] = (~rhs)[i + 1UL];  // NOLINT
   }
-  if (ipos < (~rhs).size())
-    v_[ipos] = (~rhs)[ipos];
+  if (ipos < (~rhs).size()) {
+    // clang-tidy: do not use pointer arithmetic
+    v_[ipos] = (~rhs)[ipos];  // NOLINT
+  }
 }
 
 template <typename Type, bool AF, bool PF, bool TF>
@@ -695,7 +706,8 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
       stream(i, (~rhs).load(i));
     }
     for (; i < size_; ++i) {
-      v_[i] = (~rhs)[i];
+      // clang-tidy: do not use pointer arithmetic
+      v_[i] = (~rhs)[i];  // NOLINT
     }
   } else {
     const size_t i4way(size_ & size_t(-SIMDSIZE * 4));
@@ -720,7 +732,8 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
       store(i, it.load());
     }
     for (; i < size_; ++i, ++it) {
-      v_[i] = *it;
+      // clang-tidy: do not use pointer arithmetic
+      v_[i] = *it;  // NOLINT
     }
   }
 }
@@ -739,11 +752,13 @@ PointerVector<Type, AF, PF, TF>::addAssign(
                         "Invalid end calculation");
 
   for (size_t i = 0UL; i < ipos; i += 2UL) {
-    v_[i] += (~rhs)[i];
-    v_[i + 1UL] += (~rhs)[i + 1UL];
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] += (~rhs)[i];              // NOLINT
+    v_[i + 1UL] += (~rhs)[i + 1UL];  // NOLINT
   }
   if (ipos < (~rhs).size()) {
-    v_[ipos] += (~rhs)[ipos];
+    // clang-tidy: do not use pointer arithmetic
+    v_[ipos] += (~rhs)[ipos];  // NOLINT
   }
 }
 
@@ -783,7 +798,8 @@ PointerVector<Type, AF, PF, TF>::addAssign(
     store(i, load(i) + it.load());
   }
   for (; i < size_; ++i, ++it) {
-    v_[i] += *it;
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] += *it;  // NOLINT
   }
 }
 
@@ -813,11 +829,13 @@ PointerVector<Type, AF, PF, TF>::subAssign(
                         "Invalid end calculation");
 
   for (size_t i = 0UL; i < ipos; i += 2UL) {
-    v_[i] -= (~rhs)[i];
-    v_[i + 1UL] -= (~rhs)[i + 1UL];
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] -= (~rhs)[i];              // NOLINT
+    v_[i + 1UL] -= (~rhs)[i + 1UL];  // NOLINT
   }
   if (ipos < (~rhs).size()) {
-    v_[ipos] -= (~rhs)[ipos];
+    // clang-tidy: do not use pointer arithmetic
+    v_[ipos] -= (~rhs)[ipos];  // NOLINT
   }
 }
 
@@ -857,7 +875,8 @@ PointerVector<Type, AF, PF, TF>::subAssign(
     store(i, load(i) - it.load());
   }
   for (; i < size_; ++i, ++it) {
-    v_[i] -= *it;
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] -= *it;  // NOLINT
   }
 }
 
@@ -887,11 +906,13 @@ PointerVector<Type, AF, PF, TF>::multAssign(
                         "Invalid end calculation");
 
   for (size_t i = 0UL; i < ipos; i += 2UL) {
-    v_[i] *= (~rhs)[i];
-    v_[i + 1UL] *= (~rhs)[i + 1UL];
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] *= (~rhs)[i];              // NOLINT
+    v_[i + 1UL] *= (~rhs)[i + 1UL];  // NOLINT
   }
   if (ipos < (~rhs).size()) {
-    v_[ipos] *= (~rhs)[ipos];
+    // clang-tidy: do not use pointer arithmetic
+    v_[ipos] *= (~rhs)[ipos];  // NOLINT
   }
 }
 
@@ -931,7 +952,8 @@ PointerVector<Type, AF, PF, TF>::multAssign(
     store(i, load(i) * it.load());  // LCOV_EXCL_LINE
   }
   for (; i < size_; ++i, ++it) {
-    v_[i] *= *it;
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] *= *it;  // NOLINT
   }
 }
 
@@ -963,11 +985,13 @@ PointerVector<Type, AF, PF, TF>::divAssign(
                         "Invalid end calculation");
 
   for (size_t i = 0UL; i < ipos; i += 2UL) {
-    v_[i] /= (~rhs)[i];
-    v_[i + 1UL] /= (~rhs)[i + 1UL];
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] /= (~rhs)[i];              // NOLINT
+    v_[i + 1UL] /= (~rhs)[i + 1UL];  // NOLINT
   }
   if (ipos < (~rhs).size()) {
-    v_[ipos] /= (~rhs)[ipos];
+    // clang-tidy: do not use pointer arithmetic
+    v_[ipos] /= (~rhs)[ipos];  // NOLINT
   }
 }
 
@@ -1007,7 +1031,8 @@ PointerVector<Type, AF, PF, TF>::divAssign(
     store(i, load(i) / it.load());  // LCOV_EXCL_LINE
   }
   for (; i < size_; ++i, ++it) {
-    v_[i] /= *it;
+    // clang-tidy: do not use pointer arithmetic
+    v_[i] /= *it;  // NOLINT
   }
 }
 /// \endcond

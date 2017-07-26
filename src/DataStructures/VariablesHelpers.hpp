@@ -34,8 +34,10 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
   double* interface_vars_data = interface_vars.data();
   for (SliceIterator si(element_extents, sliced_dim, slice_point); si; ++si) {
     for (size_t i = 0; i < number_of_independent_components; ++i) {
-      interface_vars_data[si.slice_offset() + i * interface_grid_points] =
-          vars_data[si.volume_offset() + i * volume_grid_points];
+      // clang-tidy: do not use pointer arithmetic
+      interface_vars_data[si.slice_offset() +                      // NOLINT
+                          i * interface_grid_points] =             // NOLINT
+          vars_data[si.volume_offset() + i * volume_grid_points];  // NOLINT
     }
   }
   return interface_vars;

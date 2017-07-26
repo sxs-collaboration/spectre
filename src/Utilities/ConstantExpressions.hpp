@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -168,13 +169,16 @@ inline constexpr auto make_array_from_list() {
 
 /// \ingroup ConstantExpressions
 /// \brief Compute the length of a const char* at compile time
-SPECTRE_ALWAYS_INLINE constexpr size_t cstring_length(const char* str) {
+SPECTRE_ALWAYS_INLINE constexpr size_t cstring_length(
+    const char* str) noexcept {
+  // clang-tidy: do not use pointer arithmetic
   return *str != 0 ? 1 + cstring_length(str + 1) : 0;  // NOLINT
 }
 
 /// \ingroup ConstantExpressions
 /// \brief Compute a hash of a const char* at compile time
-SPECTRE_ALWAYS_INLINE constexpr size_t cstring_hash(const char* str) {
+SPECTRE_ALWAYS_INLINE constexpr size_t cstring_hash(const char* str) noexcept {
+  // clang-tidy: do not use pointer arithmetic
   return *str != 0
              ? (cstring_hash(str + 1) * 33) ^  // NOLINT
                    static_cast<size_t>(*str)
@@ -187,7 +191,8 @@ inline constexpr std::array<std::decay_t<T>, Size> replace_at_helper(
     const std::array<T, Size>& arr, const T& value, const size_t i,
     std::integer_sequence<size_t, I...> /*unused*/,
     std::integer_sequence<size_t, J...> /*unused*/) {
-  return std::array<std::decay_t<T>, Size>{{arr[I]..., value, arr[i + J]...}};
+  return std::array<std::decay_t<T>, Size>{
+      {arr[I]..., value, gsl::at(arr, i + J)...}};
 }
 }  // namespace ConstantExpression_detail
 
@@ -207,6 +212,8 @@ inline constexpr std::array<std::decay_t<T>, Size> replace_at(
 template <typename T, typename S, size_t size>
 inline constexpr bool array_equal(const std::array<T, size>& lhs,
                                   const std::array<S, size>& rhs,
-                                  const size_t i = 0) {
-  return i < size ? (lhs[i] == rhs[i] and array_equal(lhs, rhs, i + 1)) : true;
+                                  const size_t i = 0) noexcept {
+  return i < size ? (gsl::at(lhs, i) == gsl::at(rhs, i) and
+                     array_equal(lhs, rhs, i + 1))
+                  : true;
 }
