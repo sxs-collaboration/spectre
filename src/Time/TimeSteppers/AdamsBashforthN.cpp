@@ -64,9 +64,17 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
 
 std::vector<double> AdamsBashforthN::variable_coefficients(
     const std::vector<double>& steps) noexcept {
-  const size_t order = steps.size();
+  const size_t order = steps.size();  // "k" in below equations
 
-  // polynomials[coefficient][term exponent]
+  // The `steps` vector contains the relative step sizes:
+  //   steps = {dt_{n-k+1}/dt_n, ..., dt_n/dt_n}
+  // Our goal is to calculate, for each j, the coefficient given by
+  //   \int_0^1 dt ell_j(t; 1, (dt_n + dt_{n-1})/dt_n, ...,
+  //                        (dt_n + ... + dt_{n-k+1})/dt_n)
+  // (Where the ell_j are the Lagrange interpolating polynomials.)
+
+  // Calculate coefficients of the numerators of the Lagrange interpolating
+  // polynomial, in the standard form.
   std::vector<std::vector<double>> polynomials(order,
                                                std::vector<double>(order, 0.));
   for (auto& poly : polynomials) {
@@ -90,6 +98,7 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
     }
   }
 
+  // Calculate the denominators of the Lagrange interpolating polynomials.
   std::vector<double> denominators;
   denominators.reserve(order);
   for (size_t j = 0; j < order; ++j) {
@@ -109,6 +118,10 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
     denominators.push_back(denom);
   }
 
+  // At this point, the Lagrange interpolating polynomials are given by:
+  //   ell_j(t; ...) = +/- sum_m t^m polynomials[j][m] / denominators[j]
+
+  // Integrate, term by term.
   std::vector<double> result;
   result.reserve(order);
   double overall_sign = order % 2 == 0 ? -1. : 1.;
