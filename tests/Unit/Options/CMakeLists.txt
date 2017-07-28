@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(OPTIONS_TESTS
+    Options/Test_Factory.cpp
     Options/Test_Options.cpp
     )
 
