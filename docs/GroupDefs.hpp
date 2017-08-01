@@ -183,6 +183,11 @@
  */
 
 /*!
+ * \defgroup OptionParsing Option Parsing
+ * Things related to parsing YAML input files.
+ */
+
+/*!
  * \defgroup Parallel Parallel Info
  * \brief Functions to get info about parallelization and printing in parallel
  */
