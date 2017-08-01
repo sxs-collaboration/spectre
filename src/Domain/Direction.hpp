@@ -22,13 +22,13 @@ class Direction {
   enum class Axis;
 
   /// Construct by specifying an Axis and a Side.
-  Direction(Axis axis, Side side) : axis_(axis), side_(side) {}
+  Direction(Axis axis, Side side) noexcept : axis_(axis), side_(side) {}
 
   /// Construct by specifying a dimension and a Side.
-  Direction<VolumeDim>(size_t dimension, Side side);
+  Direction<VolumeDim>(size_t dimension, Side side) noexcept;
 
   /// Default constructor for Charm++ serialization.
-  Direction() = default;
+  Direction() noexcept;
 
   /// The dimension of the Direction
   size_t dimension() const noexcept { return static_cast<size_t>(axis_); }
@@ -43,18 +43,22 @@ class Direction {
   double sign() const noexcept { return (Side::Lower == side_ ? -1.0 : 1.0); }
 
   /// The opposite Direction.
-  Direction<VolumeDim> opposite() const;
+  Direction<VolumeDim> opposite() const noexcept;
+
+  // An array of all logical Directions for a given dimensionality.
+  static std::array<Direction<VolumeDim>, 2 * VolumeDim>
+  all_directions() noexcept;
 
   // {@
   /// Helper functions for creating specific Directions.
   /// These are labeled by the logical-coordinate names (Xi,Eta,Zeta).
   // Note: these are functions because they contain static_assert.
-  static Direction<VolumeDim> lower_xi();
-  static Direction<VolumeDim> upper_xi();
-  static Direction<VolumeDim> lower_eta();
-  static Direction<VolumeDim> upper_eta();
-  static Direction<VolumeDim> lower_zeta();
-  static Direction<VolumeDim> upper_zeta();
+  static Direction<VolumeDim> lower_xi() noexcept;
+  static Direction<VolumeDim> upper_xi() noexcept;
+  static Direction<VolumeDim> lower_eta() noexcept;
+  static Direction<VolumeDim> upper_eta() noexcept;
+  static Direction<VolumeDim> lower_zeta() noexcept;
+  static Direction<VolumeDim> upper_zeta() noexcept;
   // @}
 
   /// Serialization for Charm++
@@ -74,6 +78,9 @@ std::ostream& operator<<(std::ostream& os,
 // INLINE DEFINITIONS
 //##############################################################################
 
+template <size_t VolumeDim>
+Direction<VolumeDim>::Direction() noexcept = default;
+
 // Needed in order to address warning; ignorning -Wpedantic is needed.
 // Bug 61491
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61491
@@ -90,42 +97,63 @@ enum class Direction<3>::Axis{Xi = 0, Eta = 1, Zeta = 2};
 #pragma GCC diagnostic pop
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::lower_xi() {
+inline Direction<VolumeDim> Direction<VolumeDim>::lower_xi() noexcept {
   return Direction(Direction<VolumeDim>::Axis::Xi, Side::Lower);
 }
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::upper_xi() {
+inline Direction<VolumeDim> Direction<VolumeDim>::upper_xi() noexcept {
   return Direction(Direction<VolumeDim>::Axis::Xi, Side::Upper);
 }
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::lower_eta() {
+inline Direction<VolumeDim> Direction<VolumeDim>::lower_eta() noexcept {
   static_assert(VolumeDim == 2 or VolumeDim == 3, "VolumeDim must be 2 or 3.");
   return Direction(Direction<VolumeDim>::Axis::Eta, Side::Lower);
 }
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::upper_eta() {
+inline Direction<VolumeDim> Direction<VolumeDim>::upper_eta() noexcept {
   static_assert(VolumeDim == 2 or VolumeDim == 3, "VolumeDim must be 2 or 3.");
   return Direction(Direction<VolumeDim>::Axis::Eta, Side::Upper);
 }
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::lower_zeta() {
+inline Direction<VolumeDim> Direction<VolumeDim>::lower_zeta() noexcept {
   static_assert(VolumeDim == 3, "VolumeDim must be 3.");
   return Direction(Direction<VolumeDim>::Axis::Zeta, Side::Lower);
 }
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::upper_zeta() {
+inline Direction<VolumeDim> Direction<VolumeDim>::upper_zeta() noexcept {
   static_assert(VolumeDim == 3, "VolumeDim must be 3.");
   return Direction(Direction<VolumeDim>::Axis::Zeta, Side::Upper);
 }
 
 template <size_t VolumeDim>
-inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const {
+inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
   return Direction<VolumeDim>(axis_, ::opposite(side_));
+}
+
+template <>
+inline std::array<Direction<1>, 2> Direction<1>::all_directions() noexcept {
+  return std::array<Direction<1>, 2>{
+      {Direction<1>::upper_xi(), Direction<1>::lower_xi()}};
+}
+
+template <>
+inline std::array<Direction<2>, 4> Direction<2>::all_directions() noexcept {
+  return std::array<Direction<2>, 4>{
+      {Direction<2>::upper_xi(), Direction<2>::lower_xi(),
+       Direction<2>::upper_eta(), Direction<2>::lower_eta()}};
+}
+
+template <>
+inline std::array<Direction<3>, 6> Direction<3>::all_directions() noexcept {
+  return std::array<Direction<3>, 6>{
+      {Direction<3>::upper_xi(), Direction<3>::lower_xi(),
+       Direction<3>::upper_eta(), Direction<3>::lower_eta(),
+       Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}};
 }
 
 template <size_t VolumeDim>
