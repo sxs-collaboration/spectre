@@ -3,6 +3,7 @@
 
 set(OPTIONS_TESTS
     Options/Test_Factory.cpp
+    Options/Test_MakeCreatableFromYaml.cpp
     Options/Test_Options.cpp
     )
 
