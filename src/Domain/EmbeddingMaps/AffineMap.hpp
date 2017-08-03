@@ -6,10 +6,10 @@
 
 #pragma once
 
+#include <array>
 #include <memory>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/EmbeddingMaps/EmbeddingMap.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace EmbeddingMaps {
@@ -24,46 +24,60 @@ namespace EmbeddingMaps {
  * \xi =\frac{B}{b-a} (x-a) +\frac{A}{b-a}(b-x)
  * \f]
 */
-class AffineMap : public EmbeddingMap<1, 1> {
+class AffineMap {
  public:
+  static constexpr size_t dim = 1;
+
   AffineMap(double A, double B, double a, double b);
 
   AffineMap() = default;
-  ~AffineMap() override = default;
-  AffineMap(const AffineMap&) = delete;
+  ~AffineMap() = default;
+  AffineMap(const AffineMap&) = default;
   AffineMap(AffineMap&&) noexcept = default;  // NOLINT
-  AffineMap& operator=(const AffineMap&) = delete;
+  AffineMap& operator=(const AffineMap&) = default;
   AffineMap& operator=(AffineMap&&) = default;
 
-  std::unique_ptr<EmbeddingMap<1, 1>> get_clone() const override;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> operator()(
+      const std::array<T, 1>& xi) const;
 
-  Point<1, Frame::Grid> operator()(
-      const Point<1, Frame::Logical>& xi) const override;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> inverse(
+      const std::array<T, 1>& x) const;
 
-  Point<1, Frame::Logical> inverse(
-      const Point<1, Frame::Grid>& x) const override;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+  inv_jacobian(const std::array<T, 1>& /*xi*/) const;
 
-  double jacobian(const Point<1, Frame::Logical>& xi, size_t ud,
-                  size_t ld) const override;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+  jacobian(const std::array<T, 1>& /*xi*/) const;
 
-  double inv_jacobian(const Point<1, Frame::Logical>& xi, size_t ud,
-                      size_t ld) const override;
-
-  WRAPPED_PUPable_decl_base_template(SINGLE_ARG(EmbeddingMap<1, 1>),  // NOLINT
-                                     AffineMap);
-
-  explicit AffineMap(CkMigrateMessage* /* m */);
-
-  void pup(PUP::er& p) override;
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p);  // NOLINT
 
  private:
+  friend bool operator==(const AffineMap& lhs, const AffineMap& rhs) noexcept;
+
   double A_{-1.0};
   double B_{1.0};
   double a_{-1.0};
   double b_{1.0};
   double length_of_domain_{2.0};  // B-A
   double length_of_range_{2.0};   // b-a
-  double jacobian_;
-  double inverse_jacobian_;
+  double jacobian_{length_of_range_ / length_of_domain_};
+  double inverse_jacobian_{length_of_domain_ / length_of_range_};
 };
+
+inline bool operator!=(const EmbeddingMaps::AffineMap& lhs,
+                       const EmbeddingMaps::AffineMap& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 }  // namespace EmbeddingMaps

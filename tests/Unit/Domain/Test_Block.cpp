@@ -3,14 +3,17 @@
 
 #include <catch.hpp>
 
-#include "Domain/Block.cpp"
+#include "Domain/Block.hpp"
+#include "Domain/EmbeddingMaps/CoordinateMap.hpp"
 #include "Domain/EmbeddingMaps/Identity.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 template <size_t Dim>
 void test_block() {
-  const EmbeddingMaps::Identity<Dim> identity_map{};
-  Block<Dim> block(identity_map, 7, {});
+  using embedding_map =
+      CoordinateMap<Frame::Logical, Frame::Grid, EmbeddingMaps::Identity<Dim>>;
+  const embedding_map identity_map{EmbeddingMaps::Identity<Dim>{}};
+  Block<embedding_map> block(identity_map, 7, {});
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2 * Dim);
@@ -29,20 +32,19 @@ void test_block() {
   CHECK(map.inverse(x) == xi);
 
   // Test PUP
-  // CHECK(block == serialize_and_deserialize(block));
+  CHECK(block == serialize_and_deserialize(block));
 
   // Test move semantics:
-  const Block<Dim> block_copy(identity_map, 7, {});
+  const Block<embedding_map> block_copy(identity_map, 7, {});
   test_move_semantics(std::move(block), block_copy);
 }
 
-TEST_CASE("Unit.Domain.Block.Identity", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Block.Identity", "[Domain][Unit]") {
   test_block<1>();
   test_block<2>();
-  // test_identity<3>();
 }
 
-TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   // Create std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
 
   // Each BlockNeighbor is an id and an Orientation:
@@ -55,8 +57,10 @@ TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   std::unordered_map<Direction<2>, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
-  const EmbeddingMaps::Identity<2> identity_map{};
-  const Block<2> block(identity_map, 3, std::move(neighbors));
+  using embedding_map =
+      CoordinateMap<Frame::Logical, Frame::Grid, EmbeddingMaps::Identity<2>>;
+  const embedding_map identity_map{EmbeddingMaps::Identity<2>{}};
+  const Block<embedding_map> block(identity_map, 3, std::move(neighbors));
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2);
@@ -76,7 +80,7 @@ TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
         "External boundaries: (+1,-0)\n");
 
   // Test comparison:
-  const Block<2> neighborless_block(identity_map, 7, {});
+  const Block<embedding_map> neighborless_block(identity_map, 7, {});
   CHECK(block == block);
   CHECK(block != neighborless_block);
   CHECK(neighborless_block == neighborless_block);

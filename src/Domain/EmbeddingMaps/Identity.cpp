@@ -9,50 +9,178 @@
 namespace EmbeddingMaps {
 
 template <size_t Dim>
-Point<Dim, Frame::Grid> Identity<Dim>::operator()(
-    const Point<Dim, Frame::Logical>& xi) const {
-  Point<Dim, Frame::Grid> x{};
-  std::copy(xi.begin(), xi.end(), x.begin());
-  return x;
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Dim> Identity<Dim>::
+operator()(const std::array<T, Dim>& xi) const {
+  return make_array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Dim>(xi);
 }
 
 template <size_t Dim>
-Point<Dim, Frame::Logical> Identity<Dim>::inverse(
-    const Point<Dim, Frame::Grid>& x) const {
-  Point<Dim, Frame::Logical> xi{};
-  std::copy(x.begin(), x.end(), xi.begin());
-  return xi;
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Dim>
+Identity<Dim>::inverse(const std::array<T, Dim>& x) const {
+  return make_array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Dim>(x);
 }
 
 template <size_t Dim>
-double Identity<Dim>::jacobian(const Point<Dim, Frame::Logical>& /* xi */,
-                               const size_t ud, const size_t ld) const {
-  ASSERT(ld < Dim, "ld = " << ld);
-  ASSERT(ud < Dim, "ud = " << ud);
-  return (ld == ud ? 1.0 : 0.0);
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
+Identity<Dim>::jacobian(const std::array<T, Dim>& /*xi*/) const {
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
+      jac{0.0};
+  for (size_t i = 0; i < Dim; ++i) {
+    jac.get(i, i) = 1.0;
+  }
+  return jac;
 }
 
 template <size_t Dim>
-double Identity<Dim>::inv_jacobian(const Point<Dim, Frame::Logical>& /* xi */,
-                                   const size_t ud, const size_t ld) const {
-  ASSERT(ld < Dim, "ld = " << ld);
-  ASSERT(ud < Dim, "ud = " << ud);
-  return (ld == ud ? 1.0 : 0.0);
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
+Identity<Dim>::inv_jacobian(const std::array<T, Dim>& /*xi*/) const {
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
+      inv_jac{0.0};
+  for (size_t i = 0; i < Dim; ++i) {
+    inv_jac.get(i, i) = 1.0;
+  }
+  return inv_jac;
 }
-
-template <size_t Dim>
-std::unique_ptr<EmbeddingMap<Dim, Dim>> Identity<Dim>::get_clone() const {
-  return std::make_unique<Identity<Dim>>();
-}
-
-template <size_t Dim>
-void Identity<Dim>::pup(PUP::er& p) {
-  EmbeddingMap<Dim, Dim>::pup(p);
-}  // NOLINT
 
 template class Identity<1>;
 template class Identity<2>;
 // Identity should only be used in ProductMaps if a particular dimension is
 // unaffected.  So if the largest dim we do is 3, then you should never use
 // Identity<3>
+
+/// \cond HIDDEN_SYMBOLS
+template std::array<double, 1> Identity<1>::operator()(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template std::array<double, 1> Identity<1>::operator()(
+    const std::array<double, 1>& /*xi*/) const;
+template std::array<DataVector, 1> Identity<1>::operator()(
+    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const;
+template std::array<DataVector, 1> Identity<1>::operator()(
+    const std::array<DataVector, 1>& /*xi*/) const;
+
+template std::array<double, 1> Identity<1>::inverse(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template std::array<double, 1> Identity<1>::inverse(
+    const std::array<double, 1>& /*xi*/) const;
+template std::array<DataVector, 1> Identity<1>::inverse(
+    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const;
+template std::array<DataVector, 1> Identity<1>::inverse(
+    const std::array<DataVector, 1>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::jacobian(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::jacobian(const std::array<double, 1>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::jacobian(const std::array<std::reference_wrapper<const DataVector>,
+                                       1>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::jacobian(const std::array<DataVector, 1>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::inv_jacobian(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::inv_jacobian(const std::array<double, 1>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::inv_jacobian(
+    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+Identity<1>::inv_jacobian(const std::array<DataVector, 1>& /*xi*/) const;
+
+template std::array<double, 2> Identity<2>::operator()(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template std::array<double, 2> Identity<2>::operator()(
+    const std::array<double, 2>& /*xi*/) const;
+template std::array<DataVector, 2> Identity<2>::operator()(
+    const std::array<std::reference_wrapper<const DataVector>, 2>& /*xi*/)
+    const;
+template std::array<DataVector, 2> Identity<2>::operator()(
+    const std::array<DataVector, 2>& /*xi*/) const;
+
+template std::array<double, 2> Identity<2>::inverse(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template std::array<double, 2> Identity<2>::inverse(
+    const std::array<double, 2>& /*xi*/) const;
+template std::array<DataVector, 2> Identity<2>::inverse(
+    const std::array<std::reference_wrapper<const DataVector>, 2>& /*xi*/)
+    const;
+template std::array<DataVector, 2> Identity<2>::inverse(
+    const std::array<DataVector, 2>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::jacobian(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::jacobian(const std::array<double, 2>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::jacobian(const std::array<std::reference_wrapper<const DataVector>,
+                                       2>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::jacobian(const std::array<DataVector, 2>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::inv_jacobian(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::inv_jacobian(const std::array<double, 2>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::inv_jacobian(
+    const std::array<std::reference_wrapper<const DataVector>, 2>& /*xi*/)
+    const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Identity<2>::inv_jacobian(const std::array<DataVector, 2>& /*xi*/) const;
+/// \endcond
 }  // namespace EmbeddingMaps

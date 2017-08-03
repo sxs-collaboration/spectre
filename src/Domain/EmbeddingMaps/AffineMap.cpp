@@ -3,6 +3,9 @@
 
 #include "Domain/EmbeddingMaps/AffineMap.hpp"
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+
 namespace EmbeddingMaps {
 
 AffineMap::AffineMap(const double A, const double B, const double a,
@@ -16,47 +19,45 @@ AffineMap::AffineMap(const double A, const double B, const double a,
       jacobian_(length_of_range_ / length_of_domain_),
       inverse_jacobian_(length_of_domain_ / length_of_range_) {}
 
-std::unique_ptr<EmbeddingMap<1, 1>> AffineMap::get_clone() const {
-  return std::make_unique<AffineMap>(A_, B_, a_, b_);
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> AffineMap::
+operator()(const std::array<T, 1>& xi) const {
+  return {{(length_of_range_ * xi[0] + a_ * B_ - b_ * A_) / length_of_domain_}};
 }
 
-Point<1, Frame::Grid> AffineMap::operator()(
-    const Point<1, Frame::Logical>& xi) const {
-  return Point<1, Frame::Grid>((length_of_range_ * xi[0] + a_ * B_ - b_ * A_) /
-                               length_of_domain_);
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1>
+AffineMap::inverse(const std::array<T, 1>& x) const {
+  return {{(length_of_domain_ * x[0] - a_ * B_ + b_ * A_) / length_of_range_}};
 }
 
-Point<1, Frame::Logical> AffineMap::inverse(
-    const Point<1, Frame::Grid>& x) const {
-  return Point<1, Frame::Logical>(
-      (length_of_domain_ * x[0] - a_ * B_ + b_ * A_) / length_of_range_);
-}
-double AffineMap::jacobian(const Point<1, Frame::Logical>& /* xi */, size_t ud,
-                           size_t ld) const {
-  ASSERT(0 == ld, "ld = " << ld);
-  ASSERT(0 == ud, "ud = " << ud);
-  return jacobian_;
-}
-
-double AffineMap::inv_jacobian(const Point<1, Frame::Logical>& /* xi */,
-                               size_t ud, size_t ld) const {
-  ASSERT(0 == ld, "ld = " << ld);
-  ASSERT(0 == ud, "ud = " << ud);
-  return inverse_jacobian_;
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::jacobian(const std::array<T, 1>& /*xi*/) const {
+  return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+                tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
+      jacobian_};
 }
 
-AffineMap::AffineMap(CkMigrateMessage* /* m */)
-    : A_(-1),
-      B_(1),
-      a_(-1),
-      b_(1),
-      length_of_domain_(B_ - A_),
-      length_of_range_(b_ - a_),
-      jacobian_(length_of_range_ / length_of_domain_),
-      inverse_jacobian_(length_of_domain_ / length_of_range_) {}
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::inv_jacobian(const std::array<T, 1>& /*xi*/) const {
+  return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+                tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
+      inverse_jacobian_};
+}
 
 void AffineMap::pup(PUP::er& p) {
-  EmbeddingMap<1, 1>::pup(p);
   p | A_;
   p | B_;
   p | a_;
@@ -66,8 +67,73 @@ void AffineMap::pup(PUP::er& p) {
   p | jacobian_;
   p | inverse_jacobian_;
 }
-}  // namespace EmbeddingMaps
 
-/// \cond HIDDEN_SYMBOLS
-PUP::able::PUP_ID EmbeddingMaps::AffineMap::my_PUP_ID = 0;  // NOLINT
-/// \endcond
+bool operator==(const EmbeddingMaps::AffineMap& lhs,
+                const EmbeddingMaps::AffineMap& rhs) noexcept {
+  return lhs.A_ == rhs.A_ and lhs.B_ == rhs.B_ and lhs.a_ == rhs.a_ and
+         lhs.b_ == rhs.b_ and lhs.length_of_domain_ == rhs.length_of_domain_ and
+         lhs.length_of_range_ == rhs.length_of_range_ and
+         lhs.jacobian_ == rhs.jacobian_ and
+         lhs.inverse_jacobian_ == rhs.inverse_jacobian_;
+}
+
+// Explicit instantiations
+template std::array<double, 1> AffineMap::operator()(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template std::array<double, 1> AffineMap::operator()(
+    const std::array<double, 1>& /*xi*/) const;
+template std::array<DataVector, 1> AffineMap::operator()(
+    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const;
+template std::array<DataVector, 1> AffineMap::operator()(
+    const std::array<DataVector, 1>& /*xi*/) const;
+
+template std::array<double, 1> AffineMap::inverse(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template std::array<double, 1> AffineMap::inverse(
+    const std::array<double, 1>& /*xi*/) const;
+template std::array<DataVector, 1> AffineMap::inverse(
+    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const;
+template std::array<DataVector, 1> AffineMap::inverse(
+    const std::array<DataVector, 1>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::jacobian(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::jacobian(const std::array<double, 1>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::jacobian(const std::array<std::reference_wrapper<const DataVector>,
+                                     1>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::jacobian(const std::array<DataVector, 1>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::inv_jacobian(
+    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::inv_jacobian(const std::array<double, 1>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::inv_jacobian(
+    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+AffineMap::inv_jacobian(const std::array<DataVector, 1>& /*xi*/) const;
+}  // namespace EmbeddingMaps

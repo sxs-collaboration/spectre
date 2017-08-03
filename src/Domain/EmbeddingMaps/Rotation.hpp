@@ -6,10 +6,10 @@
 
 #pragma once
 
+#include <array>
 #include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/EmbeddingMaps/EmbeddingMap.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace EmbeddingMaps {
@@ -31,45 +31,55 @@ class Rotation;
   \f}.
  */
 template <>
-class Rotation<2> : public EmbeddingMap<2, 2> {
+class Rotation<2> {
  public:
+  static constexpr size_t dim = 2;
+
   /// Constructor.
   ///
   /// \param rotation_angle the angle \f$\alpha\f$ (in radians).
   explicit Rotation(double rotation_angle);
   Rotation() = default;
-  ~Rotation() override = default;
-  Rotation(const Rotation&) = delete;
-  Rotation& operator=(const Rotation&) = delete;
+  ~Rotation() = default;
+  Rotation(const Rotation&) = default;
+  Rotation& operator=(const Rotation&) = default;
   Rotation(Rotation&&) noexcept = default;  // NOLINT
-  Rotation& operator=(Rotation&&) = delete;
+  Rotation& operator=(Rotation&&) = default;
 
-  std::unique_ptr<EmbeddingMap<2, 2>> get_clone() const override;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> operator()(
+      const std::array<T, 2>& xi) const;
 
-  Point<2, Frame::Grid> operator()(
-      const Point<2, Frame::Logical>& xi) const override;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> inverse(
+      const std::array<T, 2>& x) const;
 
-  Point<2, Frame::Logical> inverse(
-      const Point<2, Frame::Grid>& x) const override;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+  jacobian(const std::array<T, 2>& /*xi*/) const;
 
-  double jacobian(const Point<2, Frame::Logical>& /*xi*/, size_t ud,
-                  size_t ld) const override;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+  inv_jacobian(const std::array<T, 2>& /*xi*/) const;
 
-  double inv_jacobian(const Point<2, Frame::Logical>& /*xi*/, size_t ud,
-                      size_t ld) const override;
-
-  WRAPPED_PUPable_decl_base_template(SINGLE_ARG(EmbeddingMap<2, 2>),  // NOLINT
-                                     Rotation);                       // NOLINT
-
-  explicit Rotation(CkMigrateMessage* /* m */);
-
-  void pup(PUP::er& p) override;  // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
+  friend bool operator==(const Rotation<2>& lhs,
+                         const Rotation<2>& rhs) noexcept;
+
   double rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
   tnsr::ij<double, 2, Frame::Grid> rotation_matrix_{
       std::numeric_limits<double>::signaling_NaN()};
 };
+
+bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept;
 
 /*! Spatial rotation in three dimensions using Euler angles
  *
@@ -94,8 +104,10 @@ class Rotation<2> : public EmbeddingMap<2, 2> {
  *  \f}
  */
 template <>
-class Rotation<3> : public EmbeddingMap<3, 3> {
+class Rotation<3> {
  public:
+  static constexpr size_t dim = 3;
+
   /// Constructor.
   ///
   /// \param rotation_about_z the angle \f$\alpha\f$ (in radians).
@@ -104,34 +116,40 @@ class Rotation<3> : public EmbeddingMap<3, 3> {
   Rotation(double rotation_about_z, double rotation_about_rotated_y,
            double rotation_about_rotated_z);
   Rotation() = default;
-  ~Rotation() override = default;
-  Rotation(const Rotation&) = delete;
-  Rotation& operator=(const Rotation&) = delete;
+  ~Rotation() = default;
+  Rotation(const Rotation&) = default;
+  Rotation& operator=(const Rotation&) = default;
   Rotation(Rotation&&) noexcept = default;  // NOLINT
-  Rotation& operator=(Rotation&&) = delete;
+  Rotation& operator=(Rotation&&) = default;
 
-  std::unique_ptr<EmbeddingMap<3, 3>> get_clone() const override;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> operator()(
+      const std::array<T, 3>& xi) const;
 
-  Point<3, Frame::Grid> operator()(
-      const Point<3, Frame::Logical>& xi) const override;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> inverse(
+      const std::array<T, 3>& x) const;
 
-  Point<3, Frame::Logical> inverse(
-      const Point<3, Frame::Grid>& x) const override;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+  jacobian(const std::array<T, 3>& /*xi*/) const;
 
-  double jacobian(const Point<3, Frame::Logical>& xi, size_t ud,
-                  size_t ld) const override;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+  inv_jacobian(const std::array<T, 3>& /*xi*/) const;
 
-  double inv_jacobian(const Point<3, Frame::Logical>& xi, size_t ud,
-                      size_t ld) const override;
-
-  WRAPPED_PUPable_decl_base_template(SINGLE_ARG(EmbeddingMap<3, 3>),  // NOLINT
-                                     Rotation);                       // NOLINT
-
-  explicit Rotation(CkMigrateMessage* m);
-
-  void pup(PUP::er& p) override; // NOLINT
+  void pup(PUP::er& p);  // NOLINT
 
  private:
+  friend bool operator==(const Rotation<3>& lhs,
+                         const Rotation<3>& rhs) noexcept;
+
   double rotation_about_z_{std::numeric_limits<double>::signaling_NaN()};
   double rotation_about_rotated_y_{
       std::numeric_limits<double>::signaling_NaN()};
@@ -140,4 +158,7 @@ class Rotation<3> : public EmbeddingMap<3, 3> {
   tnsr::ij<double, 3, Frame::Grid> rotation_matrix_{
       std::numeric_limits<double>::signaling_NaN()};
 };
+
+bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept;
+
 }  // namespace EmbeddingMaps

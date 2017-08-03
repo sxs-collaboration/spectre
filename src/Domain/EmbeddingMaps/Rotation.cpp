@@ -10,62 +10,77 @@ Rotation<2>::Rotation(const double rotation_angle)
       rotation_matrix_(std::numeric_limits<double>::signaling_NaN()) {
   const double cos_alpha = cos(rotation_angle_);
   const double sin_alpha = sin(rotation_angle_);
-  rotation_matrix_.get(0, 0) = cos_alpha;
-  rotation_matrix_.get(0, 1) = -sin_alpha;
-  rotation_matrix_.get(1, 0) = sin_alpha;
-  rotation_matrix_.get(1, 1) = cos_alpha;
+  rotation_matrix_.template get<0, 0>() = cos_alpha;
+  rotation_matrix_.template get<0, 1>() = -sin_alpha;
+  rotation_matrix_.template get<1, 0>() = sin_alpha;
+  rotation_matrix_.template get<1, 1>() = cos_alpha;
 }
 
-std::unique_ptr<EmbeddingMap<2, 2>> Rotation<2>::get_clone() const {
-  return std::make_unique<Rotation<2>>(rotation_angle_);
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> Rotation<2>::
+operator()(const std::array<T, 2>& xi) const {
+  return {{xi[0] * rotation_matrix_.template get<0, 0>() +
+               xi[1] * rotation_matrix_.template get<0, 1>(),
+           xi[0] * rotation_matrix_.template get<1, 0>() +
+               xi[1] * rotation_matrix_.template get<1, 1>()}};
 }
 
-Point<2, Frame::Grid> Rotation<2>::operator()(
-    const Point<2, Frame::Logical>& xi) const {
-  return Point<2, Frame::Grid>{
-      {{xi[0] * rotation_matrix_.template get<0, 0>() +
-            xi[1] * rotation_matrix_.template get<0, 1>(),
-        xi[0] * rotation_matrix_.template get<1, 0>() +
-            xi[1] * rotation_matrix_.template get<1, 1>()}}};
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2>
+Rotation<2>::inverse(const std::array<T, 2>& x) const {
+  return {{x[0] * rotation_matrix_.template get<0, 0>() +
+               x[1] * rotation_matrix_.template get<1, 0>(),
+           x[0] * rotation_matrix_.template get<0, 1>() +
+               x[1] * rotation_matrix_.template get<1, 1>()}};
 }
 
-Point<2, Frame::Logical> Rotation<2>::inverse(
-    const Point<2, Frame::Grid>& x) const {
-  // Inverse rotation matrix is the same as the transpose.
-  return Point<2, Frame::Logical>{
-      {{x[0] * rotation_matrix_.template get<0, 0>() +
-            x[1] * rotation_matrix_.template get<1, 0>(),
-        x[0] * rotation_matrix_.template get<0, 1>() +
-            x[1] * rotation_matrix_.template get<1, 1>()}}};
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::jacobian(const std::array<T, 2>& /*xi*/) const {
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+      jac{};
+  jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
+  jac.template get<1, 0>() = rotation_matrix_.template get<1, 0>();
+  jac.template get<0, 1>() = rotation_matrix_.template get<0, 1>();
+  jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
+  return jac;
 }
 
-double Rotation<2>::jacobian(const Point<2, Frame::Logical>& /*xi*/, size_t ud,
-                             size_t ld) const {
-  ASSERT(0 == ld || 1 == ld,
-         "ld = " << ld << " in jacobian. ld must be 0 or 1");
-  ASSERT(0 == ud || 1 == ud,
-         "ud = " << ud << " in jacobian. ud must be 0 or 1");
-  return rotation_matrix_.get(ud, ld);
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::inv_jacobian(const std::array<T, 2>& /*xi*/) const {
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+      inv_jac{};
+  inv_jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
+  inv_jac.template get<1, 0>() = rotation_matrix_.template get<0, 1>();
+  inv_jac.template get<0, 1>() = rotation_matrix_.template get<1, 0>();
+  inv_jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
+  return inv_jac;
 }
-
-double Rotation<2>::inv_jacobian(const Point<2, Frame::Logical>& /*xi*/,
-                                 size_t ud, size_t ld) const {
-  ASSERT(0 == ld || 1 == ld,
-         "ld = " << ld << " in inverse jacobian. ld must be 0 or 1");
-  ASSERT(0 == ud || 1 == ud,
-         "ud = " << ud << " in inverse jacobian. us must be 0 or 1");
-  // Recall inverse(rotation_matrix_) = transpose(rotation_matrix_)
-  return rotation_matrix_.get(ld, ud);
-}
-
-Rotation<2>::Rotation(CkMigrateMessage* /* m */)
-    : rotation_angle_(std::numeric_limits<double>::signaling_NaN()),
-      rotation_matrix_() {}
 
 void Rotation<2>::pup(PUP::er& p) {
-  EmbeddingMap<2, 2>::pup(p);
   p | rotation_angle_;
   p | rotation_matrix_;
+}
+
+bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
+  return lhs.rotation_angle_ == rhs.rotation_angle_;
+}
+
+bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
+  return not(lhs == rhs);
 }
 
 Rotation<3>::Rotation(const double rotation_about_z,
@@ -81,91 +96,227 @@ Rotation<3>::Rotation(const double rotation_about_z,
   const double sin_beta = sin(rotation_about_rotated_y_);
   const double cos_gamma = cos(rotation_about_rotated_z_);
   const double sin_gamma = sin(rotation_about_rotated_z_);
-  rotation_matrix_.get(0, 0) =
+  rotation_matrix_.template get<0, 0>() =
       cos_gamma * cos_beta * cos_alpha - sin_gamma * sin_alpha;
-  rotation_matrix_.get(0, 1) =
+  rotation_matrix_.template get<0, 1>() =
       -sin_gamma * cos_beta * cos_alpha - cos_gamma * sin_alpha;
-  rotation_matrix_.get(0, 2) = sin_beta * cos_alpha;
-  rotation_matrix_.get(1, 0) =
+  rotation_matrix_.template get<0, 2>() = sin_beta * cos_alpha;
+  rotation_matrix_.template get<1, 0>() =
       cos_gamma * cos_beta * sin_alpha + sin_gamma * cos_alpha;
-  rotation_matrix_.get(1, 1) =
+  rotation_matrix_.template get<1, 1>() =
       -sin_gamma * cos_beta * sin_alpha + cos_gamma * cos_alpha;
-  rotation_matrix_.get(1, 2) = sin_beta * sin_alpha;
-  rotation_matrix_.get(2, 0) = -cos_gamma * sin_beta;
-  rotation_matrix_.get(2, 1) = sin_gamma * sin_beta;
-  rotation_matrix_.get(2, 2) = cos_beta;
+  rotation_matrix_.template get<1, 2>() = sin_beta * sin_alpha;
+  rotation_matrix_.template get<2, 0>() = -cos_gamma * sin_beta;
+  rotation_matrix_.template get<2, 1>() = sin_gamma * sin_beta;
+  rotation_matrix_.template get<2, 2>() = cos_beta;
 }
 
-std::unique_ptr<EmbeddingMap<3, 3>> Rotation<3>::get_clone() const {
-  return std::make_unique<Rotation<3>>(
-      rotation_about_z_, rotation_about_rotated_y_, rotation_about_rotated_z_);
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> Rotation<3>::
+operator()(const std::array<T, 3>& xi) const {
+  return {{xi[0] * rotation_matrix_.template get<0, 0>() +
+               xi[1] * rotation_matrix_.template get<0, 1>() +
+               xi[2] * rotation_matrix_.template get<0, 2>(),
+           xi[0] * rotation_matrix_.template get<1, 0>() +
+               xi[1] * rotation_matrix_.template get<1, 1>() +
+               xi[2] * rotation_matrix_.template get<1, 2>(),
+           xi[0] * rotation_matrix_.template get<2, 0>() +
+               xi[1] * rotation_matrix_.template get<2, 1>() +
+               xi[2] * rotation_matrix_.template get<2, 2>()}};
 }
 
-Point<3, Frame::Grid> Rotation<3>::operator()(
-    const Point<3, Frame::Logical>& xi) const {
-  return Point<3, Frame::Grid>{
-      {{xi[0] * rotation_matrix_.template get<0, 0>() +
-            xi[1] * rotation_matrix_.template get<0, 1>() +
-            xi[2] * rotation_matrix_.template get<0, 2>(),
-        xi[0] * rotation_matrix_.template get<1, 0>() +
-            xi[1] * rotation_matrix_.template get<1, 1>() +
-            xi[2] * rotation_matrix_.template get<1, 2>(),
-        xi[0] * rotation_matrix_.template get<2, 0>() +
-            xi[1] * rotation_matrix_.template get<2, 1>() +
-            xi[2] * rotation_matrix_.template get<2, 2>()}}};
-}
-
-Point<3, Frame::Logical> Rotation<3>::inverse(
-    const Point<3, Frame::Grid>& x) const {
+template <typename T>
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3>
+Rotation<3>::inverse(const std::array<T, 3>& x) const {
   // Inverse rotation matrix is the same as the transpose.
-  return Point<3, Frame::Logical>{
-      {{x[0] * rotation_matrix_.template get<0, 0>() +
-            x[1] * rotation_matrix_.template get<1, 0>() +
-            x[2] * rotation_matrix_.template get<2, 0>(),
-        x[0] * rotation_matrix_.template get<0, 1>() +
-            x[1] * rotation_matrix_.template get<1, 1>() +
-            x[2] * rotation_matrix_.template get<2, 1>(),
-        x[0] * rotation_matrix_.template get<0, 2>() +
-            x[1] * rotation_matrix_.template get<1, 2>() +
-            x[2] * rotation_matrix_.template get<2, 2>()}}};
+  return {{x[0] * rotation_matrix_.template get<0, 0>() +
+               x[1] * rotation_matrix_.template get<1, 0>() +
+               x[2] * rotation_matrix_.template get<2, 0>(),
+           x[0] * rotation_matrix_.template get<0, 1>() +
+               x[1] * rotation_matrix_.template get<1, 1>() +
+               x[2] * rotation_matrix_.template get<2, 1>(),
+           x[0] * rotation_matrix_.template get<0, 2>() +
+               x[1] * rotation_matrix_.template get<1, 2>() +
+               x[2] * rotation_matrix_.template get<2, 2>()}};
 }
 
-double Rotation<3>::jacobian(const Point<3, Frame::Logical>& /*xi*/, size_t ud,
-                             size_t ld) const {
-  ASSERT(0 == ld || 1 == ld || 2 == ld,
-         "ld = " << ld << "in jacobian. ld must be 0, 1, or 2");
-  ASSERT(0 == ud || 1 == ud || 2 == ud,
-         "ud = " << ud << "in jacobian. ud must be 0, 1, or 2");
-  return rotation_matrix_.get(ud, ld);
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::jacobian(const std::array<T, 3>& /*xi*/) const {
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+      jac{};
+  jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
+  jac.template get<1, 0>() = rotation_matrix_.template get<1, 0>();
+  jac.template get<0, 1>() = rotation_matrix_.template get<0, 1>();
+  jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
+  jac.template get<2, 0>() = rotation_matrix_.template get<2, 0>();
+  jac.template get<2, 1>() = rotation_matrix_.template get<2, 1>();
+  jac.template get<0, 2>() = rotation_matrix_.template get<0, 2>();
+  jac.template get<1, 2>() = rotation_matrix_.template get<1, 2>();
+  jac.template get<2, 2>() = rotation_matrix_.template get<2, 2>();
+  return jac;
 }
 
-double Rotation<3>::inv_jacobian(const Point<3, Frame::Logical>& /*xi*/,
-                                 size_t ud, size_t ld) const {
-  ASSERT(0 == ld || 1 == ld || 2 == ld,
-         "ld = " << ld << "in inv_jacobian. ld must be 0, 1, or 2");
-  ASSERT(0 == ud || 1 == ud || 2 == ud,
-         "ud = " << ud << "in inv_jacobian. ud must be 0, 1, or 2");
-  // Recall inverse(rotation_matrix_) = transpose(rotation_matrix_)
-  return rotation_matrix_.get(ld, ud);
+template <typename T>
+Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+       tmpl::integral_list<std::int32_t, 2, 1>,
+       index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                  SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::inv_jacobian(const std::array<T, 3>& /*xi*/) const {
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+      inv_jac{};
+  inv_jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
+  inv_jac.template get<1, 0>() = rotation_matrix_.template get<0, 1>();
+  inv_jac.template get<0, 1>() = rotation_matrix_.template get<1, 0>();
+  inv_jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
+  inv_jac.template get<2, 0>() = rotation_matrix_.template get<0, 2>();
+  inv_jac.template get<2, 1>() = rotation_matrix_.template get<1, 2>();
+  inv_jac.template get<0, 2>() = rotation_matrix_.template get<2, 0>();
+  inv_jac.template get<1, 2>() = rotation_matrix_.template get<2, 1>();
+  inv_jac.template get<2, 2>() = rotation_matrix_.template get<2, 2>();
+  return inv_jac;
 }
-
-Rotation<3>::Rotation(CkMigrateMessage* /* m */)
-    : rotation_about_z_(std::numeric_limits<double>::signaling_NaN()),
-      rotation_about_rotated_y_(std::numeric_limits<double>::signaling_NaN()),
-      rotation_about_rotated_z_(std::numeric_limits<double>::signaling_NaN()),
-      rotation_matrix_() {}
 
 void Rotation<3>::pup(PUP::er& p) {  // NOLINT
-  EmbeddingMap<3, 3>::pup(p);
   p | rotation_about_z_;
   p | rotation_about_rotated_y_;
   p | rotation_about_rotated_z_;
   p | rotation_matrix_;
 }
+
+bool operator==(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {
+  return lhs.rotation_about_z_ == rhs.rotation_about_z_ and
+         lhs.rotation_about_rotated_y_ == rhs.rotation_about_rotated_y_ and
+         lhs.rotation_about_rotated_z_ == rhs.rotation_about_rotated_z_;
+}
+
+bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template std::array<double, 2> Rotation<2>::operator()(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template std::array<double, 2> Rotation<2>::operator()(
+    const std::array<double, 2>& /*xi*/) const;
+template std::array<DataVector, 2> Rotation<2>::operator()(
+    const std::array<std::reference_wrapper<const DataVector>, 2>& /*xi*/)
+    const;
+template std::array<DataVector, 2> Rotation<2>::operator()(
+    const std::array<DataVector, 2>& /*xi*/) const;
+
+template std::array<double, 2> Rotation<2>::inverse(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template std::array<double, 2> Rotation<2>::inverse(
+    const std::array<double, 2>& /*xi*/) const;
+template std::array<DataVector, 2> Rotation<2>::inverse(
+    const std::array<std::reference_wrapper<const DataVector>, 2>& /*xi*/)
+    const;
+template std::array<DataVector, 2> Rotation<2>::inverse(
+    const std::array<DataVector, 2>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::jacobian(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::jacobian(const std::array<double, 2>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::jacobian(const std::array<std::reference_wrapper<const DataVector>,
+                                       2>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::jacobian(const std::array<DataVector, 2>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::inv_jacobian(
+    const std::array<std::reference_wrapper<const double>, 2>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::inv_jacobian(const std::array<double, 2>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::inv_jacobian(
+    const std::array<std::reference_wrapper<const DataVector>, 2>& /*xi*/)
+    const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
+Rotation<2>::inv_jacobian(const std::array<DataVector, 2>& /*xi*/) const;
+
+template std::array<double, 3> Rotation<3>::operator()(
+    const std::array<std::reference_wrapper<const double>, 3>& xi) const;
+template std::array<double, 3> Rotation<3>::operator()(
+    const std::array<double, 3>& xi) const;
+template std::array<DataVector, 3> Rotation<3>::operator()(
+    const std::array<std::reference_wrapper<const DataVector>, 3>& xi) const;
+template std::array<DataVector, 3> Rotation<3>::operator()(
+    const std::array<DataVector, 3>& xi) const;
+
+template std::array<double, 3> Rotation<3>::inverse(
+    const std::array<std::reference_wrapper<const double>, 3>& xi) const;
+template std::array<double, 3> Rotation<3>::inverse(
+    const std::array<double, 3>& xi) const;
+template std::array<DataVector, 3> Rotation<3>::inverse(
+    const std::array<std::reference_wrapper<const DataVector>, 3>& xi) const;
+template std::array<DataVector, 3> Rotation<3>::inverse(
+    const std::array<DataVector, 3>& xi) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::jacobian(
+    const std::array<std::reference_wrapper<const double>, 3>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::jacobian(const std::array<double, 3>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::jacobian(const std::array<std::reference_wrapper<const DataVector>,
+                                       3>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::jacobian(const std::array<DataVector, 3>& /*xi*/) const;
+
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::inv_jacobian(
+    const std::array<std::reference_wrapper<const double>, 3>& /*xi*/) const;
+template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::inv_jacobian(const std::array<double, 3>& /*xi*/) const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::inv_jacobian(
+    const std::array<std::reference_wrapper<const DataVector>, 3>& /*xi*/)
+    const;
+template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
+                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
+Rotation<3>::inv_jacobian(const std::array<DataVector, 3>& /*xi*/) const;
+
 }  // namespace EmbeddingMaps
-
-/// \cond HIDDEN_SYMBOLS
-PUP::able::PUP_ID EmbeddingMaps::Rotation<2>::my_PUP_ID = 0;  // NOLINT
-
-PUP::able::PUP_ID EmbeddingMaps::Rotation<3>::my_PUP_ID = 0;  // NOLINT
-/// \endcond

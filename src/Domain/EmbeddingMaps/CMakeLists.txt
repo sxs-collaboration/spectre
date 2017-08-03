@@ -6,7 +6,6 @@ set(LIBRARY EmbeddingMaps)
 set(LIBRARY_SOURCES
     AffineMap.cpp
     Identity.cpp
-    ProductMaps.cpp
     Rotation.cpp
     )
 

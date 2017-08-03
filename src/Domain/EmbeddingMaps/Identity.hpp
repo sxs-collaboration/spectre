@@ -6,10 +6,10 @@
 
 #pragma once
 
+#include <array>
 #include <memory>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/EmbeddingMaps/EmbeddingMap.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace EmbeddingMaps {
@@ -17,39 +17,54 @@ namespace EmbeddingMaps {
 /// \ingroup EmbeddingMaps
 /// Identity  map from \f$\xi \rightarrow x\f$.
 template <size_t Dim>
-class Identity : public EmbeddingMap<Dim, Dim> {
+class Identity {
  public:
+  static constexpr size_t dim = Dim;
+
   Identity() = default;
-  ~Identity() override = default;
-  Identity(const Identity&) = delete;
+  ~Identity() = default;
+  Identity(const Identity&) = default;
   Identity(Identity&&) noexcept = default;  // NOLINT
-  Identity& operator=(const Identity&) = delete;
+  Identity& operator=(const Identity&) = default;
   Identity& operator=(Identity&&) = default;
 
-  Point<Dim, Frame::Grid> operator()(
-      const Point<Dim, Frame::Logical>& xi) const override ;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Dim> operator()(
+      const std::array<T, Dim>& xi) const;
 
-  Point<Dim, Frame::Logical> inverse(
-      const Point<Dim, Frame::Grid>& x) const override ;
+  template <typename T>
+  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Dim> inverse(
+      const std::array<T, Dim>& x) const;
 
-  double jacobian(const Point<Dim, Frame::Logical>& /* xi */, const size_t ud,
-                  const size_t ld) const override ;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
+  jacobian(const std::array<T, Dim>& /*xi*/) const;
 
-  double inv_jacobian(const Point<Dim, Frame::Logical>& /* xi */,
-                      const size_t ud, const size_t ld) const override ;
+  template <typename T>
+  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
+         tmpl::integral_list<std::int32_t, 2, 1>,
+         index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
+                    SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
+  inv_jacobian(const std::array<T, Dim>& /*xi*/) const;
 
-  std::unique_ptr<EmbeddingMap<Dim, Dim>> get_clone() const override ;
-
-  WRAPPED_PUPable_decl_base_template(  // NOLINT
-      SINGLE_ARG(EmbeddingMap<Dim, Dim>), Identity);
-
-  explicit Identity(CkMigrateMessage* /* m */) {}
-
-  void pup(PUP::er& p) override;
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& /*p*/) {}  // NOLINT
 };
-}  // namespace EmbeddingMaps
 
-/// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
-PUP::able::PUP_ID EmbeddingMaps::Identity<Dim>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
+inline constexpr bool operator==(
+    const EmbeddingMaps::Identity<Dim>& /*lhs*/,
+    const EmbeddingMaps::Identity<Dim>& /*rhs*/) noexcept {
+  return true;
+}
+
+template <size_t Dim>
+inline constexpr bool operator!=(
+    const EmbeddingMaps::Identity<Dim>& lhs,
+    const EmbeddingMaps::Identity<Dim>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+}  // namespace EmbeddingMaps
