@@ -14,6 +14,7 @@ set(UTILITIES_TESTS
     Utilities/Test_PrettyType.cpp
     Utilities/Test_StdHelpers.cpp
     Utilities/Test_TaggedTuple.cpp
+    Utilities/Test_TMPL.cpp
     Utilities/Test_TypeTraits.cpp
     )
 

@@ -468,3 +468,16 @@ namespace tmpl = brigand;
 /// \brief Construct a typelist of types `Ts`.
 template <typename... Ts>
 using typelist = tmpl::list<Ts...>;
+
+/*!
+ * \ingroup Utilities
+ * \brief Allows zero-cost unordered expansion of a parameter
+ *
+ * \details
+ * Expands a parameter pack, typically useful for runtime evaluation via a
+ * Callable such as a lambda, function, or function object. For example,
+ * an unordered transform of a std::tuple can be implemented as:
+ * \snippet Utilities/Test_TMPL.cpp swallow_example
+ */
+template <typename... Ts>
+constexpr void swallow(Ts&&...) noexcept {}
