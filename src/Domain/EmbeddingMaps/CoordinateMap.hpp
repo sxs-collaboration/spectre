@@ -15,7 +15,7 @@
 #include "Utilities/Tuple.hpp"
 
 /// Contains all embedding maps.
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 template <typename FirstMap, typename... Maps>
 constexpr size_t map_dim = FirstMap::dim;
 }  // namespace CoordinateMaps
@@ -48,7 +48,7 @@ class CoordinateMap {
       "All Maps passed to CoordinateMap must be of the same dimensionality.");
 
  public:
-  static constexpr size_t dim = EmbeddingMaps::map_dim<Maps...>;
+  static constexpr size_t dim = CoordinateMaps::map_dim<Maps...>;
   using source_frame = SourceFrame;
   using target_frame = TargetFrame;
   using maps_list = tmpl::list<Maps...>;

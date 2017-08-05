@@ -11,8 +11,8 @@
 template <size_t Dim>
 void test_block() {
   using embedding_map =
-      CoordinateMap<Frame::Logical, Frame::Grid, EmbeddingMaps::Identity<Dim>>;
-  const embedding_map identity_map{EmbeddingMaps::Identity<Dim>{}};
+      CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<Dim>>;
+  const embedding_map identity_map{CoordinateMaps::Identity<Dim>{}};
   Block<embedding_map> block(identity_map, 7, {});
 
   // Test external boundaries:
@@ -58,8 +58,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
   using embedding_map =
-      CoordinateMap<Frame::Logical, Frame::Grid, EmbeddingMaps::Identity<2>>;
-  const embedding_map identity_map{EmbeddingMaps::Identity<2>{}};
+      CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<2>>;
+  const embedding_map identity_map{CoordinateMaps::Identity<2>{}};
   const Block<embedding_map> block(identity_map, 3, std::move(neighbors));
 
   // Test external boundaries:

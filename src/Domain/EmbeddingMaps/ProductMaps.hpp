@@ -12,7 +12,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 
 namespace product_detail {
 template <typename T, size_t Size, typename Map1, typename Map2,
@@ -68,8 +68,8 @@ apply_jac(const std::array<T, Size>& xi, const Map1& map1, const Map2& map2,
 }
 }  // namespace product_detail
 
-/// \ingroup EmbeddingMaps
-/// \brief Product of two codimension=0 EmbeddingMaps.
+/// \ingroup CoordinateMaps
+/// \brief Product of two codimension=0 CoordinateMaps.
 ///
 /// \tparam Map1 the map for the first coordinate(s)
 /// \tparam Map2 the map for the second coordinate(s)
@@ -195,8 +195,8 @@ bool operator!=(const ProductOf2Maps<Map1, Map2>& lhs,
   return not(lhs == rhs);
 }
 
-/// \ingroup EmbeddingMaps
-/// \brief Product of three one-dimensional EmbeddingMaps.
+/// \ingroup CoordinateMaps
+/// \brief Product of three one-dimensional CoordinateMaps.
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps {
  public:
@@ -322,4 +322,4 @@ bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
                 const ProductOf3Maps<Map1, Map2, Map3>& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace EmbeddingMaps
+}  // namespace CoordinateMaps

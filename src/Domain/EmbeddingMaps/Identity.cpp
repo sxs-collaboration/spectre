@@ -6,7 +6,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
 
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 
 template <size_t Dim>
 template <typename T>
@@ -183,4 +183,4 @@ template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                            SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
 Identity<2>::inv_jacobian(const std::array<DataVector, 2>& /*xi*/) const;
 /// \endcond
-}  // namespace EmbeddingMaps
+}  // namespace CoordinateMaps

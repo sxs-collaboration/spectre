@@ -12,12 +12,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
 
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 
 template <size_t Dim>
 class Rotation;
 
-/*! \ingroup EmbeddingMaps
+/*! \ingroup CoordinateMaps
  * Spatial rotation in two dimensions.
  * Let \f$(R,\Phi)\f$ be the polar coordinates associated with
  * \f$(\xi,\eta)\f$.
@@ -161,4 +161,4 @@ class Rotation<3> {
 
 bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept;
 
-}  // namespace EmbeddingMaps
+}  // namespace CoordinateMaps

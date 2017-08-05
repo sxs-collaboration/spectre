@@ -13,10 +13,10 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf2Maps",
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
                   "[Domain][Unit]") {
-  using affine_map = EmbeddingMaps::AffineMap;
-  using affine_map_2d = EmbeddingMaps::ProductOf2Maps<affine_map, affine_map>;
+  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
 
   const double xA = -1.0;
   const double xB = 1.0;
@@ -96,11 +96,11 @@ SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf2Maps",
   CHECK(jac_xi.get(1, 1) == jacobian_11);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf3Maps",
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
                   "[Domain][Unit]") {
-  using affine_map = EmbeddingMaps::AffineMap;
+  using affine_map = CoordinateMaps::AffineMap;
   using affine_map_3d =
-      EmbeddingMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
+      CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
 
   const double xA = -1.0;
   const double xB = 1.0;
@@ -231,8 +231,8 @@ SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf3Maps",
   CHECK(jac_xi.get(2, 2) == jacobian_22);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<2>", "[Domain][Unit]") {
-  EmbeddingMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
+  CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
   Approx approx = Approx::custom().epsilon(1e-15);
 
   const auto xi0 = make_array<2>(0.0);
@@ -281,7 +281,7 @@ SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<2>", "[Domain][Unit]") {
 }
 
 template <typename T>
-void test_rotation_3(const EmbeddingMaps::Rotation<3>& three_dim_rotation_map,
+void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
                      const std::array<T, 3>& xi_hat,
                      const std::array<T, 3>& eta_hat,
                      const std::array<T, 3>& zeta_hat) {
@@ -324,45 +324,45 @@ void test_rotation_3(const EmbeddingMaps::Rotation<3>& three_dim_rotation_map,
         serialize_and_deserialize(three_dim_rotation_map));
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<3>", "[Domain][Unit]") {
-  test_rotation_3(EmbeddingMaps::Rotation<3>(0.0, 0.0, 0.0),
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<3>", "[Domain][Unit]") {
+  test_rotation_3(CoordinateMaps::Rotation<3>(0.0, 0.0, 0.0),
                   std::array<double, 3>{{1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(EmbeddingMaps::Rotation<3>(M_PI_2, 0.0, 0.0),
+  test_rotation_3(CoordinateMaps::Rotation<3>(M_PI_2, 0.0, 0.0),
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{-1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(EmbeddingMaps::Rotation<3>(M_PI, 0.0, 0.0),
+  test_rotation_3(CoordinateMaps::Rotation<3>(M_PI, 0.0, 0.0),
                   std::array<double, 3>{{-1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, -1.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(EmbeddingMaps::Rotation<3>(-M_PI_2, 0.0, 0.0),
+  test_rotation_3(CoordinateMaps::Rotation<3>(-M_PI_2, 0.0, 0.0),
                   std::array<double, 3>{{0.0, -1.0, 0.0}},
                   std::array<double, 3>{{1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(EmbeddingMaps::Rotation<3>(0.0, -M_PI_2, 0.0),
+  test_rotation_3(CoordinateMaps::Rotation<3>(0.0, -M_PI_2, 0.0),
                   std::array<double, 3>{{0.0, 0.0, 1.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{-1.0, 0.0, 0.0}});
 
-  test_rotation_3(EmbeddingMaps::Rotation<3>(0.0, M_PI_2, 0.0),
+  test_rotation_3(CoordinateMaps::Rotation<3>(0.0, M_PI_2, 0.0),
                   std::array<double, 3>{{0.0, 0.0, -1.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{1.0, 0.0, 0.0}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Affine", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   const double xA = -1.0;
   const double xB = 1.0;
   const double xa = -2.0;
   const double xb = 2.0;
 
-  EmbeddingMaps::AffineMap affine_map(xA, xB, xa, xb);
+  CoordinateMaps::AffineMap affine_map(xA, xB, xa, xb);
 
   const double xi = 0.5 * (xA + xB);
   const double x = xb * (xi - xA) / (xB - xA) + xa * (xB - xi) / (xB - xA);
@@ -403,7 +403,7 @@ SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Affine", "[Domain][Unit]") {
 
 template <size_t Dim>
 void test_identity() {
-  EmbeddingMaps::Identity<Dim> identity_map;
+  CoordinateMaps::Identity<Dim> identity_map;
   const auto xi = make_array<Dim>(1.0);
   const auto x = make_array<Dim>(1.0);
   CHECK(identity_map(xi) == x);
@@ -421,14 +421,14 @@ void test_identity() {
   CHECK(identity_map == serialize_and_deserialize(identity_map));
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Identity", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Identity", "[Domain][Unit]") {
   test_identity<1>();
   test_identity<2>();
 }
 
 namespace {
 void test_single_coordinate_map() {
-  using affine_map1d = EmbeddingMaps::AffineMap;
+  using affine_map1d = CoordinateMaps::AffineMap;
 
   const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       affine_map1d{-1.0, 1.0, 2.0, 8.0});
@@ -453,7 +453,7 @@ void test_single_coordinate_map() {
     CHECK(inv_jac.get(0, 0) == expected_inv_jac.get(0, 0));
   }
 
-  using rotate2d = EmbeddingMaps::Rotation<2>;
+  using rotate2d = CoordinateMaps::Rotation<2>;
 
   const auto rotated2d =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotate2d{M_PI_4});
@@ -487,7 +487,7 @@ void test_single_coordinate_map() {
     }
   }
 
-  using rotate3d = EmbeddingMaps::Rotation<3>;
+  using rotate3d = CoordinateMaps::Rotation<3>;
 
   const auto rotated3d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       rotate3d{M_PI_4, M_PI_4, M_PI_2});
@@ -526,10 +526,10 @@ void test_single_coordinate_map() {
 }
 
 void test_coordinate_map_with_affine_map() {
-  using affine_map = EmbeddingMaps::AffineMap;
-  using affine_map_2d = EmbeddingMaps::ProductOf2Maps<affine_map, affine_map>;
+  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
   using affine_map_3d =
-      EmbeddingMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
+      CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
 
   constexpr size_t number_of_points_checked = 10;
   Approx approx = Approx::custom().epsilon(1.0e-14);
@@ -648,8 +648,8 @@ void test_coordinate_map_with_affine_map() {
 }
 
 void test_coordinate_map_with_rotation_map() {
-  using rotate2d = EmbeddingMaps::Rotation<2>;
-  using rotate3d = EmbeddingMaps::Rotation<3>;
+  using rotate2d = CoordinateMaps::Rotation<2>;
+  using rotate3d = CoordinateMaps::Rotation<3>;
 
   // No 1D test because it would just the be affine map test
 

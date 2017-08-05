@@ -12,9 +12,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
 
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 
-/// \ingroup EmbeddingMaps
+/// \ingroup CoordinateMaps
 /// Identity  map from \f$\xi \rightarrow x\f$.
 template <size_t Dim>
 class Identity {
@@ -56,15 +56,15 @@ class Identity {
 
 template <size_t Dim>
 inline constexpr bool operator==(
-    const EmbeddingMaps::Identity<Dim>& /*lhs*/,
-    const EmbeddingMaps::Identity<Dim>& /*rhs*/) noexcept {
+    const CoordinateMaps::Identity<Dim>& /*lhs*/,
+    const CoordinateMaps::Identity<Dim>& /*rhs*/) noexcept {
   return true;
 }
 
 template <size_t Dim>
 inline constexpr bool operator!=(
-    const EmbeddingMaps::Identity<Dim>& lhs,
-    const EmbeddingMaps::Identity<Dim>& rhs) noexcept {
+    const CoordinateMaps::Identity<Dim>& lhs,
+    const CoordinateMaps::Identity<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace EmbeddingMaps
+}  // namespace CoordinateMaps

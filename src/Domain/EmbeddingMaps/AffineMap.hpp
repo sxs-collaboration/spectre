@@ -12,9 +12,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
 
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 
-/*! \ingroup EmbeddingMaps
+/*! \ingroup CoordinateMaps
  * Linear map from \f$\xi \in [A, B]\rightarrow x \in [a, b]\f$.
  * The formula for the mapping is...
  * \f[
@@ -75,9 +75,9 @@ class AffineMap {
   double inverse_jacobian_{length_of_domain_ / length_of_range_};
 };
 
-inline bool operator!=(const EmbeddingMaps::AffineMap& lhs,
-                       const EmbeddingMaps::AffineMap& rhs) noexcept {
+inline bool operator!=(const CoordinateMaps::AffineMap& lhs,
+                       const CoordinateMaps::AffineMap& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-}  // namespace EmbeddingMaps
+}  // namespace CoordinateMaps

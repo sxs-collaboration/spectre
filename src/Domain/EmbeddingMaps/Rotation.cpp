@@ -3,7 +3,7 @@
 
 #include "Domain/EmbeddingMaps/Rotation.hpp"
 
-namespace EmbeddingMaps {
+namespace CoordinateMaps {
 
 Rotation<2>::Rotation(const double rotation_angle)
     : rotation_angle_(rotation_angle),
@@ -319,4 +319,4 @@ template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                            SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
 Rotation<3>::inv_jacobian(const std::array<DataVector, 3>& /*xi*/) const;
 
-}  // namespace EmbeddingMaps
+}  // namespace CoordinateMaps
