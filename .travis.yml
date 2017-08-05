@@ -97,11 +97,19 @@ matrix:
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CLANG_TIDY=true
+    env: RUN_CLANG_TIDY=true BUILD_TYPE=Release
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CPPCHECK=true
+    env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug
+    compiler: clang
+  - os: linux
+    dist: trusty
+    env: RUN_CPPCHECK=true BUILD_TYPE=Release
+    compiler: clang
+  - os: linux
+    dist: trusty
+    env: RUN_CPPCHECK=true BUILD_TYPE=Debug
     compiler: clang
 
 
