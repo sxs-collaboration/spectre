@@ -259,7 +259,7 @@
  * \code
  * // [[TimeOut, 10]]
  * // [[ErrorRegex, The error message expected from the test]]
- * TEST_CASE("Unit.Blah", "[Unit]") {
+ * SPECTRE_TEST_CASE("Unit.Blah", "[Unit]") {
  * \endcode
  *
  * Available attributes are:

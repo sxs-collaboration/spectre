@@ -4,6 +4,7 @@
 #include <catch.hpp>
 
 #include "Numerical/RootFinding/RootFinder.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 double f_free(double x) { return 2.0 - x * x; }
@@ -12,8 +13,8 @@ struct F {
 };
 }  // namespace
 
-TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver",
-          "[Numerical][RootFinding][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver",
+                  "[Numerical][RootFinding][Unit]") {
   double abs_tol = 1e-15;
   double rel_tol = 1e-15;
   double upper = 2.0;
@@ -32,8 +33,8 @@ TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver",
   CHECK(root_from_free == root_from_functor);
 }
 
-TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.Bounds",
-          "[Numerical][RootFinding][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.Bounds",
+                  "[Numerical][RootFinding][Unit]") {
   double abs_tol = 1e-15;
   double rel_tol = 1e-15;
   double upper = 2.0;

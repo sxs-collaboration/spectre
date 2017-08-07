@@ -5,9 +5,10 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Numerical/LinearAlgebra/Determinant.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
-          "[LinearAlgebra][Numerical][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
+                  "[LinearAlgebra][Numerical][Unit]") {
   Approx approx = Approx::custom().epsilon(1e-15);
 
   // Test determinant function on general (no symmetry) matrices:
@@ -21,7 +22,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
     }
 
     {
-      tnsr::ij<double, 2, Frame::Grid> matrix;
+      tnsr::ij<double, 2, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 2.1;
       matrix.get<1, 0>() = 4.5;
       matrix.get<0, 1>() = -18.3;
@@ -31,7 +32,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
     }
 
     {
-      tnsr::ij<double, 3, Frame::Grid> matrix;
+      tnsr::ij<double, 3, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 1.1;
       matrix.get<1, 0>() = -10.4;
       matrix.get<2, 0>() = -4.5;
@@ -46,7 +47,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
     }
 
     {
-      tnsr::ij<double, 4, Frame::Grid> matrix;
+      tnsr::ij<double, 4, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 1.1;
       matrix.get<1, 0>() = -10.4;
       matrix.get<2, 0>() = -4.5;
@@ -73,7 +74,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
   // * use Tensor<double, ...>, i.e. data at single spatial point.
   SECTION("Test symmetric Tensor<double,...> matrices") {
     {
-      tnsr::ii<double, 2, Frame::Grid> matrix;
+      tnsr::ii<double, 2, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 2.1;
       matrix.get<1, 0>() = 4.5;
       matrix.get<1, 1>() = -10.9;
@@ -82,7 +83,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
     }
 
     {
-      tnsr::ii<double, 3, Frame::Grid> matrix;
+      tnsr::ii<double, 3, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 1.1;
       matrix.get<1, 0>() = -10.4;
       matrix.get<2, 0>() = -4.5;
@@ -94,7 +95,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
     }
 
     {
-      tnsr::ii<double, 4, Frame::Grid> matrix;
+      tnsr::ii<double, 4, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 1.1;
       matrix.get<1, 0>() = -10.4;
       matrix.get<2, 0>() = -4.5;
@@ -115,7 +116,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
   // * use Tensor<T,...> for T in {int, DataVector}.
   SECTION("Test Tensors of different types") {
     {
-      tnsr::ij<int, 2, Frame::Grid> matrix;
+      tnsr::ij<int, 2, Frame::Grid> matrix{};
       matrix.get<0, 0>() = 9;
       matrix.get<1, 0>() = 1;
       matrix.get<0, 1>() = -3;
@@ -125,7 +126,7 @@ TEST_CASE("Unit.Numerical.LinearAlgebra.Determinant",
     }
 
     {
-      tnsr::ij<DataVector, 2, Frame::Grid> matrix;
+      tnsr::ij<DataVector, 2, Frame::Grid> matrix{};
       matrix.get<0, 0>() = DataVector({6.0, 5.9, 9.8, 6.4});
       matrix.get<1, 0>() = DataVector({6.1, 0.3, 2.4, 5.7});
       matrix.get<0, 1>() = DataVector({4.2, 7.1, 1.1, 6.5});

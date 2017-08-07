@@ -12,7 +12,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf2Maps", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf2Maps",
+                  "[Domain][Unit]") {
   const double xA = -1.0;
   const double xB = 1.0;
   const double xa = -2.0;
@@ -89,7 +90,8 @@ TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf2Maps", "[Domain][Unit]") {
   CHECK((*affine_map_xy_clone)(point_A) == point_a);
 }
 
-TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf3Maps", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf3Maps",
+                  "[Domain][Unit]") {
   const double xA = -1.0;
   const double xB = 1.0;
   const double xa = -2.0;
@@ -218,7 +220,7 @@ TEST_CASE("Unit.Domain.EmbeddingMaps.ProductOf3Maps", "[Domain][Unit]") {
   CHECK((*affine_map_xyz_clone)(point_A) == point_a);
 }
 
-TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<2>", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<2>", "[Domain][Unit]") {
   EmbeddingMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
 
   const Point<2, Frame::Logical> xi0{{{0.0, 0.0}}};
@@ -304,7 +306,7 @@ void test_rotation_3(const EmbeddingMaps::Rotation<3>& three_dim_rotation_map,
   }
 }
 
-TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<3>", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<3>", "[Domain][Unit]") {
   test_rotation_3(EmbeddingMaps::Rotation<3>(0.0, 0.0, 0.0),
                   Point<3, Frame::Grid>{{{1.0, 0.0, 0.0}}},
                   Point<3, Frame::Grid>{{{0.0, 1.0, 0.0}}},
@@ -336,7 +338,7 @@ TEST_CASE("Unit.Domain.EmbeddingMaps.Rotation<3>", "[Domain][Unit]") {
                   Point<3, Frame::Grid>{{{1.0, 0.0, 0.0}}});
 }
 
-TEST_CASE("Unit.Domain.EmbeddingMaps.Affine", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Affine", "[Domain][Unit]") {
   const double xA = -1.0;
   const double xB = 1.0;
   const double xa = -2.0;
@@ -396,7 +398,7 @@ void test_identity() {
   CHECK((*clone_identity)(xi) == x);
 }
 
-TEST_CASE("Unit.Domain.EmbeddingMaps.Identity", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.EmbeddingMaps.Identity", "[Domain][Unit]") {
   test_identity<1>();
   test_identity<2>();
 }

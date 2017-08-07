@@ -21,7 +21,7 @@ struct email {
 };
 }  // namespace
 
-TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   /// [construction_example]
   TaggedTupleTypelist<typelist<name, age, email>> test("bla", 17,
                                                        "bla@bla.bla");

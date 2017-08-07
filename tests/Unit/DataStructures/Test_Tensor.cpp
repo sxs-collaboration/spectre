@@ -139,8 +139,8 @@ static_assert(not TensorMetafunctions::check_index_symmetry_v<
                            SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
               "Failed testing check_index_symmetry");
 
-TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
-          "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
+                  "[DataStructures][Unit]") {
   /// [spatial_vector]
   tnsr::I<double, 3, Frame::Grid> spatial_vector3{};
   /// [spatial_vector]
@@ -345,7 +345,8 @@ TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
 }
 
 // [[OutputRegex, Tensor dim\[0\] must be 1,2,3, or 4 for default axis_labels]]
-TEST_CASE("Unit.DataStructures.Tensor.BadDim1", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim1",
+                  "[DataStructures][Unit]") {
   ERROR_TEST();
   Tensor<double, Symmetry<1>,
          index_list<SpacetimeIndex<5, UpLo::Lo, Frame::Grid>>>
@@ -355,7 +356,8 @@ TEST_CASE("Unit.DataStructures.Tensor.BadDim1", "[DataStructures][Unit]") {
 }
 
 // [[OutputRegex, Tensor dim\[0\] must be 1,2, or 3 for default axis_labels]]
-TEST_CASE("Unit.DataStructures.Tensor.BadDim2", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim2",
+                  "[DataStructures][Unit]") {
   ERROR_TEST();
   Tensor<double, Symmetry<1>,
          index_list<SpatialIndex<6, UpLo::Lo, Frame::Grid>>>
@@ -366,7 +368,8 @@ TEST_CASE("Unit.DataStructures.Tensor.BadDim2", "[DataStructures][Unit]") {
 
 // [[OutputRegex, Dimension mismatch: Tensor has dim = 4, but you specified 8
 // different labels in abcdefgh]]
-TEST_CASE("Unit.DataStructures.Tensor.StreamBad", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamBad",
+                  "[DataStructures][Unit]") {
   ERROR_TEST();
   Tensor<double, Symmetry<1, 2, 2>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
@@ -378,7 +381,8 @@ TEST_CASE("Unit.DataStructures.Tensor.StreamBad", "[DataStructures][Unit]") {
             make_array<3>(std::string("abcdefgh"))) == "aaa");
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.RankAndSize", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
+                  "[DataStructures][Unit]") {
   {
     Scalar<double> scalar{2.8};
     CHECK(scalar.multiplicity(0_st) == 1);  // 0 can be a pointer
@@ -444,7 +448,8 @@ TEST_CASE("Unit.DataStructures.Tensor.RankAndSize", "[DataStructures][Unit]") {
   CHECK(40 == symmetric_rank3_dim4.size());
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.Indices", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Indices",
+                  "[DataStructures][Unit]") {
   // Tests that iterators correctly handle the symmetries. However, as a result
   // the test is implementation defined
   Tensor<double, Symmetry<1, 2, 2>,
@@ -463,7 +468,8 @@ TEST_CASE("Unit.DataStructures.Tensor.Indices", "[DataStructures][Unit]") {
   }
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.Iterating", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
+                  "[DataStructures][Unit]") {
   // Fills two tensors with values such that A+B =1 and then checks that this is
   // the case doing a for (int...) loop over the Tensor's underlying storage
   // vector, which is iterating over all independent components.
@@ -550,8 +556,8 @@ TEST_CASE("Unit.DataStructures.Tensor.Iterating", "[DataStructures][Unit]") {
   CHECK(sum == 3942);
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
-          "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
+                  "[DataStructures][Unit]") {
   Tensor<std::vector<double>, Symmetry<1, 2, 2>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>,
@@ -569,7 +575,8 @@ TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
   }
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.Multiplicity", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Multiplicity",
+                  "[DataStructures][Unit]") {
   Tensor<std::vector<double>, Symmetry<1, 2, 2>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>,
@@ -591,7 +598,8 @@ TEST_CASE("Unit.DataStructures.Tensor.Multiplicity", "[DataStructures][Unit]") {
   }
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.Stream", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Stream",
+                  "[DataStructures][Unit]") {
   std::string compare_out =
       "--Symmetry:  (1)\n"
       "--Types:     (Spatial)\n"
@@ -619,8 +627,8 @@ TEST_CASE("Unit.DataStructures.Tensor.Stream", "[DataStructures][Unit]") {
   CHECK(get_output(Scalar<std::vector<double>>(10_st, 2.0)) == compare_out);
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
-          "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
+                  "[DataStructures][Unit]") {
   const int dim = 3;
   Tensor_detail::Structure<Symmetry<2, 1, 1>,
                            SpatialIndex<dim, UpLo::Lo, Frame::Grid>,
@@ -638,8 +646,8 @@ TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
   }
 }
 
-TEST_CASE("Unit.Serialization.Tensor",
-          "[DataStructures][Unit][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
+                  "[DataStructures][Unit][Serialization]") {
   constexpr size_t dim = 4;
   tnsr::Abb<std::vector<double>, dim - 1, Frame::Grid> tensor(1_st);
   // Fill the tensors
@@ -654,8 +662,9 @@ TEST_CASE("Unit.Serialization.Tensor",
 }
 
 // [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] TEST_CASE("Unit.DataStructures.Tensor.out_of_bounds_subscript",
-                       "[DataStructures][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Tensor.out_of_bounds_subscript",
+    "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
@@ -665,7 +674,7 @@ TEST_CASE("Unit.Serialization.Tensor",
 }
 
 // [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] TEST_CASE(
+[[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_subscript",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
@@ -677,7 +686,7 @@ TEST_CASE("Unit.Serialization.Tensor",
 }
 
 // [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] TEST_CASE(
+[[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_multiplicity",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
@@ -689,7 +698,7 @@ TEST_CASE("Unit.Serialization.Tensor",
 }
 
 // [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
-[[noreturn]] TEST_CASE(
+[[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
@@ -700,15 +709,16 @@ TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.IndexType", "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexType",
+                  "[Unit][DataStructures]") {
   CHECK(get_output(Frame::Logical{}) == "Logical");
   CHECK(get_output(Frame::Grid{}) == "Grid");
   CHECK(get_output(Frame::Distorted{}) == "Distorted");
   CHECK(get_output(Frame::Inertial{}) == "Inertial");
 }
 
-TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
-          "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
+                  "[Unit][DataStructures]") {
   // NOTE: This test depends on the implementation of serialize and Tensor,
   // but that is inevitable without making the test more complicated.
   /// [init_vector]

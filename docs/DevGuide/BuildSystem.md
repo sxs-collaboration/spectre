@@ -27,7 +27,7 @@ unit tests. All unit tests are housed in `tests/Unit` with subdirectories for
 each subdirectory of `src`. Add the `cpp` file to the appropriate subdirectory
 and also to the `CMakeLists.txt` in that subdirectory. Inside the source file
 you can create a new test by adding a
-`TEST_CASE("Unit.Dir.Component", "[Unit][Dir][Tag]")`. The `[Tag]` is optional
+`SPECTRE_TEST_CASE("Unit.Dir.Component", "[Unit][Dir][Tag]")`. The `[Tag]` is optional
 and you can have more than one, but the tags should be used quite sparingly.
 The purpose of the tags is to be able to run all unit tests or all tests of
 a particular set of components, e.g. `ctest -L Data` to run all tests inside

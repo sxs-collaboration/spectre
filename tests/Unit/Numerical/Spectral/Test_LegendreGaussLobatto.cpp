@@ -9,10 +9,11 @@
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Blas.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
-          "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
+                  "[Numerical][Spectral][Unit]") {
   // Compare LGL points to matlab code accompanying the
   // book "Nodal Discontinuous Galerkin Methods" by Hesthaven and Warburton
   // http://www.nudg.org/
@@ -151,8 +152,8 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
   }
 }
 
-TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
-          "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
+                  "[Numerical][Spectral][Unit]") {
   // Compare differentiation matrix values to matlab code accompanying the
   // book "Nodal Discontinuous Galerkin Methods" by Hesthaven and Warburton
   // http://www.nudg.org/
@@ -170,7 +171,7 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(1, 1) = .5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(2);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(2);
     for (size_t i = 0; i < 2; ++i) {
       for (size_t j = 0; j < 2; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -192,7 +193,7 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(2, 2) = 1.5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(3);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(3);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -221,7 +222,7 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(3, 3) = 3.0;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(4);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(4);
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -259,7 +260,7 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(4, 4) = 5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(5);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(5);
     for (size_t i = 0; i < 5; ++i) {
       for (size_t j = 0; j < 5; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -308,7 +309,7 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(5, 5) = 7.5;
       return diff_matrix;
     }();
-    const Matrix diff_matrix = Basis::lgl::differentiation_matrix(6);
+    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(6);
     for (size_t i = 0; i < 6; ++i) {
       for (size_t j = 0; j < 6; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -317,8 +318,9 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
   }
 }
 
-TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.LinearFilterMatrix",
-          "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.Spectral.LegendreGaussLobatto.LinearFilterMatrix",
+    "[Numerical][Spectral][Unit]") {
   Approx approx = Approx::custom().epsilon(1e-12);
   for (size_t n = 2; n < 10; ++n) {
     const Matrix& filter_matrix = Basis::lgl::linear_filter_matrix(n);
@@ -341,8 +343,9 @@ TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.LinearFilterMatrix",
   }
 }
 
-TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.InterpolationMatrix",
-          "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.Spectral.LegendreGaussLobatto.InterpolationMatrix",
+    "[Numerical][Spectral][Unit]") {
   auto check_interp = [](const size_t num_pts, auto func) {
     Approx approx = Approx::custom().epsilon(1e-14);
     const DataVector& collocation_points =

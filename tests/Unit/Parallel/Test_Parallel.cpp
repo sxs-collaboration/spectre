@@ -5,6 +5,7 @@
 
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 struct TestStream {
@@ -23,20 +24,21 @@ std::ostream& operator<<(std::ostream& os, const TestStream& t) {
 }  // namespace
 
 // [[OutputRegex, -100 3000000000 3.4 \(0,4,8,-7\) test 1 2 3 abf a o e u]]
-TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
+SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   const char c_string0[40] = {"test 1 2 3"};
-  char* c_string1 = new char[80];
-  c_string1[0] = 'a';
-  c_string1[1] = 'b';
-  c_string1[2] = 'f';
-  c_string1[3] = '\0';
+  auto* c_string1 = new char[80];
+  // clang-tidy: do not use pointer arithmetic
+  c_string1[0] = 'a';   // NOLINT
+  c_string1[1] = 'b';   // NOLINT
+  c_string1[2] = 'f';   // NOLINT
+  c_string1[3] = '\0';  // NOLINT
   constexpr const char* const c_string2 = {"a o e u"};
   Parallel::printf("%d %lld %s %s %s %s\n", -100, 3000000000, TestStream{},
                    c_string0, c_string1, c_string2);
   delete[] c_string1;
 }
 
-TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel") {
+SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel") {
   CHECK(1 == Parallel::number_of_procs());
   CHECK(0 == Parallel::my_proc());
   CHECK(1 == Parallel::number_of_nodes());

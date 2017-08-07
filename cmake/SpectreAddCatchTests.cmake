@@ -21,7 +21,7 @@
 # // [[TimeOut, 10]]
 # // [[OutputRegex, A regular expression that is expected to match the output
 # //   from the test]]
-# TEST_CASE("Unit.Blah", "[Unit]") {
+# SPECTRE_TEST_CASE("Unit.Blah", "[Unit]") {
 #
 # Note the space after the comma!
 #
@@ -86,17 +86,17 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     # Remove commented out tests so they are not added to ctest
     string(REGEX REPLACE "\n[ \t]*//+[^\n]+" "\n" CONTENTS "${CONTENTS}")
 
-    # The regex searches for TEST_CASE_METHOD, SCENARIO and TEST_CASE
+    # The regex searches for SPECTRE_TEST_CASE_METHOD, SCENARIO and SPECTRE_TEST_CASE
     # to find tests that need to be added.  TESTS will be a list of all tests
     # found in the SOURCE_FILE.
     string(REGEX MATCHALL
-           "(CATCH_)?(TEST_CASE_METHOD|SCENARIO|TEST_CASE)[ \t]*\\([^\)]+\\)[ \t]*{"
+           "(CATCH_)?(SPECTRE_TEST_CASE_METHOD|SCENARIO|SPECTRE_TEST_CASE)[ \t]*\\([^\)]+\\)[ \t]*{"
            TESTS
            "${CONTENTS}")
 
     foreach (TEST_NAME ${TESTS})
         # Get test type and fixture if applicable
-        string(REGEX MATCH "(CATCH_)?(TEST_CASE_METHOD|SCENARIO|TEST_CASE)"
+        string(REGEX MATCH "(CATCH_)?(SPECTRE_TEST_CASE_METHOD|SCENARIO|SPECTRE_TEST_CASE)"
                TEST_TYPE "${TEST_NAME}")
 
         string(REPLACE "${TEST_TYPE}(" ""

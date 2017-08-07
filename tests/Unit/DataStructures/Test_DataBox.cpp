@@ -139,7 +139,7 @@ static_assert(db::detail::tag_has_label<test_databox_tags::TagTensor>::value,
               "Failed testing db::tag_has_label");
 }  // namespace
 
-TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   /// [create_databox]
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -252,8 +252,8 @@ TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   }
 }
 
-TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
-          "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
+                  "[Unit][DataStructures]") {
   /// [get_item_from_box]
   auto original_box = db::create<
       db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -275,8 +275,8 @@ TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
 }
 
 // [[OutputRegex, Could not find the tag named "time__" in the DataBox]]
-TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
-          "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
+                  "[Unit][DataStructures]") {
   ERROR_TEST();
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -287,7 +287,8 @@ TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
   static_cast<void>(db::get_item_from_box<double>(original_box, "time__"));
 }
 
-TEST_CASE("Unit.DataStructures.DataBox.apply", "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
+                  "[Unit][DataStructures]") {
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                              test_databox_tags::Tag2>,
@@ -315,8 +316,8 @@ TEST_CASE("Unit.DataStructures.DataBox.apply", "[Unit][DataStructures]") {
   /// [apply_example]
 }
 
-TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
-          "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
+                  "[Unit][DataStructures]") {
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                              test_databox_tags::Tag2>,
@@ -352,8 +353,8 @@ TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
-TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
-          "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
+                  "[Unit][DataStructures]") {
   ERROR_TEST();
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -366,7 +367,8 @@ TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
   static_cast<void>(tag_tensor);  // make sure compilers don't warn
 }
 
-TEST_CASE("Unit.DataStructures.DataBox.Helpers", "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
+                  "[Unit][DataStructures]") {
   auto original_box =
       db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                              test_databox_tags::Tag2>,

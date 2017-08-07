@@ -4,9 +4,10 @@
 #include <catch.hpp>
 
 #include "Domain/Direction.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
   auto upper_xi_1 = Direction<1>::upper_xi();
   CHECK(upper_xi_1.opposite() == Direction<1>::lower_xi());
   CHECK(upper_xi_1.opposite().sign() == -1.0);
@@ -18,7 +19,7 @@ TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
   CHECK(lower_xi_1.side() == Side::Lower);
 }
 
-TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
   auto upper_xi_2 = Direction<2>(0, Side::Upper);
   CHECK(upper_xi_2 == Direction<2>::upper_xi());
   CHECK(upper_xi_2.axis() == Direction<2>::Axis::Xi);
@@ -40,7 +41,7 @@ TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
   CHECK(lower_eta_2.side() == Side::Lower);
 }
 
-TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
   auto upper_xi = Direction<3>(0, Side::Upper);
   CHECK(upper_xi == Direction<3>::upper_xi());
   CHECK(upper_xi.axis() == Direction<3>::Axis::Xi);
@@ -72,7 +73,7 @@ TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
   CHECK(lower_zeta.side() == Side::Lower);
 }
 
-TEST_CASE("Unit.Domain.Direction.HelperFunctions", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Direction.HelperFunctions", "[Domain][Unit]") {
   auto upper_xi_3 = Direction<3>::upper_xi();
   CHECK(upper_xi_3.axis() == Direction<3>::Axis::Xi);
   CHECK(upper_xi_3.side() == Side::Upper);
@@ -98,7 +99,7 @@ TEST_CASE("Unit.Domain.Direction.HelperFunctions", "[Domain][Unit]") {
   CHECK(lower_zeta_3.side() == Side::Lower);
 }
 
-TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
   size_t upper_xi_1_hash = std::hash<Direction<1>>{}(Direction<1>::upper_xi());
   size_t lower_xi_1_hash = std::hash<Direction<1>>{}(Direction<1>::lower_xi());
 
@@ -125,7 +126,7 @@ TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
                                        upper_eta_2_hash, lower_eta_2_hash}};
   for (size_t i = 0; i < direction_2.size(); i++) {
     for (size_t j = i + 1; j < direction_2.size(); j++) {
-      CHECK(direction_2[i] != direction_2[j]);
+      CHECK(gsl::at(direction_2, i) != gsl::at(direction_2, j));
     }
   }
   std::array<size_t, 6> direction_3 = {{upper_xi_3_hash,   lower_xi_3_hash,
@@ -133,12 +134,12 @@ TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
                                        upper_zeta_3_hash, lower_zeta_3_hash}};
   for (size_t i = 0; i < direction_3.size(); i++) {
     for (size_t j = i + 1; j < direction_3.size(); j++) {
-      CHECK(direction_3[i] != direction_3[j]);
+      CHECK(gsl::at(direction_3, i) != gsl::at(direction_3, j));
     }
   }
 }
 
-TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
   auto upper_xi = Direction<1>(0, Side::Upper);
   CHECK(get_output(upper_xi) == "+0");
 
@@ -171,8 +172,8 @@ TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, dim = 1, for Direction<1> only dim = 0 is allowed.]]
-[[noreturn]] TEST_CASE("Unit.Domain.Direction.FirstDimension",
-                       "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Direction.FirstDimension",
+                               "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_direction = Direction<1>(1, Side::Upper);
@@ -184,8 +185,8 @@ TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
 
 // [[OutputRegex, dim = 2, for Direction<2> only dim = 0 or dim = 1 are
 // allowed.]]
-[[noreturn]] TEST_CASE("Unit.Domain.Direction.SecondDimension",
-                       "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Direction.SecondDimension",
+                               "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_direction = Direction<2>(2, Side::Upper);
@@ -197,8 +198,8 @@ TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
 
 // [[OutputRegex, dim = 3, for Direction<3> only dim = 0, dim = 1, or dim = 2
 // are allowed.]]
-[[noreturn]] TEST_CASE("Unit.Domain.Direction.ThirdDimension",
-                       "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Direction.ThirdDimension",
+                               "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_direction = Direction<3>(3, Side::Upper);

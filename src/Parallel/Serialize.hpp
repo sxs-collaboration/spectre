@@ -28,7 +28,8 @@ std::vector<char> serialize(const U& obj) {
   const T& typed_obj = obj;
   // pup routine is non-const, but shouldn't modify anything in serialization
   // mode.
-  T& mut_obj = const_cast<T&>(typed_obj);
+  // clang-tidy: do not use const_cast
+  auto& mut_obj = const_cast<T&>(typed_obj);  // NOLINT
 
   PUP::sizer sizer;
   sizer | mut_obj;
@@ -48,7 +49,7 @@ std::vector<char> serialize(const U& obj) {
 template <typename T>
 T deserialize(const void* const data) {
   PUP::fromMem reader(data);
-  T result;
+  T result{};
   reader | result;
   return result;
 }

@@ -21,7 +21,8 @@ struct Base : public PUP::able {
 }  // namespace
 
 struct DerivedInPupStlCpp11 : public Base {
-  DerivedInPupStlCpp11(std::vector<double> vec) : vec_(std::move(vec)) {}
+  explicit DerivedInPupStlCpp11(std::vector<double> vec)
+      : vec_(std::move(vec)) {}
   WRAPPED_PUPable_decl_base_template(Base,  // NOLINT
                                      DerivedInPupStlCpp11);
   explicit DerivedInPupStlCpp11(CkMigrateMessage* /* m */) {}
@@ -41,20 +42,20 @@ struct DerivedInPupStlCpp11 : public Base {
   std::vector<double> vec_;
 };
 
-TEST_CASE("Unit.Serialization.unordered_map", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.unordered_map", "[Serialization][Unit]") {
   std::unordered_map<std::string, double> um;
   um["aaa"] = 1.589;
   um["bbb"] = -10.7392;
   CHECK(um == serialize_and_deserialize(um));
 }
 
-TEST_CASE("Unit.Serialization.enum", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.enum", "[Serialization][Unit]") {
   eDummyEnum test1 = eDummyEnum::test2;
   CHECK(test1 == serialize_and_deserialize(test1));
 }
 
 /// [example_serialize_copyable]
-TEST_CASE("Unit.Serialization.tuple", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.tuple", "[Serialization][Unit]") {
   std::unordered_map<std::string, double> um;
   um["aaa"] = 1.589;
   um["bbb"] = -10.7392;
@@ -65,7 +66,7 @@ TEST_CASE("Unit.Serialization.tuple", "[Serialization][Unit]") {
 }
 /// [example_serialize_copyable]
 
-TEST_CASE("Unit.Serialization.array", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.array", "[Serialization][Unit]") {
   auto t = make_array(1.0, 3.64, 9.23);
   CHECK(t == serialize_and_deserialize(t));
 
@@ -74,35 +75,38 @@ TEST_CASE("Unit.Serialization.array", "[Serialization][Unit]") {
   CHECK(t2 == serialize_and_deserialize(t2));
 }
 
-TEST_CASE("Unit.Serialization.unordered_set", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.unordered_set", "[Serialization][Unit]") {
   std::unordered_set<size_t> test_set = {1, 2, 5, 100};
   CHECK(test_set == serialize_and_deserialize(test_set));
 }
 
-TEST_CASE("Unit.Serialization.unordered_set.empty", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.unordered_set.empty",
+                  "[Serialization][Unit]") {
   std::unordered_set<size_t> test_set{};
   CHECK(test_set == serialize_and_deserialize(test_set));
 }
 
-TEST_CASE("Unit.Serialization.unique_ptr.double", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
+                  "[Serialization][Unit]") {
   auto test_unique_ptr = std::make_unique<double>(3.8273);
-  CHECK(3.8273 == *serialize_and_deserialize(std::move(test_unique_ptr)));
+  // clang-tidy: false positive use after free
+  CHECK(3.8273 == *serialize_and_deserialize(test_unique_ptr));  // NOLINT
 }
 
-TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
-          "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
+                  "[Serialization][Unit]") {
   DerivedInPupStlCpp11 derived({-1, 12.3, -7, 8});
   std::unique_ptr<Base> derived_ptr = std::make_unique<DerivedInPupStlCpp11>(
       std::vector<double>{-1, 12.3, -7, 8});
-  std::unique_ptr<Base> serialized_ptr =
-      serialize_and_deserialize(std::move(derived_ptr));
+  std::unique_ptr<Base> serialized_ptr = serialize_and_deserialize(derived_ptr);
   CHECK(nullptr != dynamic_cast<DerivedInPupStlCpp11*>(serialized_ptr.get()));
   CHECK(derived == dynamic_cast<const DerivedInPupStlCpp11&>(*serialized_ptr));
 }
 
-TEST_CASE("Unit.Serialization.unique_ptr.nullptr", "[Serialization][Unit]") {
+SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
+                  "[Serialization][Unit]") {
   std::unique_ptr<double> derived_ptr = nullptr;
-  auto blah = serialize_and_deserialize(std::move(derived_ptr));
+  auto blah = serialize_and_deserialize(derived_ptr);
   CHECK(nullptr == blah);
 }
 

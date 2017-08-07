@@ -28,7 +28,8 @@ void check_slice_iterator_helper(SliceIterator si) {
 }
 }  // namespace
 
-TEST_CASE("Unit.DataStructures.SliceIterator", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.SliceIterator",
+                  "[DataStructures][Unit]") {
   size_t i = 0;
   for (SliceIterator si(Index<3>(3, 4, 5), 2, 0); si; ++si) {
     CHECK(i == si.slice_offset());

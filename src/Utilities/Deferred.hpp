@@ -30,6 +30,11 @@ decltype(auto) retrieve_from_deferred(const Deferred<T>& t) {
 template <typename Rt>
 class assoc_state {
  public:
+  assoc_state() = default;
+  assoc_state(const assoc_state& /*rhs*/) = delete;
+  assoc_state& operator=(const assoc_state& /*rhs*/) = delete;
+  assoc_state(assoc_state&& /*rhs*/) = delete;
+  assoc_state& operator=(assoc_state&& /*rhs*/) = delete;
   virtual const Rt& get() const = 0;
   virtual Rt& mutate() = 0;
   virtual ~assoc_state() = default;
@@ -53,8 +58,11 @@ class deferred_assoc_state : public assoc_state<Rt> {
  public:
   explicit deferred_assoc_state(Fp f, Args... args)
       : func_(f), args_(std::make_tuple(std::move(args)...)) {}
-
-  virtual ~deferred_assoc_state() = default;
+  deferred_assoc_state(const deferred_assoc_state& /*rhs*/) = delete;
+  deferred_assoc_state& operator=(const deferred_assoc_state& /*rhs*/) = delete;
+  deferred_assoc_state(deferred_assoc_state&& /*rhs*/) = delete;
+  deferred_assoc_state& operator=(deferred_assoc_state&& /*rhs*/) = delete;
+  ~deferred_assoc_state() override = default;
 
   const Rt& get() const override {
     if (not evaluated_) {
@@ -121,9 +129,6 @@ class Deferred {
       : state_(std::make_shared<Deferred_detail::simple_assoc_state<Rt>>(
             std::move(t))) {}
 
-  template <typename Fp, typename... Args, typename Rt1>
-  friend Deferred<Rt1> make_deferred(Fp f, Args&&... args);
-
   constexpr const Rt& get() const { return state_->get(); }
 
   constexpr Rt& mutate() { return state_->mutate(); }
@@ -133,6 +138,10 @@ class Deferred {
 
   explicit Deferred(std::shared_ptr<Deferred_detail::assoc_state<Rt>>&& state)
       : state_(std::move(state)) {}
+
+  // clang-tidy: redundant declaration
+  template <typename Fp, typename... Args, typename Rt1>
+  friend Deferred<Rt1> make_deferred(Fp f, Args&&... args);  // NOLINT
 };
 
 /*!

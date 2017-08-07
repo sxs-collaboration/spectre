@@ -14,7 +14,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   // We don't test unordered containers because the order of the output depends
   // on not just libc++ vs. stdlibc++ but also the OS, etc.
   std::list<int> my_list;

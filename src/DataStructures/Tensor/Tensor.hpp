@@ -456,7 +456,7 @@ Tensor<X, Symm, IndexLs<Indices...>>::get_vector_of_data() const {
   std::vector<std::string> component_names(size());
   for (size_t i = 0; i < data_.size(); ++i) {
     component_names[i] = component_name(get_tensor_index(i));
-    serialized_tensor[i] = data_[i];
+    serialized_tensor[i] = gsl::at(data_, i);
   }
   return std::make_pair(component_names, serialized_tensor);
 }

@@ -85,8 +85,8 @@ class Variables<tmpl::list<Tags...>> {
       size_t number_of_grid_points,
       double value = std::numeric_limits<double>::signaling_NaN());
 
-  Variables(Variables&& rhs) noexcept = default;   // NOLINT
-  Variables& operator=(Variables&& rhs) noexcept;  // NOLINT
+  Variables(Variables&& rhs) noexcept = default;
+  Variables& operator=(Variables&& rhs) noexcept;
 
   Variables(const Variables& rhs);
   Variables& operator=(const Variables& rhs);
@@ -125,10 +125,12 @@ class Variables<tmpl::list<Tags...>> {
   // @}
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p);
 
+  /// Converting constructor for an expression to a Variables class
+  // clang-tidy: mark as explicit (we want conversion to Variables)
   template <typename VT, bool VF>
-  Variables(const blaze::Vector<VT, VF>& expression);
+  Variables(const blaze::Vector<VT, VF>& expression);  // NOLINT
 
   template <typename VT, bool VF>
   Variables& operator=(const blaze::Vector<VT, VF>& expression);
@@ -233,11 +235,11 @@ class Variables<tmpl::list<Tags...>> {
             std::enable_if_t<
                 tt::is_a<Tensor, typename TagToAdd::type>::value>* = nullptr>
   void add_reference_variable_data(typelist<TagToAdd, Rest...> /*unused*/,
-                                   const size_t variable_offset = 0);
+                                   size_t variable_offset = 0);
 
-  template <typename TagsListLocal>
-  friend bool operator==(const Variables<TagsListLocal>& lhs,  // NOLINT
-                         const Variables<TagsListLocal>& rhs);
+  friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
+    return lhs.variable_data_ == rhs.variable_data_;
+  }
 
   std::vector<double, allocator_type> variable_data_impl_;
   // variable_data_ is only used to plug into the Blaze expression templates
@@ -388,12 +390,6 @@ std::ostream& print_helper(
 template <typename TagsLs>
 std::ostream& operator<<(std::ostream& os, const Variables<TagsLs>& d) {
   return Variables_detail::print_helper(os, d, TagsLs{});
-}
-
-template <typename TagsLsLocal>
-bool operator==(const Variables<TagsLsLocal>& lhs,
-                const Variables<TagsLsLocal>& rhs) {
-  return lhs.variable_data_ == rhs.variable_data_;
 }
 
 template <typename TagsLs>

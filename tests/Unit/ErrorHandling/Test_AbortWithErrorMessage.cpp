@@ -7,15 +7,16 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // [[OutputRegex, 'a == b' violated!]]
-[[noreturn]] TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage.Assert",
-                       "[Unit][ErrorHandling]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.ErrorHandling.AbortWithErrorMessage.Assert",
+    "[Unit][ErrorHandling]") {
   ERROR_TEST();
   abort_with_error_message("a == b", __FILE__, __LINE__, "Test Error");
 }
 
 // [[OutputRegex, ############ ERROR]]
-[[noreturn]] TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage.Error",
-                       "[Unit][ErrorHandling]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage.Error",
+                               "[Unit][ErrorHandling]") {
   ERROR_TEST();
   abort_with_error_message(__FILE__, __LINE__, "Test Error");
 }

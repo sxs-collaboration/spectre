@@ -35,7 +35,7 @@ class IndexIterator {
   /// \endcond
 
   /// Returns false if the end of the Index iteration is reached
-  operator bool() const noexcept { return valid_; }
+  explicit operator bool() const noexcept { return valid_; }
 
   /// Advance to next Index.
   IndexIterator<Dim>& operator++();

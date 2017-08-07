@@ -12,7 +12,7 @@ default_tag_timeouts = [("unit", 5)]
 
 def parse_source_file(file_name):
     file_string = open(file_name, "r").read()
-    test_regex = re.compile("(\/\/ \[\[.*?)?TEST_CASE\((.*?)\) {", re.DOTALL)
+    test_regex = re.compile("(\/\/ \[\[.*?)?SPECTRE_TEST_CASE\((.*?)\) {", re.DOTALL)
     for (attributes, test_name) in re.findall(test_regex, file_string):
         # Capture the name of the test into the first group and the tags into
         # the second. For example,

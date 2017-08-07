@@ -7,7 +7,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
   // Test default constructor:
   SegmentId test_id;
   CHECK(test_id.index() == std::numeric_limits<size_t>::max());

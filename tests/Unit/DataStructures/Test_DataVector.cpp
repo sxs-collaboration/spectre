@@ -7,7 +7,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   DataVector t(5, 10.0);
   CHECK(t.size() == 5);
   // Not range-based so we can see which index is wrong if the test fails
@@ -37,8 +37,8 @@ TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   CHECK(t_move_constructor.is_owning());
 }
 
-TEST_CASE("Unit.Serialization.DataVector",
-          "[DataStructures][Unit][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Serialization.DataVector",
+                  "[DataStructures][Unit][Serialization]") {
   const size_t npts = 10;
   DataVector t(npts), tgood(npts);
   std::iota(t.begin(), t.end(), 1.2);
@@ -46,17 +46,18 @@ TEST_CASE("Unit.Serialization.DataVector",
   CHECK(tgood == serialize_and_deserialize(t));
 }
 
-TEST_CASE("Unit.Serialization.DataVector_Ref",
-          "[DataStructures][Unit][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
+                  "[DataStructures][Unit][Serialization]") {
   const size_t npts = 10;
   DataVector t(npts);
   std::iota(t.begin(), t.end(), 4.3);
   DataVector t2;
   t2.set_data_ref(t);
-  CHECK(t == serialize_and_deserialize(std::move(t2)));
+  CHECK(t == serialize_and_deserialize(t2));
 }
 
-TEST_CASE("Unit.DataStructures.DataVector_Ref", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
+                  "[DataStructures][Unit]") {
   DataVector data{1.43, 2.83, 3.94, 7.85};
   DataVector t;
   t.set_data_ref(data);
@@ -100,7 +101,8 @@ TEST_CASE("Unit.DataStructures.DataVector_Ref", "[DataStructures][Unit]") {
     CHECK(data_2[2] == 4.94);
     CHECK(data_2[3] == 8.85);
     DataVector owned_data;
-    owned_data = data_2_ref;
+    // clang-tidy: false positive, used after it was moved
+    owned_data = data_2_ref;  // NOLINT
     CHECK(owned_data[0] == 2.43);
     CHECK(owned_data[1] == 3.83);
     CHECK(owned_data[2] == 4.94);
@@ -111,8 +113,8 @@ TEST_CASE("Unit.DataStructures.DataVector_Ref", "[DataStructures][Unit]") {
 }
 
 // [[OutputRegex, Must copy into same size]]
-[[noreturn]] TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
-                       "[DataStructures][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
+                               "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   DataVector data{1.43, 2.83, 3.94, 7.85};
@@ -125,8 +127,9 @@ TEST_CASE("Unit.DataStructures.DataVector_Ref", "[DataStructures][Unit]") {
 }
 
 // [[OutputRegex, Must copy into same size]]
-[[noreturn]] TEST_CASE("Unit.DataStructures.DataVector.move_ref_diff_size",
-                       "[DataStructures][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.DataVector.move_ref_diff_size",
+    "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   DataVector data{1.43, 2.83, 3.94, 7.85};
@@ -148,7 +151,8 @@ void check_vectors(const T1& t1, const T2& t2) {
 }
 }  // namespace
 
-TEST_CASE("Unit.DataStructures.DataVector.Math", "[Unit][DataStructures]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
+                  "[Unit][DataStructures]") {
   constexpr size_t num_pts = 19;
   DataVector val{1, 2, 3, -4, 8, 12, -14};
   DataVector nine(num_pts, 9.0);
@@ -164,7 +168,7 @@ TEST_CASE("Unit.DataStructures.DataVector.Math", "[Unit][DataStructures]") {
   check_vectors(nine + nine, DataVector(num_pts, 18.0));
   check_vectors(nine + (one * nine), DataVector(num_pts, 18.0));
   check_vectors((one * nine) + nine, DataVector(num_pts, 18.0));
-  check_vectors(nine - nine, DataVector(num_pts, 0.0));
+  check_vectors(nine - DataVector(num_pts, 8.0), DataVector(num_pts, 1.0));
   check_vectors(nine - (one * nine), DataVector(num_pts, 0.0));
   check_vectors((one * nine) - nine, DataVector(num_pts, 0.0));
 
@@ -313,8 +317,9 @@ TEST_CASE("Unit.DataStructures.DataVector.Math", "[Unit][DataStructures]") {
 }
 
 // [[OutputRegex, Must copy into same size]]
-[[noreturn]] TEST_CASE("Unit.DataStructures.DataVector.ExpressionAssignError",
-                       "[Unit][DataStructures]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.DataVector.ExpressionAssignError",
+    "[Unit][DataStructures]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   DataVector one(10, 1.0);

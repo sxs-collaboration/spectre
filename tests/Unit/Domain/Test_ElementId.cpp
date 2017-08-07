@@ -7,7 +7,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   // Test default constructor:
   ElementId<3> test_id;
   CHECK(test_id.block_id() == std::numeric_limits<size_t>::max());
@@ -25,7 +25,7 @@ TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   for (size_t dim = 0; dim < 3; dim++) {
     CHECK(id == id.id_of_child(dim, Side::Lower).id_of_parent(dim));
     CHECK(id == id.id_of_child(dim, Side::Upper).id_of_parent(dim));
-    if (0 == id.segment_ids()[dim].index() % 2) {
+    if (0 == gsl::at(id.segment_ids(), dim).index() % 2) {
       CHECK(id == id.id_of_parent(dim).id_of_child(dim, Side::Lower));
     } else {
       CHECK(id == id.id_of_parent(dim).id_of_child(dim, Side::Upper));

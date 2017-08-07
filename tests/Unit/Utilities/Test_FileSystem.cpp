@@ -9,7 +9,8 @@
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Utilities.FileSystem.get_parent_path", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_parent_path",
+                  "[Unit][Utilities]") {
   /// [get_parent_path]
   CHECK("/test/path/to/dir"s ==
         file_system::get_parent_path("/test/path/to/dir/dummy.txt"));
@@ -25,7 +26,8 @@ TEST_CASE("Unit.Utilities.FileSystem.get_parent_path", "[Unit][Utilities]") {
   /// [get_parent_path]
 }
 
-TEST_CASE("Unit.Utilities.FileSystem.get_file_name", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name",
+                  "[Unit][Utilities]") {
   /// [get_file_name]
   CHECK("dummy.txt"s ==
         file_system::get_file_name("/test/path/to/dir/dummy.txt"));
@@ -40,33 +42,35 @@ TEST_CASE("Unit.Utilities.FileSystem.get_file_name", "[Unit][Utilities]") {
 }
 
 // [[OutputRegex, Failed to find a file in the given path: '/']]
-TEST_CASE("Unit.Utilities.FileSystem.get_file_name_error",
-          "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name_error",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   file_system::get_file_name("/");
 }
 
 // [[OutputRegex, Received an empty path]]
-TEST_CASE("Unit.Utilities.FileSystem.get_file_name_empty_path",
-          "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name_empty_path",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   static_cast<void>(file_system::get_file_name(""));
 }
 
-TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path",
+                  "[Unit][Utilities]") {
   CHECK(file_system::cwd() == file_system::get_absolute_path("./"));
 }
 
 // [[OutputRegex, Failed to convert to absolute path because one of the path
 // components does not exist. Relative path is]]
-TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path_nonexistent",
-          "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path_nonexistent",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   static_cast<void>(
       file_system::get_absolute_path("./get_absolute_path_nonexistent/"));
 }
 
-TEST_CASE("Unit.Utilities.FileSystem.check_if_exists", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.check_if_exists",
+                  "[Unit][Utilities]") {
   CHECK(file_system::check_if_dir_exists("./"));
   std::fstream file("check_if_exists.txt", file.out);
   file.close();
@@ -84,7 +88,8 @@ TEST_CASE("Unit.Utilities.FileSystem.check_if_exists", "[Unit][Utilities]") {
 
 // [[OutputRegex, Failed to check if path points to a file because the path is
 // invalid.]]
-TEST_CASE("Unit.Utilities.FileSystem.is_file_error", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.is_file_error",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   CHECK(file_system::is_file("./is_file_error"));
 }
@@ -92,13 +97,14 @@ TEST_CASE("Unit.Utilities.FileSystem.is_file_error", "[Unit][Utilities]") {
 // [[OutputRegex, Cannot get size of file './file_size_error.txt' because it
 // cannot be accessed. Either it does not exist or you do not have the
 // appropriate permissions.]]
-TEST_CASE("Unit.Utilities.FileSystem.file_size_error", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.file_size_error",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   CHECK(file_system::file_size("./file_size_error.txt"));
 }
 
-TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_directory",
-          "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_directory",
+                  "[Unit][Utilities]") {
   const std::string dir_one(
       "./create_and_rm_directory/nested///nested2/nested3///");
   file_system::create_directory(dir_one);
@@ -118,8 +124,8 @@ TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_directory",
   CHECK_FALSE(file_system::check_if_dir_exists("./create_and_rm_directory"s));
 }
 
-TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_empty_directory",
-          "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_empty_directory",
+                  "[Unit][Utilities]") {
   const std::string dir_name("./create_and_rm_empty_directory");
   file_system::create_directory(dir_name);
   CHECK(file_system::check_if_dir_exists(dir_name));
@@ -128,20 +134,22 @@ TEST_CASE("Unit.Utilities.FileSystem.create_and_rm_empty_directory",
 }
 
 // [[OutputRegex, Cannot create a directory that has no name]]
-TEST_CASE("Unit.Utilities.FileSystem.create_dir_error_cannot_be_empty",
-          "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.create_dir_error_cannot_be_empty",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   file_system::create_directory(""s);
 }
 
-TEST_CASE("Unit.Utilities.FileSystem.create_dir_root", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.create_dir_root",
+                  "[Unit][Utilities]") {
   file_system::create_directory("/"s);
   CHECK(file_system::check_if_dir_exists("/"s));
 }
 
 // [[OutputRegex, Could not delete file './rm_error_not_empty' because the
 // directory is not empty]]
-TEST_CASE("Unit.Utilities.FileSystem.rm_error_not_empty", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.rm_error_not_empty",
+                  "[Unit][Utilities]") {
   ERROR_TEST();
   const std::string dir_name("./rm_error_not_empty");
   file_system::create_directory(dir_name);

@@ -8,7 +8,7 @@
 #include "Time/Time.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
   Approx approx =
       Approx::custom().epsilon(5 * std::numeric_limits<double>::epsilon());
 
@@ -87,7 +87,8 @@ TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
   CHECK(get_output(Slab(0.5, 1.5)) == "Slab[0.5,1.5]");
 }
 
-TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
+SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
+                  "[Unit][Time][Serialization]") {
   const Slab slab(1.7, 2.4);
   CHECK(slab == serialize_and_deserialize(slab));
 }
@@ -98,7 +99,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 #endif
 
 // [[OutputRegex, Backwards Slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.Backwards.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Backwards.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(1., 0.);
@@ -107,7 +108,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Backwards Slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.Backwards.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Backwards.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab::with_duration_from_start(0., -1.);
@@ -116,7 +117,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Backwards Slab]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.Backwards.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Backwards.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab::with_duration_to_end(0., -1.);
@@ -125,7 +126,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Can't advance along a zero time vector]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.Advance0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.Advance0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Slab slab(0., 1.);
@@ -135,7 +136,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(0.1, 0.9);
@@ -144,7 +145,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(0.1, 1.1);
@@ -153,7 +154,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(-0.1, 0.9);
@@ -162,7 +163,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less.3", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(-0.1, 1.1);
@@ -171,7 +172,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(0.1, 0.9);
@@ -180,7 +181,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(0.1, 1.1);
@@ -189,7 +190,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(-0.1, 0.9);
@@ -198,7 +199,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater.3", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(-0.1, 1.1);
@@ -207,7 +208,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less_equal.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.0", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(0.1, 0.9);
@@ -216,7 +217,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less_equal.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.1", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(0.1, 1.1);
@@ -225,7 +226,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less_equal.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.2", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(-0.1, 0.9);
@@ -234,7 +235,7 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.less_equal.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.less_equal.3", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(-0.1, 1.1);
@@ -243,7 +244,8 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater_equal.0", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.0",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(0.1, 0.9);
@@ -252,7 +254,8 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater_equal.1", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.1",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(0.1, 1.1);
@@ -261,7 +264,8 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater_equal.2", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.2",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(-0.1, 0.9);
@@ -270,7 +274,8 @@ TEST_CASE("Unit.Time.Slab.serialization", "[Unit][Time][Serialization]") {
 }
 
 // [[OutputRegex, Cannot compare overlapping slabs]]
-[[noreturn]] TEST_CASE("Unit.Time.Slab.greater_equal.3", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Slab.greater_equal.3",
+                               "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(-0.1, 1.1);

@@ -8,13 +8,15 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // [[OutputRegex, Testing assert]]
-[[noreturn]] TEST_CASE("Unit.ErrorHandling.Assert", "[Unit][ErrorHandling]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.Assert",
+                               "[Unit][ErrorHandling]") {
   ASSERTION_TEST();
   ASSERT(false, "Testing assert");
 }
 
 // [[OutputRegex, Testing error]]
-[[noreturn]] TEST_CASE("Unit.ErrorHandling.Error", "[Unit][ErrorHandling]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.Error",
+                               "[Unit][ErrorHandling]") {
   ERROR_TEST();
   ERROR("Testing error");
 }

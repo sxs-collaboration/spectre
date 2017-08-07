@@ -216,10 +216,13 @@ template <typename... Args>
 std::string formatted_string(const std::string& fmt, Args... args) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-  auto requiredBytes = static_cast<size_t>(
-      std::snprintf(nullptr, 0, fmt.c_str(), args...) + 1);  // NOLINT
+   // clang-tidy: do not use snprintf
+  auto requiredBytes = static_cast<size_t>(std::snprintf(  // NOLINT
+                           nullptr, 0, fmt.c_str(), args...)) +
+                       1;
   std::string rtn;
   rtn.resize(requiredBytes);
+  // clang-tidy: do not use snprintf
   std::snprintf(&rtn[0], requiredBytes, fmt.c_str(), args...);  // NOLINT
 #pragma GCC diagnostic pop
   if (rtn[rtn.size() - 1] == '\0') {
