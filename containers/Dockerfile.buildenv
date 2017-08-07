@@ -2,11 +2,13 @@
 # See LICENSE.txt for details.
 
 # If you change this file please push a new image to DockerHub so that the
-# new image is used for testing. To build a new image run:
-# docker build  -t sxscollaboration/spectrebuildenv:latest
-#               -f ./Dockerfile.buildenv .
+# new image is used for testing. Docker must be run as root on your machine,
+# so to build a new image run the following as root (e.g. sudo su):
+#   cd $SPECTRE_HOME/containers
+#   docker build  -t sxscollaboration/spectrebuildenv:latest \
+#                 -f ./Dockerfile.buildenv .
 # and then to push to DockerHub:
-# docker push sxscollaboration/spectrebuildenv
+#   docker push sxscollaboration/spectrebuildenv
 # If you do not have permission to push to DockerHub please coordinate with
 # someone who does. Since changes to this image effect our testing
 # infrastructure it is important all changes be carefully reviewed.
@@ -21,7 +23,7 @@ RUN apt-get update -y
 RUN apt-get install -y gcc g++ gfortran git cmake
 RUN apt-get install -y libopenblas-dev liblapack-dev libhdf5-dev libgsl0-dev
 RUN apt-get install -y clang clang-format clang-tidy iwyu lcov cppcheck
-RUN apt-get install -y libboost-all-dev libyaml-cpp-dev
+RUN apt-get install -y libboost-all-dev
 
 # Update is needed to get libc++ correctly
 RUN apt-get update -y
@@ -54,12 +56,12 @@ https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip \
 RUN apt-get update -y && apt-get install -y rubygems && gem install coveralls-lcov
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
-RUN apt-get install -y bash-completion
+RUN apt-get update -y && apt-get install -y bash-completion
 RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
 # Install LMod which is needed by Spack and set it to load at login
-RUN apt-get install -y curl lmod
+RUN apt-get update -y && apt-get install -y curl lmod
 RUN printf '. /etc/profile.d/lmod.sh\n' >> /root/.bashrc
 RUN . /etc/profile.d/lmod.sh
 
@@ -82,6 +84,7 @@ RUN /work/spack/bin/spack install brigand@master
 RUN /work/spack/bin/spack install blaze
 RUN /work/spack/bin/spack install gsl%gcc
 RUN /work/spack/bin/spack install libxsmm
+RUN /work/spack/bin/spack install yaml-cpp@develop
 
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
@@ -101,3 +104,4 @@ RUN echo 'spack load brigand' >> /root/.bashrc
 RUN echo 'spack load blaze' >> /root/.bashrc
 RUN echo 'spack load gsl' >> /root/.bashrc
 RUN echo 'spack load libxsmm' >> /root/.bashrc
+RUN echo 'spack load yaml-cpp' >> /root/.bashrc
