@@ -130,7 +130,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
       v(1, -3.0);
   auto& vector_in_v = v.get<VariablesTestTags_detail::vector>();
   vector_in_v = tnsr::I<DataVector, 3, Frame::Grid>{10_st, -4.0};
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 

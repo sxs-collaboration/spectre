@@ -11,7 +11,8 @@ before the `SPECTRE_TEST_CASE` macro will force ctest to only pass the particula
 if the regular expression is found. This can be used to test error handling.
 When testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as `[[noreturn]]`,
 add the macro `ASSERTION_TEST();` to the beginning of the test, and also have
-the test call `ERROR("Bad test end");` at the end of the test body.
+the test call `ERROR("Failed to trigger ASSERT in an assertion test");` at the
+end of the test body.
 For example,
 
 ```cpp
@@ -25,7 +26,7 @@ For example,
   data_ref.set_data_ref(data);
   DataVector data2{1.43, 2.83, 3.94};
   data_ref = data2;
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 ```

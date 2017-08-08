@@ -71,6 +71,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.Deferred", "[Utilities][Unit]") {
 #ifdef SPECTRE_DEBUG
   auto def = make_deferred(func{});
   auto& mutate = def.mutate();
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

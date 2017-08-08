@@ -122,7 +122,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
   data_ref.set_data_ref(data);
   DataVector data2{1.43, 2.83, 3.94};
   data_ref = data2;
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -137,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
   data_ref.set_data_ref(data);
   DataVector data2{1.43, 2.83, 3.94};
   data_ref = std::move(data2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -326,6 +326,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   DataVector one_ref(one.data(), one.size());
   DataVector one_b(2, 1.0);
   one_ref = (one_b * one_b);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
