@@ -669,7 +669,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #ifdef SPECTRE_DEBUG
   tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
   auto& t = tensor[1000];
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -681,7 +681,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #ifdef SPECTRE_DEBUG
   const tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
   const auto& t = tensor[1000];
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -693,7 +693,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #ifdef SPECTRE_DEBUG
   Scalar<double> tensor(1_st);
   const auto& t = tensor.multiplicity(1000);
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -705,7 +705,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #ifdef SPECTRE_DEBUG
   Scalar<double> tensor(1_st);
   const auto& t = tensor.get_tensor_index(1000);
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 

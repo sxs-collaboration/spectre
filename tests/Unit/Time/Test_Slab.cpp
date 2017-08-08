@@ -103,7 +103,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(1., 0.);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab::with_duration_from_start(0., -1.);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab::with_duration_to_end(0., -1.);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -131,7 +131,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
 #ifdef SPECTRE_DEBUG
   const Slab slab(0., 1.);
   slab.advance_towards(0 * slab.duration());
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -140,7 +140,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -149,7 +149,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -158,7 +158,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(-0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -167,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) < Slab(-0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -176,7 +176,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -185,7 +185,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -194,7 +194,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(-0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -203,7 +203,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) > Slab(-0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -212,7 +212,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -221,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -230,7 +230,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(-0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -239,7 +239,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) <= Slab(-0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -249,7 +249,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -259,7 +259,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -269,7 +269,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(-0.1, 0.9);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -279,6 +279,6 @@ SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Slab(0., 1.) >= Slab(-0.1, 1.1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

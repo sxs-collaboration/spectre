@@ -287,7 +287,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), -1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 /// [example_of_error_test]
@@ -297,7 +297,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -306,7 +306,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(1., 2.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -315,7 +315,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(-1., 0.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -324,7 +324,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), Time::rational_t(1, 2)).with_slab(Slab(0., 2.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -333,7 +333,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0).with_slab(Slab(1., 2.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -342,7 +342,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0).with_slab(Slab(-1., 1.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -351,7 +351,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1).with_slab(Slab(-1., 0.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -360,7 +360,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1).with_slab(Slab(0., 2.));
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -369,7 +369,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1) < Time(Slab(0., 2.), 1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -378,7 +378,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - Time(Slab(2., 3.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -387,7 +387,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 1) - Time(Slab(-1., 0.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -396,7 +396,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(-1., 0.), 0) - Time(Slab(0., 1.), 1);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -405,7 +405,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), 2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -414,7 +414,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), 2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -423,7 +423,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) + TimeDelta(Slab(0., 1.), -2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -432,7 +432,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) += TimeDelta(Slab(0., 1.), -2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -441,7 +441,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), 2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -450,7 +450,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), 2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -459,7 +459,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - TimeDelta(Slab(0., 1.), -2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -468,7 +468,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) -= TimeDelta(Slab(0., 1.), -2);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -477,7 +477,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -486,7 +486,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -495,7 +495,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -504,7 +504,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Time(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -514,7 +514,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) < TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -524,7 +524,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) > TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -534,7 +534,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) <= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -544,7 +544,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) >= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -554,7 +554,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 2) + Time(Slab(0., 1.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -564,7 +564,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), -2) + Time(Slab(0., 1.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -574,7 +574,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(1., 2.), 0) + Time(Slab(0., 1.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -584,7 +584,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) += TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -594,7 +594,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) + TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -604,7 +604,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) -= TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -614,6 +614,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   TimeDelta(Slab(0., 1.), 0) - TimeDelta(Slab(1., 2.), 0);
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

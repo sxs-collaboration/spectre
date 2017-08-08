@@ -13,7 +13,7 @@
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   real_roots(1.0, -3.0, 3.0);
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -24,7 +24,7 @@
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   positive_root(1.0, -3.0, 3.0);
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -35,7 +35,7 @@
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   positive_root(1.0, -3.0, 2.0);
-  ERROR("Bad test end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 

@@ -179,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
   auto failed_direction = Direction<1>(1, Side::Upper);
   static_cast<void>(failed_direction);
 
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -192,7 +192,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
   auto failed_direction = Direction<2>(2, Side::Upper);
   static_cast<void>(failed_direction);
 
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
@@ -205,6 +205,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
   auto failed_direction = Direction<3>(3, Side::Upper);
   static_cast<void>(failed_direction);
 
-  ERROR("Bad end");
+  ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
