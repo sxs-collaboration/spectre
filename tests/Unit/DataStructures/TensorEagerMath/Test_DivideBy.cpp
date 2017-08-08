@@ -6,7 +6,8 @@
 #include "DataStructures/Tensor/EagerMath/DivideBy.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
+                  "[DataStructures][Unit]") {
   const size_t npts = 2;
   const DataVector one(npts, 1.0);
   const DataVector two(npts, 2.0);

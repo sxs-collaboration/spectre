@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Data.Tensor.Expression.AddSubtract",
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                   "[DataStructures][Unit]") {
   Tensor<double, Symmetry<1, 1>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
