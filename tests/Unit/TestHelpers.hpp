@@ -89,6 +89,10 @@
  */
 template <typename T>
 T serialize_and_deserialize(const T& t) {
+  static_assert(
+      std::is_default_constructible<T>::value,
+      "Cannot use serialize_and_deserialize if a class is not default "
+      "constructible.");
   return deserialize<T>(serialize<T>(t).data());
 }
 
