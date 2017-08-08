@@ -191,8 +191,10 @@ inline constexpr std::array<std::decay_t<T>, Size> replace_at_helper(
     const std::array<T, Size>& arr, const T& value, const size_t i,
     std::integer_sequence<size_t, I...> /*unused*/,
     std::integer_sequence<size_t, J...> /*unused*/) {
+  // clang-tidy: Cannot use gsl::at because we want constexpr evaluation and
+  // Parallel::abort violates this
   return std::array<std::decay_t<T>, Size>{
-      {arr[I]..., value, gsl::at(arr, i + J)...}};
+      {arr[I]..., value, arr[i + J]...}};  // NOLINT
 }
 }  // namespace ConstantExpression_detail
 
@@ -213,7 +215,9 @@ template <typename T, typename S, size_t size>
 inline constexpr bool array_equal(const std::array<T, size>& lhs,
                                   const std::array<S, size>& rhs,
                                   const size_t i = 0) noexcept {
-  return i < size ? (gsl::at(lhs, i) == gsl::at(rhs, i) and
-                     array_equal(lhs, rhs, i + 1))
+  // clang-tidy: Cannot use gsl::at because we want constexpr evaluation and
+  // Parallel::abort violates this
+  return i < size ? (lhs[i] == rhs[i]  // NOLINT
+                     and array_equal(lhs, rhs, i + 1))
                   : true;
 }
