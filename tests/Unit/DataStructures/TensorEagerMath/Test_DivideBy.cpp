@@ -6,7 +6,8 @@
 #include "DataStructures/Tensor/EagerMath/DivideBy.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
+                  "[DataStructures][Unit]") {
   const size_t npts = 2;
   const DataVector one(npts, 1.0);
   const DataVector two(npts, 2.0);
@@ -19,7 +20,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
   const Tensor<DataVector, Symmetry<1>,
                typelist<SpatialIndex<1, UpLo::Lo, Frame::Grid>>>
       one_d_covector{{{two}}};
-  const DataVector magnitude_one_d_covector = two;
+  const DataVector& magnitude_one_d_covector = two;
   const auto normalized_one_d_covector =
       divide_by(one_d_covector, magnitude_one_d_covector);
   for (size_t s = 0; s < npts; ++s) {
@@ -29,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
   const Tensor<DataVector, Symmetry<1>,
                typelist<SpacetimeIndex<1, UpLo::Up, Frame::Grid>>>
       two_d_vector{{{three, four}}};
-  const DataVector magnitude_two_d_vector = five;
+  const DataVector& magnitude_two_d_vector = five;
   const auto normalized_two_d_vector =
       divide_by(two_d_vector, magnitude_two_d_vector);
   for (size_t s = 0; s < npts; ++s) {
@@ -40,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
   const Tensor<DataVector, Symmetry<1>,
                typelist<SpatialIndex<2, UpLo::Up, Frame::Grid>>>
       two_d_spatial_vector{{{five, twelve}}};
-  const DataVector magnitude_two_d_spatial_vector = thirteen;
+  const DataVector& magnitude_two_d_spatial_vector = thirteen;
   const auto normalized_two_d_spatial_vector =
       divide_by(two_d_spatial_vector, magnitude_two_d_spatial_vector);
   for (size_t s = 0; s < npts; ++s) {
@@ -51,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
   const Tensor<DataVector, Symmetry<1>,
                typelist<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
       three_d_covector{{{three, twelve, four}}};
-  const DataVector magnitude_three_d_covector = thirteen;
+  const DataVector& magnitude_three_d_covector = thirteen;
   const auto normalized_three_d_covector =
       divide_by(three_d_covector, magnitude_three_d_covector);
   for (size_t s = 0; s < npts; ++s) {
@@ -63,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.DivideBy", "[Functors][Unit]") {
   const Tensor<DataVector, Symmetry<1>,
                typelist<SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
       five_d_covector{{{two, twelve, four, one, two}}};
-  const DataVector magnitude_five_d_covector = thirteen;
+  const DataVector& magnitude_five_d_covector = thirteen;
   const auto normalized_five_d_covector =
       divide_by(five_d_covector, magnitude_five_d_covector);
   for (size_t s = 0; s < npts; ++s) {

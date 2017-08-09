@@ -6,7 +6,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EuclideanMagnitude",
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanMagnitude",
                   "[DataStructures][Unit]") {
   // Check for DataVectors
   {
@@ -71,7 +71,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EuclideanMagnitude",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Magnitude",
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
                   "[DataStructures][Unit]") {
   // Check for DataVectors
   {
