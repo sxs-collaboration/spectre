@@ -5,7 +5,7 @@
 
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Test.TestHelpers", "[Unit]") {
+SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   std::vector<double> vector{0, 1, 2, 3};
   test_iterators(vector);
   test_reverse_iterators(vector);

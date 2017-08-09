@@ -11,27 +11,27 @@
 void register_derived_classes_for_pup_stl_cpp11();
 
 class TestArrayChare : public CBase_TestArrayChare {
-public:
-  TestArrayChare() {}
-  explicit TestArrayChare(CkMigrateMessage*) {}
+ public:
+  TestArrayChare() = default;
+  explicit TestArrayChare(CkMigrateMessage* /*unused*/) {}
 };
 
 class TestChare : public CBase_TestChare {
-public:
-  TestChare() {}
-  explicit TestChare(CkMigrateMessage*) {}
+ public:
+  TestChare() = default;
+  explicit TestChare(CkMigrateMessage* /*unused*/) {}
 };
 
 class TestGroupChare : public CBase_TestGroupChare {
-public:
-  TestGroupChare() {}
-  explicit TestGroupChare(CkMigrateMessage*) {}
+ public:
+  TestGroupChare() = default;
+  explicit TestGroupChare(CkMigrateMessage* /*unused*/) {}
 };
 
 class TestNodeGroupChare : public CBase_TestNodeGroupChare {
 public:
-  TestNodeGroupChare() {}
-  explicit TestNodeGroupChare(CkMigrateMessage*) {}
+ TestNodeGroupChare() = default;
+ explicit TestNodeGroupChare(CkMigrateMessage* /*unused*/) {}
 };
 
 /// Main executable for running the unit tests.

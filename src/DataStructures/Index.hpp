@@ -43,11 +43,9 @@ class Index {
   explicit Index(std::array<size_t, Dim> i) : indices_(std::move(i)) {}
 
   size_t operator[](const size_t d) const noexcept {
-    return gsl::at(indices_, d);  // NOLINT
+    return gsl::at(indices_, d);
   }
-  size_t& operator[](const size_t d) noexcept {
-    return gsl::at(indices_, d);  // NOLINT
-  }
+  size_t& operator[](const size_t d) noexcept { return gsl::at(indices_, d); }
 
   typename std::array<size_t, Dim>::iterator begin() {
     return indices_.begin();
@@ -92,6 +90,7 @@ class Index {
   }
 
   /// \cond
+  // clang-tidy: runtime-references
   void pup(PUP::er& p) {  // NOLINT
     p | indices_;
   }

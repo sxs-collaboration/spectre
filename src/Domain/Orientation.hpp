@@ -32,11 +32,10 @@ class Orientation {
       const std::array<Direction<VolumeDim>, VolumeDim>&
           directions_in_neighbor);
   ~Orientation() = default;
-  Orientation(const Orientation<VolumeDim>&) = default;
-  Orientation<VolumeDim>& operator=(const Orientation<VolumeDim>&) = default;
-  Orientation(Orientation<VolumeDim>&& /* rhs */) noexcept = default;  // NOLINT
-  Orientation<VolumeDim>& operator=(                                   // NOLINT
-      Orientation<VolumeDim>&& /*rhs*/) noexcept = default;
+  Orientation(const Orientation&) = default;
+  Orientation& operator=(const Orientation&) = default;
+  Orientation(Orientation&& /*rhs*/) noexcept = default;
+  Orientation& operator=(Orientation&& /*rhs*/) noexcept = default;
 
   /// True when mapped(Direction) == Direction
   bool is_aligned() const noexcept { return is_aligned_; }

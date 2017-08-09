@@ -275,21 +275,21 @@ template <typename... Tags>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const Variables<tmpl::list<Tags...>>& rhs) {
   if (&rhs == this) {
-    return *this;  // NOLINT
+    return *this;
   }
   variable_data_impl_ = rhs.variable_data_impl_;
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = rhs.number_of_grid_points();
   add_reference_variable_data(typelist<Tags...>{});
-  return *this;  // NOLINT
+  return *this;
 }
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     Variables<tmpl::list<Tags...>>&& rhs) noexcept {
   if (this == &rhs) {
-    return *this;  // NOLINT
+    return *this;
   }
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());

@@ -53,17 +53,17 @@ struct ComponentNameImpl {
     std::array<std::string, Structure::rank()> labels = axis_labels;
     constexpr auto index_dim = Structure::dims();
     for (size_t i = 0; i < Structure::rank(); ++i) {
-      if (labels[i].length() == 0) {                                // NOLINT
-        if (Structure::index_types()[i] == IndexType::Spacetime) {  // NOLINT
+      if (gsl::at(labels, i).length() == 0) {
+        if (gsl::at(Structure::index_types(), i) == IndexType::Spacetime) {
           switch (gsl::at(index_dim, i)) {
             case 2:
-              labels[i] = "tx";  // NOLINT
+              gsl::at(labels, i) = "tx";
               break;
             case 3:
-              labels[i] = "txy";  // NOLINT
+              gsl::at(labels, i) = "txy";
               break;
             case 4:
-              labels[i] = "txyz";  // NOLINT
+              gsl::at(labels, i) = "txyz";
               break;
             default:
               ERROR("Tensor dim["
@@ -73,13 +73,13 @@ struct ComponentNameImpl {
         } else {
           switch (gsl::at(index_dim, i)) {
             case 1:
-              labels[i] = "x";  // NOLINT
+              gsl::at(labels, i) = "x";
               break;
             case 2:
-              labels[i] = "xy";  // NOLINT
+              gsl::at(labels, i) = "xy";
               break;
             case 3:
-              labels[i] = "xyz";  // NOLINT
+              gsl::at(labels, i) = "xyz";
               break;
             default:
               ERROR("Tensor dim["
@@ -88,11 +88,11 @@ struct ComponentNameImpl {
           }
         }
       } else {
-        if (axis_labels[i].length() != gsl::at(index_dim, i)) {  // NOLINT
+        if (gsl::at(axis_labels, i).length() != gsl::at(index_dim, i)) {
           ERROR("Dimension mismatch: Tensor has dim = "
                 << gsl::at(index_dim, i) << ", but you specified "
-                << axis_labels[i].length() << " different labels in "
-                << axis_labels[i]);
+                << gsl::at(axis_labels, i).length() << " different labels in "
+                << gsl::at(axis_labels, i));
         }
       }
     }
@@ -101,7 +101,7 @@ struct ComponentNameImpl {
     const auto& canonical_tensor_index =
         Structure::get_canonical_tensor_index(storage_index);
     for (size_t r = 0; r < Structure::rank(); ++r) {
-      ss << labels[r][canonical_tensor_index[r]];  // NOLINT
+      ss << gsl::at(labels, r)[gsl::at(canonical_tensor_index, r)];
     }
     return ss.str();
   }

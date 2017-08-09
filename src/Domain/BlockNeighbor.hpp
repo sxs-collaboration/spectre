@@ -28,11 +28,11 @@ class BlockNeighbor {
   BlockNeighbor(size_t id, Orientation<VolumeDim> orientation);
   ~BlockNeighbor() = default;
   BlockNeighbor(const BlockNeighbor<VolumeDim>& neighbor) = default;
-  BlockNeighbor(BlockNeighbor<VolumeDim>&&) noexcept = default;  // NOLINT
+  BlockNeighbor(BlockNeighbor<VolumeDim>&&) noexcept = default;
   BlockNeighbor<VolumeDim>& operator=(const BlockNeighbor<VolumeDim>& rhs) =
       default;
-  BlockNeighbor<VolumeDim>& operator=(  // NOLINT
-      BlockNeighbor<VolumeDim>&&) noexcept = default;
+  BlockNeighbor<VolumeDim>& operator=(BlockNeighbor<VolumeDim>&&) noexcept =
+      default;
 
   size_t id() const noexcept { return id_; }
 

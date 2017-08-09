@@ -17,6 +17,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
     ss << "{ ";
     for (size_t j = 0; j < matrix.columns(); ++j) {
       CHECK(1.0 == matrix(i, j));
+      // clang-tidy: do not use pointer arithmetic
       CHECK(&a_ptr[i + j * matrix.rows()] == &matrix(i, j));  // NOLINT
       ss << matrix(i, j) << " ";
     }
