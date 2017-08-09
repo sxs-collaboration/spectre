@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
   DataVector t(npts);
   std::iota(t.begin(), t.end(), 4.3);
   DataVector t2;
-  t2.set_data_ref(t);
+  t2.set_data_ref(&t);
   CHECK(t == serialize_and_deserialize(t2));
 }
 
@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
                   "[DataStructures][Unit]") {
   DataVector data{1.43, 2.83, 3.94, 7.85};
   DataVector t;
-  t.set_data_ref(data);
+  t.set_data_ref(&data);
   CHECK(not t.is_owning());
   CHECK(data.is_owning());
   CHECK(t.data() == data.data());
@@ -71,7 +71,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
   CHECK(t[3] == 7.85);
   test_copy_semantics(t);
   DataVector t_copy;
-  t_copy.set_data_ref(t);
+  t_copy.set_data_ref(&t);
   test_move_semantics(std::move(t), t_copy);
   DataVector t_move_assignment = std::move(t_copy);
   CHECK(not t_move_assignment.is_owning());
@@ -80,7 +80,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
   {
     DataVector data_2{1.43, 2.83, 3.94, 7.85};
     DataVector data_2_ref;
-    data_2_ref.set_data_ref(data_2);
+    data_2_ref.set_data_ref(&data_2);
     DataVector data_3{2.43, 3.83, 4.94, 8.85};
     data_2_ref = std::move(data_3);
     CHECK(data_2[0] == 2.43);
@@ -119,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
 #ifdef SPECTRE_DEBUG
   DataVector data{1.43, 2.83, 3.94, 7.85};
   DataVector data_ref;
-  data_ref.set_data_ref(data);
+  data_ref.set_data_ref(&data);
   DataVector data2{1.43, 2.83, 3.94};
   data_ref = data2;
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -134,7 +134,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
 #ifdef SPECTRE_DEBUG
   DataVector data{1.43, 2.83, 3.94, 7.85};
   DataVector data_ref;
-  data_ref.set_data_ref(data);
+  data_ref.set_data_ref(&data);
   DataVector data2{1.43, 2.83, 3.94};
   data_ref = std::move(data2);
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -250,7 +250,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   test_81_ref = second_81;
   check_vectors(DataVector(num_pts, 81.0), test_81_ref);
   second_81 = 0.0;
-  test_81_ref.set_data_ref(test_81);
+  test_81_ref.set_data_ref(&test_81);
   second_81 = std::move(test_81_ref);
   check_vectors(DataVector(num_pts, 81.0), second_81);
   CHECK_FALSE(second_81.is_owning());
@@ -262,7 +262,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
 
   test_81 = 81.0;
   DataVector test_081;
-  test_081.set_data_ref(test_81);
+  test_081.set_data_ref(&test_81);
   check_vectors(DataVector(num_pts, 81.0), test_081);
   CHECK_FALSE(test_081.is_owning());
   test_081 = square(point_nine);

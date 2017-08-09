@@ -15,6 +15,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/PointerVector.hpp"
 
 /// \cond HIDDEN_SYMBOLS
@@ -94,7 +95,9 @@ class DataVector {
 
   // @{
   /// Set the DataVector to be a reference to another DataVector object
-  void set_data_ref(DataVector& rhs) { set_data_ref(rhs.data(), rhs.size_); }
+  void set_data_ref(gsl::not_null<DataVector*> rhs) {
+    set_data_ref(rhs->data(), rhs->size_);
+  }
   void set_data_ref(double* start, size_t size);
   // @}
 
