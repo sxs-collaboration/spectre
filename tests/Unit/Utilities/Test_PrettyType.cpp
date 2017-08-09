@@ -101,3 +101,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.Stl", "[Utilities][Unit]") {
   CHECK("std::weak_ptr<double>" ==
         pretty_type::get_name<std::weak_ptr<double>>());
 }
+
+SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.short_name", "[Utilities][Unit]") {
+  CHECK("Simple" == pretty_type::extract_short_name("Simple"));
+  CHECK("Qualified" == pretty_type::extract_short_name("Namespace::Qualified"));
+  CHECK("Templated" == pretty_type::extract_short_name("Templated<int>"));
+  CHECK("Nested" == pretty_type::extract_short_name("Nested<Templated<int>>"));
+  CHECK("Nested" ==
+        pretty_type::extract_short_name("Nested<Namespace::Templated<int>>"));
+  CHECK("Inner" == pretty_type::extract_short_name("Outer<int>::Inner"));
+}
