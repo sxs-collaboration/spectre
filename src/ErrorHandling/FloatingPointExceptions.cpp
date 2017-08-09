@@ -10,7 +10,7 @@
 #ifdef __APPLE__
 #include <xmmintrin.h>
 #else
-#include <fenv.h>
+#include <cfenv>
 #endif
 
 namespace {

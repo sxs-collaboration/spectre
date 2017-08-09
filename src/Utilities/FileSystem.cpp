@@ -49,7 +49,10 @@ std::string get_file_name(const std::string& file_path) {
 }
 
 std::string get_absolute_path(const std::string& rel_path) {
-  char* name = realpath(rel_path.c_str(), nullptr);
+  // clang-tidy: do not manually manage memory
+  auto deleter = [](char* p) { free(p); }; // NOLINT
+  std::unique_ptr<char, decltype(deleter)> name(
+      realpath(rel_path.c_str(), nullptr), deleter);
   if (nullptr == name) {
     if (ENAMETOOLONG == errno) {
       // LCOV_EXCL_START
@@ -81,9 +84,7 @@ std::string get_absolute_path(const std::string& rel_path) {
     ERROR("Failed to get absolute path for an unknown reason: " << local_errno);
     // LCOV_EXCL_STOP
   }
-  std::string return_name(name);
-  free(name);
-  return return_name;
+  return name.get();
 }
 
 void create_directory(const std::string& dir, const double wait_time,
@@ -180,26 +181,25 @@ size_t file_size(const std::string& file) {
 
 std::string cwd() {
   double wait_time = 1;
-  char* the_cwd = nullptr;
-  the_cwd = getcwd(the_cwd, 0);
+  // clang-tidy: do not manually manage memory
+  auto deleter = [](char* p) { free(p); }; // NOLINT
+  std::unique_ptr<char, decltype(deleter)> the_cwd(nullptr, deleter);
+  the_cwd.reset(getcwd(the_cwd.get(), 0));
   while (the_cwd == nullptr) {
     // It's not clear how to test this code since we can't make the file system
     // be slow
     // LCOV_EXCL_START
     std::this_thread::sleep_for(std::chrono::duration<double>(wait_time));
     wait_time += 10;
-    the_cwd = getcwd(the_cwd, 0);
+    the_cwd.reset(getcwd(the_cwd.get(), 0));
     if (wait_time > 61) {
-      free(the_cwd);
       ERROR(
           "Could not get the current directory. This is typically related to "
           "filesystem issues.");
     }
     // LCOV_EXCL_STOP
   }
-  std::string return_dir(the_cwd);
-  free(the_cwd);
-  return return_dir;
+  return the_cwd.get();
 }
 
 std::vector<std::string> ls(const std::string& dir_name) {
@@ -261,4 +261,4 @@ void rm(const std::string& path, bool recursive) {
     // LCOV_EXCL_STOP
   }
 }
-}  // namespace filesystem
+}  // namespace file_system

@@ -55,7 +55,9 @@ DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
   if (owning_ or size_ == 0) {
     size_ = rhs.size_;
     owned_data_ = std::move(rhs.owned_data_);
-    data_ = std::move(rhs.data_);
+    // clang-tidy: move trivially copyable type, future proof in case impl
+    // changes
+    data_ = std::move(rhs.data_);  // NOLINT
     owning_ = rhs.owning_;
   } else {
     ASSERT(rhs.size() == size(), "Must copy into same size");

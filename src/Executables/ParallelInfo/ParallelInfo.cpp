@@ -14,14 +14,17 @@
 
 /// \cond HIDDEN_SYMBOLS
 ParallelInfo::ParallelInfo(CkArgMsg* msg) {
-  Parallel::printf("Executing '%s' using %d processors.\n", msg->argv[0],
+  // clang-tidy: do not use pointer arithmetic
+  Parallel::printf("Executing '%s' using %d processors.\n",
+                   msg->argv[0],  // NOLINT
                    Parallel::number_of_procs());
   if (msg->argc > 1) {
     std::stringstream error_msg;
     error_msg << "Expected zero command line options, not " << msg->argc - 1
               << "\nReceived:\n";
     for (int i = 1; i < msg->argc; ++i) {
-      error_msg << "'" << msg->argv[i] << "'\n\n";
+      // clang-tidy: do not use pointer arithmetic
+      error_msg << "'" << msg->argv[i] << "'\n\n";  // NOLINT
     }
     ERROR(error_msg.str());
   }
@@ -81,12 +84,15 @@ void print_info() {
       Parallel::local_rank_of(Parallel::my_proc()));
 }
 
-PeGroupReporter::PeGroupReporter(CkCallback& cb_start_node_group_check) {
+// clang-tidy: google-runtime-references
+PeGroupReporter::PeGroupReporter(
+    CkCallback& cb_start_node_group_check) {  // NOLINT
   print_info();
   this->contribute(cb_start_node_group_check);
 }
 
-NodeGroupReporter::NodeGroupReporter(CkCallback& cb_end_report) {
+// clang-tidy: google-runtime-references
+NodeGroupReporter::NodeGroupReporter(CkCallback& cb_end_report) {  // NOLINT
   print_info();
   this->contribute(cb_end_report);
 }

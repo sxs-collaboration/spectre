@@ -101,7 +101,7 @@ struct ComponentNameImpl {
     const auto& canonical_tensor_index =
         Structure::get_canonical_tensor_index(storage_index);
     for (size_t r = 0; r < Structure::rank(); ++r) {
-      ss << labels[r][gsl::at(canonical_tensor_index, r)];
+      ss << gsl::at(labels, r)[gsl::at(canonical_tensor_index, r)];
     }
     return ss.str();
   }
