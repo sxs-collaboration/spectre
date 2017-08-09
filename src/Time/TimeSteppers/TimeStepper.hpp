@@ -39,8 +39,8 @@ class TimeStepper /*: public Factory<TimeStepper>*/ {
   TimeStepper() noexcept = default;
   TimeStepper(const TimeStepper&) noexcept = default;
   TimeStepper& operator=(const TimeStepper&) noexcept = default;
-  TimeStepper(TimeStepper&&) noexcept = default;             // NOLINT
-  TimeStepper& operator=(TimeStepper&&) noexcept = default;  // NOLINT
+  TimeStepper(TimeStepper&&) noexcept = default;
+  TimeStepper& operator=(TimeStepper&&) noexcept = default;
   virtual ~TimeStepper() noexcept = default;
   /// \endcond
 

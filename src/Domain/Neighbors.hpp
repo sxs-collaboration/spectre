@@ -32,10 +32,9 @@ class Neighbors {
   Neighbors() = default;
   ~Neighbors() = default;
   Neighbors(const Neighbors<VolumeDim>& neighbor)  = default;
-  Neighbors(Neighbors<VolumeDim>&&) noexcept = default;  // NOLINT
-  Neighbors<VolumeDim>& operator=(const Neighbors<VolumeDim>& rhs) = default;
-  Neighbors<VolumeDim>& operator=(Neighbors<VolumeDim>&&) noexcept =  // NOLINT
-      default;                                                        // NOLINT
+  Neighbors(Neighbors<VolumeDim>&&) noexcept = default;
+  Neighbors& operator=(const Neighbors& rhs) = default;
+  Neighbors& operator=(Neighbors&&) noexcept = default;
 
   const std::unordered_set<ElementId<VolumeDim>>& ids() const noexcept {
     return ids_;

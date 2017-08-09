@@ -15,6 +15,7 @@ enum class eDummyEnum { test1, test2 };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 struct Base : public PUP::able {
+  // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_abstract(Base);  // NOLINT
 };
 #pragma GCC diagnostic pop
@@ -23,6 +24,7 @@ struct Base : public PUP::able {
 struct DerivedInPupStlCpp11 : public Base {
   explicit DerivedInPupStlCpp11(std::vector<double> vec)
       : vec_(std::move(vec)) {}
+  // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_decl_base_template(Base,  // NOLINT
                                      DerivedInPupStlCpp11);
   explicit DerivedInPupStlCpp11(CkMigrateMessage* /* m */) {}
@@ -115,5 +117,7 @@ void register_derived_classes_for_pup_stl_cpp11() {
 }
 
 /// \cond
+// clang-tidy: possibly throwing constructor static storage
+// clang-tidy: false positive: redundant declaration
 PUP::able::PUP_ID DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
 /// \endcond

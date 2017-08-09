@@ -44,9 +44,9 @@ class Block {
   Block() = default;
   ~Block() = default;
   Block(const Block<VolumeDim>&) = delete;
-  Block(Block<VolumeDim>&&) = default;  // NOLINT
+  Block(Block<VolumeDim>&&) = default;
   Block<VolumeDim>& operator=(const Block<VolumeDim>&) = delete;
-  Block<VolumeDim>& operator=(Block<VolumeDim>&&) = default;  // NOLINT
+  Block<VolumeDim>& operator=(Block<VolumeDim>&&) = default;
 
   const EmbeddingMap<VolumeDim, VolumeDim>& embedding_map() const noexcept {
     return *embedding_map_;

@@ -11,8 +11,8 @@ struct NonCopyable {
   constexpr NonCopyable() = default;
   constexpr NonCopyable(const NonCopyable&) = delete;
   constexpr NonCopyable& operator=(const NonCopyable&) = delete;
-  constexpr NonCopyable(NonCopyable&&) = default;   // NOLINT
-  NonCopyable& operator=(NonCopyable&&) = default;  // NOLINT
+  constexpr NonCopyable(NonCopyable&&) = default;
+  NonCopyable& operator=(NonCopyable&&) = default;
   ~NonCopyable() = default;
 };
 }  // namespace

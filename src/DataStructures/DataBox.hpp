@@ -207,8 +207,8 @@ class DataBox<TagsLs<Tags...>> {
    * \note the default constructor is only used for serialization
    */
   DataBox() = default;
-  DataBox(DataBox&& rhs) noexcept = default;             // NOLINT
-  DataBox& operator=(DataBox&& rhs) noexcept = default;  // NOLINT
+  DataBox(DataBox&& rhs) noexcept = default;
+  DataBox& operator=(DataBox&& rhs) noexcept = default;
   DataBox(const DataBox& rhs) = default;
   DataBox& operator=(const DataBox& rhs) = default;
   ~DataBox() = default;

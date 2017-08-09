@@ -111,9 +111,9 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   Tensor() = default;
   ~Tensor() = default;
   Tensor(const Tensor&) = default;
-  Tensor(Tensor&&) noexcept = default;  // NOLINT
+  Tensor(Tensor&&) noexcept = default;
   Tensor& operator=(const Tensor&) = default;
-  Tensor& operator=(Tensor&&) noexcept = default;  // NOLINT
+  Tensor& operator=(Tensor&&) noexcept = default;
 
   /// \cond HIDDEN_SYMBOLS
   /// Constructor from a TensorExpression.
@@ -132,7 +132,7 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
         "evaluate<_a_t, _b_t>(G); if G has 2 free indices and you want "
         "the LHS of the equation to be F_{ab} rather than F_{ba}.");
     for (size_t i = 0; i < size(); ++i) {
-      data_[i] = tensor_expression.template get<LhsIndices...>(  // NOLINT
+      gsl::at(data_, i) = tensor_expression.template get<LhsIndices...>(
           structure::get_canonical_tensor_index(i));
     }
   }

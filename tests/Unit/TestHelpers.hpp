@@ -108,10 +108,11 @@ void test_copy_semantics(const T& a) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wparentheses"
   CHECK(b == a);
-  // Intentionally not a reference to force invocation of copy constructor
+  // clang-tidy: intentionally not a reference to force invocation of copy
+  // constructor
   const T c(a);  // NOLINT
   CHECK(c == a);
-  // Check self-assignment
+  // clang-tidy: self-assignment
   b = b;  // NOLINT
   CHECK(b == a);
 #pragma GCC diagnostic pop

@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   CHECK(get_output(tuple0) == "()");
 
   // check map with some other comparison op
-  std::map<std::string, int, std::greater<std::string>> my_map;  // NOLINT
+  std::map<std::string, int, std::greater<>> my_map;
   CHECK(get_output(my_map) == "()");
   CHECK(keys_of(my_map) == "()");
   my_map["aaa"] = 1;

@@ -10,8 +10,8 @@
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   DataVector t(5, 10.0);
   CHECK(t.size() == 5);
-  // Not range-based so we can see which index is wrong if the test fails
-  for (size_t i = 0; i < t.size(); ++i) {  // NOLINT
+  for (size_t i = 0; i < t.size(); ++i) {
+    INFO(i);
     CHECK(t[i] == 10.0);
   }
   for (const auto& p : t) {

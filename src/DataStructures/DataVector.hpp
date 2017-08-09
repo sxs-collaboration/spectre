@@ -133,7 +133,8 @@ class DataVector {
   // @}
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p);  // NOLINT
 
   // @{
   /// See the Blaze library documentation for details on these functions since
