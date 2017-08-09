@@ -78,8 +78,10 @@ std::ostream& operator<<(std::ostream& os,
 // INLINE DEFINITIONS
 //##############################################################################
 
+// clang-tidy: redundant declaration false positive. Needs to be here because of
+// the Axis enum, otherwise won't compile.
 template <size_t VolumeDim>
-Direction<VolumeDim>::Direction() noexcept = default;
+Direction<VolumeDim>::Direction() noexcept = default;  // NOLINT
 
 // Needed in order to address warning; ignorning -Wpedantic is needed.
 // Bug 61491

@@ -44,7 +44,7 @@ class BlockNeighbor {
   void pup(PUP::er& p);  // NOLINT
 
  private:
-  size_t id_;
+  size_t id_{0};
   Orientation<VolumeDim> orientation_;
 };
 
