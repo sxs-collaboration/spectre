@@ -6,7 +6,7 @@
 #include "Domain/Neighbors.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
   Neighbors<1> test_neighbors;
@@ -62,7 +62,7 @@ TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
   test_iterators(custom_neighbors);
 }
 
-TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
   Neighbors<2> test_neighbors;
@@ -123,7 +123,7 @@ TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
   test_move_semantics(std::move(custom_neighbors), custom_copy);
 }
 
-TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
   Neighbors<3> test_neighbors;
