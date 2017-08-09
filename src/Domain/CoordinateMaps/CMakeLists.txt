@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY EmbeddingMaps)
+set(LIBRARY CoordinateMaps)
 
 set(LIBRARY_SOURCES
     AffineMap.cpp

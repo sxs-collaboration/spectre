@@ -4,8 +4,8 @@
 #include <catch.hpp>
 
 #include "Domain/Block.hpp"
-#include "Domain/EmbeddingMaps/CoordinateMap.hpp"
-#include "Domain/EmbeddingMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 template <size_t Dim>

@@ -14,8 +14,10 @@
 
 namespace CoordinateMaps {
 
-/*! \ingroup CoordinateMaps
- * Linear map from \f$\xi \in [A, B]\rightarrow x \in [a, b]\f$.
+/*!
+ * \ingroup CoordinateMapsGroup
+ * \brief Linear map from \f$\xi \in [A, B]\rightarrow x \in [a, b]\f$.
+ *
  * The formula for the mapping is...
  * \f[
  * x = \frac{b}{B-A} (\xi-A) +\frac{a}{B-A}(B-\xi)

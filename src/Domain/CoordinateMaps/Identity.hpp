@@ -14,7 +14,7 @@
 
 namespace CoordinateMaps {
 
-/// \ingroup CoordinateMaps
+/// \ingroup CoordinateMapsGroup
 /// Identity  map from \f$\xi \rightarrow x\f$.
 template <size_t Dim>
 class Identity {

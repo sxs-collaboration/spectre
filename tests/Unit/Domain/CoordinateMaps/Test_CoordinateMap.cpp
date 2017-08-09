@@ -4,10 +4,10 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/EmbeddingMaps/AffineMap.hpp"
-#include "Domain/EmbeddingMaps/CoordinateMap.hpp"
-#include "Domain/EmbeddingMaps/ProductMaps.hpp"
-#include "Domain/EmbeddingMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/Rotation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

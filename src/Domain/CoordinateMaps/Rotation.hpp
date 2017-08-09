@@ -14,11 +14,15 @@
 
 namespace CoordinateMaps {
 
+/// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
 class Rotation;
+/// \endcond
 
-/*! \ingroup CoordinateMaps
- * Spatial rotation in two dimensions.
+/*!
+ * \ingroup CoordinateMapsGroup
+ * \brief Spatial rotation in two dimensions.
+ *
  * Let \f$(R,\Phi)\f$ be the polar coordinates associated with
  * \f$(\xi,\eta)\f$.
  * Let \f$(r,\phi)\f$ be the polar coordinates associated with \f$(x,y)\f$.
@@ -81,7 +85,9 @@ class Rotation<2> {
 
 bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept;
 
-/*! Spatial rotation in three dimensions using Euler angles
+/*!
+ * \ingroup CoordinateMapsGroup
+ * \brief Spatial rotation in three dimensions using Euler angles
  *
  * Rotation angles should be specified in degrees.
  * First rotation \f$\alpha\f$ is about z axis.

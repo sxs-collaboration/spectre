@@ -22,6 +22,7 @@ constexpr size_t map_dim = FirstMap::dim;
 
 /*!
  * \ingroup ComputationalDomain
+ * \ingroup CoordinateMapsGroup
  * \brief A coordinate map or composition of coordinate maps
  *
  * Maps coordinates from the `SourceFrame` to the `TargetFrame` using the

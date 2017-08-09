@@ -4,8 +4,8 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/EmbeddingMaps/AffineMap.hpp"
-#include "Domain/EmbeddingMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",

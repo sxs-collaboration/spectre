@@ -12,8 +12,8 @@
 #include <unordered_set>
 
 #include "Domain/BlockNeighbor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/EmbeddingMaps/CoordinateMap.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 /// \ingroup ComputationalDomain

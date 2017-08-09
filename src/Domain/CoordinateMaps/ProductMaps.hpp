@@ -68,7 +68,7 @@ apply_jac(const std::array<T, Size>& xi, const Map1& map1, const Map2& map2,
 }
 }  // namespace product_detail
 
-/// \ingroup CoordinateMaps
+/// \ingroup CoordinateMapsGroup
 /// \brief Product of two codimension=0 CoordinateMaps.
 ///
 /// \tparam Map1 the map for the first coordinate(s)

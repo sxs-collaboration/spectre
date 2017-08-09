@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/EmbeddingMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/Rotation.hpp"
 
 namespace CoordinateMaps {
 

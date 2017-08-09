@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/EmbeddingMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {

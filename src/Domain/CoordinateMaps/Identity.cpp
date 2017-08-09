@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/EmbeddingMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"

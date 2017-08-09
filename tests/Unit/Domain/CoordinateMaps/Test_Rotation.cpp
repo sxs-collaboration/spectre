@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/EmbeddingMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/Rotation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {

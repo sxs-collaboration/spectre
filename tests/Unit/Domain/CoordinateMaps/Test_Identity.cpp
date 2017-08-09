@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/EmbeddingMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 template <size_t Dim>
