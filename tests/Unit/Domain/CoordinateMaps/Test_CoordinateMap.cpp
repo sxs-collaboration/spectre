@@ -429,10 +429,204 @@ void test_coordinate_map_with_rotation_map() {
   CHECK_FALSE(double_rotated3d != double_rotated3d);
   CHECK(double_rotated3d == serialize_and_deserialize(double_rotated3d));
 }
+
+void test_coordinate_map_with_rotation_map_datavector() {
+  using rotate2d = CoordinateMaps::Rotation<2>;
+  using rotate3d = CoordinateMaps::Rotation<3>;
+
+  // No 1D test because it would just the be affine map test
+
+  // Test 2D
+  {
+    const auto double_rotated2d =
+        make_coordinate_map<Frame::Logical, Frame::Grid>(rotate2d{M_PI_4},
+                                                         rotate2d{M_PI_2});
+    const auto first_rotated2d = rotate2d{M_PI_4};
+    const auto second_rotated2d = rotate2d{M_PI_2};
+
+    const tnsr::I<DataVector, 2, Frame::Logical> coords2d{
+        {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4}}}};
+    const tnsr::I<DataVector, 2, Frame::Grid> coords2d_grid{
+        {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4}}}};
+    const auto coords2d_array = make_array<DataVector, 2>(coords2d);
+
+    CHECK((make_array<DataVector, 2>(double_rotated2d(coords2d))) ==
+          second_rotated2d(first_rotated2d(coords2d_array)));
+    CHECK(
+        (make_array<DataVector, 2>(double_rotated2d.inverse(coords2d_grid))) ==
+        first_rotated2d.inverse(second_rotated2d.inverse(coords2d_array)));
+
+    const auto jac = double_rotated2d.jacobian(coords2d);
+
+    const auto expected_jac = [&first_rotated2d, &second_rotated2d, &coords2d,
+                               &coords2d_array]() {
+
+      const auto first_jac = first_rotated2d.jacobian(coords2d_array);
+      auto second_jac =
+          second_rotated2d.jacobian(first_rotated2d(coords2d_array));
+
+      std::array<DataVector, 2> temp{};
+      for (size_t source = 0; source < 2; ++source) {
+        for (size_t target = 0; target < 2; ++target) {
+          gsl::at(temp, target) =
+              second_jac.get(source, 0) * first_jac.get(0, target);
+          for (size_t dummy = 1; dummy < 2; ++dummy) {
+            gsl::at(temp, target) +=
+                second_jac.get(source, dummy) * first_jac.get(dummy, target);
+          }
+        }
+        for (size_t target = 0; target < 2; ++target) {
+          second_jac.get(source, target) = gsl::at(temp, target);
+        }
+      }
+      return second_jac;
+    }();
+
+    for (size_t j = 0; j < 2; ++j) {
+      for (size_t k = 0; k < 2; ++k) {
+        INFO(j);
+        INFO(k);
+        CHECK(jac.get(j, k) == expected_jac.get(j, k));
+      }
+    }
+
+    const auto inv_jac = double_rotated2d.inv_jacobian(coords2d);
+
+    const auto expected_inv_jac = [&first_rotated2d, &second_rotated2d,
+                                   &coords2d, &coords2d_array]() {
+      auto first_inv_jac = first_rotated2d.inv_jacobian(coords2d_array);
+
+      const auto second_inv_jac =
+          second_rotated2d.inv_jacobian(first_rotated2d(coords2d_array));
+
+      std::array<DataVector, 2> temp{};
+      for (size_t source = 0; source < 2; ++source) {
+        for (size_t target = 0; target < 2; ++target) {
+          gsl::at(temp, target) =
+              first_inv_jac.get(source, 0) * second_inv_jac.get(0, target);
+          for (size_t dummy = 1; dummy < 2; ++dummy) {
+            gsl::at(temp, target) += first_inv_jac.get(source, dummy) *
+                                     second_inv_jac.get(dummy, target);
+          }
+        }
+        for (size_t target = 0; target < 2; ++target) {
+          first_inv_jac.get(source, target) = gsl::at(temp, target);
+        }
+      }
+
+      return first_inv_jac;
+    }();
+
+    for (size_t j = 0; j < 2; ++j) {
+      for (size_t k = 0; k < 2; ++k) {
+        INFO(j);
+        INFO(k);
+        CHECK(inv_jac.get(j, k) == expected_inv_jac.get(j, k));
+      }
+    }
+  }
+
+  // Test 3D
+  {
+    const auto double_rotated3d =
+        make_coordinate_map<Frame::Logical, Frame::Grid>(
+            rotate3d{M_PI_4, M_PI_4, M_PI_2}, rotate3d{M_PI_2, M_PI_4, M_PI_4});
+    const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
+    const auto second_rotated3d = rotate3d{M_PI_2, M_PI_4, M_PI_4};
+
+    const tnsr::I<DataVector, 3, Frame::Logical> coords3d{
+        {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4},
+          DataVector{9.3, -9.7, 8.1, -7.8}}}};
+    const tnsr::I<DataVector, 3, Frame::Grid> coords3d_grid{
+        {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4},
+          DataVector{9.3, -9.7, 8.1, -7.8}}}};
+    const auto coords3d_array = make_array<DataVector, 3>(coords3d);
+
+    CHECK((make_array<DataVector, 3>(double_rotated3d(coords3d))) ==
+          second_rotated3d(first_rotated3d(coords3d_array)));
+    CHECK(
+        (make_array<DataVector, 3>(double_rotated3d.inverse(coords3d_grid))) ==
+        first_rotated3d.inverse(second_rotated3d.inverse(coords3d_array)));
+
+    const auto jac = double_rotated3d.jacobian(coords3d);
+
+    const auto expected_jac = [&first_rotated3d, &second_rotated3d, &coords3d,
+                               &coords3d_array]() {
+
+      const auto first_jac = first_rotated3d.jacobian(coords3d_array);
+      auto second_jac =
+          second_rotated3d.jacobian(first_rotated3d(coords3d_array));
+
+      std::array<DataVector, 3> temp{};
+      for (size_t source = 0; source < 3; ++source) {
+        for (size_t target = 0; target < 3; ++target) {
+          gsl::at(temp, target) =
+              second_jac.get(source, 0) * first_jac.get(0, target);
+          for (size_t dummy = 1; dummy < 3; ++dummy) {
+            gsl::at(temp, target) +=
+                second_jac.get(source, dummy) * first_jac.get(dummy, target);
+          }
+        }
+        for (size_t target = 0; target < 3; ++target) {
+          second_jac.get(source, target) = gsl::at(temp, target);
+        }
+    }
+    return second_jac;
+    }();
+
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        INFO(j);
+        INFO(k);
+        CHECK(jac.get(j, k) == expected_jac.get(j, k));
+      }
+    }
+
+    const auto inv_jac = double_rotated3d.inv_jacobian(coords3d);
+
+    const auto expected_inv_jac = [&first_rotated3d, &second_rotated3d,
+                                   &coords3d, &coords3d_array]() {
+      auto first_inv_jac = first_rotated3d.inv_jacobian(coords3d_array);
+
+      const auto second_inv_jac =
+          second_rotated3d.inv_jacobian(first_rotated3d(coords3d_array));
+
+      std::array<DataVector, 3> temp{};
+      for (size_t source = 0; source < 3; ++source) {
+        for (size_t target = 0; target < 3; ++target) {
+          gsl::at(temp, target) =
+              first_inv_jac.get(source, 0) * second_inv_jac.get(0, target);
+          for (size_t dummy = 1; dummy < 3; ++dummy) {
+            gsl::at(temp, target) += first_inv_jac.get(source, dummy) *
+                                     second_inv_jac.get(dummy, target);
+          }
+        }
+        for (size_t target = 0; target < 3; ++target) {
+          first_inv_jac.get(source, target) = gsl::at(temp, target);
+        }
+      }
+
+      return first_inv_jac;
+    }();
+
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        INFO(j);
+        INFO(k);
+        CHECK(inv_jac.get(j, k) == expected_inv_jac.get(j, k));
+      }
+    }
+
+    // Check inequivalence operator
+    CHECK_FALSE(double_rotated3d != double_rotated3d);
+    CHECK(double_rotated3d == serialize_and_deserialize(double_rotated3d));
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_single_coordinate_map();
   test_coordinate_map_with_affine_map();
   test_coordinate_map_with_rotation_map();
+  test_coordinate_map_with_rotation_map_datavector();
 }
