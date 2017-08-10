@@ -32,6 +32,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 
 #if defined(__clang__) || defined(__GNUC__)
 
@@ -151,14 +152,12 @@ class not_null {
   static_assert(std::is_assignable<T&, std::nullptr_t>::value,
                 "T cannot be assigned nullptr.");
 
-  template <typename U,
-            typename Dummy = std::enable_if_t<std::is_convertible<U, T>::value>>
+  template <typename U, Requires<std::is_convertible<U, T>::value> = nullptr>
   constexpr not_null(U&& u) : ptr_(std::forward<U>(u)) {
     Expects(ptr_ != nullptr);
   }
 
-  template <typename U,
-            typename Dummy = std::enable_if_t<std::is_convertible<U, T>::value>>
+  template <typename U, Requires<std::is_convertible<U, T>::value> = nullptr>
   constexpr not_null(const not_null<U>& other) : not_null(other.get()) {}
 
   not_null(const not_null& other) = default;

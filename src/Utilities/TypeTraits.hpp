@@ -25,6 +25,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 
 /// \ingroup TypeTraits
@@ -691,7 +692,7 @@ struct is_maplike<T,
                   cpp17::void_t<typename T::key_type, typename T::mapped_type,
                                 decltype(std::declval<T&>()[std::declval<
                                     const typename T::key_type&>()]),
-                                std::enable_if_t<tt::is_iterable_v<T>>>>
+                                Requires<tt::is_iterable_v<T>>>>
     : std::true_type {};
 /// \endcond
 /// \see is_maplike
@@ -742,7 +743,7 @@ template <typename S, typename T>
 struct is_streamable<
     S, T, cpp17::void_t<decltype(std::declval<std::add_lvalue_reference_t<S>>()
                                  << std::declval<T>()),
-                        std::enable_if_t<not std::is_same<S, T>::value>>>
+                        Requires<not std::is_same<S, T>::value>>>
     : std::true_type {};
 /// \endcond
 /// \see is_streamable
@@ -786,15 +787,15 @@ using is_streamable_t = typename is_streamable<S, T>::type;
 /// \snippet Utilities/Test_TypeTraits.cpp is_string_like_example
 /// \see std::string std::is_same
 /// \tparam T the type to check
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::nullptr_t>
 struct is_string_like : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct is_string_like<
-    T, std::enable_if_t<
-           std::is_same<std::decay_t<T>, std::string>::value or
-           std::is_same<std::decay_t<std::remove_pointer_t<std::decay_t<T>>>,
-                        char>::value>> : std::true_type {};
+    T,
+    Requires<std::is_same<std::decay_t<T>, std::string>::value or
+             std::is_same<std::decay_t<std::remove_pointer_t<std::decay_t<T>>>,
+                          char>::value>> : std::true_type {};
 /// \endcond
 /// \see is_string_like
 template <typename T>
@@ -837,7 +838,7 @@ using is_string_like_t = typename is_string_like<T>::type;
 /// \snippet Utilities/Test_TypeTraits.cpp has_get_clone_example
 /// \see has_clone
 /// \tparam T the type to check
-template <typename T, typename = cpp17::void_t<>, typename = void>
+template <typename T, typename = cpp17::void_t<>, typename = std::nullptr_t>
 struct has_get_clone : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 // The ugliness with two void template parameters is because clang does not
@@ -846,15 +847,14 @@ template <typename T>
 struct has_get_clone<
     T, cpp17::void_t<decltype(
            std::declval<std::remove_pointer_t<std::decay_t<T>>>().get_clone())>,
-    std::enable_if_t<not tt::is_a_v<std::unique_ptr, std::decay_t<T>> and
-                     not tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
+    Requires<not tt::is_a_v<std::unique_ptr, std::decay_t<T>> and
+             not tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
     : std::true_type {};
 template <typename T>
-struct has_get_clone<
-    T, cpp17::void_t<std::enable_if_t<tt::is_a_v<std::unique_ptr, T>>,
-                     decltype(std::declval<T>()->get_clone())>,
-    std::enable_if_t<tt::is_a_v<std::unique_ptr, std::decay_t<T>> or
-                     tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
+struct has_get_clone<T, cpp17::void_t<Requires<tt::is_a_v<std::unique_ptr, T>>,
+                                      decltype(std::declval<T>()->get_clone())>,
+                     Requires<tt::is_a_v<std::unique_ptr, std::decay_t<T>> or
+                              tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
     : std::true_type {};
 /// \endcond
 /// \see has_get_clone
@@ -897,20 +897,18 @@ using has_get_clone_t = typename has_get_clone<T>::type;
 /// \snippet Utilities/Test_TypeTraits.cpp has_clone_example
 /// \see has_get_clone
 /// \tparam T the type to check
-template <typename T, typename = cpp17::void_t<>, typename = void>
+template <typename T, typename = cpp17::void_t<>, typename = std::nullptr_t>
 struct has_clone : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
-struct has_clone<
-    T, cpp17::void_t<decltype(std::declval<T>().clone())>,
-    std::enable_if_t<not tt::is_a_v<std::unique_ptr, std::decay_t<T>> and
-                     not tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
+struct has_clone<T, cpp17::void_t<decltype(std::declval<T>().clone())>,
+                 Requires<not tt::is_a_v<std::unique_ptr, std::decay_t<T>> and
+                          not tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
     : std::true_type {};
 template <typename T>
-struct has_clone<
-    T, cpp17::void_t<decltype(std::declval<T>()->clone())>,
-    std::enable_if_t<tt::is_a_v<std::unique_ptr, std::decay_t<T>> or
-                     tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
+struct has_clone<T, cpp17::void_t<decltype(std::declval<T>()->clone())>,
+                 Requires<tt::is_a_v<std::unique_ptr, std::decay_t<T>> or
+                          tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
     : std::true_type {};
 /// \endcond
 /// \see has_clone

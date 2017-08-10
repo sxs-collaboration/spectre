@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Requires.hpp"
 
 namespace TensorExpressions {
 
@@ -21,8 +22,7 @@ namespace TensorExpressions {
  * T::index_list>
  */
 template <typename... LhsIndices, typename T,
-          typename std::enable_if<
-              std::is_base_of<Expression, T>::value>::type* = nullptr>
+          Requires<std::is_base_of<Expression, T>::value> = nullptr>
 auto evaluate(const T& te) {
   static_assert(
       sizeof...(LhsIndices) == tmpl::size<typename T::args_list>::value,

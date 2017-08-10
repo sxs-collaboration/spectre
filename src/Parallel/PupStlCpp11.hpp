@@ -14,20 +14,21 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Utilities/Requires.hpp"
+
 namespace PUP {
 
 // @{
 /// \ingroup Parallel
 /// Serialization of std::array for Charm++
-template <
-    typename T, std::size_t N,
-    typename std::enable_if_t<not std::is_arithmetic<T>::value>* = nullptr>
+template <typename T, std::size_t N,
+          Requires<not std::is_arithmetic<T>::value> = nullptr>
 inline void pup(PUP::er& p, std::array<T, N>& a) {  // NOLINT
   std::for_each(a.begin(), a.end(), [&p](auto& t) { p | t; });
 }
 
 template <typename T, std::size_t N,
-          typename std::enable_if_t<std::is_arithmetic<T>::value>* = nullptr>
+          Requires<std::is_arithmetic<T>::value> = nullptr>
 inline void pup(PUP::er& p, std::array<T, N>& a) {  // NOLINT
   PUParray(p, a.data(), N);
 }
@@ -101,24 +102,24 @@ inline void operator|(er& p, std::unordered_set<T>& s) {  // NOLINT
 /// Serialization of enum for Charm++
 ///
 /// \note This requires a change to Charm++ to work
-template <typename T, std::enable_if_t<std::is_enum<T>::value>* = nullptr>
+template <typename T, Requires<std::is_enum<T>::value> = nullptr>
 inline void operator|(PUP::er& p, T& s) {  // NOLINT
   pup_bytes(&p, static_cast<void*>(&s), sizeof(T));
 }
 
 template <size_t N = 0, typename... Args,
-          std::enable_if_t<0 == sizeof...(Args)>* = nullptr>
+          Requires<0 == sizeof...(Args)> = nullptr>
 void pup_tuple_impl(PUP::er& /* p */, std::tuple<Args...>& /* t */) {  // NOLINT
 }
 
 template <size_t N = 0, typename... Args,
-          std::enable_if_t<(0 < sizeof...(Args) and 0 == N)>* = nullptr>
+          Requires<(0 < sizeof...(Args) and 0 == N)> = nullptr>
 void pup_tuple_impl(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
   p | std::get<N>(t);
 }
 
 template <size_t N, typename... Args,
-          std::enable_if_t<(sizeof...(Args) > 0 and N > 0)>* = nullptr>
+          Requires<(sizeof...(Args) > 0 and N > 0)> = nullptr>
 void pup_tuple_impl(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
   p | std::get<N>(t);
   pup_tuple_impl<N - 1>(p, t);
@@ -145,7 +146,7 @@ inline void operator|(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
 /// \ingroup Parallel
 /// Serialization of a unique_ptr for Charm++
 template <typename T,
-          std::enable_if_t<not std::is_base_of<PUP::able, T>::value>* = nullptr>
+          Requires<not std::is_base_of<PUP::able, T>::value> = nullptr>
 inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
   bool is_nullptr = nullptr == t;
   p | is_nullptr;
@@ -163,8 +164,7 @@ inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
   }
 }
 
-template <typename T,
-          std::enable_if_t<std::is_base_of<PUP::able, T>::value>* = nullptr>
+template <typename T, Requires<std::is_base_of<PUP::able, T>::value> = nullptr>
 inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
   T* t1 = nullptr;
   if (p.isUnpacking()) {

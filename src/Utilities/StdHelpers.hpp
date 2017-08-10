@@ -21,6 +21,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -129,7 +130,7 @@ inline std::ostream& operator<<(std::ostream& os,
  * \ingroup Utilities
  * \brief Output all the key, value pairs of a map
  */
-template <typename Map, typename std::enable_if_t<tt::is_maplike<Map>::value>*>
+template <typename Map, Requires<tt::is_maplike<Map>::value>>
 inline std::ostream& operator<<(std::ostream& os, const Map& m) {
   StdHelpers_detail::print_helper(
       os, begin(m), end(m),
@@ -164,8 +165,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::set<T>& v) {
  * \ingroup Utilities
  * \brief Stream operator for std::unique_ptr
  */
-template <typename T,
-          typename std::enable_if_t<tt::is_streamable<std::ostream, T>::value>*>
+template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
 inline std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t) {
   return os << *t;
 }
@@ -174,8 +174,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t) {
  * \ingroup Utilities
  * \brief Stream operator for std::shared_ptr
  */
-template <typename T,
-          typename std::enable_if_t<tt::is_streamable<std::ostream, T>::value>*>
+template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
 inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t) {
   return os << *t;
 }
@@ -193,8 +192,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
  * \ingroup Utilities
  * \brief Construct a string containing the keys of a map
  */
-template <typename Map,
-          typename std::enable_if_t<tt::is_maplike<Map>::value>* = nullptr>
+template <typename Map, Requires<tt::is_maplike_v<Map>> = nullptr>
 inline std::string keys_of(const Map& m) {
   std::ostringstream os;
   StdHelpers_detail::print_helper(

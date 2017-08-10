@@ -20,6 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -122,7 +123,7 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// \tparam T the type of the TensorExpression
   /// \param tensor_expression the tensor expression being evaluated
   template <typename... LhsIndices, typename T,
-            std::enable_if_t<std::is_base_of<Expression, T>::value>* = nullptr>
+            Requires<std::is_base_of<Expression, T>::value> = nullptr>
   Tensor(const T& tensor_expression, tmpl::list<LhsIndices...> /*meta*/) {
     static_assert(
         sizeof...(LhsIndices) == sizeof...(Indices),
@@ -144,17 +145,16 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// \snippet Test_Tensor.cpp init_vector
   /// \param data the values of the individual components of the Vector
   template <size_t NumberOfIndices = sizeof...(Indices),
-            std::enable_if_t<(NumberOfIndices == 1)>* = nullptr>
+            Requires<(NumberOfIndices == 1)> = nullptr>
   explicit Tensor(storage_type data);
 
   /// Constructor that passes "args" to constructor of X and initializes each
   /// component to be the same
-  template <
-      typename... Args,
-      std::enable_if_t<not(
-          cpp17::disjunction_v<std::is_same<
-              Tensor<X, Symm, IndexLs<Indices...>>, std::decay_t<Args>>...> and
-          sizeof...(Args) == 1)>* = nullptr>
+  template <typename... Args,
+            Requires<not(cpp17::disjunction_v<
+                             std::is_same<Tensor<X, Symm, IndexLs<Indices...>>,
+                                          std::decay_t<Args>>...> and
+                         sizeof...(Args) == 1)> = nullptr>
   explicit Tensor(Args&&... args);
 
   using value_type = typename storage_type::value_type;
@@ -247,16 +247,16 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   // @{
   /// Retrieve a TensorExpression object with the index structure passed in
   template <typename... N,
-            std::enable_if_t<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
-                             tmpl::is_set<N...>::value>* = nullptr>
+            Requires<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
+                     tmpl::is_set<N...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE constexpr TE<tmpl::list<N...>> operator()(
       N... /*meta*/) const {
     return TE<tmpl::list<N...>>(*this);
   }
 
   template <typename... N,
-            std::enable_if_t<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
-                             not tmpl::is_set<N...>::value>* = nullptr>
+            Requires<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
+                     not tmpl::is_set<N...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE constexpr auto operator()(N... /*meta*/) const
       -> decltype(
           TensorExpressions::fully_contracted<
@@ -431,7 +431,7 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
 
 template <typename X, typename Symm, template <typename...> class IndexLs,
           typename... Indices>
-template <size_t NumberOfIndices, std::enable_if_t<(NumberOfIndices == 1)>*>
+template <size_t NumberOfIndices, Requires<(NumberOfIndices == 1)>>
 Tensor<X, Symm, IndexLs<Indices...>>::Tensor(storage_type data)
     : data_(std::move(data)) {}
 
@@ -439,12 +439,11 @@ Tensor<X, Symm, IndexLs<Indices...>>::Tensor(storage_type data)
 // function when it should select the move constructor.
 template <typename X, typename Symm, template <typename...> class IndexLs,
           typename... Indices>
-template <
-    typename... Args,
-    std::enable_if_t<not(
-        cpp17::disjunction_v<std::is_same<Tensor<X, Symm, IndexLs<Indices...>>,
-                                          std::decay_t<Args>>...> and
-        sizeof...(Args) == 1)>*>
+template <typename... Args,
+          Requires<not(cpp17::disjunction_v<
+                           std::is_same<Tensor<X, Symm, IndexLs<Indices...>>,
+                                        std::decay_t<Args>>...> and
+                       sizeof...(Args) == 1)>>
 Tensor<X, Symm, IndexLs<Indices...>>::Tensor(Args&&... args)
     : data_(make_array<size()>(X(std::forward<Args>(args)...))) {}
 

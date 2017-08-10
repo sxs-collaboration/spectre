@@ -17,6 +17,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Deferred.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -121,19 +122,20 @@ struct TaggedDeferredTuple {
   std::tuple<Deferred<item_type<Tags>>...> data_;
 };
 
-template <typename Element, typename = void>
+template <typename Element, typename = std::nullptr_t>
 struct extract_dependent_items {
   using type = typelist<Element>;
 };
 
 template <typename Element>
 struct extract_dependent_items<
-    Element, std::enable_if_t<tt::is_a<Variables, item_type<Element>>::value>> {
+    Element, Requires<tt::is_a<Variables, item_type<Element>>::value>> {
   using type =
       tmpl::append<typelist<Element>, typename item_type<Element>::tags_list>;
 };
 
-template <typename Caller, typename Callee, typename List, typename = void>
+template <typename Caller, typename Callee, typename List,
+          typename = std::nullptr_t>
 struct create_dependency_graph {
   using new_edge = tmpl::edge<Callee, Caller>;
   using type = tmpl::conditional_t<
@@ -143,8 +145,7 @@ struct create_dependency_graph {
 
 template <typename Caller, typename Callee, typename List>
 struct create_dependency_graph<
-    Caller, Callee, List,
-    std::enable_if_t<is_simple_compute_item<Callee>::value>> {
+    Caller, Callee, List, Requires<is_simple_compute_item<Callee>::value>> {
   using sub_tree =
       tmpl::fold<typename Callee::argument_tags, List,
                  create_dependency_graph<Callee, tmpl::_element, tmpl::_state>>;
@@ -155,8 +156,7 @@ struct create_dependency_graph<
 
 template <typename Caller, typename Callee, typename List>
 struct create_dependency_graph<
-    Caller, Callee, List,
-    std::enable_if_t<is_variables_compute_item<Callee>::value>> {
+    Caller, Callee, List, Requires<is_variables_compute_item<Callee>::value>> {
   using partial_sub_tree = tmpl::fold<
       typename Callee::argument_tags, List,
       create_dependency_graph<tmpl::pin<Callee>, tmpl::_element, tmpl::_state>>;
@@ -292,8 +292,8 @@ class DataBox<TagsLs<Tags...>> {
   template <typename... TagsInArgsOrder, typename... FullItems,
             typename... ComputeItemTags, typename... FullComputeItems,
             typename... Args,
-            std::enable_if_t<not cpp17::disjunction<
-                db::is_databox<std::decay_t<Args>>...>::value>* = nullptr>
+            Requires<not cpp17::disjunction<
+                db::is_databox<std::decay_t<Args>>...>::value> = nullptr>
   constexpr DataBox(typelist<TagsInArgsOrder...> /*meta*/,
                     typelist<FullItems...> /*meta*/,
                     typelist<ComputeItemTags...> /*meta*/,
@@ -322,10 +322,10 @@ class DataBox<TagsLs<Tags...>> {
 
 /// \cond HIDDEN_SYMBOLS
 template <template <typename...> class TagsLs, typename... Tags>
-template <typename... TagsInArgsOrder, typename... FullItems,
-          typename... ComputeItemTags, typename... FullComputeItems,
-          typename... Args, std::enable_if_t<not cpp17::disjunction<
-                                is_databox<std::decay_t<Args>>...>::value>*>
+template <
+    typename... TagsInArgsOrder, typename... FullItems,
+    typename... ComputeItemTags, typename... FullComputeItems, typename... Args,
+    Requires<not cpp17::disjunction<is_databox<std::decay_t<Args>>...>::value>>
 constexpr DataBox<TagsLs<Tags...>>::DataBox(
     typelist<TagsInArgsOrder...> /*meta*/, typelist<FullItems...> /*meta*/,
     typelist<ComputeItemTags...> /*meta*/,
@@ -500,10 +500,10 @@ struct DataBoxAddHelper {
         ComputeItem::function, data.template get<ComputeItemTags>()...);
   }
 
-  template <int ArgsIndex, typename... T, typename... Tags,
-            typename ItemsLs = PoppedTagLs,
-            std::enable_if_t<
-                is_simple_compute_item<tmpl::front<ItemsLs>>::value>* = nullptr>
+  template <
+      int ArgsIndex, typename... T, typename... Tags,
+      typename ItemsLs = PoppedTagLs,
+      Requires<is_simple_compute_item<tmpl::front<ItemsLs>>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void add_items_to_box(
       std::tuple<T...>& tuple, detail::TaggedDeferredTuple<Tags...>& data) {
     using ls_pop = tmpl::pop_front<PoppedTagLs>;
@@ -537,15 +537,14 @@ struct DataBoxAddHelper {
   // return variables, but it would be more efficient to not deal with it that
   // way and just add them directly. However, then there could be issues with
   // dependencies that will need to be checked carefully.
-  template <typename Tag, typename... Tags,
-            typename std::enable_if_t<
-                not tt::is_a<Variables, typename Tag::type>::value>* = nullptr>
+  template <
+      typename Tag, typename... Tags,
+      Requires<not tt::is_a<Variables, typename Tag::type>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static void add_variables_tags_to_box_helper(
       detail::TaggedDeferredTuple<Tags...>& /*data*/) {}
 
   template <typename Tag, typename... Tags,
-            typename std::enable_if_t<
-                tt::is_a<Variables, item_type<Tag>>::value>* = nullptr>
+            Requires<tt::is_a<Variables, item_type<Tag>>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void add_variables_tags_to_box_helper(
       detail::TaggedDeferredTuple<Tags...>& data) {
     add_variables_compute_tags_to_box<Tag>(
@@ -554,8 +553,8 @@ struct DataBoxAddHelper {
 
   template <int ArgsIndex, typename... T, typename... Tags,
             typename ItemsLs = PoppedTagLs,
-            std::enable_if_t<is_variables_compute_item<
-                tmpl::front<ItemsLs>>::value>* = nullptr>
+            Requires<is_variables_compute_item<tmpl::front<ItemsLs>>::value> =
+                nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void add_items_to_box(
       std::tuple<T...>& tuple, detail::TaggedDeferredTuple<Tags...>& data) {
     using ls_pop = tmpl::pop_front<PoppedTagLs>;
@@ -570,10 +569,10 @@ struct DataBoxAddHelper {
   }
 
   // Add a tag that isn't a compute item
-  template <int ArgsIndex, typename... T, typename... Tags,
-            typename ItemsLs = PoppedTagLs,
-            std::enable_if_t<
-                not is_compute_item<tmpl::front<ItemsLs>>::value>* = nullptr>
+  template <
+      int ArgsIndex, typename... T, typename... Tags,
+      typename ItemsLs = PoppedTagLs,
+      Requires<not is_compute_item<tmpl::front<ItemsLs>>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void add_items_to_box(
       std::tuple<T...>& tuple, detail::TaggedDeferredTuple<Tags...>& data) {
     using ls_pop = tmpl::pop_front<PoppedTagLs>;
@@ -627,22 +626,19 @@ struct ResetComputeItems {
         ComputeItem::function, data.template get<ComputeItemTags>()...);
   }
 
-  template <
-      typename Tag, typename... Tags,
-      typename std::enable_if_t<not is_compute_item<Tag>::value>* = nullptr>
+  template <typename Tag, typename... Tags,
+            Requires<not is_compute_item<Tag>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void reset_compute_item(
       detail::TaggedDeferredTuple<Tags...>& /*data*/) {}
 
-  template <
-      typename Tag, typename... Tags,
-      typename std::enable_if_t<is_simple_compute_item<Tag>::value>* = nullptr>
+  template <typename Tag, typename... Tags,
+            Requires<is_simple_compute_item<Tag>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void reset_compute_item(
       detail::TaggedDeferredTuple<Tags...>& data) {
     add_compute_item_to_box<Tag>(data, typename Tag::argument_tags{});
   }
   template <typename Tag, typename... Tags,
-            typename std::enable_if_t<is_variables_compute_item<Tag>::value>* =
-                nullptr>
+            Requires<is_variables_compute_item<Tag>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr void reset_compute_item(
       detail::TaggedDeferredTuple<Tags...>& data) {
     add_compute_item_to_box<Tag>(data, typename Tag::argument_tags{});
@@ -777,7 +773,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
 
 namespace detail {
 template <typename Type, typename Tags, typename TagLs,
-          std::enable_if_t<(tmpl::size<Tags>::value == 0)>* = nullptr>
+          Requires<(tmpl::size<Tags>::value == 0)> = nullptr>
 [[noreturn]] const Type& get_item_from_box(const DataBox<TagLs>& /*box*/,
                                            const std::string& /*tag_name*/) {
   static_assert(tmpl::size<Tags>::value != 0,
@@ -786,7 +782,7 @@ template <typename Type, typename Tags, typename TagLs,
 }
 
 template <typename Type, typename Tags, typename TagLs,
-          std::enable_if_t<(tmpl::size<Tags>::value == 1)>* = nullptr>
+          Requires<(tmpl::size<Tags>::value == 1)> = nullptr>
 const Type& get_item_from_box(const DataBox<TagLs>& box,
                               const std::string& tag_name) {
   using Tag = tmpl::front<Tags>;
@@ -803,7 +799,7 @@ const Type& get_item_from_box(const DataBox<TagLs>& box,
 }
 
 template <typename Type, typename Tags, typename TagLs,
-          std::enable_if_t<(tmpl::size<Tags>::value > 1)>* = nullptr>
+          Requires<(tmpl::size<Tags>::value > 1)> = nullptr>
 constexpr const Type& get_item_from_box(const DataBox<TagLs>& box,
                                         const std::string& tag_name) {
   using Tag = tmpl::front<Tags>;

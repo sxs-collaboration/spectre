@@ -9,6 +9,7 @@
 #ifdef __INTEL_COMPILER
 
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Requires.hpp"
 
 // This is needed because the Intel compiler is not good enough at templates...
 namespace Tensor_detail {
@@ -24,7 +25,7 @@ void increment_tensor_index(std::array<T, Size>& tensor_index,
 }
 
 template <size_t I, typename T, typename S, size_t Size,
-          typename std::enable_if_t<(I == Size - 1)>* = nullptr>
+          Requires<(I == Size - 1)> = nullptr>
 constexpr std::array<T, Size> increment_tensor_index_impl(
     const std::array<T, Size>& tensor_index, const std::array<S, Size>& dims) {
   return tensor_index[I] + 1 < static_cast<T>(dims[I])
@@ -33,7 +34,7 @@ constexpr std::array<T, Size> increment_tensor_index_impl(
 }
 
 template <size_t I, typename T, typename S, size_t Size,
-          typename std::enable_if_t<(I < Size - 1)>* = nullptr>
+          Requires<(I < Size - 1)> = nullptr>
 constexpr std::array<T, Size> increment_tensor_index_impl(
     const std::array<T, Size>& tensor_index, const std::array<S, Size>& dims) {
   return tensor_index[I] + 1 < static_cast<T>(dims[I])
@@ -63,9 +64,8 @@ T canonicalize_tensor_index(T arr) {
   return arr;
 }
 
-template <
-    typename Symm, typename IndexLs, typename NumComps,
-    typename std::enable_if_t<(tmpl::size<IndexLs>::value > 0)>* = nullptr>
+template <typename Symm, typename IndexLs, typename NumComps,
+          Requires<(tmpl::size<IndexLs>::value > 0)> = nullptr>
 std::array<int, NumComps::value> compute_collapsed_to_storage() {
   static constexpr auto dims = ::make_array_from_list<IndexLs>();
   static constexpr auto rank = tmpl::size<IndexLs>::value;
@@ -95,17 +95,14 @@ std::array<int, NumComps::value> compute_collapsed_to_storage() {
   return collapsed_to_storage;
 }
 
-template <
-    typename Symm, typename IndexLs, typename NumComps,
-    typename std::enable_if_t<(tmpl::size<IndexLs>::value == 0)>* = nullptr>
+template <typename Symm, typename IndexLs, typename NumComps,
+          Requires<(tmpl::size<IndexLs>::value == 0)> = nullptr>
 std::array<int, 1> compute_collapsed_to_storage() {
   return std::array<int, 1>{{0}};
 }
 
-template <
-    typename Symm, typename IndexLs, typename NumIndComps, typename T,
-    size_t NumComps,
-    typename std::enable_if_t<(tmpl::size<IndexLs>::value > 0)>* = nullptr>
+template <typename Symm, typename IndexLs, typename NumIndComps, typename T,
+          size_t NumComps, Requires<(tmpl::size<IndexLs>::value > 0)> = nullptr>
 std::array<std::array<int, tmpl::size<IndexLs>::value>, NumIndComps::value>
 compute_storage_to_tensor(const std::array<T, NumComps>& collapsed_to_storage) {
   static constexpr auto dims = ::make_array_from_list<IndexLs>();
@@ -121,10 +118,9 @@ compute_storage_to_tensor(const std::array<T, NumComps>& collapsed_to_storage) {
   return storage_to_tensor;
 }
 
-template <
-    typename Symm, typename IndexLs, typename NumIndComps, typename T,
-    size_t NumComps,
-    typename std::enable_if_t<(tmpl::size<IndexLs>::value == 0)>* = nullptr>
+template <typename Symm, typename IndexLs, typename NumIndComps, typename T,
+          size_t NumComps,
+          Requires<(tmpl::size<IndexLs>::value == 0)> = nullptr>
 std::array<std::array<int, 1>, NumIndComps::value> compute_storage_to_tensor(
     const std::array<T, NumComps>& /*collapsed_to_storage*/) {
   return std::array<std::array<int, 1>, 1>{{std::array<int, 1>{{0}}}};

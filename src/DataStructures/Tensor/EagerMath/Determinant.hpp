@@ -9,11 +9,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 
 namespace detail {
-template <typename Symm, typename Index, typename = void>
+template <typename Symm, typename Index, typename = std::nullptr_t>
 struct DeterminantImpl;
 
 template <typename Symm, typename Index>
-struct DeterminantImpl<Symm, Index, std::enable_if_t<Index::dim == 1>> {
+struct DeterminantImpl<Symm, Index, Requires<Index::dim == 1>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     return tensor.template get<0, 0>();
@@ -21,7 +21,7 @@ struct DeterminantImpl<Symm, Index, std::enable_if_t<Index::dim == 1>> {
 };
 
 template <typename Symm, typename Index>
-struct DeterminantImpl<Symm, Index, std::enable_if_t<Index::dim == 2>> {
+struct DeterminantImpl<Symm, Index, Requires<Index::dim == 2>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();
@@ -33,8 +33,7 @@ struct DeterminantImpl<Symm, Index, std::enable_if_t<Index::dim == 2>> {
 };
 
 template <typename Index>
-struct DeterminantImpl<Symmetry<2, 1>, Index,
-                       std::enable_if_t<Index::dim == 3>> {
+struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 3>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();
@@ -52,8 +51,7 @@ struct DeterminantImpl<Symmetry<2, 1>, Index,
 };
 
 template <typename Index>
-struct DeterminantImpl<Symmetry<1, 1>, Index,
-                       std::enable_if_t<Index::dim == 3>> {
+struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 3>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();
@@ -68,8 +66,7 @@ struct DeterminantImpl<Symmetry<1, 1>, Index,
 };
 
 template <typename Index>
-struct DeterminantImpl<Symmetry<2, 1>, Index,
-                       std::enable_if_t<Index::dim == 4>> {
+struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 4>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();
@@ -102,8 +99,7 @@ struct DeterminantImpl<Symmetry<2, 1>, Index,
 };
 
 template <typename Index>
-struct DeterminantImpl<Symmetry<1, 1>, Index,
-                       std::enable_if_t<Index::dim == 4>> {
+struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();

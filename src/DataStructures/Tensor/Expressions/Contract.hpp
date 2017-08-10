@@ -9,6 +9,7 @@
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
+#include "Utilities/Requires.hpp"
 
 /*!
  * \ingroup TensorExpressions
@@ -102,8 +103,7 @@ struct TensorContract
       const TensorExpression<T, X, Symm, IndexLs, ArgsLs>& t)
       : t_(~t) {}
 
-  template <size_t I, size_t Rank,
-            std::enable_if_t<(I <= Index1::value)>* = nullptr>
+  template <size_t I, size_t Rank, Requires<(I <= Index1::value)> = nullptr>
   SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(
       std::array<int, Rank>& tensor_index_in,
       const std::array<int, num_tensor_indices>& tensor_index) const {
@@ -113,8 +113,8 @@ struct TensorContract
   }
 
   template <size_t I, size_t Rank,
-            std::enable_if_t<(I > Index1::value and I <= Index2::value and
-                              I < Rank - 1)>* = nullptr>
+            Requires<(I > Index1::value and I <= Index2::value and
+                      I < Rank - 1)> = nullptr>
   SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(
       std::array<int, Rank>& tensor_index_in,
       const std::array<int, Rank - 2>& tensor_index) const {
@@ -125,7 +125,7 @@ struct TensorContract
   }
 
   template <size_t I, size_t Rank,
-            std::enable_if_t<(I > Index2::value and I < Rank - 1)>* = nullptr>
+            Requires<(I > Index2::value and I < Rank - 1)> = nullptr>
   SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(
       std::array<int, Rank>& tensor_index_in,
       const std::array<int, Rank - 2>& tensor_index) const {
@@ -134,7 +134,7 @@ struct TensorContract
     fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
   }
 
-  template <size_t I, size_t Rank, std::enable_if_t<(I == Rank - 1)>* = nullptr>
+  template <size_t I, size_t Rank, Requires<(I == Rank - 1)> = nullptr>
   SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(
       std::array<int, Rank>& tensor_index_in,
       const std::array<int, num_tensor_indices>& tensor_index) const {

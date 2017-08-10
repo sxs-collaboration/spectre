@@ -17,6 +17,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup Tensor
@@ -130,10 +131,10 @@ inline constexpr std::size_t compute_collapsed_index(
                   : 0;
 }
 
-template <typename IndexLs, typename... I>
-SPECTRE_ALWAYS_INLINE constexpr std::enable_if_t<
-    cpp17::conjunction_v<tt::is_integer<I>...>, std::size_t>
-compute_collapsed_index(I... i) noexcept {
+template <typename IndexLs, typename... I,
+          Requires<cpp17::conjunction_v<tt::is_integer<I>...>> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr size_t compute_collapsed_index(
+    I... i) noexcept {
   static_assert(sizeof...(I) == tmpl::size<IndexLs>::value,
                 "The number of tensor indices passed to "
                 "compute_collapsed_index does not match the rank of the "
@@ -310,7 +311,7 @@ struct Structure {
                    compute_collapsed_index(tensor_index, Structure::dims()));
   }
 
-  template <int... N, std::enable_if_t<(sizeof...(N) > 0)>* = nullptr>
+  template <int... N, Requires<(sizeof...(N) > 0)> = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t
   get_storage_index() noexcept {
     static_assert(sizeof...(Indices) == sizeof...(N),

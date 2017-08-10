@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
@@ -20,11 +21,10 @@ namespace detail {
  * to a std::string necessary.
  */
 template <typename T,
-          typename std::enable_if_t<
-              std::is_fundamental<std::decay_t<
-                  std::remove_pointer_t<std::decay_t<T>>>>::value or
-              std::is_pointer<T>::value or
-              std::is_pointer<std::decay_t<T>>::value>* = nullptr>
+          Requires<std::is_fundamental<std::decay_t<
+                       std::remove_pointer_t<std::decay_t<T>>>>::value or
+                   std::is_pointer<T>::value or
+                   std::is_pointer<std::decay_t<T>>::value> = nullptr>
 inline constexpr T stream_object_to_string(T&& t) {
   return t;
 }
@@ -35,9 +35,7 @@ inline constexpr T stream_object_to_string(T&& t) {
  * We need a 2-phase call so that the std::string doesn't go out of scope before
  * the C-style string is passed to printf.
  */
-template <
-    typename T,
-    typename std::enable_if_t<std::is_class<std::decay_t<T>>::value>* = nullptr>
+template <typename T, Requires<std::is_class<std::decay_t<T>>::value> = nullptr>
 inline std::string stream_object_to_string(T&& t) {
   static_assert(tt::is_streamable<std::stringstream, T>::value,
                 "Cannot stream type and therefore it cannot be printed. Please "
@@ -51,8 +49,8 @@ inline std::string stream_object_to_string(T&& t) {
  * Fundamentals are already printable, so nothing to do.
  */
 template <typename T,
-          typename std::enable_if_t<std::is_fundamental<std::decay_t<
-              std::remove_pointer_t<std::decay_t<T>>>>::value>* = nullptr>
+          Requires<std::is_fundamental<std::decay_t<
+              std::remove_pointer_t<std::decay_t<T>>>>::value> = nullptr>
 inline constexpr T get_printable_type(T&& t) {
   return t;
 }

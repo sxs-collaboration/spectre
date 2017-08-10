@@ -16,12 +16,12 @@ class Tensor;
 class DataVector;
 /// \endcond
 
-template <typename Tag, typename = void>
+template <typename Tag, typename = std::nullptr_t>
 struct get_item_from_variant_databox;
 
 template <typename Tag>
 struct get_item_from_variant_databox<
-    Tag, std::enable_if_t<std::is_base_of<db::DataBoxTag, Tag>::value>>
+    Tag, Requires<std::is_base_of<db::DataBoxTag, Tag>::value>>
     : boost::static_visitor<db::item_type<Tag>> {
   template <typename DataBox_t>
   constexpr db::item_type<Tag> operator()(DataBox_t& box) const {
@@ -31,8 +31,7 @@ struct get_item_from_variant_databox<
 
 template <typename TagType>
 struct get_item_from_variant_databox<
-    TagType,
-    std::enable_if_t<not std::is_base_of<db::DataBoxTag, TagType>::value>>
+    TagType, Requires<not std::is_base_of<db::DataBoxTag, TagType>::value>>
     : boost::static_visitor<TagType> {
   explicit get_item_from_variant_databox(std::string name)
       : var_name(std::move(name)) {}
@@ -47,7 +46,7 @@ struct get_item_from_variant_databox<
 
 namespace DataBoxHelpers_detail {
 template <typename Tags, typename TagLs,
-          std::enable_if_t<(tmpl::size<Tags>::value == 1)>* = nullptr>
+          Requires<(tmpl::size<Tags>::value == 1)> = nullptr>
 auto get_tensor_from_box(const db::DataBox<TagLs>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
@@ -58,7 +57,7 @@ auto get_tensor_from_box(const db::DataBox<TagLs>& box,
 }
 
 template <typename Tags, typename TagLs,
-          std::enable_if_t<(tmpl::size<Tags>::value > 1)>* = nullptr>
+          Requires<(tmpl::size<Tags>::value > 1)> = nullptr>
 auto get_tensor_from_box(const db::DataBox<TagLs>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
@@ -82,7 +81,7 @@ auto get_tensor_from_box(const db::DataBox<TagsLs>& box,
 
 // namespace DataBoxHelpers_detail {
 // template <typename Tags, typename TagsLs,
-//          std::enable_if_t<(tmpl::size<Tags>::value == 1)>* = nullptr>
+//          Requires<(tmpl::size<Tags>::value == 1)> = nullptr>
 // auto get_tensor_norm_from_box(
 //    const db::DataBox<TagsLs>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {
@@ -95,7 +94,7 @@ auto get_tensor_from_box(const db::DataBox<TagsLs>& box,
 //}
 //
 // template <typename Tags, typename TagsLs,
-//          std::enable_if_t<(tmpl::size<Tags>::value > 1)>* = nullptr>
+//          Requires<(tmpl::size<Tags>::value > 1)> = nullptr>
 // auto get_tensor_norm_from_box(
 //    const db::DataBox<TagsLs>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {

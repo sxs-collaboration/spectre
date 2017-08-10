@@ -16,6 +16,7 @@
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -31,7 +32,7 @@ class Index {
       : indices_(make_array<Dim>(i0)) {}
 
   /// Construct specifying value in each dimension
-  template <typename... I, std::enable_if_t<(sizeof...(I) > 1)>* = nullptr>
+  template <typename... I, Requires<(sizeof...(I) > 1)> = nullptr>
   explicit Index(I... i) : indices_(make_array(static_cast<size_t>(i)...)) {
     static_assert(cpp17::conjunction_v<tt::is_integer<I>...>,
                   "You must pass in a set of size_t's to Index.");
@@ -61,13 +62,13 @@ class Index {
 
   /// The product of the indices.
   /// If Dim = 0, the product is defined as 1.
-  template <int N = Dim, std::enable_if_t<(N > 0)>* = nullptr>
+  template <int N = Dim, Requires<(N > 0)> = nullptr>
   constexpr size_t product() const noexcept {
     return indices_[N - 1] * product<N - 1>();
   }
   /// \cond
   // Specialization for N = 0 to stop recursion
-  template <int N = Dim, std::enable_if_t<(N == 0)>* = nullptr>
+  template <int N = Dim, Requires<(N == 0)> = nullptr>
   constexpr size_t product() const noexcept {
     return 1;
   }
@@ -76,7 +77,7 @@ class Index {
   /// Return a smaller Index with the d-th elmenent removed.
   ///
   /// \param d the element to remove.
-  template <size_t N = Dim, std::enable_if_t<(N > 0)>* = nullptr>
+  template <size_t N = Dim, Requires<(N > 0)> = nullptr>
   Index<Dim - 1> slice_away(const size_t d) const {
     std::array<size_t, Dim - 1> t{};
     for (size_t i = 0; i < Dim; ++i) {
