@@ -97,8 +97,7 @@ T serialize_and_deserialize(const T& t) {
 }
 
 /// Test for copy semantics assuming operator== is implement correctly
-template <typename T,
-          typename std::enable_if<tt::has_equivalence<T>::value, int>::type = 0>
+template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr>
 void test_copy_semantics(const T& a) {
   static_assert(std::is_copy_assignable<T>::value,
                 "Class is not copy assignable.");
@@ -120,8 +119,7 @@ void test_copy_semantics(const T& a) {
 
 /// Test for move semantics assuming operator== is implement correctly
 /// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true
-template <typename T,
-          typename std::enable_if<tt::has_equivalence<T>::value, int>::type = 0>
+template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr>
 void test_move_semantics(T&& a, const T& comparison) {
   static_assert(std::is_rvalue_reference<decltype(a)>::value,
                 "Must move into test_move_semantics");

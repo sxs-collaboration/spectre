@@ -17,6 +17,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PointerVector.hpp"
+#include "Utilities/Requires.hpp"
 
 /// \cond HIDDEN_SYMBOLS
 namespace PUP {
@@ -392,15 +393,14 @@ DataVector& DataVector::operator=(const blaze::Vector<VT, VF>& expression) {
 
 namespace ConstantExpressions_details {
 template <>
-struct pow<DataVector, 0, void> {
+struct pow<DataVector, 0, std::nullptr_t> {
   SPECTRE_ALWAYS_INLINE static constexpr double apply(const DataVector& /*t*/) {
     return 1.0;
   }
 };
 template <typename BlazeVector>
-struct pow<
-    BlazeVector, 0,
-    std::enable_if_t<std::is_base_of<blaze::Expression, BlazeVector>::value>> {
+struct pow<BlazeVector, 0,
+           Requires<std::is_base_of<blaze::Expression, BlazeVector>::value>> {
   SPECTRE_ALWAYS_INLINE static constexpr double apply(
       const BlazeVector& /*t*/) {
     return 1.0;
@@ -408,7 +408,7 @@ struct pow<
 };
 
 template <int N>
-struct pow<DataVector, N, typename std::enable_if<(N < 0)>::type> {
+struct pow<DataVector, N, Requires<(N < 0)>> {
   static_assert(N > 0,
                 "Cannot use pow on DataVectorStructures with a negative "
                 "exponent. You must "

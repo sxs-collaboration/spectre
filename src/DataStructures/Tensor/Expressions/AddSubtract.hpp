@@ -7,6 +7,7 @@
 #pragma once
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "Utilities/Requires.hpp"
 
 namespace TensorExpressions {
 
@@ -64,7 +65,7 @@ struct AddSub<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>, Sign>
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
 
   template <typename... LhsIndices, typename T, int U = Sign,
-            std::enable_if_t<U == 1>* = nullptr>
+            Requires<U == 1> = nullptr>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<T, num_tensor_indices>& tensor_index) const {
     return t1_.template get<LhsIndices...>(tensor_index) +
@@ -72,19 +73,19 @@ struct AddSub<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>, Sign>
   }
 
   template <typename... LhsIndices, typename T, int U = Sign,
-            std::enable_if_t<U == -1>* = nullptr>
+            Requires<U == -1> = nullptr>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<T, num_tensor_indices>& tensor_index) const {
     return t1_.template get<LhsIndices...>(tensor_index) -
            t2_.template get<LhsIndices...>(tensor_index);
   }
 
-  template <int U = Sign, std::enable_if_t<U == 1>* = nullptr>
+  template <int U = Sign, Requires<U == 1> = nullptr>
   SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
     return t1_[i] + t2_[i];
   }
 
-  template <int U = Sign, std::enable_if_t<U == -1>* = nullptr>
+  template <int U = Sign, Requires<U == -1> = nullptr>
   SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
     return t1_[i] - t2_[i];
   }

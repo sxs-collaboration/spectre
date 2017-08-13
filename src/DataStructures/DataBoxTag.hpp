@@ -14,6 +14,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -155,13 +156,12 @@ struct tag_has_label<T, cpp17::void_t<decltype(T::label)>> : std::true_type {};
  *
  * \tparam T the type to check
  */
-template <typename T, typename = void>
+template <typename T, typename = std::nullptr_t>
 struct tag_label_correct_type : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct tag_label_correct_type<
-    T,
-    std::enable_if_t<std::is_same<DataBoxString_t, decltype(T::label)>::value>>
+    T, Requires<std::is_same<DataBoxString_t, decltype(T::label)>::value>>
     : std::true_type {};
 /// \endcond
 // @}
@@ -194,16 +194,14 @@ struct check_tag_labels {
  * \tparam Tag the DataBoxTag whose name to get
  * \return string holding the DataBoxTag's name
  */
-template <
-    typename Tag,
-    std::enable_if_t<not std::is_base_of<DataBoxPrefix, Tag>::value>* = nullptr>
+template <typename Tag,
+          Requires<not std::is_base_of<DataBoxPrefix, Tag>::value> = nullptr>
 std::string get_tag_name() {
   return std::string(Tag::label);
 }
 /// \cond HIDDEN_SYMBOLS
-template <
-    typename Tag,
-    std::enable_if_t<std::is_base_of<DataBoxPrefix, Tag>::value>* = nullptr>
+template <typename Tag,
+          Requires<std::is_base_of<DataBoxPrefix, Tag>::value> = nullptr>
 std::string get_tag_name() {
   return std::string(Tag::label) + get_tag_name<typename Tag::tag>();
 }
@@ -225,7 +223,7 @@ namespace detail {
  * \metareturns
  * value member of type `value_type` representing the hash of the DataBoxTag
  */
-template <typename Tag, typename = void>
+template <typename Tag, typename = std::nullptr_t>
 struct hash_databox_tag {
   using value_type = size_t;
   static constexpr value_type value = cstring_hash(Tag::label);
@@ -233,8 +231,8 @@ struct hash_databox_tag {
 };
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct hash_databox_tag<
-    Tag, std::enable_if_t<std::is_base_of<DataBoxPrefix, Tag>::value>> {
+struct hash_databox_tag<Tag,
+                        Requires<std::is_base_of<DataBoxPrefix, Tag>::value>> {
   using value_type = size_t;
   static constexpr value_type value =
       cstring_hash(Tag::label) * hash_databox_tag<typename Tag::tag>::value;
@@ -242,8 +240,8 @@ struct hash_databox_tag<
 };
 
 template <typename Tag>
-struct hash_databox_tag<
-    Tag, std::enable_if_t<tt::is_a<::Tags::Variables, Tag>::value>> {
+struct hash_databox_tag<Tag,
+                        Requires<tt::is_a<::Tags::Variables, Tag>::value>> {
   using value_type = size_t;
   using reduced_hash = tmpl::fold<
       typename Tag::type::tags_list, tmpl::size_t<0>,
@@ -277,12 +275,12 @@ struct databox_tag_less : tmpl::bool_<(hash_databox_tag<DataBoxTag1>::value <
  * \ingroup DataBoxGroup
  * \brief Check if `T` derives off of db::ComputeItemTag
  */
-template <typename T, typename = void>
+template <typename T, typename = std::nullptr_t>
 struct is_compute_item : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
-struct is_compute_item<
-    T, std::enable_if_t<std::is_base_of<db::ComputeItemTag, T>::value>>
+struct is_compute_item<T,
+                       Requires<std::is_base_of<db::ComputeItemTag, T>::value>>
     : std::true_type {};
 /// \endcond
 
@@ -294,7 +292,7 @@ template <typename T>
 constexpr bool is_compute_item_v = is_compute_item<T>::value;
 
 namespace detail {
-template <typename Tag, typename = void>
+template <typename Tag, typename = std::nullptr_t>
 struct compute_item_result_impl;
 
 template <typename Tag, typename ArgsLs>
@@ -317,16 +315,15 @@ struct compute_item_result_helper<Tag, ArgumentsLs<Args...>> {
 };
 
 template <typename Tag>
-struct compute_item_result_impl<Tag,
-                                std::enable_if_t<is_compute_item<Tag>::value>> {
+struct compute_item_result_impl<Tag, Requires<is_compute_item<Tag>::value>> {
   using type =
       typename compute_item_result_helper<Tag,
                                           typename Tag::argument_tags>::type;
 };
 
 template <typename Tag>
-struct compute_item_result_impl<
-    Tag, std::enable_if_t<not is_compute_item<Tag>::value>> {
+struct compute_item_result_impl<Tag,
+                                Requires<not is_compute_item<Tag>::value>> {
   using type = typename Tag::type;
 };
 }  // namespace detail
@@ -342,23 +339,23 @@ using item_type = typename detail::compute_item_result_impl<T>::type;
  * \ingroup DataBoxGroup
  * \brief Check if a Compute Item is "simple"
  */
-template <typename T, typename = void>
+template <typename T, typename = std::nullptr_t>
 struct is_simple_compute_item : std::false_type {};
 template <typename T>
-struct is_simple_compute_item<
-    T, std::enable_if_t<is_compute_item<T>::value and
-                        not tt::is_a<Variables, item_type<T>>::value>>
+struct is_simple_compute_item<T,
+                              Requires<is_compute_item<T>::value and
+                                       not tt::is_a_v<Variables, item_type<T>>>>
     : std::true_type {};
 
 /*!
  * \ingroup DataBoxGroup
  * \brief Check if a Compute Item returns a Variables class
  */
-template <typename T, typename = void>
+template <typename T, typename = std::nullptr_t>
 struct is_variables_compute_item : std::false_type {};
 template <typename T>
 struct is_variables_compute_item<
-    T, std::enable_if_t<is_compute_item<T>::value and
-                        tt::is_a<Variables, item_type<T>>::value>>
+    T,
+    Requires<is_compute_item<T>::value and tt::is_a_v<Variables, item_type<T>>>>
     : std::true_type {};
 }  // namespace db

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <typename X, typename Symm, typename IndexLs>
@@ -22,7 +23,7 @@ namespace detail {
  * \tparam Symmetry_t Symmetry of the Tensor
  * \tparam Indices_t typelist of the TensorIndex's of the Tensor
  */
-template <typename Symmetry_t, typename Indices_t, typename = void>
+template <typename Symmetry_t, typename Indices_t, typename = std::nullptr_t>
 struct number_of_independent_components_impl;
 
 /*!
@@ -44,7 +45,7 @@ struct number_of_independent_components_impl<tmpl::list<>, tmpl::list<>> {
 
 template <typename SymmetryValue, typename Index>
 struct number_of_independent_components_impl<typelist<SymmetryValue>,
-                                             typelist<Index>, void> {
+                                             typelist<Index>, std::nullptr_t> {
   using number_of_independent_components = tmpl::size_t<Index::dim>;
   using component_number = tmpl::size_t<1>;
   using number_of_components = tmpl::size_t<Index::dim>;
@@ -74,8 +75,7 @@ template <typename FirstSymm, typename... SymmetryValues, typename FirstIndex,
           typename... Indices>
 struct number_of_independent_components_impl<
     typelist<FirstSymm, SymmetryValues...>, typelist<FirstIndex, Indices...>,
-    std::enable_if_t<(sizeof...(SymmetryValues) > 0 and
-                      sizeof...(Indices) > 0)>> {
+    Requires<(sizeof...(SymmetryValues) > 0 and sizeof...(Indices) > 0)>> {
   static_assert(
       sizeof...(SymmetryValues) == sizeof...(Indices),
       "Number of components in Symmetry_t and Indices_t must be the same.");

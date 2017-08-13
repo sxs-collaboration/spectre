@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace brigand {
@@ -54,18 +55,17 @@ struct add_unique_vertex<State, edge<Source, Destination, Weight>> {
   using type = append<State, source, destination>;
 };
 
-template <class E, class S, class = void>
+template <class E, class S, class = std::nullptr_t>
 struct has_source : std::false_type {};
 template <class E, class S>
-struct has_source<E, S, typename std::enable_if<
-                            std::is_same<typename E::source, S>::value>::type>
+struct has_source<E, S, Requires<std::is_same<typename E::source, S>::value>>
     : std::true_type {};
 
 template <class E, class D, class = void>
 struct has_destination : std::false_type {};
 template <class E, class D>
-struct has_destination<E, D, typename std::enable_if<std::is_same<
-                                 typename E::destination, D>::value>::type>
+struct has_destination<
+    E, D, Requires<std::is_same<typename E::destination, D>::value>>
     : std::true_type {};
 
 template <class E, class S, class D>

@@ -9,6 +9,7 @@
 #include <array>
 
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 // Much of this is taken from
@@ -70,8 +71,7 @@ SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
  * \brief Helper function to initialize a std::array with varying number of
  * arguments
  */
-template <typename T, typename... V,
-          typename std::enable_if_t<(sizeof...(V) > 0)>* = nullptr>
+template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr std::array<typename std::decay_t<T>,
                                            sizeof...(V) + 1>
 make_array(T&& t, V&&... values) {

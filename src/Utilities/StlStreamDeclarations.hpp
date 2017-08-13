@@ -23,6 +23,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Utilities/Requires.hpp"
+
 namespace tt {
 template <typename S, typename T, typename>
 struct is_streamable;
@@ -43,9 +45,7 @@ std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a);
 template <typename... Args>
 std::ostream& operator<<(std::ostream& os, const std::tuple<Args...>& t);
 
-template <
-    typename Map,
-    typename std::enable_if_t<tt::is_maplike<Map, void>::value>* = nullptr>
+template <typename Map, Requires<tt::is_maplike<Map, void>::value> = nullptr>
 std::ostream& operator<<(std::ostream& os, const Map& m);
 
 template <typename T>
@@ -55,13 +55,11 @@ template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::set<T>& v);
 
 template <typename T,
-          typename std::enable_if_t<
-              tt::is_streamable<std::ostream, T, void>::value>* = nullptr>
+          Requires<tt::is_streamable<std::ostream, T, void>::value> = nullptr>
 std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t);
 
 template <typename T,
-          typename std::enable_if_t<
-              tt::is_streamable<std::ostream, T, void>::value>* = nullptr>
+          Requires<tt::is_streamable<std::ostream, T, void>::value> = nullptr>
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t);
 
 template <typename T, typename U>

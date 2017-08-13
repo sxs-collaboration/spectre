@@ -8,6 +8,7 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup Utilities
@@ -43,43 +44,43 @@
 ///
 /// \example
 /// \snippet Test_FakeVirtual.cpp fake_virtual_example
-#define DEFINE_FAKE_VIRTUAL(function)                                          \
-  /* This struct is only needed for producing an error if the function */      \
-  /* is not overridden in the derived class. */                                \
-  template <typename Base>                                                     \
-  struct FakeVirtualInherit_##function : public Base {                         \
-    using Base::Base;                                                          \
-    void function(...) const = delete;                                         \
-  };                                                                           \
-                                                                               \
-  template <                                                                   \
-      typename Classes, typename... TArgs, typename Base, typename... Args,    \
-      typename std::enable_if_t<(tmpl::size<Classes>::value == 0)>* = nullptr> \
-  auto fake_virtual_##function(Base* obj, Args&&... args)                      \
-      ->decltype(obj->template function<TArgs...>(args...)) {                  \
-    ERROR("Class " << pretty_type::get_runtime_type_name(*obj)                 \
-                   << " is not registered with "                               \
-                   << pretty_type::get_name<std::remove_const_t<Base>>());     \
-  }                                                                            \
-                                                                               \
-  template <                                                                   \
-      typename Classes, typename... TArgs, typename Base, typename... Args,    \
-      typename std::enable_if_t<(tmpl::size<Classes>::value != 0)>* = nullptr> \
-  decltype(auto) fake_virtual_##function(Base* obj, Args&&... args) {          \
-    using derived = tmpl::front<Classes>;                                      \
-    static_assert(std::is_base_of<typename Base::Inherit, derived>::value,     \
-                  "Derived class does not inherit from Base::Inherit");        \
-    using derived_p = std::conditional_t<std::is_const<Base>::value,           \
-                                         derived const*, derived*>;            \
-    /* If we want to allow creatable classses to return objects of */          \
-    /* types derived from themselves then this will have to be changed */      \
-    /* to a dynamic_cast, but we probably won't want that and this */          \
-    /* form is significantly faster. */                                        \
-    if (typeid(*obj) == typeid(derived)) {                                     \
-      return static_cast<derived_p>(obj)->template function<TArgs...>(         \
-          std::forward<Args>(args)...);                                        \
-    } else {                                                                   \
-      return fake_virtual_##function<tmpl::pop_front<Classes>, TArgs...>(      \
-          obj, std::forward<Args>(args)...);                                   \
-    }                                                                          \
+#define DEFINE_FAKE_VIRTUAL(function)                                      \
+  /* This struct is only needed for producing an error if the function */  \
+  /* is not overridden in the derived class. */                            \
+  template <typename Base>                                                 \
+  struct FakeVirtualInherit_##function : public Base {                     \
+    using Base::Base;                                                      \
+    void function(...) const = delete;                                     \
+  };                                                                       \
+                                                                           \
+  template <typename Classes, typename... TArgs, typename Base,            \
+            typename... Args,                                              \
+            Requires<(tmpl::size<Classes>::value == 0)> = nullptr>         \
+  auto fake_virtual_##function(Base* obj, Args&&... args)                  \
+      ->decltype(obj->template function<TArgs...>(args...)) {              \
+    ERROR("Class " << pretty_type::get_runtime_type_name(*obj)             \
+                   << " is not registered with "                           \
+                   << pretty_type::get_name<std::remove_const_t<Base>>()); \
+  }                                                                        \
+                                                                           \
+  template <typename Classes, typename... TArgs, typename Base,            \
+            typename... Args,                                              \
+            Requires<(tmpl::size<Classes>::value != 0)> = nullptr>         \
+  decltype(auto) fake_virtual_##function(Base* obj, Args&&... args) {      \
+    using derived = tmpl::front<Classes>;                                  \
+    static_assert(std::is_base_of<typename Base::Inherit, derived>::value, \
+                  "Derived class does not inherit from Base::Inherit");    \
+    using derived_p = std::conditional_t<std::is_const<Base>::value,       \
+                                         derived const*, derived*>;        \
+    /* If we want to allow creatable classses to return objects of */      \
+    /* types derived from themselves then this will have to be changed */  \
+    /* to a dynamic_cast, but we probably won't want that and this */      \
+    /* form is significantly faster. */                                    \
+    if (typeid(*obj) == typeid(derived)) {                                 \
+      return static_cast<derived_p>(obj)->template function<TArgs...>(     \
+          std::forward<Args>(args)...);                                    \
+    } else {                                                               \
+      return fake_virtual_##function<tmpl::pop_front<Classes>, TArgs...>(  \
+          obj, std::forward<Args>(args)...);                               \
+    }                                                                      \
   }

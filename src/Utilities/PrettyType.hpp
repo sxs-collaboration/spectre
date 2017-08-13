@@ -10,6 +10,7 @@
 #include <sstream>
 #include <string>
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -185,13 +186,13 @@ std::string add_qualifiers() {
  * \tparam KT the struct holding the template alias template_list which is a
  * list of known specializations of construct_name for those containers
  */
-template <typename T, typename M, typename KT, typename U = void>
+template <typename T, typename M, typename KT, typename = std::nullptr_t>
 struct construct_name;
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<
-        tmpl::has_key<M, std::decay_t<std::remove_pointer_t<T>>>::value == 1>> {
+    Requires<tmpl::has_key<M, std::decay_t<std::remove_pointer_t<T>>>::value ==
+             1>> {
   static std::string get() {
     constexpr str_const t =
         tmpl::at<M, std::decay_t<std::remove_pointer_t<T>>>::type_name;
@@ -204,7 +205,7 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<
+    Requires<
         tmpl::has_key<M, std::decay_t<std::remove_reference_t<
                              std::remove_pointer_t<T>>>>::value == 0 and
         std::is_same<
@@ -227,9 +228,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::vector,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::vector, std::decay_t<std::remove_reference_t<
+                                         std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_pointer_t<T>>;
   static std::string get() {
     std::stringstream ss;
@@ -245,7 +245,7 @@ struct construct_name<
 
 template <typename T, typename M, typename KT>
 struct construct_name<
-    T, M, KT, std::enable_if_t<tt::is_std_array_v<std::decay_t<
+    T, M, KT, Requires<tt::is_std_array_v<std::decay_t<
                   std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
@@ -264,9 +264,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::deque,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::deque, std::decay_t<std::remove_reference_t<
+                                        std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_pointer_t<T>>;
   static std::string get() {
     std::stringstream ss;
@@ -283,9 +282,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::forward_list,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::forward_list, std::decay_t<std::remove_reference_t<
+                                               std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_pointer_t<T>>;
   static std::string get() {
     std::stringstream ss;
@@ -302,8 +300,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<std::list, std::decay_t<std::remove_reference_t<
-                                               std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::list, std::decay_t<std::remove_reference_t<
+                                       std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_pointer_t<T>>;
   static std::string get() {
     std::stringstream ss;
@@ -321,8 +319,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<std::map, std::decay_t<std::remove_reference_t<
-                                              std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::map, std::decay_t<std::remove_reference_t<
+                                      std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -343,9 +341,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::multimap,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::multimap, std::decay_t<std::remove_reference_t<
+                                           std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -366,9 +363,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::multiset,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::multiset, std::decay_t<std::remove_reference_t<
+                                           std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -385,8 +381,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<std::set, std::decay_t<std::remove_reference_t<
-                                              std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::set, std::decay_t<std::remove_reference_t<
+                                      std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -405,7 +401,7 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
+    Requires<tt::is_a_v<
         std::unordered_map,
         std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
@@ -428,7 +424,7 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
+    Requires<tt::is_a_v<
         std::unordered_multimap,
         std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
@@ -451,7 +447,7 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
+    Requires<tt::is_a_v<
         std::unordered_multiset,
         std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
@@ -470,7 +466,7 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
+    Requires<tt::is_a_v<
         std::unordered_set,
         std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
@@ -490,7 +486,7 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
+    Requires<tt::is_a_v<
         std::priority_queue,
         std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
@@ -513,9 +509,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::queue,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::queue, std::decay_t<std::remove_reference_t<
+                                        std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -536,9 +531,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::stack,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::stack, std::decay_t<std::remove_reference_t<
+                                        std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -560,9 +554,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::unique_ptr,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::unique_ptr, std::decay_t<std::remove_reference_t<
+                                             std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -581,9 +574,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::shared_ptr,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::shared_ptr, std::decay_t<std::remove_reference_t<
+                                             std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -602,9 +594,8 @@ struct construct_name<
 template <typename T, typename M, typename KT>
 struct construct_name<
     T, M, KT,
-    std::enable_if_t<tt::is_a_v<
-        std::weak_ptr,
-        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    Requires<tt::is_a_v<std::weak_ptr, std::decay_t<std::remove_reference_t<
+                                           std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   using element_type = typename type::element_type;
   static std::string get() {

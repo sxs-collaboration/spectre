@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -300,9 +301,8 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   // @{
   /// Cast down to the derived class. This is enabled by the
   /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
-  template <
-      typename V = Derived,
-      typename std::enable_if<not tt::is_a<Tensor, V>::value>::type* = nullptr>
+  template <typename V = Derived,
+            Requires<not tt::is_a<Tensor, V>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE const Derived& operator~() const {
     return static_cast<const Derived&>(*this);
   }
@@ -319,9 +319,8 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   /// expression.
   /// \returns const TensorExpression<Derived, DataType, Symm, IndexLs,
   /// ArgsLs<Args...>>&
-  template <
-      typename V = Derived,
-      typename std::enable_if<tt::is_a<Tensor, V>::value>::type* = nullptr>
+  template <typename V = Derived,
+            Requires<tt::is_a<Tensor, V>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE auto operator~() const {
     return static_cast<const TensorExpression<Derived, DataType, Symm, IndexLs,
                                               ArgsLs<Args...>>&>(*this);
@@ -400,9 +399,9 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   /// \tparam V used for SFINAE
   /// \param tensor_index the tensor component to retrieve
   /// \return the value of the DataType of component `tensor_index`
-  template <
-      typename... LhsIndices, typename ArrayValueType, typename V = Derived,
-      typename std::enable_if<tt::is_a<Tensor, V>::value>::type* = nullptr>
+  template <typename... LhsIndices, typename ArrayValueType,
+            typename V = Derived,
+            Requires<tt::is_a<Tensor, V>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<ArrayValueType, num_tensor_indices>& tensor_index)
       const {
@@ -430,9 +429,9 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   /// \tparam V used for SFINAE
   /// \param tensor_index the tensor component to retrieve
   /// \return the value of the DataType of component `tensor_index`
-  template <
-      typename... LhsIndices, typename ArrayValueType, typename V = Derived,
-      typename std::enable_if<not tt::is_a<Tensor, V>::value>::type* = nullptr>
+  template <typename... LhsIndices, typename ArrayValueType,
+            typename V = Derived,
+            Requires<not tt::is_a<Tensor, V>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<ArrayValueType, num_tensor_indices>& tensor_index)
       const {
@@ -444,9 +443,8 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   }
 
   /// Retrieve the i'th entry of the Tensor being held
-  template <
-      typename V = Derived,
-      typename std::enable_if<tt::is_a<Tensor, V>::value>::type* = nullptr>
+  template <typename V = Derived,
+            Requires<tt::is_a<Tensor, V>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE type operator[](const size_t i) const {
     return t_->operator[](i);
   }
@@ -455,9 +453,8 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   ///
   /// In this case we do not need to store a pointer to the TensorExpression
   /// since we can cast back to the derived class using operator~.
-  template <
-      typename V = Derived,
-      typename std::enable_if<not tt::is_a<Tensor, V>::value>::type* = nullptr>
+  template <typename V = Derived,
+            Requires<not tt::is_a<Tensor, V>::value> = nullptr>
   TensorExpression() {}  // NOLINT
 
   /// \brief Construct a TensorExpression from a Tensor.

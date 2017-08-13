@@ -9,6 +9,7 @@
 #include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -231,9 +232,9 @@ class Variables<tmpl::list<Tags...>> {
             "cannot be used in a meaningful way.");
   }
 
-  template <typename TagToAdd, typename... Rest,
-            std::enable_if_t<
-                tt::is_a<Tensor, typename TagToAdd::type>::value>* = nullptr>
+  template <
+      typename TagToAdd, typename... Rest,
+      Requires<tt::is_a<Tensor, typename TagToAdd::type>::value> = nullptr>
   void add_reference_variable_data(typelist<TagToAdd, Rest...> /*unused*/,
                                    size_t variable_offset = 0);
 
@@ -342,8 +343,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 template <typename TagToAdd, typename... Rest,
-          typename std::enable_if_t<
-              tt::is_a<Tensor, typename TagToAdd::type>::value>*>
+          Requires<tt::is_a<Tensor, typename TagToAdd::type>::value>>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
     typelist<TagToAdd, Rest...> /*unused*/, const size_t variable_offset) {
   CASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *

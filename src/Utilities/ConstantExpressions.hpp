@@ -10,6 +10,7 @@
 
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -23,8 +24,8 @@ struct Expression;
 /// \param n the power of two to compute.
 /// \return 2^n
 template <typename T,
-          std::enable_if_t<std::is_integral<T>::value and
-                           not std::is_same<bool, T>::value>* = nullptr>
+          Requires<std::is_integral<T>::value and
+                   not std::is_same<bool, T>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
   return static_cast<T>(1) << n;
 }
@@ -56,30 +57,31 @@ SPECTRE_ALWAYS_INLINE constexpr T cube(const T& x) {
 
 /// \ingroup ConstantExpressions
 namespace ConstantExpressions_details {
-template <typename T, int N, typename U = void>
+template <typename T, int N, typename = std::nullptr_t>
 struct pow;
 
+/// \cond HIDDEN_SYMBOLS
 template <typename T, int N>
-struct pow<T, N, typename std::enable_if<(N > 0)>::type> {
+struct pow<T, N, Requires<(N > 0)>> {
   SPECTRE_ALWAYS_INLINE static constexpr decltype(auto) apply(const T& t) {
     return t * pow<T, N - 1>::apply(t);
   }
 };
 
 template <typename T, int N>
-struct pow<T, N, typename std::enable_if<(N < 0)>::type> {
+struct pow<T, N, Requires<(N < 0)>> {
   SPECTRE_ALWAYS_INLINE static constexpr decltype(auto) apply(const T& t) {
     return static_cast<T>(1) / (t * pow<T, -N - 1>::apply(t));
   }
 };
 
 template <typename T>
-struct pow<T, 0,
-           std::enable_if_t<not std::is_base_of<blaze::Expression, T>::value>> {
+struct pow<T, 0, Requires<not std::is_base_of<blaze::Expression, T>::value>> {
   SPECTRE_ALWAYS_INLINE static constexpr T apply(const T& /*t*/) {
     return static_cast<T>(1);
   }
 };
+/// \endcond
 }  // namespace ConstantExpressions_details
 
 /// \ingroup ConstantExpressions
@@ -97,9 +99,8 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
 }
 
 namespace detail {
-template <
-    typename Ls, size_t... indices,
-    std::enable_if_t<not tt::is_a_v<tmpl::list, tmpl::front<Ls>>>* = nullptr>
+template <typename Ls, size_t... indices,
+          Requires<not tt::is_a_v<tmpl::list, tmpl::front<Ls>>> = nullptr>
 inline constexpr std::array<std::decay_t<decltype(tmpl::front<Ls>::value)>,
                             tmpl::size<Ls>::value>
 make_array_from_list_helper(
@@ -116,9 +117,8 @@ make_array_from_list_helper(
 ///
 /// \tparam Ls the typelist of std::integral_constant's
 /// \return array of integral values from the typelist
-template <
-    typename Ls,
-    std::enable_if_t<not tt::is_a_v<tmpl::list, tmpl::front<Ls>>>* = nullptr>
+template <typename Ls,
+          Requires<not tt::is_a_v<tmpl::list, tmpl::front<Ls>>> = nullptr>
 inline constexpr std::array<std::decay_t<decltype(tmpl::front<Ls>::value)>,
                             tmpl::size<Ls>::value>
 make_array_from_list() {
@@ -127,7 +127,7 @@ make_array_from_list() {
 }
 
 template <typename TypeForZero,
-          std::enable_if_t<not tt::is_a_v<tmpl::list, TypeForZero>>* = nullptr>
+          Requires<not tt::is_a_v<tmpl::list, TypeForZero>> = nullptr>
 inline constexpr std::array<std::decay_t<TypeForZero>, 0>
 make_array_from_list() {
   return std::array<std::decay_t<TypeForZero>, 0>{{}};
@@ -135,8 +135,7 @@ make_array_from_list() {
 
 namespace detail {
 template <typename Ls, size_t... indices,
-          typename std::enable_if<
-              tt::is_a<tmpl::list, tmpl::front<Ls>>::value>::type* = nullptr>
+          Requires<tt::is_a<tmpl::list, tmpl::front<Ls>>::value> = nullptr>
 inline constexpr std::array<
     std::decay_t<
         decltype(make_array_from_list<tmpl::at<Ls, tmpl::size_t<0>>>())>,
@@ -161,7 +160,7 @@ make_array_from_list_helper(
 /// \tparam Ls the typelist of typelists of std::integral_constant's
 /// \return array of arrays of integral values from the typelists
 template <typename Ls,
-          std::enable_if_t<tt::is_a_v<tmpl::list, tmpl::front<Ls>>>* = nullptr>
+          Requires<tt::is_a_v<tmpl::list, tmpl::front<Ls>>> = nullptr>
 inline constexpr auto make_array_from_list() {
   return detail::make_array_from_list_helper<Ls>(
       std::make_integer_sequence<size_t, tmpl::size<Ls>::value>{});
