@@ -8,6 +8,7 @@
 
 #include <array>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -80,4 +81,29 @@ make_array(T&& t, V&&... values) {
       "all types to make_array(...) must be the same");
   return std::array<typename std::decay<T>::type, sizeof...(V) + 1>{
       {std::forward<T>(t), std::forward<V>(values)...}};
+}
+
+namespace MakeArray_detail {
+template <typename T, size_t size, typename Seq, size_t... indexes>
+std::array<T, size> make_array_from_iterator_impl(
+    Seq&& s, std::integer_sequence<size_t, indexes...> /*meta*/) {
+  return std::array<T, size>{{static_cast<T>(*(std::begin(s) + indexes))...}};
+}
+}  // namespace MakeArray_detail
+
+/*!
+ * \ingroup Utilities
+ * \brief Create an `std::array<T, size>` from the first `size` values of `seq`
+ *
+ * \requires `Seq` has a `begin` function
+ * \tparam T the type held by the array
+ * \tparam size the size of the created array
+ */
+template <typename T, size_t size, typename Seq>
+constexpr std::array<T, size> make_array(Seq&& seq) {
+  CASSERT(size <= seq.size(),
+          "The sequence size must be at least as large as the array being "
+          "created from it.");
+  return MakeArray_detail::make_array_from_iterator_impl<T, size>(
+      std::forward<Seq>(seq), std::make_index_sequence<size>{});
 }

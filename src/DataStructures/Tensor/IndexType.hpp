@@ -36,6 +36,9 @@ struct Logical {};
 struct Grid {};
 struct Inertial {};
 struct Distorted {};
+/// Represents an index that is not in a known frame, e.g. some internal
+/// intermediate frame that is irrelevant to the interface.
+struct NoFrame {};
 
 /// This ordered list is needed to determine the ordering of frames
 /// for jacobians.
@@ -58,6 +61,10 @@ inline std::ostream& operator<<(std::ostream& os,
 inline std::ostream& operator<<(std::ostream& os,
                                 const Frame::Distorted& /*meta*/) {
   return os << "Distorted";
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const Frame::NoFrame& /*meta*/) {
+  return os << "NoFrame";
 }
 /// \endcond
 

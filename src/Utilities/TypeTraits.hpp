@@ -1017,4 +1017,37 @@ struct is_integer<unsigned long long> : std::true_type {};
 template <typename T>
 constexpr bool is_integer_v = is_integer<T>::value;
 // @}
+
+// @{
+/*!
+ * \ingroup TypeTraits
+ * \brief Gets the underlying type if the type is a std::reference_wrapper,
+ * otherwise returns the type itself
+ *
+ * \usage
+ * For any type `I`,
+ * \code
+ * using result = tt::remove_reference_wrapper<I>;
+ * \endcode
+ * \metareturns
+ * either `I::type` if `I` is a std::reference_wrapper, else returns I
+ *
+ * \example
+ * \snippet Utilities/Test_TypeTraits.cpp remove_reference_wrapper_example
+ * \see std::reference_wrapper
+ */
+template <typename T>
+struct remove_reference_wrapper {
+  using type = T;
+};
+/// \cond HIDDEN_SYMBOLS
+template <typename T>
+struct remove_reference_wrapper<std::reference_wrapper<T>> {
+  using type = T;
+};
+/// \endcond
+
+template <typename T>
+using remove_reference_wrapper_t = typename remove_reference_wrapper<T>::type;
+// @}
 }  // namespace tt

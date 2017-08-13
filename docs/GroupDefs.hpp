@@ -23,19 +23,6 @@
  *  that may be changed dynamically if AMR is enabled.
  */
 
-/*! \defgroup EmbeddingMaps  Embedding Maps
- *  \brief Functions for mapping logical co-ordinates to grid co-ordinates
- *
- *  ### Description
- *  The reference elements where the numerical methods are evaluated
- *  are D-dimensional cubes with logical co-ordinates [-1,1] in each
- *  dimension. Embedding maps provide functions to map the logical co-ordinates
- *  of the reference elements to the grid co-ordinates of the distorted
- *  cubes which are used by the simulation. Embedding maps provide the maps
- *  themselves, the inverse maps, along with the jacobian and inverse
- *  jacobian of the maps.
- */
-
 /*!
  * \defgroup ConstantExpressions Constant Expressions
  * \brief Contains an assortment of constexpr functions
@@ -45,6 +32,14 @@
  * metaprogramming, or efficient mathematical computations, such as
  * exponentiating to an integer power, where the power is known at compile
  * time.
+ */
+
+/*!
+ * \defgroup CoordinateMapsGroup  Coordinate Maps
+ * \brief Functions for mapping coordinates between different frames
+ *
+ * Coordinate maps provide the maps themselves, the inverse maps, along
+ * with the Jacobian and inverse Jacobian of the maps.
  */
 
 /*!

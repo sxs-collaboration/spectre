@@ -490,3 +490,30 @@ static_assert(not tt::is_integer_v<bool>,
 static_assert(not tt::is_integer_v<char>,
               "Failed testing type trait is_integer");
 /// [is_integer_example]
+
+/// [remove_reference_wrapper_example]
+static_assert(
+    cpp17::is_same_v<const double, tt::remove_reference_wrapper_t<
+                                       std::reference_wrapper<const double>>>,
+    "Failed testing remove_reference_wrapper");
+static_assert(cpp17::is_same_v<const double,
+                               tt::remove_reference_wrapper_t<const double>>,
+              "Failed testing remove_reference_wrapper");
+static_assert(
+    cpp17::is_same_v<
+        double, tt::remove_reference_wrapper_t<std::reference_wrapper<double>>>,
+    "Failed testing remove_reference_wrapper");
+static_assert(cpp17::is_same_v<double, tt::remove_reference_wrapper_t<double>>,
+              "Failed testing remove_reference_wrapper");
+static_assert(cpp17::is_same_v<const A, tt::remove_reference_wrapper_t<
+                                            std::reference_wrapper<const A>>>,
+              "Failed testing remove_reference_wrapper");
+static_assert(
+    cpp17::is_same_v<const A, tt::remove_reference_wrapper_t<const A>>,
+    "Failed testing remove_reference_wrapper");
+static_assert(cpp17::is_same_v<
+                  A, tt::remove_reference_wrapper_t<std::reference_wrapper<A>>>,
+              "Failed testing remove_reference_wrapper");
+static_assert(cpp17::is_same_v<A, tt::remove_reference_wrapper_t<A>>,
+              "Failed testing remove_reference_wrapper");
+/// [remove_reference_wrapper_example]

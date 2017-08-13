@@ -53,4 +53,20 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
                 "Unit Test Failure: Incorrect array size.");
   CHECK((my_array[0] == 1 and my_array[1] == 3 and my_array[2] == 4 and
          my_array[3] == 8 and my_array[4] == 9));
+
+  CHECK((std::array<int, 3>{{2, 8, 6}}) ==
+        (make_array<int, 3>(std::vector<int>{2, 8, 6})));
+  CHECK((std::array<int, 3>{{2, 8, 6}}) ==
+        (make_array<int, 3>(std::vector<int>{2, 8, 6, 9, 7})));
+}
+
+// [[OutputRegex, The sequence size must be at least as large as the array being
+// created from it.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.MakeArraySeqTooSmall",
+                               "[Unit][Utilities]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  static_cast<void>(make_array<int, 3>(std::vector<int>{2, 8}));
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }

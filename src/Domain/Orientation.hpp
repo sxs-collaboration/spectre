@@ -25,9 +25,9 @@ template <size_t VolumeDim>
 class Orientation {
  public:
   Orientation() = default;
-  Orientation<VolumeDim>(
+  explicit Orientation(
       std::array<Direction<VolumeDim>, VolumeDim> mapped_directions);
-  Orientation<VolumeDim>(
+  Orientation(
       const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
       const std::array<Direction<VolumeDim>, VolumeDim>&
           directions_in_neighbor);
@@ -56,14 +56,16 @@ class Orientation {
   std::array<SegmentId, VolumeDim> mapped(
       const std::array<SegmentId, VolumeDim>& segmentIds) const;
 
-  template <size_t VolumeDimLocal>
-  friend bool operator==(const Orientation<VolumeDimLocal>& lhs,
-                         const Orientation<VolumeDimLocal>& rhs) noexcept;
-
   /// Serialization for Charm++
   void pup(PUP::er& p);  // NOLINT
 
  private:
+  friend bool operator==(const Orientation& lhs,
+                         const Orientation& rhs) noexcept {
+    return (lhs.mapped_directions_ == rhs.mapped_directions_ and
+            lhs.is_aligned_ == rhs.is_aligned_);
+  }
+
   std::array<Direction<VolumeDim>, VolumeDim> mapped_directions_;
   bool is_aligned_ = true;
 };
@@ -72,13 +74,6 @@ class Orientation {
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
                          const Orientation<VolumeDim>& orientation);
-
-template <size_t VolumeDim>
-bool operator==(const Orientation<VolumeDim>& lhs,
-                const Orientation<VolumeDim>& rhs) noexcept {
-  return (lhs.mapped_directions_ == rhs.mapped_directions_ and
-          lhs.is_aligned_ == rhs.is_aligned_);
-}
 
 template <size_t VolumeDim>
 bool operator!=(const Orientation<VolumeDim>& lhs,

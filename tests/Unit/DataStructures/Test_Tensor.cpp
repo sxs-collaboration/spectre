@@ -735,3 +735,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
                        std::vector<double>{1.0, 2.0, 3.0}) ==
         tensor_double.get_vector_of_data());
 }
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
+                  "[Unit][DataStructures]") {
+  CHECK("Logical" == get_output(Frame::Logical{}));
+  CHECK("Grid" == get_output(Frame::Grid{}));
+  CHECK("Inertial" == get_output(Frame::Inertial{}));
+  CHECK("Distorted" == get_output(Frame::Distorted{}));
+  CHECK("NoFrame" == get_output(Frame::NoFrame{}));
+}

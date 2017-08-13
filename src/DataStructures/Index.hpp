@@ -60,6 +60,8 @@ class Index {
     return indices_.end();
   }
 
+  size_t size() const noexcept { return Dim; }
+
   /// The product of the indices.
   /// If Dim = 0, the product is defined as 1.
   template <int N = Dim, Requires<(N > 0)> = nullptr>

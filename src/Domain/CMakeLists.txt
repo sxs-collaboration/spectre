@@ -1,12 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(EmbeddingMaps)
+add_subdirectory(CoordinateMaps)
 
 set(LIBRARY Domain)
 
 set(LIBRARY_SOURCES
-    Block.cpp
     BlockNeighbor.cpp
     Direction.cpp
     ElementId.cpp
