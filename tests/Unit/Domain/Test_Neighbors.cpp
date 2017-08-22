@@ -156,12 +156,10 @@ TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
   CHECK(custom_neighbors.size() == 3);
 
   // Test output
-  // This test is removed until we have proper output for unordered_sets
-  // see Issue #112
-  /*CHECK(get_output(custom_neighbors) ==
+  CHECK(get_output(custom_neighbors) ==
         "Ids = "
-        "([B1,(L2I1,L1I0,L1I1)],[B3,(L2I2,L1I1,L1I0)],[B2,(L2I3,L1I0,L1I1)]); "
-        "orientation = (+1, +2, +0)");*/
+        "([B1,(L2I1,L1I0,L1I1)],[B2,(L2I3,L1I0,L1I1)],[B3,(L2I2,L1I1,L1I0)]); "
+        "orientation = (+1, +2, +0)");
 
   // Test add_ids
 
@@ -177,24 +175,20 @@ TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
   custom_neighbors.add_ids(more_custom_ids);
   CHECK(custom_neighbors.size() == 4);
 
-  // This test is removed until we have proper output for unordered_sets
-  // see Issue #112
-  /*CHECK(get_output(custom_neighbors) ==
+  CHECK(get_output(custom_neighbors) ==
         "Ids = "
-        "([B1,(L2I1,L1I0,L1I1)],[B3,(L2I2,L1I1,L1I0)],[B0,(L2I3,L1I0,L1I1)],["
-        "B2,(L2I3,L1I0,L1I1)]); "
-        "orientation = (+1, +2, +0)");*/
+        "([B0,(L2I3,L1I0,L1I1)],[B1,(L2I1,L1I0,L1I1)],[B2,(L2I3,L1I0,L1I1)],"
+        "[B3,(L2I2,L1I1,L1I0)]); "
+        "orientation = (+1, +2, +0)");
 
   // Test set_ids_to:
   custom_neighbors.set_ids_to(custom_ids);
   CHECK(custom_neighbors.size() == 3);
 
-  // This test is removed until we have proper output for unordered_set
-  // see Issue #112
-  /*CHECK(get_output(custom_neighbors) ==
+  CHECK(get_output(custom_neighbors) ==
         "Ids = "
-        "([B1,(L2I1,L1I0,L1I1)],[B3,(L2I2,L1I1,L1I0)],[B2,(L2I3,L1I0,L1I1)]); "
-        "orientation = (+1, +2, +0)");*/
+        "([B1,(L2I1,L1I0,L1I1)],[B2,(L2I3,L1I0,L1I1)],[B3,(L2I2,L1I1,L1I0)]); "
+        "orientation = (+1, +2, +0)");
 
   // Test serialization:
   CHECK(custom_neighbors == (serialize_and_deserialize(custom_neighbors)));
