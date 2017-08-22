@@ -50,14 +50,16 @@
   template <typename Base>                                                 \
   struct FakeVirtualInherit_##function : public Base {                     \
     using Base::Base;                                                      \
-    void function(...) const = delete;                                     \
+    /* clang-tidy: I think "= delete" was overlooked in the guideline */   \
+    void function(...) const = delete;  /* NOLINT */                       \
   };                                                                       \
                                                                            \
   template <typename Classes, typename... TArgs, typename Base,            \
             typename... Args,                                              \
             Requires<(tmpl::size<Classes>::value == 0)> = nullptr>         \
   auto fake_virtual_##function(Base* obj, Args&&... args)                  \
-      ->decltype(obj->template function<TArgs...>(args...)) {              \
+      /* clang-tidy: macro arg in parentheses */                           \
+      ->decltype(obj->template function<TArgs...>(args...)) {  /* NOLINT */\
     ERROR("Class " << pretty_type::get_runtime_type_name(*obj)             \
                    << " is not registered with "                           \
                    << pretty_type::get_name<std::remove_const_t<Base>>()); \
@@ -76,11 +78,11 @@
     /* types derived from themselves then this will have to be changed */  \
     /* to a dynamic_cast, but we probably won't want that and this */      \
     /* form is significantly faster. */                                    \
-    if (typeid(*obj) == typeid(derived)) {                                 \
-      return static_cast<derived_p>(obj)->template function<TArgs...>(     \
-          std::forward<Args>(args)...);                                    \
-    } else {                                                               \
-      return fake_virtual_##function<tmpl::pop_front<Classes>, TArgs...>(  \
-          obj, std::forward<Args>(args)...);                               \
-    }                                                                      \
+    return typeid(*obj) == typeid(derived)                                 \
+        ? static_cast<derived_p>(obj)                                      \
+        /* clang-tidy: macro arg in parentheses */                         \
+              ->template function<TArgs...>(/* NOLINT */                   \
+                                            std::forward<Args>(args)...)   \
+        : fake_virtual_##function<tmpl::pop_front<Classes>, TArgs...>(     \
+            obj, std::forward<Args>(args)...);                             \
   }

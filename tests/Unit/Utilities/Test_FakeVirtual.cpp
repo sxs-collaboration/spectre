@@ -84,7 +84,9 @@ class MultipleBase {
   }
 
   template <typename T>
-  int& nondeduced(int& x) const {
+  // clang-tidy: non-const reference argument - allows single test to
+  // check reference args and mutable reference return type
+  int& nondeduced(int& x) const {  // NOLINT
     return fake_virtual_nondeduced<AB, T>(this, x);
   }
 
@@ -104,14 +106,15 @@ class A : public MultipleBase::Inherit {
   }
 
   template <typename T>
-  int& nondeduced(int& x) const {
+  // clang-tidy: see base class
+  int& nondeduced(int& x) const {  // NOLINT
     called_func = "A::nondeduced";
     called_types = make_type_vector<T>();
     return x;
   }
 
   template <typename T, typename U>
-  void deduced_and_nondeduced(const U&) const {
+  void deduced_and_nondeduced(const U& /*unused*/) const {
     called_func = "A::deduced_and_nondeduced";
     called_types = make_type_vector<T, U>();
   }
@@ -127,14 +130,15 @@ class B : public MultipleBase::Inherit {
   }
 
   template <typename T>
-  int& nondeduced(int& x) const {
+  // clang-tidy: see base class
+  int& nondeduced(int& x) const {  // NOLINT
     called_func = "B::nondeduced";
     called_types = make_type_vector<T>();
     return x;
   }
 
   template <typename T, typename U>
-  void deduced_and_nondeduced(const U&) const {
+  void deduced_and_nondeduced(const U& /*unused*/) const {
     called_func = "B::deduced_and_nondeduced";
     called_types = make_type_vector<T, U>();
   }
@@ -185,7 +189,7 @@ namespace {
 class C : public MultipleBase::Inherit {
  public:
   template <typename T>
-  T deduced(const T&) /* not const for testing */ {
+  T deduced(const T& /*unused*/) /* not const for testing */ {
     called_func = "C::deduced";
     called_types = make_type_vector<>();
   }
