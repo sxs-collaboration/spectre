@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <ctime>
@@ -51,6 +52,28 @@ inline void print_helper(std::ostream& out, ForwardIt&& begin,
   print_helper(out, std::forward<ForwardIt>(begin),
                std::forward<ForwardIt>(end),
                [](std::ostream& os, const ForwardIt& it) { os << *it; });
+}
+
+// Like print_helper, but sorts the string representations
+template <typename ForwardIt, typename Func>
+inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
+                                   ForwardIt&& end, Func f) {
+  std::vector<std::string> entries;
+  while (begin != end) {
+    std::ostringstream ss;
+    f(ss, begin++);
+    entries.push_back(ss.str());
+  }
+  std::sort(entries.begin(), entries.end());
+  print_helper(out, entries.begin(), entries.end());
+}
+
+template <typename ForwardIt>
+inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
+                                   ForwardIt&& end) {
+  unordered_print_helper(
+      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
+      [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
 
 // Helper classes for operator<< for tuples
@@ -128,13 +151,29 @@ inline std::ostream& operator<<(std::ostream& os,
 
 /*!
  * \ingroup Utilities
- * \brief Output all the key, value pairs of a map
+ * \brief Output all the key, value pairs of a std::unordered_map
  */
-template <typename Map, Requires<tt::is_maplike<Map>::value>>
-inline std::ostream& operator<<(std::ostream& os, const Map& m) {
+template <typename K, typename V>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unordered_map<K, V>& m) {
+  StdHelpers_detail::unordered_print_helper(
+      os, begin(m), end(m),
+      [](std::ostream& out,
+         typename std::unordered_map<K, V>::const_iterator it) {
+        out << "[" << it->first << "," << it->second << "]";
+      });
+  return os;
+}
+
+/*!
+ * \ingroup Utilities
+ * \brief Output all the key, value pairs of a std::map
+ */
+template <typename K, typename V, typename C>
+inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
   StdHelpers_detail::print_helper(
       os, begin(m), end(m),
-      [](std::ostream& out, typename Map::const_iterator it) {
+      [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
         out << "[" << it->first << "," << it->second << "]";
       });
   return os;
@@ -147,16 +186,16 @@ inline std::ostream& operator<<(std::ostream& os, const Map& m) {
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::unordered_set<T>& v) {
-  StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
+  StdHelpers_detail::unordered_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
 
 /*!
  * \ingroup Utilities
- * \brief Output the items of a std::unordered_set
+ * \brief Output the items of a std::set
  */
-template <typename T>
-inline std::ostream& operator<<(std::ostream& os, const std::set<T>& v) {
+template <typename T, typename C>
+inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v) {
   StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
   return os;
 }
@@ -190,14 +229,30 @@ inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
 
 /*!
  * \ingroup Utilities
- * \brief Construct a string containing the keys of a map
+ * \brief Construct a string containing the keys of a std::unordered_map
  */
-template <typename Map, Requires<tt::is_maplike_v<Map>> = nullptr>
-inline std::string keys_of(const Map& m) {
+template <typename K, typename V>
+inline std::string keys_of(const std::unordered_map<K, V>& m) {
+  std::ostringstream os;
+  StdHelpers_detail::unordered_print_helper(
+      os, begin(m), end(m),
+      [](std::ostream& out,
+         typename std::unordered_map<K, V>::const_iterator it) {
+        out << it->first;
+      });
+  return os.str();
+}
+
+/*!
+ * \ingroup Utilities
+ * \brief Construct a string containing the keys of a std::map
+ */
+template <typename K, typename V, typename C>
+inline std::string keys_of(const std::map<K, V, C>& m) {
   std::ostringstream os;
   StdHelpers_detail::print_helper(
       os, begin(m), end(m),
-      [](std::ostream& out, typename Map::const_iterator it) {
+      [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
         out << it->first;
       });
   return os.str();
