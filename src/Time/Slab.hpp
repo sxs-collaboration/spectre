@@ -16,7 +16,7 @@ class TimeDelta;
 
 namespace PUP {
 class er;
-}
+}  // namespace PUP
 
 /// \ingroup TimeGroup
 ///
@@ -97,9 +97,9 @@ class Slab {
   friend class Time;
   friend class TimeDelta;
 
-  friend bool operator==(const Slab&, const Slab&) noexcept;
-  friend bool operator<(const Slab&, const Slab&) noexcept;
-  friend bool operator==(const Time&, const Time&) noexcept;
+  friend bool operator==(const Slab& a, const Slab& b) noexcept;
+  friend bool operator<(const Slab& a, const Slab& b) noexcept;
+  friend bool operator==(const Time& a, const Time& b) noexcept;
 };
 
 inline bool operator==(const Slab& a, const Slab& b) noexcept {

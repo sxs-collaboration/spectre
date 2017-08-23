@@ -14,7 +14,7 @@
 
 namespace PUP {
 class er;
-}
+}  // namespace PUP
 class TimeDelta;
 
 /// \ingroup TimeGroup
@@ -27,11 +27,12 @@ class Time {
   using rational_t = boost::rational<ssize_t>;
 
   /// Default constructor gives an invalid Time.
-  Time() noexcept : slab_(), fraction_(0) {}
+  Time() noexcept : fraction_(0) {}
 
   /// A time a given fraction of the way through the given slab.
   Time(Slab slab, rational_t fraction) noexcept
-      : slab_(std::move(slab)), fraction_(std::move(fraction)) {
+      // clang-tidy: move trivially copyable type
+      : slab_(std::move(slab)), fraction_(std::move(fraction)) {  // NOLINT
     range_check();
   }
 
@@ -75,11 +76,12 @@ class TimeDelta {
   using rational_t = Time::rational_t;
 
   /// Default constructor gives an invalid TimeDelta.
-  TimeDelta() noexcept : slab_(), fraction_(0) {}
+  TimeDelta() noexcept : fraction_(0) {}
 
   /// An interval covering a given fraction of the slab.
   TimeDelta(Slab slab, rational_t fraction) noexcept
-      : slab_(std::move(slab)), fraction_(std::move(fraction)) {}
+      // clang-tidy: move trivially copyable type
+      : slab_(std::move(slab)), fraction_(std::move(fraction)) {}  // NOLINT
 
   /// Move the interval to a different slab.  The resulting interval
   /// will in general not be the same length, but will take up the
@@ -117,7 +119,9 @@ class TimeDelta {
 };
 
 // Time <cmp> Time
-bool operator==(const Time& a, const Time& b) noexcept;
+// clang-tidy: clang-tidy wants this removed in favor of friend
+// declaration in different header.
+bool operator==(const Time& a, const Time& b) noexcept;  // NOLINT
 inline bool operator!=(const Time& a, const Time& b) noexcept {
   return not(a == b);
 }
