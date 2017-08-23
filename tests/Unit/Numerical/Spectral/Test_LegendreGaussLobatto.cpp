@@ -35,8 +35,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
        .5349928640318858, .6637764022903113, .7753682609520557,
        .8668779780899503, .9359344988126655, .9807437048939139}};
 
-  Approx approx = Approx::custom().epsilon(1e-12);
-
   // cppcheck-suppress preprocessorErrorDirective
   SECTION("Check 2 points") {
     const DataVector& collocation_pts = Basis::lgl::collocation_points(2);
@@ -160,7 +158,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
   //
   // Command to generate differentation matrix with the Matlab code:
   // DN = Dmatrix1D(N, JacobiGL(0,0,N), Vandermonde1D(N, JacobiGL(0,0,N)))
-  Approx approx = Approx::custom().epsilon(1e-12);
 
   SECTION("Check 2 points") {
     const Matrix diff_matrix_expected = []() {
@@ -321,7 +318,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
 SPECTRE_TEST_CASE(
     "Unit.Numerical.Spectral.LegendreGaussLobatto.LinearFilterMatrix",
     "[Numerical][Spectral][Unit]") {
-  Approx approx = Approx::custom().epsilon(1e-12);
   for (size_t n = 2; n < 10; ++n) {
     const Matrix& filter_matrix = Basis::lgl::linear_filter_matrix(n);
     const Matrix& grid_points_to_spectral_matrix =
@@ -347,7 +343,6 @@ SPECTRE_TEST_CASE(
     "Unit.Numerical.Spectral.LegendreGaussLobatto.InterpolationMatrix",
     "[Numerical][Spectral][Unit]") {
   auto check_interp = [](const size_t num_pts, auto func) {
-    Approx approx = Approx::custom().epsilon(1e-14);
     const DataVector& collocation_points =
         Basis::lgl::collocation_points(num_pts);
     DataVector u(num_pts);

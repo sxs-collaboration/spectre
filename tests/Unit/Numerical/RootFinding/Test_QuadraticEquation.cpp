@@ -41,11 +41,11 @@
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.OnePositiveRoot",
                   "[Numerical][RootFinding][Unit]") {
-  CHECK(Approx(6.31662479035539985) == positive_root(1.0, -6.0, -2.0));
+  CHECK(approx(6.31662479035539985) == positive_root(1.0, -6.0, -2.0));
 }
 
 SPECTRE_TEST_CASE("Unit.Functors.RealRoots", "[Numerical][RootFinding][Unit]") {
   auto roots = real_roots(2.0, -11.0, 5.0);
-  CHECK(Approx(0.5) == roots[0]);
-  CHECK(Approx(5.0) == roots[1]);
+  CHECK(approx(0.5) == roots[0]);
+  CHECK(approx(5.0) == roots[1]);
 }

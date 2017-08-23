@@ -9,8 +9,6 @@
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
                   "[DataStructures][Unit]") {
-  Approx approx = Approx::custom().epsilon(1e-15);
-
   // Test determinant function on general (no symmetry) matrices:
   // * use rank-2 Tensor in 1-4 dimensions, i.e. 1x1, 2x2, 3x3, 4x4 matrices.
   // * use Tensor<double, ...>, i.e. data at single spatial point.

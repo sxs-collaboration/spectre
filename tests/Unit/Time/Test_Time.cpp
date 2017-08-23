@@ -11,9 +11,6 @@
 SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   using rational_t = Time::rational_t;
 
-  Approx approx =
-      Approx::custom().epsilon(5 * std::numeric_limits<double>::epsilon());
-
   const double tstart_d = 0.68138945475734402635;
   const double tend_d = 76.34481744714527451379;
   // Make sure we're using values that will trigger rounding errors.
@@ -186,9 +183,6 @@ SPECTRE_TEST_CASE("Unit.Time.Time.serialization",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
   using rational_t = TimeDelta::rational_t;
-
-  Approx approx =
-      Approx::custom().epsilon(5 * std::numeric_limits<double>::epsilon());
 
   const double tstart_d = 0.68138945475734402635;
   const double tend_d = 76.34481744714527451379;

@@ -247,6 +247,35 @@
  * a regex to match the test name using `ctest -R Unit.Blah`, or run all
  * tests with a certain tag using `ctest -L tag`.
  *
+ * ### Comparing double-precision results
+ *
+ * To compare two floating-point numbers that may differ by round-off, use the
+ * helper object `approx`. This is an instance of Catch's comparison class
+ * `Approx` in which the relative tolerance for comparisons is set to roughly
+ * \f$10^{-14}\f$ (i.e. `std\:\:numeric_limits<double>\:\:epsilon()*100`).
+ * When possible, we recommend using `approx` for fuzzy comparisons as follows:
+ * \example
+ * \snippet TestFramework.cpp approx_default
+ *
+ * For checks that need more control over the precision (e.g. an algorithm in
+ * which round-off errors accumulate to a higher level), we recommend using
+ * the `approx` helper with a one-time tolerance adjustment. A comment
+ * should explain the reason for the adjustment:
+ * \example
+ * \snippet TestFramework.cpp approx_single_custom
+ *
+ * For tests in which the same precision adjustment is re-used many times, a new
+ * helper object can be created from Catch's `Approx` with a custom precision:
+ * \example
+ * \snippet TestFramework.cpp approx_new_custom
+ *
+ * Note: We provide the `approx` object because Catch's `Approx` defaults to a
+ * very loose tolerance (`std\:\:numeric_limits<float>\:\:epsilon()*100`, or
+ * roughly \f$10^{-5}\f$ relative error), and so is poorly-suited to checking
+ * many numerical algorithms that rely on double-precision accuracy. By
+ * providing a tighter tolerance with `approx`, we avoid having to redefine the
+ * tolerance in every test.
+ *
  * ### Attributes
  *
  * Attributes allow you to modify properties of the test. Attributes are

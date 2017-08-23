@@ -116,7 +116,6 @@ void test_coordinate_map_with_affine_map() {
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
 
   constexpr size_t number_of_points_checked = 10;
-  Approx approx = Approx::custom().epsilon(1.0e-14);
 
   // Test 1D
   const auto map = make_coordinate_map<Frame::Logical, Frame::Grid>(

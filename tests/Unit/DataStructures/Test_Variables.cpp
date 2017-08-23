@@ -168,7 +168,7 @@ void check_vectors(const Variables<T1>& t1, const blaze::Vector<VT, VF>& t2) {
     // We've removed the subscript operator so people don't try to use that
     // and as a result we need to use the data() member function
     // clang-tidy: do not use pointer arithmetic
-    CHECK(t1.data()[i] == Approx((~t2)[i]).epsilon(1e-14));  // NOLINT
+    CHECK(t1.data()[i] == approx((~t2)[i]));  // NOLINT
   }
 }
 
@@ -179,7 +179,7 @@ void check_vectors(const Variables<T1>& t1, const Variables<T2>& t2) {
     // We've removed the subscript operator so people don't try to use that
     // and as a result we need to use the data() member function
     // clang-tidy: do not use pointer arithmetic
-    CHECK(t1.data()[i] == Approx(t2.data()[i]).epsilon(1e-14));  // NOLINT
+    CHECK(t1.data()[i] == approx(t2.data()[i]));  // NOLINT
   }
 }
 }  // namespace
