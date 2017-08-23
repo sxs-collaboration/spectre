@@ -11,7 +11,7 @@
 namespace Requires_detail {
 template <bool B>
 struct requires_impl {
-  using template_error_types_failed_to_meet_requirements_on_template_parameters =
+  using template_error_type_failed_to_meet_requirements_on_template_parameters =
       std::nullptr_t;
 };
 
@@ -28,7 +28,7 @@ struct requires_impl<false> {};
  * on template parameters. This does not require merging of the Concepts
  * TS (whose merit is debatable) and provides an "error message" if substitution
  * of a template parameter failed. Specifically, the compiler error will contain
- * "template_error_types_failed_to_meet_requirements_on_template_parameters",
+ * "template_error_type_failed_to_meet_requirements_on_template_parameters",
  * aiding the user of a function or class in tracking down the list of
  * requirements on the deduced type.
  *
@@ -44,7 +44,7 @@ struct requires_impl<false> {};
  * ./tests/Unit/Utilities/Test_Requires.cpp:15:13: note: candidate
  *     template ignored: substitution failure [with T = std::__1::list<double,
  *     std::__1::allocator<double> >]: no type named
- *     'template_error_types_failed_to_meet_requirements_on_template_parameters'
+ *     'template_error_type_failed_to_meet_requirements_on_template_parameters'
  *     in 'Requires_detail::requires_impl<false>'
  * std::string foo(const T&) {
  *             ^
@@ -64,4 +64,4 @@ struct requires_impl<false> {};
  */
 template <bool B>
 using Requires = typename Requires_detail::requires_impl<
-    B>::template_error_types_failed_to_meet_requirements_on_template_parameters;
+    B>::template_error_type_failed_to_meet_requirements_on_template_parameters;
