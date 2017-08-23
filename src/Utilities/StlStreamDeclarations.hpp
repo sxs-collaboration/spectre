@@ -18,6 +18,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -28,9 +29,6 @@
 namespace tt {
 template <typename S, typename T, typename>
 struct is_streamable;
-
-template <typename T, typename>
-struct is_maplike;
 }  // namespace tt
 
 template <typename T>
@@ -45,14 +43,18 @@ std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a);
 template <typename... Args>
 std::ostream& operator<<(std::ostream& os, const std::tuple<Args...>& t);
 
-template <typename Map, Requires<tt::is_maplike<Map, void>::value> = nullptr>
-std::ostream& operator<<(std::ostream& os, const Map& m);
+template <typename K, typename V>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unordered_map<K, V>& m);
+
+template <typename K, typename V, typename C>
+inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::unordered_set<T>& v);
 
-template <typename T>
-inline std::ostream& operator<<(std::ostream& os, const std::set<T>& v);
+template <typename T, typename C>
+inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v);
 
 template <typename T,
           Requires<tt::is_streamable<std::ostream, T, void>::value> = nullptr>

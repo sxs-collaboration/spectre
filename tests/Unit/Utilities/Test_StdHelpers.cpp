@@ -4,6 +4,7 @@
 #include <catch.hpp>
 #include <list>
 #include <map>
+#include <set>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -15,8 +16,6 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
-  // We don't test unordered containers because the order of the output depends
-  // on not just libc++ vs. stdlibc++ but also the OS, etc.
   std::list<int> my_list;
   CHECK(get_output(my_list) == "()");
   my_list = {1};
@@ -43,6 +42,20 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   std::tuple<> tuple0{};
   CHECK(get_output(tuple0) == "()");
 
+  std::unordered_map<std::string, int> my_unordered_map;
+  CHECK(get_output(my_unordered_map) == "()");
+  CHECK(keys_of(my_unordered_map) == "()");
+  my_unordered_map["aaa"] = 1;
+  CHECK(get_output(my_unordered_map) == "([aaa,1])");
+  CHECK(keys_of(my_unordered_map) == "(aaa)");
+  my_unordered_map["bbb"] = 2;
+  my_unordered_map["ccc"] = 3;
+  my_unordered_map["ddd"] = 4;
+  my_unordered_map["eee"] = 5;
+  CHECK(get_output(my_unordered_map) ==
+        "([aaa,1],[bbb,2],[ccc,3],[ddd,4],[eee,5])");
+  CHECK(keys_of(my_unordered_map) == "(aaa,bbb,ccc,ddd,eee)");
+
   // check map with some other comparison op
   std::map<std::string, int, std::greater<>> my_map;
   CHECK(get_output(my_map) == "()");
@@ -58,13 +71,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   CHECK(keys_of(my_map) == "(eee,ddd,ccc,bbb,aaa)");
 
   std::unordered_set<int> my_unordered_set{1, 3, 4, 5};
-  std::string my_unordered_set_output = get_output(my_unordered_set);
-  CHECK(my_unordered_set_output.find('1') != std::string::npos);
-  CHECK(my_unordered_set_output.find('3') != std::string::npos);
-  CHECK(my_unordered_set_output.find('4') != std::string::npos);
-  CHECK(my_unordered_set_output.find('5') != std::string::npos);
-  CHECK(my_unordered_set_output.find('2') == std::string::npos);
-  CHECK(my_unordered_set_output.find('0') == std::string::npos);
+  CHECK(get_output(my_unordered_set) == "(1,3,4,5)");
 
   std::set<int> my_set{1, 3, 4, 5};
   CHECK(get_output(my_set) == "(1,3,4,5)");
