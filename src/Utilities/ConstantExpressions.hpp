@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <type_traits>
 
 #include "Utilities/ForceInline.hpp"
@@ -97,6 +98,60 @@ template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
   return ConstantExpressions_details::pow<T, N>::apply(t);
 }
+
+/// \ingroup ConstantExpressions
+/// \brief Compute the absolute value of of its argument
+///
+/// The argument must be comparable to an int and muste be negatable.
+template <typename T>
+constexpr T constexpr_abs(const T& x) noexcept(noexcept(x < 0 ? -x : x)) {
+  return x < 0 ? -x : x;
+}
+
+namespace ConstantExpressions_details {
+struct CompareByMagnitude {
+  template <typename T>
+  constexpr bool operator()(const T& a, const T& b) {
+    return constexpr_abs(a) < constexpr_abs(b);
+  }
+};
+}  // namespace ConstantExpressions_details
+
+/// \ingroup ConstantExpressions
+/// \brief Return the argument with the largest magnitude
+///
+/// Magnitude is determined by constexpr_abs.  In case of a tie,
+/// returns the leftmost of the tied values.
+//@{
+template <typename T>
+constexpr const T& max_by_magnitude(const T& a, const T& b) {
+  return std::max(a, b, ConstantExpressions_details::CompareByMagnitude{});
+}
+
+template <typename T>
+constexpr T max_by_magnitude(std::initializer_list<T> ilist) {
+  return std::max(std::move(ilist),
+                  ConstantExpressions_details::CompareByMagnitude{});
+}
+//@}
+
+/// \ingroup ConstantExpressions
+/// \brief Return the argument with the smallest magnitude
+///
+/// Magnitude is determined by constexpr_abs.  In case of a tie,
+/// returns the leftmost of the tied values.
+//@{
+template <typename T>
+constexpr const T& min_by_magnitude(const T& a, const T& b) {
+  return std::min(a, b, ConstantExpressions_details::CompareByMagnitude{});
+}
+
+template <typename T>
+constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
+  return std::min(std::move(ilist),
+                  ConstantExpressions_details::CompareByMagnitude{});
+}
+//@}
 
 namespace detail {
 template <typename Ls, size_t... indices,
