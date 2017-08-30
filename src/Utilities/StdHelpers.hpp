@@ -10,6 +10,7 @@
 #include <array>
 #include <chrono>
 #include <ctime>
+#include <deque>
 #include <future>
 #include <iterator>
 #include <list>
@@ -122,6 +123,16 @@ inline std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
  */
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
+  StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
+  return os;
+}
+
+/*!
+ * \ingroup Utilities
+ * \brief Output the items of a std::deque
+ */
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) {
   StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
   return os;
 }
