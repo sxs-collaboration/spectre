@@ -5,6 +5,7 @@ set(SPECTRE_UNIT_SPECTRAL_TESTS
     Numerical/Spectral/Test_DefiniteIntegral.cpp
     Numerical/Spectral/Test_LegendreGaussLobatto.cpp
     Numerical/Spectral/Test_Linearize.cpp
+    Numerical/Spectral/Test_MeanValue.cpp
     )
 
 set(SPECTRE_UNIT_NUMERICAL_TESTS

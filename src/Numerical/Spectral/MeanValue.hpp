@@ -1,0 +1,42 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+/// \file
+/// Defines function mean_value and mean_value_on_boundary.
+
+#pragma once
+
+#include "Domain/Side.hpp"
+#include "Numerical/Spectral/DefiniteIntegral.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+
+/*!
+ * \ingroup NumericalAlgorithms
+ * \brief Compute the mean value of a grid-function over a manifold.
+ *
+ * \remarks The mean value is computed on the reference element(s).
+ *
+ * \returns the mean value of `f` on the manifold
+ */
+template <size_t Dim>
+double mean_value(const DataVector& f, const Index<Dim>& extents) {
+  return Basis::lgl::definite_integral(f, extents) / two_to_the(Dim);
+}
+
+/*!
+ * \ingroup NumericalAlgorithms
+ * Compute the mean value of a grid-function on a boundary of a manifold.
+ * \f$mean value = \int f dV / \int dV\f$
+ *
+ * \remarks The mean value is computed on the reference element(s).
+ *
+ * \returns the mean value of `f` on the boundary of the manifold
+ *
+ * \param f the grid function of which to find the mean.
+ * \param extents the extents of the manifold on which f is located.
+ * \param d the dimension which is sliced away to get the boundary.
+ * \param side whether it is the lower or upper boundary in the d-th dimension.
+ */
+template <size_t Dim>
+double mean_value_on_boundary(const DataVector& f, const Index<Dim>& extents,
+                              size_t d, Side side);
