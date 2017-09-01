@@ -30,6 +30,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   my_vector = {{1, 2, 3, 4, 5}};
   CHECK(get_output(my_vector) == "(1,2,3,4,5)");
 
+  std::deque<int> my_deque;
+  CHECK(get_output(my_deque) == "()");
+  my_deque = {1};
+  CHECK(get_output(my_deque) == "(1)");
+  my_deque = {{1, 2, 3, 4, 5}};
+  CHECK(get_output(my_deque) == "(1,2,3,4,5)");
+
   std::array<int, 0> a0{};
   CHECK(get_output(a0) == "()");
   std::array<int, 1> a1{{1}};

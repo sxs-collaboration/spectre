@@ -15,6 +15,7 @@
 #endif
 
 #include <array>
+#include <deque>
 #include <list>
 #include <map>
 #include <memory>
@@ -36,6 +37,9 @@ std::ostream& operator<<(std::ostream& os, const std::list<T>& v);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v);
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::deque<T>& v);
 
 template <typename T, size_t N>
 std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a);
