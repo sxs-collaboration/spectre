@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -93,4 +94,56 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
 
   CHECK("1.19e+01 10 test" ==
         formatted_string("%1.2e %d %s", 11.87, 10, "test"));
+}
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayArithmetic",
+                  "[DataStructures][Unit]") {
+  const size_t Dim = 3;
+
+  std::array<double, Dim> p1{{2.3, -1.4, 0.2}};
+  std::array<double, Dim> p2{{-12.4, 4.5, 2.6}};
+
+  const std::array<double, Dim> expected_plus{{-10.1, 3.1, 2.8}};
+  const std::array<double, Dim> expected_minus{{14.7, -5.9, -2.4}};
+
+  const auto plus = p1 + p2;
+  const auto minus = p1 - p2;
+
+  for (size_t i = 0; i < Dim; ++i) {
+    CHECK(gsl::at(plus, i) == approx(gsl::at(expected_plus, i)));
+    CHECK(gsl::at(minus, i) == approx(gsl::at(expected_minus, i)));
+  }
+
+  p1 += expected_plus;
+  p2 -= expected_minus;
+
+  const std::array<double, Dim> expected_plus_equal{{-7.8, 1.7, 3.}};
+  const std::array<double, Dim> expected_minus_equal{{-27.1, 10.4, 5.}};
+
+  for (size_t i = 0; i < Dim; ++i) {
+    CHECK(gsl::at(p1, i) == approx(gsl::at(expected_plus_equal, i)));
+    CHECK(gsl::at(p2, i) == approx(gsl::at(expected_minus_equal, i)));
+  }
+
+  const double scale = -1.8;
+  const auto left_scaled_array = scale * p1;
+  const std::array<double, Dim> expected_left_scaled_array{
+      {14.04, -3.06, -5.4}};
+  const auto right_scaled_array = p1 * scale;
+  const auto array_divided_by_double = p1 / (1 / scale);
+
+  for (size_t i = 0; i < Dim; ++i) {
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(expected_left_scaled_array, i)));
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(right_scaled_array, i)));
+    CHECK(gsl::at(left_scaled_array, i) ==
+          approx(gsl::at(array_divided_by_double, i)));
+  }
+
+  const auto neg_p1 = -p1;
+  const auto expected_neg_p1 = -1. * p1;
+  for (size_t i = 0; i < Dim; ++i) {
+    CHECK(gsl::at(neg_p1, i) == approx(gsl::at(expected_neg_p1, i)));
+  }
 }
