@@ -756,40 +756,34 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
 }
 
 namespace detail {
-template <typename Type, typename Tags, typename TagLs,
-          Requires<(tmpl::size<Tags>::value == 0)> = nullptr>
-[[noreturn]] const Type& get_item_from_box(const DataBox<TagLs>& /*box*/,
-                                           const std::string& /*tag_name*/) {
-  static_assert(tmpl::size<Tags>::value != 0,
-                "No items with the requested type were found in the DataBox");
-  ERROR("Cannot ever reach this function.");
+template <typename Tag, typename TagLs, typename T>
+constexpr void get_item_from_box_helper(const DataBox<TagLs>& box,
+                                        const std::string& tag_name,
+                                        T const** result) {
+  if (get_tag_name<Tag>() == tag_name) {
+    *result = &box.template get<Tag>();
+  }
 }
 
-template <typename Type, typename Tags, typename TagLs,
-          Requires<(tmpl::size<Tags>::value == 1)> = nullptr>
+template <typename Type, typename... Tags, typename TagLs>
 const Type& get_item_from_box(const DataBox<TagLs>& box,
-                              const std::string& tag_name) {
-  using Tag = tmpl::front<Tags>;
-  if (get_tag_name<Tag>() != tag_name) {
+                              const std::string& tag_name,
+                              tmpl::list<Tags...> /*meta*/) {
+  static_assert(sizeof...(Tags) != 0,
+                "No items with the requested type were found in the DataBox");
+  Type const* result = nullptr;
+  static_cast<void>(std::initializer_list<char>{
+      (get_item_from_box_helper<Tags>(box, tag_name, &result), '0')...});
+  if (result == nullptr) {
     std::stringstream tags_in_box;
-    tmpl::for_each<TagLs>([&tags_in_box](auto t) {
-      tags_in_box << "  " << decltype(t)::type::label << "\n";
+    tmpl::for_each<TagLs>([&tags_in_box](auto temp) {
+      tags_in_box << "  " << decltype(temp)::type::label << "\n";
     });
     ERROR("Could not find the tag named \""
           << tag_name << "\" in the DataBox. Available tags are:\n"
           << tags_in_box.str());
   }
-  return box.template get<Tag>();
-}
-
-template <typename Type, typename Tags, typename TagLs,
-          Requires<(tmpl::size<Tags>::value > 1)> = nullptr>
-constexpr const Type& get_item_from_box(const DataBox<TagLs>& box,
-                                        const std::string& tag_name) {
-  using Tag = tmpl::front<Tags>;
-  return get_tag_name<Tag>() == tag_name
-             ? box.template get<Tag>()
-             : get_item_from_box<Type, tmpl::pop_front<Tags>>(box, tag_name);
+  return *result;
 }
 }  // namespace detail
 
@@ -816,7 +810,7 @@ constexpr const Type& get_item_from_box(const DataBox<TagLs>& box,
                                         const std::string& tag_name) {
   using tags = tmpl::filter<
       TagLs, std::is_same<tmpl::bind<item_type, tmpl::_1>, tmpl::pin<Type>>>;
-  return detail::get_item_from_box<Type, tags>(box, tag_name);
+  return detail::get_item_from_box<Type>(box, tag_name, tags{});
 }
 
 namespace detail {
