@@ -6,7 +6,7 @@
 import re
 
 # A list of all the allowed ctest labels/Catch tags for tests
-allowed_tags = ["compilation_test", "DataStructures", "Domain",
+allowed_tags = ["CompilationTest", "DataStructures", "Domain",
                 "ErrorHandling", "Numerical", "Parallel", "RootFinding",
                 "Serialization", "Spectral", "Time", "Unit", "Utilities"]
 

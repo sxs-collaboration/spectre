@@ -38,7 +38,9 @@ MODIFIED_FILES=''
 
 for FILENAME in `git diff --name-only ${UPSTREAM_COMMIT_HASH} HEAD`
 do
-    if [ -f $FILENAME ]; then
+    if [ -f $FILENAME ] \
+           && [ ${FILENAME: -4} == ".cpp" ] \
+           && ! grep -q "FILE_IS_COMPILATION_TEST" $FILENAME; then
         MODIFIED_FILES="${MODIFIED_FILES} $FILENAME"
     fi
 done

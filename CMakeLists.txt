@@ -53,6 +53,7 @@ include(SetupYamlCpp)
 
 enable_testing(true)
 include(SpectreAddCatchTests)
+include(SetupCompilationFailureTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR})

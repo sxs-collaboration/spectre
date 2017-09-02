@@ -5,6 +5,8 @@ set(executable RunTests)
 
 set(SPECTRE_TESTS "TestFramework.cpp")
 
+set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
+
 add_subdirectory(DataStructures)
 add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
@@ -46,3 +48,19 @@ if(COVERAGE)
       '${CMAKE_SOURCE_DIR}/tests/*'
   )
 endif()
+
+# Setup tests of static_assert's and other compilation failures
+
+set(EXECUTABLE compilation-failure-tests)
+
+add_executable(${EXECUTABLE} ${SPECTRE_COMPILATION_TESTS})
+
+set_target_properties(
+  ${EXECUTABLE}
+  PROPERTIES
+  COMPILE_FLAGS "\${WHICH_TEST} -DFILE_IS_COMPILATION_TEST=\"static_assert(false, \\\"File is compilation test\\\");\""
+  EXCLUDE_FROM_ALL TRUE
+  )
+
+add_compilation_tests(${EXECUTABLE})
+
