@@ -49,44 +49,19 @@ sudo: required
 services:
 - docker
 
-# Travis has a build matrix, the set of all build configurations tested.
-# The matrix is created from a product of all the
-# env:
-#   matrix:
-# configs and the compilers chosen. Individual configurations can be excluded
-# by using
-# matrix:
-#   exclude:
-#   - env: THE_ENV_VARAIBLES
-#   - compiler: THE_COMPILER
-# Explicit includes of configs are possible and used for macOS.
-env:
-  matrix:
-  - BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON
-  - BUILD_TYPE=Release
-
-compiler:
-- gcc
-- clang
-
-# macOS is easiest to add specific targets for. We target 10.11 Debug and 10.12
-# Release builds.
+# Set up travis configurations of Linux and macOS. We use the 14.04 Ubuntu build
+# env. We target 10.11 Debug and 10.12 Release builds.
 #
 # We also have separate targets for running shell scripts that enforce what
 # would normally be done as pre-push hooks, CHECK_COMMITS and CHECK_FILES
 #
 # We run two static analyzers, cppcheck and clang-tidy.
+#
+# NOTE: The static analysis targets are run first since these are typically
+#       fast to run and provide the most useful feedback.
 matrix:
   fast_finish: true
   include:
-  - os: osx
-    env: BUILD_TYPE=Debug
-    osx_image: xcode7.3
-    compiler: clang
-  - os: osx
-    osx_image: xcode8.3
-    env: BUILD_TYPE=Release
-    compiler: clang
   - os: linux
     dist: trusty
     env: CHECK_COMMITS=true
@@ -110,6 +85,31 @@ matrix:
   - os: linux
     dist: trusty
     env: RUN_CPPCHECK=true BUILD_TYPE=Debug
+    compiler: clang
+    # Run full builds after static analysis
+  - os: linux
+    compiler: gcc
+    dist: trusty
+    env: BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON
+  - os: linux
+    compiler: gcc
+    dist: trusty
+    env: BUILD_TYPE=Release
+  - os: linux
+    compiler: clang
+    dist: trusty
+    env: BUILD_TYPE=Debug
+  - os: linux
+    compiler: clang
+    dist: trusty
+    env: BUILD_TYPE=Release
+  - os: osx
+    env: BUILD_TYPE=Debug
+    osx_image: xcode7.3
+    compiler: clang
+  - os: osx
+    osx_image: xcode8.3
+    env: BUILD_TYPE=Release
     compiler: clang
 
 
