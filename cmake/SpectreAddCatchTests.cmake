@@ -64,7 +64,11 @@ function(spectre_add_catch_tests TEST_TARGET)
         ${PYTHON_EXECUTABLE}
         ${CMAKE_SOURCE_DIR}/cmake/SpectreParseTests.py
         ${ABSOLUTE_SOURCE_FILES}
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tmp
+        RESULT_VARIABLE PARSED_TESTS_SUCCESSFULLY)
+    if (${PARSED_TESTS_SUCCESSFULLY} GREATER 0)
+      message(FATAL_ERROR "Failed to parse test files")
+    endif()
 
     foreach (SOURCE_FILE ${ABSOLUTE_SOURCE_FILES})
         spectre_parse_file(${SOURCE_FILE} ${TEST_TARGET})
