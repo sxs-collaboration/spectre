@@ -72,55 +72,471 @@ struct is_databox<DataBox<tmpl::list<Tags...>>> : std::true_type {};
 /// \endcond
 // @}
 
-namespace detail {
-/*!
- * \ingroup DataBoxGroup
- * \brief TaggedTuple of objects or lazily evaluated functions
- * \tparam Tags the tags of the objects to be placed in the tuple
- */
-template <typename... Tags>
-struct TaggedDeferredTuple {
-  static_assert(tmpl::is_set<Tags...>::value,
-                "Cannot have repeated Tags in a DataBox.");
-  template <typename... Args>
-  constexpr explicit TaggedDeferredTuple(Args&&... args)
-      : data_(std::forward<Args>(args)...) {}
-  static constexpr size_t size = sizeof...(Tags);
+namespace databox_detail {
+namespace tuples_detail {
+template <class T, T...>
+struct value_list {};
 
-  // @{
-  /*!
-   * \ingroup DataBoxGroup
-   * \brief Retrieve on object from a TaggedDeferredTuple
-   *
-   * \tparam T the tag of the object to retrieve
-   * \return reference to the object held in the tuple
-   */
-  template <typename T>
-  constexpr Deferred<item_type<T>>& get() noexcept {
-    static_assert(not std::is_same<tmpl::index_of<tmpl::list<Tags...>, T>,
-                                   tmpl::no_such_type_>::value,
-                  "Could not retrieve Tag from DataBox. See the first template "
-                  "parameter of the instantiation for what Tag is being "
-                  "retrieved and the remaining template parameters for what "
-                  "takes are available.");
-    return std::get<tmpl::index_of<tmpl::list<Tags...>, T>::value>(data_);
-  }
+template <bool... Bs>
+using all = typename std::is_same<
+    value_list<bool, Bs...>,
+    value_list<bool, (static_cast<void>(Bs), true)...>>::type;
 
-  template <typename T>
-  constexpr const Deferred<item_type<T>>& get() const noexcept {
-    static_assert(not std::is_same<tmpl::index_of<tmpl::list<Tags...>, T>,
-                                   tmpl::no_such_type_>::value,
-                  "Could not retrieve Tag from DataBox. See the first template "
-                  "parameter of the instantiation for what Tag is being "
-                  "retrieved and the remaining template parameters for what "
-                  "takes are available.");
-    return std::get<tmpl::index_of<tmpl::list<Tags...>, T>::value>(data_);
-  }
-  // @}
-
- private:
-  std::tuple<Deferred<item_type<Tags>>...> data_;
+struct no_such_type {
+  no_such_type() = delete;
+  no_such_type(no_such_type const& /*unused*/) = delete;
+  no_such_type(no_such_type&& /*unused*/) = delete;
+  ~no_such_type() = delete;
+  no_such_type& operator=(no_such_type const& /*unused*/) = delete;
+  no_such_type operator=(no_such_type&& /*unused*/) = delete;
 };
+}  // namespace tuples_detail
+
+namespace tuples_detail {
+template <class Tag>
+class TaggedDeferredTupleLeaf;
+
+template <class Tag>
+class TaggedDeferredTupleLeaf {
+  using value_type = Deferred<item_type<Tag>>;
+  value_type value_;
+
+  template <class T>
+  static constexpr bool can_bind_reference() noexcept {
+    using rem_ref_value_type = typename std::remove_reference<value_type>::type;
+    using rem_ref_T = typename std::remove_reference<T>::type;
+    using is_lvalue_type = std::integral_constant<
+        bool,
+        std::is_lvalue_reference<T>::value or
+            std::is_same<std::reference_wrapper<rem_ref_value_type>,
+                         rem_ref_T>::value or
+            std::is_same<std::reference_wrapper<typename std::remove_const<
+                             rem_ref_value_type>::type>,
+                         rem_ref_T>::value>;
+    return not std::is_reference<value_type>::value or
+           (std::is_lvalue_reference<value_type>::value and
+            is_lvalue_type::value) or
+           (std::is_rvalue_reference<value_type>::value and
+            not std::is_lvalue_reference<T>::value);
+  }
+
+ public:
+  // Tested in constexpr context in Unit.TaggedDeferredTuple.Ebo
+  constexpr TaggedDeferredTupleLeaf() noexcept(
+      std::is_nothrow_default_constructible<value_type>::value)
+      : value_() {
+    static_assert(!std::is_reference<value_type>::value,
+                  "Cannot default construct a reference element in a "
+                  "TaggedDeferredTuple");
+  }
+
+  template <class T,
+            typename std::enable_if<
+                !std::is_same<typename std::decay<T>::type,
+                              TaggedDeferredTupleLeaf>::value &&
+                std::is_constructible<value_type, T&&>::value>::type* = nullptr>
+  constexpr explicit TaggedDeferredTupleLeaf(T&& t) noexcept(
+      std::is_nothrow_constructible<value_type, T&&>::value)
+      : value_(std::forward<T>(t)) {  // NOLINT
+    static_assert(can_bind_reference<T>(),
+                  "Cannot construct an lvalue reference with an rvalue");
+  }
+
+  constexpr TaggedDeferredTupleLeaf(TaggedDeferredTupleLeaf const& /*rhs*/) =
+      default;
+  constexpr TaggedDeferredTupleLeaf(TaggedDeferredTupleLeaf&& /*rhs*/) =
+      default;
+  constexpr TaggedDeferredTupleLeaf& operator=(
+      TaggedDeferredTupleLeaf const& /*rhs*/) = default;
+  constexpr TaggedDeferredTupleLeaf& operator=(
+      TaggedDeferredTupleLeaf&& /*rhs*/) = default;
+
+  ~TaggedDeferredTupleLeaf() = default;
+
+#if __cplusplus < 201402L
+  value_type& get() noexcept { return value_; }
+#else
+  constexpr value_type& get() noexcept { return value_; }
+#endif
+  constexpr const value_type& get() const noexcept { return value_; }
+
+  // clang-tidy: runtime-references
+  void pup(PUP::er& p) { p | value_; }  // NOLINT
+};
+
+struct disable_constructors {
+  static constexpr bool enable_default() noexcept { return false; }
+  static constexpr bool enable_explicit() noexcept { return false; }
+  static constexpr bool enable_implicit() noexcept { return false; }
+};
+}  // namespace tuples_detail
+
+template <class... Tags>
+class TaggedDeferredTuple;
+
+template <class Tag, class... Tags>
+constexpr const typename Tag::type& get(
+    const TaggedDeferredTuple<Tags...>& t) noexcept;
+template <class Tag, class... Tags>
+constexpr typename Tag::type& get(TaggedDeferredTuple<Tags...>& t) noexcept;
+template <class Tag, class... Tags>
+constexpr const typename Tag::type&& get(
+    const TaggedDeferredTuple<Tags...>&& t) noexcept;
+template <class Tag, class... Tags>
+constexpr typename Tag::type&& get(TaggedDeferredTuple<Tags...>&& t) noexcept;
+
+template <class... Tags>
+class TaggedDeferredTuple
+    : private tuples_detail::TaggedDeferredTupleLeaf<Tags>... {
+  template <class... Args>
+  struct pack_is_TaggedDeferredTuple : std::false_type {};
+  template <class Arg>
+  struct pack_is_TaggedDeferredTuple<Arg>
+      : std::is_same<typename std::decay<Arg>::type, TaggedDeferredTuple> {};
+
+  template <bool EnableConstructor, class Dummy = void>
+  struct args_constructor : tuples_detail::disable_constructors {};
+
+  template <class Dummy>
+  struct args_constructor<true, Dummy> {
+    static constexpr bool enable_default() {
+      return tuples_detail::all<
+          std::is_default_constructible<item_type<Tags>>::value...>::value;
+    }
+
+    template <class... Ts>
+    static constexpr bool enable_explicit() noexcept {
+      return tuples_detail::all<std::is_constructible<
+                 tuples_detail::TaggedDeferredTupleLeaf<Tags>,
+                 Ts>::value...>::value and
+             not tuples_detail::all<
+                 std::is_convertible<Ts, item_type<Tags>>::value...>::value;
+    }
+    template <class... Ts>
+    static constexpr bool enable_implicit() noexcept {
+      return sizeof...(Ts) == sizeof...(Tags) and
+             tuples_detail::all<std::is_constructible<
+                 tuples_detail::TaggedDeferredTupleLeaf<Tags>,
+                 Ts>::value...>::value and
+             tuples_detail::all<
+                 std::is_convertible<Ts, item_type<Tags>>::value...>::value;
+    }
+  };
+
+  template <bool EnableConstructor, bool = sizeof...(Tags) == 1,
+            class Dummy = void>
+  struct tuple_like_constructor : tuples_detail::disable_constructors {};
+
+  template <class Dummy>
+  struct tuple_like_constructor<true, false, Dummy> {
+    template <class Tuple, class... Ts>
+    static constexpr bool enable_explicit() noexcept {
+      return not tuples_detail::all<
+          std::is_convertible<Ts, item_type<Tags>>::value...>::value;
+    }
+
+    template <class Tuple, class... Ts>
+    static constexpr bool enable_implicit() noexcept {
+      return tuples_detail::all<
+          std::is_convertible<Ts, item_type<Tags>>::value...>::value;
+    }
+  };
+
+  template <class Dummy>
+  struct tuple_like_constructor<true, true, Dummy> {
+    template <class Tuple, class... Ts>
+    static constexpr bool enable_explicit() noexcept {
+      return not tuples_detail::all<
+                 std::is_convertible<Ts, item_type<Tags>>::value...>::value and
+             (not tuples_detail::all<std::is_convertible<
+                  Tuple, item_type<Tags>>::value...>::value and
+              not tuples_detail::all<std::is_constructible<
+                  item_type<Tags>, Tuple>::value...>::value and
+              not tuples_detail::all<
+                  std::is_same<item_type<Tags>, Ts>::value...>::value);
+    }
+
+    template <class Tuple, class... Ts>
+    static constexpr bool enable_implicit() noexcept {
+      return tuples_detail::all<
+                 std::is_convertible<Ts, item_type<Tags>>::value...>::value and
+             (not tuples_detail::all<std::is_convertible<
+                  Tuple, item_type<Tags>>::value...>::value and
+              not tuples_detail::all<std::is_constructible<
+                  item_type<Tags>, Tuple>::value...>::value and
+              not tuples_detail::all<
+                  std::is_same<item_type<Tags>, Ts>::value...>::value);
+    }
+  };
+
+  // C++17 Draft 23.5.3.2 Assignment - helper aliases
+  using is_copy_assignable =
+      tuples_detail::all<std::is_copy_assignable<item_type<Tags>>::value...>;
+  using is_nothrow_copy_assignable = tuples_detail::all<
+      std::is_nothrow_copy_assignable<item_type<Tags>>::value...>;
+  using is_move_assignable =
+      tuples_detail::all<std::is_move_assignable<item_type<Tags>>::value...>;
+  using is_nothrow_move_assignable = tuples_detail::all<
+      std::is_nothrow_move_assignable<item_type<Tags>>::value...>;
+
+  // clang-tidy: redundant declaration
+  template <class Tag, class... LTags>
+  friend constexpr const typename Tag::type& get(  // NOLINT
+      const TaggedDeferredTuple<LTags...>& t) noexcept;
+  template <class Tag, class... LTags>
+  friend constexpr typename Tag::type& get(  // NOLINT
+      TaggedDeferredTuple<LTags...>& t) noexcept;
+  template <class Tag, class... LTags>
+  friend constexpr const typename Tag::type&& get(  // NOLINT
+      const TaggedDeferredTuple<LTags...>&& t) noexcept;
+  template <class Tag, class... LTags>
+  friend constexpr typename Tag::type&& get(  // NOLINT
+      TaggedDeferredTuple<LTags...>&& t) noexcept;
+
+ public:
+  static constexpr size_t size() noexcept { return sizeof...(Tags); }
+
+  // clang-tidy: runtime-references
+  void pup(PUP::er& p) {  // NOLINT
+    static_cast<void>(std::initializer_list<char>{
+        (tuples_detail::TaggedDeferredTupleLeaf<Tags>::pup(p), '0')...});
+  }
+
+  // C++17 Draft 23.5.3.1 Construction
+  template <bool Dummy = true,
+            typename std::enable_if<
+                args_constructor<Dummy>::enable_default()>::type* = nullptr>
+  // clang-tidy: use = default, can't because won't compile
+  constexpr TaggedDeferredTuple() noexcept(  // NOLINT
+      tuples_detail::all<std::is_nothrow_default_constructible<
+          item_type<Tags>>::value...>::value) {}
+
+  constexpr TaggedDeferredTuple(TaggedDeferredTuple const& /*rhs*/) = default;
+  constexpr TaggedDeferredTuple(TaggedDeferredTuple&& /*rhs*/) = default;
+
+  template <
+      bool Dummy = true,
+      typename std::enable_if<args_constructor<Dummy>::template enable_explicit<
+          item_type<Tags> const&...>()>::type* = nullptr>
+  constexpr explicit TaggedDeferredTuple(item_type<Tags> const&... ts) noexcept(
+      tuples_detail::all<std::is_nothrow_copy_constructible<
+          tuples_detail::TaggedDeferredTupleLeaf<Tags>>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(ts)... {}
+
+  template <
+      bool Dummy = true,
+      typename std::enable_if<args_constructor<Dummy>::template enable_implicit<
+          item_type<Tags> const&...>()>::type* = nullptr>
+  // clang-tidy: mark explicit
+  // clang-format off
+  constexpr TaggedDeferredTuple(  // NOLINT
+      item_type<
+          Tags> const&... ts) noexcept(tuples_detail::
+                                       all<std::is_nothrow_copy_constructible<
+                                       tuples_detail::TaggedDeferredTupleLeaf<
+                                       Tags>>::value...>::value)
+      // clang-format on
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(ts)... {}
+
+  template <
+      class... Us,
+      typename std::enable_if<
+          args_constructor<not pack_is_TaggedDeferredTuple<Us...>::value and
+                           sizeof...(Us) == sizeof...(Tags)>::
+              template enable_explicit<Us&&...>()>::type* = nullptr>
+  constexpr explicit TaggedDeferredTuple(Us&&... us) noexcept(
+      tuples_detail::all<std::is_nothrow_constructible<
+          tuples_detail::TaggedDeferredTupleLeaf<Tags>, Us&&>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(std::forward<Us>(us))... {}
+
+  template <
+      class... Us,
+      typename std::enable_if<
+          args_constructor<not pack_is_TaggedDeferredTuple<Us...>::value and
+                           sizeof...(Us) == sizeof...(Tags)>::
+              template enable_implicit<Us&&...>()>::type* = nullptr>
+  // clang-tidy: mark explicit
+  constexpr TaggedDeferredTuple(Us&&... us) noexcept(  // NOLINT
+      tuples_detail::all<std::is_nothrow_constructible<
+          tuples_detail::TaggedDeferredTupleLeaf<Tags>, Us&&>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(std::forward<Us>(us))... {}
+
+  template <
+      class... UTags,
+      typename std::enable_if<
+          tuple_like_constructor<
+              sizeof...(Tags) == sizeof...(UTags) and
+              tuples_detail::all<std::is_constructible<
+                  item_type<Tags>, item_type<UTags> const&>::value...>::value>::
+              template enable_explicit<TaggedDeferredTuple<UTags...> const&,
+                                       item_type<UTags>...>()>::type* = nullptr>
+  constexpr explicit TaggedDeferredTuple(
+      TaggedDeferredTuple<UTags...> const&
+          t) noexcept(tuples_detail::
+                          all<std::is_nothrow_constructible<
+                              item_type<Tags>,
+                              item_type<UTags> const&>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(get<UTags>(t))... {}
+
+  template <
+      class... UTags,
+      typename std::enable_if<
+          tuple_like_constructor<
+              sizeof...(Tags) == sizeof...(UTags) and
+              tuples_detail::all<std::is_constructible<
+                  item_type<Tags>, item_type<UTags> const&>::value...>::value>::
+              template enable_implicit<TaggedDeferredTuple<UTags...> const&,
+                                       item_type<UTags>...>()>::type* = nullptr>
+  // clang-tidy: mark explicit
+  constexpr TaggedDeferredTuple(  // NOLINT
+      TaggedDeferredTuple<UTags...> const&
+          t) noexcept(tuples_detail::
+                          all<std::is_nothrow_constructible<
+                              item_type<Tags>,
+                              item_type<UTags> const&>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(get<UTags>(t))... {}
+
+  template <
+      class... UTags,
+      typename std::enable_if<
+          tuple_like_constructor<
+              sizeof...(Tags) == sizeof...(UTags) and
+              tuples_detail::all<std::is_constructible<
+                  item_type<Tags>, item_type<UTags>&&>::value...>::value>::
+              template enable_explicit<TaggedDeferredTuple<UTags...>&&,
+                                       item_type<UTags>...>()>::type* = nullptr>
+  constexpr explicit TaggedDeferredTuple(
+      TaggedDeferredTuple<UTags...>&&
+          t) noexcept(tuples_detail::
+                          all<std::is_nothrow_constructible<
+                              item_type<Tags>,
+                              item_type<UTags>&&>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(
+            std::forward<item_type<UTags>>(get<UTags>(t)))... {}
+
+  template <
+      class... UTags,
+      typename std::enable_if<
+          tuple_like_constructor<
+              sizeof...(Tags) == sizeof...(UTags) and
+              tuples_detail::all<std::is_constructible<
+                  item_type<Tags>, item_type<UTags>&&>::value...>::value>::
+              template enable_implicit<TaggedDeferredTuple<UTags...>&&,
+                                       item_type<UTags>...>()>::type* = nullptr>
+  // clang-tidy: mark explicit
+  constexpr TaggedDeferredTuple(  // NOLINT
+      TaggedDeferredTuple<UTags...>&&
+          t) noexcept(tuples_detail::
+                          all<std::is_nothrow_constructible<
+                              item_type<Tags>,
+                              item_type<UTags>&&>::value...>::value)
+      : tuples_detail::TaggedDeferredTupleLeaf<Tags>(
+            std::forward<item_type<UTags>>(get<UTags>(t)))... {}
+
+  ~TaggedDeferredTuple() = default;
+
+  // C++17 Draft 23.5.3.2 Assignment
+  TaggedDeferredTuple& operator=(
+      typename std::conditional<is_copy_assignable::value, TaggedDeferredTuple,
+                                tuples_detail::no_such_type>::type const&
+          t) noexcept(is_nothrow_copy_assignable::value) {
+    swallow((get<Tags>(*this) = get<Tags>(t))...);
+    return *this;
+  }
+
+  TaggedDeferredTuple& operator=(
+      typename std::conditional<is_move_assignable::value, TaggedDeferredTuple,
+                                tuples_detail::no_such_type>::type&&
+          t) noexcept(is_nothrow_move_assignable::value) {
+    swallow(
+        (get<Tags>(*this) = std::forward<item_type<Tags>>(get<Tags>(t)))...);
+    return *this;
+  }
+
+  template <class... UTags,
+            typename std::enable_if<
+                sizeof...(Tags) == sizeof...(UTags) and
+                tuples_detail::all<std::is_assignable<
+                    item_type<Tags>&, item_type<UTags> const&>::value...>::
+                    value>::type* = nullptr>
+  TaggedDeferredTuple&
+  operator=(TaggedDeferredTuple<UTags...> const& t) noexcept(
+      tuples_detail::all<std::is_nothrow_assignable<
+          item_type<Tags>&, item_type<UTags> const&>::value...>::value) {
+    swallow((get<Tags>(*this) = get<UTags>(t))...);
+    return *this;
+  }
+
+  template <
+      class... UTags,
+      typename std::enable_if<
+          sizeof...(Tags) == sizeof...(UTags) and
+          tuples_detail::all<std::is_assignable<
+              item_type<Tags>&, item_type<UTags>&&>::value...>::value>::type* =
+          nullptr>
+  TaggedDeferredTuple& operator=(TaggedDeferredTuple<UTags...>&& t) noexcept(
+      tuples_detail::all<std::is_nothrow_assignable<
+          item_type<Tags>&, item_type<UTags>&&>::value...>::value) {
+    swallow(
+        (get<Tags>(*this) = std::forward<item_type<UTags>>(get<UTags>(t)))...);
+    return *this;
+  }
+
+  // Element access
+  template <typename Tag>
+  constexpr Deferred<item_type<Tag>>& get() noexcept {
+    static_assert(std::is_base_of<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
+                                  TaggedDeferredTuple>::value,
+                  "Could not retrieve Tag from DataBox. See the first template "
+                  "parameter of the instantiation for what Tag is being "
+                  "retrieved and the remaining template parameters for what "
+                  "Tags are available.");
+    return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
+  }
+
+  template <typename Tag>
+  constexpr const Deferred<item_type<Tag>>& get() const noexcept {
+    static_assert(std::is_base_of<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
+                                  TaggedDeferredTuple>::value,
+                  "Could not retrieve Tag from DataBox. See the first template "
+                  "parameter of the instantiation for what Tag is being "
+                  "retrieved and the remaining template parameters for what "
+                  "Tags are available.");
+    return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
+  }
+};
+
+template <>
+class TaggedDeferredTuple<> {
+ public:
+  static constexpr size_t size() noexcept { return 0; }
+  TaggedDeferredTuple() noexcept = default;
+};
+
+template <class Tag, class... Tags>
+inline constexpr const typename Tag::type& get(
+    const TaggedDeferredTuple<Tags...>& t) noexcept {
+  return static_cast<const tuples_detail::TaggedDeferredTupleLeaf<Tag>&>(t)
+      .get();
+}
+template <class Tag, class... Tags>
+inline constexpr typename Tag::type& get(
+    TaggedDeferredTuple<Tags...>& t) noexcept {
+  return static_cast<tuples_detail::TaggedDeferredTupleLeaf<Tag>&>(t).get();
+}
+template <class Tag, class... Tags>
+inline constexpr const typename Tag::type&& get(
+    const TaggedDeferredTuple<Tags...>&& t) noexcept {
+  return static_cast<const typename Tag::type&&>(
+      static_cast<const tuples_detail::TaggedDeferredTupleLeaf<Tag>&&>(t)
+          .get());
+}
+template <class Tag, class... Tags>
+inline constexpr typename Tag::type&& get(
+    TaggedDeferredTuple<Tags...>&& t) noexcept {
+  return static_cast<typename Tag::type&&>(
+      static_cast<tuples_detail::TaggedDeferredTupleLeaf<Tag>&&>(t).get());
+}
 
 template <typename Element, typename = std::nullptr_t>
 struct extract_dependent_items {
@@ -169,7 +585,7 @@ struct create_dependency_graph<
       std::is_same<void, Caller>::value, sub_tree,
       tmpl::push_back<sub_tree, tmpl::edge<Callee, Caller>>>;
 };
-}  // namespace detail
+}  // namespace databox_detail
 
 /*!
  * \ingroup DataBoxGroup
@@ -317,7 +733,7 @@ class DataBox<TagsLs<Tags...>> {
 #endif
   }
 
-  detail::TaggedDeferredTuple<Tags...> data_;
+  databox_detail::TaggedDeferredTuple<Tags...> data_;
 };
 
 /// \cond HIDDEN_SYMBOLS
@@ -336,7 +752,8 @@ template <
     typename VariablesTag, typename... Ts, typename... Tags,
     Requires<not tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_tags_to_box(
-    detail::TaggedDeferredTuple<Tags...>& /*data*/, typelist<Ts...> /*meta*/) {}
+    databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
+    typelist<Ts...> /*meta*/) {}
 
 template <typename VariablesTag, typename... Ts, typename... Tags,
           Requires<tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
@@ -355,7 +772,7 @@ SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_tags_to_box(
 template <size_t ArgsIndex, typename Tag, typename... Tags, typename... Ts>
 SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
     std::tuple<Ts...>& tupull,
-    detail::TaggedDeferredTuple<Tags...>&
+    databox_detail::TaggedDeferredTuple<Tags...>&
         data) noexcept(noexcept(data.template get<Tag>() =
                                     Deferred<item_type<Tag>>(std::move(
                                         std::get<ArgsIndex>(tupull)))) and
@@ -381,7 +798,7 @@ template <typename ComputeItem, typename FullTagList, typename... Tags,
 // clang-format off
 SPECTRE_ALWAYS_INLINE constexpr void
 add_compute_item_to_box_impl(
-    detail::TaggedDeferredTuple<Tags...>& data,
+    databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept(
         noexcept(data.template get<ComputeItem>() = make_deferred(
             ComputeItem::function,
@@ -426,7 +843,8 @@ template <typename FullTagList, typename... Ts, typename... Tags,
           typename... AddItemTags, typename... AddComputeItemTags, size_t... Is,
           bool... DependenciesAddedBefore>
 SPECTRE_ALWAYS_INLINE void add_items_to_box(
-    std::tuple<Ts...>& tupull, detail::TaggedDeferredTuple<Tags...>& data,
+    std::tuple<Ts...>& tupull,
+    databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<AddItemTags...> /*meta*/, std::index_sequence<Is...> /*meta*/,
     tmpl::list<AddComputeItemTags...> /*meta*/) {
   swallow(add_item_to_box<Is, AddItemTags>(tupull, data)...);
@@ -447,7 +865,7 @@ SPECTRE_ALWAYS_INLINE constexpr void merge_old_box(
 
 template <typename ComputeItem, typename... Tags, typename... ComputeItemTags>
 SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
-    detail::TaggedDeferredTuple<Tags...>& data,
+    databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemTags...> /*meta*/) {
   data.template get<ComputeItem>() = make_deferred(
       ComputeItem::function, data.template get<ComputeItemTags>()...);
@@ -458,12 +876,12 @@ SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
 template <typename Tag, typename... Tags,
           Requires<not is_compute_item<Tag>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void reset_compute_item(
-    detail::TaggedDeferredTuple<Tags...>& /*data*/) {}
+    databox_detail::TaggedDeferredTuple<Tags...>& /*data*/) {}
 
 template <typename Tag, typename... Tags,
           Requires<is_compute_item<Tag>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void reset_compute_item(
-    detail::TaggedDeferredTuple<Tags...>& data) {
+    databox_detail::TaggedDeferredTuple<Tags...>& data) {
   add_reset_compute_item_to_box<Tag>(data, typename Tag::argument_tags{});
   // If `tag` holds a Variables then add the contained Tensor's
   add_variables_compute_tags_to_box<Tag>(
@@ -495,7 +913,7 @@ SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items_apply(
 template <typename DependencyGraph, typename... Tags,
           typename... ComputeItemsToKeep>
 SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items(
-    detail::TaggedDeferredTuple<Tags...>& data,
+    databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemsToKeep...> /*meta*/) {
   static_cast<void>(std::initializer_list<char>{
       (reset_compute_items_apply<DependencyGraph, ComputeItemsToKeep>(data),
@@ -525,13 +943,11 @@ constexpr DataBox<TagsLs<Tags...>>::DataBox(
       "the function creating the new DataBox.");
 
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
-  databox_detail::add_items_to_box<
-      typelist<FullItems..., FullComputeItems...>>(
+  databox_detail::add_items_to_box<typelist<FullItems..., FullComputeItems...>>(
       args_tuple, data_, typelist<TagsInArgsOrder...>{},
       std::make_index_sequence<sizeof...(TagsInArgsOrder)>{},
       typelist<ComputeItemTags...>{});
 }
-
 
 template <template <typename...> class TagsLs, typename... Tags>
 template <typename OldTags, typename... KeepTags, typename... NewTags,
@@ -549,9 +965,10 @@ constexpr DataBox<TagsLs<Tags...>>::DataBox(
       "The type of each Tag must be the same as the type being passed into "
       "the function creating the new DataBox.");
   // Create dependency graph between compute items and items being reset
-  using edge_list = tmpl::fold<
-      ComputeItemsToKeep, typelist<>,
-      detail::create_dependency_graph<void, tmpl::_element, tmpl::_state>>;
+  using edge_list =
+      tmpl::fold<ComputeItemsToKeep, typelist<>,
+                 databox_detail::create_dependency_graph<void, tmpl::_element,
+                                                         tmpl::_state>>;
   using DependencyGraph = tmpl::digraph<edge_list>;
 
   check_tags();
@@ -588,14 +1005,14 @@ constexpr auto DataBox<TagsLs<Tags...>>::create(Args&&... args) {
   static_assert(tmpl::all<AddComputeItems, is_compute_item<tmpl::_1>>::value,
                 "Cannot add any Tags in the AddComputeItems list, must use the "
                 "AddTags list.");
-  using full_items =
-      tmpl::fold<AddTags, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            detail::extract_dependent_items<tmpl::_element>>>;
-  using full_compute_items =
-      tmpl::fold<AddComputeItems, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            detail::extract_dependent_items<tmpl::_element>>>;
+  using full_items = tmpl::fold<
+      AddTags, tmpl::list<>,
+      tmpl::bind<tmpl::append, tmpl::_state,
+                 databox_detail::extract_dependent_items<tmpl::_element>>>;
+  using full_compute_items = tmpl::fold<
+      AddComputeItems, tmpl::list<>,
+      tmpl::bind<tmpl::append, tmpl::_state,
+                 databox_detail::extract_dependent_items<tmpl::_element>>>;
   using sorted_tags =
       ::db::get_databox_list<tmpl::append<full_items, full_compute_items>>;
   return DataBox<sorted_tags>(AddTags{}, full_items{}, AddComputeItems{},
@@ -633,18 +1050,18 @@ constexpr auto DataBox<TagsLs<Tags...>>::create_from(const Box& box,
   // Build list of tags where we expand the tags inside Variables<Tags...>
   // objects. This is needed since we actually want those tags to be part of the
   // DataBox type as well
-  using full_remove_tags =
-      tmpl::fold<RemoveTags, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            detail::extract_dependent_items<tmpl::_element>>>;
-  using full_items =
-      tmpl::fold<AddTags, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            detail::extract_dependent_items<tmpl::_element>>>;
-  using full_compute_items =
-      tmpl::fold<AddComputeItems, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            detail::extract_dependent_items<tmpl::_element>>>;
+  using full_remove_tags = tmpl::fold<
+      RemoveTags, tmpl::list<>,
+      tmpl::bind<tmpl::append, tmpl::_state,
+                 databox_detail::extract_dependent_items<tmpl::_element>>>;
+  using full_items = tmpl::fold<
+      AddTags, tmpl::list<>,
+      tmpl::bind<tmpl::append, tmpl::_state,
+                 databox_detail::extract_dependent_items<tmpl::_element>>>;
+  using full_compute_items = tmpl::fold<
+      AddComputeItems, tmpl::list<>,
+      tmpl::bind<tmpl::append, tmpl::_state,
+                 databox_detail::extract_dependent_items<tmpl::_element>>>;
   using remaining_tags =
       tmpl::fold<full_remove_tags, old_tags_list,
                  tmpl::bind<tmpl::remove, tmpl::_state, tmpl::_element>>;
@@ -702,13 +1119,14 @@ template <typename AddTags, typename AddComputeItems = typelist<>,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   return DataBox<::db::get_databox_list<tmpl::append<
-      tmpl::fold<AddTags, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            detail::extract_dependent_items<tmpl::_element>>>,
       tmpl::fold<
-          AddComputeItems, tmpl::list<>,
+          AddTags, tmpl::list<>,
           tmpl::bind<tmpl::append, tmpl::_state,
-                     detail::extract_dependent_items<tmpl::_element>>>>>>::
+                     databox_detail::extract_dependent_items<tmpl::_element>>>,
+      tmpl::fold<AddComputeItems, tmpl::list<>,
+                 tmpl::bind<tmpl::append, tmpl::_state,
+                            databox_detail::extract_dependent_items<
+                                tmpl::_element>>>>>>::
       template create<AddTags, AddComputeItems>(std::forward<Args>(args)...);
 }
 
@@ -741,16 +1159,17 @@ template <typename RemoveTags, typename AddTags = typelist<>,
 SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
                                                  Args&&... args) {
   return DataBox<::db::get_databox_list<tmpl::append<
-      tmpl::fold<tmpl::fold<RemoveTags, tmpl::list<>,
-                            tmpl::lazy::append<tmpl::_state,
-                                               detail::extract_dependent_items<
-                                                   tmpl::_element>>>,
-                 typename Box::tags_list,
-                 tmpl::bind<tmpl::remove, tmpl::_state, tmpl::_element>>,
       tmpl::fold<
-          tmpl::append<AddTags, AddComputeItems>, tmpl::list<>,
-          tmpl::bind<tmpl::append, tmpl::_state,
-                     detail::extract_dependent_items<tmpl::_element>>>>>>::
+          tmpl::fold<RemoveTags, tmpl::list<>,
+                     tmpl::lazy::append<tmpl::_state,
+                                        databox_detail::extract_dependent_items<
+                                            tmpl::_element>>>,
+          typename Box::tags_list,
+          tmpl::bind<tmpl::remove, tmpl::_state, tmpl::_element>>,
+      tmpl::fold<tmpl::append<AddTags, AddComputeItems>, tmpl::list<>,
+                 tmpl::bind<tmpl::append, tmpl::_state,
+                            databox_detail::extract_dependent_items<
+                                tmpl::_element>>>>>>::
       template create_from<RemoveTags, AddTags, AddComputeItems>(
           box, std::forward<Args>(args)...);
 }
