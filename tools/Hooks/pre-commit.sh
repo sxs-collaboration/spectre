@@ -137,5 +137,32 @@ END
 fi
 
 ###############################################################################
+# Check for tests using Catch's TEST_CASE instead of SPECTRE_TEST_CASE
+found_test_case=`
+find $commit_files -name '*.[ch]pp' \
+    | xargs grep --with-filename -n "^TEST_CASE"`
+if [[ $found_test_case != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
+    echo "$found_test_case"
+    exit 1
+fi
+
+###############################################################################
+# Check for tests using Catch's Approx, which has a very loose tolerance
+found_bad_approx=`
+find $commit_files -name '*.[ch]pp' \
+    | xargs grep --with-filename -n "Approx("`
+if [[ $found_bad_approx != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of Approx, must use approx from " \
+           "SPECTRE_ROOT/tests/Unit/TestHelpers.hpp instead:\n"
+    echo "$found_bad_approx"
+    exit 1
+fi
+
+###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
