@@ -126,7 +126,8 @@ class Variables<tmpl::list<Tags...>> {
   // @}
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p);
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p);  // NOLINT
 
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
