@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   delete[] c_string1;
 }
 
-SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel") {
+SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel]") {
   CHECK(1 == Parallel::number_of_procs());
   CHECK(0 == Parallel::my_proc());
   CHECK(1 == Parallel::number_of_nodes());
