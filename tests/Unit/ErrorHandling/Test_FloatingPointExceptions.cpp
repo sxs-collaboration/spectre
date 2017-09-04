@@ -15,6 +15,7 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
   enable_floating_point_exceptions();
   double x = -1.0;
   double invalid = sqrt(x);
+  static_cast<void>(invalid);
   CHECK(true);
 }
 
@@ -44,6 +45,7 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
   disable_floating_point_exceptions();
   double x = -1.0;
   double invalid = sqrt(x);
+  static_cast<void>(invalid);
   volatile double overflow = std::numeric_limits<double>::max();
   overflow *= 1.0e300;
   volatile double div_by_zero = 1.0;
