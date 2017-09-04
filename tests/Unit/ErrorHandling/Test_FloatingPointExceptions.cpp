@@ -13,8 +13,8 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
                   "[ErrorHandling][Unit]") {
   ERROR_TEST();
   enable_floating_point_exceptions();
-  double x = -1.0;
-  double invalid = sqrt(x);
+  // clang-tidy: Value is never read
+  double invalid = sqrt(-1.0); //NOLINT
   CHECK(true);
 }
 
@@ -42,8 +42,8 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Disable",
                   "[ErrorHandling][Unit]") {
   enable_floating_point_exceptions();
   disable_floating_point_exceptions();
-  double x = -1.0;
-  double invalid = sqrt(x);
+  // clang-tidy: Value is never read
+  double invalid = sqrt(-1.0); //NOLINT
   volatile double overflow = std::numeric_limits<double>::max();
   overflow *= 1.0e300;
   volatile double div_by_zero = 1.0;
