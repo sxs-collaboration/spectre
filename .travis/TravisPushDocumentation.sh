@@ -18,7 +18,7 @@ spack load blaze
 spack load brigand
 spack load catch
 spack load libxsmm
-spack load yaml-cpp
+spack load yaml-cpp%${CC}
 
 # We use cron jobs to deploy to gh-pages. Since this still runs all jobs we
 # only actually build documentation for one job but let the others run tests.

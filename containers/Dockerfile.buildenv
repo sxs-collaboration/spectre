@@ -79,12 +79,15 @@ RUN printf "\n  openssl:\n    paths:\n      openssl@1.0.2g: /usr\n\
 RUN echo "export PATH=\$PATH:/work/spack/bin" >> /root/.bashrc
 RUN echo '. /work/spack/share/spack/setup-env.sh' >> /root/.bashrc
 RUN export PATH=$PATH:/work/spack/bin
-RUN /work/spack/bin/spack install catch@1.6.1
+RUN /work/spack/bin/spack install catch@1.9.1
 RUN /work/spack/bin/spack install brigand@master
 RUN /work/spack/bin/spack install blaze
 RUN /work/spack/bin/spack install gsl%gcc
 RUN /work/spack/bin/spack install libxsmm
-RUN /work/spack/bin/spack install yaml-cpp@develop
+# On 09/03/2017 CMake 3.9.0 failed to build with spack
+RUN /work/spack/bin/spack install cmake@3.8.0
+RUN /work/spack/bin/spack install yaml-cpp@develop%gcc ^cmake@3.8.0
+RUN /work/spack/bin/spack install yaml-cpp@develop%clang ^cmake@3.8.0 cxxflags="-stdlib=libc++" ldflags="-stdlib=libc++" cppflags="-stdlib=libc++"
 
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
@@ -104,4 +107,3 @@ RUN echo 'spack load brigand' >> /root/.bashrc
 RUN echo 'spack load blaze' >> /root/.bashrc
 RUN echo 'spack load gsl' >> /root/.bashrc
 RUN echo 'spack load libxsmm' >> /root/.bashrc
-RUN echo 'spack load yaml-cpp' >> /root/.bashrc
