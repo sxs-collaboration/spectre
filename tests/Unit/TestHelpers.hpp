@@ -169,12 +169,15 @@ void test_move_semantics(T&& a, const T& comparison) {
 // Test for iterators
 template <typename Container>
 void test_iterators(Container& c) {
-  CHECK(std::distance(c.begin(), c.end()) == c.size());
+  CHECK(std::distance(c.begin(), c.end()) ==
+        static_cast<decltype(std::distance(c.begin(), c.end()))>(c.size()));
   CHECK(c.begin() == c.cbegin());
   CHECK(c.end() == c.cend());
 
   const auto& const_c = c;
-  CHECK(std::distance(const_c.begin(), const_c.end()) == const_c.size());
+  CHECK(std::distance(const_c.begin(), const_c.end()) ==
+        static_cast<decltype(std::distance(const_c.begin(), const_c.end()))>(
+            const_c.size()));
   CHECK(const_c.begin() == const_c.cbegin());
   CHECK(const_c.end() == const_c.cend());
 }
@@ -182,7 +185,8 @@ void test_iterators(Container& c) {
 // Test for reverse iterators
 template <typename Container>
 void test_reverse_iterators(Container& c) {
-  CHECK(std::distance(c.rbegin(), c.rend()) == c.size());
+  CHECK(std::distance(c.rbegin(), c.rend()) ==
+        static_cast<decltype(std::distance(c.rbegin(), c.rend()))>(c.size()));
 
   CHECK(c.rbegin() == c.crbegin());
   CHECK(c.rend() == c.crend());
@@ -212,7 +216,9 @@ void test_reverse_iterators(Container& c) {
   }
 
   const auto& const_c = c;
-  CHECK(std::distance(const_c.begin(), const_c.end()) == const_c.size());
+  CHECK(std::distance(const_c.begin(), const_c.end()) ==
+        static_cast<decltype(std::distance(const_c.begin(), const_c.end()))>(
+            const_c.size()));
   auto c_it = const_c.begin();
   auto c_rit = const_c.rbegin();
   auto c_end = const_c.end();
