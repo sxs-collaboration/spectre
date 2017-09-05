@@ -4,6 +4,7 @@
 # Remove the checks because:
 # -llvm-header-guard: We use pragma once instead of include guards
 # -google-runtime-int: specifying int32_t and int64_t instead of just int
+# -readability-else-after-return: style choice, discussed in issue #145
 # -misc-noexcept-move-constructor: false positives
 # -misc-unconventional-assign-operator: false positives
 # -cppcoreguidelines-c-copy-assignment-signature: false positives
@@ -13,7 +14,7 @@
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature")
+set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature")
 
 if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   string(
