@@ -42,19 +42,72 @@ See LICENSE.txt for details.
 
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
-be used to build SpECTRE on a personal machine. To retrieve the Docker image run
-
-```
-docker pull sxscollaboration/spectrebuildenv:latest
-```
-
-The image already has Charm++ configured, all that needs to be done is to
-clone SpECTRE and compile it.
+be used to build SpECTRE on a personal machine.
 
 **Note**: The Docker image is the recommended way of using SpECTRE on a personal
 Linux machine. Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
 as outlined below is a supported alternative to Docker images.
+
+To build with the docker image:
+
+1. Clone SpECTRE into SPECTRE_ROOT, a directory of your choice.
+2. Retrieve the docker image (you may need `sudo` in front of this command)
+   ```
+   docker pull sxscollaboration/spectrebuildenv:latest
+   ```
+3. Start the docker container (you may need `sudo`)
+   ```
+   docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
+   ```
+   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
+   of your choice. If you don't name your container, docker will generate an
+   arbitrary name.)
+   You will end up in a shell in a docker container,
+   as root (you need to be root).
+   Within the container, SPECTRE_ROOT is available and
+   CHARM_DIR is /work/charm. For the following steps, stay inside the docker
+   container as root.
+4. Cd into /work/charm, and apply the Charm++ patch by
+   running `git apply SPECTRE_ROOT/support/Charm/v6.7.patch`.
+5. Make a build directory somewhere inside the container, e.g.
+   /work/spectre-build-gcc, and cd into it.
+6. Build SpECTRE with
+   `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT`
+   then
+   `make -jN`
+   to compile the code, and `ctest` to run the tests.
+
+Notes:
+  * Everything in your build directory is owned by root, and is
+    accessible only within the container.
+  * You should edit source files in SPECTRE_ROOT in a separate terminal
+    outside the container, and use the container only for compiling and
+    running the code.
+  * If you exit the container (e.g. ctrl-d),
+    your compilation directories are still saved, as is the patch
+    that you have applied to /work/charm and any other changes to
+    the container that you have made.
+    To restart the container, try the following commands
+    (you may need `sudo`):
+    1. `docker ps -a` # lists all containers and their CONTAINER_IDs and CONTAINER_NAMEs:
+    2. `docker start -i CONTAINER_NAME` or `docker start -i CONTAINER_ID` # Restarts your container
+  * You can run more than one shell in the same container, for instance
+    one shell for compiling with gcc and another for compiling
+    with clang.
+    To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
+    (or `docker exec -it CONTAINER_ID /bin/bash`) from
+    a terminal outside the container.
+  * In step 3 above, the `-v SPECTRE_ROOT:SPECTRE_ROOT` maps the directory
+    SPECTRE_ROOT outside the container to SPECTRE_ROOT inside the container.
+    Technically docker allows you to say `-v SPECTRE_ROOT:/my/new/path`
+    to map SPECTRE_ROOT outside the container to any path you want inside
+    the container, but **do not do this**.  Compiling inside the container
+    sets up git hooks in SPECTRE_ROOT that
+    contain hardcoded pathnames to SPECTRE_ROOT *as seen from
+    inside the container*. So if your source paths inside and outside the
+    container are different, commands like `git commit` run *from
+    outside the container* will die with `No such file or directory`.
 
 #### Installing Dependencies Using Spack
 
