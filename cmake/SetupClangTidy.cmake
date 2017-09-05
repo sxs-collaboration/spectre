@@ -44,6 +44,10 @@ if (CLANG_TIDY_BIN)
       -p ${CMAKE_BINARY_DIR}
       \${FILE}
   )
+  add_dependencies(
+      clang-tidy
+      module_RunTests
+  )
   set_target_properties(
       clang-tidy
       PROPERTIES EXCLUDE_FROM_ALL TRUE
@@ -55,5 +59,9 @@ if (CLANG_TIDY_BIN)
   set_target_properties(
       clang-tidy-all
       PROPERTIES EXCLUDE_FROM_ALL TRUE
+  )
+  add_dependencies(
+      clang-tidy-all
+      module_RunTests
   )
 endif()

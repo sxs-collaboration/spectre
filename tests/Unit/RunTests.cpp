@@ -11,11 +11,12 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/Printf.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
   std::set_terminate(
       []() { Parallel::abort("Called terminate. Aborting..."); });
-  printf("%s", info_from_build().c_str());
+  Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
   int result = Catch::Session().run(msg->argc, msg->argv);
   if (0 == result) {
