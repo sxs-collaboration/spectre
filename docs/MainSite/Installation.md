@@ -51,16 +51,20 @@ as outlined below is a supported alternative to Docker images.
 
 To build with the docker image:
 
-1. Clone spectre into SPECTRE_ROOT, a directory of your choice.
+1. Clone SpECTRE into SPECTRE_ROOT, a directory of your choice.
 2. Retrieve the docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
    ```
 3. Start the docker container (you may need `sudo`)
    ```
-   docker run -v SPECTRE_ROOT:SPECTRE_ROOT -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
+   docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
-   You will end up in a docker container, as root (you need to be root).
+   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
+   of your choice. If you don't name your container, docker will generate an
+   arbitrary name.)
+   You will end up in a shell in a docker container,
+   as root (you need to be root).
    Within the container, SPECTRE_ROOT is available and
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
@@ -82,15 +86,17 @@ Notes:
     running the code.
   * If you exit the container (e.g. ctrl-d),
     your compilation directories are still saved, as is the patch
-    that you have applied to /work/charm or any other changes to
+    that you have applied to /work/charm and any other changes to
     the container that you have made.
     To restart the container, try the following commands
     (you may need `sudo`):
-    1. `docker ps -a` # lists all containers and their CONTAINER_IDs:
-    2. `docker restart CONTAINER_ID` # Restarts your container
-    3. `docker attach CONTAINER_ID` # Resumes your /bin/bash shell
-  * You can run more than one shell in the same container.
-    To add a new one, run `docker exec -it CONTAINER_ID /bin/bash` from
+    1. `docker ps -a` # lists all containers and their CONTAINER_IDs and CONTAINER_NAMEs:
+    2. `docker start -i CONTAINER_NAME` or `docker start -i CONTAINER_ID` # Restarts your container
+  * You can run more than one shell in the same container, for instance
+    one shell for compiling with gcc and another for compiling
+    with clang.
+    To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
+    (or `docker exec -it CONTAINER_ID /bin/bash`) from
     a terminal outside the container.
   * In step 3 above, the `-v SPECTRE_ROOT:SPECTRE_ROOT` maps the directory
     SPECTRE_ROOT outside the container to SPECTRE_ROOT inside the container.
