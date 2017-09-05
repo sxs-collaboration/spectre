@@ -89,7 +89,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   static std::vector<double> variable_coefficients(
       const std::vector<double>& steps) noexcept;
 
-  static const std::array<std::vector<double>, maximum_order> coefficients_;
+  static std::vector<double> constant_coefficients(size_t order) noexcept;
 
   size_t target_order_ = 3;
   bool is_self_starting_ = true;

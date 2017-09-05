@@ -37,7 +37,7 @@ double AdamsBashforthN::stable_step() const noexcept {
   // This is the condition that the characteristic polynomial of the
   // recurrence relation defined by the method has the correct sign at
   // -1.  It is not clear whether this is actually sufficient.
-  const auto& coefficients = gsl::at(coefficients_, target_order_ - 2);
+  const auto& coefficients = constant_coefficients(target_order_);
   double invstep = 0.;
   double sign = 1.;
   for (const auto coef : coefficients) {
@@ -51,12 +51,9 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
     const std::vector<double>& steps) noexcept {
   const size_t order = steps.size();
   ASSERT(order >= 1 and order <= maximum_order, "Bad order" << order);
-  if (order == 1) {
-    return {1.};
-  }
   if (std::all_of(steps.begin(), steps.end(),
                   [=](const double& s) { return s == 1.; })) {
-    return gsl::at(coefficients_, order - 2);
+    return constant_coefficients(order);
   }
 
   return variable_coefficients(steps);
@@ -137,21 +134,25 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
   return result;
 }
 
-const std::array<std::vector<double>, AdamsBashforthN::maximum_order>
-AdamsBashforthN::coefficients_{{
-    {1.5, -0.5},                                           // 2nd order
-    {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0},                 // 3rd order
-    {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -3.0 / 8.0},  // 4th order
-    {1901.0 / 720.0, -1387.0 / 360.0, 109.0 / 30.0, -637.0 / 360.0,
-     251.0 / 720.0},  // 5th order
-    {4277.0 / 1440.0, -2641.0 / 480.0, 4991.0 / 720.0, -3649.0 / 720.0,
-     959.0 / 480.0, -95.0 / 288.0},  // 6th order
-    {198721.0 / 60480.0, -18637.0 / 2520.0, 235183.0 / 20160.0,
-     -10754.0 / 945.0, 135713.0 / 20160.0, -5603.0 / 2520.0,
-     19087.0 / 60480.0},  // 7th order
-    {16083.0 / 4480.0, -1152169.0 / 120960.0, 242653.0 / 13440.0,
-     -296053.0 / 13440.0, 2102243.0 / 120960.0, -115747.0 / 13440.0,
-     32863.0 / 13440.0, -5257.0 / 17280.0},  // 8th order
-}};
-
+std::vector<double> AdamsBashforthN::constant_coefficients(
+    const size_t order) noexcept {
+  switch (order) {
+    case 1: return {1.};
+    case 2: return {1.5, -0.5};
+    case 3: return {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0};
+    case 4: return {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -3.0 / 8.0};
+    case 5: return {1901.0 / 720.0, -1387.0 / 360.0, 109.0 / 30.0,
+          -637.0 / 360.0, 251.0 / 720.0};
+    case 6: return {4277.0 / 1440.0, -2641.0 / 480.0, 4991.0 / 720.0,
+          -3649.0 / 720.0, 959.0 / 480.0, -95.0 / 288.0};
+    case 7: return {198721.0 / 60480.0, -18637.0 / 2520.0, 235183.0 / 20160.0,
+          -10754.0 / 945.0, 135713.0 / 20160.0, -5603.0 / 2520.0,
+          19087.0 / 60480.0};
+    case 8: return {16083.0 / 4480.0, -1152169.0 / 120960.0, 242653.0 / 13440.0,
+          -296053.0 / 13440.0, 2102243.0 / 120960.0, -115747.0 / 13440.0,
+          32863.0 / 13440.0, -5257.0 / 17280.0};
+    default:
+      ERROR("Bad order: " << order);
+  }
+}
 }  // namespace TimeSteppers
