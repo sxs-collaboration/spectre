@@ -32,6 +32,16 @@
 /// C++ STL code present in C++17
 namespace cpp17 {
 
+/*!
+ * \ingroup Utilities
+ * \brief Mark a return type as being "void". In C++17 void is a regular type
+ * under certain circumstances, so this can be replaced by `void` then.
+ *
+ * The proposal is available
+ * [here](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0146r1.html)
+ */
+struct void_type {};
+
 /// \ingroup TypeTraits
 /// \brief A compile-time boolean
 ///
