@@ -88,7 +88,8 @@ class Slab {
     return other.is_followed_by(*this);
   }
 
-  void pup(PUP::er& p) noexcept;
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   double start_;

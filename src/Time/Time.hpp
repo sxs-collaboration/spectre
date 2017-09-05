@@ -54,7 +54,8 @@ class Time {
     return is_at_slab_start() or is_at_slab_end();
   }
 
-  void pup(PUP::er& p) noexcept;
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   Slab slab_;
@@ -109,7 +110,8 @@ class TimeDelta {
   TimeDelta& operator*=(const rational_t& mult) noexcept;
   TimeDelta& operator/=(const rational_t& div) noexcept;
 
-  void pup(PUP::er& p) noexcept;
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   Slab slab_;

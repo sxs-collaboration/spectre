@@ -19,6 +19,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace TimeSteppers {
 
@@ -62,7 +63,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
   template <typename Vars, typename DerivVars>
   TimeDelta update_u(
-      Vars& u,
+      gsl::not_null<Vars*> u,
       const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
       const TimeDelta& time_step) const noexcept;
 
@@ -96,7 +97,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
 template <typename Vars, typename DerivVars>
 TimeDelta AdamsBashforthN::update_u(
-    Vars& u,
+    const gsl::not_null<Vars*> u,
     const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(is_self_starting_ or target_order_ == history.size(),
@@ -116,63 +117,63 @@ TimeDelta AdamsBashforthN::update_u(
 
   switch (history.size()) {
     case 1: {
-      u += time_step.value() * std::get<2>(history[0]);
+      *u += time_step.value() * std::get<2>(history[0]);
       return time_step;
     }
     case 2: {
-      u += time_step.value() * (coefficients[1] * std::get<2>(history[0]) +
-                                coefficients[0] * std::get<2>(history[1]));
+      *u += time_step.value() * (coefficients[1] * std::get<2>(history[0]) +
+                                 coefficients[0] * std::get<2>(history[1]));
       return time_step;
     }
     case 3: {
-      u += time_step.value() * (coefficients[2] * std::get<2>(history[0]) +
-                                coefficients[1] * std::get<2>(history[1]) +
-                                coefficients[0] * std::get<2>(history[2]));
+      *u += time_step.value() * (coefficients[2] * std::get<2>(history[0]) +
+                                 coefficients[1] * std::get<2>(history[1]) +
+                                 coefficients[0] * std::get<2>(history[2]));
       return time_step;
     }
     case 4: {
-      u += time_step.value() * (coefficients[3] * std::get<2>(history[0]) +
-                                coefficients[2] * std::get<2>(history[1]) +
-                                coefficients[1] * std::get<2>(history[2]) +
-                                coefficients[0] * std::get<2>(history[3]));
+      *u += time_step.value() * (coefficients[3] * std::get<2>(history[0]) +
+                                 coefficients[2] * std::get<2>(history[1]) +
+                                 coefficients[1] * std::get<2>(history[2]) +
+                                 coefficients[0] * std::get<2>(history[3]));
       return time_step;
     }
     case 5: {
-      u += time_step.value() * (coefficients[4] * std::get<2>(history[0]) +
-                                coefficients[3] * std::get<2>(history[1]) +
-                                coefficients[2] * std::get<2>(history[2]) +
-                                coefficients[1] * std::get<2>(history[3]) +
-                                coefficients[0] * std::get<2>(history[4]));
+      *u += time_step.value() * (coefficients[4] * std::get<2>(history[0]) +
+                                 coefficients[3] * std::get<2>(history[1]) +
+                                 coefficients[2] * std::get<2>(history[2]) +
+                                 coefficients[1] * std::get<2>(history[3]) +
+                                 coefficients[0] * std::get<2>(history[4]));
       return time_step;
     }
     case 6: {
-      u += time_step.value() * (coefficients[5] * std::get<2>(history[0]) +
-                                coefficients[4] * std::get<2>(history[1]) +
-                                coefficients[3] * std::get<2>(history[2]) +
-                                coefficients[2] * std::get<2>(history[3]) +
-                                coefficients[1] * std::get<2>(history[4]) +
-                                coefficients[0] * std::get<2>(history[5]));
+      *u += time_step.value() * (coefficients[5] * std::get<2>(history[0]) +
+                                 coefficients[4] * std::get<2>(history[1]) +
+                                 coefficients[3] * std::get<2>(history[2]) +
+                                 coefficients[2] * std::get<2>(history[3]) +
+                                 coefficients[1] * std::get<2>(history[4]) +
+                                 coefficients[0] * std::get<2>(history[5]));
       return time_step;
     }
     case 7: {
-      u += time_step.value() * (coefficients[6] * std::get<2>(history[0]) +
-                                coefficients[5] * std::get<2>(history[1]) +
-                                coefficients[4] * std::get<2>(history[2]) +
-                                coefficients[3] * std::get<2>(history[3]) +
-                                coefficients[2] * std::get<2>(history[4]) +
-                                coefficients[1] * std::get<2>(history[5]) +
-                                coefficients[0] * std::get<2>(history[6]));
+      *u += time_step.value() * (coefficients[6] * std::get<2>(history[0]) +
+                                 coefficients[5] * std::get<2>(history[1]) +
+                                 coefficients[4] * std::get<2>(history[2]) +
+                                 coefficients[3] * std::get<2>(history[3]) +
+                                 coefficients[2] * std::get<2>(history[4]) +
+                                 coefficients[1] * std::get<2>(history[5]) +
+                                 coefficients[0] * std::get<2>(history[6]));
       return time_step;
     }
     case 8: {
-      u += time_step.value() * (coefficients[7] * std::get<2>(history[0]) +
-                                coefficients[6] * std::get<2>(history[1]) +
-                                coefficients[5] * std::get<2>(history[2]) +
-                                coefficients[4] * std::get<2>(history[3]) +
-                                coefficients[3] * std::get<2>(history[4]) +
-                                coefficients[2] * std::get<2>(history[5]) +
-                                coefficients[1] * std::get<2>(history[6]) +
-                                coefficients[0] * std::get<2>(history[7]));
+      *u += time_step.value() * (coefficients[7] * std::get<2>(history[0]) +
+                                 coefficients[6] * std::get<2>(history[1]) +
+                                 coefficients[5] * std::get<2>(history[2]) +
+                                 coefficients[4] * std::get<2>(history[3]) +
+                                 coefficients[3] * std::get<2>(history[4]) +
+                                 coefficients[2] * std::get<2>(history[5]) +
+                                 coefficients[1] * std::get<2>(history[6]) +
+                                 coefficients[0] * std::get<2>(history[7]));
       return time_step;
     }
     default:

@@ -13,6 +13,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace TimeSteppers {
 
@@ -37,7 +38,7 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   template <typename Vars, typename DerivVars>
   TimeDelta update_u(
-      Vars& u,
+      gsl::not_null<Vars*> u,
       const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
       const TimeDelta& time_step) const noexcept;
 
@@ -52,7 +53,7 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
 template <typename Vars, typename DerivVars>
 TimeDelta RungeKutta3::update_u(
-    Vars& u,
+    const gsl::not_null<Vars*> u,
     const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
     const TimeDelta& time_step) const noexcept {
   const size_t substep = history.size() - 1;
@@ -66,7 +67,7 @@ TimeDelta RungeKutta3::update_u(
       // v^(1) = u^n + dt*RHS(u^n,t^n)
       // On entry V = u^n, U0 = u^n, rhs0 = RHS(u^n,t^n),
       // time = t^n
-      u += time_step.value() * dt_vars;
+      *u += time_step.value() * dt_vars;
       return time_step;
       // On exit v = v^(1), time = t^n + dt
     }
@@ -75,7 +76,7 @@ TimeDelta RungeKutta3::update_u(
       // v^(2) = (1/4)*( 3*u^n + v^(1) + dt*RHS(v^(1),t^n + dt) )
       // On entry V = v^(1), U0 = u^n, rhs0 = RHS(v^(1),t^n + dt),
       // time = t^n + dt
-      u += 0.25 * (3.0 * (U0 - vars) + time_step.value() * dt_vars);
+      *u += 0.25 * (3.0 * (U0 - vars) + time_step.value() * dt_vars);
       return -time_step / 2;
       // On exit v = v^(2), time = t^n + (1/2)*dt
     }
@@ -84,7 +85,7 @@ TimeDelta RungeKutta3::update_u(
       // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
       // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
       // time = t^n + (1/2)*dt
-      u += (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
+      *u += (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
       return time_step / 2;
       // On exit v = u^(n+1), time = t^n + dt
     }
