@@ -15,7 +15,7 @@ add_subdirectory(Utilities)
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};Test_TestHelpers.cpp")
 
-add_charm_mainmodule(${executable})
+add_charm_module(${executable})
 
 add_executable(
     ${executable}
@@ -46,4 +46,3 @@ if(COVERAGE)
       '${CMAKE_SOURCE_DIR}/tests/*'
   )
 endif()
-
