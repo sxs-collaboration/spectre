@@ -6,15 +6,19 @@
 
 #pragma once
 
+#include <array>
 #include <catch.hpp>
 #include <charm++.h>
 #include <csignal>
 #include <limits>
 #include <pup.h>
 
+#include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Serialize.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 #define SPECTRE_TEST_CASE(m, n) TEST_CASE(m, n)  // NOLINT
@@ -282,4 +286,50 @@ std::string get_output(const Container& c) {
   std::ostringstream os;
   os << c;
   return os.str();
+}
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Alternative to Catch's CAPTURE that prints more digits.
+ */
+#define CAPTURE_PRECISE(variable)                                    \
+  INFO(std::scientific << std::setprecision(18) << #variable << ": " \
+                       << (variable));
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Calculates the derivative of an Invocable at a point x - represented
+ * by an array of doubles - in the domain of `map` with a sixth-order finite
+ * difference method.
+ *
+ * \details Intended for use with CoordinateMaps taking the domain {xi,eta,zeta}
+ * to the range {x,y,z}. This function calculates the derivative along the
+ * direction given by `direction` with a step size of `h`.
+ *
+ * \requires direction be between 0 and VolumeDim
+ */
+template <typename Invocable, size_t VolumeDim>
+std::array<double, VolumeDim> numerical_derivative(
+    const Invocable& map, const std::array<double, VolumeDim>& x,
+    const size_t direction, const double delta) {
+  ASSERT(0 <= direction and direction < VolumeDim,
+         "Trying to take derivative along axis " << direction);
+
+  const auto dx = [direction, delta]() {
+    auto d = make_array<3>(0.);
+    gsl::at(d, direction) = delta;
+    return d;
+  }();
+
+  const std::array<double, VolumeDim> x_1ahead = x + dx;
+  const std::array<double, VolumeDim> x_2ahead = x_1ahead + dx;
+  const std::array<double, VolumeDim> x_3ahead = x_2ahead + dx;
+  const std::array<double, VolumeDim> x_1behind = x - dx;
+  const std::array<double, VolumeDim> x_2behind = x_1behind - dx;
+  const std::array<double, VolumeDim> x_3behind = x_2behind - dx;
+  return (1.0 / (60.0 * delta)) * map(x_3ahead) +
+         (-3.0 / (20.0 * delta)) * map(x_2ahead) +
+         (0.75 / delta) * map(x_1ahead) + (-0.75 / delta) * map(x_1behind) +
+         (3.0 / (20.0 * delta)) * map(x_2behind) +
+         (-1.0 / (60.0 * delta)) * map(x_3behind);
 }
