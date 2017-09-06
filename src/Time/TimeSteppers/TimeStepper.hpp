@@ -11,6 +11,7 @@
 
 #include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \ingroup TimeSteppersGroup
 ///
@@ -51,7 +52,7 @@ class TimeStepper /*: public Factory<TimeStepper>*/ {
   /// from the front, in a manner similar to a queue.
   template <typename Vars, typename DerivVars>
   TimeDelta update_u(
-      Vars& u,
+      const gsl::not_null<Vars*> u,
       const std::deque<std::tuple<Vars, DerivVars, TimeDelta>>& history,
       const TimeDelta& time_step) const noexcept {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(

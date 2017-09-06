@@ -12,32 +12,33 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 
 template <typename Stepper, typename F>
 void take_step(
-    Time& time,
-    double& y,
-    std::deque<std::tuple<Time, double, double>>& history,
+    const gsl::not_null<Time*> time,
+    const gsl::not_null<double*> y,
+    const gsl::not_null<std::deque<std::tuple<Time, double, double>>*> history,
     const Stepper& stepper,
     F&& rhs,
     const TimeDelta& step_size) noexcept {
   TimeDelta accumulated_step_dt = step_size * 0;
   for (size_t substep = 0; substep < stepper.number_of_substeps(); ++substep) {
-    history.emplace_back(time, y, rhs(y));
-    const TimeDelta substep_dt = stepper.update_u(y, history, step_size);
+    history->emplace_back(*time, *y, rhs(*y));
+    const TimeDelta substep_dt = stepper.update_u(y, *history, step_size);
     accumulated_step_dt += substep_dt;
-    time += substep_dt;
+    *time += substep_dt;
   }
   CHECK(accumulated_step_dt == step_size);
-  while (history.size() > stepper.number_of_past_steps()) {
-    history.pop_front();
+  while (history->size() > stepper.number_of_past_steps()) {
+    history->pop_front();
   }
 }
 
 template <typename Stepper, typename F1, typename F2>
 void initialize_history(
     Time time,
-    std::deque<std::tuple<Time, double, double>>& history,
+    const gsl::not_null<std::deque<std::tuple<Time, double, double>>*> history,
     const Stepper& stepper,
     F1&& analytic,
     F2&& rhs,
@@ -51,8 +52,8 @@ void initialize_history(
       step_size = step_size.with_slab(new_slab);
     }
     time -= step_size;
-    history.emplace_front(time, analytic(time.value()),
-                          rhs(analytic(time.value())));
+    history->emplace_front(time, analytic(time.value()),
+                           rhs(analytic(time.value())));
   }
 }
 
@@ -86,11 +87,11 @@ void integrate_test(const Stepper& stepper, const double integration_time,
   std::deque<std::tuple<Time, double, double>> history;
 
   if (not stepper.is_self_starting()) {
-    initialize_history(time, history, stepper, analytic, rhs, step_size);
+    initialize_history(time, &history, stepper, analytic, rhs, step_size);
   }
 
   for (size_t i = 0; i < num_steps; ++i) {
-    take_step(time, y, history, stepper, rhs, step_size);
+    take_step(&time, &y, &history, stepper, rhs, step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
@@ -111,14 +112,14 @@ void integrate_variable_test(const Stepper& stepper,
 
   std::deque<std::tuple<Time, double, double>> history;
   if (not stepper.is_self_starting()) {
-    initialize_history(time, history, stepper, analytic, rhs, slab.duration());
+    initialize_history(time, &history, stepper, analytic, rhs, slab.duration());
   }
 
   for (size_t i = 0; i < num_steps; ++i) {
     slab = slab.advance().with_duration_from_start(
         (1. + 0.5 * sin(i)) * average_step);
 
-    take_step(time, y, history, stepper, rhs, slab.duration());
+    take_step(&time, &y, &history, stepper, rhs, slab.duration());
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
@@ -142,14 +143,14 @@ void stability_test(const Stepper& stepper) noexcept {
     double y = 1.;
     std::deque<std::tuple<Time, double, double>> history;
     if (not stepper.is_self_starting()) {
-      initialize_history(time, history, stepper,
+      initialize_history(time, &history, stepper,
                          [](double t) { return exp(-2. * t); },
                          [](double v) { return -2. * v; },
                          step_size);
     }
 
     for (size_t i = 0; i < num_steps; ++i) {
-      take_step(time, y, history, stepper, [](double v) { return -2. * v; },
+      take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
                 step_size);
       CHECK(std::abs(y) < 10.);
     }
@@ -165,14 +166,14 @@ void stability_test(const Stepper& stepper) noexcept {
     double y = 1.;
     std::deque<std::tuple<Time, double, double>> history;
     if (not stepper.is_self_starting()) {
-      initialize_history(time, history, stepper,
+      initialize_history(time, &history, stepper,
                          [](double t) { return exp(-2. * t); },
                          [](double v) { return -2. * v; },
                          step_size);
     }
 
     for (size_t i = 0; i < num_steps; ++i) {
-      take_step(time, y, history, stepper, [](double v) { return -2. * v; },
+      take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
                 step_size);
       if (std::abs(y) > 10.) {
         return;
