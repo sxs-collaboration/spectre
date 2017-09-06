@@ -117,16 +117,17 @@ class Variables<tmpl::list<Tags...>> {
    */
   template <typename Tag>
   constexpr auto& get() noexcept {
-    return reference_variable_data_.template get<Tag>();
+    return tuples::get<Tag>(reference_variable_data_);
   }
   template <typename Tag>
   constexpr const auto& get() const noexcept {
-    return reference_variable_data_.template get<Tag>();
+    return tuples::get<Tag>(reference_variable_data_);
   }
   // @}
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p);
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p);  // NOLINT
 
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
@@ -247,7 +248,7 @@ class Variables<tmpl::list<Tags...>> {
   PointerVector<double> variable_data_;
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
-  TaggedTuple<Tags...> reference_variable_data_;
+  tuples::TaggedTuple<Tags...> reference_variable_data_;
 };
 
 template <typename... Tags>
@@ -353,7 +354,7 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
           "default constructor is because Charm++ uses it, you are not "
           "supposed to use it otherwise.");
   typename TagToAdd::type& var =
-      reference_variable_data_.template get<TagToAdd>();
+      tuples::get<TagToAdd>(reference_variable_data_);
   for (size_t i = 0; i < TagToAdd::type::size(); ++i) {
     var[i].set_data_ref(
         &variable_data_[(variable_offset + i) * number_of_grid_points_],

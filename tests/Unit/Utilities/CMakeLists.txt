@@ -12,6 +12,7 @@ set(UTILITIES_TESTS
     Utilities/Test_MakeArithmeticValue.cpp
     Utilities/Test_MakeArray.cpp
     Utilities/Test_Math.cpp
+    Utilities/Test_Overloader.cpp
     Utilities/Test_PrettyType.cpp
     Utilities/Test_Requires.cpp
     Utilities/Test_StdHelpers.cpp

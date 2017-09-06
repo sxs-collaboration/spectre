@@ -471,6 +471,65 @@ using typelist = tmpl::list<Ts...>;
 
 /*!
  * \ingroup Utilities
+ * \brief Metaprogramming things that are not planned to be submitted to Brigand
+ */
+namespace tmpl2 {
+/*!
+ * \ingroup Utilities
+ * \brief A compile-time list of values of the same type
+ */
+template <class T, T...>
+struct value_list {};
+
+/*!
+ * \ingroup Utilities
+ * \brief A non-short-circuiting logical AND between bools 'B""
+ *
+ * Useful when arbitrarily large parameter packs need to be evaluated, since
+ * cpp17::conjunction and cpp17::disjunction use recursion
+ */
+template <bool... Bs>
+using flat_all =
+    std::is_same<value_list<bool, Bs...>,
+                 value_list<bool, (static_cast<void>(Bs), true)...>>;
+
+/*!
+ * \ingroup Utilities
+ * \brief A non-short-circuiting logical AND between bools 'B""
+ *
+ * Useful when arbitrarily large parameter packs need to be evaluated, since
+ * cpp17::conjunction and cpp17::disjunction use recursion
+ */
+template <bool... Bs>
+constexpr bool flat_all_v = flat_all<Bs...>::value;
+
+/*!
+ * \ingroup Utilities
+ * \brief A non-short-circuiting logical OR between bools 'B""
+ *
+ * Useful when arbitrarily large parameter packs need to be evaluated, since
+ * cpp17::conjunction and cpp17::disjunction use recursion
+ */
+template <bool... Bs>
+using flat_any = std::integral_constant<
+    bool,
+    not std::is_same<
+        value_list<bool, Bs...>,
+        value_list<bool, (static_cast<void>(Bs), false)...>>::value>;
+
+/*!
+ * \ingroup Utilities
+ * \brief A non-short-circuiting logical OR between bools 'B""
+ *
+ * Useful when arbitrarily large parameter packs need to be evaluated, since
+ * cpp17::conjunction and cpp17::disjunction use recursion
+ */
+template <bool... Bs>
+constexpr bool flat_any_v = flat_any<Bs...>::value;
+}  // namespace tmpl2
+
+/*!
+ * \ingroup Utilities
  * \brief Allows zero-cost unordered expansion of a parameter
  *
  * \details
