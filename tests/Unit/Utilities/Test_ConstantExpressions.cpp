@@ -66,6 +66,55 @@ static_assert(pow<4>(2.0) == 16.0, "Failed testing pow");
 static_assert(pow<0>(2.0) == 1.0, "Failed testing pow");
 static_assert(pow<-4>(2.0) == 1.0 / 16.0, "Failed testing pow");
 
+// Test abs
+static_assert(constexpr_abs(0) == 0, "Failed testing abs");
+static_assert(constexpr_abs(1.4) == 1.4, "Failed testing abs");
+static_assert(constexpr_abs(-1.4) == 1.4, "Failed testing abs");
+
+// Test max_by_magnitude
+static_assert(max_by_magnitude(1, 2) == 2, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(2, 1) == 2, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(-1, 2) == 2, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(2, -1) == 2, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(1, -2) == -2, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(-2, 1) == -2, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(-1, -2) == -2,
+              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(-2, -1) == -2,
+              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude({-2, -1, -3}) == -3,
+              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(1, -1) == 1,
+              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(-1, 1) == -1,
+              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude({1, -1}) == 1,
+              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude({-1, 1}) == -1,
+              "Failed testing max_by_magnitude");
+
+// Test min_by_magnitude
+static_assert(min_by_magnitude(1, 2) == 1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(2, 1) == 1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(-1, 2) == -1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(2, -1) == -1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(1, -2) == 1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(-2, 1) == 1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(-1, -2) == -1,
+              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(-2, -1) == -1,
+              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude({-2, -1, -3}) == -1,
+              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(1, -1) == 1,
+              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(-1, 1) == -1,
+              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude({1, -1}) == 1,
+              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude({-1, 1}) == -1,
+              "Failed testing min_by_magnitude");
+
 // Test string manipulation
 constexpr const char *const dummy_string1 = "test 1";
 constexpr const char *const dummy_string2 = "test 1";
