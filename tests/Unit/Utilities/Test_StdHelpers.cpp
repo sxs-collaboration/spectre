@@ -10,6 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -145,5 +146,24 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayArithmetic",
   const auto expected_neg_p1 = -1. * p1;
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(gsl::at(neg_p1, i) == approx(gsl::at(expected_neg_p1, i)));
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
+                  "[DataStructures][Unit]") {
+  const std::array<double, 2> p1{{3., 4.}};
+  CHECK(magnitude(p1) == approx(5.));
+  const std::array<double, 3> p2{{
+      -2., 10., 11.,
+  }};
+  CHECK(magnitude(p2) == approx(15.));
+
+  // Check DataVector case
+  const std::array<DataVector, 2> p1_data_vector{
+      {DataVector(2, 3.), DataVector(2, 4.)}};
+  const DataVector expected_data_vector(2, 5.);
+  const auto magnitude_p1 = magnitude(p1_data_vector);
+  for(size_t i=0; i<2; ++i){
+    CHECK(expected_data_vector[i] == approx(magnitude_p1[i]));
   }
 }
