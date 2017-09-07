@@ -21,6 +21,9 @@ allowed_tags = ["CompilationTest",
                 "Unit",
                 "Utilities"]
 
+# Words disallowed in tests
+disallowed_test_name_portions = ["Functors"]
+
 # All the timeout times for the different types of tests. The order here
 # matters. Whichever time is specified last is what will be used for the
 # test if it is of multiple types.
@@ -39,6 +42,12 @@ def parse_source_file(file_name):
         # group(2) == [Unit][My]
         parsed_name = re.search("\"(.*)\",[\s]*\"(.*)\"", test_name)
         test_name = parsed_name.group(1)
+        for disallowed_name in disallowed_test_name_portions:
+            if test_name.lower().find(disallowed_name.lower()) != -1:
+                print("\nERROR: Found disallowed portion of a test name '%s' "
+                      "the test named '%s' in the file %s." %
+                      (disallowed_name, test_name, file_name))
+                exit(1)
         test_tags = parsed_name.group(2).lower().replace("[", "")[:-1]
         test_tags = test_tags.split("]")
         for test_tag in test_tags:

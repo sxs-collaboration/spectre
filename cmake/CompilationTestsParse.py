@@ -6,6 +6,7 @@
 import re
 
 from SpectreParseTests import allowed_tags
+from SpectreParseTests import disallowed_test_name_portions
 
 def parse_source_file(file_name):
     file_string = open(file_name, "r").read()
@@ -20,6 +21,13 @@ def parse_source_file(file_name):
     test_regex = re.compile("\n#ifdef COMPILATION_TEST_([A-Za-z_0-9]+)\n"
                             "(.*?)#endif", re.DOTALL)
     for (test_name, test_contents) in re.findall(test_regex, file_string):
+        for disallowed_name in disallowed_test_name_portions:
+            if test_name.lower().find(disallowed_name.lower()) != -1:
+                print("\nERROR: Found disallowed portion of a test name '%s' "
+                      "the test named '%s' in the file %s." %
+                      (disallowed_name, test_name, file_name))
+                exit(1)
+
         # parse tags
         test_tags = re.search("\/\/ \[\[TAGS:(.*?)\]\]", test_contents,
                               re.DOTALL)
