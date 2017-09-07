@@ -28,18 +28,36 @@ SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
 }
 
 SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {
-  const std::array<double, 3> x{{1.2, -3.4, 1.3}};
-  const double delta = 1.e-2;
+  { // 3D Test
+    const std::array<double, 3> x{{1.2, -3.4, 1.3}};
+    const double delta = 1.e-2;
 
-  const auto func = [](const std::array<double, 3>& y) {
-    return std::array<double, 3>{{sin(y[0]), cos(y[1]), exp(y[2])}};
-  };
-  const auto dfunc = [](const std::array<double, 3>& y) {
-    return std::array<double, 3>{{cos(y[0]), -sin(y[1]), exp(y[2])}};
-  };
+    const auto func = [](const std::array<double, 3>& y) {
+      return std::array<double, 3>{{sin(y[0]), cos(y[1]), exp(y[2])}};
+    };
+    const auto dfunc = [](const std::array<double, 3>& y) {
+      return std::array<double, 3>{{cos(y[0]), -sin(y[1]), exp(y[2])}};
+    };
 
-  for(size_t i=0; i<3; ++i){
-    CHECK(gsl::at(numerical_derivative(func, x, i, delta), i) ==
-          approx(gsl::at(dfunc(x), i)));
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(gsl::at(numerical_derivative(func, x, i, delta), i) ==
+            approx(gsl::at(dfunc(x), i)));
+    }
+  }
+  { // 2D Test
+    const std::array<double, 2> x{{1.2, -2.4}};
+    const double delta = 1.e-2;
+
+    const auto func = [](const std::array<double, 2>& y) {
+      return std::array<double, 2>{{sin(y[0]), cos(y[1])}};
+    };
+    const auto dfunc = [](const std::array<double, 2>& y) {
+      return std::array<double, 2>{{cos(y[0]), -sin(y[1])}};
+    };
+
+    for (size_t i = 0; i < 2; ++i) {
+      CHECK(gsl::at(numerical_derivative(func, x, i, delta), i) ==
+            approx(gsl::at(dfunc(x), i)));
+    }
   }
 }
