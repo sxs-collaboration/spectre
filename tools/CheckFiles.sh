@@ -164,6 +164,19 @@ if [[ $found_bad_doxygen_syntax != "" ]]; then
     found_error=1
 fi
 
+###############################################################################
+# Check for Ls because of a preference not to use it as short form for List
+found_incorrect_list_name=`
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
+    | xargs grep --with-filename -n 'Ls'`
+if [[ $found_incorrect_list_name != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of 'Ls', which is usually short for List\n"
+    echo "$found_incorrect_list_name"
+    found_error=1
+fi
+
 if [ "$found_error" -eq "1" ]; then
     exit 1
 fi

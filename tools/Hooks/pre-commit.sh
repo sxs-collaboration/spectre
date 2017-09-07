@@ -181,6 +181,19 @@ if [[ $found_bad_doxygen_syntax != "" ]]; then
 fi
 
 ###############################################################################
+# Check for Ls because of a preference not to use it as short form for List
+found_incorrect_list_name=`
+find $commit_files -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n 'Ls'`
+if [[ $found_incorrect_list_name != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of 'Ls', which is usually short for List\n"
+    echo "$found_incorrect_list_name"
+    found_error=1
+fi
+
+###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
 
