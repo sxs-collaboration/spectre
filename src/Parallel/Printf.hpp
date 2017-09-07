@@ -12,6 +12,7 @@
 #include <type_traits>
 
 #include "Utilities/Requires.hpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
@@ -84,7 +85,9 @@ inline void print_helper(const std::string& format, Ts&&... t) {
    */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
+  disable_floating_point_exceptions();
   detail::print_helper(
       format, detail::stream_object_to_string(std::forward<Args>(args))...);
+  enable_floating_point_exceptions();
 }
 }  // namespace Parallel

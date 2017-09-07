@@ -622,7 +622,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Stream",
       "--Dims:      ()\n"
       "--Locations: ()\n"
       "--Frames:    ()\n"
-      " T(0)=(2,2,2,2,2,2,2,2,2,2)\n"
+      " T()=(2,2,2,2,2,2,2,2,2,2)\n"
       "     Multiplicity: 1 Index: 0";
   CHECK(get_output(Scalar<std::vector<double>>(10_st, 2.0)) == compare_out);
 }
@@ -697,15 +697,28 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-// [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
+// [[OutputRegex, For a scalar the 0th storage index should be retrieved for
+// consistency.]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index",
+    "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index_scalar",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Scalar<double> tensor(1_st);
   const auto& t = tensor.get_tensor_index(1000);
   ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index_vector",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  tnsr::I<double, 3, Frame::Grid> tensor(1_st);
+  const auto& t = tensor.get_tensor_index(1000);
+  ERROR("Bad test end");
 #endif
 }
 
@@ -734,6 +747,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
   CHECK(std::make_pair(std::vector<std::string>{"x", "y", "z"},
                        std::vector<double>{1.0, 2.0, 3.0}) ==
         tensor_double.get_vector_of_data());
+
+  const Scalar<double> scalar{0.8};
+  CHECK(std::make_pair(std::vector<std::string>{"Scalar"},
+                       std::vector<double>{0.8}) ==
+        scalar.get_vector_of_data());
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",

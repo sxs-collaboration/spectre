@@ -6,9 +6,20 @@
 import re
 
 # A list of all the allowed ctest labels/Catch tags for tests
-allowed_tags = ["CompilationTest", "DataStructures", "Domain",
-                "ErrorHandling", "Numerical", "Parallel", "RootFinding",
-                "Serialization", "Spectral", "Time", "Unit", "Utilities"]
+allowed_tags = ["CompilationTest",
+                "DataStructures",
+                "Domain",
+                "ErrorHandling",
+                "H5",
+                "IO",
+                "Numerical",
+                "Parallel",
+                "RootFinding",
+                "Serialization",
+                "Spectral",
+                "Time",
+                "Unit",
+                "Utilities"]
 
 # All the timeout times for the different types of tests. The order here
 # matters. Whichever time is specified last is what will be used for the
