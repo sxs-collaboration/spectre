@@ -17,7 +17,8 @@ class Index;
 namespace Basis {
 namespace lgl {
 
-/*! \ingroup NumericalAlgorithms
+/*!
+ * \ingroup NumericalAlgorithms
  * \brief Compute the definite integral of a grid-function over a manifold.
  *
  * The integral is computed on the reference element by multiplying the

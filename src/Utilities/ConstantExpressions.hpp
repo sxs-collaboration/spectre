@@ -154,15 +154,15 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
 //@}
 
 namespace detail {
-template <typename Ls, size_t... indices,
-          Requires<not tt::is_a_v<tmpl::list, tmpl::front<Ls>>> = nullptr>
-inline constexpr std::array<std::decay_t<decltype(tmpl::front<Ls>::value)>,
-                            tmpl::size<Ls>::value>
+template <typename List, size_t... indices,
+          Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
+inline constexpr std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+                            tmpl::size<List>::value>
 make_array_from_list_helper(
     std::integer_sequence<size_t, indices...> /*meta*/) {
-  return std::array<std::decay_t<decltype(tmpl::front<Ls>::value)>,
-                    tmpl::size<Ls>::value>{
-      {tmpl::at<Ls, tmpl::size_t<indices>>::value...}};
+  return std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+                    tmpl::size<List>::value>{
+      {tmpl::at<List, tmpl::size_t<indices>>::value...}};
 }
 }  // namespace detail
 
@@ -170,15 +170,15 @@ make_array_from_list_helper(
 /// Make an array from a typelist that holds std::integral_constant's all of
 /// which have the same `value_type`
 ///
-/// \tparam Ls the typelist of std::integral_constant's
+/// \tparam List the typelist of std::integral_constant's
 /// \return array of integral values from the typelist
-template <typename Ls,
-          Requires<not tt::is_a_v<tmpl::list, tmpl::front<Ls>>> = nullptr>
-inline constexpr std::array<std::decay_t<decltype(tmpl::front<Ls>::value)>,
-                            tmpl::size<Ls>::value>
+template <typename List,
+          Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
+inline constexpr std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+                            tmpl::size<List>::value>
 make_array_from_list() {
-  return detail::make_array_from_list_helper<Ls>(
-      std::make_integer_sequence<size_t, tmpl::size<Ls>::value>{});
+  return detail::make_array_from_list_helper<List>(
+      std::make_integer_sequence<size_t, tmpl::size<List>::value>{});
 }
 
 template <typename TypeForZero,
@@ -189,21 +189,21 @@ make_array_from_list() {
 }
 
 namespace detail {
-template <typename Ls, size_t... indices,
-          Requires<tt::is_a<tmpl::list, tmpl::front<Ls>>::value> = nullptr>
+template <typename List, size_t... indices,
+          Requires<tt::is_a<tmpl::list, tmpl::front<List>>::value> = nullptr>
 inline constexpr std::array<
     std::decay_t<
-        decltype(make_array_from_list<tmpl::at<Ls, tmpl::size_t<0>>>())>,
-    tmpl::size<Ls>::value>
+        decltype(make_array_from_list<tmpl::at<List, tmpl::size_t<0>>>())>,
+    tmpl::size<List>::value>
 make_array_from_list_helper(
     std::integer_sequence<size_t, indices...> /*unused*/) {
-  return std::array<std::decay_t<decltype(
-                        make_array_from_list<tmpl::at<Ls, tmpl::size_t<0>>>())>,
-                    tmpl::size<Ls>::value>{
-      {make_array_from_list_helper<tmpl::at<Ls, tmpl::size_t<indices>>>(
+  return std::array<std::decay_t<decltype(make_array_from_list<
+                                          tmpl::at<List, tmpl::size_t<0>>>())>,
+                    tmpl::size<List>::value>{
+      {make_array_from_list_helper<tmpl::at<List, tmpl::size_t<indices>>>(
           std::make_integer_sequence<
               size_t,
-              tmpl::size<tmpl::at<Ls, tmpl::size_t<indices>>>::value>{})...}};
+              tmpl::size<tmpl::at<List, tmpl::size_t<indices>>>::value>{})...}};
 }
 }  // namespace detail
 
@@ -212,13 +212,13 @@ make_array_from_list_helper(
 /// Make an array of arrays from a typelist that holds typelists of
 /// std::integral_constant's all of which have the same `value_type`
 ///
-/// \tparam Ls the typelist of typelists of std::integral_constant's
+/// \tparam List the typelist of typelists of std::integral_constant's
 /// \return array of arrays of integral values from the typelists
-template <typename Ls,
-          Requires<tt::is_a_v<tmpl::list, tmpl::front<Ls>>> = nullptr>
+template <typename List,
+          Requires<tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
 inline constexpr auto make_array_from_list() {
-  return detail::make_array_from_list_helper<Ls>(
-      std::make_integer_sequence<size_t, tmpl::size<Ls>::value>{});
+  return detail::make_array_from_list_helper<List>(
+      std::make_integer_sequence<size_t, tmpl::size<List>::value>{});
 }
 
 /// \ingroup ConstantExpressions

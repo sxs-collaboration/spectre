@@ -10,22 +10,23 @@
 
 namespace TensorExpressions {
 
-/*! \ingroup TensorExpressions
+/*!
+ * \ingroup TensorExpressions
  *
  * @tparam T1
  * @tparam T2
- * @tparam ArgsLs1
- * @tparam ArgsLs2
+ * @tparam ArgsList1
+ * @tparam ArgsList2
  */
-template <typename T1, typename T2, typename ArgsLs1, typename ArgsLs2>
+template <typename T1, typename T2, typename ArgsList1, typename ArgsList2>
 struct Product;
 
-template <typename T1, typename T2, template <typename...> class ArgsLs1,
-          template <typename...> class ArgsLs2, typename... Args1,
+template <typename T1, typename T2, template <typename...> class ArgsList1,
+          template <typename...> class ArgsList2, typename... Args1,
           typename... Args2>
-struct Product<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>>
+struct Product<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>>
     : public TensorExpression<
-          Product<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>>,
+          Product<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>>,
           typename T1::type, double,
           tmpl::append<typename T1::index_list, typename T2::index_list>,
           tmpl::sort<
@@ -66,15 +67,16 @@ struct Product<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>>
 
 }  // namespace TensorExpressions
 
-/*! @ingroup TensorExpressions
+/*!
+ * @ingroup TensorExpressions
  *
  * @tparam T1
  * @tparam T2
  * @tparam X
  * @tparam Symm1
  * @tparam Symm2
- * @tparam IndexLs1
- * @tparam IndexLs2
+ * @tparam IndexList1
+ * @tparam IndexList2
  * @tparam Args1
  * @tparam Args2
  * @param t1
@@ -82,10 +84,11 @@ struct Product<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>>
  * @return
  */
 template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
-          typename IndexLs1, typename IndexLs2, typename Args1, typename Args2>
+          typename IndexList1, typename IndexList2, typename Args1,
+          typename Args2>
 SPECTRE_ALWAYS_INLINE auto operator*(
-    const TensorExpression<T1, X, Symm1, IndexLs1, Args1>& t1,
-    const TensorExpression<T2, X, Symm2, IndexLs2, Args2>& t2) {
+    const TensorExpression<T1, X, Symm1, IndexList1, Args1>& t1,
+    const TensorExpression<T2, X, Symm2, IndexList2, Args2>& t2) {
   // static_assert(tmpl::size<Args1>::value == tmpl::size<Args2>::value,
   //               "Tensor addition is only possible with the same rank
   //               tensors");
@@ -96,9 +99,9 @@ SPECTRE_ALWAYS_INLINE auto operator*(
   return TensorExpressions::Product<
       typename std::conditional<
           std::is_base_of<Expression, T1>::value, T1,
-          TensorExpression<T1, X, Symm1, IndexLs1, Args1>>::type,
+          TensorExpression<T1, X, Symm1, IndexList1, Args1>>::type,
       typename std::conditional<
           std::is_base_of<Expression, T2>::value, T2,
-          TensorExpression<T2, X, Symm2, IndexLs2, Args2>>::type,
+          TensorExpression<T2, X, Symm2, IndexList2, Args2>>::type,
       Args1, Args2>(~t1, ~t2);
 }

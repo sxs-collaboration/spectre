@@ -25,21 +25,22 @@ using indices_contractible =
                            I1::dim == I2::dim and I1::ul != I2::ul and
                                I1::fr == I2::fr and I1::index == I2::index>;
 
-template <typename T, typename X, typename SymmLs, typename IndexLs,
+template <typename T, typename X, typename SymmList, typename IndexList,
           typename Args>
 struct ComputeContractedTypeImpl;
 
-template <typename T, typename X, template <typename...> class SymmLs,
-          typename IndexLs, typename Args, typename... Symm>
-struct ComputeContractedTypeImpl<T, X, SymmLs<Symm...>, IndexLs, Args> {
-  using type = TensorExpression<T, X, Symmetry<Symm::value...>, IndexLs, Args>;
+template <typename T, typename X, template <typename...> class SymmList,
+          typename IndexList, typename Args, typename... Symm>
+struct ComputeContractedTypeImpl<T, X, SymmList<Symm...>, IndexList, Args> {
+  using type =
+      TensorExpression<T, X, Symmetry<Symm::value...>, IndexList, Args>;
 };
 
 template <typename Index1, typename Index2, typename T, typename X,
-          typename Symm, typename IndexLs, typename Args>
+          typename Symm, typename IndexList, typename Args>
 using ComputeContractedType = typename ComputeContractedTypeImpl<
     T, X, tmpl::erase<tmpl::erase<Symm, Index2>, Index1>,
-    tmpl::erase<tmpl::erase<IndexLs, Index2>, Index1>,
+    tmpl::erase<tmpl::erase<IndexList, Index2>, Index1>,
     tmpl::erase<tmpl::erase<Args, Index2>, Index1>>::type;
 
 template <int I, typename Index1, typename Index2>
@@ -71,26 +72,27 @@ struct ComputeContractionImpl<0, Index1, Index2> {
  * \ingroup TensorExpressions
  */
 template <typename Index1, typename Index2, typename T, typename X,
-          typename Symm, typename IndexLs, typename ArgsLs>
+          typename Symm, typename IndexList, typename ArgsList>
 struct TensorContract
     : public TensorExpression<
-          TensorContract<Index1, Index2, T, X, Symm, IndexLs, ArgsLs>, X,
+          TensorContract<Index1, Index2, T, X, Symm, IndexList, ArgsList>, X,
           typename detail::ComputeContractedType<Index1, Index2, T, X, Symm,
-                                                 IndexLs, ArgsLs>::symmetry,
-          typename detail::ComputeContractedType<Index1, Index2, T, X, Symm,
-                                                 IndexLs, ArgsLs>::index_list,
-          typename detail::ComputeContractedType<Index1, Index2, T, X, Symm,
-                                                 IndexLs, ArgsLs>::args_list>,
+                                                 IndexList, ArgsList>::symmetry,
+          typename detail::ComputeContractedType<
+              Index1, Index2, T, X, Symm, IndexList, ArgsList>::index_list,
+          typename detail::ComputeContractedType<
+              Index1, Index2, T, X, Symm, IndexList, ArgsList>::args_list>,
       public Expression {
-  using CI1 = tmpl::at<IndexLs, Index1>;
-  using CI2 = tmpl::at<IndexLs, Index2>;
-  static_assert(tmpl::size<Symm>::value > 1 and tmpl::size<IndexLs>::value > 1,
+  using CI1 = tmpl::at<IndexList, Index1>;
+  using CI2 = tmpl::at<IndexList, Index2>;
+  static_assert(tmpl::size<Symm>::value > 1 and
+                    tmpl::size<IndexList>::value > 1,
                 "Cannot contract indices on a Tensor with rank less than 2");
   static_assert(detail::indices_contractible<CI1, CI2>::value,
                 "Cannot contract the requested indices.");
 
   using new_type = detail::ComputeContractedType<Index1, Index2, T, X, Symm,
-                                                 IndexLs, ArgsLs>;
+                                                 IndexList, ArgsList>;
 
   using type = X;
   using symmetry = typename new_type::symmetry;
@@ -100,7 +102,7 @@ struct TensorContract
   using args_list = tmpl::sort<typename new_type::args_list>;
 
   explicit TensorContract(
-      const TensorExpression<T, X, Symm, IndexLs, ArgsLs>& t)
+      const TensorExpression<T, X, Symm, IndexList, ArgsList>& t)
       : t_(~t) {}
 
   template <size_t I, size_t Rank, Requires<(I <= Index1::value)> = nullptr>
@@ -155,7 +157,7 @@ struct TensorContract
 
  private:
   const std::conditional_t<std::is_base_of<Expression, T>::value, T,
-                           TensorExpression<T, X, Symm, IndexLs, ArgsLs>>
+                           TensorExpression<T, X, Symm, IndexList, ArgsList>>
       t_;
 };
 
@@ -163,50 +165,52 @@ struct TensorContract
  * \ingroup TensorExpressions
  */
 template <int Index1, int Index2, typename T, typename X, typename Symm,
-          typename IndexLs, typename Args>
+          typename IndexList, typename Args>
 SPECTRE_ALWAYS_INLINE auto contract(
-    const TensorExpression<T, X, Symm, IndexLs, Args>& t) {
+    const TensorExpression<T, X, Symm, IndexList, Args>& t) {
   return TensorContract<tmpl::int32_t<Index1>, tmpl::int32_t<Index2>, T, X,
-                        Symm, IndexLs, Args>(~t);
+                        Symm, IndexList, Args>(~t);
 }
 
 namespace detail {
 // Helper struct to allow contractions by using repeated indices in operator()
 // calls to tensor.
-template <template <typename> class TE, typename ReplacedArgLs, typename I,
+template <template <typename> class TE, typename ReplacedArgList, typename I,
           typename TotalContracted>
 struct fully_contract_helper {
   template <typename T>
   SPECTRE_ALWAYS_INLINE static constexpr auto apply(const T& t) -> decltype(
       contract<
-          tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value>>::value,
-          tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value + 1>>::value>(
-          fully_contract_helper<TE, ReplacedArgLs, tmpl::next<I>,
+          tmpl::index_of<ReplacedArgList, ti_contracted_t<I::value>>::value,
+          tmpl::index_of<ReplacedArgList,
+                         ti_contracted_t<I::value + 1>>::value>(
+          fully_contract_helper<TE, ReplacedArgList, tmpl::next<I>,
                                 TotalContracted>::apply(t))) {
     return contract<
-        tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value>>::value,
-        tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value + 1>>::value>(
-        fully_contract_helper<TE, ReplacedArgLs, tmpl::next<I>,
+        tmpl::index_of<ReplacedArgList, ti_contracted_t<I::value>>::value,
+        tmpl::index_of<ReplacedArgList, ti_contracted_t<I::value + 1>>::value>(
+        fully_contract_helper<TE, ReplacedArgList, tmpl::next<I>,
                               TotalContracted>::apply(t));
   }
 };
 
-template <template <typename> class TE, typename ReplacedArgLs,
+template <template <typename> class TE, typename ReplacedArgList,
           typename TotalContracted>
-struct fully_contract_helper<TE, ReplacedArgLs,
+struct fully_contract_helper<TE, ReplacedArgList,
                              tmpl::int32_t<TotalContracted::value - 1>,
                              TotalContracted> {
   using I = tmpl::int32_t<TotalContracted::value - 1>;
   template <typename T>
   SPECTRE_ALWAYS_INLINE static constexpr auto apply(const T& t) -> decltype(
       contract<
-          tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value>>::value,
-          tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value + 1>>::value>(
-          TE<ReplacedArgLs>(t))) {
+          tmpl::index_of<ReplacedArgList, ti_contracted_t<I::value>>::value,
+          tmpl::index_of<ReplacedArgList,
+                         ti_contracted_t<I::value + 1>>::value>(
+          TE<ReplacedArgList>(t))) {
     return contract<
-        tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value>>::value,
-        tmpl::index_of<ReplacedArgLs, ti_contracted_t<I::value + 1>>::value>(
-        TE<ReplacedArgLs>(t));
+        tmpl::index_of<ReplacedArgList, ti_contracted_t<I::value>>::value,
+        tmpl::index_of<ReplacedArgList, ti_contracted_t<I::value + 1>>::value>(
+        TE<ReplacedArgList>(t));
   }
 };
 }  // namespace detail
@@ -215,8 +219,8 @@ struct fully_contract_helper<TE, ReplacedArgLs,
  * \ingroup TensorExpressions
  * \brief Represents a fully contracted Tensor
  */
-template <template <typename> class TE, typename ReplacedArgLs, typename I,
+template <template <typename> class TE, typename ReplacedArgList, typename I,
           typename TotalContracted>
 using fully_contracted =
-    detail::fully_contract_helper<TE, ReplacedArgLs, I, TotalContracted>;
+    detail::fully_contract_helper<TE, ReplacedArgList, I, TotalContracted>;
 }  // namespace TensorExpressions

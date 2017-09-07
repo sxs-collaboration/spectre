@@ -54,7 +54,7 @@ constexpr int index_to_swap(const std::array<int, Rank>& arr,
                    : index_to_swap<Rank>(arr, sym, offset + 1, cur);
 }
 
-template <typename Symm, typename IndexLs, typename T>
+template <typename Symm, typename IndexList, typename T>
 T canonicalize_tensor_index(T arr) {
   static constexpr auto symm = ::make_array_from_list<Symm>();
   static constexpr size_t rank = arr.size();
@@ -64,11 +64,11 @@ T canonicalize_tensor_index(T arr) {
   return arr;
 }
 
-template <typename Symm, typename IndexLs, typename NumComps,
-          Requires<(tmpl::size<IndexLs>::value > 0)> = nullptr>
+template <typename Symm, typename IndexList, typename NumComps,
+          Requires<(tmpl::size<IndexList>::value > 0)> = nullptr>
 std::array<int, NumComps::value> compute_collapsed_to_storage() {
-  static constexpr auto dims = ::make_array_from_list<IndexLs>();
-  static constexpr auto rank = tmpl::size<IndexLs>::value;
+  static constexpr auto dims = ::make_array_from_list<IndexList>();
+  static constexpr auto rank = tmpl::size<IndexList>::value;
   std::array<int, NumComps::value> collapsed_to_storage;
   auto tensor_index = make_array<rank>(0);
   int count{0};
@@ -76,7 +76,7 @@ std::array<int, NumComps::value> compute_collapsed_to_storage() {
     // Compute canonical tensor_index, which, for symmetric get_tensor_index is
     // in decreasing numerical order, e.g. (3,2) rather than (2,3).
     auto canonical_tensor_index =
-        canonicalize_tensor_index<Symm, IndexLs>(tensor_index);
+        canonicalize_tensor_index<Symm, IndexList>(tensor_index);
     // If the tensor_index was already in the canonical form, then it must be a
     // new unique entry  and we add it to collapsed_to_storage_ as a new
     // integer, thus increasing the size_. Else, the StorageIndex has already
@@ -95,32 +95,33 @@ std::array<int, NumComps::value> compute_collapsed_to_storage() {
   return collapsed_to_storage;
 }
 
-template <typename Symm, typename IndexLs, typename NumComps,
-          Requires<(tmpl::size<IndexLs>::value == 0)> = nullptr>
+template <typename Symm, typename IndexList, typename NumComps,
+          Requires<(tmpl::size<IndexList>::value == 0)> = nullptr>
 std::array<int, 1> compute_collapsed_to_storage() {
   return std::array<int, 1>{{0}};
 }
 
-template <typename Symm, typename IndexLs, typename NumIndComps, typename T,
-          size_t NumComps, Requires<(tmpl::size<IndexLs>::value > 0)> = nullptr>
-std::array<std::array<int, tmpl::size<IndexLs>::value>, NumIndComps::value>
+template <typename Symm, typename IndexList, typename NumIndComps, typename T,
+          size_t NumComps,
+          Requires<(tmpl::size<IndexList>::value > 0)> = nullptr>
+std::array<std::array<int, tmpl::size<IndexList>::value>, NumIndComps::value>
 compute_storage_to_tensor(const std::array<T, NumComps>& collapsed_to_storage) {
-  static constexpr auto dims = ::make_array_from_list<IndexLs>();
-  static constexpr auto rank = tmpl::size<IndexLs>::value;
+  static constexpr auto dims = ::make_array_from_list<IndexList>();
+  static constexpr auto rank = tmpl::size<IndexList>::value;
   std::array<std::array<int, rank>, NumIndComps::value> storage_to_tensor;
   std::array<int, rank> tensor_index = make_array<rank>(0);
   for (const auto& current_storage_index : collapsed_to_storage) {
     storage_to_tensor[current_storage_index] =
-        canonicalize_tensor_index<Symm, IndexLs>(tensor_index);
+        canonicalize_tensor_index<Symm, IndexList>(tensor_index);
     // Move to the next tensor_index.
     increment_tensor_index(tensor_index, dims);
   }
   return storage_to_tensor;
 }
 
-template <typename Symm, typename IndexLs, typename NumIndComps, typename T,
+template <typename Symm, typename IndexList, typename NumIndComps, typename T,
           size_t NumComps,
-          Requires<(tmpl::size<IndexLs>::value == 0)> = nullptr>
+          Requires<(tmpl::size<IndexList>::value == 0)> = nullptr>
 std::array<std::array<int, 1>, NumIndComps::value> compute_storage_to_tensor(
     const std::array<T, NumComps>& /*collapsed_to_storage*/) {
   return std::array<std::array<int, 1>, 1>{{std::array<int, 1>{{0}}}};

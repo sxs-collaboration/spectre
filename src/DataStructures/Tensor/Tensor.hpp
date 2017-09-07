@@ -27,15 +27,15 @@
 
 /// \cond
 template <typename X, typename Symm = Symmetry<>,
-          typename IndexLs = index_list<>>
+          typename IndexList = index_list<>>
 class Tensor;
 /// \endcond
 
 namespace Tensor_detail {
 template <typename T, typename = void>
 struct is_tensor : std::false_type {};
-template <typename X, typename Symm, typename IndexLs>
-struct is_tensor<Tensor<X, Symm, IndexLs>> : std::true_type {};
+template <typename X, typename Symm, typename IndexList>
+struct is_tensor<Tensor<X, Symm, IndexList>> : std::true_type {};
 }  // namespace Tensor_detail
 
 /*!
@@ -68,11 +68,11 @@ struct is_tensor<Tensor<X, Symm, IndexLs>> : std::true_type {};
  *
  * \tparam X the type held
  * \tparam Symm the ::Symmetry of the indices
- * \tparam IndexLs a typelist of \ref SpacetimeIndex "TensorIndexType"'s
+ * \tparam IndexList a typelist of \ref SpacetimeIndex "TensorIndexType"'s
  */
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-class Tensor<X, Symm, IndexLs<Indices...>> {
+class Tensor<X, Symm, IndexList<Indices...>> {
   /// The number of \ref SpacetimeIndex "TensorIndexType"'s
   ///
   /// Note: Scalars need to have 1 so we can still store their data.
@@ -104,9 +104,9 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   using index_list = typelist<Indices...>;
   /// The type of the TensorExpression that would represent this Tensor in a
   /// tensor expression.
-  template <typename ArgsLs>
+  template <typename ArgsList>
   using TE = TensorExpression<Tensor<X, Symm, tmpl::list<Indices...>>, X, Symm,
-                              tmpl::list<Indices...>, ArgsLs>;
+                              tmpl::list<Indices...>, ArgsList>;
 
   Tensor() = default;
   ~Tensor() = default;
@@ -150,9 +150,9 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
   /// Constructor that passes "args" to constructor of X and initializes each
   /// component to be the same
   template <typename... Args,
-            Requires<not(cpp17::disjunction_v<
-                             std::is_same<Tensor<X, Symm, IndexLs<Indices...>>,
-                                          std::decay_t<Args>>...> and
+            Requires<not(cpp17::disjunction_v<std::is_same<
+                             Tensor<X, Symm, IndexList<Indices...>>,
+                             std::decay_t<Args>>...> and
                          sizeof...(Args) == 1)> = nullptr>
   explicit Tensor(Args&&... args);
 
@@ -426,28 +426,28 @@ class Tensor<X, Symm, IndexLs<Indices...>> {
 // Template Definitions - Variadic templates must be in header
 // ================================================================
 
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 template <size_t NumberOfIndices, Requires<(NumberOfIndices == 1)>>
-Tensor<X, Symm, IndexLs<Indices...>>::Tensor(storage_type data)
+Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data)
     : data_(std::move(data)) {}
 
 // The cpp17::disjunction is used to prevent the compiler from matching this
 // function when it should select the move constructor.
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 template <typename... Args,
           Requires<not(cpp17::disjunction_v<
-                           std::is_same<Tensor<X, Symm, IndexLs<Indices...>>,
+                           std::is_same<Tensor<X, Symm, IndexList<Indices...>>,
                                         std::decay_t<Args>>...> and
                        sizeof...(Args) == 1)>>
-Tensor<X, Symm, IndexLs<Indices...>>::Tensor(Args&&... args)
+Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args)
     : data_(make_array<size()>(X(std::forward<Args>(args)...))) {}
 
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 std::pair<std::vector<std::string>, std::vector<X>>
-Tensor<X, Symm, IndexLs<Indices...>>::get_vector_of_data() const {
+Tensor<X, Symm, IndexList<Indices...>>::get_vector_of_data() const {
   std::vector<value_type> serialized_tensor(size());
   std::vector<std::string> component_names(size());
   for (size_t i = 0; i < data_.size(); ++i) {
@@ -457,25 +457,25 @@ Tensor<X, Symm, IndexLs<Indices...>>::get_vector_of_data() const {
   return std::make_pair(component_names, serialized_tensor);
 }
 
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-bool operator==(const Tensor<X, Symm, IndexLs<Indices...>>& lhs,
-                const Tensor<X, Symm, IndexLs<Indices...>>& rhs) {
+bool operator==(const Tensor<X, Symm, IndexList<Indices...>>& lhs,
+                const Tensor<X, Symm, IndexList<Indices...>>& rhs) {
   return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-bool operator!=(const Tensor<X, Symm, IndexLs<Indices...>>& lhs,
-                const Tensor<X, Symm, IndexLs<Indices...>>& rhs) {
+bool operator!=(const Tensor<X, Symm, IndexList<Indices...>>& lhs,
+                const Tensor<X, Symm, IndexList<Indices...>>& rhs) {
   return not(lhs == rhs);
 }
 
 // We place the stream operators in the header file so they do not need to be
 // explicitly instantiated.
-template <typename X, typename Symm, template <typename...> class IndexLs,
+template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 std::ostream& operator<<(std::ostream& os,
-                         const Tensor<X, Symm, IndexLs<Indices...>>& x) {
+                         const Tensor<X, Symm, IndexList<Indices...>>& x) {
   static_assert(tt::is_streamable_v<decltype(os), X>,
                 "operator<< is not defined for the type you are trying to "
                 "stream in Tensor");

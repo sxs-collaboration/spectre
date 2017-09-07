@@ -11,7 +11,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/*! \ingroup TensorExpressions
+/*!
+ * \ingroup TensorExpressions
  * \brief Represents the indices in a TensorExpression
  *
  * \details
@@ -109,7 +110,8 @@ TensorIndex<static_cast<size_t>(I + 1000)> ti_contracted();
 /// \endcond
 
 namespace tt {
-/*! \ingroup TypeTraits TensorExpressions
+/*!
+ * \ingroup TypeTraits TensorExpressions
  * \brief Check if a type `T` is a TensorIndex used in TensorExpressions
  */
 template <typename T>
@@ -137,9 +139,9 @@ struct rhs_elements_in_lhs_helper {
 /// `Rhs`.
 ///
 /// ### Usage
-/// For typelists `Ls1` and `Ls2`,
+/// For typelists `List1` and `List2`,
 /// \code{.cpp}
-/// using result = rhs_elements_in_lhs<Ls1, Ls2>;
+/// using result = rhs_elements_in_lhs<List1, List2>;
 /// \endcode
 /// \metareturns
 /// typelist
@@ -216,42 +218,43 @@ struct repeated_helper {
 };
 }  // namespace detail
 
-/*! \ingroup TensorExpressions
- * Returns a list of all the types that occurred more than once in Ls.
+/*!
+ * \ingroup TensorExpressions
+ * Returns a list of all the types that occurred more than once in List.
  */
-template <typename Ls>
+template <typename List>
 using repeated = tmpl::fold<
-    Ls, tmpl::list<>,
-    detail::repeated_helper<tmpl::pin<Ls>, tmpl::_state, tmpl::_element>>;
+    List, tmpl::list<>,
+    detail::repeated_helper<tmpl::pin<List>, tmpl::_state, tmpl::_element>>;
 
 namespace detail {
-template <typename Ls, typename Element, typename R>
+template <typename List, typename Element, typename R>
 using index_replace = tmpl::replace_at<
-    tmpl::replace_at<Ls, tmpl::index_of<Ls, Element>, R>,
-    tmpl::index_of<tmpl::replace_at<Ls, tmpl::index_of<Ls, Element>, R>,
+    tmpl::replace_at<List, tmpl::index_of<List, Element>, R>,
+    tmpl::index_of<tmpl::replace_at<List, tmpl::index_of<List, Element>, R>,
                    Element>,
     next_tensor_index<R>>;
 
 /// \cond HIDDEN_SYMBOLS
-template <typename Ls, typename ReplaceLs, int I>
+template <typename List, typename ReplaceList, int I>
 struct replace_indices_impl
     : replace_indices_impl<
-          index_replace<Ls, tmpl::front<ReplaceLs>, ti_contracted_t<2 * I>>,
-          tmpl::pop_front<ReplaceLs>, I + 1> {};
+          index_replace<List, tmpl::front<ReplaceList>, ti_contracted_t<2 * I>>,
+          tmpl::pop_front<ReplaceList>, I + 1> {};
 /// \endcond
 
-template <typename Ls, int I>
-struct replace_indices_impl<Ls, tmpl::list<>, I> {
-  using type = Ls;
+template <typename List, int I>
+struct replace_indices_impl<List, tmpl::list<>, I> {
+  using type = List;
 };
 }  // namespace detail
 
-/*! \ingroup TensorExpressions
- *
+/*!
+ * \ingroup TensorExpressions
  */
-template <typename Ls, typename ReplaceLs>
+template <typename List, typename ReplaceList>
 using replace_indices =
-    typename detail::replace_indices_impl<Ls, ReplaceLs, 0>::type;
+    typename detail::replace_indices_impl<List, ReplaceList, 0>::type;
 
 /// \ingroup TensorExpressions
 /// \brief Marks a class as being a TensorExpression
@@ -264,7 +267,7 @@ using replace_indices =
 /// 2) The tensor indices will be swapped to conform with mathematical notation
 struct Expression {};
 
-template <typename DataType, typename Symm, typename IndexLs>
+template <typename DataType, typename Symm, typename IndexList>
 class Tensor;
 
 // @{
@@ -275,28 +278,30 @@ class Tensor;
 /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
 /// \tparam DataType the type of the data being stored in the ::Tensor's
 /// \tparam Symm the ::Symmetry of the Derived class
-/// \tparam IndexLs the list of \ref SpacetimeIndex "TensorIndex"'s
+/// \tparam IndexList the list of \ref SpacetimeIndex "TensorIndex"'s
 /// \tparam Args the tensor indices, e.g. `_a` and `_b` in `F(_a, _b)`
 /// \cond HIDDEN_SYMBOLS
-template <typename Derived, typename DataType, typename Symm, typename IndexLs,
-          typename Args = tmpl::list<>, typename ReducedArgs = tmpl::list<>>
+template <typename Derived, typename DataType, typename Symm,
+          typename IndexList, typename Args = tmpl::list<>,
+          typename ReducedArgs = tmpl::list<>>
 struct TensorExpression;
 /// \endcond
 
-template <typename Derived, typename DataType, typename Symm, typename IndexLs,
-          template <typename...> class ArgsLs, typename... Args>
-struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
+template <typename Derived, typename DataType, typename Symm,
+          typename IndexList, template <typename...> class ArgsList,
+          typename... Args>
+struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>> {
   static_assert(sizeof...(Args) == 0 or
-                    sizeof...(Args) == tmpl::size<IndexLs>::value,
+                    sizeof...(Args) == tmpl::size<IndexList>::value,
                 "the number of Tensor indices must match the number of "
                 "components specified in an expression.");
   using type = DataType;
   using symmetry = Symm;
-  using index_list = IndexLs;
+  using index_list = IndexList;
   static constexpr auto num_tensor_indices =
       tmpl::size<index_list>::value == 0 ? 1 : tmpl::size<index_list>::value;
   /// Typelist of the tensor indices, e.g. `_a_t` and `_b_t` in `F(_a, _b)`
-  using args_list = ArgsLs<Args...>;
+  using args_list = ArgsList<Args...>;
 
   // @{
   /// Cast down to the derived class. This is enabled by the
@@ -317,13 +322,14 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   /// base classes, which is not feasible), return a reference to a
   /// TensorExpression, which has a sufficient interface to evaluate the
   /// expression.
-  /// \returns const TensorExpression<Derived, DataType, Symm, IndexLs,
-  /// ArgsLs<Args...>>&
+  /// \returns const TensorExpression<Derived, DataType, Symm, IndexList,
+  /// ArgsList<Args...>>&
   template <typename V = Derived,
             Requires<tt::is_a<Tensor, V>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE auto operator~() const {
-    return static_cast<const TensorExpression<Derived, DataType, Symm, IndexLs,
-                                              ArgsLs<Args...>>&>(*this);
+    return static_cast<const TensorExpression<Derived, DataType, Symm,
+                                              IndexList, ArgsList<Args...>>&>(
+        *this);
   }
   // @}
 
@@ -338,8 +344,8 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   template <typename U>
   struct ComputeCorrectTensorIndex;
 
-  template <template <typename...> class RedArgsLs, typename... RedArgs>
-  struct ComputeCorrectTensorIndex<RedArgsLs<RedArgs...>> {
+  template <template <typename...> class RedArgsList, typename... RedArgs>
+  struct ComputeCorrectTensorIndex<RedArgsList<RedArgs...>> {
     template <typename U, std::size_t Size>
     SPECTRE_ALWAYS_INLINE static constexpr std::array<U, Size> apply(
         const std::array<U, Size>& tensor_index) {
@@ -461,7 +467,7 @@ struct TensorExpression<Derived, DataType, Symm, IndexLs, ArgsLs<Args...>> {
   ///
   /// We need to store a pointer to the Tensor in a member variable in order
   /// to be able to access the data when later evaluating the tensor expression.
-  explicit TensorExpression(const Tensor<DataType, Symm, IndexLs>& t)
+  explicit TensorExpression(const Tensor<DataType, Symm, IndexList>& t)
       : t_(&t) {}
 
  private:

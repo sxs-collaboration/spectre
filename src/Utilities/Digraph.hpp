@@ -73,38 +73,38 @@ struct has_source_and_destination : std::false_type {};
 template <template <class...> class E, class S, class D, class W>
 struct has_source_and_destination<E<S, D, W>, S, D> : std::true_type {};
 
-template <class edgeLs>
+template <class edgeList>
 struct digraph;
 
 namespace detail {
 template <class Graph, class S, class D>
 struct get_edge_impl;
-template <class S, class D, class edgeLs>
-struct get_edge_impl<digraph<edgeLs>, S, D> {
-  using type = find<edgeLs, has_source_and_destination<_1, pin<S>, pin<D>>>;
+template <class S, class D, class edgeList>
+struct get_edge_impl<digraph<edgeList>, S, D> {
+  using type = find<edgeList, has_source_and_destination<_1, pin<S>, pin<D>>>;
 };
 }  // namespace detail
 
 namespace detail {
 template <class Graph, class S, class D>
 struct has_edge_impl;
-template <class S, class D, class edgeLs>
-struct has_edge_impl<digraph<edgeLs>, S, D>
-    : found<edgeLs, has_source_and_destination<_1, pin<S>, pin<D>>> {};
+template <class S, class D, class edgeList>
+struct has_edge_impl<digraph<edgeList>, S, D>
+    : found<edgeList, has_source_and_destination<_1, pin<S>, pin<D>>> {};
 }  // namespace detail
 
 template <class Graph>
 struct outgoing_edges_impl;
-template <class edgeLs>
-struct outgoing_edges_impl<digraph<edgeLs>> {
-  using type = typename digraph<edgeLs>::adjacency_list;
+template <class edgeList>
+struct outgoing_edges_impl<digraph<edgeList>> {
+  using type = typename digraph<edgeList>::adjacency_list;
 };
 
 template <class Graph>
 struct ingoing_edges_impl;
-template <class edgeLs>
-struct ingoing_edges_impl<digraph<edgeLs>> {
-  using type = typename digraph<edgeLs>::ingoing_list;
+template <class edgeList>
+struct ingoing_edges_impl<digraph<edgeList>> {
+  using type = typename digraph<edgeList>::ingoing_list;
 };
 
 // This is what we would like to do, but Intel cannot handle it...
@@ -117,8 +117,8 @@ struct compute_adjacency_list<VertexSeq<Vertices...>, F, Es...> {
       brigand::filter<brigand::list<Es...>, F<brigand::_1, pin<Vertices>>>...>;
 };
 
-template <template <class...> class Ls, class... edges>
-struct digraph<Ls<edges...>> {
+template <template <class...> class List, class... edges>
+struct digraph<List<edges...>> {
  public:
   using edge_list = list<edges...>;
   static_assert(is_set<edge_list>::value,
@@ -137,14 +137,14 @@ struct digraph<Ls<edges...>> {
   template <class E>
   static digraph<::brigand::remove<
       list<edges...>,
-      detail::get_edge_impl<digraph<Ls<edges...>>, typename E::source,
+      detail::get_edge_impl<digraph<List<edges...>>, typename E::source,
                             typename E::destination>>>
       erase(brigand::type_<E>);
 
   template <class E>
   static digraph<push_back<
       remove<list<edges...>,
-             detail::get_edge_impl<digraph<Ls<edges...>>, typename E::source,
+             detail::get_edge_impl<digraph<List<edges...>>, typename E::source,
                                    typename E::destination>>,
       E>>
       insert(::brigand::type_<E>);
@@ -155,7 +155,8 @@ template <class Graph, class S, class D>
 using has_edge = ::brigand::detail::has_edge_impl<Graph, S, D>;
 }  // namespace lazy
 
-/*! \ingroup digraph
+/*!
+ * \ingroup Utilities
  * \brief Check if a digraph has an edge with source `S` and destination `D`
  *
  *

@@ -15,26 +15,26 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
-template <typename X, typename Symm, typename IndexLs>
+template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
-template <typename TagsLs>
+template <typename TagsList>
 class Variables;
 /// \endcond
 
 namespace Tags {
-template <typename TagsLs>
+template <typename TagsList>
 struct Variables : db::DataBoxTag {
-  static_assert(tt::is_a<tmpl::list, TagsLs>::value,
-                "The TagsLs passed to Tags::Variables is not a typelist");
-  using tags_list = TagsLs;
-  using type = ::Variables<TagsLs>;
+  static_assert(tt::is_a<tmpl::list, TagsList>::value,
+                "The TagsList passed to Tags::Variables is not a typelist");
+  using tags_list = TagsList;
+  using type = ::Variables<TagsList>;
   static constexpr db::DataBoxString_t label = "Variables";
 };
 }  // namespace Tags
 
 /// \cond
-template <typename TagsLs>
+template <typename TagsList>
 class Variables;
 /// \endcond
 
@@ -366,21 +366,21 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
 /// \endcond
 
 namespace Variables_detail {
-template <typename TagsLs>
-std::ostream& print_helper(std::ostream& os, const Variables<TagsLs>& /*d*/,
+template <typename TagsList>
+std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
                            typelist<> /*meta*/) {
   return os << "Variables is empty!";
 }
 
-template <typename Tag, typename TagsLs>
-std::ostream& print_helper(std::ostream& os, const Variables<TagsLs>& d,
+template <typename Tag, typename TagsList>
+std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
                            typelist<Tag> /*meta*/) {
   return os << d.template get<Tag>();
 }
 template <typename Tag, typename SecondTag, typename... RemainingTags,
-          typename TagsLs>
+          typename TagsList>
 std::ostream& print_helper(
-    std::ostream& os, const Variables<TagsLs>& d,
+    std::ostream& os, const Variables<TagsList>& d,
     typelist<Tag, SecondTag, RemainingTags...> /*meta*/) {
   os << d.template get<Tag>() << '\n';
   print_helper(os, d, typelist<SecondTag, RemainingTags...>{});
@@ -388,12 +388,13 @@ std::ostream& print_helper(
 }
 }  // namespace Variables_detail
 
-template <typename TagsLs>
-std::ostream& operator<<(std::ostream& os, const Variables<TagsLs>& d) {
-  return Variables_detail::print_helper(os, d, TagsLs{});
+template <typename TagsList>
+std::ostream& operator<<(std::ostream& os, const Variables<TagsList>& d) {
+  return Variables_detail::print_helper(os, d, TagsList{});
 }
 
-template <typename TagsLs>
-bool operator!=(const Variables<TagsLs>& lhs, const Variables<TagsLs>& rhs) {
+template <typename TagsList>
+bool operator!=(const Variables<TagsList>& lhs,
+                const Variables<TagsList>& rhs) {
   return not(lhs == rhs);
 }

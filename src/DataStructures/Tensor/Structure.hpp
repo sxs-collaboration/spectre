@@ -132,15 +132,15 @@ inline constexpr std::size_t compute_collapsed_index(
                   : 0;
 }
 
-template <typename IndexLs, typename... I,
+template <typename IndexList, typename... I,
           Requires<cpp17::conjunction_v<tt::is_integer<I>...>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr size_t compute_collapsed_index(
     I... i) noexcept {
-  static_assert(sizeof...(I) == tmpl::size<IndexLs>::value,
+  static_assert(sizeof...(I) == tmpl::size<IndexList>::value,
                 "The number of tensor indices passed to "
                 "compute_collapsed_index does not match the rank of the "
                 "tensor.");
-  return static_cast<size_t>(detail::compute_collapsed_index_impl<IndexLs>(
+  return static_cast<size_t>(detail::compute_collapsed_index_impl<IndexList>(
       static_cast<std::size_t>(i)...));
 }
 
