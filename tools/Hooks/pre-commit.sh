@@ -164,5 +164,20 @@ if [[ $found_bad_approx != "" ]]; then
 fi
 
 ###############################################################################
+# Check for Doxygen comments on the same line as a /*!
+found_bad_doxygen_syntax=`
+find $commit_files -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n '/\*\! '`
+if [[ $found_bad_doxygen_syntax != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of bad Doxygen syntax: /*! STUFF\n"
+    echo $found_bad_doxygen_syntax | \
+        GREP_COLOR='1;37;41' grep -E '\/\*\!.*' $color_option
+    echo ''
+    exit 1
+fi
+
+###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
