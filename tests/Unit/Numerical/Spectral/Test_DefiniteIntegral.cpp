@@ -13,6 +13,12 @@
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+// GCC 4.7.3 triggers the following for the CHECK() macros.
+// suggest parentheses around comparison in operand of == [-Wparentheses]
+// adding an extra set of parentheses causes CHECK to print false instead
+// of the lhs and rhs of the assertion when a check fails.
+#pragma GCC diagnostic push
+
 namespace {
 void test_definite_integral_1d(const Index<1>& index_1d) {
   const size_t num_pts_in_x = index_1d[0];
@@ -84,6 +90,7 @@ void test_definite_integral_3d(const Index<3>& index_3d) {
   }
 }
 }  // namespace
+#pragma GCC diagnostic pop
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.DefiniteIntegral",
                   "[Numerical][Spectral][Unit]") {
