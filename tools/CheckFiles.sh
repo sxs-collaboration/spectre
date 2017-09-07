@@ -16,7 +16,7 @@ found_error=0
 ###############################################################################
 # Check for lines longer than 80 characters
 found_long_lines=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n '.\{81,\}'`
 if [[ $found_long_lines != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -29,7 +29,7 @@ fi
 ###############################################################################
 # Check for iostream header
 found_iostream=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n '#include <iostream>'`
 if [[ $found_iostream != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -46,6 +46,7 @@ find ./ -type f               \
      ! -name "*.patch"        \
      ! -path "./docs/*"       \
      ! -path "./.git/*"       \
+     ! -path "./build*"       \
     | xargs grep -E '^.*'$'\t'`
 if [[ $found_tabs_files != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -62,6 +63,7 @@ find ./ -type f             \
      ! -name "*.patch"      \
      ! -path "./docs/*"     \
      ! -path "./.git/*"     \
+     ! -path "./build*"     \
     | xargs grep -E '^.* +$'`
 echo
 if [[ $found_spaces_files != "" ]]; then
@@ -78,6 +80,7 @@ fi
 found_carriage_return_files=`
 find ./ -type f                 \
      ! -path "*.git*"           \
+     ! -path "./build*"       \
     | xargs grep -E '^\+.*'$'\r'`
 if [[ $found_carriage_return_files != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -109,6 +112,7 @@ find ./ -type f                                                              \
      ! -name "*.patch"                                                       \
      ! -name "*LICENSE.*"                                                    \
      ! -name "*.clang-format"                                                \
+     ! -path "./build*"                                                      \
     | xargs grep -L "^.*Distributed under the MIT License"`
 if [[ $files_without_license != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -121,7 +125,7 @@ fi
 ###############################################################################
 # Check for tests using Catch's TEST_CASE instead of SPECTRE_TEST_CASE
 found_test_case=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n "^TEST_CASE"`
 if [[ $found_test_case != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -134,7 +138,7 @@ fi
 ###############################################################################
 # Check for tests using Catch's Approx, which has a very loose tolerance
 found_bad_approx=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n "Approx("`
 if [[ $found_bad_approx != "" ]]; then
     echo "This script can be run locally from any source dir using:"
