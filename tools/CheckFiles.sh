@@ -11,6 +11,8 @@ then
   color_option='--color=auto'
 fi
 
+found_error=0
+
 ###############################################################################
 # Check for lines longer than 80 characters
 found_long_lines=`
@@ -21,7 +23,7 @@ if [[ $found_long_lines != "" ]]; then
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found lines over 80 characters:"
     echo "$found_long_lines"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -34,7 +36,7 @@ if [[ $found_iostream != "" ]]; then
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found iostream header in files:"
     echo "$found_iostream"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -50,7 +52,7 @@ if [[ $found_tabs_files != "" ]]; then
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found tabs in the following  files:"
     echo "$found_tabs_files" | GREP_COLOR='1;37;41' grep -F $'\t' $color_option
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -68,7 +70,7 @@ if [[ $found_spaces_files != "" ]]; then
     echo "Found white space at end of line in the following files:"
     echo "$found_spaces_files" | \
         GREP_COLOR='1;37;41' grep -E ' +$' $color_option
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -83,7 +85,7 @@ if [[ $found_carriage_return_files != "" ]]; then
     echo "Found carriage returns in the following files:"
     echo "$found_carriage_return_files" | \
         GREP_COLOR='1;37;41' grep -E '\r+$' $color_option
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -113,7 +115,7 @@ if [[ $files_without_license != "" ]]; then
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Did not find a license in these files:"
     echo "$files_without_license"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -126,7 +128,7 @@ if [[ $found_test_case != "" ]]; then
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
     echo "$found_test_case"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -140,5 +142,9 @@ if [[ $found_bad_approx != "" ]]; then
     printf "Found occurrences of Approx, must use approx from " \
            "SPECTRE_ROOT/tests/Unit/TestHelpers.hpp instead:\n"
     echo "$found_bad_approx"
+    found_error=1
+fi
+
+if [ "$found_error" -eq "1" ]; then
     exit 1
 fi
