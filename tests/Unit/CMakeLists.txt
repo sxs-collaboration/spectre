@@ -45,6 +45,8 @@ if(COVERAGE)
       unit-test-coverage
       ${CMAKE_CTEST_COMMAND}
       DEPENDS ${executable}
+      TESTRUNNER_ARGS
+      "--output-on-failure"
       IGNORE_COV
       '${CMAKE_BINARY_DIR}/Informer/InfoFromBuild.cpp'
       '${CMAKE_SOURCE_DIR}/tests/*'
