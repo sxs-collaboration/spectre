@@ -194,6 +194,19 @@ if [[ $found_incorrect_list_name != "" ]]; then
 fi
 
 ###############################################################################
+# Check for enable_if and request replacing it with Requires
+found_enable_if=`
+find $commit_files -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n 'enable_if'`
+if [[ $found_enable_if != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of 'std::enable_if', prefer 'Requires'\n"
+    echo "$found_enable_if"
+    found_error=1
+fi
+
+###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
 
