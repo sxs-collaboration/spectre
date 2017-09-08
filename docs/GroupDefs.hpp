@@ -144,16 +144,6 @@
  */
 
 /*!
- * \defgroup Functions Functions
- * Functions and compute items available
- */
-
-/*!
- * \defgroup GrFunctions Functions for GR
- * Functions and compute items available specific to general relativity
- */
-
-/*!
  * \defgroup GlobalCache Global Cache
  * How to access and utilize the global cache
  */
