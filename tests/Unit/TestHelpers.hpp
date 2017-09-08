@@ -316,7 +316,7 @@ std::array<double, VolumeDim> numerical_derivative(
          "Trying to take derivative along axis " << direction);
 
   const auto dx = [direction, delta]() {
-    auto d = make_array<3>(0.);
+    auto d = make_array<VolumeDim>(0.);
     gsl::at(d, direction) = delta;
     return d;
   }();
