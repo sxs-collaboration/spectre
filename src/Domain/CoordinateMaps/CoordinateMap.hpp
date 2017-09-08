@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArithmeticValue.hpp"
 #include "Utilities/Tuple.hpp"
@@ -21,7 +22,68 @@ constexpr size_t map_dim = FirstMap::dim;
 }  // namespace CoordinateMaps
 
 /*!
- * \ingroup ComputationalDomain
+ * \ingroup CoordinateMapsGroup
+ * \brief Abstract base class for CoordinateMap
+ */
+template <typename SourceFrame, typename TargetFrame, size_t Dim>
+class CoordinateMapBase : public PUP::able {
+ public:
+  WRAPPED_PUPable_abstract(CoordinateMapBase);  // NOLINT
+
+  CoordinateMapBase() = default;
+  CoordinateMapBase(const CoordinateMapBase& /*rhs*/) = default;
+  CoordinateMapBase& operator=(const CoordinateMapBase& /*rhs*/) = default;
+  CoordinateMapBase(CoordinateMapBase&& /*rhs*/) = default;
+  CoordinateMapBase& operator=(CoordinateMapBase&& /*rhs*/) = default;
+  ~CoordinateMapBase() override = default;
+
+  virtual std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>
+  get_clone() const = 0;
+
+  // @{
+  /// Apply the `Maps` to the point(s) `source_point`
+  virtual tnsr::I<double, Dim, TargetFrame> operator()(
+      const tnsr::I<double, Dim, SourceFrame>& source_point) const = 0;
+  virtual tnsr::I<DataVector, Dim, TargetFrame> operator()(
+      const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
+  // @}
+
+  // @{
+  /// Apply the inverse `Maps` to the point(s) `target_point`
+  virtual tnsr::I<double, Dim, SourceFrame> inverse(
+      const tnsr::I<double, Dim, TargetFrame>& target_point) const = 0;
+  virtual tnsr::I<DataVector, Dim, SourceFrame> inverse(
+      const tnsr::I<DataVector, Dim, TargetFrame>& target_point) const = 0;
+  // @}
+
+  // @{
+  /// Compute the inverse Jacobian of the `Maps` at the point(s)
+  /// `source_point`
+  virtual Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                 index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
+                            SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
+  inv_jacobian(const tnsr::I<double, Dim, SourceFrame>& source_point) const = 0;
+  virtual Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                 index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
+                            SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
+  inv_jacobian(
+      const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
+  // @}
+
+  // @{
+  /// Compute the Jacobian of the `Maps` at the point(s) `source_point`
+  virtual Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
+                 index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
+                            SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
+  jacobian(const tnsr::I<double, Dim, SourceFrame>& source_point) const = 0;
+  virtual Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                 index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
+                            SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
+  jacobian(const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
+  // @}
+};
+
+/*!
  * \ingroup CoordinateMapsGroup
  * \brief A coordinate map or composition of coordinate maps
  *
@@ -39,7 +101,9 @@ constexpr size_t map_dim = FirstMap::dim;
  * a type alias `target_frame` and `typelist of the `Maps...`.
  */
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-class CoordinateMap {
+class CoordinateMap
+    : public CoordinateMapBase<SourceFrame, TargetFrame,
+                               CoordinateMaps::map_dim<Maps...>> {
   static_assert(sizeof...(Maps) > 0, "Must have at least one map");
   static_assert(
       tmpl::all<tmpl::integral_list<size_t, Maps::dim...>,
@@ -57,41 +121,121 @@ class CoordinateMap {
   /// Used for Charm++ serialization
   CoordinateMap() = default;
 
+  CoordinateMap(const CoordinateMap& /*rhs*/) = default;
+  CoordinateMap& operator=(const CoordinateMap& /*rhs*/) = default;
+  CoordinateMap(CoordinateMap&& /*rhs*/) = default;
+  CoordinateMap& operator=(CoordinateMap&& /*rhs*/) = default;
+  ~CoordinateMap() override = default;
+
   constexpr explicit CoordinateMap(Maps... maps);
 
+  std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, dim>> get_clone()
+      const override {
+    return std::make_unique<CoordinateMap>(*this);
+  }
+
+  // @{
   /// Apply the `Maps...` to the point(s) `source_point`
-  template <typename T>
-  constexpr tnsr::I<T, dim, TargetFrame> operator()(
-      const tnsr::I<T, dim, SourceFrame>& source_point) const;
+  constexpr tnsr::I<double, dim, TargetFrame> operator()(
+      const tnsr::I<double, dim, SourceFrame>& source_point) const override {
+    return call_impl(source_point);
+  }
+  constexpr tnsr::I<DataVector, dim, TargetFrame> operator()(
+      const tnsr::I<DataVector, dim, SourceFrame>& source_point)
+      const override {
+    return call_impl(source_point);
+  }
+  // @}
 
+  // @{
   /// Apply the inverse `Maps...` to the point(s) `target_point`
-  template <typename T>
-  constexpr tnsr::I<T, dim, SourceFrame> inverse(
-      const tnsr::I<T, dim, TargetFrame>& target_point) const;
+  constexpr tnsr::I<double, dim, SourceFrame> inverse(
+      const tnsr::I<double, dim, TargetFrame>& target_point) const override {
+    return inverse_impl(target_point);
+  }
+  constexpr tnsr::I<DataVector, dim, SourceFrame> inverse(
+      const tnsr::I<DataVector, dim, TargetFrame>& target_point)
+      const override {
+    return inverse_impl(target_point);
+  }
+  // @}
 
+  // @{
   /// Compute the inverse Jacobian of the `Maps...` at the point(s)
   /// `source_point`
-  template <typename T>
-  constexpr Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
+  constexpr Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                    index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
                               SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(const tnsr::I<T, dim, SourceFrame>& source_point) const;
+  inv_jacobian(
+      const tnsr::I<double, dim, SourceFrame>& source_point) const override {
+    return inv_jacobian_impl(source_point);
+  }
+  constexpr Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                   index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
+                              SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
+  inv_jacobian(const tnsr::I<DataVector, dim, SourceFrame>& source_point)
+      const override {
+    return inv_jacobian_impl(source_point);
+  }
+  // @}
 
+  // @{
   /// Compute the Jacobian of the `Maps...` at the point(s) `source_point`
-  template <typename T>
-  constexpr Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
+  constexpr Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                    index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                               SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-  jacobian(const tnsr::I<T, dim, SourceFrame>& source_point) const;
+  jacobian(
+      const tnsr::I<double, dim, SourceFrame>& source_point) const override {
+    return jacobian_impl(source_point);
+  }
+  constexpr Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                   index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
+                              SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
+  jacobian(const tnsr::I<DataVector, dim, SourceFrame>& source_point)
+      const override {
+    return jacobian_impl(source_point);
+  }
+  // @}
+
+  WRAPPED_PUPable_decl_base_template(  // NOLINT
+      SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, dim>),
+      CoordinateMap);
+
+  explicit CoordinateMap(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) { p | maps_; }  // NOLINT
+  void pup(PUP::er& p) override {  // NOLINT
+    CoordinateMapBase<SourceFrame, TargetFrame, dim>::pup(p);
+    p | maps_;
+  }
 
  private:
   friend bool operator==(const CoordinateMap& lhs,
                          const CoordinateMap& rhs) noexcept {
     return lhs.maps_ == rhs.maps_;
   }
+
+  template <typename T>
+  constexpr SPECTRE_ALWAYS_INLINE tnsr::I<T, dim, TargetFrame> call_impl(
+      const tnsr::I<T, dim, SourceFrame>& source_point) const;
+
+  template <typename T>
+  constexpr SPECTRE_ALWAYS_INLINE tnsr::I<T, dim, SourceFrame> inverse_impl(
+      const tnsr::I<T, dim, TargetFrame>& target_point) const;
+
+  template <typename T>
+  constexpr SPECTRE_ALWAYS_INLINE
+      Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
+             index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
+                        SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
+      inv_jacobian_impl(const tnsr::I<T, dim, SourceFrame>& source_point) const;
+
+  template <typename T>
+  constexpr SPECTRE_ALWAYS_INLINE
+      Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
+             index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
+                        SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
+      jacobian_impl(const tnsr::I<T, dim, SourceFrame>& source_point) const;
 
   std::tuple<Maps...> maps_;
 };
@@ -107,9 +251,9 @@ constexpr CoordinateMap<SourceFrame, TargetFrame, Maps...>::CoordinateMap(
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
-constexpr tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim,
-                  TargetFrame>
-CoordinateMap<SourceFrame, TargetFrame, Maps...>::operator()(
+constexpr SPECTRE_ALWAYS_INLINE tnsr::I<
+    T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, TargetFrame>
+CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
     const tnsr::I<T, dim, SourceFrame>& source_point) const {
   std::array<T, dim> mapped_point = make_array<T, dim>(source_point);
   tuple_fold(maps_, [](const auto& map,
@@ -120,9 +264,9 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::operator()(
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
-constexpr tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim,
-                  SourceFrame>
-CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse(
+constexpr SPECTRE_ALWAYS_INLINE tnsr::I<
+    T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, SourceFrame>
+CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
     const tnsr::I<T, dim, TargetFrame>& target_point) const {
   std::array<T, dim> mapped_point = make_array<T, dim>(target_point);
   tuple_fold<true>(maps_,
@@ -135,7 +279,8 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse(
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
-constexpr auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian(
+constexpr SPECTRE_ALWAYS_INLINE auto
+CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
     const tnsr::I<T, dim, SourceFrame>& source_point) const
     -> Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
               index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
@@ -186,7 +331,8 @@ constexpr auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian(
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
-constexpr auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian(
+constexpr SPECTRE_ALWAYS_INLINE auto
+CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
     const tnsr::I<T, dim, SourceFrame>& source_point) const
     -> Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
               index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
@@ -249,3 +395,10 @@ constexpr CoordinateMap<SourceFrame, TargetFrame, Maps...> make_coordinate_map(
   return CoordinateMap<SourceFrame, TargetFrame, Maps...>(
       std::forward<Maps>(maps)...);
 }
+
+/// \cond
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+PUP::able::PUP_ID
+    CoordinateMap<SourceFrame, TargetFrame, Maps...>::my_PUP_ID =  // NOLINT
+    0;
+/// \endcond
