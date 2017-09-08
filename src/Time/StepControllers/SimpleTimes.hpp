@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-//#include "Options/Options.hpp"
+#include "Options/Options.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
@@ -23,11 +23,12 @@ namespace StepControllers {
 /// prefers simpler (smaller denominator) fractions of slabs.
 class SimpleTimes : public StepController {
  public:
-  // using OptionsList = tmpl::list<>;
-  // static constexpr OptionString_t help = {
-  //     "Chooses steps by dividing the reminder of the slab approximately\n"
-  //     "evenly, but prefering evaluation times that are simple (i.e., small\n"
-  //     "denominator) fractions of the slab."};
+  using options = tmpl::list<>;
+  static constexpr OptionString_t help = {
+      "Chooses steps by dividing the remainder of the slab approximately\n"
+      "evenly, but preferring evaluation times that are simple (i.e., small\n"
+      "denominator) fractions of the slab."};
+  explicit SimpleTimes(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

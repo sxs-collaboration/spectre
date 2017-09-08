@@ -28,6 +28,11 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
         == slab.duration());
 }
 
+SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction.Factory",
+                  "[Unit][Time]") {
+  test_factory_creation<StepController>("  BinaryFraction");
+}
+
 // [[OutputRegex, Not at a binary-fraction time within slab]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.Time.StepControllers.BinaryFraction.NonBinary", "[Unit][Time]") {
@@ -54,6 +59,11 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
         == slab.duration());
 }
 
+SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab.Factory",
+                  "[Unit][Time]") {
+  test_factory_creation<StepController>("  FullSlab");
+}
+
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
   const StepControllers::SimpleTimes st{};
   const Slab slab(1., 4.);
@@ -76,6 +86,11 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
         == slab.duration());
 }
 
+SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes.Factory",
+                  "[Unit][Time]") {
+  test_factory_creation<StepController>("  SimpleTimes");
+}
+
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   const StepControllers::SplitRemaining sr{};
   const Slab slab(1., 4.);
@@ -92,4 +107,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
 
   CHECK(sr.choose_step(slab.start(), std::numeric_limits<double>::infinity())
         == slab.duration());
+}
+
+SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining.Factory",
+                  "[Unit][Time]") {
+  test_factory_creation<StepController>("  SplitRemaining");
 }

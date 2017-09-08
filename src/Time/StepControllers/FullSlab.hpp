@@ -6,7 +6,7 @@
 
 #pragma once
 
-//#include "Options/Options.hpp"
+#include "Options/Options.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
@@ -20,8 +20,9 @@ namespace StepControllers {
 /// using global time stepping.
 class FullSlab : public StepController {
  public:
-  // using OptionsList = tmpl::list<>;
-  // static constexpr OptionString_t help = {"Chooses the full slab."};
+  using options = tmpl::list<>;
+  static constexpr OptionString_t help = {"Chooses the full slab."};
+  explicit FullSlab(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

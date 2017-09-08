@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-//#include "Options/Options.hpp"
+#include "Options/Options.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
@@ -21,11 +21,12 @@ namespace StepControllers {
 /// the slab.
 class SplitRemaining : public StepController {
  public:
-  // using OptionsList = tmpl::list<>;
-  // static constexpr OptionString_t help = {
-  //     "Chooses steps by dividing the remainder of the slab evenly.\n"
-  //   "WARNING: With many steps per slab this often leads to overflow in the\n"
-  //     "  time representations."};
+  using options = tmpl::list<>;
+  static constexpr OptionString_t help = {
+      "Chooses steps by dividing the remainder of the slab evenly.\n"
+      "WARNING: With many steps per slab this often leads to overflow in the\n"
+      "  time representations."};
+  explicit SplitRemaining(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {
