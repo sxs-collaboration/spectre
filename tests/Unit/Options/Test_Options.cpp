@@ -1,0 +1,427 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include <array>
+#include <catch.hpp>
+#include <map>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "Options/Options.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+
+SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
+  Options<tmpl::list<>> opts("");
+  opts.parse("");
+}
+
+// [[OutputRegex, In string:.*At line 1 column 1:.Option 'Option' is not a valid
+// option.]]
+SPECTRE_TEST_CASE("Unit.Options.Empty.extra", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<>> opts("");
+  opts.parse("Option:");
+}
+
+// [[OutputRegex, In string:.*'4' does not look like options]]
+SPECTRE_TEST_CASE("Unit.Options.Empty.not_map", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<>> opts("");
+  opts.parse("4");
+}
+
+namespace {
+struct Simple {
+  using type = int;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Simple.success", "[Unit][Options]") {
+  Options<tmpl::list<Simple>> opts("");
+  opts.parse("Simple: -4");
+  CHECK(opts.get<Simple>() == -4);
+}
+
+// [[OutputRegex, In string:.*At line 2 column 1:.Option 'Simple' specified
+// twice.]]
+SPECTRE_TEST_CASE("Unit.Options.Simple.duplicate", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Simple>> opts("");
+  opts.parse("Simple: -4\n"
+             "Simple: -3");
+  opts.get<Simple>();
+}
+
+// [[OutputRegex, In string:.*You did not specify the option 'Simple']]
+SPECTRE_TEST_CASE("Unit.Options.Simple.missing", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Simple>> opts("");
+  opts.parse("");
+  opts.get<Simple>();
+}
+
+// [[OutputRegex, In string:.*While parsing option Simple:.At line 1 column
+// 1:.Failed to convert value to type int:]]
+SPECTRE_TEST_CASE("Unit.Options.Simple.missing_arg", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Simple>> opts("");
+  opts.parse("Simple:");
+  opts.get<Simple>();
+}
+
+// [[OutputRegex, In string:.*While parsing option Simple:.At line 1 column
+// 9:.Failed to convert value to type int: 2.3]]
+SPECTRE_TEST_CASE("Unit.Options.Simple.invalid", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Simple>> opts("");
+  opts.parse("Simple: 2.3");
+  opts.get<Simple>();
+}
+
+namespace {
+/// [options_example_scalar_struct]
+struct Bounded {
+  using type = int;
+  static constexpr OptionString_t help = {
+    "Option with bounds and a default value"};
+  // These are optional
+  static type default_value() { return 3; }
+  static type lower_bound() { return 2; }
+  static type upper_bound() { return 10; }
+};
+/// [options_example_scalar_struct]
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Defaulted.specified", "[Unit][Options]") {
+/// [options_example_scalar_parse]
+  Options<tmpl::list<Bounded>> opts("Overall help text");
+  opts.parse("Bounded: 8");
+  CHECK(opts.get<Bounded>() == 8);
+/// [options_example_scalar_parse]
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Defaulted.defaulted", "[Unit][Options]") {
+  Options<tmpl::list<Bounded>> opts("");
+  opts.parse("");
+  CHECK(opts.get<Bounded>() == 3);
+}
+
+// [[OutputRegex, In string:.*While parsing option Bounded:.At line 1 column
+// 10:.Value 1 is below the lower bound of 2]]
+SPECTRE_TEST_CASE("Unit.Options.Bounded.below", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Bounded>> opts("");
+  opts.parse("Bounded: 1");
+  opts.get<Bounded>();
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Bounded.lower_bound", "[Unit][Options]") {
+  Options<tmpl::list<Bounded>> opts("");
+  opts.parse("Bounded: 2");
+  CHECK(opts.get<Bounded>() == 2);
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Bounded.upper_bound", "[Unit][Options]") {
+  Options<tmpl::list<Bounded>> opts("");
+  opts.parse("Bounded: 10");
+  CHECK(opts.get<Bounded>() == 10);
+}
+
+// [[OutputRegex, In string:.*While parsing option Bounded:.At line 1 column
+// 10:.Value 11 is above the upper bound of 10]]
+SPECTRE_TEST_CASE("Unit.Options.Bounded.above", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Bounded>> opts("");
+  opts.parse("Bounded: 11");
+  opts.get<Bounded>();
+}
+
+namespace {
+struct BadDefault {
+  using type = int;
+  static constexpr OptionString_t help = {"halp"};
+  static type default_value() { return 3; }
+  static type lower_bound() { return 4; }
+};
+}  // namespace
+
+// [[OutputRegex, Checking DEFAULT value for BadDefault:.Value 3 is below the
+// lower bound of 4]]
+SPECTRE_TEST_CASE("Unit.Options.BadDefault", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<BadDefault>> opts("");
+  opts.parse("");
+  opts.get<BadDefault>();
+}
+
+namespace {
+/// [options_example_vector_struct]
+struct Vector {
+  using type = std::vector<int>;
+  static constexpr OptionString_t help = {"A vector with length limits"};
+  // These are optional
+  static size_t lower_bound_on_size() { return 2; }
+  static size_t upper_bound_on_size() { return 5; }
+};
+/// [options_example_vector_struct]
+}  // namespace
+
+// [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
+// 9:.Value must have at least 2 entries, but 1 were given.]]
+SPECTRE_TEST_CASE("Unit.Options.Vector.too_short", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Vector>> opts("");
+  opts.parse("Vector: [2]");
+  opts.get<Vector>();
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Vector.lower_bound", "[Unit][Options]") {
+  Options<tmpl::list<Vector>> opts("");
+  opts.parse("Vector: [2,3]");
+  CHECK(opts.get<Vector>() == (std::vector<int>{2, 3}));
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Vector.upper_bound", "[Unit][Options]") {
+  Options<tmpl::list<Vector>> opts("");
+  opts.parse("Vector: [2, 3, 3, 3, 5]");
+  CHECK(opts.get<Vector>() == (std::vector<int>{2, 3, 3, 3, 5}));
+}
+
+// [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
+// 9:.Value must have at most 5 entries, but 6 were given.]]
+SPECTRE_TEST_CASE("Unit.Options.Vector.too_long", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Vector>> opts("");
+  opts.parse("Vector: [2, 3, 3, 3, 5, 6]");
+  opts.get<Vector>();
+}
+
+// [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
+// 1:.Value must have at least 2 entries, but 0 were given.]]
+SPECTRE_TEST_CASE("Unit.Options.Vector.empty_too_short", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Vector>> opts("");
+  opts.parse("Vector:");
+  opts.get<Vector>();
+}
+
+namespace {
+struct Array {
+  using type = std::array<int, 3>;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+// [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
+// 8:.Failed to convert value to type std::array<int, 3>]]
+SPECTRE_TEST_CASE("Unit.Options.Array.too_short", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Array>> opts("");
+  opts.parse("Array: [1, 2]");
+  opts.get<Array>();
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Array.success", "[Unit][Options]") {
+  Options<tmpl::list<Array>> opts("");
+  opts.parse("Array: [1,2,3]");
+  CHECK(opts.get<Array>() == (std::array<int, 3>{{1, 2, 3}}));
+}
+
+// [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
+// 8:.Failed to convert value to type std::array<int, 3>]]
+SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Array>> opts("");
+  opts.parse("Array: [1, 2, 3, 4]");
+  opts.get<Array>();
+}
+
+// [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
+// 1:.Failed to convert value to type std::array<int, 3>]]
+SPECTRE_TEST_CASE("Unit.Options.Array.missing", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Array>> opts("");
+  opts.parse("Array:");
+  opts.get<Array>();
+}
+
+namespace {
+struct ZeroArray {
+  using type = std::array<int, 0>;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.ZeroArray.missing", "[Unit][Options]") {
+  Options<tmpl::list<ZeroArray>> opts("");
+  opts.parse("ZeroArray:");
+  opts.get<ZeroArray>();
+}
+
+namespace {
+struct Map {
+  using type = std::map<std::string, int>;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Map.success", "[Unit][Options]") {
+  Options<tmpl::list<Map>> opts("");
+  opts.parse("Map:\n"
+             "  A: 3\n"
+             "  Z: 2");
+  std::map<std::string, int> expected;
+  expected.emplace("A", 3);
+  expected.emplace("Z", 2);
+  CHECK(opts.get<Map>() == expected);
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Map.empty", "[Unit][Options]") {
+  Options<tmpl::list<Map>> opts("");
+  opts.parse("Map:");
+  CHECK(opts.get<Map>() == (std::map<std::string, int>{}));
+}
+
+// [[OutputRegex, In string:.*While parsing option Map:.At line 1 column
+// 6:.Failed to convert value to type std::map<std::string, int>: string]]
+SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Map>> opts("");
+  opts.parse("Map: string");
+  opts.get<Map>();
+}
+
+// [[OutputRegex, In string:.*While parsing option Map:.At line 2 column
+// 6:.Failed to convert value to type std::map<std::string, int>: A: string]]
+SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Map>> opts("");
+  opts.parse("Map:\n"
+             "  A: string");
+  opts.get<Map>();
+}
+
+namespace {
+struct UnorderedMap {
+  using type = std::unordered_map<std::string, int>;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.UnorderedMap.success", "[Unit][Options]") {
+  Options<tmpl::list<UnorderedMap>> opts("");
+  opts.parse("UnorderedMap:\n"
+             "  A: 3\n"
+             "  Z: 2");
+  std::unordered_map<std::string, int> expected;
+  expected.emplace("A", 3);
+  expected.emplace("Z", 2);
+  CHECK(opts.get<UnorderedMap>() == expected);
+}
+
+namespace {
+struct A {
+  struct Duplicate {
+    using type = int;
+    static constexpr OptionString_t help = {"halp"};
+  };
+};
+struct B {
+  struct Duplicate {
+    using type = int;
+    static constexpr OptionString_t help = {"halp"};
+  };
+};
+}  // namespace
+
+// [[OutputRegex, Duplicate option name: Duplicate]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.Duplicate", "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<A::Duplicate, B::Duplicate>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+namespace {
+struct TooooooooooooooooooooLong {
+  using type = int;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct NoHelp {
+  using type = int;
+  static constexpr OptionString_t help = {""};
+};
+struct TooLongHelp {
+  using type = int;
+  static constexpr OptionString_t help = {
+    "halp halp halp halp halp halp halp halp halp halp halp halp"};
+};
+}  // namespace
+
+// [[OutputRegex, The option name TooooooooooooooooooooLong is too long for
+// nice formatting]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.TooLong", "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<TooooooooooooooooooooLong>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, You must supply a help string]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NoHelp", "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<NoHelp>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The help string for TooLongHelp should be less than]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.TooLongHelp", "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<TooLongHelp>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+namespace {
+struct Apply1 {
+  using type = int;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct Apply2 {
+  using type = std::string;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct Apply3 {
+  using type = std::vector<int>;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Apply", "[Unit][Options]") {
+  Options<tmpl::list<Apply1, Apply2, Apply3>> opts("");
+  opts.parse("Apply1: 2\n"
+             "Apply2: str\n"
+             "Apply3: [1, 2, 3]");
+  // We do the checks outside the lambda to make sure it actually gets called.
+  std::vector<int> arg1;
+  int arg2;
+  opts.apply<tmpl::list<Apply3, Apply1>>(
+      [&](const auto& a, auto b) {
+        arg1 = a;
+        arg2 = b;
+      });
+  CHECK(arg1 == (std::vector<int>{1, 2, 3}));
+  CHECK(arg2 == 2);
+}
+
+SPECTRE_TEST_CASE("Unit.Options.OptionContext.default_stream",
+                  "[Unit][Options]") {
+  CHECK(get_output(OptionContext{}) == "");
+}

@@ -5,6 +5,7 @@ set(LIBRARY Utilities)
 
 set(LIBRARY_SOURCES
     FileSystem.cpp
+    PrettyType.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

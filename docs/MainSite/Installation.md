@@ -22,7 +22,9 @@ See LICENSE.txt for details.
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * [LIBXSMM](https://github.com/hfp/libxsmm)
-* [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+* [yaml-cpp](https://github.com/jbeder/yaml-cpp) built from a commit more
+  recent than November 2016 (versions newer than 0.5.3 should work once any
+  are released)
 
 #### Optional:
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate

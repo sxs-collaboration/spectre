@@ -143,7 +143,16 @@ RUN if [ "${CC}" = "gcc" ] \
     && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ ${COVERAGE} = ON ]; then \
-      make unit-test-coverage; \
+    bash -c ". /etc/profile.d/lmod.sh; \
+               export PATH=$PATH:/work/spack/bin; \
+               . /work/spack/share/spack/setup-env.sh; \
+               spack load gsl; \
+               spack load blaze; \
+               spack load brigand; \
+               spack load catch; \
+               spack load libxsmm; \
+               spack load yaml-cpp; \
+               make unit-test-coverage"; \
       if [ ${TRAVIS_SECURE_ENV_VARS} = true ]; then \
         cd /work/spectre; \
         coveralls-lcov -v --repo-token ${COVERALLS_TOKEN} /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \

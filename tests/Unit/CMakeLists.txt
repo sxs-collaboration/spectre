@@ -12,6 +12,7 @@ add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
 add_subdirectory(IO)
 add_subdirectory(Numerical)
+add_subdirectory(Options)
 add_subdirectory(Parallel)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
@@ -44,6 +45,8 @@ if(COVERAGE)
       unit-test-coverage
       ${CMAKE_CTEST_COMMAND}
       DEPENDS ${executable}
+      TESTRUNNER_ARGS
+      "--output-on-failure"
       IGNORE_COV
       '${CMAKE_BINARY_DIR}/Informer/InfoFromBuild.cpp'
       '${CMAKE_SOURCE_DIR}/tests/*'

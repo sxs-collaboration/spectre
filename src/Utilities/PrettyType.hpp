@@ -675,4 +675,21 @@ template <typename T>
 std::string get_runtime_type_name(const T& x) {
   return boost::core::demangle(typeid(x).name());
 }
+
+/*!
+ * \ingroup PrettyType
+ * \brief Extract the "short name" from a name, that is, the name
+ * without template parameters or scopes.
+ */
+std::string extract_short_name(std::string name);
+
+/*!
+ * \ingroup PrettyType
+ * \brief Return the "short name" of a class, that is, the name
+ * without template parameters or scopes.
+ */
+template <typename T>
+std::string short_name() {
+  return extract_short_name(get_name<T>());
+}
 }  // namespace pretty_type
