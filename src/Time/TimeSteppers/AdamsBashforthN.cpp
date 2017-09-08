@@ -9,11 +9,13 @@
 
 namespace TimeSteppers {
 
-AdamsBashforthN::AdamsBashforthN(size_t target_order, bool self_start) noexcept
+AdamsBashforthN::AdamsBashforthN(size_t target_order, bool self_start,
+                                 const OptionContext& context)
     : target_order_(target_order), is_self_starting_(self_start) {
   if (target_order_ < 1 or target_order_ > maximum_order) {
-    ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
-          << maximum_order);
+    PARSE_ERROR(context,
+                "The order for Adams-Bashforth Nth order must be 1 <= order <= "
+                << maximum_order);
   }
 }
 

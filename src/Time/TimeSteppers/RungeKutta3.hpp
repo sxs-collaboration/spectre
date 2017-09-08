@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "ErrorHandling/Error.hpp"
+#include "Options/Options.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -24,10 +25,10 @@ namespace TimeSteppers {
 /// Galerkin Methods. section 5.7
 class RungeKutta3 : public TimeStepper::Inherit {
  public:
-  //using OptionsList = tmpl::list<>;
-  //static std::string class_id() { return "RungeKutta3"; }
-  //static constexpr OptionString_t help = {
-  //    "A third-order strong stability-preserving Runge-Kutta time-stepper."};
+  using options = tmpl::list<>;
+  static constexpr OptionString_t help = {
+      "A third-order strong stability-preserving Runge-Kutta time-stepper."};
+  explicit RungeKutta3(const OptionContext& /*context*/) noexcept {}
 
   RungeKutta3() noexcept = default;
   RungeKutta3(const RungeKutta3&) noexcept = default;

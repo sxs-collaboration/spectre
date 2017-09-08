@@ -3,6 +3,7 @@
 
 #include <cmath>
 
+#include "Options/Options.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
@@ -62,4 +63,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability",
     INFO(order);
     stability_test(TimeSteppers::AdamsBashforthN(order, false));
   }
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Factory",
+                  "[Unit][Time]") {
+  test_factory_creation<TimeStepper>("  AdamsBashforthN:\n"
+                                     "    TargetOrder: 3");
 }

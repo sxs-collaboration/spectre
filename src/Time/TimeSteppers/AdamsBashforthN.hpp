@@ -17,6 +17,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Options/Options.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -30,31 +31,28 @@ class AdamsBashforthN : public TimeStepper::Inherit {
  public:
   static constexpr const size_t maximum_order = 8;
 
-  // struct TargetOrder {
-  //   using type = size_t;
-  //   static constexpr OptionString_t label = {"TargetOrder"};
-  //   static constexpr OptionString_t help = {
-  //       "Target order of Adams-Bashforth method."};
-  //   static type lower_bound() { return 1; }
-  //   static type upper_bound() { return maximum_order; }
-  // };
+  struct TargetOrder {
+    using type = size_t;
+    static constexpr OptionString_t help = {
+        "Target order of Adams-Bashforth method."};
+    static type lower_bound() { return 1; }
+    static type upper_bound() { return maximum_order; }
+  };
+  struct SelfStart {
+    using type = bool;
+    static constexpr OptionString_t help = {
+        "Start at first order and increase."};
+    static type default_value() { return false; }
+  };
+  using options = tmpl::list<TargetOrder, SelfStart>;
+  static constexpr OptionString_t help = {
+      "An Adams-Bashforth Nth order time-stepper. The target order is the\n"
+      "order of the method. If a self-starting approach is chosen then the\n"
+      "method starts at first order and increases the step-size until the\n"
+      "desired order is reached."};
 
-  // struct SelfStart {
-  //   using type = bool;
-  //   static constexpr OptionString_t label = {"SelfStart"};
-  //   static constexpr OptionString_t help = {
-  //       "If true then the method starts at first order and increases."};
-  //   static type default_value() { return false; }
-  // };
-  // using OptionsList = tmpl::list<TargetOrder, SelfStart>;
-  // static std::string class_id() { return "AdamsBashforthN"; }
-  // static constexpr OptionString_t help = {
-  //     "An Adams-Bashforth Nth order time-stepper. The target order is the "
-  //     "order of the method. If a self-starting approach is chosen then the "
-  //     "method starts at first order and increases the step-size until the "
-  //     "desired order is reached."};
-
-  AdamsBashforthN(size_t target_order, bool self_start) noexcept;
+  AdamsBashforthN(size_t target_order, bool self_start,
+                  const OptionContext& context = {});
   AdamsBashforthN(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN& operator=(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN(AdamsBashforthN&&) noexcept = default;
