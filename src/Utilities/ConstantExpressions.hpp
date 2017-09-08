@@ -45,14 +45,14 @@ SPECTRE_ALWAYS_INLINE constexpr size_t get_nth_bit(const size_t i,
 /// \ingroup ConstantExpressions
 /// \brief Compute the square of `x`
 template <typename T>
-SPECTRE_ALWAYS_INLINE constexpr T square(const T& x) {
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) square(const T& x) {
   return x * x;
 }
 
 /// \ingroup ConstantExpressions
 /// \brief Compute the cube of `x`
 template <typename T>
-SPECTRE_ALWAYS_INLINE constexpr T cube(const T& x) {
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
   return x * x * x;
 }
 

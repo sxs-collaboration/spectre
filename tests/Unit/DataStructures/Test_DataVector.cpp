@@ -5,6 +5,7 @@
 #include <numeric>
 
 #include "DataStructures/DataVector.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
@@ -314,6 +315,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   check_vectors(DataVector(num_pts, 4.0), x);
   x /= x;
   check_vectors(DataVector(num_pts, 1.0), x);
+
+  // Test composition of constant expressions with DataVector math member
+  // functions
+  x = DataVector(num_pts, 2.);
+  check_vectors(DataVector(num_pts, 0.82682181043180603), square(sin(x)));
+  check_vectors(DataVector(num_pts, -0.072067555747765299), cube(cos(x)));
 }
 
 // [[OutputRegex, Must copy into same size]]
