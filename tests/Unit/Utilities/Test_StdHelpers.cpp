@@ -153,9 +153,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
                   "[DataStructures][Unit]") {
   const std::array<double, 2> p1{{3., 4.}};
   CHECK(magnitude(p1) == approx(5.));
-  const std::array<double, 3> p2{{
-      -2., 10., 11.,
-  }};
+  const std::array<double, 3> p2{{-2., 10., 11.}};
   CHECK(magnitude(p2) == approx(15.));
 
   // Check DataVector case
@@ -163,7 +161,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
       {DataVector(2, 3.), DataVector(2, 4.)}};
   const DataVector expected_data_vector(2, 5.);
   const auto magnitude_p1 = magnitude(p1_data_vector);
-  for(size_t i=0; i<2; ++i){
+  for (size_t i = 0; i < 2; ++i) {
     CHECK(expected_data_vector[i] == approx(magnitude_p1[i]));
   }
 }

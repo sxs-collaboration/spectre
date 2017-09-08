@@ -7,6 +7,7 @@ set(DOMAIN_TESTS
     Domain/CoordinateMaps/Test_Identity.cpp
     Domain/CoordinateMaps/Test_ProductMaps.cpp
     Domain/CoordinateMaps/Test_Rotation.cpp
+    Domain/CoordinateMaps/Test_Wedge2D.cpp
     Domain/Test_Block.cpp
     Domain/Test_BlockNeighbor.cpp
     Domain/Test_Direction.cpp

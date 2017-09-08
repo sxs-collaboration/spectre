@@ -399,7 +399,7 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept(
  */
 template <size_t Dim, typename T>
 inline T magnitude(const std::array<T, Dim>& array) noexcept {
-  T mag_sqrd = make_with_value<T>(gsl::at(array, 0), 0.);
+  auto mag_sqrd = make_with_value<T>(gsl::at(array, 0), 0.);
   for (size_t i = 0; i < Dim; ++i) {
     mag_sqrd += square(gsl::at(array, i));
   }
