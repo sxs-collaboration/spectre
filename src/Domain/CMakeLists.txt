@@ -6,6 +6,7 @@ add_subdirectory(CoordinateMaps)
 set(LIBRARY Domain)
 
 set(LIBRARY_SOURCES
+    Block.cpp
     BlockNeighbor.cpp
     Direction.cpp
     ElementId.cpp

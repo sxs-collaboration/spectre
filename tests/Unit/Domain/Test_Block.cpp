@@ -10,10 +10,13 @@
 
 template <size_t Dim>
 void test_block() {
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Grid,
+                                       CoordinateMaps::Identity<Dim>>));
+
   using embedding_map =
       CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<Dim>>;
   const embedding_map identity_map{CoordinateMaps::Identity<Dim>{}};
-  Block<embedding_map> block(identity_map, 7, {});
+  Block<Dim, Frame::Grid> block(identity_map.get_clone(), 7, {});
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2 * Dim);
@@ -35,7 +38,7 @@ void test_block() {
   CHECK(block == serialize_and_deserialize(block));
 
   // Test move semantics:
-  const Block<embedding_map> block_copy(identity_map, 7, {});
+  const Block<Dim, Frame::Grid> block_copy(identity_map.get_clone(), 7, {});
   test_move_semantics(std::move(block), block_copy);
 }
 
@@ -60,7 +63,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   using embedding_map =
       CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<2>>;
   const embedding_map identity_map{CoordinateMaps::Identity<2>{}};
-  const Block<embedding_map> block(identity_map, 3, std::move(neighbors));
+  const Block<2, Frame::Grid> block(identity_map.get_clone(), 3,
+                                    std::move(neighbors));
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2);
@@ -80,7 +84,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
         "External boundaries: (+1,-0)\n");
 
   // Test comparison:
-  const Block<embedding_map> neighborless_block(identity_map, 7, {});
+  const Block<2, Frame::Grid> neighborless_block(identity_map.get_clone(), 7,
+                                                 {});
   CHECK(block == block);
   CHECK(block != neighborless_block);
   CHECK(neighborless_block == neighborless_block);
