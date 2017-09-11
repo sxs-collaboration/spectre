@@ -11,7 +11,6 @@
 #include <chrono>
 #include <ctime>
 #include <deque>
-#include <future>
 #include <iterator>
 #include <list>
 #include <map>
@@ -294,6 +293,16 @@ std::string formatted_string(const std::string& fmt, Args... args) {
     rtn.resize(rtn.size() - 1);
   }
   return rtn;
+}
+
+/*!
+ * \ingroup Utilities
+ * \brief Get the current date and time
+ */
+inline std::string current_date_and_time() {
+  const auto now =
+      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  return std::ctime(&now);
 }
 
 // Arithmetic operators for std::array<T, Dim>

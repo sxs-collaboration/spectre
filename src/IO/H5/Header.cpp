@@ -3,13 +3,13 @@
 
 #include "IO/H5/Header.hpp"
 
-#include <chrono>
 #include <regex>
 #include <sstream>
 
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "Informer/InfoFromBuild.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace h5 {
 /// \cond HIDDEN_SYMOLS
@@ -22,9 +22,7 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
   } else {
     std::vector<std::string> header_info{[]() {
       std::stringstream ss;
-      std::time_t current_time = std::chrono::system_clock::to_time_t(
-          std::chrono::system_clock::now());
-      ss << "#\n# File created on " << std::ctime(&current_time) << "# ";
+      ss << "#\n# File created on " << current_date_and_time() << "# ";
       auto build_info = info_from_build();
       ss << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
       return ss.str();
