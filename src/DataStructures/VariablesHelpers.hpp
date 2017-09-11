@@ -12,7 +12,8 @@
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Variables.hpp"
 
-/*! \ingroup DataStructures
+/*!
+ * \ingroup DataStructures
  * \brief Slices the data within `vars` to a codimension 1 slice. The
  * slice has a constant grid coordinate in direction `sliced_dim`, and slices
  * the volume through the point `slice_point` of this coordinate.

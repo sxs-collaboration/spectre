@@ -809,8 +809,8 @@ namespace TaggedTuple_detail {
 template <typename T>
 struct tagged_tuple_typelist_impl;
 
-template <template <typename...> class Ls, typename... Tags>
-struct tagged_tuple_typelist_impl<Ls<Tags...>> {
+template <template <typename...> class List, typename... Tags>
+struct tagged_tuple_typelist_impl<List<Tags...>> {
   using type = TaggedTuple<Tags...>;
 };
 }  // namespace TaggedTuple_detail

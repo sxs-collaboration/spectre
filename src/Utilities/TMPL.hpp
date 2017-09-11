@@ -72,16 +72,17 @@ using replace_at = typename ::brigand::lazy::replace_at<L, I, R>::type;
 
 namespace brigand {
 namespace detail {
-template <typename Ls, typename Ind1, typename Ind2>
+template <typename List, typename Ind1, typename Ind2>
 struct swap_at_impl {
   using type = ::brigand::replace_at<
-      ::brigand::replace_at<Ls, Ind1, ::brigand::at<Ls, Ind2>>, Ind2,
-      ::brigand::at<Ls, Ind1>>;
+      ::brigand::replace_at<List, Ind1, ::brigand::at<List, Ind2>>, Ind2,
+      ::brigand::at<List, Ind1>>;
 };
 }
 
-template <typename Ls, typename Ind1, typename Ind2>
-using swap_at = typename ::brigand::detail::swap_at_impl<Ls, Ind1, Ind2>::type;
+template <typename List, typename Ind1, typename Ind2>
+using swap_at =
+    typename ::brigand::detail::swap_at_impl<List, Ind1, Ind2>::type;
 }
 
 namespace brigand {
@@ -115,72 +116,73 @@ struct factorial<uint64_t<1>> : uint64_t<1> {};
 
 namespace brigand {
 namespace detail {
-template <typename Ls, std::size_t Size = size<Ls>::value>
+template <typename List, std::size_t Size = size<List>::value>
 struct permutations_impl {
-  template <typename T, typename Ls1>
+  template <typename T, typename List1>
   struct helper {
     using type = ::brigand::transform<
-        typename permutations_impl<::brigand::remove<Ls1, T>>::type,
+        typename permutations_impl<::brigand::remove<List1, T>>::type,
         ::brigand::lazy::push_front<_state, T>>;
   };
 
   using type = ::brigand::fold<
-      Ls, list<>,
-      ::brigand::lazy::append<::brigand::_state,
-                              helper<::brigand::_element, ::brigand::pin<Ls>>>>;
+      List, list<>,
+      ::brigand::lazy::append<::brigand::_state, helper<::brigand::_element,
+                                                        ::brigand::pin<List>>>>;
 };
 
-template <typename Ls>
-struct permutations_impl<Ls, 1> {
-  using type = list<Ls>;
+template <typename List>
+struct permutations_impl<List, 1> {
+  using type = list<List>;
 };
 }
 
 namespace lazy {
-template <typename Ls>
-using permutations = detail::permutations_impl<Ls>;
+template <typename List>
+using permutations = detail::permutations_impl<List>;
 }
 
-template <typename Ls>
-using permutations = typename lazy::permutations<Ls>::type;
+template <typename List>
+using permutations = typename lazy::permutations<List>::type;
 }
 
 namespace brigand {
 namespace detail {
-template <typename Ls, std::size_t Size = ::brigand::size<Ls>::value>
+template <typename List, std::size_t Size = ::brigand::size<List>::value>
 struct generic_permutations_impl {
-  template <typename Lc, typename Ls1>
+  template <typename Lc, typename List1>
   struct helper {
     using type = ::brigand::transform<
-        typename generic_permutations_impl<::brigand::erase<Ls1, Lc>>::type,
-        ::brigand::lazy::push_front<::brigand::_state, ::brigand::at<Ls1, Lc>>>;
+        typename generic_permutations_impl<::brigand::erase<List1, Lc>>::type,
+        ::brigand::lazy::push_front<::brigand::_state,
+                                    ::brigand::at<List1, Lc>>>;
   };
   using type = ::brigand::fold<
       ::brigand::make_sequence<brigand::uint32_t<0>, Size>, ::brigand::list<>,
-      ::brigand::lazy::append<::brigand::_state,
-                              helper<::brigand::_element, ::brigand::pin<Ls>>>>;
+      ::brigand::lazy::append<::brigand::_state, helper<::brigand::_element,
+                                                        ::brigand::pin<List>>>>;
 };
 
-template <typename Ls>
-struct generic_permutations_impl<Ls, 1> {
-  using type = ::brigand::list<Ls>;
+template <typename List>
+struct generic_permutations_impl<List, 1> {
+  using type = ::brigand::list<List>;
 };
 }
 
 namespace lazy {
-template <typename Ls>
-using generic_permutations = detail::generic_permutations_impl<Ls>;
+template <typename List>
+using generic_permutations = detail::generic_permutations_impl<List>;
 }
 
-template <typename Ls>
-using generic_permutations = typename lazy::generic_permutations<Ls>::type;
+template <typename List>
+using generic_permutations = typename lazy::generic_permutations<List>::type;
 }
 
 namespace brigand {
 namespace detail {
-template <typename Ls, typename Number = uint32_t<1>>
+template <typename List, typename Number = uint32_t<1>>
 struct combinations_impl_helper {
-  using split_list = split_at<Ls, Number>;
+  using split_list = split_at<List, Number>;
   using type =
       fold<back<split_list>, list<>,
            lazy::append<
@@ -188,27 +190,28 @@ struct combinations_impl_helper {
                bind<list, bind<push_back, pin<front<split_list>>, _element>>>>;
 };
 
-template <typename Ls, typename OutSize, typename = void>
+template <typename List, typename OutSize, typename = void>
 struct combinations_impl {
   using type =
-      append<list<>, typename combinations_impl_helper<Ls, prev<OutSize>>::type,
-             typename combinations_impl<pop_front<Ls>, OutSize>::type>;
+      append<list<>,
+             typename combinations_impl_helper<List, prev<OutSize>>::type,
+             typename combinations_impl<pop_front<List>, OutSize>::type>;
 };
-template <typename Ls, typename OutSize>
+template <typename List, typename OutSize>
 struct combinations_impl<
-    Ls, OutSize,
-    typename std::enable_if<OutSize::value == size<Ls>::value>::type> {
-  using type = typename combinations_impl_helper<Ls, prev<OutSize>>::type;
+    List, OutSize,
+    typename std::enable_if<OutSize::value == size<List>::value>::type> {
+  using type = typename combinations_impl_helper<List, prev<OutSize>>::type;
 };
 }
 
 namespace lazy {
-template <typename Ls, typename OutSize = uint32_t<2>>
-using combinations = detail::combinations_impl<Ls, OutSize>;
+template <typename List, typename OutSize = uint32_t<2>>
+using combinations = detail::combinations_impl<List, OutSize>;
 }
 
-template <typename Ls, typename OutSize = uint32_t<2>>
-using combinations = typename lazy::combinations<Ls, OutSize>::type;
+template <typename List, typename OutSize = uint32_t<2>>
+using combinations = typename lazy::combinations<List, OutSize>::type;
 }
 
 namespace brigand {
@@ -218,12 +221,12 @@ struct equal_members_helper
     : std::is_same<count_if<Seq, std::is_same<T, _1>>, size_t<1>> {};
 }
 
-template <typename Ls1, typename Ls2>
-using equal_members =
-    and_<fold<Ls1, bool_<true>,
-              and_<_state, detail::equal_members_helper<pin<Ls2>, _element>>>,
-         fold<Ls2, bool_<true>,
-              and_<_state, detail::equal_members_helper<pin<Ls1>, _element>>>>;
+template <typename List1, typename List2>
+using equal_members = and_<
+    fold<List1, bool_<true>,
+         and_<_state, detail::equal_members_helper<pin<List2>, _element>>>,
+    fold<List2, bool_<true>,
+         and_<_state, detail::equal_members_helper<pin<List1>, _element>>>>;
 }
 
 namespace brigand {
@@ -417,9 +420,9 @@ struct remove_duplicates_helper {
 };
 }
 
-template <typename Ls>
+template <typename List>
 using remove_duplicates =
-    fold<Ls, list<>, detail::remove_duplicates_helper<_state, _element>>;
+    fold<List, list<>, detail::remove_duplicates_helper<_state, _element>>;
 }
 
 namespace brigand {

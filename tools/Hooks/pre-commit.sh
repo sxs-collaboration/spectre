@@ -29,13 +29,15 @@ if [ -z "$commit_files" ]; then
     exit 0
 fi
 
+found_error=0
+
 ###############################################################################
 # Check the file size
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/CheckFileSize.py
 ret_code=$?
 if [ "$ret_code" -ne 0 ]; then
     @GIT_EXECUTABLE@ stash pop > /dev/null 2>&1
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -45,7 +47,7 @@ found_long_lines=`find $commit_files -name '*.[ch]pp' \
 if [[ $found_long_lines != "" ]]; then
     echo "Found lines over 80 characters:"
     echo "$found_long_lines"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -68,7 +70,7 @@ END
   | sed 's@[0-9a-f]\{1,\} (Not Committed Yet [^\)]\+ \{1,\}\([0-9]\{1,\}\)) \(.*\)@'$i':\1: \2@g;tx;d;:x' \
   | GREP_COLOR='1;37;41' grep -F $'\t' $color_option
   done
-  exit 1
+  found_error=1
 fi
 
 ###############################################################################
@@ -86,7 +88,7 @@ END
   | sed 's@[0-9a-f]\{1,\} (Not Committed Yet [^\)]\+ \{1,\}\([0-9]\{1,\}\)) \(.*\)@'$i':\1: \2@g;tx;d;:x' \
   | grep -v -E '^[^:]*:[^:]+: $' | GREP_COLOR='1;37;41' grep -E ' +$' $color_option
   done
-  exit 1
+  found_error=1
 fi
 
 ###############################################################################
@@ -95,7 +97,7 @@ no_license_found=`grep -L "^.*Distributed under the MIT License" $commit_files`
 if [[ $no_license_found != "" ]]; then
     echo "Did not find the license header in these files:"
     echo "$no_license_found"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -116,7 +118,7 @@ error: no newline at end of file
 Incriminating files:
 END
   echo $no_newline
-  exit 1
+  found_error=1
 fi
 
 ###############################################################################
@@ -133,7 +135,7 @@ END
   | sed 's@[0-9a-f]\{1,\} (Not Committed Yet [^\)]\+ \{1,\}\([0-9]\{1,\}\)) \(.*\)@'$i':\1: \2@g;tx;d;:x' \
   | grep -v -E '^[^:]*:[^:]+: $' | GREP_COLOR='1;37;41' grep -E '\r+$' $color_option
   done
-  exit 1
+  found_error=1
 fi
 
 ###############################################################################
@@ -146,7 +148,7 @@ if [[ $found_test_case != "" ]]; then
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
     echo "$found_test_case"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -160,9 +162,54 @@ if [[ $found_bad_approx != "" ]]; then
     printf "Found occurrences of Approx, must use approx from " \
            "SPECTRE_ROOT/tests/Unit/TestHelpers.hpp instead:\n"
     echo "$found_bad_approx"
-    exit 1
+    found_error=1
+fi
+
+###############################################################################
+# Check for Doxygen comments on the same line as a /*!
+found_bad_doxygen_syntax=`
+find $commit_files -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n '/\*\! '`
+if [[ $found_bad_doxygen_syntax != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of bad Doxygen syntax: /*! STUFF\n"
+    echo $found_bad_doxygen_syntax | \
+        GREP_COLOR='1;37;41' grep -E '\/\*\!.*' $color_option
+    echo ''
+    found_error=1
+fi
+
+###############################################################################
+# Check for Ls because of a preference not to use it as short form for List
+found_incorrect_list_name=`
+find $commit_files -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n 'Ls'`
+if [[ $found_incorrect_list_name != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of 'Ls', which is usually short for List\n"
+    echo "$found_incorrect_list_name"
+    found_error=1
+fi
+
+###############################################################################
+# Check for enable_if and request replacing it with Requires
+found_enable_if=`
+find $commit_files -type f -name '*.[ch]pp' \
+    | xargs grep --with-filename -n 'enable_if'`
+if [[ $found_enable_if != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of 'std::enable_if', prefer 'Requires'\n"
+    echo "$found_enable_if"
+    found_error=1
 fi
 
 ###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
+
+if [ "$found_error" -eq "1" ]; then
+    exit 1
+fi

@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/Symmetry.hpp"
 
 class DataVector;
-template <typename X, typename Symm, typename IndexLs>
+template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 /// \ingroup Tensor

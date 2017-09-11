@@ -644,7 +644,8 @@ struct stl_templates {
       tt::is_a<std::shared_ptr, X>, tt::is_a<std::weak_ptr, X>>;
 };
 
-/*! \ingroup PrettyType
+/*!
+ * \ingroup PrettyType
  *  \brief Returns a string with the prettiest typename known for the type T.
  *
  *  Example usage: auto name = get_name<T>();

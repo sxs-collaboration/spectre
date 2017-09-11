@@ -22,12 +22,20 @@ allowed_tags = ["CompilationTest",
                 "Unit",
                 "Utilities"]
 
+# Words disallowed in tests
+disallowed_test_name_portions = ["Functors"]
+
+# Allowed test attributes
+allowed_test_attributes = ["TimeOut",
+                           "OutputRegex"]
+
 # All the timeout times for the different types of tests. The order here
 # matters. Whichever time is specified last is what will be used for the
 # test if it is of multiple types.
 default_tag_timeouts = [("unit", 5)]
 
 allowed_tags = [x.lower() for x in allowed_tags]
+allowed_test_attributes = [x.lower() for x in allowed_test_attributes]
 
 def parse_source_file(file_name):
     file_string = open(file_name, "r").read()
@@ -40,6 +48,12 @@ def parse_source_file(file_name):
         # group(2) == [Unit][My]
         parsed_name = re.search("\"(.*)\",[\s]*\"(.*)\"", test_name)
         test_name = parsed_name.group(1)
+        for disallowed_name in disallowed_test_name_portions:
+            if test_name.lower().find(disallowed_name.lower()) != -1:
+                print("\nERROR: Found disallowed portion of a test name '%s' "
+                      "the test named '%s' in the file %s." %
+                      (disallowed_name, test_name, file_name))
+                exit(1)
         test_tags = parsed_name.group(2).lower().replace("[", "")[:-1]
         test_tags = test_tags.split("]")
         for test_tag in test_tags:
@@ -55,14 +69,24 @@ def parse_source_file(file_name):
         for (tag, timeout) in default_tag_timeouts:
             if tag in test_tags:
                 test_timeout = timeout
-        # parse attributes for time
-        explicit_timeout = re.search("\[\[TimeOut, ([0-9]+)\]\]", attributes)
-        if explicit_timeout:
-            test_timeout = explicit_timeout.group(1)
-        output_regex = re.search("\[\[OutputRegex, (.*?)\]\]",
-                                attributes, re.DOTALL)
-        if output_regex:
-            output_regex = output_regex.group(1).replace("\n//", "")
+
+        # Parse the test attributes
+        output_regex = ''
+
+        all_attributes_by_name = re.findall("\[\[([^,]+), (.*?)\]\]",
+                                            attributes, re.DOTALL)
+        for attribute in all_attributes_by_name:
+            if not attribute[0].lower() in allowed_test_attributes:
+                print("\nERROR: Found unknown test attribute '%s' applied "
+                      "to test '%s' in file %s." %
+                      (attribute[0], test_name, file_name))
+                exit(1)
+
+            if attribute[0].lower() == "timeout":
+                test_timeout = attribute[1]
+
+            if attribute[0].lower() == "outputregex":
+                output_regex = attribute[1].replace("\n//", "")
 
         open("%s.timeout" % test_name, "w").write("%s" % test_timeout)
         open("%s.output_regex" % test_name, "w").write("%s" % output_regex)

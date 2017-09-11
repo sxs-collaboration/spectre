@@ -126,7 +126,8 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
 };
 }  // namespace detail
 
-/*! \ingroup Functors
+/*!
+ * \ingroup Tensor
  * \brief Computes the determinant of a rank-2 Tensor `tensor`.
  *
  * \returns The determinant of `tensor`.

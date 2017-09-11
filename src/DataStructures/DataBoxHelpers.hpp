@@ -10,7 +10,7 @@
 #include "Utilities/BoostHelpers.hpp"
 
 /// \cond
-template <typename X, typename Symm, typename IndexLs>
+template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 class DataVector;
@@ -45,9 +45,9 @@ struct get_item_from_variant_databox<
 };
 
 namespace DataBoxHelpers_detail {
-template <typename Tags, typename TagLs,
+template <typename Tags, typename TagList,
           Requires<(tmpl::size<Tags>::value == 1)> = nullptr>
-auto get_tensor_from_box(const db::DataBox<TagLs>& box,
+auto get_tensor_from_box(const db::DataBox<TagList>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
   if (db::get_tag_name<tag>() != tag_name) {
@@ -56,9 +56,9 @@ auto get_tensor_from_box(const db::DataBox<TagLs>& box,
   return box.template get<tag>().get_vector_of_data();
 }
 
-template <typename Tags, typename TagLs,
+template <typename Tags, typename TagList,
           Requires<(tmpl::size<Tags>::value > 1)> = nullptr>
-auto get_tensor_from_box(const db::DataBox<TagLs>& box,
+auto get_tensor_from_box(const db::DataBox<TagList>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
   return db::get_tag_name<tag>() == tag_name
@@ -70,20 +70,20 @@ template <typename T>
 using is_a_tensor = tt::is_a<Tensor, T>;
 }  // namespace DataBoxHelpers_detail
 
-template <typename TagsLs>
-auto get_tensor_from_box(const db::DataBox<TagsLs>& box,
+template <typename TagsList>
+auto get_tensor_from_box(const db::DataBox<TagsList>& box,
                          const std::string& tag_name) {
   using tags =
-      tmpl::filter<TagsLs, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
-                                      tmpl::bind<db::item_type, tmpl::_1>>>;
+      tmpl::filter<TagsList, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
+                                        tmpl::bind<db::item_type, tmpl::_1>>>;
   return DataBoxHelpers_detail::get_tensor_from_box<tags>(box, tag_name);
 }
 
 // namespace DataBoxHelpers_detail {
-// template <typename Tags, typename TagsLs,
+// template <typename Tags, typename TagsList,
 //          Requires<(tmpl::size<Tags>::value == 1)> = nullptr>
 // auto get_tensor_norm_from_box(
-//    const db::DataBox<TagsLs>& box,
+//    const db::DataBox<TagsList>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {
 //  using tag = tmpl::front<Tags>;
 //  if (db::get_tag_name<tag>() != tag_name.first) {
@@ -93,10 +93,10 @@ auto get_tensor_from_box(const db::DataBox<TagsLs>& box,
 //  return compute_norm_core(box.template get<tag>(), tag_name.second);
 //}
 //
-// template <typename Tags, typename TagsLs,
+// template <typename Tags, typename TagsList,
 //          Requires<(tmpl::size<Tags>::value > 1)> = nullptr>
 // auto get_tensor_norm_from_box(
-//    const db::DataBox<TagsLs>& box,
+//    const db::DataBox<TagsList>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {
 //  using tag = tmpl::front<Tags>;
 //  if (db::get_tag_name<tag>() != tag_name.first) {
@@ -106,12 +106,12 @@ auto get_tensor_from_box(const db::DataBox<TagsLs>& box,
 //}
 //}  // namespace DataBoxHelpers_detail
 
-// template <typename TagsLs>
+// template <typename TagsList>
 // auto get_tensor_norm_from_box(
-//    const db::DataBox<TagsLs>& box,
+//    const db::DataBox<TagsList>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {
 //  using tags =
-//      tmpl::filter<TagsLs, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
+//      tmpl::filter<TagsList, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
 //                                      tmpl::bind<db::item_type, tmpl::_1>>>;
 //
 //  return DataBoxHelpers_detail::get_tensor_norm_from_box<tags>(box, tag_name);

@@ -11,30 +11,32 @@ then
   color_option='--color=auto'
 fi
 
+found_error=0
+
 ###############################################################################
 # Check for lines longer than 80 characters
 found_long_lines=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n '.\{81,\}'`
 if [[ $found_long_lines != "" ]]; then
     echo "This script can be run locally from any source dir using:"
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found lines over 80 characters:"
     echo "$found_long_lines"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
 # Check for iostream header
 found_iostream=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n '#include <iostream>'`
 if [[ $found_iostream != "" ]]; then
     echo "This script can be run locally from any source dir using:"
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found iostream header in files:"
     echo "$found_iostream"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -44,13 +46,14 @@ find ./ -type f               \
      ! -name "*.patch"        \
      ! -path "./docs/*"       \
      ! -path "./.git/*"       \
+     ! -path "./build*"       \
     | xargs grep -E '^.*'$'\t'`
 if [[ $found_tabs_files != "" ]]; then
     echo "This script can be run locally from any source dir using:"
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found tabs in the following  files:"
     echo "$found_tabs_files" | GREP_COLOR='1;37;41' grep -F $'\t' $color_option
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -60,6 +63,7 @@ find ./ -type f             \
      ! -name "*.patch"      \
      ! -path "./docs/*"     \
      ! -path "./.git/*"     \
+     ! -path "./build*"     \
     | xargs grep -E '^.* +$'`
 echo
 if [[ $found_spaces_files != "" ]]; then
@@ -68,7 +72,7 @@ if [[ $found_spaces_files != "" ]]; then
     echo "Found white space at end of line in the following files:"
     echo "$found_spaces_files" | \
         GREP_COLOR='1;37;41' grep -E ' +$' $color_option
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -76,6 +80,7 @@ fi
 found_carriage_return_files=`
 find ./ -type f                 \
      ! -path "*.git*"           \
+     ! -path "./build*"       \
     | xargs grep -E '^\+.*'$'\r'`
 if [[ $found_carriage_return_files != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -83,7 +88,7 @@ if [[ $found_carriage_return_files != "" ]]; then
     echo "Found carriage returns in the following files:"
     echo "$found_carriage_return_files" | \
         GREP_COLOR='1;37;41' grep -E '\r+$' $color_option
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
@@ -107,32 +112,33 @@ find ./ -type f                                                              \
      ! -name "*.patch"                                                       \
      ! -name "*LICENSE.*"                                                    \
      ! -name "*.clang-format"                                                \
+     ! -path "./build*"                                                      \
     | xargs grep -L "^.*Distributed under the MIT License"`
 if [[ $files_without_license != "" ]]; then
     echo "This script can be run locally from any source dir using:"
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Did not find a license in these files:"
     echo "$files_without_license"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
 # Check for tests using Catch's TEST_CASE instead of SPECTRE_TEST_CASE
 found_test_case=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n "^TEST_CASE"`
 if [[ $found_test_case != "" ]]; then
     echo "This script can be run locally from any source dir using:"
     echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
     echo "$found_test_case"
-    exit 1
+    found_error=1
 fi
 
 ###############################################################################
 # Check for tests using Catch's Approx, which has a very loose tolerance
 found_bad_approx=`
-find ./ -type f -name '*.[ch]pp' \
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
     | xargs grep --with-filename -n "Approx("`
 if [[ $found_bad_approx != "" ]]; then
     echo "This script can be run locally from any source dir using:"
@@ -140,5 +146,37 @@ if [[ $found_bad_approx != "" ]]; then
     printf "Found occurrences of Approx, must use approx from " \
            "SPECTRE_ROOT/tests/Unit/TestHelpers.hpp instead:\n"
     echo "$found_bad_approx"
+    found_error=1
+fi
+
+###############################################################################
+# Check for Doxygen comments on the same line as a /*!
+found_bad_doxygen_syntax=`
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
+    | xargs grep --with-filename -n '/\*\![^\n]'`
+if [[ $found_bad_doxygen_syntax != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of bad Doxygen syntax: /*! STUFF\n"
+    echo $found_bad_doxygen_syntax | \
+        GREP_COLOR='1;37;41' grep -E '\/\*\!.*' $color_option
+    echo ''
+    found_error=1
+fi
+
+###############################################################################
+# Check for Ls because of a preference not to use it as short form for List
+found_incorrect_list_name=`
+find ./ -type f -name '*.[ch]pp' -not -path './build*' \
+    | xargs grep --with-filename -n 'Ls'`
+if [[ $found_incorrect_list_name != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Found occurrences of 'Ls', which is usually short for List\n"
+    echo "$found_incorrect_list_name"
+    found_error=1
+fi
+
+if [ "$found_error" -eq "1" ]; then
     exit 1
 fi

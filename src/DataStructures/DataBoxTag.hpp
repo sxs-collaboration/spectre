@@ -18,11 +18,11 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <typename TagsLs>
+template <typename TagsList>
 class Variables;
 
 namespace Tags {
-template <typename TagsLs>
+template <typename TagsList>
 struct Variables;
 }  // namespace Tags
 /// \endcond
@@ -84,7 +84,8 @@ struct DataBoxTag {};
  */
 struct DataBoxPrefix : DataBoxTag {};
 
-/*! \ingroup DataBoxGroup
+/*!
+ * \ingroup DataBoxGroup
  * \brief Marks a DataBoxTag as being a compute item that executes a function
  *
  * \details
@@ -295,12 +296,12 @@ namespace detail {
 template <typename Tag, typename = std::nullptr_t>
 struct compute_item_result_impl;
 
-template <typename Tag, typename ArgsLs>
+template <typename Tag, typename ArgsList>
 struct compute_item_result_helper;
 
-template <typename Tag, template <typename...> class ArgumentsLs,
+template <typename Tag, template <typename...> class ArgumentsList,
           typename... Args>
-struct compute_item_result_helper<Tag, ArgumentsLs<Args...>> {
+struct compute_item_result_helper<Tag, ArgumentsList<Args...>> {
   static_assert(
       tt::is_callable<decltype(Tag::function),
                       typename compute_item_result_impl<Args>::type...>::value,

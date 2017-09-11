@@ -9,7 +9,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename X, typename Symm, typename IndexLs>
+template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 /// \ingroup Tensor
@@ -105,7 +105,8 @@ struct number_of_independent_components_impl<
 /// \endcond
 }  // namespace detail
 
-/*! \ingroup Tensor
+/*!
+ * \ingroup Tensor
  * \brief Compute the number of independent components for a given ::Symmetry
  * and \ref SpacetimeIndex "TensorIndexType" list
  * \tparam Symmetry_t Symmetry of the Tensor
@@ -242,18 +243,18 @@ struct canonicalize_tensor_index_impl;
 
 template <>
 struct canonicalize_tensor_index_impl<false> {
-  template <typename Symm, typename IndexLs, typename TensorIndex, size_t Rank,
-            size_t I>
+  template <typename Symm, typename IndexList, typename TensorIndex,
+            size_t Rank, size_t I>
   using type = TensorIndex;
 };
 
 template <>
 struct canonicalize_tensor_index_impl<true> {
-  template <typename Symm, typename IndexLs, typename TensorIndex, size_t Rank,
-            size_t I>
+  template <typename Symm, typename IndexList, typename TensorIndex,
+            size_t Rank, size_t I>
   using type =
       typename canonicalize_tensor_index_impl<(Rank > I + 1)>::template type<
-          Symm, IndexLs,
+          Symm, IndexList,
           tmpl::swap_at<TensorIndex, tmpl::size_t<I>,
                         ::TensorMetafunctions::tensor_index_to_swap<
                             Symm, TensorIndex, Rank, I, I>>,
@@ -264,12 +265,12 @@ struct canonicalize_tensor_index_impl<true> {
 /*!
  * \ingroup Tensor
  */
-template <typename Symm, typename IndexLs, typename TensorIndex>
+template <typename Symm, typename IndexList, typename TensorIndex>
 using canonicalize_tensor_index =
     typename detail::canonicalize_tensor_index_impl<(
-        tmpl::size<IndexLs>::value >
-        0)>::template type<Symm, IndexLs, TensorIndex,
-                           tmpl::size<IndexLs>::value, 0>;
+        tmpl::size<IndexList>::value >
+        0)>::template type<Symm, IndexList, TensorIndex,
+                           tmpl::size<IndexList>::value, 0>;
 
 namespace detail {
 template <bool IndicesRemaining>
@@ -277,33 +278,33 @@ struct compute_collapsed_index_impl;
 
 template <>
 struct compute_collapsed_index_impl<false> {
-  template <typename TensorIndex, typename IndexLs>
+  template <typename TensorIndex, typename IndexList>
   using type = tmpl::front<TensorIndex>;
 };
 
 template <>
 struct compute_collapsed_index_impl<true> {
-  template <typename TensorIndex, typename IndexLs>
+  template <typename TensorIndex, typename IndexList>
   using type =
       tmpl::plus<tmpl::front<TensorIndex>,
-                 tmpl::times<tmpl::front<IndexLs>,
+                 tmpl::times<tmpl::front<IndexList>,
                              typename compute_collapsed_index_impl<(
                                  tmpl::size<TensorIndex>::value > 2)>::
                                  template type<tmpl::pop_front<TensorIndex>,
-                                               tmpl::pop_front<IndexLs>>>>;
+                                               tmpl::pop_front<IndexList>>>>;
 };
 }  // namespace detail
 
 /*!
  * \ingroup Tensor
  *
- * \requires `is_a<typelist, IndexLs>::%value` is true, `tt::is_a<typelist,
+ * \requires `is_a<typelist, IndexList>::%value` is true, `tt::is_a<typelist,
  * TensorIndex>::%value` is true, and `tmpl::all<TensorIndex,
  * is_a<std::integral_constant, tmpl::_1>>::%value` is true
  */
-template <typename TensorIndex, typename IndexLs>
+template <typename TensorIndex, typename IndexList>
 using compute_collapsed_index = typename detail::compute_collapsed_index_impl<(
-    tmpl::size<TensorIndex>::value > 1)>::template type<TensorIndex, IndexLs>;
+    tmpl::size<TensorIndex>::value > 1)>::template type<TensorIndex, IndexList>;
 
 namespace detail {
 template <bool>
@@ -311,36 +312,37 @@ struct update_collapsed_to_storage_using_canonical_tensor_index_impl;
 
 template <>
 struct update_collapsed_to_storage_using_canonical_tensor_index_impl<false> {
-  template <typename IndexLs, typename CanonicalTensorIndex,
-            typename TensorIndex, typename CollapsedToStorageLs, typename I,
+  template <typename IndexList, typename CanonicalTensorIndex,
+            typename TensorIndex, typename CollapsedToStorageList, typename I,
             typename Count>
   using type = tmpl::replace_at<
-      CollapsedToStorageLs, I,
-      tmpl::at<CollapsedToStorageLs,
-               compute_collapsed_index<CanonicalTensorIndex, IndexLs>>>;
+      CollapsedToStorageList, I,
+      tmpl::at<CollapsedToStorageList,
+               compute_collapsed_index<CanonicalTensorIndex, IndexList>>>;
 };
 
 template <>
 struct update_collapsed_to_storage_using_canonical_tensor_index_impl<true> {
-  template <typename IndexLs, typename CanonicalTensorIndex,
-            typename TensorIndex, typename CollapsedToStorageLs, typename I,
+  template <typename IndexList, typename CanonicalTensorIndex,
+            typename TensorIndex, typename CollapsedToStorageList, typename I,
             typename Count>
-  using type = tmpl::replace_at<CollapsedToStorageLs, I, Count>;
+  using type = tmpl::replace_at<CollapsedToStorageList, I, Count>;
 };
 }  // namespace detail
 
-/*! \ingroup Tensor
- *
+/*!
+ * \ingroup Tensor
  * \note Cannot use `std::conditional_t` because `typelist<>` will fail
  */
-template <typename IndexLs, typename CanonicalTensorIndex, typename TensorIndex,
-          typename CollapsedToStorageLs, typename I, typename Count>
+template <typename IndexList, typename CanonicalTensorIndex,
+          typename TensorIndex, typename CollapsedToStorageList, typename I,
+          typename Count>
 using update_collapsed_to_storage_using_canonical_tensor_index =
     typename detail::
         update_collapsed_to_storage_using_canonical_tensor_index_impl<
             std::is_same<CanonicalTensorIndex, TensorIndex>::value>::
-            template type<IndexLs, CanonicalTensorIndex, TensorIndex,
-                          CollapsedToStorageLs, I, Count>;
+            template type<IndexList, CanonicalTensorIndex, TensorIndex,
+                          CollapsedToStorageList, I, Count>;
 
 /*!
  * \ingroup Tensor
@@ -358,27 +360,28 @@ struct compute_collapsed_to_storage_impl;
 
 template <>
 struct compute_collapsed_to_storage_impl<false> {
-  template <typename CollapsedToStorageLs, typename IndexLs, typename Symm,
+  template <typename CollapsedToStorageList, typename IndexList, typename Symm,
             typename TensorIndex, typename I, typename Count, typename NumComps>
   using type = update_collapsed_to_storage_using_canonical_tensor_index<
-      IndexLs, canonicalize_tensor_index<Symm, IndexLs, TensorIndex>,
-      TensorIndex, CollapsedToStorageLs, I, Count>;
+      IndexList, canonicalize_tensor_index<Symm, IndexList, TensorIndex>,
+      TensorIndex, CollapsedToStorageList, I, Count>;
 };
 template <>
 struct compute_collapsed_to_storage_impl<true> {
-  template <typename CollapsedToStorageLs, typename IndexLs, typename Symm,
+  template <typename CollapsedToStorageList, typename IndexList, typename Symm,
             typename TensorIndex, typename I, typename Count, typename NumComps>
   using type = typename compute_collapsed_to_storage_impl<(
       I::value + 1 < NumComps::value - 1)>::
       template type<
           update_collapsed_to_storage_using_canonical_tensor_index<
-              IndexLs, canonicalize_tensor_index<Symm, IndexLs, TensorIndex>,
-              TensorIndex, CollapsedToStorageLs, I, Count>,
-          IndexLs, Symm,
-          ::TensorMetafunctions::increment_tensor_index<IndexLs, TensorIndex>,
+              IndexList,
+              canonicalize_tensor_index<Symm, IndexList, TensorIndex>,
+              TensorIndex, CollapsedToStorageList, I, Count>,
+          IndexList, Symm,
+          ::TensorMetafunctions::increment_tensor_index<IndexList, TensorIndex>,
           tmpl::size_t<I::value + 1>,
           ::TensorMetafunctions::increase_count<
-              canonicalize_tensor_index<Symm, IndexLs, TensorIndex>,
+              canonicalize_tensor_index<Symm, IndexList, TensorIndex>,
               TensorIndex, Count>,
           NumComps>;
 };
@@ -388,11 +391,11 @@ struct compute_collapsed_to_storage_impl<true> {
  * \ingroup Tensor
  * \brief Compute the collapse index to storage index ::typelist
  */
-template <typename IndexLs, typename Symm, typename NumComps>
+template <typename IndexList, typename Symm, typename NumComps>
 using compute_collapsed_to_storage = typename detail::
     compute_collapsed_to_storage_impl<(0 < NumComps::value - 1)>::template type<
-        tmpl::filled_list<tmpl::size_t<0>, NumComps::value>, IndexLs, Symm,
-        tmpl::filled_list<tmpl::size_t<0>, tmpl::size<IndexLs>::value>,
+        tmpl::filled_list<tmpl::size_t<0>, NumComps::value>, IndexList, Symm,
+        tmpl::filled_list<tmpl::size_t<0>, tmpl::size<IndexList>::value>,
         tmpl::size_t<0>, tmpl::size_t<0>, NumComps>;
 
 namespace detail {
@@ -401,41 +404,42 @@ struct compute_storage_to_tensor_impl;
 
 template <>
 struct compute_storage_to_tensor_impl<0> {
-  template <typename Symm, typename IndexLs, typename CollapsedToStorageLs,
-            typename TensorIndex, typename StorageToTensorLs>
-  using type = tmpl::replace_at<StorageToTensorLs,
-                                tmpl::front<CollapsedToStorageLs>, TensorIndex>;
+  template <typename Symm, typename IndexList, typename CollapsedToStorageList,
+            typename TensorIndex, typename StorageToTensorList>
+  using type =
+      tmpl::replace_at<StorageToTensorList, tmpl::front<CollapsedToStorageList>,
+                       TensorIndex>;
 };
 
 // Case where
-// std::is_same_v<CollapsedToStorageLs, tmpl::list<tmpl::size_t<0>>> == true
+// std::is_same_v<CollapsedToStorageList, tmpl::list<tmpl::size_t<0>>> == true
 template <>
 struct compute_storage_to_tensor_impl<1> {
-  template <typename Symm, typename IndexLs, typename CollapsedToStorageLs,
-            typename TensorIndex, typename StorageToTensorLs>
+  template <typename Symm, typename IndexList, typename CollapsedToStorageList,
+            typename TensorIndex, typename StorageToTensorList>
   using type = tmpl::list<tmpl::integral_list<std::size_t, 0>>;
 };
 
 // Case where:
-// tmpl::size<CollapsedToStorageLs>::value > 1 == true
+// tmpl::size<CollapsedToStorageList>::value > 1 == true
 template <>
 struct compute_storage_to_tensor_impl<2> {
-  template <typename Symm, typename IndexLs, typename CollapsedToStorageLs,
-            typename TensorIndex, typename StorageToTensorLs>
+  template <typename Symm, typename IndexList, typename CollapsedToStorageList,
+            typename TensorIndex, typename StorageToTensorList>
   using type = typename compute_storage_to_tensor_impl<
-      (tmpl::size<CollapsedToStorageLs>::value > 2)
+      (tmpl::size<CollapsedToStorageList>::value > 2)
           ? 2
-          : ((tmpl::size<CollapsedToStorageLs>::value == 2 and
-              std::is_same<tmpl::back<CollapsedToStorageLs>,
+          : ((tmpl::size<CollapsedToStorageList>::value == 2 and
+              std::is_same<tmpl::back<CollapsedToStorageList>,
                            tmpl::list<tmpl::size_t<0>>>::value)
                  ? 1
                  : 0)>::
       template type<
-          Symm, IndexLs, tmpl::pop_front<CollapsedToStorageLs>,
-          ::TensorMetafunctions::increment_tensor_index<IndexLs, TensorIndex>,
+          Symm, IndexList, tmpl::pop_front<CollapsedToStorageList>,
+          ::TensorMetafunctions::increment_tensor_index<IndexList, TensorIndex>,
           tmpl::replace_at<
-              StorageToTensorLs, tmpl::front<CollapsedToStorageLs>,
-              canonicalize_tensor_index<Symm, IndexLs, TensorIndex>>>;
+              StorageToTensorList, tmpl::front<CollapsedToStorageList>,
+              canonicalize_tensor_index<Symm, IndexList, TensorIndex>>>;
 };
 }  // namespace detail
 
@@ -443,20 +447,20 @@ struct compute_storage_to_tensor_impl<2> {
  * \ingroup Tensor
  * \brief Compute a ::typelist holding the tensor index for each storage index
  */
-template <typename Symm, typename IndexLs, typename CollapsedToStorageLs,
+template <typename Symm, typename IndexList, typename CollapsedToStorageList,
           typename NumIndComps>
 using compute_storage_to_tensor =
     typename detail::compute_storage_to_tensor_impl<
-        (tmpl::size<CollapsedToStorageLs>::value > 1)
+        (tmpl::size<CollapsedToStorageList>::value > 1)
             ? 2
-            : (tmpl::size<CollapsedToStorageLs>::value == 2 and
-               std::is_same<tmpl::back<CollapsedToStorageLs>,
+            : (tmpl::size<CollapsedToStorageList>::value == 2 and
+               std::is_same<tmpl::back<CollapsedToStorageList>,
                             tmpl::list<tmpl::size_t<0>>>::value)
                   ? 1
                   : 0>::
         template type<
-            Symm, IndexLs, CollapsedToStorageLs,
-            tmpl::filled_list<tmpl::size_t<0>, tmpl::size<IndexLs>::value>,
+            Symm, IndexList, CollapsedToStorageList,
+            tmpl::filled_list<tmpl::size_t<0>, tmpl::size<IndexList>::value>,
             tmpl::filled_list<tmpl::size_t<0>, NumIndComps::value>>;
 
 namespace detail {
@@ -465,26 +469,27 @@ struct compute_multiplicity_impl;
 
 template <>
 struct compute_multiplicity_impl<false> {
-  template <typename CollapsedToStorageLs, typename MultiplicityLs>
+  template <typename CollapsedToStorageList, typename MultiplicityList>
   using type = tmpl::replace_at<
-      MultiplicityLs, tmpl::front<CollapsedToStorageLs>,
-      tmpl::size_t<
-          tmpl::at<MultiplicityLs, tmpl::front<CollapsedToStorageLs>>::value +
-          1>>;
+      MultiplicityList, tmpl::front<CollapsedToStorageList>,
+      tmpl::size_t<tmpl::at<MultiplicityList,
+                            tmpl::front<CollapsedToStorageList>>::value +
+                   1>>;
 };
 
 template <>
 struct compute_multiplicity_impl<true> {
-  template <typename CollapsedToStorageLs, typename MultiplicityLs>
+  template <typename CollapsedToStorageList, typename MultiplicityList>
   using type = typename compute_multiplicity_impl<(
-      tmpl::size<CollapsedToStorageLs>::value > 2)>::
+      tmpl::size<CollapsedToStorageList>::value > 2)>::
       template type<
-          tmpl::pop_front<CollapsedToStorageLs>,
+          tmpl::pop_front<CollapsedToStorageList>,
           tmpl::replace_at<
-              MultiplicityLs, tmpl::front<CollapsedToStorageLs>,
-              tmpl::size_t<tmpl::at<MultiplicityLs,
-                                    tmpl::front<CollapsedToStorageLs>>::value +
-                           1>>>;
+              MultiplicityList, tmpl::front<CollapsedToStorageList>,
+              tmpl::size_t<
+                  tmpl::at<MultiplicityList,
+                           tmpl::front<CollapsedToStorageList>>::value +
+                  1>>>;
 };
 }  // namespace detail
 
@@ -505,10 +510,10 @@ struct compute_multiplicity_impl<true> {
  *                          tmpl::size_t<5>> = tmpl::size_t<2>;
  * \endcode
  */
-template <typename CollapsedToStorageLs, typename NumIndComps>
+template <typename CollapsedToStorageList, typename NumIndComps>
 using compute_multiplicity = typename detail::compute_multiplicity_impl<(
-    tmpl::size<CollapsedToStorageLs>::value >
-    1)>::template type<CollapsedToStorageLs,
+    tmpl::size<CollapsedToStorageList>::value >
+    1)>::template type<CollapsedToStorageList,
                        tmpl::filled_list<tmpl::size_t<0>, NumIndComps::value>>;
 
 namespace detail {
@@ -518,30 +523,31 @@ struct check_index_symmetry_impl;
 // empty typelist, done recursion
 template <>
 struct check_index_symmetry_impl<0> {
-  template <typename Symm, typename IndexLs, typename IndexSymm>
+  template <typename Symm, typename IndexList, typename IndexSymm>
   using type = std::true_type;
 };
 
 // found incorrect symmetric index
 template <>
 struct check_index_symmetry_impl<1> {
-  template <typename Symm, typename IndexLs, typename IndexSymm>
+  template <typename Symm, typename IndexList, typename IndexSymm>
   using type = std::false_type;
 };
 
 // recurse the list
 template <>
 struct check_index_symmetry_impl<2> {
-  template <typename Symm, typename IndexLs, typename IndexSymm>
+  template <typename Symm, typename IndexList, typename IndexSymm>
   using type = typename check_index_symmetry_impl<
       tmpl::has_key<IndexSymm, tmpl::front<Symm>>::value and
-              not std::is_same<tmpl::front<IndexLs>,
+              not std::is_same<tmpl::front<IndexList>,
                                tmpl::at<IndexSymm, tmpl::front<Symm>>>::value
           ? 1
           : tmpl::size<Symm>::value == 1 ? 0 : 2>::
-      template type<tmpl::pop_front<Symm>, tmpl::pop_front<IndexLs>,
-                    tmpl::insert<IndexSymm, tmpl::pair<tmpl::front<Symm>,
-                                                       tmpl::front<IndexLs>>>>;
+      template type<
+          tmpl::pop_front<Symm>, tmpl::pop_front<IndexList>,
+          tmpl::insert<IndexSymm,
+                       tmpl::pair<tmpl::front<Symm>, tmpl::front<IndexList>>>>;
 };
 }  // namespace detail
 
@@ -550,13 +556,13 @@ struct check_index_symmetry_impl<2> {
  * \brief Check that each of symmetric indices is in the same frame and have the
  * same dimensionality.
  */
-template <typename Symm, typename IndexLs>
+template <typename Symm, typename IndexList>
 using check_index_symmetry = typename detail::check_index_symmetry_impl<
-    tmpl::size<Symm>::value == 0 ? 0 : 2>::template type<Symm, IndexLs,
+    tmpl::size<Symm>::value == 0 ? 0 : 2>::template type<Symm, IndexList,
                                                          tmpl::map<>>;
-template <typename Symm, typename IndexLs>
+template <typename Symm, typename IndexList>
 constexpr bool check_index_symmetry_v =
-    check_index_symmetry<Symm, IndexLs>::value;
+    check_index_symmetry<Symm, IndexList>::value;
 
 /*!
  * \ingroup Tensor

@@ -12,33 +12,35 @@
 namespace TensorExpressions {
 
 namespace detail {
-template <typename IndexLs1, typename IndexLs2, typename Args1, typename Args2,
-          typename Element>
+template <typename IndexList1, typename IndexList2, typename Args1,
+          typename Args2, typename Element>
 struct AddSubIndexCheckHelper
-    : std::is_same<tmpl::at<IndexLs1, tmpl::index_of<Args1, Element>>,
-                   tmpl::at<IndexLs2, tmpl::index_of<Args2, Element>>>::type {};
+    : std::is_same<tmpl::at<IndexList1, tmpl::index_of<Args1, Element>>,
+                   tmpl::at<IndexList2, tmpl::index_of<Args2, Element>>>::type {
+};
 
 // Check to make sure that the tensor indices being added are of the same type,
 // dimensionality and in the same frame
-template <typename IndexLs1, typename IndexLs2, typename Args1, typename Args2>
+template <typename IndexList1, typename IndexList2, typename Args1,
+          typename Args2>
 using AddSubIndexCheck = tmpl::fold<
     Args1, tmpl::bool_<true>,
     tmpl::and_<tmpl::_state,
-               AddSubIndexCheckHelper<tmpl::pin<IndexLs1>, tmpl::pin<IndexLs2>,
-                                      tmpl::pin<Args1>, tmpl::pin<Args2>,
-                                      tmpl::_element>>>;
+               AddSubIndexCheckHelper<tmpl::pin<IndexList1>,
+                                      tmpl::pin<IndexList2>, tmpl::pin<Args1>,
+                                      tmpl::pin<Args2>, tmpl::_element>>>;
 }  // namespace detail
 
-template <typename T1, typename T2, typename ArgsLs1, typename ArgsLs2,
+template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,
           int Sign>
 struct AddSub;
 
-template <typename T1, typename T2, template <typename...> class ArgsLs1,
-          template <typename...> class ArgsLs2, typename... Args1,
+template <typename T1, typename T2, template <typename...> class ArgsList1,
+          template <typename...> class ArgsList2, typename... Args1,
           typename... Args2, int Sign>
-struct AddSub<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>, Sign>
+struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     : public TensorExpression<
-          AddSub<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>, Sign>,
+          AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>,
           typename T1::type,
           tmpl::transform<typename T1::symmetry, typename T2::symmetry,
                           tmpl::append<tmpl::max<tmpl::_1, tmpl::_2>>>,
@@ -48,7 +50,7 @@ struct AddSub<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>, Sign>
                 "Cannot add or subtract Tensors holding different data types.");
   static_assert(
       detail::AddSubIndexCheck<typename T1::index_list, typename T2::index_list,
-                               ArgsLs1<Args1...>, ArgsLs2<Args2...>>::value,
+                               ArgsList1<Args1...>, ArgsList2<Args2...>>::value,
       "You are attempting to add indices of different types, e.g. T^a_b + "
       "S^b_a, which doesn't make sense. The indices may also be in different "
       "frames, different types (spatial vs. spacetime) or of different "
@@ -100,10 +102,11 @@ struct AddSub<T1, T2, ArgsLs1<Args1...>, ArgsLs2<Args2...>, Sign>
  * \ingroup TensorExpressions
  */
 template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
-          typename IndexLs1, typename IndexLs2, typename Args1, typename Args2>
+          typename IndexList1, typename IndexList2, typename Args1,
+          typename Args2>
 SPECTRE_ALWAYS_INLINE auto operator+(
-    const TensorExpression<T1, X, Symm1, IndexLs1, Args1>& t1,
-    const TensorExpression<T2, X, Symm2, IndexLs2, Args2>& t2) {
+    const TensorExpression<T1, X, Symm1, IndexList1, Args1>& t1,
+    const TensorExpression<T2, X, Symm2, IndexList2, Args2>& t2) {
   static_assert(tmpl::size<Args1>::value == tmpl::size<Args2>::value,
                 "Tensor addition is only possible with the same rank tensors");
   static_assert(tmpl::equal_members<Args1, Args2>::value,
@@ -111,9 +114,9 @@ SPECTRE_ALWAYS_INLINE auto operator+(
                 "occurs from expressions like A(_a, _b) + B(_c, _a)");
   return TensorExpressions::AddSub<
       tmpl::conditional_t<std::is_base_of<Expression, T1>::value, T1,
-                          TensorExpression<T1, X, Symm1, IndexLs1, Args1>>,
+                          TensorExpression<T1, X, Symm1, IndexList1, Args1>>,
       tmpl::conditional_t<std::is_base_of<Expression, T2>::value, T2,
-                          TensorExpression<T2, X, Symm2, IndexLs2, Args2>>,
+                          TensorExpression<T2, X, Symm2, IndexList2, Args2>>,
       Args1, Args2, 1>(~t1, ~t2);
 }
 
@@ -121,10 +124,11 @@ SPECTRE_ALWAYS_INLINE auto operator+(
  * \ingroup TensorExpressions
  */
 template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
-          typename IndexLs1, typename IndexLs2, typename Args1, typename Args2>
+          typename IndexList1, typename IndexList2, typename Args1,
+          typename Args2>
 SPECTRE_ALWAYS_INLINE auto operator-(
-    const TensorExpression<T1, X, Symm1, IndexLs1, Args1>& t1,
-    const TensorExpression<T2, X, Symm2, IndexLs2, Args2>& t2) {
+    const TensorExpression<T1, X, Symm1, IndexList1, Args1>& t1,
+    const TensorExpression<T2, X, Symm2, IndexList2, Args2>& t2) {
   static_assert(tmpl::size<Args1>::value == tmpl::size<Args2>::value,
                 "Tensor addition is only possible with the same rank tensors");
   static_assert(tmpl::equal_members<Args1, Args2>::value,
@@ -132,8 +136,8 @@ SPECTRE_ALWAYS_INLINE auto operator-(
                 "occurs from expressions like A(_a, _b) - B(_c, _a)");
   return TensorExpressions::AddSub<
       tmpl::conditional_t<std::is_base_of<Expression, T1>::value, T1,
-                          TensorExpression<T1, X, Symm1, IndexLs1, Args1>>,
+                          TensorExpression<T1, X, Symm1, IndexList1, Args1>>,
       tmpl::conditional_t<std::is_base_of<Expression, T2>::value, T2,
-                          TensorExpression<T2, X, Symm2, IndexLs2, Args2>>,
+                          TensorExpression<T2, X, Symm2, IndexList2, Args2>>,
       Args1, Args2, -1>(~t1, ~t2);
 }

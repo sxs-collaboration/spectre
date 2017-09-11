@@ -11,10 +11,11 @@
 
 #include <boost/math/tools/toms748_solve.hpp>
 
-/*! \ingroup Functors
- *  \brief Finds the root of the function f with the TOMS_748 method.
+/*!
+ * \ingroup NumericalAlgorithms
+ * \brief Finds the root of the function f with the TOMS_748 method.
  *
- *  \requires Function f be callable
+ * \requires Function f be callable
  */
 template <typename Function>
 double find_root_of_function(Function f, const double lower_bound,
