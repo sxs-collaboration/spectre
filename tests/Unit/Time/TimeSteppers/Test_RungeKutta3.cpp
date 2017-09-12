@@ -27,3 +27,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Stability",
                   "[Unit][Time]") {
   stability_test(TimeSteppers::RungeKutta3{});
 }
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Factory",
+                  "[Unit][Time]") {
+  test_factory_creation<TimeStepper>("  RungeKutta3");
+}

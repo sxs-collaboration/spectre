@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-//#include "Options/Options.hpp"
+#include "Options/Options.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
@@ -21,9 +21,10 @@ namespace StepControllers {
 /// A StepController that chooses steps to be 1/2^n of a slab.
 class BinaryFraction : public StepController {
  public:
-  // using options = tmpl::list<>;
-  // static constexpr OptionString_t help = {
-  //     "Chooses steps to be binary fractions of a slab"};
+  using options = tmpl::list<>;
+  static constexpr OptionString_t help = {
+      "Chooses steps to be binary fractions of a slab"};
+  explicit BinaryFraction(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

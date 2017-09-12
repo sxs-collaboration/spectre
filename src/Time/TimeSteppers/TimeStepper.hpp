@@ -9,6 +9,7 @@
 #include <deque>
 #include <tuple>
 
+#include "Options/Factory.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
@@ -28,10 +29,9 @@ DEFINE_FAKE_VIRTUAL(update_u)
 /// \ingroup TimeSteppersGroup
 ///
 /// Abstract base class for TimeSteppers.
-class TimeStepper /*: public Factory<TimeStepper>*/ {
+class TimeStepper : public Factory<TimeStepper> {
  public:
   using Inherit = TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>;
-  static std::string class_id() noexcept { return "TimeStepper"; }
   using creatable_classes = typelist<
       TimeSteppers::AdamsBashforthN,
       TimeSteppers::RungeKutta3>;
