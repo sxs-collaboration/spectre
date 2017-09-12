@@ -11,8 +11,8 @@
 #include <string>
 #include <type_traits>
 
-#include "Utilities/Requires.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
