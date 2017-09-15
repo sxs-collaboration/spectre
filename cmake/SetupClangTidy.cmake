@@ -31,6 +31,10 @@ elseif(CMAKE_CXX_CLANG_TIDY)
 endif()
 
 if (CLANG_TIDY_BIN)
+  set(MODULES_TO_DEPEND_ON
+    module_RunTests
+    module_Test_ConstGlobalCache
+    )
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/ClangTidyAll.sh
     ${CMAKE_BINARY_DIR}/ClangTidyAll.sh
@@ -46,9 +50,9 @@ if (CLANG_TIDY_BIN)
       \${FILE}
   )
   add_dependencies(
-      clang-tidy
-      module_RunTests
-  )
+    clang-tidy
+    ${MODULES_TO_DEPEND_ON}
+    )
   set_target_properties(
       clang-tidy
       PROPERTIES EXCLUDE_FROM_ALL TRUE
@@ -62,7 +66,7 @@ if (CLANG_TIDY_BIN)
       PROPERTIES EXCLUDE_FROM_ALL TRUE
   )
   add_dependencies(
-      clang-tidy-all
-      module_RunTests
+    clang-tidy-all
+    ${MODULES_TO_DEPEND_ON}
   )
 endif()
