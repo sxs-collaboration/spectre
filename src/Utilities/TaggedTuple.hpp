@@ -14,6 +14,7 @@
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace tuples {
 
@@ -606,6 +607,8 @@ class TaggedTuple<> {
   static constexpr size_t size() noexcept { return 0; }
   TaggedTuple() noexcept = default;
   void swap(TaggedTuple& /*unused*/) noexcept {}
+  // clang-tidy: runtime-references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 // C++17 Draft 23.5.3.6 Tuple helper classes
@@ -818,7 +821,7 @@ struct tagged_tuple_typelist_impl<List<Tags...>> {
 /// \ingroup Utilities
 template <typename T>
 using TaggedTupleTypelist =
-    typename TaggedTuple_detail::tagged_tuple_typelist_impl<T>;
+    typename TaggedTuple_detail::tagged_tuple_typelist_impl<T>::type;
 
 /// Stream operator for TaggedTuple
 template <class... Tags>
