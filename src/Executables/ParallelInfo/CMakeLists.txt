@@ -8,12 +8,17 @@ set(EXECUTABLE_SOURCES
     ${EXECUTABLE}.decl.h
 )
 
-add_charm_mainmodule(${EXECUTABLE})
+add_charm_module(${EXECUTABLE})
 
 add_executable(
     ${EXECUTABLE}
     ${EXECUTABLE_SOURCES}
 )
+
+add_dependencies(
+  ${EXECUTABLE}
+  module_ParallelInfo
+  )
 
 target_link_libraries(
     ${EXECUTABLE}
