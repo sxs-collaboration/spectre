@@ -17,10 +17,10 @@ namespace {
 void test_definite_integral_1d(const Index<1>& index_1d) {
   const size_t num_pts_in_x = index_1d[0];
   const DataVector& x = Basis::lgl::collocation_points(num_pts_in_x);
-  Scalar<DataVector> integrand(num_pts_in_x);
+  DataVector integrand(num_pts_in_x);
   for (size_t a = 0; a < num_pts_in_x; ++a) {
-    for (size_t s = 0; s < integrand.begin()->size(); ++s) {
-      integrand.get()[s] = pow(x[s], a);
+    for (size_t s = 0; s < integrand.size(); ++s) {
+      integrand[s] = pow(x[s], a);
     }
     if (0 == a % 2) {
       CHECK(2.0 / (a + 1.0) ==
@@ -37,11 +37,11 @@ void test_definite_integral_2d(const Index<2>& index_2d) {
   const size_t num_pts_in_y = index_2d[1];
   const DataVector& x = Basis::lgl::collocation_points(num_pts_in_x);
   const DataVector& y = Basis::lgl::collocation_points(num_pts_in_y);
-  Scalar<DataVector> integrand(extents.product());
+  DataVector integrand(extents.product());
   for (size_t a = 0; a < num_pts_in_x; ++a) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
       for (IndexIterator<2> index_it(index_2d); index_it; ++index_it) {
-        integrand.get()[index_it.offset()] =
+        integrand[index_it.offset()] =
             pow(x[index_it()[0]], a) * pow(y[index_it()[1]], b);
       }
       if (0 == a % 2 and 0 == b % 2) {
@@ -63,14 +63,14 @@ void test_definite_integral_3d(const Index<3>& index_3d) {
   const DataVector& x = Basis::lgl::collocation_points(num_pts_in_x);
   const DataVector& y = Basis::lgl::collocation_points(num_pts_in_y);
   const DataVector& z = Basis::lgl::collocation_points(num_pts_in_z);
-  Scalar<DataVector> integrand(extents.product());
+  DataVector integrand(extents.product());
   for (size_t a = 0; a < num_pts_in_x; ++a) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
       for (size_t c = 0; c < num_pts_in_z; ++c) {
         for (IndexIterator<3> index_it(index_3d); index_it; ++index_it) {
-          integrand.get()[index_it.offset()] = pow(x[index_it()[0]], a) *
-                                               pow(y[index_it()[1]], b) *
-                                               pow(z[index_it()[2]], c);
+          integrand[index_it.offset()] = pow(x[index_it()[0]], a) *
+                                         pow(y[index_it()[1]], b) *
+                                         pow(z[index_it()[2]], c);
         }
         if (0 == a % 2 and 0 == b % 2 and 0 == c % 2) {
           CHECK(8.0 / ((a + 1.0) * (b + 1.0) * (c + 1.0)) ==

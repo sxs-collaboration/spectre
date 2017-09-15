@@ -8,8 +8,6 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/Tensor.hpp"
-
 class DataVector;
 template <size_t>
 class Index;
@@ -30,7 +28,7 @@ namespace lgl {
  * \returns the definite integral of `integrand` on the manifold.
  */
 template <size_t Dim>
-double definite_integral(const Scalar<DataVector>& integrand,
+double definite_integral(const DataVector& integrand,
                          const Index<Dim>& extents) noexcept;
 
 }  // namespace lgl
