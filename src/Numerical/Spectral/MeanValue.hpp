@@ -13,10 +13,16 @@
 /*!
  * \ingroup NumericalAlgorithms
  * \brief Compute the mean value of a grid-function over a manifold.
+ * \f$mean value = \int f dV / \int dV\f$
  *
  * \remarks The mean value is computed on the reference element(s).
+ * \note The mean w.r.t. a different set of coordinates x can be computed
+ * by pre-multiplying the argument f by the Jacobian J = dx/dxi of the mapping
+ * from the reference coordinates xi to the coordinates x.
  *
  * \returns the mean value of `f` on the manifold
+ * \param f the grid function of which to find the mean.
+ * \param extents the extents of the manifold on which f is located.
  */
 template <size_t Dim>
 double mean_value(const DataVector& f, const Index<Dim>& extents) {

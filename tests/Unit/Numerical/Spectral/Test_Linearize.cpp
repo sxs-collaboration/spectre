@@ -16,7 +16,7 @@
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Linearize",
                   "[Numerical][Spectral][Unit]") {
   // The start and end are chosen to give fast tests
-  const size_t n_start = 3, n_end = 5;
+  const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
     const DataVector& x = Basis::lgl::collocation_points(nx);
     for (size_t ny = n_start; ny < n_end; ++ny) {
@@ -41,6 +41,29 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Linearize",
               CHECK(0.0 == approx(u_s[i]));
             }
           }
+        }
+      }
+    }
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearizeALinearFunction",
+                  "[Numerical][Spectral][Unit]"){
+  const size_t n_start = 2, n_end = 5;
+  for (size_t nx = n_start; nx < n_end; ++nx) {
+    const DataVector& x = Basis::lgl::collocation_points(nx);
+    for (size_t ny = n_start; ny < n_end; ++ny) {
+      const DataVector& y = Basis::lgl::collocation_points(ny);
+      for (size_t nz = n_start; nz < n_end; ++nz) {
+        const DataVector& z = Basis::lgl::collocation_points(nz);
+        const Index<3> extents(nx, ny, nz);
+        DataVector u(extents.product());
+        for (IndexIterator<3> i(extents); i; ++i) {
+          u[i.offset()] = 3*x[i()[0]]+5*y[i()[1]]+z[i()[2]];
+        }
+        const DataVector u_lin = linearize(u, extents);
+        for(size_t i=0; i<u.size(); i++){
+          CHECK(u[i] == approx(u_lin[i]));
         }
       }
     }
