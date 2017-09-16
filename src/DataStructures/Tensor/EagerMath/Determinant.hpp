@@ -45,8 +45,8 @@ struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 3>> {
     const auto& t20 = tensor.template get<2, 0>();
     const auto& t21 = tensor.template get<2, 1>();
     const auto& t22 = tensor.template get<2, 2>();
-    return t00 * (t11 * t22 - t21 * t12) - t01 * (t10 * t22 - t20 * t12) +
-           t02 * (t10 * t21 - t20 * t11);
+    return t00 * (t11 * t22 - t12 * t21) - t01 * (t10 * t22 - t12 * t20) +
+           t02 * (t10 * t21 - t11 * t20);
   }
 };
 
@@ -55,13 +55,13 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 3>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();
-    const auto& t10 = tensor.template get<1, 0>();
+    const auto& t01 = tensor.template get<0, 1>();
+    const auto& t02 = tensor.template get<0, 2>();
     const auto& t11 = tensor.template get<1, 1>();
-    const auto& t20 = tensor.template get<2, 0>();
-    const auto& t21 = tensor.template get<2, 1>();
+    const auto& t12 = tensor.template get<1, 2>();
     const auto& t22 = tensor.template get<2, 2>();
-    return t00 * (t11 * t22 - t21 * t21) - t10 * (t10 * t22 - 2 * t20 * t21) -
-           t11 * t20 * t20;
+    return t00 * (t11 * t22 - t12 * t12) - t01 * (t01 * t22 - t12 * t02) +
+           t02 * (t01 * t12 - t11 * t02);
   }
 };
 
@@ -85,16 +85,16 @@ struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 4>> {
     const auto& t31 = tensor.template get<3, 1>();
     const auto& t32 = tensor.template get<3, 2>();
     const auto& t33 = tensor.template get<3, 3>();
-    const auto tmp1 = t22 * t33 - t32 * t23;
-    const auto tmp2 = t21 * t33 - t31 * t23;
-    const auto tmp3 = t21 * t32 - t31 * t22;
-    const auto tmp4 = t02 * t13 - t12 * t03;
-    const auto tmp5 = t01 * t13 - t11 * t03;
-    const auto tmp6 = t01 * t12 - t02 * t11;
-    return t00 * (t11 * tmp1 - t12 * tmp2 + t13 * tmp3) -
-           t10 * (t01 * tmp1 - t02 * tmp2 + t03 * tmp3) +
-           t20 * (t31 * tmp4 - t32 * tmp5 + t33 * tmp6) -
-           t30 * (t21 * tmp4 - t22 * tmp5 + t23 * tmp6);
+    const auto minor1 = t22 * t33 - t23 * t32;
+    const auto minor2 = t21 * t33 - t23 * t31;
+    const auto minor3 = t20 * t33 - t23 * t30;
+    const auto minor4 = t21 * t32 - t22 * t31;
+    const auto minor5 = t20 * t32 - t22 * t30;
+    const auto minor6 = t20 * t31 - t21 * t30;
+    return t00 * (t11 * minor1 - t12 * minor2 + t13 * minor4) -
+           t01 * (t10 * minor1 - t12 * minor3 + t13 * minor5) +
+           t02 * (t10 * minor2 - t11 * minor3 + t13 * minor6) -
+           t03 * (t10 * minor4 - t11 * minor5 + t12 * minor6);
   }
 };
 
@@ -103,25 +103,25 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
   template <typename T>
   static typename T::type apply(const T& tensor) {
     const auto& t00 = tensor.template get<0, 0>();
-    const auto& t10 = tensor.template get<1, 0>();
+    const auto& t01 = tensor.template get<0, 1>();
+    const auto& t02 = tensor.template get<0, 2>();
+    const auto& t03 = tensor.template get<0, 3>();
     const auto& t11 = tensor.template get<1, 1>();
-    const auto& t20 = tensor.template get<2, 0>();
-    const auto& t21 = tensor.template get<2, 1>();
+    const auto& t12 = tensor.template get<1, 2>();
+    const auto& t13 = tensor.template get<1, 3>();
     const auto& t22 = tensor.template get<2, 2>();
-    const auto& t30 = tensor.template get<3, 0>();
-    const auto& t31 = tensor.template get<3, 1>();
-    const auto& t32 = tensor.template get<3, 2>();
+    const auto& t23 = tensor.template get<2, 3>();
     const auto& t33 = tensor.template get<3, 3>();
-    const auto tmp1 = t22 * t33 - t32 * t32;
-    const auto tmp2 = t21 * t33 - t31 * t32;
-    const auto tmp3 = t21 * t32 - t31 * t22;
-    const auto tmp4 = t20 * t31 - t21 * t30;
-    const auto tmp5 = t10 * t31 - t11 * t30;
-    const auto tmp6 = t10 * t21 - t20 * t11;
-    return t00 * (t11 * tmp1 - t21 * tmp2 + t31 * tmp3) -
-           t10 * (t10 * tmp1 - t20 * tmp2 + t30 * tmp3) +
-           t20 * (t31 * tmp4 - t32 * tmp5 + t33 * tmp6) -
-           t30 * (t21 * tmp4 - t22 * tmp5 + t32 * tmp6);
+    const auto minor1 = t22 * t33 - t23 * t23;
+    const auto minor2 = t12 * t33 - t23 * t13;
+    const auto minor3 = t02 * t33 - t23 * t03;
+    const auto minor4 = t12 * t23 - t22 * t13;
+    const auto minor5 = t02 * t23 - t22 * t03;
+    const auto minor6 = t02 * t13 - t12 * t03;
+    return t00 * (t11 * minor1 - t12 * minor2 + t13 * minor4) -
+           t01 * (t01 * minor1 - t12 * minor3 + t13 * minor5) +
+           t02 * (t01 * minor2 - t11 * minor3 + t13 * minor6) -
+           t03 * (t01 * minor4 - t11 * minor5 + t12 * minor6);
   }
 };
 }  // namespace detail

@@ -3,6 +3,7 @@
 
 set(TENSOR_EAGER_MATH_TESTS
     DataStructures/TensorEagerMath/Test_Determinant.cpp
+    DataStructures/TensorEagerMath/Test_DeterminantAndInverse.cpp
     DataStructures/TensorEagerMath/Test_DivideBy.cpp
     DataStructures/TensorEagerMath/Test_Magnitude.cpp
     )
