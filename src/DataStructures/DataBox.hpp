@@ -623,8 +623,12 @@ class DataBox<TagsList<Tags...>> {
    * \note the default constructor is only used for serialization
    */
   DataBox() = default;
-  DataBox(DataBox&& rhs) noexcept = default;
-  DataBox& operator=(DataBox&& rhs) noexcept = default;
+  DataBox(DataBox&& rhs) noexcept(
+      std::is_nothrow_move_constructible<
+          databox_detail::TaggedDeferredTuple<Tags...>>::value) = default;
+  DataBox& operator=(DataBox&& rhs) noexcept(
+      std::is_nothrow_move_assignable<
+          databox_detail::TaggedDeferredTuple<Tags...>>::value) = default;
   DataBox(const DataBox& rhs) = default;
   DataBox& operator=(const DataBox& rhs) = default;
   ~DataBox() = default;
