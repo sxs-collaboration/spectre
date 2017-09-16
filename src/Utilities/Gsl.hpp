@@ -243,3 +243,18 @@ template <class T>
 not_null<T> operator+(std::ptrdiff_t, const not_null<T>&) = delete;
 
 }  // namespace gsl
+
+// The remainder of this file is
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+/// Construct a not_null from a pointer.  Often this will be done as
+/// an implicit conversion, but it may be necessary to perform the
+/// conversion explicitly when type deduction is desired.
+///
+/// \note This is not a standard GSL function, and so is not in the
+/// gsl namespace.
+template <typename T>
+gsl::not_null<T*> make_not_null(T* ptr) noexcept {
+  return gsl::not_null<T*>(ptr);
+}
