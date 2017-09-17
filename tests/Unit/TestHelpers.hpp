@@ -128,8 +128,6 @@ void test_copy_semantics(const T& a) {
   static_assert(std::is_copy_constructible<T>::value,
                 "Class is not copy constructible.");
   T b = a;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wparentheses"
   CHECK(b == a);
   // clang-tidy: intentionally not a reference to force invocation of copy
   // constructor
@@ -138,7 +136,6 @@ void test_copy_semantics(const T& a) {
   // clang-tidy: self-assignment
   b = b;  // NOLINT
   CHECK(b == a);
-#pragma GCC diagnostic pop
 }
 
 /// Test for move semantics assuming operator== is implement correctly
@@ -163,12 +160,9 @@ void test_move_semantics(T&& a, const T& comparison) {
   T b;
   // clang-tidy: use std::forward instead of std::move
   b = std::move(a);  // NOLINT
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wparentheses"
   CHECK(b == comparison);
   T c(std::move(b));
   CHECK(c == comparison);
-#pragma GCC diagnostic pop
 }
 
 // Test for iterators
