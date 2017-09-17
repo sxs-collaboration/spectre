@@ -61,6 +61,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 # Charm++ generated headers are created in the build directory
 include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src)
+include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src/Parallel)
 
 add_subdirectory(src)
 add_subdirectory(tests)

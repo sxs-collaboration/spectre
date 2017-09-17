@@ -8,6 +8,7 @@ add_subdirectory(Executables)
 add_subdirectory(Informer)
 add_subdirectory(IO)
 add_subdirectory(Numerical)
+add_subdirectory(Parallel)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
 

@@ -1,0 +1,18 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+module ConstGlobalCache {
+  include "Utilities/TaggedTuple.hpp";
+  namespace Parallel {
+
+  template <typename Metavariables>
+  nodegroup[migratable] ConstGlobalCache {
+    entry ConstGlobalCache(
+        tuples::TaggedTupleTypelist<
+            typename Metavariables::const_global_cache_tag_list>&);
+    entry void set_tentacles(
+        tuples::TaggedTupleTypelist<typename Metavariables::tentacle_list>&,
+        const CkCallback&);
+  }
+  }
+}

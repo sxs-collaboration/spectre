@@ -1,0 +1,31 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+mainmodule Test_ConstGlobalCache {
+
+  extern module ConstGlobalCache;
+
+  namespace Parallel {
+  nodegroup ConstGlobalCache<TestMetavariables>;
+  }
+
+  mainchare Test_ConstGlobalCache {
+    entry Test_ConstGlobalCache(CkArgMsg * msg);
+  };
+
+  array [1D] TestArrayChare {
+    entry TestArrayChare();
+  };
+
+  chare TestChare {
+    entry TestChare(int);
+  };
+
+  group TestGroupChare {
+    entry TestGroupChare();
+  };
+
+  nodegroup TestNodeGroupChare {
+    entry TestNodeGroupChare();
+  };
+};
