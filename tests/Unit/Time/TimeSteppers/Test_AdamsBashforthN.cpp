@@ -12,17 +12,17 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const TimeSteppers::AdamsBashforthN stepper(order, false);
-    check_multistep_properties(stepper);
+    TimeStepperTestUtils::check_multistep_properties(stepper);
     const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    integrate_test(stepper, 1., epsilon);
+    TimeStepperTestUtils::integrate_test(stepper, 1., epsilon);
   }
 
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const TimeSteppers::AdamsBashforthN stepper(order, true);
-    check_multistep_properties(stepper);
+    TimeStepperTestUtils::check_multistep_properties(stepper);
     // Accuracy limited by first step
-    integrate_test(stepper, 1., 1e-3);
+    TimeStepperTestUtils::integrate_test(stepper, 1., 1e-3);
   }
 }
 
@@ -31,14 +31,15 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    integrate_variable_test(TimeSteppers::AdamsBashforthN(order, false),
-                            epsilon);
+    TimeStepperTestUtils::integrate_variable_test(
+        TimeSteppers::AdamsBashforthN(order, false), epsilon);
   }
 
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     // Accuracy limited by first step
-    integrate_variable_test(TimeSteppers::AdamsBashforthN(order, true), 1e-3);
+    TimeStepperTestUtils::integrate_variable_test(
+        TimeSteppers::AdamsBashforthN(order, true), 1e-3);
   }
 }
 
@@ -47,13 +48,15 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    integrate_test(TimeSteppers::AdamsBashforthN(order, false), -1., epsilon);
+    TimeStepperTestUtils::integrate_test(
+        TimeSteppers::AdamsBashforthN(order, false), -1., epsilon);
   }
 
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     // Accuracy limited by first step
-    integrate_test(TimeSteppers::AdamsBashforthN(order, true), -1., 1e-3);
+    TimeStepperTestUtils::integrate_test(
+        TimeSteppers::AdamsBashforthN(order, true), -1., 1e-3);
   }
 }
 
@@ -61,7 +64,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability",
                   "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
-    stability_test(TimeSteppers::AdamsBashforthN(order, false));
+    TimeStepperTestUtils::stability_test(
+        TimeSteppers::AdamsBashforthN(order, false));
   }
 }
 

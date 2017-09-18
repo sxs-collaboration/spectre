@@ -14,6 +14,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace TimeStepperTestUtils {
+
 template <typename Stepper, typename F>
 void take_step(
     const gsl::not_null<Time*> time,
@@ -182,3 +184,5 @@ void stability_test(const Stepper& stepper) noexcept {
     CHECK(false);
   }
 }
+
+}  // namespace TimeStepperTestUtils
