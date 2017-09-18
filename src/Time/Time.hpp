@@ -57,6 +57,26 @@ class Time {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  /// A comparison operator that compares Times structurally, i.e.,
+  /// just looking at the class members.  This is only intended for
+  /// use as the comparator in a map.  The returned ordering does not
+  /// match the time ordering and opposite sides of slab boundaries do
+  /// not compare equal.  It is, however, much faster to compute than
+  /// the temporal ordering, so it is useful when an ordering is
+  /// required, but the ordering does not have to be physically
+  /// meaningful.
+  struct StructuralCompare {
+    bool operator()(const Time& a, const Time& b) const {
+      if (a.fraction().numerator() != b.fraction().numerator()) {
+        return a.fraction().numerator() < b.fraction().numerator();
+      }
+      if (a.fraction().denominator() != b.fraction().denominator()) {
+        return a.fraction().denominator() < b.fraction().denominator();
+      }
+      return a.slab() < b.slab();
+    }
+  };
+
  private:
   Slab slab_;
   rational_t fraction_;
