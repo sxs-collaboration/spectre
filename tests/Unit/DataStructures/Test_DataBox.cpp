@@ -160,34 +160,32 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
               test_databox_tags::ComputeLambda1>>>>::value,
       "Failed to create original_box");
 
-  CHECK(original_box.template get<test_databox_tags::Tag0>() == 3.14);
+  CHECK(db::get<test_databox_tags::Tag0>(original_box) == 3.14);
   // Check retrieving chained compute item result
-  CHECK(original_box.template get<test_databox_tags::ComputeTag1>() ==
+  CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
         "My Sample String6.28"s);
-  CHECK(original_box.template get<test_databox_tags::ComputeLambda0>() ==
+  CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) ==
         3.0 * 3.14);
-  CHECK(original_box.template get<test_databox_tags::ComputeLambda1>() == 7.0);
+  CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   // No removal
   {
     auto box = db::create_from<db::RemoveTags<>>(original_box);
-    CHECK(box.template get<test_databox_tags::Tag2>() == "My Sample String"s);
-    CHECK(box.template get<test_databox_tags::ComputeTag1>() ==
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
-    CHECK(box.template get<test_databox_tags::ComputeLambda0>() == 3.0 * 3.14);
-    CHECK(original_box.template get<test_databox_tags::ComputeLambda1>() ==
-          7.0);
+    CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   }
   {
     /// [create_from_remove]
     auto box =
         db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(original_box);
     /// [create_from_remove]
-    CHECK(box.template get<test_databox_tags::Tag2>() == "My Sample String"s);
-    CHECK(box.template get<test_databox_tags::ComputeTag1>() ==
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
-    CHECK(box.template get<test_databox_tags::ComputeLambda0>() == 3.0 * 3.14);
-    CHECK(original_box.template get<test_databox_tags::ComputeLambda1>() ==
-          7.0);
+    CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   }
   {
     /// [create_from_add_item]
@@ -195,15 +193,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::create_from<db::RemoveTags<>, db::AddTags<test_databox_tags::Tag3>>(
             original_box, "Yet another test string"s);
     /// [create_from_add_item]
-    CHECK(box.template get<test_databox_tags::Tag3>() ==
-          "Yet another test string"s);
-    CHECK(box.template get<test_databox_tags::Tag2>() == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(box.template get<test_databox_tags::ComputeTag1>() ==
+    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
-    CHECK(box.template get<test_databox_tags::ComputeLambda0>() == 3.0 * 3.14);
-    CHECK(original_box.template get<test_databox_tags::ComputeLambda1>() ==
-          7.0);
+    CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   }
   {
     /// [create_from_add_compute_item]
@@ -215,9 +211,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::RemoveTags<>, db::AddTags<>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(simple_box);
     /// [create_from_add_compute_item]
-    CHECK(box.template get<test_databox_tags::Tag2>() == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(box.template get<test_databox_tags::ComputeTag0>() == 6.28);
+    CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
   }
   {
     auto simple_box =
@@ -228,11 +224,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::RemoveTags<>, db::AddTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
-    CHECK(box.template get<test_databox_tags::Tag3>() ==
+    CHECK(db::get<test_databox_tags::Tag3>(box) ==
           "Yet another test string"s);
-    CHECK(box.template get<test_databox_tags::Tag2>() == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(box.template get<test_databox_tags::ComputeTag0>() == 6.28);
+    CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
   }
   {
     auto simple_box =
@@ -244,11 +240,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::AddTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
-    CHECK(box.template get<test_databox_tags::Tag3>() ==
+    CHECK(db::get<test_databox_tags::Tag3>(box) ==
           "Yet another test string"s);
-    CHECK(box.template get<test_databox_tags::Tag2>() == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(6.28 == box.template get<test_databox_tags::ComputeTag0>());
+    CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
   }
 }
 
@@ -312,7 +308,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
   };
   db::apply<typelist<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_args, original_box,
-      original_box.get<test_databox_tags::Tag1>());
+      db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_example]
 }
 
@@ -329,7 +325,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
                                  const auto& computed_string) {
     CHECK(sample_string == "My Sample String"s);
     CHECK(computed_string == "My Sample String6.28"s);
-    CHECK(box.template get<test_databox_tags::Tag1>() ==
+    CHECK(db::get<test_databox_tags::Tag1>(box) ==
           (std::vector<double>{8.7, 93.2, 84.7}));
   };
   db::apply_with_box<
@@ -342,7 +338,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
                               const std::vector<int>& vector) {
     CHECK(sample_string == "My Sample String"s);
     CHECK(computed_string == "My Sample String6.28"s);
-    CHECK(box.template get<test_databox_tags::Tag1>() ==
+    CHECK(db::get<test_databox_tags::Tag1>(box) ==
           (std::vector<double>{8.7, 93.2, 84.7}));
     CHECK((vector == std::vector<int>{1, 4, 8}));
   };
