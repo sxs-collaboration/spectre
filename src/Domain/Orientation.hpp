@@ -42,14 +42,14 @@ class Orientation {
 
   /// The corresponding dimension in the neighbor.
   size_t mapped(const size_t dim) const noexcept {
-    return mapped_directions_[dim].dimension();
+    return gsl::at(mapped_directions_, dim).dimension();
   }
 
   /// The corresponding direction in the neighbor.
   Direction<VolumeDim> mapped(const Direction<VolumeDim>& direction) const {
     return direction.side() == Side::Upper
-               ? mapped_directions_[direction.dimension()]
-               : mapped_directions_[direction.dimension()].opposite();
+               ? gsl::at(mapped_directions_, direction.dimension())
+               : gsl::at(mapped_directions_, direction.dimension()).opposite();
   }
 
   /// The corresponding SegmentIds in the neighbor.

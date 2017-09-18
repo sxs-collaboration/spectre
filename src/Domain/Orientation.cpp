@@ -12,8 +12,8 @@ Orientation<VolumeDim>::Orientation(
     std::array<Direction<VolumeDim>, VolumeDim> mapped_directions)
     : mapped_directions_(std::move(mapped_directions)) {
   for (size_t j = 0; j < VolumeDim; j++) {
-    if (mapped_directions_[j].dimension() != j or
-        mapped_directions_[j].side() != Side::Upper) {
+    if (gsl::at(mapped_directions_, j).dimension() != j or
+        gsl::at(mapped_directions_, j).side() != Side::Upper) {
       is_aligned_ = false;
     }
   }
@@ -24,11 +24,11 @@ Orientation<VolumeDim>::Orientation(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
     const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_neighbor) {
   for (size_t j = 0; j < VolumeDim; j++) {
-    mapped_directions_[directions_in_host[j].dimension()] =
-        (directions_in_host[j].side() == Side::Upper
-             ? directions_in_neighbor[j]
-             : directions_in_neighbor[j].opposite());
-    if (directions_in_host[j] != directions_in_neighbor[j]) {
+    gsl::at(mapped_directions_, gsl::at(directions_in_host, j).dimension()) =
+        (gsl::at(directions_in_host, j).side() == Side::Upper
+             ? gsl::at(directions_in_neighbor, j)
+             : gsl::at(directions_in_neighbor, j).opposite());
+    if (gsl::at(directions_in_host, j) != gsl::at(directions_in_neighbor, j)) {
       is_aligned_ = false;
     }
   }
@@ -39,10 +39,10 @@ std::array<SegmentId, VolumeDim> Orientation<VolumeDim>::mapped(
     const std::array<SegmentId, VolumeDim>& segmentIds) const {
   std::array<SegmentId, VolumeDim> result = segmentIds;
   for (size_t d = 0; d < VolumeDim; d++) {
-    result[mapped_directions_[d].dimension()] =
-        mapped_directions_[d].side() == Side::Upper
-            ? segmentIds[d]
-            : segmentIds[d].id_if_flipped();
+    gsl::at(result, gsl::at(mapped_directions_, d).dimension()) =
+        gsl::at(mapped_directions_, d).side() == Side::Upper
+            ? gsl::at(segmentIds, d)
+            : gsl::at(segmentIds, d).id_if_flipped();
   }
   return result;
 }
