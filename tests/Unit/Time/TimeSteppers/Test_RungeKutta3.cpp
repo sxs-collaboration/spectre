@@ -32,3 +32,15 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Factory",
                   "[Unit][Time]") {
   test_factory_creation<TimeStepper>("  RungeKutta3");
 }
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal",
+                  "[Unit][Time]") {
+  TimeStepperTestUtils::equal_rate_boundary(
+      TimeSteppers::RungeKutta3{}, 1e-9, true);
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal.Backwards",
+                  "[Unit][Time]") {
+  TimeStepperTestUtils::equal_rate_boundary(
+      TimeSteppers::RungeKutta3{}, 1e-9, false);
+}

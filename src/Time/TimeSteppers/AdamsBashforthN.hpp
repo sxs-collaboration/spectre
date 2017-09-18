@@ -65,6 +65,15 @@ class AdamsBashforthN : public TimeStepper::Inherit {
       const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
       const TimeDelta& time_step) const noexcept;
 
+  template <typename BoundaryVars, typename FluxVars, typename Coupling>
+  BoundaryVars compute_boundary_delta(
+      const Coupling& coupling,
+      const std::vector<std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>&
+          history,
+      const TimeDelta& time_step) const noexcept {
+    ERROR("Unimpemented");
+  }
+
   size_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;

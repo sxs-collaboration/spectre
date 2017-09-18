@@ -185,4 +185,82 @@ void stability_test(const Stepper& stepper) noexcept {
   }
 }
 
+template <typename Stepper>
+void equal_rate_boundary(const Stepper& stepper, const double epsilon,
+                         const bool forward) {
+  // This operates the stepper as an integrator.
+  const double unused_local_deriv = 4444.;
+  // TODO(wthrowe): Should the interface be redesigned to stop passing these?
+  const double unused_remote_value = 1234.;
+
+  auto analytic = [](double t) { return sin(t); };
+  auto driver = [](double t) { return cos(t); };
+  auto coupling =
+      [=](const std::vector<std::reference_wrapper<const double>>& values) {
+    CHECK(values[0] == unused_local_deriv);
+    return values[1];
+  };
+
+  Approx approx = Approx::custom().epsilon(epsilon);
+
+  const size_t num_steps = 100;
+  const Slab slab(0.875, 1.);
+  const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
+
+  Time time = forward ? slab.start() : slab.end();
+  double y = analytic(time.value());
+  std::vector<std::deque<std::tuple<Time, double, double>>> history(2);
+
+  if (not stepper.is_self_starting()) {
+    Time history_time = time;
+    TimeDelta history_step_size = step_size;
+    for (size_t j = 0; j < stepper.number_of_past_steps(); ++j) {
+      ASSERT(history_time.slab() == history_step_size.slab(), "Slab mismatch");
+      if ((history_step_size.is_positive() and
+           history_time.is_at_slab_start()) or
+          (not history_step_size.is_positive() and
+           history_time.is_at_slab_end())) {
+        const Slab new_slab =
+            history_time.slab().advance_towards(-history_step_size);
+        history_time = history_time.with_slab(new_slab);
+        history_step_size = history_step_size.with_slab(new_slab);
+      }
+      history_time -= history_step_size;
+      history[0].emplace_front(history_time, analytic(history_time.value()),
+                               unused_local_deriv);
+      history[1].emplace_front(history_time, unused_remote_value,
+                               driver(history_time.value()));
+    }
+  }
+
+  for (size_t i = 0; i < num_steps; ++i) {
+    TimeDelta accumulated_step_dt = step_size * 0;
+    for (size_t substep = 0;
+         substep < stepper.number_of_substeps();
+         ++substep) {
+      history[0].emplace_back(time, y, unused_local_deriv);
+      history[1].emplace_back(time, unused_remote_value, driver(time.value()));
+
+      // Need to get the substep size.
+      double dummy = 0.;
+      const TimeDelta substep_dt =
+          stepper.update_u(make_not_null(&dummy), history[0], step_size);
+
+      const double boundary_delta = stepper.compute_boundary_delta(
+          coupling, history, step_size);
+
+      accumulated_step_dt += substep_dt;
+      time += substep_dt;
+      y += boundary_delta;
+    }
+    CHECK(accumulated_step_dt == step_size);
+    for (auto& side_hist : history) {
+      while (side_hist.size() > stepper.number_of_past_steps()) {
+        side_hist.pop_front();
+      }
+    }
+    CHECK(y == approx(analytic(time.value())));
+  }
+}
+
 }  // namespace TimeStepperTestUtils
