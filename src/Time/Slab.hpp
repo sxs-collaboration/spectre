@@ -39,13 +39,13 @@ class Slab {
   /// Construct a slab with a given start time and duration.  The
   /// actual duration may differ by roundoff from the supplied value.
   static Slab with_duration_from_start(double start, double duration) noexcept {
-    return Slab(start, start + duration);
+    return {start, start + duration};
   }
 
   /// Construct a slab with a given end time and duration.  The
   /// actual duration may differ by roundoff from the supplied value.
   static Slab with_duration_to_end(double end, double duration) noexcept {
-    return Slab(end - duration, end);
+    return {end - duration, end};
   }
 
   Time start() const noexcept;
@@ -54,13 +54,11 @@ class Slab {
 
   /// Create a new slab immediately following this one with the same
   /// (up to roundoff) duration.
-  Slab advance() const noexcept { return Slab(end_, end_ + (end_ - start_)); }
+  Slab advance() const noexcept { return {end_, end_ + (end_ - start_)}; }
 
   /// Create a new slab immediately preceeding this one with the same
   /// (up to roundoff) duration.
-  Slab retreat() const noexcept {
-    return Slab(start_ - (end_ - start_), start_);
-  }
+  Slab retreat() const noexcept { return {start_ - (end_ - start_), start_}; }
 
   /// Create a slab adjacent to this one in the direction indicated by
   /// the argument, as with advance() or retreat().
@@ -69,13 +67,13 @@ class Slab {
   /// Create a new slab with the same start time as this one with the
   /// given duration (up to roundoff).
   Slab with_duration_from_start(double duration) const noexcept {
-    return Slab(start_, start_ + duration);
+    return {start_, start_ + duration};
   }
 
   /// Create a new slab with the same end time as this one with the
   /// given duration (up to roundoff).
   Slab with_duration_to_end(double duration) const noexcept {
-    return Slab(end_ - duration, end_);
+    return {end_ - duration, end_};
   }
 
   /// Check if this slab is immediately followed by the other slab.

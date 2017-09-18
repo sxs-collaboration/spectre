@@ -281,7 +281,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.success", "[Unit][Options]") {
 SPECTRE_TEST_CASE("Unit.Options.Map.empty", "[Unit][Options]") {
   Options<tmpl::list<Map>> opts("");
   opts.parse("Map:");
-  CHECK(opts.get<Map>() == (std::map<std::string, int>{}));
+  CHECK(opts.get<Map>().empty());
 }
 
 // [[OutputRegex, In string:.*While parsing option Map:.At line 1 column
@@ -423,5 +423,5 @@ SPECTRE_TEST_CASE("Unit.Options.Apply", "[Unit][Options]") {
 
 SPECTRE_TEST_CASE("Unit.Options.OptionContext.default_stream",
                   "[Unit][Options]") {
-  CHECK(get_output(OptionContext{}) == "");
+  CHECK(get_output(OptionContext{}).empty());
 }

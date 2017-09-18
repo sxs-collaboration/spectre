@@ -88,7 +88,7 @@ class TimeDelta {
   /// will in general not be the same length, but will take up the
   /// same fraction of its slab.
   TimeDelta with_slab(const Slab& new_slab) const noexcept {
-    return TimeDelta(new_slab, fraction());
+    return {new_slab, fraction()};
   }
 
   Slab slab() const noexcept { return slab_; }
@@ -254,7 +254,7 @@ inline TimeDelta& TimeDelta::operator-=(const TimeDelta& other) noexcept {
 inline TimeDelta TimeDelta::operator+() const noexcept { return *this; }
 
 inline TimeDelta TimeDelta::operator-() const noexcept {
-  return TimeDelta(slab_, -fraction_);
+  return {slab_, -fraction_};
 }
 
 inline TimeDelta& TimeDelta::operator*=(const rational_t& mult) noexcept {
