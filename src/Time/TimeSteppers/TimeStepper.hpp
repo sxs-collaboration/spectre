@@ -53,7 +53,7 @@ class TimeStepper : public Factory<TimeStepper> {
   template <typename Vars, typename DerivVars>
   TimeDelta update_u(
       const gsl::not_null<Vars*> u,
-      const std::deque<std::tuple<Vars, DerivVars, TimeDelta>>& history,
+      const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
       const TimeDelta& time_step) const noexcept {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, history, time_step);
