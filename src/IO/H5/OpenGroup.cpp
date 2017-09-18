@@ -31,7 +31,7 @@ OpenGroup::OpenGroup(hid_t file_id, const std::string& group_name,
   hid_t group_id = file_id;
   group_path_.reserve(path.size());
   for (const auto& current_group : path) {
-    if (current_group != "") {
+    if (not current_group.empty()) {
       const auto status = H5Lexists(group_id, current_group.c_str(), 0);
       if (0 < status) {
 #pragma GCC diagnostic push

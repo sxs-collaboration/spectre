@@ -3,8 +3,8 @@
 
 #include "Numerical/RootFinding/QuadraticEquation.hpp"
 
-#include <limits>
 #include <gsl/gsl_poly.h>
+#include <limits>
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/ExpectsAndEnsures.hpp"

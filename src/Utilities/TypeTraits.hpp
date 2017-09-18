@@ -96,7 +96,8 @@ template <class B1>
 struct conjunction<B1> : B1 {};
 template <class B1, class... Bn>
 struct conjunction<B1, Bn...>
-    : std::conditional_t<B1::value != false, conjunction<Bn...>, B1> {};
+    : std::conditional_t<static_cast<bool>(B1::value), conjunction<Bn...>, B1> {
+};
 /// \endcond
 /// \see std::conjunction
 template <class... B>
@@ -143,7 +144,8 @@ template <class B1>
 struct disjunction<B1> : B1 {};
 template <class B1, class... Bn>
 struct disjunction<B1, Bn...>
-    : std::conditional_t<B1::value != false, B1, disjunction<Bn...>> {};
+    : std::conditional_t<static_cast<bool>(B1::value), B1, disjunction<Bn...>> {
+};
 /// \endcond
 /// \see std::disjunction
 template <class... B>
