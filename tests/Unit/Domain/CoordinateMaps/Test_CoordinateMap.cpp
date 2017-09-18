@@ -499,7 +499,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     const auto jac = double_rotated2d.jacobian(coords2d);
 
-    const auto expected_jac = [&first_rotated2d, &second_rotated2d, &coords2d,
+    const auto expected_jac = [&first_rotated2d, &second_rotated2d,
                                &coords2d_array]() {
 
       const auto first_jac = first_rotated2d.jacobian(coords2d_array);
@@ -534,7 +534,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
     const auto inv_jac = double_rotated2d.inv_jacobian(coords2d);
 
     const auto expected_inv_jac = [&first_rotated2d, &second_rotated2d,
-                                   &coords2d, &coords2d_array]() {
+                                   &coords2d_array]() {
       auto first_inv_jac = first_rotated2d.inv_jacobian(coords2d_array);
 
       const auto second_inv_jac =
@@ -592,7 +592,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     const auto jac = double_rotated3d.jacobian(coords3d);
 
-    const auto expected_jac = [&first_rotated3d, &second_rotated3d, &coords3d,
+    const auto expected_jac = [&first_rotated3d, &second_rotated3d,
                                &coords3d_array]() {
 
       const auto first_jac = first_rotated3d.jacobian(coords3d_array);
@@ -627,7 +627,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
     const auto inv_jac = double_rotated3d.inv_jacobian(coords3d);
 
     const auto expected_inv_jac = [&first_rotated3d, &second_rotated3d,
-                                   &coords3d, &coords3d_array]() {
+                                   &coords3d_array]() {
       auto first_inv_jac = first_rotated3d.inv_jacobian(coords3d_array);
 
       const auto second_inv_jac =
