@@ -30,11 +30,9 @@ void take_step(
     const TimeDelta substep_dt = stepper.update_u(y, *history, step_size);
     accumulated_step_dt += substep_dt;
     *time += substep_dt;
+    history->erase(history->begin(), stepper.needed_history(*history));
   }
   CHECK(accumulated_step_dt == step_size);
-  while (history->size() > stepper.number_of_past_steps()) {
-    history->pop_front();
-  }
 }
 
 template <typename Stepper, typename F1, typename F2>
@@ -97,6 +95,11 @@ void integrate_test(const Stepper& stepper, const double integration_time,
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
+  // Make sure history is being cleaned up.  The limit of 20 is
+  // arbitrary, but much larger than the order of any integrators we
+  // care about and much smaller than the number of time steps in the
+  // test.
+  CHECK(history.size() < 20);
 }
 
 template <typename Stepper>

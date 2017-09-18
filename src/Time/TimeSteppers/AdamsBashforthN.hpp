@@ -169,6 +169,11 @@ class AdamsBashforthN : public TimeStepper::Inherit {
           history,
       const TimeDelta& time_step) const noexcept;
 
+  template <typename Vars, typename DerivVars>
+  typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+  needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
+      const noexcept;
+
   size_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
@@ -534,6 +539,18 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
   }  // for coupling_evaluation
 
   return accumulated_change;
+}
+
+template <typename Vars, typename DerivVars>
+typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+AdamsBashforthN::needed_history(
+    const std::deque<std::tuple<Time, Vars, DerivVars>>& history) const
+    noexcept {
+ if (history.size() >= target_order_) {
+   return history.end() - static_cast<ssize_t>(target_order_ - 1);
+ } else {
+   return history.begin();
+ }
 }
 
 template <typename Iterator>

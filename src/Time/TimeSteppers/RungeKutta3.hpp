@@ -55,6 +55,11 @@ class RungeKutta3 : public TimeStepper::Inherit {
           history,
       const TimeDelta& time_step) const noexcept;
 
+  template <typename Vars, typename DerivVars>
+  typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+  needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
+      const noexcept;
+
   size_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
@@ -139,6 +144,15 @@ TimeDelta RungeKutta3::step_work(
     default:
       ERROR("Bad substep value in RK3: " << substep);
   }
+}
+
+template <typename Vars, typename DerivVars>
+typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+RungeKutta3::needed_history(
+    const std::deque<std::tuple<Time, Vars, DerivVars>>& history) const
+    noexcept {
+  const bool at_step_end = history.size() == number_of_substeps();
+  return at_step_end ? history.end() : history.begin();
 }
 
 }  // namespace TimeSteppers

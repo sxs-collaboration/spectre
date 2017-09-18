@@ -25,6 +25,7 @@ class RungeKutta3;
 
 namespace TimeStepper_detail {
 DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
+DEFINE_FAKE_VIRTUAL(needed_history)
 DEFINE_FAKE_VIRTUAL(update_u)
 }  // namespace TimeStepper_detail
 
@@ -34,7 +35,8 @@ DEFINE_FAKE_VIRTUAL(update_u)
 class TimeStepper : public Factory<TimeStepper> {
  public:
   using Inherit = TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
-      TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>;
+      TimeStepper_detail::FakeVirtualInherit_needed_history<
+          TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>>;
   using creatable_classes = typelist<
       TimeSteppers::AdamsBashforthN,
       TimeSteppers::RungeKutta3>;
@@ -90,6 +92,17 @@ class TimeStepper : public Factory<TimeStepper> {
         "Coupling function returns wrong type");
     return TimeStepper_detail::fake_virtual_compute_boundary_delta<
         creatable_classes>(this, coupling, history, time_step);
+  }
+
+  /// Return iterator to the first entry in `history` that is still
+  /// needed after the current step.  Entries up to that point must be
+  /// removed before the next call to `update_u`.
+  template <typename Vars, typename DerivVars>
+  typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+  needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
+      const noexcept {
+    return TimeStepper_detail::fake_virtual_needed_history<creatable_classes>(
+        this, history);
   }
 
   /// Number of substeps in this TimeStepper
