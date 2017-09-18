@@ -60,6 +60,14 @@ class RungeKutta3 : public TimeStepper::Inherit {
   needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
       const noexcept;
 
+  template <typename BoundaryVars, typename FluxVars>
+  typename std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+  needed_boundary_history(
+      const std::vector<
+          std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+      const TimeDelta& time_step) const noexcept;
+
   size_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
@@ -155,4 +163,22 @@ RungeKutta3::needed_history(
   return at_step_end ? history.end() : history.begin();
 }
 
+template <typename BoundaryVars, typename FluxVars>
+typename std::vector<typename std::deque<
+    std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+RungeKutta3::needed_boundary_history(
+    const std::vector<
+        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+    const TimeDelta& /*time_step*/) const noexcept {
+  const bool at_step_end = history[0].size() == number_of_substeps();
+  std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator> result;
+  result.reserve(history.size());
+  for (const auto& side_hist : history) {
+    ASSERT((side_hist.size() == number_of_substeps()) == at_step_end,
+           "Side histories inconsistent");
+    result.push_back(at_step_end ? side_hist.end() : side_hist.begin());
+  }
+  return result;
+}
 }  // namespace TimeSteppers

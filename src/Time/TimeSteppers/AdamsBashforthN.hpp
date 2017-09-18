@@ -174,6 +174,14 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
       const noexcept;
 
+  template <typename BoundaryVars, typename FluxVars>
+  typename std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+  needed_boundary_history(
+      const std::vector<
+          std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+      const TimeDelta& time_step) const noexcept;
+
   size_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
@@ -551,6 +559,32 @@ AdamsBashforthN::needed_history(
  } else {
    return history.begin();
  }
+}
+
+template <typename BoundaryVars, typename FluxVars>
+typename std::vector<typename std::deque<
+    std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+AdamsBashforthN::needed_boundary_history(
+    const std::vector<
+        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+    const TimeDelta& time_step) const noexcept {
+  const SimulationLess simulation_less(time_step.is_positive());
+  const Time next_start_time = std::get<0>(history[0].back()) + time_step;
+  std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator> result;
+  result.reserve(history.size());
+  // We know that the local side will step at next_start_time, so the
+  // step containing that time will be the next step, which is not
+  // currently in the history.
+  result.push_back(history[0].end() - static_cast<ssize_t>(target_order_ - 1));
+  // We don't know whether other sides will step at next_start_time,
+  // so we have to be conservative and assume they will not.
+  for (size_t side = 1; side < history.size(); ++side) {
+    result.push_back(step_containing_time(history[side], next_start_time,
+                                          simulation_less) -
+                     static_cast<ssize_t>(target_order_ - 1));
+  }
+  return result;
 }
 
 template <typename Iterator>

@@ -188,6 +188,20 @@ void stability_test(const Stepper& stepper) noexcept {
   }
 }
 
+template <typename Stepper, typename BoundaryVars, typename FluxVars>
+void erase_boundary_history(
+    const Stepper& stepper,
+    const gsl::not_null<std::vector<
+        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>*> history,
+    const TimeDelta& step_size) {
+  const auto needed_history =
+      stepper.needed_boundary_history(*history, step_size);
+  CHECK(needed_history.size() == history->size());
+  for (size_t side = 0; side < needed_history.size(); ++side) {
+    (*history)[side].erase((*history)[side].begin(), needed_history[side]);
+  }
+}
+
 template <typename Stepper>
 void equal_rate_boundary(const Stepper& stepper, const double epsilon,
                          const bool forward) {
@@ -255,14 +269,17 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
       accumulated_step_dt += substep_dt;
       time += substep_dt;
       y += boundary_delta;
+      erase_boundary_history(stepper, make_not_null(&history), step_size);
     }
     CHECK(accumulated_step_dt == step_size);
-    for (auto& side_hist : history) {
-      while (side_hist.size() > stepper.number_of_past_steps()) {
-        side_hist.pop_front();
-      }
-    }
     CHECK(y == approx(analytic(time.value())));
+  }
+  // Make sure history is being cleaned up.  The limit of 20 is
+  // arbitrary, but much larger than the order of any integrators we
+  // care about and much smaller than the number of time steps in the
+  // test.
+  for (const auto& side_hist : history) {
+    CHECK(side_hist.size() < 20);
   }
 }
 

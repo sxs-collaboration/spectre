@@ -25,6 +25,7 @@ class RungeKutta3;
 
 namespace TimeStepper_detail {
 DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
+DEFINE_FAKE_VIRTUAL(needed_boundary_history)
 DEFINE_FAKE_VIRTUAL(needed_history)
 DEFINE_FAKE_VIRTUAL(update_u)
 }  // namespace TimeStepper_detail
@@ -34,9 +35,12 @@ DEFINE_FAKE_VIRTUAL(update_u)
 /// Abstract base class for TimeSteppers.
 class TimeStepper : public Factory<TimeStepper> {
  public:
-  using Inherit = TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
-      TimeStepper_detail::FakeVirtualInherit_needed_history<
-          TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>>;
+  using Inherit =
+      TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
+          TimeStepper_detail::FakeVirtualInherit_needed_boundary_history<
+              TimeStepper_detail::FakeVirtualInherit_needed_history<
+                  TimeStepper_detail::FakeVirtualInherit_update_u<
+                      TimeStepper>>>>;
   using creatable_classes = typelist<
       TimeSteppers::AdamsBashforthN,
       TimeSteppers::RungeKutta3>;
@@ -103,6 +107,21 @@ class TimeStepper : public Factory<TimeStepper> {
       const noexcept {
     return TimeStepper_detail::fake_virtual_needed_history<creatable_classes>(
         this, history);
+  }
+
+  /// Return iterators to the first entry for each element of
+  /// `history` that is still needed after the current step.  Entries
+  /// up to that point must be removed before the next call to
+  /// `compute_boundary_delta`.
+  template <typename BoundaryVars, typename FluxVars>
+  typename std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+  needed_boundary_history(
+      const std::vector<
+          std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+      const TimeDelta& time_step) const noexcept {
+    return TimeStepper_detail::fake_virtual_needed_boundary_history<
+        creatable_classes>(this, history, time_step);
   }
 
   /// Number of substeps in this TimeStepper
