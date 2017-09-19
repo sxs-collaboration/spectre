@@ -24,19 +24,21 @@ template <size_t VolumeDim>
 class ElementId {
  public:
   /// Default constructor needed for Charm++ serialization.
-  ElementId() = default;
+  constexpr ElementId() = default;
 
   /// Create the ElementId of the root Element of a Block.
-  explicit ElementId(size_t block_id);
+  explicit ElementId(size_t block_id) noexcept;
 
   /// Create an arbitrary ElementId.
-  ElementId(size_t block_id, std::array<SegmentId, VolumeDim> segment_ids);
+  ElementId(size_t block_id,
+                      std::array<SegmentId, VolumeDim> segment_ids) noexcept;
 
-  ElementId<VolumeDim> id_of_child(size_t dim, Side side) const;
+  ElementId<VolumeDim> id_of_child(size_t dim, Side side) const
+      noexcept;
 
-  ElementId<VolumeDim> id_of_parent(size_t dim) const;
+  ElementId<VolumeDim> id_of_parent(size_t dim) const noexcept;
 
-  size_t block_id() const noexcept { return block_id_; }
+  constexpr size_t block_id() const noexcept { return block_id_; }
 
   const std::array<SegmentId, VolumeDim>& segment_ids() const noexcept {
     return segment_ids_;
@@ -74,7 +76,7 @@ bool operator!=(const ElementId<VolumeDim>& lhs,
 namespace std {
 template <size_t VolumeDim>
 struct hash<ElementId<VolumeDim>> {
-  size_t operator()(const ElementId<VolumeDim>& c) const;
+  size_t operator()(const ElementId<VolumeDim>& c) const noexcept;
 };
 }  // namespace std
 
