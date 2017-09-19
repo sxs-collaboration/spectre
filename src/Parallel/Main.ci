@@ -1,0 +1,17 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+module Main {
+
+  namespace Parallel {
+
+  template <typename Metavariables>
+  mainchare [migratable] Main {
+    entry Main(CkArgMsg* msg);
+    entry void initialize();
+    entry void execute_next_phase();
+  }
+
+  }
+
+}

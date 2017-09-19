@@ -1,0 +1,20 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+mainmodule Test_Main {
+  initnode void setup_error_handling();
+  extern module Main;
+  extern module ConstGlobalCache;
+  extern module ParallelTestChares;
+
+  namespace Parallel {
+  mainchare Main<TestMetavariables>;
+  nodegroup ConstGlobalCache<TestMetavariables>;
+  }
+
+  group TestGroupChare<TestMetavariables>;
+  nodegroup TestNodeGroupChare<TestMetavariables>;
+  array[1D] TestArrayChare<TestMetavariables>;
+  array[1D] TestBoundArrayChare<TestMetavariables>;
+  chare TestChare<TestMetavariables>;
+}

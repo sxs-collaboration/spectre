@@ -33,6 +33,19 @@ struct is_group_proxy : std::is_base_of<CProxy_IrrGroup, T>::type {};
 template <typename T>
 struct is_node_group_proxy : std::is_base_of<CProxy_NodeGroup, T>::type {};
 
+/// \ingroup Parallel
+/// Check if `T` is a Tentacle for a Charm++ bound array
+template <typename T, typename = cpp17::void_t<>>
+struct is_bound_array : std::false_type {};
+
+template <typename T>
+struct is_bound_array<T, cpp17::void_t<typename T::bind_to>> : std::true_type {
+  static_assert(Parallel::is_array_proxy<typename T::type>::value,
+                "Can only bind an array chare");
+  static_assert(Parallel::is_array_proxy<typename T::bind_to::type>::value,
+                "Can only bind to an array chare");
+};
+
 // @{
 /// \ingroup Parallel
 /// \brief Check if `T` has a `pup` member function
