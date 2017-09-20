@@ -9,6 +9,7 @@ add_subdirectory(Informer)
 add_subdirectory(IO)
 add_subdirectory(Numerical)
 add_subdirectory(Parallel)
+add_subdirectory(PointwiseFunctions)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
 
