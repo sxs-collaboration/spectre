@@ -49,11 +49,12 @@ struct TestMetavariables {
   static constexpr const char* const input_file{"/dev/null"};
   // ctest passes options to control the tests
   static constexpr bool ignore_unrecognized_command_line_options = true;
-  using tentacle_list = typelist<Test_Tentacles::Group<TestMetavariables>,
-                                 Test_Tentacles::NodeGroup<TestMetavariables>,
-                                 Test_Tentacles::Chare<TestMetavariables>,
-                                 Test_Tentacles::Array<TestMetavariables>,
-                                 Test_Tentacles::BoundArray<TestMetavariables>>;
+  using component_list =
+      typelist<Test_Tentacles::Group<TestMetavariables>,
+               Test_Tentacles::NodeGroup<TestMetavariables>,
+               Test_Tentacles::Chare<TestMetavariables>,
+               Test_Tentacles::Array<TestMetavariables>,
+               Test_Tentacles::BoundArray<TestMetavariables>>;
   enum class phase { Initialization, Exit };
   static phase determine_next_phase(
       const Parallel::CProxy_ConstGlobalCache<TestMetavariables>& cache_proxy) {

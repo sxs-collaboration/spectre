@@ -320,16 +320,17 @@ enable_if() {
         whitelist "$1" \
                   'src/DataStructures/Tensor/Structure.hpp$' \
                   'src/IO/H5/File.hpp$' \
+                  'src/Parallel/CharmMain.cpp$' \
                   'src/Utilities/PointerVector.hpp$' \
                   'src/Utilities/Requires.hpp$' \
                   'src/Utilities/TMPL.hpp$' \
                   'src/Utilities/TaggedTuple.hpp$' \
                   'tests/Unit/Utilities/Test_TypeTraits.cpp$' && \
-        grep -q enable_if "$1"
+        grep -q std::enable_if "$1"
 }
 enable_if_report() {
     echo "Found occurrences of 'std::enable_if', prefer 'Requires':"
-    pretty_grep enable_if "$@"
+    pretty_grep std::enable_if "$@"
 }
 enable_if_test() {
     test_check pass foo.cpp 'enable'

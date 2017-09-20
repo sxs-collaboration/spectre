@@ -34,7 +34,7 @@ template <typename T>
 struct is_node_group_proxy : std::is_base_of<CProxy_NodeGroup, T>::type {};
 
 /// \ingroup Parallel
-/// Check if `T` is a Tentacle for a Charm++ bound array
+/// Check if `T` is a ParallelComponent for a Charm++ bound array
 template <typename T, typename = cpp17::void_t<>>
 struct is_bound_array : std::false_type {};
 

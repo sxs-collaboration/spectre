@@ -3,11 +3,46 @@
 
 #include <catch.hpp>
 
+#include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "tests/Unit/Parallel/ParallelTestClasses.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+namespace Test_Classes {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+struct Base : public PUP::able {
+  // clang-tidy: internal charm++ warnings
+  WRAPPED_PUPable_abstract(Base);  // NOLINT
+};
+#pragma GCC diagnostic pop
+
+struct DerivedInPupStlCpp11 : public Base {
+  explicit DerivedInPupStlCpp11(std::vector<double> vec)
+      : vec_(std::move(vec)) {}
+  // clang-tidy: internal charm++ warnings
+  WRAPPED_PUPable_decl_base_template(Base,  // NOLINT
+                                     DerivedInPupStlCpp11);
+  explicit DerivedInPupStlCpp11(CkMigrateMessage* /* m */) {}
+  void pup(PUP::er& p) override {
+    Base::pup(p);
+    p | vec_;
+  }
+
+  const auto& get() const { return vec_; }
+
+  friend bool operator==(const DerivedInPupStlCpp11& lhs,
+                         const DerivedInPupStlCpp11& rhs) {
+    return lhs.vec_ == rhs.vec_;
+  }
+
+ private:
+  std::vector<double> vec_;
+};
+
+}  // namespace Test_Classes
 
 namespace {
 enum class eDummyEnum { test1, test2 };
@@ -66,6 +101,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
                   "[Serialization][Unit]") {
+  PUPable_reg(Test_Classes::DerivedInPupStlCpp11);
   Test_Classes::DerivedInPupStlCpp11 derived({-1, 12.3, -7, 8});
   std::unique_ptr<Test_Classes::Base> derived_ptr =
       std::make_unique<Test_Classes::DerivedInPupStlCpp11>(
@@ -84,3 +120,9 @@ SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
   auto blah = serialize_and_deserialize(derived_ptr);
   CHECK(nullptr == blah);
 }
+
+/// \cond
+// clang-tidy: possibly throwing constructor static storage
+// clang-tidy: false positive: redundant declaration
+PUP::able::PUP_ID Test_Classes::DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
+/// \endcond

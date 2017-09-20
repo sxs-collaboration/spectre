@@ -3,12 +3,19 @@
 
 #define CATCH_CONFIG_RUNNER
 
+void register_pupables();
+
 #include "tests/Unit/Parallel/Test_ConstGlobalCache.hpp"
 
 #include <catch.hpp>
 #include <exception>
 #include <memory>
 
+#include "AlgorithmArray.hpp"
+#include "AlgorithmGroup.hpp"
+#include "AlgorithmNodegroup.hpp"
+#include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
@@ -70,83 +77,105 @@ struct shape_of_nametag {
   using type = std::unique_ptr<Shape>;
 };
 
-namespace Tentacles {
-struct TestGroup {
-  using type = CProxy_TestGroupChare;
+template <class Metavariables>
+struct SingletonParallelComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tag_list = typelist<name, age, height>;
+  using options = typelist<>;
+  using metavariables = Metavariables;
+  using action_list = typelist<>;
+  using inbox_tag_list = typelist<>;
+  using initial_databox = db::DataBox<tmpl::list<>>;
+  using reduction_actions_list = tmpl::list<>;
 };
 
-struct TestNodeGroup {
-  using type = CProxy_TestNodeGroupChare;
-  using const_global_cache_tag_list = typelist<age, shape_of_nametag>;
+template <class Metavariables>
+struct ArrayParallelComponent {
+  using chare_type = Parallel::Algorithms::Array;
+  using const_global_cache_tag_list = typelist<height, shape_of_nametag>;
+  using array_index = int;
+  using options = typelist<>;
+  using metavariables = Metavariables;
+  using action_list = typelist<>;
+  using inbox_tag_list = typelist<>;
+  using initial_databox = db::DataBox<tmpl::list<>>;
+  using reduction_actions_list = tmpl::list<>;
 };
 
-struct Test {
-  using type = CProxy_TestChare;
-  using const_global_cache_tag_list = typelist<>;
-};
-
-struct TestArray {
-  using type = CProxy_TestArrayChare;
+template <class Metavariables>
+struct GroupParallelComponent {
+  using chare_type = Parallel::Algorithms::Group;
   using const_global_cache_tag_list = typelist<name>;
+  using options = typelist<>;
+  using metavariables = Metavariables;
+  using action_list = typelist<>;
+  using inbox_tag_list = typelist<>;
+  using initial_databox = db::DataBox<tmpl::list<>>;
+  using reduction_actions_list = tmpl::list<>;
 };
-}  // namespace Tentacles
+
+template <class Metavariables>
+struct NodegroupParallelComponent {
+  using chare_type = Parallel::Algorithms::Nodegroup;
+  using const_global_cache_tag_list = typelist<height>;
+  using options = typelist<>;
+  using metavariables = Metavariables;
+  using action_list = typelist<>;
+  using inbox_tag_list = typelist<>;
+  using initial_databox = db::DataBox<tmpl::list<>>;
+  using reduction_actions_list = tmpl::list<>;
+};
 
 struct TestMetavariables {
-  using tentacle_list = typelist<Tentacles::TestGroup, Tentacles::TestNodeGroup,
-                                 Tentacles::Test, Tentacles::TestArray>;
+  using component_list =
+      typelist<SingletonParallelComponent<TestMetavariables>,
+               ArrayParallelComponent<TestMetavariables>,
+               GroupParallelComponent<TestMetavariables>,
+               NodegroupParallelComponent<TestMetavariables>>;
 };
 
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
-  using tag_list =
-      typename Parallel::ConstGlobalCache<TestMetavariables>::tag_list;
-  static_assert(cpp17::is_same_v<
-                    tag_list, tmpl::list<name, age, height, shape_of_nametag>>,
-                "Wrong tag_list in ConstGlobalCache test");
+  {
+    using tag_list =
+        typename Parallel::ConstGlobalCache<TestMetavariables>::tag_list;
+    static_assert(
+        cpp17::is_same_v<tag_list,
+                         tmpl::list<name, age, height, shape_of_nametag>>,
+        "Wrong tag_list in ConstGlobalCache test");
 
-  tuples::TaggedTupleTypelist<tag_list>
-      const_data_to_be_cached("Nobody", 178, 2.2, std::make_unique<Square>());
-
-  Parallel::ConstGlobalCache<TestMetavariables> cache(const_data_to_be_cached);
-
-  tuples::TaggedTupleTypelist<typename TestMetavariables::tentacle_list>
-      tentacles;
-
-  auto& group_proxy = tuples::get<Tentacles::TestGroup>(tentacles);
-  auto& node_group_proxy = tuples::get<Tentacles::TestNodeGroup>(tentacles);
-  auto& proxy = tuples::get<Tentacles::Test>(tentacles);
-  auto& array_proxy = tuples::get<Tentacles::TestArray>(tentacles);
-  group_proxy = CProxy_TestGroupChare::ckNew();
-  node_group_proxy = CProxy_TestNodeGroupChare::ckNew();
-  proxy = CProxy_TestChare::ckNew(-1);
-  array_proxy = CProxy_TestArrayChare::ckNew(40);
-
-  CkCallback cb(CkCallback::ignore);
-  cache.set_tentacles(tentacles, cb);
-
-  auto& retrieved_proxy = cache.get_tentacle<Tentacles::Test>();
-  auto& retrieved_array_proxy = cache.get_tentacle<Tentacles::TestArray>();
-
-  CHECK(Parallel::my_proc() ==
-        cache.get_tentacle<Tentacles::TestGroup>().ckLocalBranch()->my_proc());
-  CHECK(Parallel::my_node() ==
-        cache.get_tentacle<Tentacles::TestNodeGroup>()
-            .ckLocalBranch()
-            ->my_node());
-  if (nullptr != retrieved_proxy.ckLocal()) {
-    CHECK(-1 == retrieved_proxy.ckLocal()->my_id());
+    tuples::TaggedTupleTypelist<tag_list> const_data_to_be_cached(
+        "Nobody", 178, 2.2, std::make_unique<Square>());
+    Parallel::ConstGlobalCache<TestMetavariables> cache(
+        std::move(const_data_to_be_cached));
+    CHECK("Nobody" == cache.get<name>());
+    CHECK(178 == cache.get<age>());
+    CHECK(2.2 == cache.get<height>());
+    CHECK(4 == cache.get<shape_of_nametag>().number_of_sides());
   }
-  for (int i = 0; i < 40; ++i) {
-    if (nullptr != retrieved_array_proxy[i].ckLocal()) {
-      CHECK(i == retrieved_array_proxy[i].ckLocal()->my_index());
-    }
+
+  {
+    using tag_list =
+        typename Parallel::ConstGlobalCache<TestMetavariables>::tag_list;
+    static_assert(
+        cpp17::is_same_v<tag_list,
+                         tmpl::list<name, age, height, shape_of_nametag>>,
+        "Wrong tag_list in ConstGlobalCache test");
+
+    tuples::TaggedTupleTypelist<tag_list> const_data_to_be_cached(
+        "Nobody", 178, 2.2, std::make_unique<Square>());
+
+    Parallel::CProxy_ConstGlobalCache<TestMetavariables>
+        const_global_cache_proxy =
+            Parallel::CProxy_ConstGlobalCache<TestMetavariables>::ckNew(
+                const_data_to_be_cached);
+    const auto& local_cache = *const_global_cache_proxy.ckLocalBranch();
+    CHECK("Nobody" == local_cache.get<name>());
+    CHECK(178 == local_cache.get<age>());
+    CHECK(2.2 == local_cache.get<height>());
+    CHECK(4 == local_cache.get<shape_of_nametag>().number_of_sides());
   }
-  CHECK("Nobody" == cache.get<name>());
-  CHECK(178 == cache.get<age>());
-  CHECK(2.2 == cache.get<height>());
-  CHECK(4 == cache.get<shape_of_nametag>().number_of_sides());
 }
 
 Test_ConstGlobalCache::Test_ConstGlobalCache(CkArgMsg* msg) {
@@ -159,6 +188,11 @@ Test_ConstGlobalCache::Test_ConstGlobalCache(CkArgMsg* msg) {
     Parallel::exit();
   }
   Parallel::abort("A catch test has failed.");
+}
+
+void register_pupables() {
+  PUPable_reg(Triangle);
+  PUPable_reg(Square);
 }
 
 /// \cond

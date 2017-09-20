@@ -17,6 +17,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/Overloader.hpp"
@@ -32,7 +33,7 @@ namespace Parallel {
 ///
 /// Metavariables must define the following:
 ///   - help   [c string describing the program]
-///   - tentacle_list   [typelist of Tentacles]
+///   - component_list   [typelist of ParallelComponents]
 ///   - phase   [enum class listing phases of the executable]
 ///   - determine_next_phase   [function that determines the next phase of the
 ///   executable]
@@ -40,19 +41,19 @@ namespace Parallel {
 ///   - input_file   [c string giving default input file name]
 ///   - ignore_unrecognized_command_line_options   [bool, defaults to false]
 ///
-/// Each Tentacle in Metavariables::tentacle_list must define the following
-/// functions:
+/// Each ParallelComponent in Metavariables::component_list must define the
+/// following functions:
 ///   - const_global_cache_tag_list  [typelist of tags of constant data]
 ///   - options  [typelist of option tags for data to be passed to initialize]
 ///   - initialize
 ///   - execute_next_global_actions
 ///
-/// The phases in Metavariables::phase must include Initialization (the initial
+/// The phases in Metavariables::Phase must include Initialization (the initial
 /// phase) and Exit (the final phase)
 template <typename Metavariables>
 class Main : public CBase_Main<Metavariables> {
  public:
-  using tentacle_list = typename Metavariables::tentacle_list;
+  using component_list = typename Metavariables::component_list;
   using const_global_cache_tags =
       typename ConstGlobalCache<Metavariables>::tag_list;
 
@@ -60,20 +61,27 @@ class Main : public CBase_Main<Metavariables> {
   explicit Main(CkMigrateMessage* /*msg*/)
       : options_("Uninitialized after migration") {}
 
-  /// Initialize the tentacles.
+  /// Initialize the parallel_components.
   void initialize() noexcept;
 
   /// Determine the next phase of the simulation and execute it.
   void execute_next_phase() noexcept;
 
  private:
-  template <typename Tentacle>
-  using tentacle_options = typename Tentacle::options;
+  template <typename ParallelComponent>
+  using parallel_component_options = typename ParallelComponent::options;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
       const_global_cache_tags,
-      tmpl::transform<tentacle_list, tmpl::bind<tentacle_options, tmpl::_1>>>>>;
-  typename Metavariables::phase current_phase_{
-      Metavariables::phase::Initialization};
+      tmpl::transform<component_list,
+                      tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
+  using parallel_component_tag_list = tmpl::transform<
+      component_list,
+      tmpl::bind<
+          tmpl::type_,
+          tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+  typename Metavariables::Phase current_phase_{
+      Metavariables::Phase::Initialization};
+
   CProxy_ConstGlobalCache<Metavariables> const_global_cache_proxy_;
   Options<option_list> options_;
 };
@@ -124,7 +132,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                         "but there are no options");
           ERROR("This should have failed at compile time");
         },
-        [](std::false_type /*meta*/, auto /*mv*/, auto... /*unused*/) {
+        [](std::false_type /*meta*/, auto... /*unused*/) {
           // Metavariables has no options and no default input file name
         })(cpp17::bool_constant<has_options>{}, tmpl::type_<Metavariables>{});
 
@@ -170,7 +178,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
 
     if (parsed_command_line_options.count("check-options") != 0) {
       // Force all the options to be created.
-      options_.template apply<option_list>([](auto...) {});
+      options_.template apply<option_list>([](auto... args) {
+        (void)std::initializer_list<char>{((void)args, '0')...};
+      });
       if (has_options) {
         Parallel::printf("%s parsed successfully!\n", input_file);
       } else {
@@ -191,77 +201,95 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                 std::move(args)...));
       });
 
-  tuples::TaggedTupleTypelist<tentacle_list> the_tentacles;
+  tuples::TaggedTupleTypelist<parallel_component_tag_list>
+      the_parallel_components;
 
   // Construct the group proxies with a dependency on the ConstGlobalCache proxy
-  using group_tentacle_list = tmpl::filter<
-      tentacle_list,
-      tmpl::or_<Parallel::is_group_proxy<tmpl::bind<tmpl::type_from, tmpl::_1>>,
-                Parallel::is_node_group_proxy<
-                    tmpl::bind<tmpl::type_from, tmpl::_1>>>>;
+  using group_component_list = tmpl::filter<
+      component_list,
+      tmpl::or_<Parallel::is_group_proxy<tmpl::bind<
+                    Parallel::proxy_from_parallel_component, tmpl::_1>>,
+                Parallel::is_node_group_proxy<tmpl::bind<
+                    Parallel::proxy_from_parallel_component, tmpl::_1>>>>;
   CkEntryOptions const_global_cache_dependency;
   const_global_cache_dependency.setGroupDepID(
       const_global_cache_proxy_.ckGetGroupID());
-  tmpl::for_each<group_tentacle_list>([
-    this, &the_tentacles, &const_global_cache_dependency
-  ](auto tentacle) noexcept {
-    using Tentacle = tmpl::type_from<decltype(tentacle)>;
-    tuples::get<Tentacle>(the_tentacles) = Tentacle::type::ckNew(
-        const_global_cache_proxy_, &const_global_cache_dependency);
+
+  tmpl::for_each<group_component_list>([
+    this, &the_parallel_components, &const_global_cache_dependency
+  ](auto parallel_component) noexcept {
+    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
+        tmpl::type_from<decltype(parallel_component)>>;
+    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
+        ParallelComponentProxy::ckNew(const_global_cache_proxy_,
+                                      &const_global_cache_dependency);
   });
 
   // Construct the proxies for the single chares
-  using single_tentacle_list = tmpl::filter<
-      tentacle_list,
-      Parallel::is_chare_proxy<tmpl::bind<tmpl::type_from, tmpl::_1>>>;
-  tmpl::for_each<single_tentacle_list>(
-      [ this, &the_tentacles ](auto tentacle) noexcept {
-        using Tentacle = tmpl::type_from<decltype(tentacle)>;
-        tuples::get<Tentacle>(the_tentacles) =
-            Tentacle::type::ckNew(const_global_cache_proxy_);
-      });
+  using singleton_component_list =
+      tmpl::filter<component_list,
+                   Parallel::is_chare_proxy<tmpl::bind<
+                       Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+  tmpl::for_each<singleton_component_list>([ this, &the_parallel_components ](
+      auto parallel_component) noexcept {
+    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
+        tmpl::type_from<decltype(parallel_component)>>;
+    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
+        ParallelComponentProxy::ckNew(const_global_cache_proxy_);
+  });
 
-  // Create proxies for empty array chares (which are created by the initialize
-  // functions of the tentacles)
-  using array_tentacle_list =
-      tmpl::filter<tentacle_list,
-                   tmpl::and_<Parallel::is_array_proxy<
-                                  tmpl::bind<tmpl::type_from, tmpl::_1>>,
-                              tmpl::not_<Parallel::is_bound_array<tmpl::_1>>>>;
-  tmpl::for_each<array_tentacle_list>([&the_tentacles](auto tentacle) noexcept {
-    using Tentacle = tmpl::type_from<decltype(tentacle)>;
-    tuples::get<Tentacle>(the_tentacles) = Tentacle::type::ckNew();
+  // Create proxies for empty array chares (which are created by the
+  // initialize functions of the parallel_components)
+  using array_component_list = tmpl::filter<
+      component_list,
+      tmpl::and_<Parallel::is_array_proxy<tmpl::bind<
+                     Parallel::proxy_from_parallel_component, tmpl::_1>>,
+                 tmpl::not_<Parallel::is_bound_array<tmpl::_1>>>>;
+  tmpl::for_each<array_component_list>([&the_parallel_components](
+      auto parallel_component) noexcept {
+    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
+        tmpl::type_from<decltype(parallel_component)>>;
+    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
+        ParallelComponentProxy::ckNew();
   });
 
   // Create proxies for empty bound array chares
-  using bound_array_tentacle_list =
-      tmpl::filter<tentacle_list,
-                   tmpl::and_<Parallel::is_array_proxy<
-                                  tmpl::bind<tmpl::type_from, tmpl::_1>>,
-                              Parallel::is_bound_array<tmpl::_1>>>;
-  tmpl::for_each<bound_array_tentacle_list>([&the_tentacles](
-      auto tentacle) noexcept {
-    using Tentacle = tmpl::type_from<decltype(tentacle)>;
+  using bound_array_component_list = tmpl::filter<
+      component_list,
+      tmpl::and_<Parallel::is_array_proxy<tmpl::bind<
+                     Parallel::proxy_from_parallel_component, tmpl::_1>>,
+                 Parallel::is_bound_array<tmpl::_1>>>;
+  tmpl::for_each<bound_array_component_list>([&the_parallel_components](
+      auto parallel_component) noexcept {
+    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
+        tmpl::type_from<decltype(parallel_component)>>;
     CkArrayOptions opts;
-    opts.bindTo(tuples::get<typename Tentacle::bind_to>(the_tentacles));
-    tuples::get<Tentacle>(the_tentacles) = Tentacle::type::ckNew(opts);
+    opts.bindTo(
+        tuples::get<tmpl::type_<Parallel::proxy_from_parallel_component<
+            typename tmpl::type_from<decltype(parallel_component)>::bind_to>>>(
+            the_parallel_components));
+    tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
+        ParallelComponentProxy::ckNew(opts);
   });
 
-  // Send the complete list of tentacles to the ConstGlobalCache on each Charm++
-  // node.  After all nodes have finished, the callback is executed.
+  // Send the complete list of parallel_components to the ConstGlobalCache on
+  // each Charm++ node.  After all nodes have finished, the callback is
+  // executed.
   CkCallback callback(CkIndex_Main<Metavariables>::initialize(),
                       this->thisProxy);
-  const_global_cache_proxy_.set_tentacles(the_tentacles, callback);
+  const_global_cache_proxy_.set_parallel_components(the_parallel_components,
+                                                    callback);
 }
 
 template <typename Metavariables>
 void Main<Metavariables>::initialize() noexcept {
-  tmpl::for_each<typename Metavariables::tentacle_list>([this](
-      auto tentacle) noexcept {
-    using Tentacle = tmpl::type_from<decltype(tentacle)>;
-    options_.template apply<typename Tentacle::options>([this](auto... opts) {
-      Tentacle::initialize(const_global_cache_proxy_, std::move(opts)...);
-    });
+  tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
+    using ParallelComponent = tmpl::type_from<decltype(parallel_component)>;
+    options_.template apply<typename ParallelComponent::options>(
+        [this](auto... opts) {
+          ParallelComponent::initialize(const_global_cache_proxy_,
+                                        std::move(opts)...);
+        });
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));
@@ -269,15 +297,14 @@ void Main<Metavariables>::initialize() noexcept {
 
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() noexcept {
-  current_phase_ =
-      Metavariables::determine_next_phase(const_global_cache_proxy_);
-  if (Metavariables::phase::Exit == current_phase_) {
+  current_phase_ = Metavariables::determine_next_phase(
+      current_phase_, const_global_cache_proxy_);
+  if (Metavariables::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     Parallel::exit();
   }
-  tmpl::for_each<typename Metavariables::tentacle_list>([this](
-      auto tentacle) noexcept {
-    tmpl::type_from<decltype(tentacle)>::execute_next_global_actions(
+  tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
+    tmpl::type_from<decltype(parallel_component)>::execute_next_global_actions(
         current_phase_, const_global_cache_proxy_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
