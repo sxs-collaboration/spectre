@@ -34,6 +34,7 @@ if (CLANG_TIDY_BIN)
   set(MODULES_TO_DEPEND_ON
     module_RunTests
     module_Test_ConstGlobalCache
+    module_Test_Main
     )
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/ClangTidyAll.sh
