@@ -46,7 +46,7 @@ class Direction {
   Direction<VolumeDim> opposite() const noexcept;
 
   // An array of all logical Directions for a given dimensionality.
-  static std::array<Direction<VolumeDim>, 2 * VolumeDim>
+  static const std::array<Direction<VolumeDim>, 2 * VolumeDim>&
   all_directions() noexcept;
 
   // {@
@@ -138,24 +138,30 @@ inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
 }
 
 template <>
-inline std::array<Direction<1>, 2> Direction<1>::all_directions() noexcept {
-  return std::array<Direction<1>, 2>{
+inline const std::array<Direction<1>, 2>& Direction<1>::all_directions()
+    noexcept {
+  const static auto directions = std::array<Direction<1>, 2>{
       {Direction<1>::upper_xi(), Direction<1>::lower_xi()}};
+  return directions;
 }
 
 template <>
-inline std::array<Direction<2>, 4> Direction<2>::all_directions() noexcept {
-  return std::array<Direction<2>, 4>{
+inline const std::array<Direction<2>, 4>& Direction<2>::all_directions()
+    noexcept {
+  const static auto directions = std::array<Direction<2>, 4>{
       {Direction<2>::upper_xi(), Direction<2>::lower_xi(),
        Direction<2>::upper_eta(), Direction<2>::lower_eta()}};
+  return directions;
 }
 
 template <>
-inline std::array<Direction<3>, 6> Direction<3>::all_directions() noexcept {
-  return std::array<Direction<3>, 6>{
+inline const std::array<Direction<3>, 6>& Direction<3>::all_directions()
+    noexcept {
+  const static auto directions = std::array<Direction<3>, 6>{
       {Direction<3>::upper_xi(), Direction<3>::lower_xi(),
        Direction<3>::upper_eta(), Direction<3>::lower_eta(),
        Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}};
+  return directions;
 }
 
 template <size_t VolumeDim>
