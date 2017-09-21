@@ -21,15 +21,13 @@ DataVector linearize(const DataVector& u, const Index<Dim>& extents) {
     const Matrix& F = Basis::lgl::linear_filter_matrix(extents[d]);
     for (StripeIterator s(extents, d); s; ++s) {
       dgemv_('N', extents[d], extents[d], 1., F.data(), extents[d],
-             0 == d
-                 ? u.data()
-                 : gsl::at(u_linearized, d - 1).data() + s.offset(),  // NOLINT
+             0 == d ? &u[s.offset()]                              // NOLINT
+                    : &gsl::at(u_linearized, d - 1)[s.offset()],  // NOLINT
              s.stride(), 0.0,
-             gsl::at(u_linearized, d).data() + s.offset(),  // NOLINT
+             &gsl::at(u_linearized, d).data()[s.offset()],  // NOLINT
              s.stride());
     }
   }
-
   return u_linearized[Dim - 1];
 }
 
@@ -45,8 +43,8 @@ DataVector linearize(const DataVector& u, const Index<Dim>& extents,
   const Matrix& F = Basis::lgl::linear_filter_matrix(extents[d]);
   for (StripeIterator s(extents, d); s; ++s) {
     dgemv_('N', extents[d], extents[d], 1., F.data(), extents[d],
-           u.data() + s.offset(),                              // NOLINT
-           s.stride(), 0.0, u_linearized.data() + s.offset(),  // NOLINT
+           &u.data()[s.offset()],                              // NOLINT
+           s.stride(), 0.0, &u_linearized.data()[s.offset()],  // NOLINT
            s.stride());
   }
   return u_linearized;
