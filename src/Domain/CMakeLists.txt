@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
     BlockNeighbor.cpp
     DomainHelpers.cpp
     Direction.cpp
+    Element.cpp
     ElementId.cpp
     Neighbors.cpp
     Orientation.cpp
