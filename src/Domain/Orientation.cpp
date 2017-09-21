@@ -8,6 +8,12 @@
 #include "Domain/SegmentId.hpp"
 
 template <size_t VolumeDim>
+Orientation<VolumeDim>::Orientation() {
+  for (size_t j = 0; j < VolumeDim; j++) {
+    gsl::at(mapped_directions_, j) = Direction<VolumeDim>(j, Side::Upper);
+  }
+}
+template <size_t VolumeDim>
 Orientation<VolumeDim>::Orientation(
     std::array<Direction<VolumeDim>, VolumeDim> mapped_directions)
     : mapped_directions_(std::move(mapped_directions)) {
