@@ -127,8 +127,9 @@ Spack works well with a module environment. We recommend
 * On macOS, install LMod from [brew](https://brew.sh/), then source the LMod
   shell script by adding `. /usr/local/Cellar/lmod/YOUR_VERSION_NUMBER/init/sh`
   to your `.bash_profile`.
-* On Ubuntu, run `sudo apt-get install -y lmod` and add
-  `. /etc/profile.d/lmod.sh` to your `.bashrc`.
+* On Ubuntu, run `sudo apt-get install -y lmod` and, for Ubuntu 17.04, add
+  `. /etc/profile.d/lmod.sh` to your `.bashrc`. For Ubuntu 16.04, the correct
+  path to add is `. /usr/share/lmod/lmod/init/bash`.
 * On Arch Linux, run `yaourt -Sy lmod` and add `. /etc/profile.d/lmod.sh` to
   your `.bashrc`,
 * On Fedora/RHEL, GNU Environment Modules comes out-of-the-box and works equally
