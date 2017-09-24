@@ -216,6 +216,126 @@ using void_t = void;
 template <typename T, typename U>
 constexpr bool is_same_v = std::is_same<T, U>::value;
 
+/// \ingroup TypeTraits
+template <typename T>
+constexpr bool is_lvalue_reference_v = std::is_lvalue_reference<T>::value;
+
+/// \ingroup TypeTraits
+template <typename T>
+constexpr bool is_rvalue_reference_v = std::is_rvalue_reference<T>::value;
+
+/// \ingroup TypeTraits
+template <typename T>
+constexpr bool is_reference_v = std::is_reference<T>::value;
+
+/// \ingroup TypeTraits
+template <class T, class... Args>
+constexpr bool is_constructible_v =
+    std::is_constructible<T, Args...>::value;
+
+/// \ingroup TypeTraits
+template <class T, class... Args>
+constexpr bool is_trivially_constructible_v =
+    std::is_trivially_constructible<T, Args...>::value;
+
+/// \ingroup TypeTraits
+template <class T, class... Args>
+constexpr bool is_nothrow_constructible_v =
+    std::is_nothrow_constructible<T, Args...>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_default_constructible_v =
+    std::is_default_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_trivially_default_constructible_v =
+    std::is_trivially_default_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_nothrow_default_constructible_v =
+    std::is_nothrow_default_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_copy_constructible_v = std::is_copy_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_trivially_copy_constructible_v =
+    std::is_trivially_copy_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_nothrow_copy_constructible_v =
+    std::is_nothrow_copy_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_move_constructible_v = std::is_move_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_trivially_move_constructible_v =
+    std::is_trivially_move_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_nothrow_move_constructible_v =
+    std::is_nothrow_move_constructible<T>::value;
+
+/// \ingroup TypeTraits
+template <class T, class U>
+constexpr bool is_assignable_v = std::is_assignable<T, U>::value;
+
+/// \ingroup TypeTraits
+template <class T, class U>
+constexpr bool is_trivially_assignable_v =
+    std::is_trivially_assignable<T, U>::value;
+
+/// \ingroup TypeTraits
+template <class T, class U>
+constexpr bool is_nothrow_assignable_v =
+    std::is_nothrow_assignable<T, U>::value;
+
+/// \ingroup TypeTraits
+template <class From, class To>
+constexpr bool is_convertible_v = std::is_convertible<From, To>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_copy_assignable_v = std::is_copy_assignable<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_trivially_copy_assignable_v =
+    std::is_trivially_copy_assignable<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_nothrow_copy_assignable_v =
+    std::is_nothrow_copy_assignable<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_move_assignable_v = std::is_move_assignable<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_trivially_move_assignable_v =
+    std::is_trivially_move_assignable<T>::value;
+
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_nothrow_move_assignable_v =
+    std::is_nothrow_move_assignable<T>::value;
+
+/// \ingroup TypeTraits
+template <class Base, class Derived>
+constexpr bool is_base_of_v = std::is_base_of<Base, Derived>::value;
+
 }  // namespace cpp17
 
 /// \ingroup TypeTraits
