@@ -23,6 +23,8 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
  public:
+  /// Access to the Metavariables template parameter
+  using metavariables = Metavariables;
   /// Typelist of the tags of constant data stored in the ConstGlobalCache
   using tag_list = typename Metavariables::const_global_cache_tag_list;
   /// Typelist of the Tentacles stored in the ConstGlobalCache

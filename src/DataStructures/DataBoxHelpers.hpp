@@ -53,7 +53,7 @@ auto get_tensor_from_box(const db::DataBox<TagList>& box,
   if (db::get_tag_name<tag>() != tag_name) {
     ERROR("Could not find the tag named \"" << tag_name << "\" in the DataBox");
   }
-  return box.template get<tag>().get_vector_of_data();
+  return ::db::get<tag>(box).get_vector_of_data();
 }
 
 template <typename Tags, typename TagList,
@@ -62,7 +62,7 @@ auto get_tensor_from_box(const db::DataBox<TagList>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
   return db::get_tag_name<tag>() == tag_name
-             ? box.template get<tag>().serialize()
+             ? ::db::get<tag>(box).serialize()
              : get_tensor_from_box<tmpl::pop_front<Tags>>(box, tag_name);
 }
 

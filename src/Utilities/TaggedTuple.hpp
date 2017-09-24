@@ -155,12 +155,13 @@ class TaggedTupleLeaf<Tag, false> {
         "Cannot default construct a reference element in a TaggedTuple");
   }
 
-  template <class T,
-            typename std::enable_if<
-                !std::is_same<typename std::decay<T>::type,
-                              TaggedTupleLeaf>::value &&
-                std::is_constructible<value_type, T&&>::value>::type* = nullptr>
-  constexpr explicit TaggedTupleLeaf(T&& t) noexcept(
+  // clang-tidy: forwarding references can be bad
+  template <
+      class T,
+      typename std::enable_if<
+          !std::is_same<typename std::decay<T>::type, TaggedTupleLeaf>::value &&
+          std::is_constructible<value_type, T&&>::value>::type* = nullptr>
+  constexpr explicit TaggedTupleLeaf(T&& t) noexcept(  // NOLINT
       std::is_nothrow_constructible<value_type, T&&>::value)
       : value_(tuples_detail::forward<T>(t)) {  // NOLINT
     static_assert(can_bind_reference<T>(),
@@ -202,12 +203,12 @@ class TaggedTupleLeaf<Tag, true> : private Tag::type {
       std::is_nothrow_default_constructible<value_type>::value)
       : value_type{} {}
 
-  template <class T,
-            typename std::enable_if<
-                !std::is_same<typename std::decay<T>::type,
-                              TaggedTupleLeaf>::value &&
-                std::is_constructible<value_type, T&&>::value>::type* = nullptr>
-  constexpr explicit TaggedTupleLeaf(T&& t) noexcept(
+  template <
+      class T,
+      typename std::enable_if<
+          !std::is_same<typename std::decay<T>::type, TaggedTupleLeaf>::value &&
+          std::is_constructible<value_type, T&&>::value>::type* = nullptr>
+  constexpr explicit TaggedTupleLeaf(T&& t) noexcept(  // NOLINT
       std::is_nothrow_constructible<value_type, T&&>::value)
       : value_type(tuples_detail::forward<T>(t)) {}
 
@@ -281,8 +282,9 @@ constexpr typename Tag::type&& get(TaggedTuple<Tags...>&& t) noexcept;
 template <class Tag>
 using tag_type = typename Tag::type;
 
+// clang-tidy: class does not define copy or move assignment (it does)
 template <class... Tags>
-class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {
+class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
   template <class... Args>
   struct pack_is_TaggedTuple : std::false_type {};
   template <class Arg>
@@ -406,8 +408,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {
       tuples_detail::all<std::is_nothrow_default_constructible<
           tag_type<Tags>>::value...>::value) {}
 
-  constexpr TaggedTuple(TaggedTuple const& /*rhs*/) = default;
-  constexpr TaggedTuple(TaggedTuple&& /*rhs*/) = default;
+  TaggedTuple(TaggedTuple const& /*rhs*/) = default;
+  TaggedTuple(TaggedTuple&& /*rhs*/) = default;
 
   /*!
    * \brief Construct a TaggedTuple with Args
