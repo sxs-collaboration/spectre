@@ -177,6 +177,19 @@ if [[ $found_incorrect_list_name != "" ]]; then
     found_error=1
 fi
 
+###############################################################################
+# Check for pragma once in all hearder files
+found_no_pragma_once=`
+find ./ -type f -name '*.hpp' -not -path './build*' \
+    | xargs grep -L "^#pragma once$"`
+if [[ $found_no_pragma_once != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Did not find '#pragma once' in these header files:\n"
+    echo "$found_no_pragma_once"
+    found_error=1
+fi
+
 if [ "$found_error" -eq "1" ]; then
     exit 1
 fi

@@ -207,6 +207,19 @@ if [[ $found_enable_if != "" ]]; then
 fi
 
 ###############################################################################
+# Check for pragma once in all hearder files
+found_no_pragma_once=`
+find $commit_files -type f -name '*.hpp' -not -path './build*' \
+    | xargs grep -L "^#pragma once$"`
+if [[ $found_no_pragma_once != "" ]]; then
+    echo "This script can be run locally from any source dir using:"
+    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+    printf "Did not find '#pragma once' in these header files:\n"
+    echo "$found_no_pragma_once"
+    found_error=1
+fi
+
+###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
 
