@@ -23,7 +23,6 @@ spack load yaml-cpp
 # We use cron jobs to deploy to gh-pages. Since this still runs all jobs we
 # only actually build documentation for one job but let the others run tests.
 if [ ${CC} = gcc ] \
-&& [ ${TRAVIS_EVENT_TYPE} = cron ] \
 && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
 && [ ${COVERAGE} ] \
 && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
@@ -33,18 +32,15 @@ if [ ${CC} = gcc ] \
   git checkout ${GH_PAGES_SOURCE_BRANCH}
   SHA=`git rev-parse --verify HEAD`
 
-  git fetch origin gh-pages && git checkout gh-pages
+  git checkout --orphan gh-pages
 
   cp -r /work/build_${BUILD_TYPE}_${CC}/docs/html/* /work/gh-pages/
 
-  if git diff --quiet; then
-    echo "No changes to the documentation."
-  else
-    git add --all
-    git config --global user.name "Automatic Deployment (Travis CI)"
-    git config --global user.email "none@none.none"
-    git commit -m "Documentation Update: ${SHA}"
-    git push $GH_PAGES_REPO gh-pages:gh-pages
-  fi
-  rm /root/.ssh/id_rsa
+  git add --all
+  git config --global user.name "Automatic Deployment (Travis CI)"
+  git config --global user.email "none@none.none"
+  git commit -m "Documentation Update: ${SHA}"
+  git push -f $GH_PAGES_REPO gh-pages:gh-pages
+
+  rm /root/.ssh/id_rsa*
 fi
