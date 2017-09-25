@@ -239,6 +239,33 @@ SPECTRE_ALWAYS_INLINE constexpr size_t cstring_hash(const char* str) noexcept {
              : 5381;
 }
 
+#ifdef __clang__
+#define HASH_TYPE_NAME_DETAIL_NAME_LENGTH \
+  sizeof("const char *const get_pretty_function_array() [T = ") - 1
+#else
+#define HASH_TYPE_NAME_DETAIL_NAME_LENGTH                                     \
+  sizeof(                                                                     \
+      "constexpr const char *const get_pretty_function_array() [with T = ") - \
+      1
+#endif
+
+namespace ConstantExpression_detail {
+template <class T>
+constexpr const char* get_pretty_function_array() {
+  return __PRETTY_FUNCTION__;
+}
+}  // namespace ConstantExpression_detail
+
+/// \ingroup ConstantExpressions
+/// \brief Hash a type name, including namespaces, at compile time. The hash
+/// used is that of typeid in libcxx.
+template <class T>
+constexpr size_t hash_type_name() noexcept {
+  return cstring_hash(
+      ConstantExpression_detail::get_pretty_function_array<T>() +
+      HASH_TYPE_NAME_DETAIL_NAME_LENGTH);
+}
+
 namespace ConstantExpression_detail {
 template <typename T, size_t Size, size_t... I, size_t... J>
 inline constexpr std::array<std::decay_t<T>, Size> replace_at_helper(
