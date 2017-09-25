@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "Parallel/ConstGlobalCache.decl.h"
 #include "Parallel/ConstGlobalCache.hpp"
 
