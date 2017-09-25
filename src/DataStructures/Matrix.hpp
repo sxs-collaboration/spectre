@@ -17,6 +17,8 @@ class er;
 /*!
  * \ingroup DataStructures
  * \brief A dynamically sized matrix.
+ *
+ * \note The data layout is column-major (0-based)
  */
 class Matrix {
  public:
