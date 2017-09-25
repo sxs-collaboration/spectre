@@ -25,44 +25,36 @@ namespace test_databox_tags {
 /// [databox_tag_example]
 struct Tag0 : db::DataBoxTag {
   using type = double;
-  static constexpr db::DataBoxString_t label = "Tag0";
 };
 /// [databox_tag_example]
 struct Tag1 : db::DataBoxTag {
   using type = std::vector<double>;
-  static constexpr db::DataBoxString_t label = "Tag1";
 };
 struct Tag2 : db::DataBoxTag {
   using type = std::string;
-  static constexpr db::DataBoxString_t label = "Tag2";
 };
 struct Tag3 : db::DataBoxTag {
   using type = std::string;
-  static constexpr db::DataBoxString_t label = "Tag3";
 };
 
 /// [databox_compute_item_tag_example]
 struct ComputeTag0 : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "ComputeTag0";
   static constexpr auto function = multiply_by_two;
   using argument_tags = typelist<Tag0>;
 };
 /// [databox_compute_item_tag_example]
 struct ComputeTag1 : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "ComputeTag1";
   static constexpr auto function = append_word;
   using argument_tags = typelist<Tag2, ComputeTag0>;
 };
 
 struct TagTensor : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "TagTensor";
   static constexpr auto function = get_tensor;
   using argument_tags = typelist<>;
 };
 
 /// [compute_item_tag_function]
 struct ComputeLambda0 : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "ComputeLambda0";
   static constexpr double function(const double a) { return 3.0 * a; }
   using argument_tags = typelist<Tag0>;
 };
@@ -70,7 +62,6 @@ struct ComputeLambda0 : db::ComputeItemTag {
 
 /// [compute_item_tag_no_tags]
 struct ComputeLambda1 : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "ComputeLambda1";
   static constexpr double function() { return 7.0; }
   using argument_tags = typelist<>;
 };
@@ -81,7 +72,6 @@ template <typename Tag>
 struct TagPrefix : db::DataBoxPrefix {
   using type = typename Tag::type;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "TagPrefix";
 };
 /// [databox_prefix_tag_example]
 }  // namespace test_databox_tags
@@ -132,12 +122,15 @@ static_assert(
 static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
                            Box_t>::value,
               "Failed testing no-op create_from");
-
-static_assert(db::detail::tag_has_label<test_databox_tags::Tag0>::value,
-              "Failed testing db::tag_has_label");
-static_assert(db::detail::tag_has_label<test_databox_tags::TagTensor>::value,
-              "Failed testing db::tag_has_label");
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_tag_name",
+                  "[Unit][DataStructures]") {
+  CHECK(db::get_tag_name<test_databox_tags::TagTensor>() == "TagTensor");
+  CHECK(db::get_tag_name<
+            test_databox_tags::TagPrefix<test_databox_tags::Tag2>>() ==
+        "TagPrefixTag2");
+}
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   /// [create_databox]
@@ -164,8 +157,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   // Check retrieving chained compute item result
   CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
         "My Sample String6.28"s);
-  CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) ==
-        3.0 * 3.14);
+  CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) == 3.0 * 3.14);
   CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   // No removal
   {
@@ -224,8 +216,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::RemoveTags<>, db::AddTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag3>(box) ==
-          "Yet another test string"s);
+    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
     CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
@@ -240,8 +231,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::AddTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag3>(box) ==
-          "Yet another test string"s);
+    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
     CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
