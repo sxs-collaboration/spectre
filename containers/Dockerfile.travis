@@ -169,7 +169,6 @@ RUN if [ "${CC}" = "gcc" ] \
 RUN if [ ${CC} = gcc ] \
     && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ ${TRAVIS_EVENT_TYPE} = cron ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
     && [ ${COVERAGE} ] \
     && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
