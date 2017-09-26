@@ -24,7 +24,9 @@
 template <size_t VolumeDim>
 class Orientation {
  public:
-  Orientation() = default;
+  /// The default orientation is the identity map on directions.
+  /// The bool `is_aligned_` is correspondingly set to `true`.
+  Orientation();
   explicit Orientation(
       std::array<Direction<VolumeDim>, VolumeDim> mapped_directions);
   Orientation(

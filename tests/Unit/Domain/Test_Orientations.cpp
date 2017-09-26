@@ -12,12 +12,15 @@ namespace {
 
 void test_1d() {
   // Test constructors:
+  Orientation<1> default_orientation{};
+  CHECK(default_orientation.is_aligned());
+  CHECK(get_output(default_orientation) == "(+0)");
   Orientation<1> custom1(
       std::array<Direction<1>, 1>{{Direction<1>::upper_xi()}});
-  CHECK(custom1.is_aligned() == true);
+  CHECK(custom1.is_aligned());
   Orientation<1> custom2(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
-  CHECK(custom2.is_aligned() == false);
+  CHECK_FALSE(custom2.is_aligned());
 
   // Test if Orientation can encode a 1D parallel/ antiparallel.
   std::array<Direction<1>, 1> block1_directions{{Direction<1>::upper_xi()}};
@@ -39,7 +42,8 @@ void test_1d() {
   // Test semantics:
   const auto custom_copy = custom1;
   test_copy_semantics(custom2);
-  test_move_semantics(std::move(custom1), custom_copy);
+  // clang-tidy: std::move of trivially-copyable type has no effect.
+  test_move_semantics(std::move(custom1), custom_copy);  // NOLINT
 
   // Test serialization:
   serialize_and_deserialize(custom2);
@@ -47,12 +51,15 @@ void test_1d() {
 
 void test_2d() {
   // Test constructors:
+  Orientation<2> default_orientation{};
+  CHECK(default_orientation.is_aligned());
+  CHECK(get_output(default_orientation) == "(+0, +1)");
   Orientation<2> custom1(std::array<Direction<2>, 2>{
       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
-  CHECK(custom1.is_aligned() == true);
+  CHECK(custom1.is_aligned());
   Orientation<2> custom2(std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}});
-  CHECK(custom2.is_aligned() == false);
+  CHECK_FALSE(custom2.is_aligned());
 
   // Test if Orientation can encode a 2D rotated.
   const auto& upper_xi = Direction<2>::upper_xi();
@@ -122,10 +129,10 @@ void test_2d() {
         expected_neg_xi_neg_eta_segment_ids);
   CHECK(rotated2d_pos_eta_neg_xi.mapped(segment_ids) ==
         expected_pos_eta_neg_xi_segment_ids);
-  CHECK(rotated2d_neg_eta_pos_xi.is_aligned() == false);
-  CHECK(rotated2d_neg_xi_neg_eta.is_aligned() == false);
-  CHECK(rotated2d_pos_eta_neg_xi.is_aligned() == false);
-  CHECK(rotated2d_pos_xi_pos_eta.is_aligned() == true);
+  CHECK_FALSE(rotated2d_neg_eta_pos_xi.is_aligned());
+  CHECK_FALSE(rotated2d_neg_xi_neg_eta.is_aligned());
+  CHECK_FALSE(rotated2d_pos_eta_neg_xi.is_aligned());
+  CHECK(rotated2d_pos_xi_pos_eta.is_aligned());
 
   // The naming convention used in this test:
   //"neg_eta_pos_xi" means that -1 in the host maps to +0,
@@ -143,7 +150,9 @@ void test_2d() {
   // Test semantics:
   const auto rotated_copy = rotated2d_neg_eta_pos_xi;
   test_copy_semantics(rotated2d_pos_eta_neg_xi);
-  test_move_semantics(std::move(rotated2d_neg_eta_pos_xi), rotated_copy);
+  // clang-tidy: std::move of trivially-copyable type has no effect.
+  test_move_semantics(std::move(rotated2d_neg_eta_pos_xi),  // NOLINT
+                      rotated_copy);
 
   // Test serialization:
   serialize_and_deserialize(rotated_copy);
@@ -151,14 +160,17 @@ void test_2d() {
 
 void test_3d() {
   // Test constructors:
+  Orientation<3> default_orientation{};
+  CHECK(default_orientation.is_aligned());
+  CHECK(get_output(default_orientation) == "(+0, +1, +2)");
   Orientation<3> custom1(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
        Direction<3>::upper_zeta()}});
-  CHECK(custom1.is_aligned() == true);
+  CHECK(custom1.is_aligned());
   Orientation<3> custom2(std::array<Direction<3>, 3>{
       {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
        Direction<3>::lower_zeta()}});
-  CHECK(custom2.is_aligned() == false);
+  CHECK_FALSE(custom2.is_aligned());
 
   // Test if Orientation can encode a 3D Flipped.
   const auto& upper_xi = Direction<3>::upper_xi();
@@ -186,9 +198,9 @@ void test_3d() {
   CHECK(custom_orientation.mapped(2) == 2);
   CHECK(custom_orientation.mapped(direction) == direction.opposite());
   CHECK(custom_orientation.mapped(segment_ids) == flipped_ids);
-  CHECK(custom_orientation.is_aligned() == false);
+  CHECK_FALSE(custom_orientation.is_aligned());
   Orientation<3> aligned_orientation(block_directions1, block_directions1);
-  CHECK(aligned_orientation.is_aligned() == true);
+  CHECK(aligned_orientation.is_aligned());
   CHECK(get_output(custom_orientation) == "(-0, -1, -2)");
   CHECK(get_output(aligned_orientation) == "(+0, +1, +2)");
 
@@ -199,7 +211,8 @@ void test_3d() {
   // Test semantics:
   const auto custom_copy = custom_orientation;
   test_copy_semantics(aligned_orientation);
-  test_move_semantics(std::move(custom_orientation), custom_copy);
+  // clang-tidy: std::move of trivially-copyable type has no effect.
+  test_move_semantics(std::move(custom_orientation), custom_copy);  // NOLINT
 
   // Test serialzation:
   serialize_and_deserialize(custom2);
