@@ -27,7 +27,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValue",
           u[i.offset()] = exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
         }
         const DataVector u_lin = linearize(u, extents);
-        int n_pts = extents.product();
+        size_t n_pts = extents.product();
         double sum = std::accumulate(u_lin.begin(), u_lin.end(), 0.0);
         CHECK(sum / n_pts == approx(mean_value(u, extents)));
       }

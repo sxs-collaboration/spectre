@@ -46,10 +46,14 @@ inline void operator|(er& p, std::array<T, N>& a) {  // NOLINT
 /// \warning This does not work with custom hash functions that have state
 template <typename K, typename V, typename H>
 inline void pup(PUP::er& p, std::unordered_map<K, V, H>& m) {  // NOLINT
-  int number_elem = PUP_stl_container_size(p, m);
+  // The return type of PUP_stl_container_size changed in Charm 6.8
+  // from int to size_t.  Once 6.8 is standard this cast should be
+  // removed.  clang-tidy: Wants auto with cast.  Cast is temporary.
+  size_t number_elem =  // NOLINT
+      static_cast<size_t>(PUP_stl_container_size(p, m));
 
   if (p.isUnpacking()) {
-    for (int i = 0; i < number_elem; ++i) {
+    for (size_t i = 0; i < number_elem; ++i) {
       std::pair<K, V> kv;
       p | kv;
       m.emplace(std::move(kv));
@@ -73,10 +77,14 @@ inline void operator|(er& p, std::unordered_map<K, V, H>& m) {  // NOLINT
 /// Serialization of std::unordered_set for Charm++
 template <typename T>
 inline void pup(PUP::er& p, std::unordered_set<T>& s) {  // NOLINT
-  int number_elem = PUP_stl_container_size(p, s);
+  // The return type of PUP_stl_container_size changed in Charm 6.8
+  // from int to size_t.  Once 6.8 is standard this cast should be
+  // removed.  clang-tidy: Wants auto with cast.  Cast is temporary.
+  size_t number_elem =  // NOLINT
+      static_cast<size_t>(PUP_stl_container_size(p, s));
 
   if (p.isUnpacking()) {
-    for (int i = 0; i < number_elem; ++i) {
+    for (size_t i = 0; i < number_elem; ++i) {
       T element;
       p | element;
       s.emplace(std::move(element));
