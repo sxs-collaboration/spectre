@@ -16,7 +16,6 @@ configure_file(
 
 string(
     REGEX REPLACE "<CMAKE_CXX_COMPILER>"
-    "${CMAKE_BINARY_DIR}/WrapLinker.sh <CMAKE_CXX_COMPILER> \
-${CMAKE_BINARY_DIR}/Informer/InfoFromBuild.cpp"
+    "${CMAKE_BINARY_DIR}/WrapLinker.sh <CMAKE_CXX_COMPILER>"
     CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}"
 )
