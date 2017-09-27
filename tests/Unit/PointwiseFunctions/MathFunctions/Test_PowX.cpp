@@ -33,7 +33,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
   }
 
   // Check several more powers
-  for (size_t i = 2; i < 5; ++i) {
+  for (int i = 2; i < 5; ++i) {
     MathFunctions::PowX power(i);
     for (size_t j = 0; j < 3; ++j) {
       const auto value = gsl::at(test_values, j);
