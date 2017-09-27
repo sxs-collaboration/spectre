@@ -144,8 +144,6 @@ found_test_case=`
 find $commit_files -name '*.[ch]pp' \
     | xargs grep --with-filename -n "^TEST_CASE"`
 if [[ $found_test_case != "" ]]; then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
     echo "$found_test_case"
     found_error=1
@@ -157,8 +155,6 @@ found_bad_approx=`
 find $commit_files -name '*.[ch]pp' \
     | xargs grep --with-filename -n "Approx("`
 if [[ $found_bad_approx != "" ]]; then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     printf "Found occurrences of Approx, must use approx from " \
            "SPECTRE_ROOT/tests/Unit/TestHelpers.hpp instead:\n"
     echo "$found_bad_approx"
@@ -171,8 +167,6 @@ found_bad_doxygen_syntax=`
 find $commit_files -type f -name '*.[ch]pp' \
     | xargs grep --with-filename -n '/\*\! '`
 if [[ $found_bad_doxygen_syntax != "" ]]; then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     printf "Found occurrences of bad Doxygen syntax: /*! STUFF\n"
     echo $found_bad_doxygen_syntax | \
         GREP_COLOR='1;37;41' grep -E '\/\*\!.*' $color_option
@@ -186,8 +180,6 @@ found_incorrect_list_name=`
 find $commit_files -type f -name '*.[ch]pp' \
     | xargs grep --with-filename -n 'Ls'`
 if [[ $found_incorrect_list_name != "" ]]; then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     printf "Found occurrences of 'Ls', which is usually short for List\n"
     echo "$found_incorrect_list_name"
     found_error=1
@@ -199,8 +191,6 @@ found_enable_if=`
 find $commit_files -type f -name '*.[ch]pp' \
     | xargs grep --with-filename -n 'enable_if'`
 if [[ $found_enable_if != "" ]]; then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
     printf "Found occurrences of 'std::enable_if', prefer 'Requires'\n"
     echo "$found_enable_if"
     found_error=1
@@ -208,14 +198,14 @@ fi
 
 ###############################################################################
 # Check for pragma once in all hearder files
-found_no_pragma_once=`
-find $commit_files -type f -name '*.hpp' -not -path './build*' \
-    | xargs grep -L "^#pragma once$"`
-if [[ $found_no_pragma_once != "" ]]; then
-    echo "This script can be run locally from any source dir using:"
-    echo "SPECTRE_ROOT/tools/CheckFiles.sh"
+found_no_pragma_once=()
+for file in $commit_files ; do
+    [[ ${file} =~ hpp$ ]] && grep -v '^#pragma once$' "${file}" && \
+        found_no_pragma_once+=("${file}")
+done
+if [[ ${#found_no_pragma_once[@]} -ne 0 ]]; then
     printf "Did not find '#pragma once' in these header files:\n"
-    echo "$found_no_pragma_once"
+    printf '%s\n' "${found_no_pragma_once[@]}"
     found_error=1
 fi
 
