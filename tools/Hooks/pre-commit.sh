@@ -197,10 +197,10 @@ if [[ $found_enable_if != "" ]]; then
 fi
 
 ###############################################################################
-# Check for pragma once in all hearder files
+# Check for pragma once in all header files
 found_no_pragma_once=()
 for file in $commit_files ; do
-    [[ ${file} =~ hpp$ ]] && grep -v '^#pragma once$' "${file}" && \
+    [[ ${file} =~ hpp$ ]] && !(grep -x -q '^#pragma once$' "${file}") && \
         found_no_pragma_once+=("${file}")
 done
 if [[ ${#found_no_pragma_once[@]} -ne 0 ]]; then
