@@ -11,6 +11,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 // Much of this is taken from
@@ -28,18 +29,23 @@ namespace MakeArray_detail {
 /// is no risk of copy-after-move
 template <std::size_t size, typename T, std::size_t... indexes>
 SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size>
-make_array_impl(T&& value,
-                std::integer_sequence<size_t, indexes...> /* unused */) {
-  return std::array<typename std::decay<T>::type, size>{
+    // clang-format off
+make_array_impl(
+    T&& value, std::integer_sequence<size_t, indexes...> /* unused */)
+    noexcept(noexcept(std::array<std::decay_t<T>, size>{
+    {(static_cast<void>(indexes), value)..., std::forward<T>(value)}})) {
+  return std::array<std::decay_t<T>, size>{
       {(static_cast<void>(indexes), value)..., std::forward<T>(value)}};
 }
+// clang-format on
 }  // namespace MakeArray_detail
 
 /// \cond HIDDEN_SYMBOLS
 /// Construct empty array specialization
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, 0> make_array(
-    std::integral_constant<std::size_t, 0> /* unused */, T&& /* unused */) {
+    std::integral_constant<std::size_t, 0> /* unused */,
+    T&& /* unused */) noexcept {
   return std::array<std::decay_t<T>, 0>{{}};
 }
 /// \endcond
@@ -49,11 +55,14 @@ SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, 0> make_array(
 /// helper function to make make_array<size_t> a simple call for users.
 template <std::size_t size, typename T>
 SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
-    std::integral_constant<std::size_t, size> /* unused */, T&& value) {
+    // clang-format off
+    std::integral_constant<std::size_t, size> /* unused */, T&& value)
+    noexcept(noexcept(MakeArray_detail::make_array_impl<size>(
+    std::forward<T>(value), std::make_index_sequence<size - 1>{}))) {
   return MakeArray_detail::make_array_impl<size>(
       std::forward<T>(value), std::make_index_sequence<size - 1>{});
 }
-
+// clang-format on
 /*!
  * \ingroup Utilities
  * \brief Helper class to initialize a std::array.
@@ -61,8 +70,9 @@ SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
  * \tparam size the length of the array
  */
 template <std::size_t size, typename T>
-SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
-    T&& value) {
+SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size>
+make_array(T&& value) noexcept(noexcept(make_array(
+    std::integral_constant<std::size_t, size>{}, std::forward<T>(value)))) {
   return make_array(std::integral_constant<std::size_t, size>{},
                     std::forward<T>(value));
 }
@@ -75,18 +85,23 @@ SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
 template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr std::array<typename std::decay_t<T>,
                                            sizeof...(V) + 1>
-make_array(T&& t, V&&... values) {
+make_array(T&& t, V&&... values) noexcept(
+    noexcept(std::array<std::decay_t<T>, sizeof...(V) + 1>{
+        {std::forward<T>(t), std::forward<V>(values)...}})) {
   static_assert(
-      cpp17::conjunction_v<std::is_same<std::decay_t<T>, std::decay_t<V>>...>,
+      tmpl2::flat_all_v<cpp17::is_same_v<std::decay_t<T>, std::decay_t<V>>...>,
       "all types to make_array(...) must be the same");
-  return std::array<typename std::decay<T>::type, sizeof...(V) + 1>{
+  return std::array<std::decay_t<T>, sizeof...(V) + 1>{
       {std::forward<T>(t), std::forward<V>(values)...}};
 }
 
 namespace MakeArray_detail {
 template <typename T, size_t size, typename Seq, size_t... indexes>
 std::array<T, size> make_array_from_iterator_impl(
-    Seq&& s, std::integer_sequence<size_t, indexes...> /*meta*/) {
+    Seq&& s,
+    std::integer_sequence<
+        size_t, indexes...> /*meta*/) noexcept(noexcept(std::array<T, size>{
+    {static_cast<T>(*(std::begin(s) + indexes))...}})) {
   return std::array<T, size>{{static_cast<T>(*(std::begin(s) + indexes))...}};
 }
 }  // namespace MakeArray_detail
@@ -100,7 +115,9 @@ std::array<T, size> make_array_from_iterator_impl(
  * \tparam size the size of the created array
  */
 template <typename T, size_t size, typename Seq>
-constexpr std::array<T, size> make_array(Seq&& seq) {
+constexpr std::array<T, size> make_array(Seq&& seq) noexcept(
+    noexcept(MakeArray_detail::make_array_from_iterator_impl<T, size>(
+        std::forward<Seq>(seq), std::make_index_sequence<size>{}))) {
   CASSERT(size <= seq.size(),
           "The sequence size must be at least as large as the array being "
           "created from it.");

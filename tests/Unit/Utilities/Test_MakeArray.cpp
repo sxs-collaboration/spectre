@@ -17,6 +17,35 @@ struct NonCopyable {
 };
 }  // namespace
 
+class DoesNotThrow {
+ public:
+  DoesNotThrow() noexcept = default;
+  DoesNotThrow(const DoesNotThrow&) noexcept = default;
+  DoesNotThrow& operator=(const DoesNotThrow&) noexcept = default;
+  DoesNotThrow(DoesNotThrow&&) noexcept = default;
+  DoesNotThrow& operator=(DoesNotThrow&&) noexcept = default;
+  ~DoesNotThrow() = default;
+};
+class DoesThrow {
+ public:
+  DoesThrow() noexcept(false);
+  DoesThrow(const DoesThrow&) noexcept(false);
+  DoesThrow& operator=(const DoesThrow&) noexcept(false);
+  DoesThrow(DoesThrow&&) noexcept(false);
+  DoesThrow& operator=(DoesThrow&&) noexcept(false);
+  ~DoesThrow() = default;
+};
+
+static_assert(noexcept(make_array<2>(0)),
+              "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
+              "make_array.");
+static_assert(noexcept(make_array<2>(DoesNotThrow{})),
+              "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
+              "make_array.");
+static_assert(not noexcept(make_array<2>(DoesThrow{})),
+              "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
+              "make_array.");
+
 SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   constexpr auto same_array = make_array<4>(7.8);
   CHECK((same_array == std::array<double, 4>{{7.8, 7.8, 7.8, 7.8}}));
