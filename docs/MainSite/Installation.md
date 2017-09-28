@@ -40,7 +40,7 @@ See LICENSE.txt for details.
 * [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
 * [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
 
-#### Using Docker to Compile SpECTRE
+## Using Docker to obtain a SpECTRE environment
 
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
@@ -110,8 +110,15 @@ Notes:
     inside the container*. So if your source paths inside and outside the
     container are different, commands like `git commit` run *from
     outside the container* will die with `No such file or directory`.
+  * To compile with clang, the cmake command is
+```
+    cmake -D CMAKE_CXX_COMPILER=clang++ \
+          -D CMAKE_C_COMPILER=clang \
+          -D CMAKE_Fortran_COMPILER=gfortran \
+          -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
+```
 
-#### Installing Dependencies Using Spack
+## Using Spack to set up a SpECTRE environment
 
 SpECTRE's dependencies can be installed with
 [Spack](https://github.com/LLNL/spack), a package manager tailored for HPC use.
@@ -219,7 +226,7 @@ Follow these steps:
 * Inside the SpECTRE build directory, use `make list` to see all available
   targets. This list can be refreshed by running CMake again.
 
-### Code Coverage Analysis
+## Code Coverage Analysis
 
 For any coverage analysis you will need to have LCOV installed on the system.
 For documentation coverage analysis you will also need to install
