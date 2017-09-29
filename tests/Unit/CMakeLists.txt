@@ -7,6 +7,7 @@ set(SPECTRE_TESTS "TestFramework.cpp")
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
+add_subdirectory(ApparentHorizons)
 add_subdirectory(DataStructures)
 add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
@@ -32,6 +33,7 @@ add_executable(
 
 target_link_libraries(
   ${executable}
+  ApparentHorizons
   CoordinateMaps
   Domain
   IO
