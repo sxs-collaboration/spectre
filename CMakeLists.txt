@@ -3,7 +3,8 @@
 
 cmake_minimum_required(VERSION 3.3.2)
 
-project(SpECTRE VERSION 0.0.0 LANGUAGES CXX C)
+# Fortran below is needed for SPHEREPACK.
+project(SpECTRE VERSION 0.0.0 LANGUAGES CXX C Fortran)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -55,6 +56,7 @@ enable_testing(true)
 include(SpectreAddCatchTests)
 include(SetupCompilationFailureTests)
 
+include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR})
 
@@ -63,6 +65,7 @@ include_directories(SYSTEM ${CMAKE_BINARY_DIR})
 include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src)
 include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src/Parallel)
 
+add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(tests)
 
