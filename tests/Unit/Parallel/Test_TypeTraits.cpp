@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Parallel/TypeTraits.hpp"
-#include "tests/Unit/RunTests.hpp"
+#include "tests/Unit/Parallel/ParallelTestChares.hpp"
 
 class PupableClass {
  public:
@@ -12,41 +12,51 @@ inline void operator|(PUP::er&, PupableClass&);  // NOLINT
 
 class NonpupableClass {};
 
-static_assert(Parallel::is_array_proxy<CProxy_TestArrayChare>::value,
-              "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<CProxy_TestChare>::value,
-              "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<CProxy_TestGroupChare>::value,
-              "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<CProxy_TestNodeGroupChare>::value,
-              "Failed testing type trait is_array_proxy");
+namespace {
+struct MV {};
+}  // namespace
 
-static_assert(not Parallel::is_chare_proxy<CProxy_TestArrayChare>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(Parallel::is_chare_proxy<CProxy_TestChare>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(not Parallel::is_chare_proxy<CProxy_TestGroupChare>::value,
-              "Failed testing type trait is_chare_proxy");
-static_assert(not Parallel::is_chare_proxy<CProxy_TestNodeGroupChare>::value,
-              "Failed testing type trait is_chare_proxy");
+static_assert(Parallel::is_array_proxy<CProxy_TestArrayChare<MV>>::value,
+              "Failed testing type trait is_array_proxy");
+static_assert(not Parallel::is_array_proxy<CProxy_TestChare<MV>>::value,
+              "Failed testing type trait is_array_proxy");
+static_assert(not Parallel::is_array_proxy<CProxy_TestGroupChare<MV>>::value,
+              "Failed testing type trait is_array_proxy");
+static_assert(
+    not Parallel::is_array_proxy<CProxy_TestNodeGroupChare<MV>>::value,
+    "Failed testing type trait is_array_proxy");
 
-static_assert(not Parallel::is_group_proxy<CProxy_TestArrayChare>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(not Parallel::is_group_proxy<CProxy_TestChare>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(Parallel::is_group_proxy<CProxy_TestGroupChare>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(not Parallel::is_group_proxy<CProxy_TestNodeGroupChare>::value,
-              "Failed testing type trait is_group_proxy");
+static_assert(not Parallel::is_chare_proxy<CProxy_TestArrayChare<MV>>::value,
+              "Failed testing type trait is_chare_proxy");
+static_assert(Parallel::is_chare_proxy<CProxy_TestChare<MV>>::value,
+              "Failed testing type trait is_chare_proxy");
+static_assert(not Parallel::is_chare_proxy<CProxy_TestGroupChare<MV>>::value,
+              "Failed testing type trait is_chare_proxy");
+static_assert(
+    not Parallel::is_chare_proxy<CProxy_TestNodeGroupChare<MV>>::value,
+    "Failed testing type trait is_chare_proxy");
 
-static_assert(not Parallel::is_node_group_proxy<CProxy_TestArrayChare>::value,
+static_assert(not Parallel::is_group_proxy<CProxy_TestArrayChare<MV>>::value,
+              "Failed testing type trait is_group_proxy");
+static_assert(not Parallel::is_group_proxy<CProxy_TestChare<MV>>::value,
+              "Failed testing type trait is_group_proxy");
+static_assert(Parallel::is_group_proxy<CProxy_TestGroupChare<MV>>::value,
+              "Failed testing type trait is_group_proxy");
+static_assert(
+    not Parallel::is_group_proxy<CProxy_TestNodeGroupChare<MV>>::value,
+    "Failed testing type trait is_group_proxy");
+
+static_assert(
+    not Parallel::is_node_group_proxy<CProxy_TestArrayChare<MV>>::value,
+    "Failed testing type trait is_node_group_proxy");
+static_assert(not Parallel::is_node_group_proxy<CProxy_TestChare<MV>>::value,
               "Failed testing type trait is_node_group_proxy");
-static_assert(not Parallel::is_node_group_proxy<CProxy_TestChare>::value,
-              "Failed testing type trait is_node_group_proxy");
-static_assert(not Parallel::is_node_group_proxy<CProxy_TestGroupChare>::value,
-              "Failed testing type trait is_node_group_proxy");
-static_assert(Parallel::is_node_group_proxy<CProxy_TestNodeGroupChare>::value,
-              "Failed testing type trait is_node_group_proxy");
+static_assert(
+    not Parallel::is_node_group_proxy<CProxy_TestGroupChare<MV>>::value,
+    "Failed testing type trait is_node_group_proxy");
+static_assert(
+    Parallel::is_node_group_proxy<CProxy_TestNodeGroupChare<MV>>::value,
+    "Failed testing type trait is_node_group_proxy");
 
 /// [has_pup_member_example]
 static_assert(Parallel::has_pup_member<PupableClass>::value,

@@ -31,8 +31,14 @@ add_executable(
 )
 
 target_link_libraries(
-    ${executable}
-    ${SPECTRE_LIBRARIES}
+  ${executable}
+  CoordinateMaps
+  Domain
+  IO
+  NumericalAlgorithms
+  PointwiseFunctions
+  Time
+  ${SPECTRE_LIBRARIES}
 )
 
 spectre_add_catch_tests(${executable})

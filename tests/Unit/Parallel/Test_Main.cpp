@@ -14,17 +14,22 @@
 #include "Parallel/Main.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/Parallel/ParallelTestChares.hpp"
+#include "tests/Unit/Parallel/ParallelTestClasses.hpp"
 #include "tests/Unit/Parallel/ParallelTestTentacles.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 #include "tests/Unit/Parallel/Test_Main.decl.h"
 
-void setup_error_handling() {
+ void setup_error_handling() {
   std::set_terminate(
       []() { Parallel::abort("Called terminate. Aborting..."); });
   enable_floating_point_exceptions();
   Parallel::printf("Calling setup_error_handling on processor %i\n",
                    Parallel::my_proc());
+}
+
+void register_derived_classes_for_pup() {
+  PUPable_reg(Test_Classes::DerivedInPupStlCpp11);
 }
 
 // clang-tidy: may throw an exception tat cannot be caught [cert-err58-cpp]
@@ -89,3 +94,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.Main", "[Unit][Parallel]") {
 #include "tests/Unit/Parallel/ParallelTestChares.def.h"
 
 #include "tests/Unit/Parallel/Test_Main.def.h"
+
+/// \cond
+// clang-tidy: possibly throwing constructor static storage
+// clang-tidy: false positive: redundant declaration
+PUP::able::PUP_ID Test_Classes::DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
+/// \endcond
