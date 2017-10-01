@@ -3,22 +3,27 @@
 
 #include <catch.hpp>
 
-#include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Numerical/LinearOperators/Transpose.hpp"
-#include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-struct Data1 : db::DataBoxTag {
-  using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString_t label = "Data1";
+
+template <size_t Dim>
+struct Var1 {
+  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
 };
-struct Data2 : db::DataBoxTag {
+
+struct Var2 {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString_t label = "Data2";
 };
+
+template <size_t Dim>
+using two_vars = typelist<Var1<Dim>, Var2>;
+
+template <size_t Dim>
+using one_var = typelist<Var1<Dim>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
@@ -40,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
     }
   }
   /// [return_transpose_example]
-  std::fill(transposed_data.begin(),transposed_data.end(),0.0);
+  std::fill(transposed_data.begin(), transposed_data.end(), 0.0);
   DataVector ref_to_data;
   ref_to_data.set_data_ref(&data);
   DataVector ref_to_transposed_data;
@@ -59,14 +64,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   }
 
   /// [transpose_by_not_null_example]
-  const size_t n_grid_pts = 16;
-  Variables<typelist<Data1, Data2>> variables(n_grid_pts, 0.);
+  const size_t chunk_size_vars = 8;
+  const size_t n_grid_pts = 2 * chunk_size_vars;
+  Variables<two_vars<2>> variables(n_grid_pts, 0.);
   for (size_t i = 0; i < variables.size(); ++i) {
     // clang-tidy: pointer arithmetic
     variables.data()[i] = i * i;  // NOLINT
   }
-  const size_t chunk_size_vars = 8;
-  const size_t number_of_chunks_vars = 4;
+  const size_t number_of_chunks_vars = variables.size() / chunk_size_vars;
   auto transposed_vars = variables;
   transpose(variables, chunk_size_vars, number_of_chunks_vars,
             make_not_null(&transposed_vars));
@@ -80,10 +85,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   /// [transpose_by_not_null_example]
 
   /// [partial_transpose_example]
-  Variables<typelist<Data1>> partial_vars(n_grid_pts, 0.);
-  partial_vars.template get<Data1>() = variables.template get<Data1>();
-  Variables<typelist<Data1>> partial_transpose(n_grid_pts, 0.);
-  const size_t partial_number_of_chunks = number_of_chunks_vars / 2;
+  Variables<one_var<2>> partial_vars(n_grid_pts, 0.);
+  partial_vars.template get<Var1<2>>() = variables.template get<Var1<2>>();
+  Variables<one_var<2>> partial_transpose(n_grid_pts, 0.);
+  const size_t partial_number_of_chunks = 2*number_of_chunks_vars / 3;
   transpose(variables, chunk_size_vars, partial_number_of_chunks,
             make_not_null(&partial_transpose));
   for (size_t i = 0; i < chunk_size_vars; ++i) {
@@ -98,4 +103,19 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
     }
   }
   /// [partial_transpose_example]
+
+  const auto another_partial_transpose =
+      transpose<Variables<two_vars<2>>, Variables<one_var<2>>>(
+          variables, chunk_size_vars, partial_number_of_chunks);
+  for (size_t i = 0; i < chunk_size_vars; ++i) {
+    for (size_t j = 0; j < partial_number_of_chunks; ++j) {
+      // clang-tidy: pointer arithmetic
+      CHECK(another_partial_transpose
+                .data()[j + partial_number_of_chunks * i] ==  // NOLINT
+            variables.data()[i + chunk_size_vars * j]);       // NOLINT
+      CHECK(another_partial_transpose
+                .data()[j + partial_number_of_chunks * i] ==  // NOLINT
+            partial_vars.data()[i + chunk_size_vars * j]);    // NOLINT
+    }
+  }
 }
