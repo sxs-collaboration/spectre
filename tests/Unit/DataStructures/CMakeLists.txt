@@ -6,6 +6,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/Test_DataVector.cpp
     DataStructures/Test_Index.cpp
     DataStructures/Test_IndexIterator.cpp
+    DataStructures/Test_MakeWithValue.cpp
     DataStructures/Test_Matrix.cpp
     DataStructures/Test_SliceIterator.cpp
     DataStructures/Test_StripeIterator.cpp

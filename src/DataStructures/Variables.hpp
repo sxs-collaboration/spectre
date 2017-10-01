@@ -9,6 +9,7 @@
 #include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -398,3 +399,35 @@ bool operator!=(const Variables<TagsList>& lhs,
                 const Variables<TagsList>& rhs) {
   return not(lhs == rhs);
 }
+
+namespace MakeWithValueImpls {
+template <typename TagList>
+struct MakeWithValueImpl<Variables<TagList>, DataVector> {
+  /// \brief Returns a Variables whose DataVectors are the same size as `input`,
+  /// with each element equal to `value`.
+  static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(const DataVector& input,
+                                                        const double value) {
+    return Variables<TagList>(input.size(), value);
+  }
+};
+
+template <typename TagList, typename... Structure>
+struct MakeWithValueImpl<Variables<TagList>, Tensor<DataVector, Structure...>> {
+  /// \brief Returns a Variables whose DataVectors are the same size as `input`,
+  /// with each element equal to `value`.
+  static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
+      const Tensor<DataVector, Structure...>& input, const double value) {
+    return Variables<TagList>(input.begin()->size(), value);
+  }
+};
+
+template <typename TagListOut, typename TagListIn>
+struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
+  /// \brief Returns a Variables whose DataVectors are the same size as `input`,
+  /// with each element equal to `value`.
+  static SPECTRE_ALWAYS_INLINE Variables<TagListOut> apply(
+      const Variables<TagListIn>& input, const double value) {
+    return Variables<TagListOut>(input.number_of_grid_points(), value);
+  }
+};
+}  // namespace MakeWithValueImpls

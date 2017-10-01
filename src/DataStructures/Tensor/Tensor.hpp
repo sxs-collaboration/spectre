@@ -9,6 +9,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -494,3 +495,66 @@ std::ostream& operator<<(std::ostream& os,
      << "\n     Multiplicity: " << x.multiplicity(i) << " Index: " << i;
   return os;
 }
+
+namespace MakeWithValueImpls {
+template <typename... Structure>
+struct MakeWithValueImpl<Tensor<DataVector, Structure...>, DataVector> {
+  /// \brief Returns a Tensor whose DataVectors are the same size as `input`,
+  /// with each element equal to `value`.
+  static SPECTRE_ALWAYS_INLINE Tensor<DataVector, Structure...> apply(
+      const DataVector& input, const double value) {
+    return Tensor<DataVector, Structure...>(input.size(), value);
+  }
+};
+
+template <typename... Structure>
+struct MakeWithValueImpl<DataVector, Tensor<DataVector, Structure...>> {
+  /// \brief Returns a DataVector with the same size as the DataVectors of
+  /// `input`, with each element equal to `value`.
+  static SPECTRE_ALWAYS_INLINE DataVector
+  apply(const Tensor<DataVector, Structure...>& input, const double value) {
+    return DataVector(input.begin()->size(), value);
+  }
+};
+
+template <typename... StructureOut, typename... StructureIn>
+struct MakeWithValueImpl<Tensor<DataVector, StructureOut...>,
+                         Tensor<DataVector, StructureIn...>> {
+  /// \brief Returns a Tensor whose DataVectors are the same size as the
+  /// DataVectors of `input`, with each element equal to `value`.
+  static SPECTRE_ALWAYS_INLINE Tensor<DataVector, StructureOut...> apply(
+      const Tensor<DataVector, StructureIn...>& input, const double value) {
+    return Tensor<DataVector, StructureOut...>(input.begin()->size(), value);
+  }
+};
+
+template <typename... Structure>
+struct MakeWithValueImpl<Tensor<double, Structure...>, double> {
+  /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
+  /// is ignored).
+  static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
+      const double& /*input*/, const double value) {
+    return Tensor<double, Structure...>(value);
+  }
+};
+
+template <typename... Structure>
+struct MakeWithValueImpl<double, Tensor<double, Structure...>> {
+  /// \brief Returns a double initialized to `value` (`input` is ignored)
+  static SPECTRE_ALWAYS_INLINE double apply(
+      const Tensor<double, Structure...>& /*input*/, const double value) {
+    return value;
+  }
+};
+
+template <typename... StructureOut, typename... StructureIn>
+struct MakeWithValueImpl<Tensor<double, StructureOut...>,
+                         Tensor<double, StructureIn...>> {
+  /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
+  /// is ignored).
+  static SPECTRE_ALWAYS_INLINE Tensor<double, StructureOut...> apply(
+      const Tensor<double, StructureIn...>& /*input*/, const double value) {
+    return Tensor<double, StructureOut...>(value);
+  }
+};
+}  // namespace MakeWithValueImpls
