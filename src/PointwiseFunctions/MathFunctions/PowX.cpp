@@ -6,9 +6,9 @@
 #include <cmath>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MakeWithValue.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/MakeArithmeticValue.hpp"
 
 namespace MathFunctions {
 
@@ -45,14 +45,14 @@ T PowX::apply_call_operator(const T& x) const noexcept {
 
 template <typename T>
 T PowX::apply_first_deriv(const T& x) const noexcept {
-  return 0 == power_ ? make_arithmetic_value(x, 0.0)
+  return 0 == power_ ? make_with_value<T>(x, 0.0)
                      : power_ * pow(x, power_ - 1);
 }
 
 template <typename T>
 T PowX::apply_second_deriv(const T& x) const noexcept {
   return 0 == power_ or 1 == power_
-             ? make_arithmetic_value(x, 0.0)
+             ? make_with_value<T>(x, 0.0)
              : power_ * (power_ - 1) * pow(x, power_ - 2);
 }
 }  // namespace MathFunctions

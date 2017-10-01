@@ -10,9 +10,9 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Utilities/MakeArithmeticValue.hpp"
 #include "Utilities/Requires.hpp"
 
 namespace determinant_and_inverse_detail {
@@ -36,7 +36,7 @@ struct DetAndInverseImpl<Symm, Index0, Index1, Requires<Index0::dim == 1>> {
     const T& t00 = tensor.template get<0, 0>();
     // inv is non-const so that it can be moved into the std::pair:
     Tensor<T, Symm, inverse_indices<Index0, Index1>> inv{
-        make_arithmetic_value(t00, 1.0) / t00};
+        make_with_value<T>(t00, 1.0) / t00};
     return std::make_pair(Scalar<T>{t00}, std::move(inv));
   }
 };
@@ -54,7 +54,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
     const T& t11 = tensor.template get<1, 1>();
     // det is non-const so that it can be moved into the std::pair:
     Scalar<T> det{t00 * t11 - t01 * t10};
-    const T one_over_det = make_arithmetic_value(det.get(), 1.0) / det.get();
+    const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>> inv{};
     inv.template get<0, 0>() = t11 * one_over_det;
     inv.template get<0, 1>() = -t01 * one_over_det;
@@ -75,7 +75,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
     const T& t11 = tensor.template get<1, 1>();
     // det is non-const so that it can be moved into the std::pair:
     Scalar<T> det{t00 * t11 - t01 * t01};
-    const T one_over_det = make_arithmetic_value(det.get(), 1.0) / det.get();
+    const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>> inv{};
     inv.template get<0, 0>() = t11 * one_over_det;
     inv.template get<0, 1>() = -t01 * one_over_det;
@@ -106,7 +106,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
     const T c = t10 * t21 - t11 * t20;
     // det is non-const so that it can be moved into the std::pair:
     Scalar<T> det{t00 * a + t01 * b + t02 * c};
-    const T one_over_det = make_arithmetic_value(det.get(), 1.0) / det.get();
+    const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>> inv{};
     inv.template get<0, 0>() = a * one_over_det;
     inv.template get<0, 1>() = (t21 * t02 - t22 * t01) * one_over_det;
@@ -138,7 +138,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
     const T c = t01 * t12 - t11 * t02;
     // det is non-const so that it can be moved into the std::pair:
     Scalar<T> det{t00 * a + t01 * b + t02 * c};
-    const T one_over_det = make_arithmetic_value(det.get(), 1.0) / det.get();
+    const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>> inv{};
     inv.template get<0, 0>() = (t11 * t22 - t12 * t12) * one_over_det;
     inv.template get<0, 1>() = (t12 * t02 - t22 * t01) * one_over_det;
@@ -208,7 +208,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
     T& x11 = inv.template get<3, 3>();
 
     const T det_p = p00 * p11 - p01 * p10;
-    const T one_over_det_p = make_arithmetic_value(det_p, 1.0) / det_p;
+    const T one_over_det_p = make_with_value<T>(det_p, 1.0) / det_p;
     const T inv_p00 = p11 * one_over_det_p;
     const T inv_p01 = -p01 * one_over_det_p;
     const T inv_p10 = -p10 * one_over_det_p;
@@ -231,7 +231,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
 
     const T det_inv_x = inv_x00 * inv_x11 - inv_x01 * inv_x10;
     const T one_over_det_inv_x =
-        make_arithmetic_value(det_inv_x, 1.0) / det_inv_x;
+        make_with_value<T>(det_inv_x, 1.0) / det_inv_x;
     x00 = inv_x11 * one_over_det_inv_x;
     x01 = -inv_x01 * one_over_det_inv_x;
     x10 = -inv_x10 * one_over_det_inv_x;
@@ -288,7 +288,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
     T& x11 = inv.template get<3, 3>();
 
     const T det_p = p00 * p11 - p01 * p01;
-    const T one_over_det_p = make_arithmetic_value(det_p, 1.0) / det_p;
+    const T one_over_det_p = make_with_value<T>(det_p, 1.0) / det_p;
     const T inv_p00 = p11 * one_over_det_p;
     const T inv_p01 = -p01 * one_over_det_p;
     const T inv_p11 = p00 * one_over_det_p;
@@ -304,7 +304,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
 
     const T det_inv_x = inv_x00 * inv_x11 - inv_x01 * inv_x01;
     const T one_over_det_inv_x =
-        make_arithmetic_value(det_inv_x, 1.0) / det_inv_x;
+        make_with_value<T>(det_inv_x, 1.0) / det_inv_x;
     x00 = inv_x11 * one_over_det_inv_x;
     x01 = -inv_x01 * one_over_det_inv_x;
     x11 = inv_x00 * one_over_det_inv_x;
