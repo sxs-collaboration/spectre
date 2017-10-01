@@ -10,7 +10,6 @@ set(UTILITIES_TESTS
     Utilities/Test_FileSystem.cpp
     Utilities/Test_FractionUtilities.cpp
     Utilities/Test_Gsl.cpp
-    Utilities/Test_MakeArithmeticValue.cpp
     Utilities/Test_MakeArray.cpp
     Utilities/Test_Math.cpp
     Utilities/Test_Overloader.cpp

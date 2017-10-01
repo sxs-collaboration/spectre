@@ -12,7 +12,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArithmeticValue.hpp"
 #include "Utilities/Tuple.hpp"
 
 /// Contains all embedding maps.
