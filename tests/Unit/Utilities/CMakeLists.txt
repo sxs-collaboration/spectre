@@ -11,6 +11,7 @@ set(UTILITIES_TESTS
     Utilities/Test_FractionUtilities.cpp
     Utilities/Test_Gsl.cpp
     Utilities/Test_MakeArray.cpp
+    Utilities/Test_MakeVector.cpp
     Utilities/Test_Math.cpp
     Utilities/Test_Overloader.cpp
     Utilities/Test_PrettyType.cpp
