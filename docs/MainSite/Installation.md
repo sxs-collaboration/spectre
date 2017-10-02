@@ -11,7 +11,7 @@ See LICENSE.txt for details.
 * [GCC](https://gcc.gnu.org/) 5.2 or later,
 [Clang](https://clang.llvm.org/) 3.6 or later, or AppleClang 6.0 or later
 * [CMake](https://cmake.org/) 3.3.2 or later
-* [Charm++](http://charm.cs.illinois.edu/) (must be compiled from source)
+* [Charm++](http://charm.cs.illinois.edu/) 6.8 or newer (must be compiled from source)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview)
@@ -71,7 +71,7 @@ To build with the docker image:
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
 4. Cd into /work/charm, and apply the Charm++ patch by
-   running `git apply SPECTRE_ROOT/support/Charm/v6.7.patch`.
+   running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
 5. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
 6. Build SpECTRE with
@@ -176,7 +176,7 @@ Follow these steps:
   * Clone [Charm++](http://charm.cs.illinois.edu/software) into `CHARM_DIR`,
     again a directory of your choice.
   * In `CHARM_DIR`, run
-    `git checkout v6.7.1` to switch to a supported, stable release of Charm++.
+    `git checkout v6.8.0` to switch to a supported, stable release of Charm++.
   * Charm++ is compiled by running
     `./build charm++ ARCH OPTIONS`.
     To figure out the correct target architecture and options, you can simply
@@ -189,7 +189,7 @@ Follow these steps:
   * The SpECTRE repo contains a patch that must be applied to Charm++ *after*
     Charm++ has been compiled. While still in `CHARM_DIR`, apply this patch by
     running
-    `git apply SPECTRE_ROOT/support/Charm/v6.7.patch`.
+    `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
 3.  Return to `SPECTRE_ROOT`, and create a build dir by running
     `mkdir build && cd build`
 4.  Build SpECTRE with

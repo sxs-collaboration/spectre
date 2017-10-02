@@ -1,16 +1,26 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(CHARM_VERSION_REQUIRED 6.8.0)
+
 find_package(Charm REQUIRED)
+
+if(NOT ${CHARM_VERSION} VERSION_EQUAL ${CHARM_VERSION_REQUIRED})
+  message(FATAL_ERROR
+    "Charm++ required version ${CHARM_VERSION_REQUIRED}, "
+    "found ${CHARM_VERSION}")
+endif()
 
 include_directories(SYSTEM "${CHARM_INCLUDE_DIRS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -L${CHARM_LIBRARIES}")
 
 # SpECTRE must be linked with Charm++'s script charmc. In turn, charmc
 # will call your normal compiler, set at charm++ installation time internally.
+# Note: The -pthread is necessary with Charm v6.8 to get linking working
+#       with GCC
 string(
     REGEX REPLACE "<CMAKE_CXX_COMPILER>"
-    "${CHARM_COMPILER} -module DistributedLB -no-charmrun"
+    "${CHARM_COMPILER} -pthread -module DistributedLB -no-charmrun"
     CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
 
 # When building for trace analysis the PAPI counters passed to charmc
