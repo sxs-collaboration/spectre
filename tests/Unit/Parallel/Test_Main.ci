@@ -3,6 +3,7 @@
 
 mainmodule Test_Main {
   initnode void setup_error_handling();
+  initnode void register_derived_classes_for_pup();
   extern module Main;
   extern module ConstGlobalCache;
   extern module ParallelTestChares;

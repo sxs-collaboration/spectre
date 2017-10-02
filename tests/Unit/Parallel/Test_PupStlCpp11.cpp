@@ -3,46 +3,15 @@
 
 #include <catch.hpp>
 
-#include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "tests/Unit/Parallel/ParallelTestClasses.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 enum class eDummyEnum { test1, test2 };
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-struct Base : public PUP::able {
-  // clang-tidy: internal charm++ warnings
-  WRAPPED_PUPable_abstract(Base);  // NOLINT
-};
-#pragma GCC diagnostic pop
 }  // namespace
-
-struct DerivedInPupStlCpp11 : public Base {
-  explicit DerivedInPupStlCpp11(std::vector<double> vec)
-      : vec_(std::move(vec)) {}
-  // clang-tidy: internal charm++ warnings
-  WRAPPED_PUPable_decl_base_template(Base,  // NOLINT
-                                     DerivedInPupStlCpp11);
-  explicit DerivedInPupStlCpp11(CkMigrateMessage* /* m */) {}
-  void pup(PUP::er& p) override {
-    Base::pup(p);
-    p | vec_;
-  }
-
-  const auto& get() const { return vec_; }
-
-  friend bool operator==(const DerivedInPupStlCpp11& lhs,
-                         const DerivedInPupStlCpp11& rhs) {
-    return lhs.vec_ == rhs.vec_;
-  }
-
- private:
-  std::vector<double> vec_;
-};
 
 SPECTRE_TEST_CASE("Unit.Serialization.unordered_map", "[Serialization][Unit]") {
   std::unordered_map<std::string, double> um;
@@ -97,12 +66,16 @@ SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
                   "[Serialization][Unit]") {
-  DerivedInPupStlCpp11 derived({-1, 12.3, -7, 8});
-  std::unique_ptr<Base> derived_ptr = std::make_unique<DerivedInPupStlCpp11>(
-      std::vector<double>{-1, 12.3, -7, 8});
-  std::unique_ptr<Base> serialized_ptr = serialize_and_deserialize(derived_ptr);
-  CHECK(nullptr != dynamic_cast<DerivedInPupStlCpp11*>(serialized_ptr.get()));
-  CHECK(derived == dynamic_cast<const DerivedInPupStlCpp11&>(*serialized_ptr));
+  Test_Classes::DerivedInPupStlCpp11 derived({-1, 12.3, -7, 8});
+  std::unique_ptr<Test_Classes::Base> derived_ptr =
+      std::make_unique<Test_Classes::DerivedInPupStlCpp11>(
+          std::vector<double>{-1, 12.3, -7, 8});
+  std::unique_ptr<Test_Classes::Base> serialized_ptr =
+      serialize_and_deserialize(derived_ptr);
+  CHECK(nullptr != dynamic_cast<Test_Classes::DerivedInPupStlCpp11*>(
+                       serialized_ptr.get()));
+  CHECK(derived == dynamic_cast<const Test_Classes::DerivedInPupStlCpp11&>(
+                       *serialized_ptr));
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
@@ -111,13 +84,3 @@ SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
   auto blah = serialize_and_deserialize(derived_ptr);
   CHECK(nullptr == blah);
 }
-
-void register_derived_classes_for_pup_stl_cpp11() {
-  PUPable_reg(DerivedInPupStlCpp11);
-}
-
-/// \cond
-// clang-tidy: possibly throwing constructor static storage
-// clang-tidy: false positive: redundant declaration
-PUP::able::PUP_ID DerivedInPupStlCpp11::my_PUP_ID = 0;  // NOLINT
-/// \endcond

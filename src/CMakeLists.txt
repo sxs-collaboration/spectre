@@ -12,7 +12,3 @@ add_subdirectory(Parallel)
 add_subdirectory(PointwiseFunctions)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
-
-# Propagate core libraries up to global scope.
-set(SPECTRE_LIBRARIES
-    "${SPECTRE_CORE_LIBRARIES};${SPECTRE_LIBRARIES}" PARENT_SCOPE)
