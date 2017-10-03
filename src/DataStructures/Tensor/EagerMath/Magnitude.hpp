@@ -7,9 +7,9 @@
 #pragma once
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Utilities/MakeArithmeticValue.hpp"
 
 /*!
  * \ingroup Tensor
@@ -24,7 +24,7 @@
 template <typename DataType, typename Index>
 DataType magnitude(
     const Tensor<DataType, Symmetry<1>, typelist<Index>>& tensor) {
-  auto magnitude_squared = make_arithmetic_value(tensor.get(0), 0.);
+  auto magnitude_squared = make_with_value<DataType>(tensor, 0.);
   for (size_t d = 0; d < Index::dim; ++d) {
     magnitude_squared += square(tensor.get(d));
   }
@@ -49,7 +49,7 @@ DataType magnitude(
   static_assert(std::is_same<Index0, change_index_up_lo<Index1>>::value,
                 "The indices of the tensor and metric must be the same, "
                 "except for their valence which must be opposite");
-  auto magnitude_squared = make_arithmetic_value(tensor.template get<0>(), 0.);
+  auto magnitude_squared = make_with_value<DataType>(tensor, 0.);
   for (size_t a = 0; a < Index0::dim; ++a) {
     for (size_t b = 0; b < Index0::dim; ++b) {
       magnitude_squared += tensor.get(a) * tensor.get(b) * metric.get(a, b);

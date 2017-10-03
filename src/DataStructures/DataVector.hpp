@@ -13,8 +13,10 @@
 #include <memory>
 #include <vector>
 
+#include "DataStructures/MakeWithValue.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PointerVector.hpp"
 #include "Utilities/Requires.hpp"
@@ -390,6 +392,17 @@ DataVector& DataVector::operator=(const blaze::Vector<VT, VF>& expression) {
   return *this;
 }
 /// \endcond
+
+namespace MakeWithValueImpls {
+/// \brief Returns a DataVector the same size as `input`, with each element
+/// equal to `value`.
+template <>
+SPECTRE_ALWAYS_INLINE DataVector
+MakeWithValueImpl<DataVector, DataVector>::apply(const DataVector& input,
+                                                 const double value) {
+  return DataVector(input.size(), value);
+}
+}  // namespace MakeWithValueImpls
 
 namespace ConstantExpressions_details {
 template <>

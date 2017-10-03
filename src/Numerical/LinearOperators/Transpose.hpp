@@ -62,7 +62,7 @@ void transpose(const U& u, const size_t chunk_size,
 template <typename U, typename T = U>
 T transpose(const U& u, const size_t chunk_size,
             const size_t number_of_chunks) {
-  T t(chunk_size * number_of_chunks);
+  T t = make_with_value<T>(u,0.0);
   transpose(u, chunk_size, number_of_chunks, make_not_null(&t));
   return t;
 }
