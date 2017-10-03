@@ -136,6 +136,7 @@ before_install:
       export HDF5_VERSION=1.8.17;
       export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11;
       cd $HOME;
+      brew install gcc;
       brew install ccache;
       PATH=/usr/local/opt/ccache/libexec:$PATH;
       brew install jemalloc;
