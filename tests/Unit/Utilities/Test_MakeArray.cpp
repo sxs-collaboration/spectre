@@ -6,36 +6,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-namespace {
-struct NonCopyable {
-  constexpr NonCopyable() = default;
-  constexpr NonCopyable(const NonCopyable&) = delete;
-  constexpr NonCopyable& operator=(const NonCopyable&) = delete;
-  constexpr NonCopyable(NonCopyable&&) = default;
-  NonCopyable& operator=(NonCopyable&&) = default;
-  ~NonCopyable() = default;
-};
-}  // namespace
-
-class DoesNotThrow {
- public:
-  DoesNotThrow() noexcept = default;
-  DoesNotThrow(const DoesNotThrow&) noexcept = default;
-  DoesNotThrow& operator=(const DoesNotThrow&) noexcept = default;
-  DoesNotThrow(DoesNotThrow&&) noexcept = default;
-  DoesNotThrow& operator=(DoesNotThrow&&) noexcept = default;
-  ~DoesNotThrow() = default;
-};
-class DoesThrow {
- public:
-  DoesThrow() noexcept(false);
-  DoesThrow(const DoesThrow&) noexcept(false);
-  DoesThrow& operator=(const DoesThrow&) noexcept(false);
-  DoesThrow(DoesThrow&&) noexcept(false);
-  DoesThrow& operator=(DoesThrow&&) noexcept(false);
-  ~DoesThrow() = default;
-};
-
 static_assert(noexcept(make_array<2>(0)),
               "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
               "make_array.");
