@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValueOnBoundary",
           }
           return temp;
         }();
-        const DataVector u_quad = [&extents, &x, &y, &z]() {
+        const DataVector u_quad = [&extents, &x, &y]() {
           DataVector temp(extents.product());
           for (IndexIterator<3> i(extents); i; ++i) {
             temp[i.offset()] = x[i()[0]] * y[i()[1]];
