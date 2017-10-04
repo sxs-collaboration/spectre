@@ -32,4 +32,3 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Boundaries", "[Domain][Unit]") {
   CHECK((neighbors_of_all_blocks)[0][Direction<3>::upper_xi()].orientation() ==
         expected_identification);
 }
-

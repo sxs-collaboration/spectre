@@ -16,6 +16,7 @@ set(DOMAIN_TESTS
     Domain/Test_BlockNeighbor.cpp
     Domain/Test_Direction.cpp
     Domain/Test_Domain.cpp
+    Domain/Test_DomainCreators.cpp
     Domain/Test_DomainHelpers.cpp
     Domain/Test_Element.cpp
     Domain/Test_ElementId.cpp
