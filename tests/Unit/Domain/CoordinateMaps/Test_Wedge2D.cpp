@@ -106,10 +106,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D", "[Domain][Unit]") {
     const CoordinateMaps::Wedge2D map{inner_radius, outer_radius, direction};
     const std::array<double, 2> test_point{{xi, eta}};
 
-    test_forward_jacobian(map, test_point);
-    test_inverse_jacobian(map, test_point);
+    test_jacobian(map, test_point);
+    test_inv_jacobian(map, test_point);
 
     CHECK(serialize_and_deserialize(map) == map);
 
     test_coordinate_map_implementation(map);
+  }
 }

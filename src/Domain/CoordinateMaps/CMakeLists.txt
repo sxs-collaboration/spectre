@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     Identity.cpp
     Rotation.cpp
     Wedge2D.cpp
+    Wedge3D.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
