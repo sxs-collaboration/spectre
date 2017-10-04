@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Deferred.hpp"

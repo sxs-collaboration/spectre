@@ -3,8 +3,8 @@
 
 #include <catch.hpp>
 
-#include "DataStructures/DataBox.hpp"
-#include "DataStructures/DataBoxHelpers.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxHelpers.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
