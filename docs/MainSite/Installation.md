@@ -70,7 +70,7 @@ To build with the docker image:
    Within the container, SPECTRE_ROOT is available and
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
-4. Cd into /work/charm, and apply the Charm++ patch by
+4. `cd` into /work/charm, and apply the Charm++ patch by
    running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
 5. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
@@ -188,8 +188,19 @@ Follow these steps:
     appended to the architecture.
   * The SpECTRE repo contains a patch that must be applied to Charm++ *after*
     Charm++ has been compiled. While still in `CHARM_DIR`, apply this patch by
-    running
-    `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
+    running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
+  * On macOS 10.12 it is necessary to patch the STL implementation. Insert
+    \code
+    #ifndef _MACH_PORT_T
+    #define _MACH_PORT_T
+    #include <sys/_types.h> /* __darwin_mach_port_t */
+    typedef __darwin_mach_port_t mach_port_t;
+    #include <pthread.h>
+    mach_port_t pthread_mach_thread_np(pthread_t);
+    #endif /* _MACH_PORT_T */
+    \endcode
+    into the front of
+    `/Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support`
 3.  Return to `SPECTRE_ROOT`, and create a build dir by running
     `mkdir build && cd build`
 4.  Build SpECTRE with
