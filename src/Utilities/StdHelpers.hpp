@@ -393,15 +393,33 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept(
   return result;
 }
 
-/*!
- * \ingroup Utilities
- * \brief Calculates the Euclidean magnitude of `array`
- */
-template <size_t Dim, typename T>
-inline T magnitude(const std::array<T, Dim>& array) noexcept {
-  auto mag_sqrd = make_with_value<T>(gsl::at(array, 0), 0.);
-  for (size_t i = 0; i < Dim; ++i) {
-    mag_sqrd += square(gsl::at(array, i));
-  }
-  return sqrt(mag_sqrd);
+//@{
+/// \ingroup Utilities
+/// \brief Euclidean magnitude of the elements of the array.
+///
+/// \details If T is a container the magnitude is computed separately for each
+/// element of the container.
+///
+/// \requires If T is a container, T must have following mathematical operators:
+/// abs(), sqrt(), and element-wise addition and multiplication.  In addition,
+/// each T in the array must have the same size.
+template <typename T>
+inline T magnitude(const std::array<T, 1>& a) noexcept {
+  return abs(a[0]);
 }
+
+template<>
+inline double magnitude(const std::array<double, 1>& a) noexcept {
+  return std::abs(a[0]);
+}
+
+template <typename T>
+inline T magnitude(const std::array<T, 2>& a) noexcept {
+  return sqrt(a[0] * a[0] + a[1] * a[1]);
+}
+
+template <typename T>
+inline T magnitude(const std::array<T, 3>& a) noexcept {
+  return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+}
+//@}
