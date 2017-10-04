@@ -56,6 +56,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D", "[Domain][Unit]") {
   const CoordinateMaps::Wedge2D map_lower_eta(random_inner_radius_lower_eta,
                                               random_outer_radius_lower_eta,
                                               Direction<2>::lower_eta());
+  CHECK(map_lower_eta != map_lower_xi);
+  CHECK(map_upper_eta != map_lower_eta);
+  CHECK(map_lower_eta != map_upper_xi);
+
   CHECK(map_upper_xi(lower_right_corner)[0] ==
         approx(random_outer_radius_upper_xi / sqrt(2.0)));
   CHECK(map_upper_eta(lower_right_corner)[1] ==

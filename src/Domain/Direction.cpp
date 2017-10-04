@@ -16,6 +16,7 @@ Direction<1>::Direction(const size_t dimension, const Side side) noexcept {
   side_ = side;
 }
 
+/// \cond NEVER
 template <>
 Direction<2>::Direction(const size_t dimension, const Side side) noexcept {
   ASSERT(0 == dimension or 1 == dimension,
@@ -41,6 +42,7 @@ Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
   }
   side_ = side;
 }
+/// \endcond
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,

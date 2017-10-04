@@ -52,7 +52,7 @@ operator()(const std::array<T, 2>& x) const noexcept {
 template <typename T>
 [[noreturn]] std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2>
 Wedge2D::inverse(const std::array<T, 2>& /*x*/) const noexcept {
-  ERROR("Inverse map is unimplemented for Wedge2D");
+  ERROR("Inverse map is unimplemented for Wedge2D"); //LCOV_EXCL_LINE
 }
 
 template <typename T>
