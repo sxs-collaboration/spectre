@@ -32,9 +32,14 @@ inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) {
 /// Indicates the ::Frame that a \ref SpacetimeIndex "TensorIndexType"
 /// is in.
 namespace Frame {
+/// \ingroup Tensor
+/// Marks a Frame as being "physical" in the sense that it is meaningful to
+/// evaluate an analytic solution in that frame.
+struct FrameIsPhysical {};
+
 struct Logical {};
 struct Grid {};
-struct Inertial {};
+struct Inertial : FrameIsPhysical {};
 struct Distorted {};
 /// Represents an index that is not in a known frame, e.g. some internal
 /// intermediate frame that is irrelevant to the interface.
@@ -44,6 +49,23 @@ struct NoFrame {};
 /// for jacobians.
 using ordered_frame_list = typelist<Logical, Grid, Inertial, Distorted>;
 
+/// \ingroup Tensor
+/// Returns std::true_type if the frame is "physical" in the sense that it is
+/// meaningful to evaluate an analytic solution in that frame.
+/// \example
+/// \snippet Test_Tensor.cpp is_frame_physical
+template <typename CheckFrame>
+using is_frame_physical =
+    std::integral_constant<bool,
+                           cpp17::is_base_of_v<FrameIsPhysical, CheckFrame>>;
+
+/// \ingroup Tensor
+/// Returns true if the frame is "physical" in the sense that it is
+/// meaningful to evaluate an analytic solution in that frame.
+/// \example
+/// \snippet Test_Tensor.cpp is_frame_physical
+template <typename CheckFrame>
+constexpr bool is_frame_physical_v = is_frame_physical<CheckFrame>::value;
 }  // namespace Frame
 
 /// \cond HIDDEN_SYMBOLS

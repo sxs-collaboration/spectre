@@ -14,6 +14,17 @@ static_assert(cpp17::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
               "Failed testing change_index_up_lo");
 /// [change_up_lo]
 
+/// [is_frame_physical]
+static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
+              "Failed testing Frame::is_frame_physical");
+static_assert(not Frame::is_frame_physical_v<Frame::Distorted>,
+              "Failed testing Frame::is_frame_physical");
+static_assert(not Frame::is_frame_physical_v<Frame::Grid>,
+              "Failed testing Frame::is_frame_physical");
+static_assert(Frame::is_frame_physical_v<Frame::Inertial>,
+              "Failed testing Frame::is_frame_physical");
+/// [is_frame_physical]
+
 // Test Symmetry metafunction
 static_assert(
     cpp17::is_same_v<Symmetry<4, 1>, tmpl::integral_list<std::int32_t, 2, 1>>,
