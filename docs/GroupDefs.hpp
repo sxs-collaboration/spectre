@@ -59,11 +59,6 @@
  */
 
 /*!
- * \defgroup EmbeddingMaps Embedding Maps
- * A collection of embedding maps used to construct computational domains.
- */
-
-/*!
  * \defgroup ErrorHandling Error Handling
  * Macros and functions used for handling errors
  */
