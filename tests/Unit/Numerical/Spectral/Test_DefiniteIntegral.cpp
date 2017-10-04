@@ -8,7 +8,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "DataStructures/Mesh.hpp"
 #include "Numerical/Spectral/DefiniteIntegral.hpp"
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -31,53 +30,51 @@ void test_definite_integral_1d(const Index<1>& index_1d) {
   }
 }
 
-void test_definite_integral_2d(const Index<2>& index_2d) {
-  Mesh<2> extents(index_2d);
-  const size_t num_pts_in_x = index_2d[0];
-  const size_t num_pts_in_y = index_2d[1];
+void test_definite_integral_2d(const Index<2>& mesh) {
+  const size_t num_pts_in_x = mesh[0];
+  const size_t num_pts_in_y = mesh[1];
   const DataVector& x = Basis::lgl::collocation_points(num_pts_in_x);
   const DataVector& y = Basis::lgl::collocation_points(num_pts_in_y);
-  DataVector integrand(extents.product());
+  DataVector integrand(mesh.product());
   for (size_t a = 0; a < num_pts_in_x; ++a) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
-      for (IndexIterator<2> index_it(index_2d); index_it; ++index_it) {
+      for (IndexIterator<2> index_it(mesh); index_it; ++index_it) {
         integrand[index_it.offset()] =
             pow(x[index_it()[0]], a) * pow(y[index_it()[1]], b);
       }
       if (0 == a % 2 and 0 == b % 2) {
         CHECK(4.0 / ((a + 1.0) * (b + 1.0)) ==
-              approx(Basis::lgl::definite_integral(integrand, index_2d)));
+              approx(Basis::lgl::definite_integral(integrand, mesh)));
       } else {
         CHECK(0.0 ==
-              approx(Basis::lgl::definite_integral(integrand, index_2d)));
+              approx(Basis::lgl::definite_integral(integrand, mesh)));
       }
     }
   }
 }
 
-void test_definite_integral_3d(const Index<3>& index_3d) {
-  Mesh<3> extents(index_3d);
-  const size_t num_pts_in_x = index_3d[0];
-  const size_t num_pts_in_y = index_3d[1];
-  const size_t num_pts_in_z = index_3d[2];
+void test_definite_integral_3d(const Index<3>& mesh) {
+  const size_t num_pts_in_x = mesh[0];
+  const size_t num_pts_in_y = mesh[1];
+  const size_t num_pts_in_z = mesh[2];
   const DataVector& x = Basis::lgl::collocation_points(num_pts_in_x);
   const DataVector& y = Basis::lgl::collocation_points(num_pts_in_y);
   const DataVector& z = Basis::lgl::collocation_points(num_pts_in_z);
-  DataVector integrand(extents.product());
+  DataVector integrand(mesh.product());
   for (size_t a = 0; a < num_pts_in_x; ++a) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
       for (size_t c = 0; c < num_pts_in_z; ++c) {
-        for (IndexIterator<3> index_it(index_3d); index_it; ++index_it) {
+        for (IndexIterator<3> index_it(mesh); index_it; ++index_it) {
           integrand[index_it.offset()] = pow(x[index_it()[0]], a) *
                                          pow(y[index_it()[1]], b) *
                                          pow(z[index_it()[2]], c);
         }
         if (0 == a % 2 and 0 == b % 2 and 0 == c % 2) {
           CHECK(8.0 / ((a + 1.0) * (b + 1.0) * (c + 1.0)) ==
-                approx(Basis::lgl::definite_integral(integrand, index_3d)));
+                approx(Basis::lgl::definite_integral(integrand, mesh)));
         } else {
           CHECK(0.0 ==
-                approx(Basis::lgl::definite_integral(integrand, index_3d)));
+                approx(Basis::lgl::definite_integral(integrand, mesh)));
         }
       }
     }

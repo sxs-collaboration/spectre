@@ -20,7 +20,7 @@ See LICENSE.txt for details.
 
 * ref BlackNeighbor "Block Neighbor":<br>
   The identity and Orientation of a neighbor of a given Block.
-  
+
 * Direction:<br>
   A logical coordinate axis and a label "Upper" or "Lower" depending on whether
   the Direction is aligned with or anti-aligned with the logical coordinate
@@ -47,7 +47,7 @@ See LICENSE.txt for details.
   in each logical coordinate axis.
 
 * Mesh:<br>
-  A regular set of grid points associated with an Element.
+  A regular set of grid points associated with an Element. Represented by the data structure Index
 
 * External Boundary:<br>
   A face of a Block or Element that has no neighbor.
@@ -56,7 +56,7 @@ See LICENSE.txt for details.
   A boundary that is not an External Boundary.
 
 * ref Neighbors "Face Neighbors" (Rename C++ Neighbors class to FaceNeighbors):<br>
-  The identities and Orientation of the neighbors in a particular direction of a given Element. 
+  The identities and Orientation of the neighbors in a particular direction of a given Element.
 
 * External Boundary Condition:<br>
   A prescription for updating the solution on an External Boundary. Each
