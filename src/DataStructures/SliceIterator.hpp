@@ -37,13 +37,13 @@ class SliceIterator {
   /// Step to the next grid point
   SliceIterator& operator++();
 
-  /// Offset into a Dim-dimensional Data at the current gridpoint.
-  /// Note that the size of the Data is assumed to be that of the Mesh
+  /// Offset into a Dim-dimensional DataVector at the current gridpoint.
+  /// Note that the size of the DataVector is assumed to be that of the mesh
   /// used to construct this SliceIterator
   size_t volume_offset() const noexcept { return volume_offset_; }
 
-  /// Offset into a (Dim-1)-dimensional Data at the current gridpoint.
-  /// Note that the size of the Data is assumed to be that of a Mesh
+  /// Offset into a (Dim-1)-dimensional DataVector at the current gridpoint.
+  /// Note that the size of the DataVector is assumed to be that of a mesh
   /// used to construct this SliceIterator with its fixedDim sliced away.
   size_t slice_offset() const noexcept { return slice_offset_; }
 

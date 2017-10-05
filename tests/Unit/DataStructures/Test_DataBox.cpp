@@ -5,7 +5,6 @@
 
 #include "DataStructures/DataBox.hpp"
 #include "DataStructures/DataBoxHelpers.hpp"
-#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
