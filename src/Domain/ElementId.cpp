@@ -12,30 +12,31 @@
 #include "Utilities/StdHelpers.hpp"
 
 template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(const size_t block_id)
+ElementId<VolumeDim>::ElementId(const size_t block_id) noexcept
     : block_id_{block_id},
       segment_ids_(make_array<VolumeDim>(SegmentId(0, 0))) {}
 
 template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(const size_t block_id,
-                                std::array<SegmentId, VolumeDim> segment_ids)
+ElementId<VolumeDim>::ElementId(
+    const size_t block_id,
+    std::array<SegmentId, VolumeDim> segment_ids) noexcept
     : block_id_{block_id}, segment_ids_(std::move(segment_ids)) {}
 
 template <size_t VolumeDim>
-ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
-                                                       const Side side) const {
+ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(
+    const size_t dim, const Side side) const noexcept {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
   gsl::at(new_segment_ids, dim) =
       gsl::at(new_segment_ids, dim).id_of_child(side);
-  return ElementId<VolumeDim>(block_id_, new_segment_ids);
+  return {block_id_, new_segment_ids};
 }
 
 template <size_t VolumeDim>
 ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(
-    const size_t dim) const {
+    const size_t dim) const noexcept {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
   gsl::at(new_segment_ids, dim) = gsl::at(new_segment_ids, dim).id_of_parent();
-  return ElementId<VolumeDim>(block_id_, new_segment_ids);
+  return {block_id_, new_segment_ids};
 }
 
 template <size_t VolumeDim>
@@ -54,7 +55,7 @@ std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id) {
 namespace std {
 template <size_t VolumeDim>
 size_t hash<ElementId<VolumeDim>>::operator()(
-    const ElementId<VolumeDim>& c) const {
+    const ElementId<VolumeDim>& c) const noexcept {
   size_t h = 0;
   boost::hash_combine(h, c.block_id());
   boost::hash_combine(h, c.segment_ids());

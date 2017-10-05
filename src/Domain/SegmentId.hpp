@@ -22,26 +22,33 @@
 class SegmentId {
  public:
   /// Default constructor needed for Charm++ serialization.
-  SegmentId() = default;
+  constexpr SegmentId() noexcept = default;
+  constexpr SegmentId(const SegmentId& segment_id) noexcept = default;
+  constexpr SegmentId(SegmentId&& segment_id) noexcept = default;
+  ~SegmentId() noexcept = default;
+  SegmentId& operator=(const SegmentId& segment_id) noexcept = default;
+  SegmentId& operator=(SegmentId&& segment_id) noexcept = default;
 
   SegmentId(size_t refinement_level, size_t index);
 
-  size_t refinement_level() const noexcept { return refinement_level_; }
+  constexpr size_t refinement_level() const noexcept {
+    return refinement_level_;
+  }
 
-  size_t index() const noexcept { return index_; }
+  constexpr size_t index() const noexcept { return index_; }
 
-  SegmentId id_of_parent() const;
+  SegmentId id_of_parent() const noexcept;
 
-  SegmentId id_of_child(Side side) const;
+  SegmentId id_of_child(Side side) const noexcept;
 
   /// The id this segment would have if the coordinate axis were flipped.
-  SegmentId id_if_flipped() const;
+  SegmentId id_if_flipped() const noexcept;
 
   /// The logical coordinate of the endpoint of the segment on the given Side.
-  double endpoint(Side side) const;
+  double endpoint(Side side) const noexcept;
 
   /// The logical coordinate of the midpoint of the segment
-  double midpoint() const {
+  double midpoint() const noexcept {
     return -1.0 + (1.0 + 2.0 * index_) / two_to_the(refinement_level_);
   }
 
@@ -66,34 +73,30 @@ bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept;
 // INLINE DEFINITIONS
 //##############################################################################
 
-inline SegmentId SegmentId::id_of_parent() const {
-  ASSERT(0 != refinement_level_,
-         "Cannot call id_of_parent() on root refinement level!");
-  // right-shifting index_ by 1 gives us floor(index_/2).
+inline SegmentId SegmentId::id_of_parent() const noexcept {
+  CASSERT(0 != refinement_level_,
+          "Cannot call id_of_parent() on root refinement level!");
   // The parent has half as many segments as the child.
-  return SegmentId(refinement_level_ - 1, index_ >> 1);
+  return {refinement_level_ - 1, index_ / 2};
 }
 
-inline SegmentId SegmentId::id_of_child(Side side) const {
+inline SegmentId SegmentId::id_of_child(Side side) const noexcept {
   // We cannot ASSERT on the maximum level because it's only known at runtime
   // and only known elsewhere in the code, not by SegmentId. I.e. SegmentId is
   // too low-level to know about this.
   // The child has twice as many segments as the parent, so for a particular
   // parent segment, there is both an upper and lower child segment.
   if (Side::Lower == side) {
-    // left-shifting index_ by 1 gives us index*2.
-    return SegmentId(refinement_level_ + 1, index_ << 1);
+    return {refinement_level_ + 1, index_ * 2};
   }
-  // left-shifting index_ by 1, followed by OR with 1, gives us index*2 +1.
-  return SegmentId(refinement_level_ + 1, 1 | (index_ << 1));
+  return {refinement_level_ + 1, 1 + index_ * 2};
 }
 
-inline SegmentId SegmentId::id_if_flipped() const {
-  return SegmentId(refinement_level_,
-                   two_to_the(refinement_level_) - 1 - index_);
+inline SegmentId SegmentId::id_if_flipped() const noexcept {
+  return {refinement_level_, two_to_the(refinement_level_) - 1 - index_};
 }
 
-inline double SegmentId::endpoint(Side side) const {
+inline double SegmentId::endpoint(Side side) const noexcept {
   if (Side::Lower == side) {
     return -1.0 + (2.0 * index_) / two_to_the(refinement_level_);
   }
