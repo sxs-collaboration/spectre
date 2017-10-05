@@ -9,7 +9,7 @@ window.onload = function(){
         $(this).html( $(this).html().replace(/( =[ ]+)[typedef ]*typename [A-Za-z0-9]*[_]?detail[s]?::[A-Za-z0-9\-_\.&;<> /;:\"=,#]+::[A-Za-z0-9_]+/g,
             "$1implementation defined") );
     });
-    
+
     // Hide type alias RHS that refers to a type in a (*_)detail namespace
     // Also remove ... = decltype(something(_detail)::)
     $("body").children().find("td.memItemRight, td.memTemplItemRight, td.memname").each(function () {
@@ -18,11 +18,13 @@ window.onload = function(){
     });
 
     // Hide unnamed template parameters: , typename = void
-    $("body").children().find("td.memItemRight, td.memTemplItemRight, div.memitem").each(function () {
+    // Not applied to div.memitem because that causes problems with rendering
+    // MathJAX
+    $("body").children().find("td.memItemRight, td.memTemplItemRight").each(function () {
         $(this).html( $(this).html().replace(/(template[&lt; ]+.*)(,[ ]*typename[ ]*=[ ]*void[ ]*)+/g,
             "$1") );
     });
-    $("body").children().find("td.memItemRight, td.memTemplItemRight, div.memitem, div.title").each(function () {
+    $("body").children().find("td.memItemRight, td.memTemplItemRight, div.title").each(function () {
         $(this).html( $(this).html().replace(/(&lt;[A-Za-z0-9 ,]+.*)(,[ ]*typename[ ]*&gt;)+/g,
             "$1&gt;") );
     });
@@ -31,13 +33,13 @@ window.onload = function(){
     $("body").children().find("td.memTemplParams, div.memtemplate").each(function () {
         $(this).html( $(this).html().replace(/(template[A-Za-z0-9&;,\.=\(\) _]+)(,[ ]+typename[ ]+=[ ]+typename[ ]+std::enable_if.*::type)+/g,
             "$1") );
-        
+
     });
 
     $("body").children().find("td.memTemplParams, div.memtemplate").each(function () {
         $(this).html( $(this).html().replace(/(template[A-Za-z0-9&;,\.=\(\) _]+)(,[ ]+typename[ ]+std::enable_if.*)+&gt;/g,
             "$1&gt;") );
-        
+
     });
 
     // Hide enable_if_t for SFINAE
@@ -45,7 +47,7 @@ window.onload = function(){
         $(this).html( $(this).html()
             .replace(/(template[A-Za-z0-9&;,\.=\(\) _]+)(,[ ]+std::enable_if_t.*)+&gt;/g,
                 "$1&gt;") );
-        
+
     });
 
     // Hide metafunctions that use only the template metaprogramming libraries
@@ -60,7 +62,9 @@ window.onload = function(){
     });
 
     // Italicize "implementation defined"
-    $("body").children().find("div.memitem, td.memItemRight, td.memTemplItemRight").each(function () {
+    // Not applied to div.memitem because that causes problems with rendering
+    // MathJAX
+    $("body").children().find("td.memItemRight, td.memTemplItemRight").each(function () {
         $(this).html( $(this).html().replace(/implementation defined/g,
             "implementation defined".italics()) );
     });

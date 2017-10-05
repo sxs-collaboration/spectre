@@ -89,7 +89,7 @@ EXCLUDE_SYMBOLS = *detail* *brigand* std* PUP* YAML* charm* SPECTRE_TEST_CASE*
 
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/Unit/
 
-EXAMPLE_PATTERNS       = 
+EXAMPLE_PATTERNS       =
 
 EXAMPLE_RECURSIVE      = NO
 
@@ -120,7 +120,7 @@ GENERATE_XML           = @SPECTRE_DOX_GENERATE_XML@
 XML_OUTPUT             = xml
 
 #---------------------------------------------------------------------------
-# Configuration options related to the preprocessor   
+# Configuration options related to the preprocessor
 #---------------------------------------------------------------------------
 
 ENABLE_PREPROCESSING   = YES
@@ -135,7 +135,7 @@ PREDEFINED             = SPECTRE_ALWAYS_INLINE= \
                          SPECTRE_DOXYGEN_INVOKED
 
 #---------------------------------------------------------------------------
-# Configuration::additions related to external references   
+# Configuration::additions related to external references
 #---------------------------------------------------------------------------
 
 # The tag file for cppref can be updated as new features are added to the
@@ -150,7 +150,7 @@ TAGFILES += "@PROJECT_SOURCE_DIR@/docs/config/cppreference-doxygen-web.tag.xml=h
 ALLEXTERNALS           = NO
 
 #---------------------------------------------------------------------------
-# Configuration options related to the dot tool   
+# Configuration options related to the dot tool
 #---------------------------------------------------------------------------
 
 CLASS_DIAGRAMS         = NO
@@ -211,6 +211,8 @@ HTML_STYLESHEET = @PROJECT_SOURCE_DIR@/docs/config/doxygen.css
 USE_MDFILE_AS_MAINPAGE = main.md
 
 USE_MATHJAX = YES
+
+MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to the search engine
