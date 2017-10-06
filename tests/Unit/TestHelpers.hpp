@@ -346,3 +346,31 @@ std::unique_ptr<BaseClass> test_factory_creation(
   options.parse("Opt:\n" + construction_string);
   return options.template get<TestHelpers_detail::Opt<BaseClass>>();
 }
+
+struct NonCopyable {
+  constexpr NonCopyable() = default;
+  constexpr NonCopyable(const NonCopyable&) = delete;
+  constexpr NonCopyable& operator=(const NonCopyable&) = delete;
+  constexpr NonCopyable(NonCopyable&&) = default;
+  NonCopyable& operator=(NonCopyable&&) = default;
+  ~NonCopyable() = default;
+};
+
+class DoesNotThrow {
+ public:
+  DoesNotThrow() noexcept = default;
+  DoesNotThrow(const DoesNotThrow&) noexcept = default;
+  DoesNotThrow& operator=(const DoesNotThrow&) noexcept = default;
+  DoesNotThrow(DoesNotThrow&&) noexcept = default;
+  DoesNotThrow& operator=(DoesNotThrow&&) noexcept = default;
+  ~DoesNotThrow() = default;
+};
+class DoesThrow {
+ public:
+  DoesThrow() noexcept(false);
+  DoesThrow(const DoesThrow&) noexcept(false);
+  DoesThrow& operator=(const DoesThrow&) noexcept(false);
+  DoesThrow(DoesThrow&&) noexcept(false);
+  DoesThrow& operator=(DoesThrow&&) noexcept(false);
+  ~DoesThrow() = default;
+};
