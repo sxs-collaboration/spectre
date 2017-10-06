@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     AffineMap.cpp
     Identity.cpp
     Rotation.cpp
+    Trilinear.cpp
     Wedge2D.cpp
     Wedge3D.cpp
     )
