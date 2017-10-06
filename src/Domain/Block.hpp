@@ -39,7 +39,7 @@ class Block {
   Block(std::unique_ptr<
             CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>&& map,
         size_t id,
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>&&
+        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
             neighbors);
 
   Block() = default;
