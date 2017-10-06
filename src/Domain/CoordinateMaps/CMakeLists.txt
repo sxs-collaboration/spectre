@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     AffineMap.cpp
     Identity.cpp
     Rotation.cpp
+    Wedge2D.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

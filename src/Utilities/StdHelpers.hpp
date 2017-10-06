@@ -15,6 +15,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <set>
 #include <sstream>
 #include <string>
@@ -22,6 +23,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/MakeWithValue.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
@@ -388,4 +391,17 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept(
     gsl::at(result, i) = -gsl::at(rhs, i);
   }
   return result;
+}
+
+/*!
+ * \ingroup Utilities
+ * \brief Calculates the Euclidean magnitude of `array`
+ */
+template <size_t Dim, typename T>
+inline T magnitude(const std::array<T, Dim>& array) noexcept {
+  auto mag_sqrd = make_with_value<T>(gsl::at(array, 0), 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    mag_sqrd += square(gsl::at(array, i));
+  }
+  return sqrt(mag_sqrd);
 }

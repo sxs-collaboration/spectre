@@ -137,6 +137,7 @@ inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
   return Direction<VolumeDim>(axis_, ::opposite(side_));
 }
 
+/// \cond NEVER
 template <>
 inline const std::array<Direction<1>, 2>& Direction<1>::all_directions()
     noexcept {
@@ -163,6 +164,7 @@ inline const std::array<Direction<3>, 6>& Direction<3>::all_directions()
        Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}};
   return directions;
 }
+/// \endcond
 
 template <size_t VolumeDim>
 void Direction<VolumeDim>::pup(PUP::er& p) {
