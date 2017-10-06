@@ -13,9 +13,9 @@ void test_block() {
   PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Grid,
                                        CoordinateMaps::Identity<Dim>>));
 
-  using embedding_map =
+  using coordinate_map =
       CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<Dim>>;
-  const embedding_map identity_map{CoordinateMaps::Identity<Dim>{}};
+  const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
   Block<Dim, Frame::Grid> block(identity_map.get_clone(), 7, {});
 
   // Test external boundaries:
@@ -27,8 +27,8 @@ void test_block() {
   // Test id:
   CHECK((block.id()) == 7);
 
-  // Test that the block's embedding_map is Identity:
-  const auto& map = block.embedding_map();
+  // Test that the block's coordinate_map is Identity:
+  const auto& map = block.coordinate_map();
   const Point<Dim, Frame::Logical> xi(1.0);
   const Point<Dim, Frame::Grid> x(1.0);
   CHECK(map(xi) == x);
@@ -60,9 +60,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   std::unordered_map<Direction<2>, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
-  using embedding_map =
+  using coordinate_map =
       CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<2>>;
-  const embedding_map identity_map{CoordinateMaps::Identity<2>{}};
+  const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
   const Block<2, Frame::Grid> block(identity_map.get_clone(), 3,
                                     std::move(neighbors));
 

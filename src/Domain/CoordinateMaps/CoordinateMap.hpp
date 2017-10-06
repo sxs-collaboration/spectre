@@ -14,7 +14,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Tuple.hpp"
 
-/// Contains all embedding maps.
+/// Contains all coordinate maps.
 namespace CoordinateMaps {
 template <typename FirstMap, typename... Maps>
 constexpr size_t map_dim = FirstMap::dim;

@@ -50,7 +50,7 @@ class Block {
   Block& operator=(Block&&) = default;
 
   const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
-  embedding_map() const noexcept {
+  coordinate_map() const noexcept {
     return *map_;
   }
 
