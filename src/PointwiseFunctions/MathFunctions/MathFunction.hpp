@@ -34,7 +34,7 @@ template <>
 class MathFunction<1> : public Factory<MathFunction<1>> {
  public:
   using creatable_classes = typelist<
-      // MathFunctions::Gaussian,
+      MathFunctions::Gaussian,
       MathFunctions::PowX
       // ,MathFunctions::Sinusoid
       >;
@@ -65,6 +65,6 @@ class MathFunction<1> : public Factory<MathFunction<1>> {
   //@}
 };
 
+#include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
-// #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 // #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"

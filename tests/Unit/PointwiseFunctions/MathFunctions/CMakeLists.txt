@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(SPECTRE_UNIT_FUNCTION_TESTS
+    PointwiseFunctions/MathFunctions/Test_Gaussian.cpp
     PointwiseFunctions/MathFunctions/Test_PowX.cpp
    )
 
