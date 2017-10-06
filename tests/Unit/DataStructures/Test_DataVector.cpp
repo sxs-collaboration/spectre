@@ -321,6 +321,77 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   x = DataVector(num_pts, 2.);
   check_vectors(DataVector(num_pts, 0.82682181043180603), square(sin(x)));
   check_vectors(DataVector(num_pts, -0.072067555747765299), cube(cos(x)));
+
+  // Test addition of arrays of DataVectors to arrays of doubles.
+  const DataVector t1{0.0, 1.0, 2.0, 3.0};
+  const DataVector t2{-0.1, -0.2, -0.3, -0.4};
+  const DataVector t3{5.0, 4.0, 3.0, 2.0};
+  const DataVector e1{10.0, 11.0, 12.0, 13.0};
+  const DataVector e2{19.9, 19.8, 19.7, 19.6};
+  const DataVector e3{35.0, 34.0, 33.0, 32.0};
+  const DataVector e4{-10.0, -9.0, -8.0, -7.0};
+  const DataVector e5{-20.1, -20.2, -20.3, -20.4};
+  const DataVector e6{-25.0, -26.0, -27.0, -28.0};
+  const DataVector e7{10.0, 12.0, 14.0, 16.0};
+  const DataVector e8{19.8, 19.6, 19.4, 19.2};
+  const DataVector e9{40.0, 38.0, 36.0, 34.0};
+  const DataVector e10{-10.0, -10.0, -10.0, -10.0};
+  const DataVector e11{-20.0, -20.0, -20.0, -20.0};
+  const DataVector e12{-30.0, -30.0, -30.0, -30.0};
+
+  const std::array<double, 3> point{{10.0, 20.0, 30.0}};
+  std::array<DataVector, 3> points{{t1, t2, t3}};
+  const std::array<DataVector, 3> expected{{e1, e2, e3}};
+  const std::array<DataVector, 3> expected2{{e4, e5, e6}};
+  std::array<DataVector, 3> dvectors1{{t1, t2, t3}};
+  const std::array<DataVector, 3> dvectors2{{e1, e2, e3}};
+  const std::array<DataVector, 3> expected3{{e7, e8, e9}};
+  const std::array<DataVector, 3> expected4{{e10, e11, e12}};
+  CHECK(points + point == expected);
+  CHECK(point + points == expected);
+  CHECK(points - point == expected2);
+  CHECK(point - points == -expected2);
+
+  points += point;
+  CHECK(points == expected);
+  points -= point;
+  points -= point;
+  CHECK(points == expected2);
+
+  for (size_t i = 0; i < 3; i++) {
+    check_vectors(gsl::at((dvectors1 + dvectors2), i), gsl::at(expected3, i));
+    check_vectors(gsl::at((dvectors1 - dvectors2), i), gsl::at(expected4, i));
+  }
+  dvectors1 += dvectors2;
+  for (size_t i = 0; i < 3; i++) {
+    check_vectors(gsl::at(dvectors1, i), gsl::at(expected3, i));
+  }
+  dvectors1 -= dvectors2;
+  dvectors1 -= dvectors2;
+  for (size_t i = 0; i < 3; i++) {
+    check_vectors(gsl::at(dvectors1, i), gsl::at(expected4, i));
+  }
+
+  // Test calculation of magnitude of DataVector
+  const std::array<DataVector, 1> d1{{DataVector{-2.5, 3.4}}};
+  const DataVector expected_d1{2.5, 3.4};
+  const auto magnitude_d1 = magnitude(d1);
+  for (size_t i = 0; i < 2; ++i) {
+    CHECK(expected_d1[i] == approx(magnitude_d1[i]));
+  }
+  const std::array<DataVector, 2> d2{{DataVector(2, 3.), DataVector(2, 4.)}};
+  const DataVector expected_d2(2, 5.);
+  const auto magnitude_d2 = magnitude(d2);
+  for (size_t i = 0; i < 2; ++i) {
+    CHECK(expected_d2[i] == approx(magnitude_d2[i]));
+  }
+  const std::array<DataVector, 3> d3{
+      {DataVector(2, 3.), DataVector(2, -4.), DataVector(2, 12.)}};
+  const DataVector expected_d3(2, 13.);
+  const auto magnitude_d3 = magnitude(d3);
+  for (size_t i = 0; i < 2; ++i) {
+    CHECK(expected_d3[i] == approx(magnitude_d3[i]));
+  }
 }
 
 // [[OutputRegex, Must copy into same size]]

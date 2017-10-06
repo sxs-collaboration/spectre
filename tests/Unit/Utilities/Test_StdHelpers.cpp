@@ -10,11 +10,15 @@
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+// We wish to explicitly test implicit type conversion when adding std::arrays
+// of different fundamentals, so we supress this warning.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #include "Utilities/StdHelpers.hpp"
+#pragma GCC diagnostic pop
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
@@ -147,6 +151,23 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayArithmetic",
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(gsl::at(neg_p1, i) == approx(gsl::at(expected_neg_p1, i)));
   }
+
+  const std::array<double, 2> double_array{{2.2, -1.0}};
+  const std::array<int, 2> int_array{{1, 3}};
+  const std::array<size_t, 2> size_array{{2, 10}};
+  const std::array<double, 2> double_plus_int{{3.2, 2.0}};
+  const std::array<double, 2> double_plus_size{{4.2, 9.0}};
+  const std::array<size_t, 2> int_plus_size{{3, 13}};
+  const std::array<size_t, 2> size_minus_int{{1, 7}};
+  CHECK(double_array + int_array == double_plus_int);
+  CHECK(double_array + size_array == double_plus_size);
+  CHECK(int_array + size_array == int_plus_size);
+  CHECK(int_array + double_array == double_plus_int);
+  CHECK(size_array + double_array == double_plus_size);
+  CHECK(size_array + int_array == int_plus_size);
+  CHECK(size_array - -int_array == int_plus_size);
+  CHECK(size_array - -double_array == double_plus_size);
+  CHECK(size_array - int_array == size_minus_int);
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
@@ -157,27 +178,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
   CHECK(magnitude(p2) == approx(5.));
   const std::array<double, 3> p3{{-2., 10., 11.}};
   CHECK(magnitude(p3) == approx(15.));
-
-  // Check DataVector case
-  const std::array<DataVector, 1> d1{{DataVector{-2.5, 3.4}}};
-  const DataVector expected_d1{2.5, 3.4};
-  const auto magnitude_d1 = magnitude(d1);
-  for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_d1[i] == approx(magnitude_d1[i]));
-  }
-  const std::array<DataVector, 2> d2{{DataVector(2, 3.), DataVector(2, 4.)}};
-  const DataVector expected_d2(2, 5.);
-  const auto magnitude_d2 = magnitude(d2);
-  for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_d2[i] == approx(magnitude_d2[i]));
-  }
-  const std::array<DataVector, 3> d3{
-      {DataVector(2, 3.), DataVector(2, -4.), DataVector(2, 12.)}};
-  const DataVector expected_d3(2, 13.);
-  const auto magnitude_d3 = magnitude(d3);
-  for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_d3[i] == approx(magnitude_d3[i]));
-  }
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.AllButSpecifiedElementOf",

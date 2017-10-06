@@ -310,53 +310,49 @@ inline std::string current_date_and_time() {
 
 // Arithmetic operators for std::array<T, Dim>
 
-template <size_t Dim, typename T>
-inline std::array<T, Dim>& operator+=(
-    std::array<T, Dim>& lhs,
-    const std::array<T, Dim>& rhs) noexcept(noexcept(lhs[0] += rhs[0])) {
+template <size_t Dim, typename T, typename U>
+inline std::array<T, Dim>& operator+=(std::array<T, Dim>& lhs,
+                                      const std::array<U, Dim>& rhs) noexcept {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) += gsl::at(rhs, i);
   }
   return lhs;
 }
 
-template <size_t Dim, typename T>
-inline std::array<T, Dim> operator+(
-    const std::array<T, Dim>& lhs,
-    const std::array<T, Dim>&
-        rhs) noexcept(noexcept(std::declval<std::array<T, Dim>&>() += rhs) and
-                      noexcept(std::array<T, Dim>{lhs})) {
-  std::array<T, Dim> result = lhs;
-  result += rhs;
+template <size_t Dim, typename T, typename U>
+inline auto operator+(const std::array<T, Dim>& lhs,
+                      const std::array<U, Dim>& rhs) noexcept
+    -> std::array<decltype(lhs[0] + rhs[0]), Dim> {
+  std::array<decltype(lhs[0] + rhs[0]), Dim> result{};
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
+  }
   return result;
 }
 
-template <size_t Dim, typename T>
-inline std::array<T, Dim>& operator-=(
-    std::array<T, Dim>& lhs,
-    const std::array<T, Dim>& rhs) noexcept(noexcept(lhs[0] -= rhs[0])) {
+template <size_t Dim, typename T, typename U>
+inline std::array<T, Dim>& operator-=(std::array<T, Dim>& lhs,
+                                      const std::array<U, Dim>& rhs) noexcept {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) -= gsl::at(rhs, i);
   }
   return lhs;
 }
 
-template <size_t Dim, typename T>
-inline std::array<T, Dim> operator-(
-    const std::array<T, Dim>& lhs,
-    const std::array<T, Dim>&
-        rhs) noexcept(noexcept(std::declval<std::array<T, Dim>&>() -= rhs) and
-                      noexcept(std::array<T, Dim>{lhs})) {
-  std::array<T, Dim> result = lhs;
-  result -= rhs;
+template <size_t Dim, typename T, typename U>
+inline auto operator-(const std::array<T, Dim>& lhs,
+                      const std::array<U, Dim>& rhs) noexcept
+    -> std::array<decltype(lhs[0] - rhs[0]), Dim> {
+  std::array<decltype(lhs[0] - rhs[0]), Dim> result{};
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
   return result;
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim> operator*(
-    const std::array<T, Dim>& lhs,
-    const U& scale) noexcept(noexcept(lhs[0] * scale) and
-                             noexcept(std::array<T, Dim>{})) {
+inline std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
+                                    const U& scale) noexcept {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = gsl::at(lhs, i) * scale;
@@ -365,17 +361,14 @@ inline std::array<T, Dim> operator*(
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim> operator*(
-    const U& scale,
-    const std::array<T, Dim>& rhs) noexcept(noexcept(rhs* scale)) {
+inline std::array<T, Dim> operator*(const U& scale,
+                                    const std::array<T, Dim>& rhs) noexcept {
   return rhs * scale;
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim> operator/(
-    const std::array<T, Dim>& lhs,
-    const U& scale) noexcept(noexcept(lhs[0] / scale) and
-                             noexcept(std::array<T, Dim>{})) {
+inline std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
+                                    const U& scale) noexcept {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = gsl::at(lhs, i) / scale;
@@ -384,8 +377,7 @@ inline std::array<T, Dim> operator/(
 }
 
 template <size_t Dim, typename T>
-inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept(
-    noexcept(-rhs[0]) and noexcept(std::array<T, Dim>{})) {
+inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = -gsl::at(rhs, i);
