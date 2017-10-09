@@ -73,24 +73,26 @@ struct shape_of_nametag {
 namespace Tentacles {
 struct TestGroup {
   using type = CProxy_TestGroupChare;
+  using const_global_cache_tag_list = typelist<name, age, height>;
 };
 
 struct TestNodeGroup {
   using type = CProxy_TestNodeGroupChare;
+  using const_global_cache_tag_list = typelist<age, shape_of_nametag>;
 };
 
 struct Test {
   using type = CProxy_TestChare;
+  using const_global_cache_tag_list = typelist<>;
 };
 
 struct TestArray {
   using type = CProxy_TestArrayChare;
+  using const_global_cache_tag_list = typelist<name>;
 };
 }  // namespace Tentacles
 
 struct TestMetavariables {
-  using const_global_cache_tag_list =
-      typelist<name, age, height, shape_of_nametag>;
   using tentacle_list = typelist<Tentacles::TestGroup, Tentacles::TestNodeGroup,
                                  Tentacles::Test, Tentacles::TestArray>;
 };
@@ -98,8 +100,13 @@ struct TestMetavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
-  tuples::TaggedTupleTypelist<
-      typename TestMetavariables::const_global_cache_tag_list>
+  using tag_list =
+      typename Parallel::ConstGlobalCache<TestMetavariables>::tag_list;
+  static_assert(cpp17::is_same_v<
+                    tag_list, tmpl::list<name, age, height, shape_of_nametag>>,
+                "Wrong tag_list in ConstGlobalCache test");
+
+  tuples::TaggedTupleTypelist<tag_list>
       const_data_to_be_cached("Nobody", 178, 2.2, std::make_unique<Square>());
 
   Parallel::ConstGlobalCache<TestMetavariables> cache(const_data_to_be_cached);
