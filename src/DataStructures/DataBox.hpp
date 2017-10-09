@@ -176,8 +176,9 @@ template <class Tag, class... Tags>
 constexpr Deferred<typename Tag::type>&& get(
     TaggedDeferredTuple<Tags...>&& t) noexcept;
 
+// clang-tidy: does not define copy or move assignment operator, false positive
 template <class... Tags>
-class TaggedDeferredTuple
+class TaggedDeferredTuple  // NOLINT
     : private tuples_detail::TaggedDeferredTupleLeaf<Tags>... {
   template <class... Args>
   struct pack_is_TaggedDeferredTuple : std::false_type {};
