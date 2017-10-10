@@ -17,12 +17,30 @@ namespace MathFunctions {
  */
 class PowX : public MathFunction<1> {
  public:
+  struct Power {
+    using type = int;
+    static constexpr OptionString_t help = {
+        "The power that the double is raised to."};
+  };
+  using options = tmpl::list<Power>;
+
   static constexpr OptionString_t help = {
       "Raises the input value to a given power"};
 
   PowX(int power, const OptionContext& context) noexcept;
 
+  PowX() = default;
+  ~PowX() override = default;
+  PowX(const PowX& /*rhs*/) = delete;
+  PowX& operator=(const PowX& /*rhs*/) = delete;
+  PowX(PowX&& /*rhs*/) noexcept = default;
+  PowX& operator=(PowX&& /*rhs*/) noexcept = default;
+
+  WRAPPED_PUPable_decl_template(PowX);  // NOLINT
+
   explicit PowX(int power) noexcept;
+
+  explicit PowX(CkMigrateMessage* /*unused*/) noexcept {}
 
   double operator()(const double& x) const noexcept override;
   DataVector operator()(const DataVector& x) const noexcept override;
@@ -33,12 +51,8 @@ class PowX : public MathFunction<1> {
   double second_deriv(const double& x) const noexcept override;
   DataVector second_deriv(const DataVector& x) const noexcept override;
 
-  struct Power {
-    using type = int;
-    static constexpr OptionString_t help = {
-        "The power that the double is raised to."};
-  };
-  using options = tmpl::list<Power>;
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) override;  // NOLINT
 
  private:
   template <typename T>
@@ -48,6 +62,6 @@ class PowX : public MathFunction<1> {
   template <typename T>
   T apply_second_deriv(const T& x) const noexcept;
 
-  const double power_;
+  double power_{};
 };
 }  // namespace MathFunctions

@@ -50,4 +50,16 @@ template <typename T>
 T Sinusoid::apply_second_deriv(const T& x) const noexcept {
   return - amplitude_ * square(wavenumber_) * sin(wavenumber_ * x + phase_);
 }
+
+void Sinusoid::pup(PUP::er& p) {
+  MathFunction<1>::pup(p);
+  p | amplitude_;
+  p | wavenumber_;
+  p | phase_;
+}
 }  // namespace MathFunctions
+
+/// \cond
+PUP::able::PUP_ID MathFunctions::Sinusoid::my_PUP_ID =  // NOLINT
+    0;
+/// \endcond

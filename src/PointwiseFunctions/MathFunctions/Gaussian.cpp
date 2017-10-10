@@ -53,4 +53,16 @@ T Gaussian::apply_second_deriv(const T& x) const noexcept {
          (1.0 - 2.0 * square(x - center_) * square(inverse_width_)) *
          exp(-square((x - center_) * inverse_width_));
 }
+
+void Gaussian::pup(PUP::er& p) {
+  MathFunction<1>::pup(p);
+  p | amplitude_;
+  p | inverse_width_;
+  p | center_;
+}
 }  // namespace MathFunctions
+
+/// \cond
+PUP::able::PUP_ID MathFunctions::Gaussian::my_PUP_ID =  // NOLINT
+    0;
+/// \endcond

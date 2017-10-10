@@ -42,6 +42,17 @@ class Sinusoid : public MathFunction<1> {
   Sinusoid(double amplitude, double wavenumber, double phase,
            const OptionContext& context = {}) noexcept;
 
+  Sinusoid() = default;
+  ~Sinusoid() override = default;
+  Sinusoid(const Sinusoid& /*rhs*/) = delete;
+  Sinusoid& operator=(const Sinusoid& /*rhs*/) = delete;
+  Sinusoid(Sinusoid&& /*rhs*/) noexcept = default;
+  Sinusoid& operator=(Sinusoid&& /*rhs*/) noexcept = default;
+
+  WRAPPED_PUPable_decl_template(Sinusoid); //NOLINT
+
+  explicit Sinusoid(CkMigrateMessage* /*unused*/) noexcept {}
+
   double operator()(const double& x) const noexcept override;
   DataVector operator()(const DataVector& x) const noexcept override;
 
@@ -51,6 +62,9 @@ class Sinusoid : public MathFunction<1> {
   double second_deriv(const double& x) const noexcept override;
   DataVector second_deriv(const DataVector& x) const noexcept override;
 
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) override;  // NOLINT
+
  private:
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
@@ -59,8 +73,8 @@ class Sinusoid : public MathFunction<1> {
   template <typename T>
   T apply_second_deriv(const T& x) const noexcept;
 
-  const double amplitude_;
-  const double wavenumber_;
-  const double phase_;
+  double amplitude_{};
+  double wavenumber_{};
+  double phase_{};
 };
 }  // namespace MathFunctions

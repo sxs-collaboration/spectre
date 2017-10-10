@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
+#include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
@@ -46,6 +47,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
                   2 / square(width)) *
                  mapped_point[s]));
   }
+  test_pup_function(gauss);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",

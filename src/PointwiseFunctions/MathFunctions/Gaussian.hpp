@@ -39,8 +39,19 @@ class Gaussian : public MathFunction<1> {
   static constexpr OptionString_t help = {
       "Applies a Gaussian function to the input value"};
 
+  WRAPPED_PUPable_decl_template(Gaussian);  // NOLINT
+
+  explicit Gaussian(CkMigrateMessage* /*unused*/) noexcept {}
+
   Gaussian(double amplitude, double width, double center,
            const OptionContext& context = {}) noexcept;
+
+  Gaussian() = default;
+  ~Gaussian() override = default;
+  Gaussian(const Gaussian& /*rhs*/) = delete;
+  Gaussian& operator=(const Gaussian& /*rhs*/) = delete;
+  Gaussian(Gaussian&& /*rhs*/) noexcept = default;
+  Gaussian& operator=(Gaussian&& /*rhs*/) noexcept = default;
 
   double operator()(const double& x) const noexcept override;
   DataVector operator()(const DataVector& x) const noexcept override;
@@ -51,6 +62,9 @@ class Gaussian : public MathFunction<1> {
   double second_deriv(const double& x) const noexcept override;
   DataVector second_deriv(const DataVector& x) const noexcept override;
 
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) override;  // NOLINT
+
  private:
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
@@ -59,8 +73,8 @@ class Gaussian : public MathFunction<1> {
   template <typename T>
   T apply_second_deriv(const T& x) const noexcept;
 
-  const double amplitude_;
-  const double inverse_width_;
-  const double center_;
+  double amplitude_{};
+  double inverse_width_{};
+  double center_{};
 };
 }  // namespace MathFunctions

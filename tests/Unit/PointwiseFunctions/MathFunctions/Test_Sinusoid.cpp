@@ -5,6 +5,7 @@
 #include <random>
 
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
+#include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
@@ -36,12 +37,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
     const DataVector mapped_point = amplitude * sin(wavenumber * one + phase);
     const DataVector mapped_first_deriv =
         amplitude * wavenumber * cos(wavenumber * one + phase);
-    const DataVector mapped_second_deriv =
-        -square(wavenumber) * mapped_point;
+    const DataVector mapped_second_deriv = -square(wavenumber) * mapped_point;
     CHECK(sinusoid(one)[s] == approx(mapped_point[s]));
     CHECK(sinusoid.first_deriv(one)[s] == approx(mapped_first_deriv[s]));
     CHECK(sinusoid.second_deriv(one)[s] == approx(mapped_second_deriv[s]));
   }
+  test_pup_function(sinusoid);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
