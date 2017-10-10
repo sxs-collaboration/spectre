@@ -111,23 +111,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D", "[Domain][Unit]") {
 
     CHECK(serialize_and_deserialize(map) == map);
 
-    // Test that each function compiles when used with CoordinateMap
-    const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Grid>(
-        CoordinateMaps::Wedge2D{inner_radius, outer_radius, direction});
-
-    const auto lower_right_corner_tensor = [&lower_right_corner]() {
-      tnsr::I<double, 2, Frame::Logical> point_as_tensor{};
-      for (size_t i = 0; i < 2; ++i) {
-        point_as_tensor.get(i) = gsl::at(lower_right_corner, i);
-      }
-      return point_as_tensor;
-    }();
-
-    CHECK(coord_map(lower_right_corner_tensor).get(0) ==
-          approx(gsl::at(map(lower_right_corner), 0)));
-    CHECK(coord_map.jacobian(lower_right_corner_tensor).get(0, 0) ==
-          map.jacobian(lower_right_corner).get(0, 0));
-    CHECK(coord_map.inv_jacobian(lower_right_corner_tensor).get(0, 0) ==
-          map.inv_jacobian(lower_right_corner).get(0, 0));
-  }
+    test_coordinate_map_implementation(map);
 }
