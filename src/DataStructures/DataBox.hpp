@@ -608,6 +608,10 @@ class DataBox<TagsList<Tags...>> {
    */
   using tags_list = typelist<Tags...>;
 
+  using compute_item_tags =
+      tmpl::filter<tags_list,
+                   tmpl::bind<std::is_base_of, db::ComputeItemTag, tmpl::_1>>;
+
   /// \cond HIDDEN_SYMBOLS
   /*!
    * \note the default constructor is only used for serialization
@@ -670,15 +674,9 @@ class DataBox<TagsList<Tags...>> {
   static constexpr auto create_from(const Box& box, Args&&... args);
   /// @endcond
 
-  /*!
-   * \requires Type `T` is one of the Tags corresponding to an object stored in
-   * the DataBox
-   *
-   * \return The object corresponding to the Tag `T`
-   */
   template <typename T, typename TagList>
   // clang-tidy: redundant declaration
-  friend constexpr const item_type<T>& get(  // NOLINT
+  friend const item_type<T>& get(  // NOLINT
       const DataBox<TagList>& t) noexcept;
 
   /// \cond HIDDEN_SYMBOLS
@@ -691,23 +689,24 @@ class DataBox<TagsList<Tags...>> {
    * @return The lazy object corresponding to the Tag `T`
    */
   template <typename T>
-  constexpr const Deferred<item_type<T>>& get_lazy() const noexcept {
+  const Deferred<item_type<T>>& get_lazy() const noexcept {
+    if (UNLIKELY(mutate_locked_box_)) {
+      ERROR("Unable to retrieve a (compute) item '"
+            << T::label
+            << "' from the DataBox from within a "
+               "call to mutate. You must pass these either through the capture "
+               "list of the lambda or the constructor of a class, this "
+               "restriction exists to avoid complexity.");
+    }
     return data_.template get<T>();
   }
   /// \endcond
 
-  /*!
-   * \requires Type `T` is one of the Tags corresponding to an object stored in
-   * the DataBox
-   *
-   * `mutate()` is similar to get, however it allows altering the value of the
-   * item in the DataBox.
-   * \return The object corresponding to the Tag `T`
-   */
-  template <typename T, typename TagList>
+  template <typename... MutateTags, typename TagList, typename Invokable,
+            typename... Args>
   // clang-tidy: redundant declaration
-  friend constexpr item_type<T>& mutate(DataBox<TagList>& t)  // NOLINT
-      noexcept;
+  friend void mutate(DataBox<TagList>& box,                            // NOLINT
+                     Invokable&& invokable, Args&&... args) noexcept;  // NOLINT
 
  private:
   template <typename... TagsInArgsOrder, typename... FullItems,
@@ -738,19 +737,9 @@ class DataBox<TagsList<Tags...>> {
 #endif
   }
 
+  bool mutate_locked_box_{false};
   databox_detail::TaggedDeferredTuple<Tags...> data_;
 };
-
-template <typename T, typename TagList>
-constexpr item_type<T>& mutate(DataBox<TagList>& t) noexcept {
-  static_assert(not db::is_compute_item_v<T>, "Cannot mutate a compute item");
-  return t.data_.template get<T>().mutate();
-}
-
-template <typename T, typename TagList>
-constexpr const item_type<T>& get(const DataBox<TagList>& t) noexcept {
-  return t.data_.template get<T>().get();
-}
 
 /// \cond HIDDEN_SYMBOLS
 namespace databox_detail {
@@ -934,6 +923,71 @@ SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items(
        '0')...});
 }
 }  // namespace databox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Allows changing the state of one or more non-computed elements in
+ * the DataBox
+ *
+ * `mutate()`'s first argument is the DataBox from which to retrieve the tags
+ * `MutateTags`. The objects corresponding to the `MutateTags` are then passed
+ * to `invokable`, which is a lambda or a function object taking as many
+ * arguments as there are `MutateTags` and with the arguments being of types
+ * `db::item_type<MutateTags>...`. Inside the `invokable` no items can be
+ * retrieved from the DataBox `box`. This is to avoid confusing subtleties with
+ * order of evaluation of compute items, as well as dangling references. If an
+ * `invokable` needs read access to items in `box` they should be passed as
+ * additional arguments to `mutate`. Capturing them by reference in a lambda
+ * does not work because of a bug in GCC 6.3 and earlier. For a function object
+ * the read-only items can also be stored as const references inside the object
+ * by passing `db::get<TAG>(t)` to the constructor.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp databox_mutate_example
+ */
+template <typename... MutateTags, typename TagList, typename Invokable,
+          typename... Args>
+void mutate(DataBox<TagList>& box, Invokable&& invokable,
+            Args&&... args) noexcept {
+  static_assert(not tmpl2::flat_any_v<db::is_compute_item_v<MutateTags>...>,
+                "Cannot mutate a compute item");
+  if (UNLIKELY(box.mutate_locked_box_)) {
+    ERROR(
+        "Unable to mutate a DataBox that is already being mutated. This "
+        "error occurs when mutating a DataBox from inside the invokable "
+        "passed to the mutate function.");
+  }
+  box.mutate_locked_box_ = true;
+  invokable(box.data_.template get<MutateTags>().mutate()...,
+            std::forward<Args>(args)...);
+  using edge_list =
+      tmpl::fold<typename DataBox<TagList>::compute_item_tags, typelist<>,
+                 databox_detail::create_dependency_graph<void, tmpl::_element,
+                                                         tmpl::_state>>;
+  databox_detail::reset_compute_items<tmpl::digraph<edge_list>>(
+      box.data_, typename DataBox<TagList>::compute_item_tags{});
+  box.mutate_locked_box_ = false;
+}
+
+/*!
+ * \ingroup DataBoxGroup
+ * \requires Type `T` is one of the Tags corresponding to an object stored in
+ * the DataBox
+ *
+ * \return The object corresponding to the Tag `T`
+ */
+template <typename T, typename TagList>
+const item_type<T>& get(const DataBox<TagList>& t) noexcept {
+  if (UNLIKELY(t.mutate_locked_box_)) {
+    ERROR("Unable to retrieve a (compute) item '"
+          << T::label
+          << "' from the DataBox from within a "
+             "call to mutate. You must pass these either through the capture "
+             "list of the lambda or the constructor of a class, this "
+             "restriction exists to avoid complexity.");
+  }
+  return t.data_.template get<T>().get();
+}
 
 template <template <typename...> class TagsList, typename... Tags>
 template <
