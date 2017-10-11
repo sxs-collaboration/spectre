@@ -8,7 +8,7 @@ Block<VolumeDim, TargetFrame>::Block(
     std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>&&
         map,
     const size_t id,
-    std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>&&
+    std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
         neighbors)
     : map_(std::move(map)), id_(id), neighbors_(std::move(neighbors)) {
   // Loop over Directions to search which Directions were not set to neighbors_,
