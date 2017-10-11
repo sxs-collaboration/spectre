@@ -43,7 +43,12 @@ const Parallel::CProxy_ConstGlobalCache<TestMetavariables>* global_cache_proxy =
     nullptr;
 
 struct TestMetavariables {
-  using const_global_cache_tag_list = typelist<>;
+  static constexpr const char* const help{"Test executable"};
+  // We can't parse an input file in the test, so we read an empty
+  // file and give defaults for all the options.
+  static constexpr const char* const input_file{"/dev/null"};
+  // ctest passes options to control the tests
+  static constexpr bool ignore_unrecognized_command_line_options = true;
   using tentacle_list = typelist<Test_Tentacles::Group<TestMetavariables>,
                                  Test_Tentacles::NodeGroup<TestMetavariables>,
                                  Test_Tentacles::Chare<TestMetavariables>,
@@ -64,6 +69,10 @@ struct TestMetavariables {
 
 SPECTRE_TEST_CASE("Unit.Parallel.Main", "[Unit][Parallel]") {
   const auto& cache = *(global_cache_proxy->ckLocalBranch());
+  static_assert(
+      cpp17::is_same_v<std::decay_t<decltype(cache)>::tag_list,
+                       tmpl::list<Test_Tentacles::Options::NonCopyable>>,
+      "Wrong cache tag list in Unit.Parallel.Main");
   CHECK(Parallel::my_proc() ==
         cache.get_tentacle<Test_Tentacles::Group<TestMetavariables>>()
             .ckLocalBranch()
@@ -75,7 +84,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.Main", "[Unit][Parallel]") {
   auto& retrieved_proxy =
       cache.get_tentacle<Test_Tentacles::Chare<TestMetavariables>>();
   if (nullptr != retrieved_proxy.ckLocal()) {
-    CHECK(-1 == retrieved_proxy.ckLocal()->my_id());
+    CHECK(Test_Tentacles::Options::Integer::default_value() ==
+          retrieved_proxy.ckLocal()->my_id());
   }
   auto& retrieved_array_proxy =
       cache.get_tentacle<Test_Tentacles::Array<TestMetavariables>>();

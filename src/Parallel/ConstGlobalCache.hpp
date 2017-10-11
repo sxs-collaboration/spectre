@@ -7,7 +7,9 @@
 #pragma once
 
 #include "ErrorHandling/Assert.hpp"
+#include "Parallel/ConstGlobalCacheHelper.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 #include "Parallel/ConstGlobalCache.decl.h"
@@ -17,18 +19,19 @@ namespace Parallel {
 /// \ingroup Parallel
 /// A Charm++ chare that caches constant data once per Charm++ node.
 ///
-/// Metavariables must define the following metavariables:
-///   - const_global_cache_tag_list   typelist of tags of constant data
-///   - tentacle_list   typelist of Tentacles
+/// Metavariables must define `tentacle_list` as the typelist of
+/// tentacles.  Each tentacle must define
+/// `const_global_cache_tag_list` as the typelist of tags of constant
+/// data that it uses.
 template <typename Metavariables>
 class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
  public:
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
-  /// Typelist of the tags of constant data stored in the ConstGlobalCache
-  using tag_list = typename Metavariables::const_global_cache_tag_list;
   /// Typelist of the Tentacles stored in the ConstGlobalCache
   using tentacle_list = typename Metavariables::tentacle_list;
+  /// Typelist of the tags of constant data stored in the ConstGlobalCache
+  using tag_list = ConstGlobalCache_detail::make_tag_list<Metavariables>;
 
   explicit ConstGlobalCache(
       tuples::TaggedTupleTypelist<tag_list>& const_global_cache) noexcept

@@ -53,6 +53,7 @@ add_dependencies(
 target_link_libraries(
   Test_Main
   Informer
+  Utilities
   ${SPECTRE_LIBRARIES}
   )
 
