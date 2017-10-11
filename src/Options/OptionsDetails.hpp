@@ -14,7 +14,9 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
+#include <yaml-cpp/yaml.h>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

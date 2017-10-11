@@ -151,17 +151,31 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayArithmetic",
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
                   "[DataStructures][Unit]") {
-  const std::array<double, 2> p1{{3., 4.}};
-  CHECK(magnitude(p1) == approx(5.));
-  const std::array<double, 3> p2{{-2., 10., 11.}};
-  CHECK(magnitude(p2) == approx(15.));
+  std::array<double, 1> p1{{-2.5}};
+  CHECK(2.5 == magnitude(p1));
+  const std::array<double, 2> p2{{3., -4.}};
+  CHECK(magnitude(p2) == approx(5.));
+  const std::array<double, 3> p3{{-2., 10., 11.}};
+  CHECK(magnitude(p3) == approx(15.));
 
   // Check DataVector case
-  const std::array<DataVector, 2> p1_data_vector{
-      {DataVector(2, 3.), DataVector(2, 4.)}};
-  const DataVector expected_data_vector(2, 5.);
-  const auto magnitude_p1 = magnitude(p1_data_vector);
+  const std::array<DataVector, 1> d1{{DataVector{-2.5, 3.4}}};
+  const DataVector expected_d1{2.5, 3.4};
+  const auto magnitude_d1 = magnitude(d1);
   for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_data_vector[i] == approx(magnitude_p1[i]));
+    CHECK(expected_d1[i] == approx(magnitude_d1[i]));
+  }
+  const std::array<DataVector, 2> d2{{DataVector(2, 3.), DataVector(2, 4.)}};
+  const DataVector expected_d2(2, 5.);
+  const auto magnitude_d2 = magnitude(d2);
+  for (size_t i = 0; i < 2; ++i) {
+    CHECK(expected_d2[i] == approx(magnitude_d2[i]));
+  }
+  const std::array<DataVector, 3> d3{
+      {DataVector(2, 3.), DataVector(2, -4.), DataVector(2, 12.)}};
+  const DataVector expected_d3(2, 13.);
+  const auto magnitude_d3 = magnitude(d3);
+  for (size_t i = 0; i < 2; ++i) {
+    CHECK(expected_d3[i] == approx(magnitude_d3[i]));
   }
 }

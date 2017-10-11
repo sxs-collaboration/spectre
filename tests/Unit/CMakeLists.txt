@@ -36,8 +36,8 @@ target_link_libraries(
   Domain
   IO
   NumericalAlgorithms
-  PointwiseFunctions
   Time
+  WaveEquation
   ${SPECTRE_LIBRARIES}
 )
 
