@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
+#include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
@@ -56,12 +57,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
     }
   }
 
-  // Test DataVectors
   MathFunctions::PowX power(3);
   const DataVector test_dv{2, 1.4};
   CHECK(power(test_dv) == pow(test_dv, 3));
   CHECK(power.first_deriv(test_dv) == 3 * pow(test_dv, 2));
   CHECK(power.second_deriv(test_dv) == 6 * test_dv);
+
+  test_pup_function(power);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX.Factory",

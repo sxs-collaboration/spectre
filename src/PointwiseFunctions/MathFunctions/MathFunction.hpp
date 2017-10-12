@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/Factory.hpp"
+#include "Parallel/CharmPupable.hpp"
 
 /// Holds classes implementing MathFunction (functions \f$R^n \to R\f$).
 namespace MathFunctions {
@@ -31,18 +32,20 @@ class MathFunction;
  * function \f$R \to R\f$.
  */
 template <>
-class MathFunction<1> : public Factory<MathFunction<1>> {
+class MathFunction<1> : public Factory<MathFunction<1>>, public PUP::able {
  public:
   using creatable_classes =
       typelist<MathFunctions::Gaussian, MathFunctions::PowX,
                MathFunctions::Sinusoid>;
 
+  WRAPPED_PUPable_abstract(MathFunction);  // NOLINT
+
   MathFunction() = default;
   MathFunction(const MathFunction& /*rhs*/) = delete;
   MathFunction& operator=(const MathFunction& /*rhs*/) = delete;
-  MathFunction(MathFunction&& /*rhs*/) noexcept = default;             // NOLINT
-  MathFunction& operator=(MathFunction&& /*rhs*/) noexcept = default;  // NOLINT
-  virtual ~MathFunction() = default;
+  MathFunction(MathFunction&& /*rhs*/) noexcept = default;
+  MathFunction& operator=(MathFunction&& /*rhs*/) noexcept = default;
+  ~MathFunction() override = default;
 
   //@{
   /// Returns the function value at the coordinate 'x'.

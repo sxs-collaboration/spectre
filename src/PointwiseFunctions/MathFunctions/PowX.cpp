@@ -55,4 +55,14 @@ T PowX::apply_second_deriv(const T& x) const noexcept {
              ? make_with_value<T>(x, 0.0)
              : power_ * (power_ - 1) * pow(x, power_ - 2);
 }
+
+void PowX::pup(PUP::er& p) {
+  MathFunction<1>::pup(p);
+  p | power_;
+}
 }  // namespace MathFunctions
+
+/// \cond
+PUP::able::PUP_ID MathFunctions::PowX::my_PUP_ID =  // NOLINT
+    0;
+/// \endcond
