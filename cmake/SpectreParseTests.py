@@ -6,7 +6,9 @@
 import re
 
 # A list of all the allowed ctest labels/Catch tags for tests
-allowed_tags = ["CompilationTest",
+allowed_tags = [
+                "ApparentHorizons",
+                "CompilationTest",
                 "DataStructures",
                 "Domain",
                 "ErrorHandling",
@@ -22,7 +24,8 @@ allowed_tags = ["CompilationTest",
                 "Spectral",
                 "Time",
                 "Unit",
-                "Utilities"]
+                "Utilities",
+               ]
 
 # Words disallowed in tests
 disallowed_test_name_portions = ["Functors"]

@@ -138,26 +138,26 @@ void test_copy_semantics(const T& a) {
   CHECK(b == a);
 }
 
-/// Test for move semantics assuming operator== is implement correctly
-/// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true
-template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr>
-void test_move_semantics(T&& a, const T& comparison) {
+/// Test for move semantics assuming operator== is implemented correctly.
+/// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true.
+/// If T is not default constructible, you pass additional
+/// arguments that are used to construct a T.
+template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr,
+          typename...Args>
+void test_move_semantics(T&& a, const T& comparison,Args&&...args) {
   static_assert(std::is_rvalue_reference<decltype(a)>::value,
                 "Must move into test_move_semantics");
   static_assert(std::is_nothrow_move_assignable<T>::value,
                 "Class is not nothrow move assignable.");
   static_assert(std::is_nothrow_move_constructible<T>::value,
                 "Class is not nothrow move constructible.");
-  static_assert(std::is_default_constructible<T>::value,
-                "Cannot use test_move_semantics if a class is not default "
-                "constructible.");
   if (&a == &comparison or a != comparison) {
     // We use ERROR instead of ASSERT (which we normally should be using) to
     // guard against someone writing tests in Release mode where ASSERTs don't
     // show up.
     ERROR("'a' and 'comparison' must be distinct (but equal in value) objects");
   }
-  T b;
+  T b(std::forward<Args>(args)...);
   // clang-tidy: use std::forward instead of std::move
   b = std::move(a);  // NOLINT
   CHECK(b == comparison);

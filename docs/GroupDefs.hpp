@@ -197,6 +197,11 @@
  */
 
 /*!
+ * \defgroup Spectral Spectral
+ * Things related to spectral transformations.
+ */
+
+/*!
  * \defgroup Tensor Tensor
  * Tensor use documentation.
  */
