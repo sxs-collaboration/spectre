@@ -212,7 +212,11 @@ USE_MDFILE_AS_MAINPAGE = main.md
 
 USE_MATHJAX = YES
 
-MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1
+MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
+
+MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols color
+
+MATHJAX_CODEFILE = @PROJECT_SOURCE_DIR@/docs/config/js/mathjax_helper.js
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to the search engine
