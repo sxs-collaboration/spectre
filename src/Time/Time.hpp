@@ -200,7 +200,8 @@ inline Time operator+(const TimeDelta& a, Time b) noexcept {
 }
 
 inline Time operator-(Time a, const TimeDelta& b) noexcept {
-  a -= b;
+  // clang-tidy misfeature: warns about boost internals here
+  a -= b;  // NOLINT
   return a;
 }
 
@@ -252,7 +253,8 @@ inline Time& Time::operator+=(const TimeDelta& delta) noexcept {
 
 inline Time& Time::operator-=(const TimeDelta& delta) noexcept {
   *this = this->with_slab(delta.slab_);
-  fraction_ -= delta.fraction_;
+  // clang-tidy misfeature: warns about boost internals here
+  fraction_ -= delta.fraction_;  // NOLINT
   range_check();
   return *this;
 }

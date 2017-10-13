@@ -331,8 +331,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     const Slab init_slab = slab.retreat();
     const TimeDelta init_dt = init_slab.duration() / 4;
 
-    for (ssize_t step = 1; step <= 3; ++step) {
-      const Time now = t - step * init_dt;
+    // clang-tidy misfeature: warns about boost internals here
+    for (ssize_t step = 1; step <= 3; ++step) {  // NOLINT
+      // clang-tidy misfeature: warns about boost internals here
+      const Time now = t - step * init_dt;  // NOLINT
       for (size_t side = 0; side < 3; ++side) {
         history[side].emplace_front(
             now, NCd(unused), NCd(gsl::at(side_solutions, side)(now.value())));
