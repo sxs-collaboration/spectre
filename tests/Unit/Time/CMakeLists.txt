@@ -8,6 +8,7 @@ set(TIME_TESTS
     Time/Test_TimeId.cpp
     )
 
+add_subdirectory(Actions)
 add_subdirectory(TimeSteppers)
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${TIME_TESTS}" PARENT_SCOPE)
