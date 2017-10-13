@@ -38,4 +38,13 @@ struct d<Tag, VolumeDim, Fr,
   using tag = Tag;
   static constexpr db::DataBoxString_t label = "d";
 };
+
+/// \ingroup DataBoxTags
+/// \brief Prefix indicating a time derivative
+template <typename Tag>
+struct dt : db::DataBoxPrefix {
+  static constexpr db::DataBoxString_t label = "dt";
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+};
 }  // namespace Tags

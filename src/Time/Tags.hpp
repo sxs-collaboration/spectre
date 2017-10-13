@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <deque>
 #include <memory>
+#include <tuple>
 
 #include "DataStructures/DataBoxTag.hpp"
 #include "Options/Options.hpp"
@@ -45,6 +47,20 @@ struct Time : db::ComputeItemTag {
   static constexpr db::DataBoxString_t label = "Time";
   static constexpr auto function = TimeTags_detail::time_from_id;
   using argument_tags = tmpl::list<TimeId>;
+};
+
+/// \ingroup DataBoxTags
+/// \ingroup TimeGroup
+/// \brief Prefix for TimeStepper history
+///
+/// \tparam Tag tag for the variables
+/// \tparam DtTag tag for the time derivative of the variables
+template <typename Tag, typename DtTag>
+struct HistoryEvolvedVariables : db::DataBoxPrefix {
+  static constexpr db::DataBoxString_t label = "HistoryEvolvedVariables";
+  using tag = Tag;
+  using type =
+      std::deque<std::tuple<::Time, db::item_type<Tag>, db::item_type<DtTag>>>;
 };
 
 }  // namespace Tags
