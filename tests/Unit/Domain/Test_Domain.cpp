@@ -8,43 +8,26 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "tests/Unit/Domain/TestDomainHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-template <size_t Dim>
-void test_domain_construction(
-    const Domain<Dim, Frame::Grid>& domain,
-    const std::vector<std::unordered_map<Direction<Dim>, BlockNeighbor<Dim>>>&
-        expected_block_neighbors,
-    const std::vector<std::unordered_set<Direction<Dim>>>&
-        expected_external_boundaries) {
-  const auto& blocks = domain.blocks();
-  CHECK(blocks.size() == expected_external_boundaries.size());
-  CHECK(blocks.size() == expected_block_neighbors.size());
-  for (size_t i = 0; i < blocks.size(); ++i) {
-    const auto& block = blocks[i];
-    CHECK(block.id() == i);
-    CHECK(block.neighbors() == expected_block_neighbors[i]);
-    CHECK(block.external_boundaries() == expected_external_boundaries[i]);
-  }
-}
-
 void test_1d_domains() {
   {
-    PUPable_reg(SINGLE_ARG(
-        CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::AffineMap>));
+    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
+                                         CoordinateMaps::AffineMap>));
 
     // Test construction of two intervals which have anti-aligned logical axes.
-    const Domain<1, Frame::Grid> domain(
-        make_vector<
-            std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Grid,
+    const Domain<1, Frame::Inertial> domain(
+        make_vector<std::unique_ptr<
+            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
+            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
                                            CoordinateMaps::AffineMap>>(
-                make_coordinate_map<Frame::Logical, Frame::Grid>(
+                make_coordinate_map<Frame::Logical, Frame::Inertial>(
                     CoordinateMaps::AffineMap{-1., 1., -2., 0.})),
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Grid,
+            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
                                            CoordinateMaps::AffineMap>>(
-                make_coordinate_map<Frame::Logical, Frame::Grid>(
+                make_coordinate_map<Frame::Logical, Frame::Inertial>(
                     CoordinateMaps::AffineMap{-1., 1., 0., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}});
 
@@ -65,25 +48,25 @@ void test_1d_domains() {
                              expected_neighbors, expected_boundaries);
 
     auto vector_of_blocks = [&expected_neighbors]() {
-      std::vector<Block<1, Frame::Grid>> vec;
-      vec.emplace_back(Block<1, Frame::Grid>{
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Grid,
+      std::vector<Block<1, Frame::Inertial>> vec;
+      vec.emplace_back(Block<1, Frame::Inertial>{
+          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::AffineMap>>(
-              make_coordinate_map<Frame::Logical, Frame::Grid>(
+              make_coordinate_map<Frame::Logical, Frame::Inertial>(
                   CoordinateMaps::AffineMap{-1., 1., -2., 0.})),
           0, expected_neighbors[0]});
-      vec.emplace_back(Block<1, Frame::Grid>{
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Grid,
+      vec.emplace_back(Block<1, Frame::Inertial>{
+          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::AffineMap>>(
-              make_coordinate_map<Frame::Logical, Frame::Grid>(
+              make_coordinate_map<Frame::Logical, Frame::Inertial>(
                   CoordinateMaps::AffineMap{-1., 1., 0., 2.})),
           1, expected_neighbors[1]});
       return vec;
     }();
 
     test_domain_construction(
-        Domain<1, Frame::Grid>{std::move(vector_of_blocks)}, expected_neighbors,
-        expected_boundaries);
+        Domain<1, Frame::Inertial>{std::move(vector_of_blocks)},
+        expected_neighbors, expected_boundaries);
 
     CHECK(get_output(domain) ==
           "Domain with 2 blocks:\n"
@@ -99,12 +82,12 @@ void test_1d_domains() {
 
   {
     // Test construction of a periodic domain
-    const Domain<1, Frame::Grid> domain{
-        make_vector<
-            std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Grid,
+    const Domain<1, Frame::Inertial> domain{
+        make_vector<std::unique_ptr<
+            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
+            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
                                            CoordinateMaps::AffineMap>>(
-                make_coordinate_map<Frame::Logical, Frame::Grid>(
+                make_coordinate_map<Frame::Logical, Frame::Inertial>(
                     CoordinateMaps::AffineMap{-1., 1., -2., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}},
         std::vector<PairOfFaces>{{{1}, {2}}}};
