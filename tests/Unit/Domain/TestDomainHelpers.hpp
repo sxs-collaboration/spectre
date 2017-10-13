@@ -6,6 +6,13 @@
 
 #pragma once
 
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+#include "Domain/Block.hpp"
+#include "Domain/BlockNeighbor.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 

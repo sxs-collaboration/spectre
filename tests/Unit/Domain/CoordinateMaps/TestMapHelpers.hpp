@@ -21,13 +21,8 @@ bool are_maps_equal(
     const Map& map,
     const CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
         map_base) {
-  try {
-    const Map map_derived = dynamic_cast<const Map&>(map_base);
-    return map_derived == map;
-  }
-  catch(const std::bad_cast& e){
-    return false;
-  }
+  const auto* map_derived = dynamic_cast<const Map*>(&map_base);
+  return map_derived == nullptr ? false : (*map_derived == map);
 }
 
 /*!

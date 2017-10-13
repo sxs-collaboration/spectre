@@ -36,6 +36,7 @@ target_link_libraries(
   ApparentHorizons
   CoordinateMaps
   Domain
+  DomainCreators
   IO
   NumericalAlgorithms
   Time
@@ -76,4 +77,3 @@ set_target_properties(
   )
 
 add_compilation_tests(${EXECUTABLE})
-
