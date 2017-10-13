@@ -15,6 +15,8 @@
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 
+struct TimeId;
+
 /// \ingroup TimeSteppersGroup
 ///
 /// Holds classes that take time steps.
@@ -54,16 +56,14 @@ class TimeStepper : public Factory<TimeStepper> {
   virtual ~TimeStepper() noexcept = default;
   /// \endcond
 
-  /// Add the change for the current substep to u and return the
-  /// substep size, i.e., the time delta to the next derivative
-  /// evaluation.  New values should be pushed onto the end of the
-  /// history when evaluated and obsolete values should be removed
-  /// from the front, in a manner similar to a queue.
+  /// Add the change for the current substep to u.  New values should
+  /// be pushed onto the end of the history when evaluated and
+  /// obsolete values should be removed from the front, in a manner
+  /// similar to a queue.
   template <typename Vars, typename DerivVars>
-  TimeDelta update_u(
-      const gsl::not_null<Vars*> u,
-      const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
-      const TimeDelta& time_step) const noexcept {
+  void update_u(const gsl::not_null<Vars*> u,
+                const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
+                const TimeDelta& time_step) const noexcept {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, history, time_step);
   }
@@ -136,6 +136,10 @@ class TimeStepper : public Factory<TimeStepper> {
   /// Rough estimate of the maximum step size this method can take
   /// stably as a multiple of the step for Euler's method.
   virtual double stable_step() const noexcept = 0;
+
+  /// The TimeId after the current substep
+  virtual TimeId next_time_id(const TimeId& current_id,
+                              const TimeDelta& time_step) const noexcept = 0;
 };
 
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"

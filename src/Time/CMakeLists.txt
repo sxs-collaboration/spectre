@@ -6,6 +6,7 @@ set(LIBRARY Time)
 set(LIBRARY_SOURCES
     Slab.cpp
     Time.cpp
+    TimeId.cpp
     )
 
 add_subdirectory(TimeSteppers)

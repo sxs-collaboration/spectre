@@ -5,6 +5,7 @@ set(TIME_TESTS
     Time/Test_Slab.cpp
     Time/Test_StepControllers.cpp
     Time/Test_Time.cpp
+    Time/Test_TimeId.cpp
     )
 
 add_subdirectory(TimeSteppers)

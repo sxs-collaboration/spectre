@@ -21,6 +21,8 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 
+struct TimeId;
+
 namespace TimeSteppers {
 
 /// \ingroup TimeSteppersGroup
@@ -43,10 +45,9 @@ class RungeKutta3 : public TimeStepper::Inherit {
   ~RungeKutta3() noexcept override = default;
 
   template <typename Vars, typename DerivVars>
-  TimeDelta update_u(
-      gsl::not_null<Vars*> u,
-      const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
-      const TimeDelta& time_step) const noexcept;
+  void update_u(gsl::not_null<Vars*> u,
+                const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
+                const TimeDelta& time_step) const noexcept;
 
   template <typename BoundaryVars, typename FluxVars, typename Coupling>
   BoundaryVars compute_boundary_delta(
@@ -76,21 +77,23 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   double stable_step() const noexcept override;
 
+  TimeId next_time_id(const TimeId& current_id,
+                      const TimeDelta& time_step) const noexcept override;
+
  private:
   template <typename Vars, typename UnusedData, typename DerivVars>
-  TimeDelta step_work(
-    gsl::not_null<Vars*> u,
-    const std::deque<std::tuple<Time, Vars, UnusedData>>& history,
-    const TimeDelta& time_step,
-    const DerivVars& dt_vars) const noexcept;
+  void step_work(gsl::not_null<Vars*> u,
+                 const std::deque<std::tuple<Time, Vars, UnusedData>>& history,
+                 const TimeDelta& time_step,
+                 const DerivVars& dt_vars) const noexcept;
 };
 
 template <typename Vars, typename DerivVars>
-TimeDelta RungeKutta3::update_u(
+void RungeKutta3::update_u(
     const gsl::not_null<Vars*> u,
     const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
     const TimeDelta& time_step) const noexcept {
-  return step_work(u, history, time_step, std::get<2>(history.back()));
+  step_work(u, history, time_step, std::get<2>(history.back()));
 }
 
 template <typename BoundaryVars, typename FluxVars, typename Coupling>
@@ -112,7 +115,7 @@ BoundaryVars RungeKutta3::compute_boundary_delta(
 }
 
 template <typename Vars, typename UnusedData, typename DerivVars>
-TimeDelta RungeKutta3::step_work(
+void RungeKutta3::step_work(
     const gsl::not_null<Vars*> u,
     const std::deque<std::tuple<Time, Vars, UnusedData>>& history,
     const TimeDelta& time_step,
@@ -128,8 +131,8 @@ TimeDelta RungeKutta3::step_work(
       // On entry V = u^n, U0 = u^n, rhs0 = RHS(u^n,t^n),
       // time = t^n
       *u += time_step.value() * dt_vars;
-      return time_step;
       // On exit v = v^(1), time = t^n + dt
+      return;
     }
     case 1: {
       // from (5.32) of Hesthaven
@@ -137,8 +140,8 @@ TimeDelta RungeKutta3::step_work(
       // On entry V = v^(1), U0 = u^n, rhs0 = RHS(v^(1),t^n + dt),
       // time = t^n + dt
       *u += 0.25 * (3.0 * (U0 - vars) + time_step.value() * dt_vars);
-      return -time_step / 2;
       // On exit v = v^(2), time = t^n + (1/2)*dt
+      return;
     }
     case 2: {
       // from (5.32) of Hesthaven
@@ -146,8 +149,8 @@ TimeDelta RungeKutta3::step_work(
       // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
       // time = t^n + (1/2)*dt
       *u += (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
-      return time_step / 2;
       // On exit v = u^(n+1), time = t^n + dt
+      return;
     }
     default:
       ERROR("Bad substep value in RK3: " << substep);
