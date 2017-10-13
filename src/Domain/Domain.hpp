@@ -51,7 +51,7 @@ class Domain {
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,
-         const std::vector<std::vector<size_t>>& identifications = {});
+         const std::vector<PairOfFaces>& identifications = {});
 
   Domain() = default;
   ~Domain() = default;
