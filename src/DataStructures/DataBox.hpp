@@ -574,10 +574,13 @@ struct create_dependency_graph<
  * \ingroup DataBoxGroup
  * \brief A DataBox stores objects that can be retrieved by using Tags
  * \warning
- * The order of the tags in DataBoxes returned by create and create_from depends
- * on implementation-defined behavior, and therefore should not be
- * specified in source files. If explicitly naming a DataBox type is
- * necessary they should be generated using get_databox_list.
+ * The order of the tags in DataBoxes returned by db::create and
+ * db::create_from depends on implementation-defined behavior, and
+ * therefore should not be specified in source files. If explicitly
+ * naming a DataBox type is necessary they should be generated using
+ * db::get_databox_list.
+ *
+ * \see db::create db::create_from
  *
  * @tparam TagsList a metasequence
  * @tparam Tags list of DataBoxTag's
