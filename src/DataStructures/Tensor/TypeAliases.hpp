@@ -9,9 +9,11 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 
+/// \cond
 class DataVector;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
+/// \endcond
 
 /// \ingroup Tensor
 /// Scalar type

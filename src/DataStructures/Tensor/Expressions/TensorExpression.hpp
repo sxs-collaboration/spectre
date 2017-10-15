@@ -267,8 +267,10 @@ using replace_indices =
 /// 2) The tensor indices will be swapped to conform with mathematical notation
 struct Expression {};
 
+/// \cond
 template <typename DataType, typename Symm, typename IndexList>
 class Tensor;
+/// \endcond
 
 // @{
 /// \ingroup TensorExpressions

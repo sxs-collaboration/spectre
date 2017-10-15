@@ -9,8 +9,10 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
+/// \endcond
 
 /// \ingroup Tensor
 /// Contains all metafunctions related to Tensor manipulations
