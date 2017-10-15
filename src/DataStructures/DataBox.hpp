@@ -297,10 +297,8 @@ class TaggedDeferredTuple
     static_assert(
         cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
                             TaggedDeferredTuple>,
-        "Could not retrieve Tag from DataBox. See the first template "
-        "parameter of the instantiation for what Tag is being "
-        "retrieved and the remaining template parameters for what "
-        "Tags are available.");
+        "Could not retrieve Tag from DataBox. See the instantiation for "
+        "what Tag is being retrieved and what Tags are available.");
     return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
   }
 
@@ -309,10 +307,8 @@ class TaggedDeferredTuple
     static_assert(
         cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
                             TaggedDeferredTuple>,
-        "Could not retrieve Tag from DataBox. See the first template "
-        "parameter of the instantiation for what Tag is being "
-        "retrieved and the remaining template parameters for what "
-        "Tags are available.");
+        "Could not retrieve Tag from DataBox. See the instantiation for "
+        "what Tag is being retrieved and what Tags are available.");
     return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
   }
 
