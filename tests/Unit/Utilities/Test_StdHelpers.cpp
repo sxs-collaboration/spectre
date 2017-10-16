@@ -147,3 +147,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayArithmetic",
     CHECK(gsl::at(neg_p1, i) == approx(gsl::at(expected_neg_p1, i)));
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.AllButFirstElementOf",
+                  "[DataStructures][Unit]") {
+  const std::array<size_t, 3> a3{{5,2,3}};
+  const std::array<size_t, 2> a2{{2,3}};
+  const std::array<size_t, 1> a1{{3}};
+  const std::array<size_t, 0> a0{{}};
+  CHECK(a2 == all_but_first_element_of(a3));
+  CHECK(a1 == all_but_first_element_of(a2));
+  CHECK(a0 == all_but_first_element_of(a1));
+}

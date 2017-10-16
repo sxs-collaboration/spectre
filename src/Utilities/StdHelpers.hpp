@@ -389,3 +389,14 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept(
   }
   return result;
 }
+
+template <typename T, size_t Dim>
+inline std::array<T, Dim - 1> all_but_first_element_of(
+    const std::array<T, Dim>& a) noexcept {
+  static_assert(0 != Dim, "Cannot remove first element of empty array.");
+  std::array<T, Dim - 1> result{};
+  for (size_t i = 1; i < Dim; ++i) {
+    gsl::at(result, i - 1) = gsl::at(a, i);
+  }
+  return result;
+}
