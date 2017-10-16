@@ -5,7 +5,11 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxHelpers.hpp"
+#include "DataStructures/DataBox/DataBoxPrefixes.hpp"
+#include "DataStructures/DataBox/TagHelpers.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -381,3 +385,69 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
   //  CHECK(grid_coords_norm == decltype(grid_coords_norm){std::make_pair(
   //                                "x"s, std::make_pair(0.5, 3_st))});
 }
+
+// Test the tags
+namespace {
+
+template <size_t Dim>
+struct Var1 : db::DataBoxTag {
+  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
+  static constexpr db::DataBoxString_t label = "Vector_t";
+};
+
+struct Var2 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString_t label = "Scalar_t";
+};
+
+template <size_t Dim>
+using two_vars = typelist<Var1<Dim>, Var2>;
+
+template <size_t Dim>
+using vector_only = typelist<Var1<Dim>>;
+
+using scalar_only = typelist<Var2>;
+
+Variables<scalar_only> scalar(2, 0.0);
+auto& s = get<Var2>(scalar);
+static_assert(cpp17::is_same_v<std::decay_t<decltype(s)>, typename Var2::type>,
+              "unexpected type");
+Variables<wrap_tags_in<Tags::d, scalar_only, tmpl::size_t<2>, Frame::Grid>>
+    dscalar(scalar.number_of_grid_points(), 0.0);
+auto& ds = get<Tags::d<Var2, tmpl::size_t<2>, Frame::Grid>>(dscalar);
+static_assert(cpp17::is_same_v<std::decay_t<decltype(ds)>,
+                               tnsr::i<DataVector, 2, Frame::Grid>>,
+              "unexpected type");
+
+Variables<vector_only<2>> vector(2, 0.0);
+auto& v = get<Var1<2>>(vector);
+static_assert(
+    cpp17::is_same_v<std::decay_t<decltype(v)>, typename Var1<2>::type>,
+    "unexpected type");
+Variables<wrap_tags_in<Tags::d, vector_only<2>, tmpl::size_t<2>, Frame::Grid>>
+    dvector(vector.number_of_grid_points(), 0.0);
+auto& dv = get<Tags::d<Var1<2>, tmpl::size_t<2>, Frame::Grid>>(dvector);
+static_assert(cpp17::is_same_v<std::decay_t<decltype(dv)>,
+                               tnsr::ij<DataVector, 2, Frame::Grid>>,
+              "unexpected type");
+//TypeDisplayer<decltype(ds)> bla;
+
+Variables<two_vars<3>> vars(2, 0.0);
+auto& sv = get<Var2>(vars);
+auto& vv = get<Var1<3>>(vars);
+static_assert(cpp17::is_same_v<std::decay_t<decltype(sv)>, typename Var2::type>,
+              "unexpected type");
+static_assert(
+    cpp17::is_same_v<std::decay_t<decltype(vv)>, typename Var1<3>::type>,
+    "unexpected type");
+Variables<wrap_tags_in<Tags::d, two_vars<2>, tmpl::size_t<2>, Frame::Grid>>
+    dvars(vars.number_of_grid_points(), 0.0);
+auto& dsv = get<Tags::d<Var2, tmpl::size_t<2>, Frame::Grid>>(dvars);
+static_assert(cpp17::is_same_v<std::decay_t<decltype(dsv)>,
+                               tnsr::i<DataVector, 2, Frame::Grid>>,
+              "unexpected type");
+auto& dvv = get<Tags::d<Var1<2>, tmpl::size_t<2>, Frame::Grid>>(dvars);
+static_assert(cpp17::is_same_v<std::decay_t<decltype(dvv)>,
+                               tnsr::ij<DataVector, 2, Frame::Grid>>,
+              "unexpected type");
+}  // namespace
