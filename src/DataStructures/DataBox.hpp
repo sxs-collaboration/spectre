@@ -1120,7 +1120,7 @@ using AddComputeItemsTags = tmpl::flatten<typelist<Tags...>>;
  * \example
  * \snippet Test_DataBox.cpp create_databox
  *
- * \see create_from get_tags_from_box
+ * \see create_from
  *
  * \tparam AddTags the tags of the args being added
  * \tparam AddComputeItems list of \ref ComputeItemTag "compute item tags"
@@ -1155,7 +1155,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
  * Adding a compute item is done using:
  * \snippet Test_DataBox.cpp create_from_add_compute_item
  *
- * \see create DataBox get_tags_from_box
+ * \see create DataBox
  *
  * \tparam RemoveTags typelist of Tags to remove
  * \tparam AddTags typelist of Tags corresponding to the arguments to be
