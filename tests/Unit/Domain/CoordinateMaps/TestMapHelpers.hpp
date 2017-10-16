@@ -12,6 +12,26 @@
 
 /*!
  * \ingroup TestingFramework
+ * \brief Given a Map and a CoordinateMapBase, checks that the maps are equal by
+ * downcasting `map_base` and then comparing to `map`. Returns false if the
+ * downcast fails.
+ */
+template <typename Map>
+bool are_maps_equal(
+    const Map& map,
+    const CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
+        map_base) {
+  try {
+    const Map map_derived = dynamic_cast<const Map&>(map_base);
+    return map_derived == map;
+  }
+  catch(const std::bad_cast& e){
+    return false;
+  }
+}
+
+/*!
+ * \ingroup TestingFramework
  * \brief Given a Map `map`, checks that the jacobian gives expected results
  * when compared to the numerical derivative in each direction.
  */

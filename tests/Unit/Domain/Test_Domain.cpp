@@ -43,9 +43,18 @@ void test_1d_domains() {
     const std::vector<std::unordered_set<Direction<1>>> expected_boundaries{
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
 
-    test_domain_construction(domain, expected_neighbors, expected_boundaries);
+    const auto expected_maps =
+        make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                        CoordinateMaps::AffineMap{-1., 1., -2., 0.}),
+                    make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                        CoordinateMaps::AffineMap{-1., 1., 0., 2.}));
+
+    test_domain_construction(domain, expected_neighbors, expected_boundaries,
+                             expected_maps);
+
     test_domain_construction(serialize_and_deserialize(domain),
-                             expected_neighbors, expected_boundaries);
+                             expected_neighbors, expected_boundaries,
+                             expected_maps);
 
     auto vector_of_blocks = [&expected_neighbors]() {
       std::vector<Block<1, Frame::Inertial>> vec;
@@ -66,7 +75,7 @@ void test_1d_domains() {
 
     test_domain_construction(
         Domain<1, Frame::Inertial>{std::move(vector_of_blocks)},
-        expected_neighbors, expected_boundaries);
+        expected_neighbors, expected_boundaries, expected_maps);
 
     CHECK(get_output(domain) ==
           "Domain with 2 blocks:\n"
@@ -82,6 +91,10 @@ void test_1d_domains() {
 
   {
     // Test construction of a periodic domain
+    const auto expected_maps =
+        make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+            CoordinateMaps::AffineMap{-1., 1., -2., 2.}));
+
     const Domain<1, Frame::Inertial> domain{
         make_vector<std::unique_ptr<
             CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
@@ -101,7 +114,8 @@ void test_1d_domains() {
     }();
 
     test_domain_construction(domain, expected_neighbors,
-                             std::vector<std::unordered_set<Direction<1>>>{1});
+                             std::vector<std::unordered_set<Direction<1>>>{1},
+                             expected_maps);
   }
 }
 }  // namespace
