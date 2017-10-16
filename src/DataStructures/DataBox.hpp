@@ -1153,7 +1153,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
  * Adding an item is done using:
  * \snippet Test_DataBox.cpp create_from_add_item
  * Adding a compute item is done using:
- * \snippet Test_DataBox.cpp create_from_add_item
+ * \snippet Test_DataBox.cpp create_from_add_compute_item
  *
  * \see create DataBox get_tags_from_box
  *
