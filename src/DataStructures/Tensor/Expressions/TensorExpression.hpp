@@ -267,8 +267,10 @@ using replace_indices =
 /// 2) The tensor indices will be swapped to conform with mathematical notation
 struct Expression {};
 
+/// \cond
 template <typename DataType, typename Symm, typename IndexList>
 class Tensor;
+/// \endcond
 
 // @{
 /// \ingroup TensorExpressions
@@ -276,7 +278,7 @@ class Tensor;
 ///
 /// \tparam Derived the derived class needed for
 /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
-/// \tparam DataType the type of the data being stored in the ::Tensor's
+/// \tparam DataType the type of the data being stored in the Tensor's
 /// \tparam Symm the ::Symmetry of the Derived class
 /// \tparam IndexList the list of \ref SpacetimeIndex "TensorIndex"'s
 /// \tparam Args the tensor indices, e.g. `_a` and `_b` in `F(_a, _b)`

@@ -65,6 +65,8 @@ GENERATE_TESTLIST      = NO
 
 GENERATE_BUGLIST       = NO
 
+STRIP_CODE_COMMENTS    = NO
+
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------

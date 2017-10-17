@@ -297,10 +297,8 @@ class TaggedDeferredTuple
     static_assert(
         cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
                             TaggedDeferredTuple>,
-        "Could not retrieve Tag from DataBox. See the first template "
-        "parameter of the instantiation for what Tag is being "
-        "retrieved and the remaining template parameters for what "
-        "Tags are available.");
+        "Could not retrieve Tag from DataBox. See the instantiation for "
+        "what Tag is being retrieved and what Tags are available.");
     return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
   }
 
@@ -309,10 +307,8 @@ class TaggedDeferredTuple
     static_assert(
         cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
                             TaggedDeferredTuple>,
-        "Could not retrieve Tag from DataBox. See the first template "
-        "parameter of the instantiation for what Tag is being "
-        "retrieved and the remaining template parameters for what "
-        "Tags are available.");
+        "Could not retrieve Tag from DataBox. See the instantiation for "
+        "what Tag is being retrieved and what Tags are available.");
     return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
   }
 
@@ -578,10 +574,13 @@ struct create_dependency_graph<
  * \ingroup DataBoxGroup
  * \brief A DataBox stores objects that can be retrieved by using Tags
  * \warning
- * The order of the tags in DataBoxes returned by create and create_from depends
- * on implementation-defined behavior, and therefore should not be
- * specified in source files. If explicitly naming a DataBox type is
- * necessary they should be generated using get_databox_list.
+ * The order of the tags in DataBoxes returned by db::create and
+ * db::create_from depends on implementation-defined behavior, and
+ * therefore should not be specified in source files. If explicitly
+ * naming a DataBox type is necessary they should be generated using
+ * db::get_databox_list.
+ *
+ * \see db::create db::create_from
  *
  * @tparam TagsList a metasequence
  * @tparam Tags list of DataBoxTag's
@@ -1121,7 +1120,7 @@ using AddComputeItemsTags = tmpl::flatten<typelist<Tags...>>;
  * \example
  * \snippet Test_DataBox.cpp create_databox
  *
- * \see create_from get_tags_from_box
+ * \see create_from
  *
  * \tparam AddTags the tags of the args being added
  * \tparam AddComputeItems list of \ref ComputeItemTag "compute item tags"
@@ -1154,9 +1153,9 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
  * Adding an item is done using:
  * \snippet Test_DataBox.cpp create_from_add_item
  * Adding a compute item is done using:
- * \snippet Test_DataBox.cpp create_from_add_item
+ * \snippet Test_DataBox.cpp create_from_add_compute_item
  *
- * \see create DataBox get_tags_from_box
+ * \see create DataBox
  *
  * \tparam RemoveTags typelist of Tags to remove
  * \tparam AddTags typelist of Tags corresponding to the arguments to be
