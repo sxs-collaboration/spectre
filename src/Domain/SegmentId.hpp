@@ -52,6 +52,9 @@ class SegmentId {
     return -1.0 + (1.0 + 2.0 * index_) / two_to_the(refinement_level_);
   }
 
+  /// Does the segment overlap with another?
+  bool overlaps(const SegmentId& other) const noexcept;
+
   /// Serialization for Charm++
   void pup(PUP::er& p);  // NOLINT
 
@@ -101,6 +104,13 @@ inline double SegmentId::endpoint(Side side) const noexcept {
     return -1.0 + (2.0 * index_) / two_to_the(refinement_level_);
   }
   return -1.0 + (2.0 * index_ + 2.0) / two_to_the(refinement_level_);
+}
+
+inline bool SegmentId::overlaps(const SegmentId& other) const noexcept {
+  const size_t this_denom = two_to_the(refinement_level_);
+  const size_t other_denom = two_to_the(other.refinement_level_);
+  return index_ * other_denom < (other.index_ + 1) * this_denom and
+      other.index_ * this_denom < (index_ + 1) * other_denom;
 }
 
 // These are defined so that a SegmentId can be used as part of a key of an
