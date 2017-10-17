@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+if (DEFINED ENV{CHARM_ROOT} AND "${CHARM_ROOT}" STREQUAL "")
+  set(CHARM_ROOT "$ENV{CHARM_ROOT}")
+endif()
+
 if (NOT EXISTS "${CHARM_ROOT}")
   if ("${CHARM_ROOT}" STREQUAL "")
     message(
