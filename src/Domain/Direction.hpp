@@ -184,13 +184,16 @@ inline bool operator!=(const Direction<VolumeDim>& lhs,
   return not(lhs == rhs);
 }
 
-// These are defined so that a Direction can be used as part of a key of an
-// unordered_set or unordered_map.
+template <size_t VolumeDim>
+size_t hash_value(const Direction<VolumeDim>& d) noexcept {
+  return std::hash<size_t>{}(d.dimension()) xor std::hash<double>{}(d.sign());
+}
+
 namespace std {
 template <size_t VolumeDim>
 struct hash<Direction<VolumeDim>> {
-  size_t operator()(const Direction<VolumeDim>& d) const {
-    return hash<size_t>{}(d.dimension()) xor hash<double>{}(d.sign());
+  size_t operator()(const Direction<VolumeDim>& d) const noexcept {
+    return hash_value(d);
   }
 };
 }  // namespace std

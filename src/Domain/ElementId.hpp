@@ -71,8 +71,9 @@ bool operator!=(const ElementId<VolumeDim>& lhs,
 // INLINE DEFINITIONS
 // ######################################################################
 
-// These are defined so that an ElementId can be used as part of a key of an
-// unordered_set or unordered_map.
+template <size_t VolumeDim>
+size_t hash_value(const ElementId<VolumeDim>& c) noexcept;
+
 namespace std {
 template <size_t VolumeDim>
 struct hash<ElementId<VolumeDim>> {
