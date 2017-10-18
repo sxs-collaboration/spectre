@@ -57,6 +57,26 @@ class Time {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  /// A comparison operator that compares Times structurally, i.e.,
+  /// just looking at the class members.  This is only intended for
+  /// use as the comparator in a map.  The returned ordering does not
+  /// match the time ordering and opposite sides of slab boundaries do
+  /// not compare equal.  It is, however, much faster to compute than
+  /// the temporal ordering, so it is useful when an ordering is
+  /// required, but the ordering does not have to be physically
+  /// meaningful.
+  struct StructuralCompare {
+    bool operator()(const Time& a, const Time& b) const {
+      if (a.fraction().numerator() != b.fraction().numerator()) {
+        return a.fraction().numerator() < b.fraction().numerator();
+      }
+      if (a.fraction().denominator() != b.fraction().denominator()) {
+        return a.fraction().denominator() < b.fraction().denominator();
+      }
+      return a.slab() < b.slab();
+    }
+  };
+
  private:
   Slab slab_;
   rational_t fraction_;
@@ -180,7 +200,8 @@ inline Time operator+(const TimeDelta& a, Time b) noexcept {
 }
 
 inline Time operator-(Time a, const TimeDelta& b) noexcept {
-  a -= b;
+  // clang-tidy misfeature: warns about boost internals here
+  a -= b;  // NOLINT
   return a;
 }
 
@@ -232,7 +253,8 @@ inline Time& Time::operator+=(const TimeDelta& delta) noexcept {
 
 inline Time& Time::operator-=(const TimeDelta& delta) noexcept {
   *this = this->with_slab(delta.slab_);
-  fraction_ -= delta.fraction_;
+  // clang-tidy misfeature: warns about boost internals here
+  fraction_ -= delta.fraction_;  // NOLINT
   range_check();
   return *this;
 }

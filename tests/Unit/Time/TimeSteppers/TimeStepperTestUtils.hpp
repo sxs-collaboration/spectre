@@ -14,6 +14,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace TimeStepperTestUtils {
+
 template <typename Stepper, typename F>
 void take_step(
     const gsl::not_null<Time*> time,
@@ -28,11 +30,9 @@ void take_step(
     const TimeDelta substep_dt = stepper.update_u(y, *history, step_size);
     accumulated_step_dt += substep_dt;
     *time += substep_dt;
+    history->erase(history->begin(), stepper.needed_history(*history));
   }
   CHECK(accumulated_step_dt == step_size);
-  while (history->size() > stepper.number_of_past_steps()) {
-    history->pop_front();
-  }
 }
 
 template <typename Stepper, typename F1, typename F2>
@@ -95,6 +95,11 @@ void integrate_test(const Stepper& stepper, const double integration_time,
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
+  // Make sure history is being cleaned up.  The limit of 20 is
+  // arbitrary, but much larger than the order of any integrators we
+  // care about and much smaller than the number of time steps in the
+  // test.
+  CHECK(history.size() < 20);
 }
 
 template <typename Stepper>
@@ -182,3 +187,100 @@ void stability_test(const Stepper& stepper) noexcept {
     CHECK(false);
   }
 }
+
+template <typename Stepper, typename BoundaryVars, typename FluxVars>
+void erase_boundary_history(
+    const Stepper& stepper,
+    const gsl::not_null<std::vector<
+        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>*> history,
+    const TimeDelta& step_size) {
+  const auto needed_history =
+      stepper.needed_boundary_history(*history, step_size);
+  CHECK(needed_history.size() == history->size());
+  for (size_t side = 0; side < needed_history.size(); ++side) {
+    (*history)[side].erase((*history)[side].begin(), needed_history[side]);
+  }
+}
+
+template <typename Stepper>
+void equal_rate_boundary(const Stepper& stepper, const double epsilon,
+                         const bool forward) {
+  // This operates the stepper as an integrator.
+  const double unused_local_deriv = 4444.;
+  // TODO(wthrowe): Should the interface be redesigned to stop passing these?
+  const double unused_remote_value = 1234.;
+
+  auto analytic = [](double t) { return sin(t); };
+  auto driver = [](double t) { return cos(t); };
+  auto coupling =
+      [=](const std::vector<std::reference_wrapper<const double>>& values) {
+    CHECK(values[0] == unused_local_deriv);
+    return values[1];
+  };
+
+  Approx approx = Approx::custom().epsilon(epsilon);
+
+  const size_t num_steps = 100;
+  const Slab slab(0.875, 1.);
+  const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
+
+  Time time = forward ? slab.start() : slab.end();
+  double y = analytic(time.value());
+  std::vector<std::deque<std::tuple<Time, double, double>>> history(2);
+
+  if (not stepper.is_self_starting()) {
+    Time history_time = time;
+    TimeDelta history_step_size = step_size;
+    for (size_t j = 0; j < stepper.number_of_past_steps(); ++j) {
+      ASSERT(history_time.slab() == history_step_size.slab(), "Slab mismatch");
+      if ((history_step_size.is_positive() and
+           history_time.is_at_slab_start()) or
+          (not history_step_size.is_positive() and
+           history_time.is_at_slab_end())) {
+        const Slab new_slab =
+            history_time.slab().advance_towards(-history_step_size);
+        history_time = history_time.with_slab(new_slab);
+        history_step_size = history_step_size.with_slab(new_slab);
+      }
+      history_time -= history_step_size;
+      history[0].emplace_front(history_time, analytic(history_time.value()),
+                               unused_local_deriv);
+      history[1].emplace_front(history_time, unused_remote_value,
+                               driver(history_time.value()));
+    }
+  }
+
+  for (size_t i = 0; i < num_steps; ++i) {
+    TimeDelta accumulated_step_dt = step_size * 0;
+    for (size_t substep = 0;
+         substep < stepper.number_of_substeps();
+         ++substep) {
+      history[0].emplace_back(time, y, unused_local_deriv);
+      history[1].emplace_back(time, unused_remote_value, driver(time.value()));
+
+      // Need to get the substep size.
+      double dummy = 0.;
+      const TimeDelta substep_dt =
+          stepper.update_u(make_not_null(&dummy), history[0], step_size);
+
+      const double boundary_delta = stepper.compute_boundary_delta(
+          coupling, history, step_size);
+
+      accumulated_step_dt += substep_dt;
+      time += substep_dt;
+      y += boundary_delta;
+      erase_boundary_history(stepper, make_not_null(&history), step_size);
+    }
+    CHECK(accumulated_step_dt == step_size);
+    CHECK(y == approx(analytic(time.value())));
+  }
+  // Make sure history is being cleaned up.  The limit of 20 is
+  // arbitrary, but much larger than the order of any integrators we
+  // care about and much smaller than the number of time steps in the
+  // test.
+  for (const auto& side_hist : history) {
+    CHECK(side_hist.size() < 20);
+  }
+}
+
+}  // namespace TimeStepperTestUtils

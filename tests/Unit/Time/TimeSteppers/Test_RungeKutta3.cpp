@@ -7,28 +7,40 @@
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3", "[Unit][Time]") {
   const TimeSteppers::RungeKutta3 stepper{};
-  check_substep_properties(stepper);
-  integrate_test(stepper, 1., 1e-9);
+  TimeStepperTestUtils::check_substep_properties(stepper);
+  TimeStepperTestUtils::integrate_test(stepper, 1., 1e-9);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Variable",
                   "[Unit][Time]") {
   const TimeSteppers::RungeKutta3 stepper{};
-  integrate_variable_test(stepper, 1e-9);
+  TimeStepperTestUtils::integrate_variable_test(stepper, 1e-9);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Backwards",
                   "[Unit][Time]") {
   const TimeSteppers::RungeKutta3 stepper{};
-  integrate_test(stepper, -1., 1e-9);
+  TimeStepperTestUtils::integrate_test(stepper, -1., 1e-9);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Stability",
                   "[Unit][Time]") {
-  stability_test(TimeSteppers::RungeKutta3{});
+  TimeStepperTestUtils::stability_test(TimeSteppers::RungeKutta3{});
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Factory",
                   "[Unit][Time]") {
   test_factory_creation<TimeStepper>("  RungeKutta3");
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal",
+                  "[Unit][Time]") {
+  TimeStepperTestUtils::equal_rate_boundary(
+      TimeSteppers::RungeKutta3{}, 1e-9, true);
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal.Backwards",
+                  "[Unit][Time]") {
+  TimeStepperTestUtils::equal_rate_boundary(
+      TimeSteppers::RungeKutta3{}, 1e-9, false);
 }

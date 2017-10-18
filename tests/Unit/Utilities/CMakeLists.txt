@@ -4,6 +4,7 @@
 set(UTILITIES_TESTS
     Utilities/Test_Blas.cpp
     Utilities/Test_BoostHelpers.cpp
+    Utilities/Test_CachedFunction.cpp
     Utilities/Test_ConstantExpressions.cpp
     Utilities/Test_Deferred.cpp
     Utilities/Test_FakeVirtual.cpp

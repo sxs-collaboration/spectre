@@ -6,10 +6,15 @@
 
 #pragma once
 
+#include <algorithm>
 #include <deque>
+#include <functional>
+#include <iterator>
 #include <string>
 #include <tuple>
+#include <vector>
 
+#include "DataStructures/MakeWithValue.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Time/Time.hpp"
@@ -43,6 +48,26 @@ class RungeKutta3 : public TimeStepper::Inherit {
       const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
       const TimeDelta& time_step) const noexcept;
 
+  template <typename BoundaryVars, typename FluxVars, typename Coupling>
+  BoundaryVars compute_boundary_delta(
+      const Coupling& coupling,
+      const std::vector<std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>&
+          history,
+      const TimeDelta& time_step) const noexcept;
+
+  template <typename Vars, typename DerivVars>
+  typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+  needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
+      const noexcept;
+
+  template <typename BoundaryVars, typename FluxVars>
+  typename std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+  needed_boundary_history(
+      const std::vector<
+          std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+      const TimeDelta& time_step) const noexcept;
+
   size_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
@@ -50,6 +75,14 @@ class RungeKutta3 : public TimeStepper::Inherit {
   bool is_self_starting() const noexcept override;
 
   double stable_step() const noexcept override;
+
+ private:
+  template <typename Vars, typename UnusedData, typename DerivVars>
+  TimeDelta step_work(
+    gsl::not_null<Vars*> u,
+    const std::deque<std::tuple<Time, Vars, UnusedData>>& history,
+    const TimeDelta& time_step,
+    const DerivVars& dt_vars) const noexcept;
 };
 
 template <typename Vars, typename DerivVars>
@@ -57,9 +90,35 @@ TimeDelta RungeKutta3::update_u(
     const gsl::not_null<Vars*> u,
     const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
     const TimeDelta& time_step) const noexcept {
+  return step_work(u, history, time_step, std::get<2>(history.back()));
+}
+
+template <typename BoundaryVars, typename FluxVars, typename Coupling>
+BoundaryVars RungeKutta3::compute_boundary_delta(
+    const Coupling& coupling,
+    const std::vector<std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>&
+        history,
+    const TimeDelta& time_step) const noexcept {
+  std::vector<std::reference_wrapper<const FluxVars>> coupling_args;
+  std::transform(history.begin(), history.end(),
+                 std::inserter(coupling_args, coupling_args.begin()),
+                 [](const auto& side) {
+                   return std::cref(std::get<2>(side.back()));
+                 });
+
+  auto u = make_with_value<BoundaryVars>(std::get<1>(history[0][0]), 0.);
+  step_work(make_not_null(&u), history[0], time_step, coupling(coupling_args));
+  return u;
+}
+
+template <typename Vars, typename UnusedData, typename DerivVars>
+TimeDelta RungeKutta3::step_work(
+    const gsl::not_null<Vars*> u,
+    const std::deque<std::tuple<Time, Vars, UnusedData>>& history,
+    const TimeDelta& time_step,
+    const DerivVars& dt_vars) const noexcept {
   const size_t substep = history.size() - 1;
   const auto& vars = std::get<1>(history.back());
-  const auto& dt_vars = std::get<2>(history.back());
   const auto& U0 = std::get<1>(history[0]);
 
   switch (substep) {
@@ -95,4 +154,31 @@ TimeDelta RungeKutta3::update_u(
   }
 }
 
+template <typename Vars, typename DerivVars>
+typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
+RungeKutta3::needed_history(
+    const std::deque<std::tuple<Time, Vars, DerivVars>>& history) const
+    noexcept {
+  const bool at_step_end = history.size() == number_of_substeps();
+  return at_step_end ? history.end() : history.begin();
+}
+
+template <typename BoundaryVars, typename FluxVars>
+typename std::vector<typename std::deque<
+    std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
+RungeKutta3::needed_boundary_history(
+    const std::vector<
+        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
+    const TimeDelta& /*time_step*/) const noexcept {
+  const bool at_step_end = history[0].size() == number_of_substeps();
+  std::vector<typename std::deque<
+      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator> result;
+  result.reserve(history.size());
+  for (const auto& side_hist : history) {
+    ASSERT((side_hist.size() == number_of_substeps()) == at_step_end,
+           "Side histories inconsistent");
+    result.push_back(at_step_end ? side_hist.end() : side_hist.begin());
+  }
+  return result;
+}
 }  // namespace TimeSteppers

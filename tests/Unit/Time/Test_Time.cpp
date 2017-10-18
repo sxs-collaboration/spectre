@@ -104,6 +104,20 @@ SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   CHECK(get_output(Time(slab, 0)) == slab_str + ":0/1");
   CHECK(get_output(Time(slab, 1)) == slab_str + ":1/1");
   CHECK(get_output(Time(slab, rational_t(3, 5))) == slab_str + ":3/5");
+
+  const auto check_structural_compare =
+      [](const Time& a, const Time& b) noexcept {
+    Time::StructuralCompare sc;
+    CHECK_FALSE(sc(a, a));
+    CHECK_FALSE(sc(b, b));
+    CHECK(sc(a, b) != sc(b, a));
+  };
+  check_structural_compare(Time(slab, rational_t(1, 3)),
+                           Time(slab, rational_t(2, 3)));
+  check_structural_compare(Time(slab, rational_t(1, 3)),
+                           Time(slab, rational_t(1, 2)));
+  check_structural_compare(Time(slab, rational_t(0, 1)),
+                           Time(slab.advance(), rational_t(0, 1)));
 }
 
 SPECTRE_TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
