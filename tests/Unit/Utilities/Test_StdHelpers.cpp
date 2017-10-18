@@ -179,3 +179,21 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayMagnitude",
     CHECK(expected_d3[i] == approx(magnitude_d3[i]));
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.AllButSpecifiedElementOf",
+                  "[DataStructures][Unit]") {
+  const std::array<size_t, 3> a3{{5, 2, 3}};
+  const std::array<size_t, 2> a2{{2, 3}};
+  const std::array<size_t, 1> a1{{3}};
+  const std::array<size_t, 0> a0{{}};
+  CHECK(a2 == all_but_specified_element_of<0>(a3));
+  CHECK(a1 == all_but_specified_element_of<0>(a2));
+  CHECK(a0 == all_but_specified_element_of<0>(a1));
+  const std::array<size_t, 2> b2{{5, 3}};
+  const std::array<size_t, 1> b1{{5}};
+  auto c2 = all_but_specified_element_of<1>(a3);
+  CHECK(b2 == c2);
+  auto c1 = all_but_specified_element_of<1>(b2);
+  CHECK(b1 == c1);
+  CHECK(a0 == all_but_specified_element_of<0>(b1));
+}
