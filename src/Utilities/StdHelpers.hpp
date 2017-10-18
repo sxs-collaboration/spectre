@@ -167,13 +167,13 @@ inline std::ostream& operator<<(std::ostream& os,
  * \ingroup Utilities
  * \brief Output all the key, value pairs of a std::unordered_map
  */
-template <typename K, typename V>
+template <typename K, typename V, typename H>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::unordered_map<K, V>& m) {
+                                const std::unordered_map<K, V, H>& m) {
   StdHelpers_detail::unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
-         typename std::unordered_map<K, V>::const_iterator it) {
+         typename std::unordered_map<K, V, H>::const_iterator it) {
         out << "[" << it->first << "," << it->second << "]";
       });
   return os;
@@ -245,13 +245,13 @@ inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
  * \ingroup Utilities
  * \brief Construct a string containing the keys of a std::unordered_map
  */
-template <typename K, typename V>
-inline std::string keys_of(const std::unordered_map<K, V>& m) {
+template <typename K, typename V, typename H>
+inline std::string keys_of(const std::unordered_map<K, V, H>& m) {
   std::ostringstream os;
   StdHelpers_detail::unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
-         typename std::unordered_map<K, V>::const_iterator it) {
+         typename std::unordered_map<K, V, H>::const_iterator it) {
         out << it->first;
       });
   return os.str();
