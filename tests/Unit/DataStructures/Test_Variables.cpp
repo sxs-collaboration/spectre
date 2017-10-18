@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   CHECK(1 == v.number_of_grid_points());
   CHECK(5 == v.size());
 
-  auto& vector_in_v = v.get<VariablesTestTags_detail::vector>();
+  auto& vector_in_v = get<VariablesTestTags_detail::vector>(v);
   // clang-tidy: do not use pointer arithmetic
   CHECK(-3.0 == v.data()[0]);  // NOLINT
   CHECK(-3.0 == vector_in_v.get(0)[0]);
@@ -66,7 +66,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   CHECK(-4.0 == vector_in_v.get(1)[0]);
   CHECK(-4.0 == vector_in_v.get(2)[0]);
 
-  const auto& kvector_in_v = v.get<VariablesTestTags_detail::vector>();
+  const auto& kvector_in_v = get<VariablesTestTags_detail::vector>(v);
   CHECK(kvector_in_v.get(0)[0] == -4.0);
 
   Variables<tmpl::list<VariablesTestTags_detail::vector,
@@ -128,7 +128,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
                        VariablesTestTags_detail::scalar,
                        VariablesTestTags_detail::scalar2>>
       v(1, -3.0);
-  auto& vector_in_v = v.get<VariablesTestTags_detail::vector>();
+  auto& vector_in_v = get<VariablesTestTags_detail::vector>(v);
   vector_in_v = tnsr::I<DataVector, 3, Frame::Grid>{10_st, -4.0};
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -138,12 +138,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Move",
                   "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> x(1, -2.0),
       z(2, -3.0);
-  CHECK(&z.template get<VariablesTestTags_detail::vector>()[0][0] == z.data());
+  CHECK(&get<VariablesTestTags_detail::vector>(z)[0][0] == z.data());
   Variables<tmpl::list<VariablesTestTags_detail::vector>> y = std::move(x);
   x = std::move(z);
   CHECK(
       (x == Variables<tmpl::list<VariablesTestTags_detail::vector>>{2, -3.0}));
-  CHECK(&x.template get<VariablesTestTags_detail::vector>()[0][0] == x.data());
+  CHECK(&get<VariablesTestTags_detail::vector>(x)[0][0] == x.data());
 
 // Intentionally testing self-move
 #ifdef __clang__
@@ -157,7 +157,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Move",
   // clang-tidy: false positive 'x' used after it was moved
   CHECK((x ==  // NOLINT
          Variables<tmpl::list<VariablesTestTags_detail::vector>>{2, -3.0}));
-  CHECK(&x.template get<VariablesTestTags_detail::vector>()[0][0] == x.data());
+  CHECK(&get<VariablesTestTags_detail::vector>(x)[0][0] == x.data());
 }
 
 namespace {

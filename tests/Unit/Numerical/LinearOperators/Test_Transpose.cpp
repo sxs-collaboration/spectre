@@ -86,7 +86,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
 
   /// [partial_transpose_example]
   Variables<one_var<2>> partial_vars(n_grid_pts, 0.);
-  partial_vars.template get<Var1<2>>() = variables.template get<Var1<2>>();
+  get<Var1<2>>(partial_vars) = get<Var1<2>>(variables);
   Variables<one_var<2>> partial_transpose(n_grid_pts, 0.);
   const size_t partial_number_of_chunks = 2*number_of_chunks_vars / 3;
   transpose(variables, chunk_size_vars, partial_number_of_chunks,
