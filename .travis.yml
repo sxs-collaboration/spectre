@@ -202,7 +202,9 @@ before_install:
 # the repo into the docker directory, and then copy in cached files. The
 # known_hosts is copied in so that the image has push access to gh-pages in
 # a secure manner. The GH_PAGES variables are used for automatic deployment of
-# documentation to GitHub pages.
+# documentation to GitHub pages.  We compile with -march=x86-64 because Travis
+# puts us on different hardware sometimes and that breaks ccache if we use
+# -march=native.
 #
 # macOS:
 # The variable ${TRAVIS_BUILD_DIR} points to the cloned repository, not what
@@ -231,7 +233,7 @@ script:
     && cp -r $HOME/.sonar ${HOME}/docker/sonar
     && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
     && docker build
-        --build-arg CXXFLAGS="-Werror"
+        --build-arg CXXFLAGS="-Werror -march=x86-64"
         --build-arg COVERAGE=${COVERAGE}
         --build-arg BUILD_TYPE=${BUILD_TYPE}
         --build-arg CC=${CC}
