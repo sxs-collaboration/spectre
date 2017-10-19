@@ -86,7 +86,7 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
     cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
           -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
+          -D CMAKE_CXX_FLAGS=\"${CXXFLAGS}\" \
           -D CHARM_ROOT=/work/charm/multicore-linux64-${CC} \
           -D USE_CCACHE=ON \
           -D COVERAGE=${COVERAGE} \
