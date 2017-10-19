@@ -243,3 +243,9 @@ For any coverage analysis you will need to have LCOV installed on the system.
 For documentation coverage analysis you will also need to install
 [coverxygen](https://github.com/psycofdj/coverxygen) and for test coverage
 analysis [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html).
+
+If you have these installed (which is already done if you are using the docker container), you can look at code coverage as follows:
+
+1. On a gcc build, pass `-D COVERAGE=ON` to `cmake`
+2. `make unit-test-coverage`
+3. The output is in `docs/html/unit-test-coverage`.
