@@ -8,13 +8,15 @@
 # -misc-noexcept-move-constructor: false positives
 # -misc-unconventional-assign-operator: false positives
 # -cppcoreguidelines-c-copy-assignment-signature: false positives
+# -cert-err58-cpp: many static variables we use do not throw, and if they do
+#                  we want to terminate anyway
 #
 # Notes:
 # misc-move-const-arg: we keep this check because even though this gives
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*")
+set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp")
 
 if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   string(
