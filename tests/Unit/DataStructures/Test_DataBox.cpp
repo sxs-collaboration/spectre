@@ -4,8 +4,12 @@
 #include <catch.hpp>
 
 #include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBoxHelpers.hpp"
+#include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -381,3 +385,52 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
   //  CHECK(grid_coords_norm == decltype(grid_coords_norm){std::make_pair(
   //                                "x"s, std::make_pair(0.5, 3_st))});
 }
+
+// Test the tags
+namespace {
+
+auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st,2.0); }
+
+struct Var1 : db::ComputeItemTag {
+  static constexpr db::DataBoxString_t label = "Var1";
+  static constexpr auto function = get_vector;
+  using argument_tags = typelist<>;
+};
+
+struct Var2 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString_t label = "Var2";
+};
+
+using two_vars = typelist<Var1, Var2>;
+using vector_only = typelist<Var1>;
+using scalar_only = typelist<Var2>;
+
+static_assert(
+    cpp17::is_same_v<
+        tmpl::back<db::wrap_tags_in<Tags::d, scalar_only, tmpl::size_t<2>,
+                                    Frame::Grid>>::type,
+        tnsr::i<DataVector, 2, Frame::Grid>>,
+    "Failed db::wrap_tags_in scalar_only");
+
+static_assert(
+    cpp17::is_same_v<
+        tmpl::back<db::wrap_tags_in<Tags::d, vector_only, tmpl::size_t<3>,
+                                    Frame::Grid>>::type,
+        tnsr::iJ<DataVector, 3, Frame::Grid>>,
+    "Failed db::wrap_tags_in vector_only");
+
+static_assert(
+    cpp17::is_same_v<
+        tmpl::back<db::wrap_tags_in<Tags::d, two_vars, tmpl::size_t<2>,
+                                    Frame::Grid>>::type,
+        tnsr::i<DataVector, 2, Frame::Grid>>,
+    "Failed db::wrap_tags_in two_vars scalar");
+
+static_assert(
+    cpp17::is_same_v<
+        tmpl::front<db::wrap_tags_in<Tags::d, two_vars, tmpl::size_t<3>,
+                                    Frame::Grid>>::type,
+        tnsr::iJ<DataVector, 3, Frame::Grid>>,
+    "Failed db::wrap_tags_in two_vars vector");
+}  // namespace

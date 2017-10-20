@@ -11,6 +11,7 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 
 /*!

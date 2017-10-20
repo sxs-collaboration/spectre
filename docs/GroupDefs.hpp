@@ -49,6 +49,11 @@
  */
 
 /*!
+ * \defgroup DataBoxTags DataBox Tags
+ * \brief Structures and metafunctions for labeling the contents of DataBoxes
+ */
+
+/*!
  * \defgroup DataStructures Data Structures
  * \brief Various useful data structures used in SpECTRE
  */

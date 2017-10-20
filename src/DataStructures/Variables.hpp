@@ -110,21 +110,13 @@ class Variables<tmpl::list<Tags...>> {
   const double* data() const noexcept { return variable_data_.data(); }
   //@}
 
-  // {@
-  /*!
-   *  \brief Return Tag::type pointing into the contiguous array
-   *
-   *  \tparam Tag the variable to return
-   */
-  template <typename Tag>
-  constexpr auto& get() noexcept {
-    return tuples::get<Tag>(reference_variable_data_);
-  }
-  template <typename Tag>
-  constexpr const auto& get() const noexcept {
-    return tuples::get<Tag>(reference_variable_data_);
-  }
-  // @}
+  // clang-tidy: redundant-declaration
+  template <typename Tag, typename TagList>
+  friend constexpr typename Tag::type& get(Variables<TagList>& v)  // NOLINT
+      noexcept;
+  template <typename Tag, typename TagList>
+  friend constexpr const typename Tag::type& get(  //  NOLINT
+      const Variables<TagList>& v) noexcept;
 
   /// Serialization for Charm++.
   // clang-tidy: google-runtime-references
@@ -302,6 +294,23 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   return *this;
 }
 
+// {@
+/*!
+ * \ingroup DataStructures
+ * \brief Return Tag::type pointing into the contiguous array
+ *
+ * \tparam Tag the variable to return
+ */
+template <typename Tag, typename TagList>
+constexpr typename Tag::type& get(Variables<TagList>& v) noexcept {
+  return tuples::get<Tag>(v.reference_variable_data_);
+}
+template <typename Tag, typename TagList>
+constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
+  return tuples::get<Tag>(v.reference_variable_data_);
+}
+// @}
+
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
   p | variable_data_impl_;
@@ -376,14 +385,14 @@ std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
 template <typename Tag, typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
                            typelist<Tag> /*meta*/) {
-  return os << d.template get<Tag>();
+  return os << get<Tag>(d);
 }
 template <typename Tag, typename SecondTag, typename... RemainingTags,
           typename TagsList>
 std::ostream& print_helper(
     std::ostream& os, const Variables<TagsList>& d,
     typelist<Tag, SecondTag, RemainingTags...> /*meta*/) {
-  os << d.template get<Tag>() << '\n';
+  os << get<Tag>(d) << '\n';
   print_helper(os, d, typelist<SecondTag, RemainingTags...>{});
   return os;
 }

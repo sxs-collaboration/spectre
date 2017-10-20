@@ -393,6 +393,22 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept(
   return result;
 }
 
+/// \ingroup Utilities
+/// \brief Construct an array from an existing array omitting one element
+template <size_t ElementToRemove, typename T, size_t Dim>
+inline std::array<T, Dim - 1> all_but_specified_element_of(
+    const std::array<T, Dim>& a) noexcept {
+  static_assert(ElementToRemove < Dim, "Specified element does not exist");
+  std::array<T, Dim - 1> result{};
+  for (size_t i = 0; i < ElementToRemove; ++i) {
+    gsl::at(result, i) = gsl::at(a, i);
+  }
+  for (size_t i = ElementToRemove + 1; i < Dim; ++i) {
+    gsl::at(result, i - 1) = gsl::at(a, i);
+  }
+  return result;
+}
+
 //@{
 /// \ingroup Utilities
 /// \brief Euclidean magnitude of the elements of the array.

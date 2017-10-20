@@ -359,4 +359,12 @@ struct is_variables_compute_item<
     T,
     Requires<is_compute_item<T>::value and tt::is_a_v<Variables, item_type<T>>>>
     : std::true_type {};
+
+/// \ingroup DataBoxTags
+/// \brief Create a new list of Tags by wrapping each tag in `TagList` using the
+/// `Wrapper`.
+template <template <typename...> class Wrapper, typename TagList,
+          typename... Args>
+using wrap_tags_in =
+    tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, Args...>>;
 }  // namespace db
