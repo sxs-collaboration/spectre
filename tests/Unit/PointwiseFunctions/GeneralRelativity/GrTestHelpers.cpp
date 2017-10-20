@@ -17,7 +17,7 @@ tnsr::I<DataType, SpatialDim> make_shift(const DataType& used_for_size) {
   auto shift =
       make_with_value<tnsr::I<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1);
+    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1.);
   }
   return shift;
 }
@@ -27,7 +27,7 @@ tnsr::i<DataType, SpatialDim> make_lower_shift(const DataType& used_for_size) {
   auto shift =
       make_with_value<tnsr::i<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1);
+    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1.);
   }
   return shift;
 }
