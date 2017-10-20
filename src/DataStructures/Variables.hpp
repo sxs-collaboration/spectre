@@ -9,6 +9,7 @@
 #include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -374,6 +375,64 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
                               variable_offset + TagToAdd::type::size());
 }
 /// \endcond
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>>& operator*=(Variables<tmpl::list<Tags...>>& lhs,
+                                           const DataVector& rhs) noexcept {
+  ASSERT(lhs.number_of_grid_points() == rhs.size(),
+         "Size mismatch in multiplication: " << lhs.number_of_grid_points()
+         << " and " << rhs.size());
+  double* const lhs_data = lhs.data();
+  const double* const rhs_data = rhs.data();
+  for (size_t c = 0; c < lhs.number_of_independent_components; ++c) {
+    for (size_t s = 0; s < lhs.number_of_grid_points(); ++s) {
+      // clang-tidy: do not use pointer arithmetic
+      lhs_data[c * lhs.number_of_grid_points() + s] *= rhs_data[s];  // NOLINT
+    }
+  }
+  return lhs;
+}
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>> operator*(
+    const Variables<tmpl::list<Tags...>>& lhs, const DataVector& rhs) noexcept {
+  auto result = lhs;
+  result *= rhs;
+  return result;
+}
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>> operator*(
+    const DataVector& lhs, const Variables<tmpl::list<Tags...>>& rhs) noexcept {
+  auto result = rhs;
+  result *= lhs;
+  return result;
+}
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>>& operator/=(Variables<tmpl::list<Tags...>>& lhs,
+                                           const DataVector& rhs) noexcept {
+  ASSERT(lhs.number_of_grid_points() == rhs.size(),
+         "Size mismatch in multiplication: " << lhs.number_of_grid_points()
+         << " and " << rhs.size());
+  double* const lhs_data = lhs.data();
+  const double* const rhs_data = rhs.data();
+  for (size_t c = 0; c < lhs.number_of_independent_components; ++c) {
+    for (size_t s = 0; s < lhs.number_of_grid_points(); ++s) {
+      // clang-tidy: do not use pointer arithmetic
+      lhs_data[c * lhs.number_of_grid_points() + s] /= rhs_data[s];  // NOLINT
+    }
+  }
+  return lhs;
+}
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>> operator/(
+    const Variables<tmpl::list<Tags...>>& lhs, const DataVector& rhs) noexcept {
+  auto result = lhs;
+  result /= rhs;
+  return result;
+}
 
 namespace Variables_detail {
 template <typename TagsList>

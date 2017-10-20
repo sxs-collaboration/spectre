@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace VariablesTestTags_detail {
@@ -222,6 +223,28 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Math",
   test_variable_type test_assignment2(1, 0.0);
   test_assignment2 = test_assignment * 1.0;
   CHECK(test_assignment2 == test_assignment);
+
+  const auto check_components =
+      [](const auto& variables, const DataVector& datavector) {
+    tmpl::for_each<typename std::decay_t<decltype(variables)>::tags_list>(
+        [&variables, &datavector](auto tag) {
+          using Tag = tmpl::type_from<decltype(tag)>;
+          for (const auto& component : get<Tag>(variables)) {
+            CHECK(component == datavector);
+          }
+        });
+  };
+  const DataVector dv{1., 2., 3., 4.};
+  test_variable_type test_datavector_math(4, 2.);
+  test_datavector_math *= dv;
+  check_components(test_datavector_math, {2., 4., 6., 8.});
+  check_components(test_datavector_math * dv, {2., 8., 18., 32.});
+  check_components(dv * test_datavector_math, {2., 8., 18., 32.});
+  test_datavector_math *= dv;
+  check_components(test_datavector_math, {2., 8., 18., 32.});
+  check_components(test_datavector_math / dv, {2., 4., 6., 8.});
+  test_datavector_math /= dv;
+  check_components(test_datavector_math, {2., 4., 6., 8.});
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
