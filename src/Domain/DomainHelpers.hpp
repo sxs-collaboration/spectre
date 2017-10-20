@@ -13,6 +13,17 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
+/// \ingroup ComputationalDomain
+/// Each member in `PairOfFaces` holds the global corner ids of a block face.
+/// `PairOfFaces` is used in setting up periodic boundary conditions by
+/// identifying the two faces with each other.
+/// \requires The pair of faces must belong to a single block.
+struct PairOfFaces {
+  const std::vector<size_t> first;
+  const std::vector<size_t> second;
+};
+
+/// \ingroup ComputationalDomain
 /// Sets up the BlockNeighbors using the corner numbering scheme
 /// to deduce the correct neighbors and orientations. Does not set
 /// up periodic boundary conditions.
@@ -24,12 +35,13 @@ void set_internal_boundaries(
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks);
 
+/// \ingroup ComputationalDomain
 /// Sets up additional BlockNeighbors corresponding to any
 /// periodic boundary condtions provided by the user. These are
 /// stored in identifications.
 template <size_t VolumeDim>
 void set_periodic_boundaries(
-    const std::vector<std::vector<size_t>>& identifications,
+    const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     gsl::not_null<std::vector<

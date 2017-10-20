@@ -18,7 +18,7 @@ Domain<VolumeDim, TargetFrame>::Domain(
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    const std::vector<std::vector<size_t>>& identifications) {
+    const std::vector<PairOfFaces>& identifications) {
   std::vector<
       std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;

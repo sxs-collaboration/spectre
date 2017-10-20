@@ -262,17 +262,17 @@ void set_internal_boundaries(
 
 template <size_t VolumeDim>
 void set_periodic_boundaries(
-    const std::vector<std::vector<size_t>>& identifications,
+    const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) {
-  ASSERT(identifications.size() % 2 == 0,
-         "You must specify an even number of identifications.");
-  for (size_t i = 0; i < identifications.size() / 2; i++) {
-    const auto& face1 = identifications[2 * i];
-    const auto& face2 = identifications[2 * i + 1];
+  for (const auto& pair : identifications) {
+    const auto& face1 = pair.first;
+    const auto& face2 = pair.second;
+    ASSERT(face1.size() == face2.size(),
+           "Each set must have the same number of corners.");
     size_t id = ::find_block_id<VolumeDim>(face1, face2, corners_of_all_blocks);
     const auto face1_canon =
         get_common_local_corners<VolumeDim>(corners_of_all_blocks[id], face1);
@@ -324,19 +324,19 @@ template void set_internal_boundaries(
         neighbors_of_all_blocks);
 
 template void set_periodic_boundaries(
-    const std::vector<std::vector<size_t>>& identifications,
+    const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks);
 template void set_periodic_boundaries(
-    const std::vector<std::vector<size_t>>& identifications,
+    const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks);
 template void set_periodic_boundaries(
-    const std::vector<std::vector<size_t>>& identifications,
+    const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>

@@ -107,7 +107,7 @@ void test_1d_domains() {
                 make_coordinate_map<Frame::Logical, Frame::Grid>(
                     CoordinateMaps::AffineMap{-1., 1., -2., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}},
-        std::vector<std::vector<size_t>>{{1}, {2}}};
+        std::vector<PairOfFaces>{{{1}, {2}}}};
 
     const auto expected_neighbors = []() {
       Orientation<1> orientation{{{Direction<1>::lower_xi()}},

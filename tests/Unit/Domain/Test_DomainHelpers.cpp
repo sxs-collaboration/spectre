@@ -23,7 +23,9 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Boundaries", "[Domain][Unit]") {
       (neighbors_of_all_blocks)[0][Direction<3>::lower_zeta()].orientation() ==
       expected_orientation);
 
-  std::vector<std::vector<size_t>> identifications{{1, 3, 5, 7}, {0, 2, 4, 6}};
+  const PairOfFaces x_faces{{1, 3, 5, 7}, {0, 2, 4, 6}};
+
+  std::vector<PairOfFaces> identifications{x_faces};
   set_periodic_boundaries<3>(identifications, corners_of_all_blocks,
                              &neighbors_of_all_blocks);
   Orientation<3> expected_identification(mapped_directions);
