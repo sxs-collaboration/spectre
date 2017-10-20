@@ -149,10 +149,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
         "Nobody", 178, 2.2, std::make_unique<Square>());
     Parallel::ConstGlobalCache<TestMetavariables> cache(
         std::move(const_data_to_be_cached));
-    CHECK("Nobody" == cache.get<name>());
-    CHECK(178 == cache.get<age>());
-    CHECK(2.2 == cache.get<height>());
-    CHECK(4 == cache.get<shape_of_nametag>().number_of_sides());
+    CHECK("Nobody" == Parallel::get<name>(cache));
+    CHECK(178 == Parallel::get<age>(cache));
+    CHECK(2.2 == Parallel::get<height>(cache));
+    CHECK(4 == Parallel::get<shape_of_nametag>(cache).number_of_sides());
   }
 
   {
@@ -171,10 +171,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
             Parallel::CProxy_ConstGlobalCache<TestMetavariables>::ckNew(
                 const_data_to_be_cached);
     const auto& local_cache = *const_global_cache_proxy.ckLocalBranch();
-    CHECK("Nobody" == local_cache.get<name>());
-    CHECK(178 == local_cache.get<age>());
-    CHECK(2.2 == local_cache.get<height>());
-    CHECK(4 == local_cache.get<shape_of_nametag>().number_of_sides());
+    CHECK("Nobody" == Parallel::get<name>(local_cache));
+    CHECK(178 == Parallel::get<age>(local_cache));
+    CHECK(2.2 == Parallel::get<height>(local_cache));
+    CHECK(4 == Parallel::get<shape_of_nametag>(local_cache).number_of_sides());
   }
 }
 

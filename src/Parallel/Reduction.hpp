@@ -192,8 +192,8 @@ void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
           template redn_wrapper_reduction_action<Action,
                                                  std::decay_t<ReductionType>>(
               nullptr),
-      cache.template get_parallel_component<TargetParallelComponent>());
-  cache.template get_parallel_component<SenderParallelComponent>()[array_index]
+      Parallel::get_parallel_component<TargetParallelComponent>(cache));
+  Parallel::get_parallel_component<SenderParallelComponent>(cache)[array_index]
       .ckLocal()
       ->contribute(sizeof(reduction_data), &reduction_data, reducer, callback);
 }
@@ -214,8 +214,8 @@ void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
           template redn_wrapper_reduction_action<Action,
                                                  std::decay_t<ReductionType>>(
               nullptr),
-      cache.template get_parallel_component<TargetParallelComponent>());
-  cache.template get_parallel_component<SenderParallelComponent>()[array_index]
+      Parallel::get_parallel_component<TargetParallelComponent>(cache));
+  Parallel::get_parallel_component<SenderParallelComponent>(cache)[array_index]
       .ckLocal()
       ->contribute(reduction_data.size(), reduction_data.packed().get(),
                    reducer, callback);

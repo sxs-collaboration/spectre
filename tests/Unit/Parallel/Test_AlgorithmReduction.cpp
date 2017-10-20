@@ -228,7 +228,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
-        local_cache.template get_parallel_component<ArrayParallelComponent>();
+        Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
     for (size_t i = 0, which_proc = 0,
                 number_of_procs =
@@ -245,7 +245,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
-      local_cache.template get_parallel_component<ArrayParallelComponent>()
+      Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
           .template explicit_single_action<array_reduce>();
     }
   }

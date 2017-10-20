@@ -164,9 +164,8 @@ struct reduce_to_nodegroup {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/) {
     auto& local_nodegroup =
-        *(cache
-              .template get_parallel_component<
-                  NodegroupParallelComponent<Metavariables>>()
+        *(Parallel::get_parallel_component<
+              NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
     local_nodegroup.template explicit_single_action<nodegroup_receive>(
         std::make_tuple(array_index));
@@ -182,9 +181,8 @@ struct reduce_threaded_method {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/) {
     auto& local_nodegroup =
-        *(cache
-              .template get_parallel_component<
-                  NodegroupParallelComponent<Metavariables>>()
+        *(Parallel::get_parallel_component<
+              NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
     local_nodegroup.template threaded_single_action<nodegroup_threaded_receive>(
         array_index);
@@ -211,7 +209,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
-        local_cache.template get_parallel_component<ArrayParallelComponent>();
+        Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
     int which_proc = 0;
     const int number_of_procs = Parallel::number_of_procs();
@@ -229,7 +227,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
-        local_cache.template get_parallel_component<ArrayParallelComponent>();
+        Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
     if (next_phase == Metavariables::Phase::ArrayToNodegroup) {
       array_proxy.template explicit_single_action<reduce_to_nodegroup>();
     }
@@ -259,7 +257,7 @@ struct NodegroupParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    local_cache.template get_parallel_component<NodegroupParallelComponent>()
+    Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
         .template explicit_single_action<nodegroup_initialize>();
   }
 
@@ -268,8 +266,8 @@ struct NodegroupParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& nodegroup_proxy =
-        local_cache
-            .template get_parallel_component<NodegroupParallelComponent>();
+        Parallel::get_parallel_component<NodegroupParallelComponent>(
+            local_cache);
     if (next_phase == Metavariables::Phase::CheckFirstResult) {
       nodegroup_proxy
           .template explicit_single_action<nodegroup_check_first_result>();

@@ -80,8 +80,8 @@ struct CountReceives {
 
       // Call to arrays, have them execute once then reduce something through
       // groups and nodegroups
-      auto& array_parallel_component = cache.template get_parallel_component<
-          ArrayParallelComponent<Metavariables>>();
+      auto& array_parallel_component = Parallel::get_parallel_component<
+          ArrayParallelComponent<Metavariables>>(cache);
       for (size_t i = 0; i < number_of_1d_array_elements; ++i) {
         // we do not do a broadcast so that we can check inline entry methods on
         // array work. We pass "true" as the second argument to start the
@@ -119,8 +119,8 @@ struct AddIntValue10 {
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.empty() or int_receives.size() == 1);
     if (int_receives.size() == 1) {
-      auto& group_parallel_component = cache.template get_parallel_component<
-          GroupParallelComponent<Metavariables>>();
+      auto& group_parallel_component = Parallel::get_parallel_component<
+          GroupParallelComponent<Metavariables>>(cache);
       group_parallel_component.template receive_data<Tags::IntReceiveTag>(
           db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
           db::get<Tags::CountActionsCalled>(box));
@@ -173,8 +173,8 @@ struct SendToSingleton {
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/) {
-    auto& singleton_parallel_component = cache.template get_parallel_component<
-        SingletonParallelComponent<Metavariables>>();
+    auto& singleton_parallel_component = Parallel::get_parallel_component<
+        SingletonParallelComponent<Metavariables>>(cache);
     // Send CountActionsCalled to the SingletonParallelComponent several times
     singleton_parallel_component.template receive_data<Tags::IntReceiveTag>(
         db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
@@ -256,7 +256,7 @@ struct SingletonParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    local_cache.template get_parallel_component<SingletonParallelComponent>()
+    Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
         .template explicit_single_action<SingletonActions::Initialize>();
   }
 
@@ -265,7 +265,7 @@ struct SingletonParallelComponent {
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
       auto& local_cache = *(global_cache.ckLocalBranch());
-      local_cache.template get_parallel_component<SingletonParallelComponent>()
+      Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
           .perform_algorithm();
       return;
     }
@@ -295,7 +295,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
-        local_cache.template get_parallel_component<ArrayParallelComponent>();
+        Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
     for (size_t i = 0, which_proc = 0,
                 number_of_procs =
@@ -314,7 +314,7 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::PerformArrayAlgorithm) {
-      local_cache.template get_parallel_component<ArrayParallelComponent>()
+      Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
           .perform_algorithm();
     }
   }
@@ -338,7 +338,7 @@ struct GroupParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    local_cache.template get_parallel_component<GroupParallelComponent>()
+    Parallel::get_parallel_component<GroupParallelComponent>(local_cache)
         .template explicit_single_action<GroupActions::Initialize>();
   }
 
@@ -364,7 +364,7 @@ struct NodegroupParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    local_cache.template get_parallel_component<NodegroupParallelComponent>()
+    Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
         .template explicit_single_action<NodegroupActions::Initialize>();
   }
 
