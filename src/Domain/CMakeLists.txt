@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
     Direction.cpp
     Element.cpp
     ElementId.cpp
+    ElementIndex.cpp
     Neighbors.cpp
     Orientation.cpp
     SegmentId.cpp
