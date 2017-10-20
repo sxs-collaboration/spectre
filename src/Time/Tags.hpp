@@ -63,6 +63,19 @@ struct HistoryEvolvedVariables : db::DataBoxPrefix {
       std::deque<std::tuple<::Time, db::item_type<Tag>, db::item_type<DtTag>>>;
 };
 
+/// \ingroup DataBoxTags
+/// \ingroup TimeGroup
+/// Prefix for TimeStepper boundary history
+///
+/// \tparam Key type identifying a boundary
+/// \tparam Tag tag for boundary variables
+template <typename Key, typename Tag>
+struct HistoryBoundaryVariables : db::DataBoxPrefix {
+  static constexpr db::DataBoxString_t label = "HistoryBoundaryVariables";
+  using tag = Tag;
+  using type = std::unordered_map<Key, db::item_type<Tag>>;
+};
+
 }  // namespace Tags
 
 namespace CacheTags {
