@@ -15,12 +15,18 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Orientation.hpp"
+#include "Utilities/Gsl.hpp"
 
 /*!
  * \ingroup DataStructures
  * \brief Slices the data within `vars` to a codimension 1 slice. The
- * slice has a constant grid coordinate in direction `sliced_dim`, and slices
- * the volume through the point `slice_point` of this coordinate.
+ * slice has a constant logical coordinate in direction `sliced_dim`,
+ * slicing the volume at `fixed_index` in that dimension.  For
+ * example, to get the lower boundary of `sliced_dim`, pass `0` for
+ * `fixed_index`; to get the upper boundary, pass
+ * `extents[sliced_dim] - 1`.
+ *
+ * \see add_slice_to_data
  *
  * \return Variables class sliced to a hypersurface.
  */
@@ -28,16 +34,16 @@ template <std::size_t VolumeDim, typename TagsList>
 Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
                                   const Index<VolumeDim>& element_extents,
                                   const size_t sliced_dim,
-                                  const size_t slice_point) {
+                                  const size_t fixed_index) noexcept {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
   const size_t volume_grid_points = vars.number_of_grid_points();
-  const size_t number_of_independent_components =
-      vars.number_of_independent_components;
+  constexpr const size_t number_of_independent_components =
+      Variables<TagsList>::number_of_independent_components;
   Variables<TagsList> interface_vars(interface_grid_points);
   const double* vars_data = vars.data();
   double* interface_vars_data = interface_vars.data();
-  for (SliceIterator si(element_extents, sliced_dim, slice_point); si; ++si) {
+  for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
     for (size_t i = 0; i < number_of_independent_components; ++i) {
       // clang-tidy: do not use pointer arithmetic
       interface_vars_data[si.slice_offset() +                      // NOLINT
@@ -46,6 +52,38 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
     }
   }
   return interface_vars;
+}
+
+/*!
+ * \ingroup DataStructures
+ * \brief Adds data on a codimension 1 slice to a volume quantity. The
+ * slice has a constant logical coordinate in direction `sliced_dim`,
+ * slicing the volume at `fixed_index` in that dimension.  For
+ * example, to add to the lower boundary of `sliced_dim`, pass `0` for
+ * `fixed_index`; to add to the upper boundary, pass
+ * `extents[sliced_dim] - 1`.
+ *
+ * \see data_on_slice
+ */
+template <std::size_t VolumeDim, typename TagsList>
+void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
+                       const Variables<TagsList>& vars_on_slice,
+                       const Index<VolumeDim>& extents,
+                       const size_t sliced_dim,
+                       const size_t fixed_index) noexcept {
+  constexpr const size_t number_of_independent_components =
+      Variables<TagsList>::number_of_independent_components;
+  const size_t volume_grid_points = extents.product();
+  const size_t slice_grid_points = extents.slice_away(sliced_dim).product();
+  double* const volume_data = volume_vars->data();
+  const double* const slice_data = vars_on_slice.data();
+  for (SliceIterator si(extents, sliced_dim, fixed_index); si; ++si) {
+    for (size_t i = 0; i < number_of_independent_components; ++i) {
+      // clang-tidy: do not use pointer arithmetic
+      volume_data[si.volume_offset() + i * volume_grid_points] +=  // NOLINT
+          slice_data[si.slice_offset() + i * slice_grid_points];  // NOLINT
+    }
+  }
 }
 
 namespace OrientVariablesOnSlice_detail {
