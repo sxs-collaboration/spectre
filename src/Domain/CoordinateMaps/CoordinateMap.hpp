@@ -389,9 +389,9 @@ bool operator!=(
 /// \ingroup ComputationalDomain
 /// \brief Creates a CoordinateMap of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-constexpr CoordinateMap<SourceFrame, TargetFrame, Maps...> make_coordinate_map(
-    Maps&&... maps) {
-  return CoordinateMap<SourceFrame, TargetFrame, Maps...>(
+constexpr CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>
+make_coordinate_map(Maps&&... maps) {
+  return CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>(
       std::forward<Maps>(maps)...);
 }
 

@@ -31,10 +31,10 @@ bool are_maps_equal(
  * when compared to the numerical derivative in each direction.
  */
 template <typename Map>
-void test_forward_jacobian(const Map& map,
-                           const std::array<double, Map::dim>& test_point) {
+void test_jacobian(const Map& map,
+                   const std::array<double, Map::dim>& test_point) {
   // Our default approx value is too stringent for this test
-  Approx local_approx = Approx::custom().epsilon(1e-11);
+  Approx local_approx = Approx::custom().epsilon(1e-10);
   const double dx = 1e-4;
   const auto jacobian = map.jacobian(test_point);
   for (size_t i = 0; i < Map::dim; ++i) {
@@ -51,8 +51,8 @@ void test_forward_jacobian(const Map& map,
  * multiply together to produce the identity matrix
  */
 template <typename Map>
-void test_inverse_jacobian(const Map& map,
-                           const std::array<double, Map::dim>& test_point) {
+void test_inv_jacobian(const Map& map,
+                       const std::array<double, Map::dim>& test_point) {
   const auto jacobian = map.jacobian(test_point);
   const auto inv_jacobian = map.inv_jacobian(test_point);
 
@@ -74,6 +74,50 @@ void test_inverse_jacobian(const Map& map,
     for (size_t j = 0; j < Map::dim; ++j) {
       CHECK(gsl::at(gsl::at(expected_identity, i), j) ==
             approx(i == j ? 1. : 0.));
+    }
+  }
+}
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Checks that the CoordinateMap `map` functions as expected when used as
+ * the template parameter to the `CoordinateMap` type.
+ */
+template <typename Map, typename... Args>
+void test_coordinate_map_implementation(const Map& map) {
+  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Grid>(map);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> real_dis(-1, 1);
+
+  const auto test_point = [&gen, &real_dis] {
+    std::array<double, Map::dim> p{};
+    for (size_t i = 0; i < Map::dim; ++i) {
+      gsl::at(p, i) = real_dis(gen);
+    }
+    return p;
+  }();
+
+  for (size_t i = 0; i < Map::dim; ++i) {
+    CAPTURE_PRECISE(gsl::at(test_point, i));
+  }
+
+  const auto test_point_tensor = [&test_point]() {
+    tnsr::I<double, Map::dim, Frame::Logical> point_as_tensor{};
+    for (size_t i = 0; i < Map::dim; ++i) {
+      point_as_tensor.get(i) = gsl::at(test_point, i);
+    }
+    return point_as_tensor;
+  }();
+
+  for (size_t i = 0; i < Map::dim; ++i) {
+    CHECK(coord_map(test_point_tensor).get(i) ==
+          approx(gsl::at(map(test_point), i)));
+    for (size_t j = 0; j < Map::dim; ++j) {
+      CHECK(coord_map.jacobian(test_point_tensor).get(i, j) ==
+            map.jacobian(test_point).get(i, j));
+      CHECK(coord_map.inv_jacobian(test_point_tensor).get(i, j) ==
+            map.inv_jacobian(test_point).get(i, j));
     }
   }
 }
