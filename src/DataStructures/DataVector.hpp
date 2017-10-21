@@ -370,6 +370,79 @@ bool operator==(const DataVector& lhs, const DataVector& rhs);
 /// Inequivalence operator for DataVector
 bool operator!=(const DataVector& lhs, const DataVector& rhs);
 
+template <typename T, size_t Dim>
+std::array<DataVector, Dim> operator+(
+    const std::array<T, Dim>& lhs,
+    const std::array<DataVector, Dim>& rhs) noexcept {
+  std::array<DataVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
+  }
+  return result;
+}
+template <typename U, size_t Dim>
+std::array<DataVector, Dim> operator+(const std::array<DataVector, Dim>& lhs,
+                                      const std::array<U, Dim>& rhs) noexcept {
+  return rhs + lhs;
+}
+template <size_t Dim>
+std::array<DataVector, Dim> operator+(
+    const std::array<DataVector, Dim>& lhs,
+    const std::array<DataVector, Dim>& rhs) noexcept {
+  std::array<DataVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
+  }
+  return result;
+}
+template <size_t Dim>
+std::array<DataVector, Dim>& operator+=(
+    std::array<DataVector, Dim>& lhs,
+    const std::array<DataVector, Dim>& rhs) noexcept {
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(lhs, i) += gsl::at(rhs, i);
+  }
+  return lhs;
+}
+template <typename T, size_t Dim>
+std::array<DataVector, Dim> operator-(
+    const std::array<T, Dim>& lhs,
+    const std::array<DataVector, Dim>& rhs) noexcept {
+  std::array<DataVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
+  return result;
+}
+template <typename U, size_t Dim>
+std::array<DataVector, Dim> operator-(const std::array<DataVector, Dim>& lhs,
+                                      const std::array<U, Dim>& rhs) noexcept {
+  std::array<DataVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
+  return result;
+}
+template <size_t Dim>
+std::array<DataVector, Dim> operator-(
+    const std::array<DataVector, Dim>& lhs,
+    const std::array<DataVector, Dim>& rhs) noexcept {
+  std::array<DataVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
+  return result;
+}
+template <size_t Dim>
+std::array<DataVector, Dim>& operator-=(
+    std::array<DataVector, Dim>& lhs,
+    const std::array<DataVector, Dim>& rhs) noexcept {
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(lhs, i) -= gsl::at(rhs, i);
+  }
+  return lhs;
+}
+
 /// \cond HIDDEN_SYMBOLS
 template <typename VT, bool VF>
 DataVector::DataVector(const blaze::Vector<VT, VF>& expression)
