@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(CoordinateMaps)
+add_subdirectory(DomainCreators)
 
 set(LIBRARY Domain)
 

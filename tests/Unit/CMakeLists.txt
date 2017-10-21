@@ -36,6 +36,7 @@ target_link_libraries(
   ApparentHorizons
   CoordinateMaps
   Domain
+  DomainCreators
   IO
   NumericalAlgorithms
   Time
