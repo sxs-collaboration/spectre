@@ -591,15 +591,6 @@ class DataBox<TagsList<Tags...>> {
       tmpl2::flat_all_v<cpp17::is_base_of_v<db::DataBoxTag, Tags>...>,
       "All structs used to Tag (compute) items in a DataBox must derive off of "
       "db::DataBoxTag");
-  static_assert(
-      tmpl2::flat_all_v<detail::tag_has_label<Tags>::value...>,
-      "Missing a label on a Tag. All Tags must have a static "
-      "constexpr db::DataBoxString_t member variable named 'label' with "
-      "the name of the Tag.");
-  static_assert(
-      tmpl2::flat_all_v<detail::tag_label_correct_type<Tags>::value...>,
-      "One of the labels of the Tags in a DataBox has the incorrect "
-      "type. It should be a DataBoxString_t.");
 
  public:
   /*!
@@ -727,15 +718,6 @@ class DataBox<TagsList<Tags...>> {
                     typelist<NewTags...> /*meta*/,
                     typelist<NewComputeItems...> /*meta*/,
                     ComputeItemsToKeep /*meta*/, Args&&... args);
-
-  SPECTRE_ALWAYS_INLINE void check_tags() const {
-#ifdef SPECTRE_DEBUG
-    ASSERT(tmpl::size<tags_list>::value == 0 or
-               tmpl::for_each<tags_list>(detail::check_tag_labels{}).value,
-           "Could not match one of the Tag labels with the Tag type. That is, "
-           "the label of a Tag must be the same as the Tag.");
-#endif
-  }
 
   databox_detail::TaggedDeferredTuple<Tags...> data_;
 };
@@ -943,7 +925,6 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
     typelist<TagsInArgsOrder...> /*meta*/, typelist<FullItems...> /*meta*/,
     typelist<ComputeItemTags...> /*meta*/,
     typelist<FullComputeItems...> /*meta*/, Args&&... args) {
-  check_tags();
   static_assert(
       sizeof...(Tags) == sizeof...(FullItems) + sizeof...(FullComputeItems),
       "Must pass in as many (compute) items as there are Tags.");
@@ -984,7 +965,6 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
                                                          tmpl::_state>>;
   using DependencyGraph = tmpl::digraph<edge_list>;
 
-  check_tags();
   // Merge old tags, including all ComputeItems even though they might be
   // reset.
   databox_detail::merge_old_box(old_box, data_, typelist<KeepTags...>{});
@@ -1208,7 +1188,9 @@ const Type& get_item_from_box(const DataBox<TagList>& box,
   if (result == nullptr) {
     std::stringstream tags_in_box;
     tmpl::for_each<TagList>([&tags_in_box](auto temp) {
-      tags_in_box << "  " << decltype(temp)::type::label << "\n";
+      tags_in_box << "  "
+                  << get_tag_name<std::decay_t<typename decltype(temp)::type>>()
+                  << "\n";
     });
     ERROR("Could not find the tag named \""
           << tag_name << "\" in the DataBox. Available tags are:\n"
@@ -1220,21 +1202,21 @@ const Type& get_item_from_box(const DataBox<TagList>& box,
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Retrieve an item from the DataBox that has a tag with label `tag_name`
+ * \brief Retrieve an item from the DataBox that has a tag named `tag_name`
  * and type `Type`
  *
  * \details
  * The type that the tag represents must be of the type `Type`, and the tag must
- * have the label `tag_name`. The function iterates over all tags in the DataBox
- * `box` that have the type `Type` searching linearly for one whose `label`
+ * have the name `tag_name`. The function iterates over all tags in the DataBox
+ * `box` that have the type `Type` searching linearly for one whose name
  * matches `tag_name`.
  *
  * \example
  * \snippet Test_DataBox.cpp get_item_from_box
  *
- * \tparam Type the type of the tag with the `label` `tag_name`
+ * \tparam Type the type of the tag with the name `tag_name`
  * \param box the DataBox through which to search
- * \param tag_name the `label` of the tag to retrieve
+ * \param tag_name the name of the tag to retrieve
  */
 template <typename Type, typename TagList>
 constexpr const Type& get_item_from_box(const DataBox<TagList>& box,

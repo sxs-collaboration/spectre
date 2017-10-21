@@ -31,7 +31,6 @@ struct Variables : db::DataBoxTag {
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
   using type = ::Variables<TagsList>;
-  static constexpr db::DataBoxString_t label = "Variables";
 };
 }  // namespace Tags
 

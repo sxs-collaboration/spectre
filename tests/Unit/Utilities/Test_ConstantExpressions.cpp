@@ -126,6 +126,19 @@ static_assert(cstring_hash(dummy_string1) == cstring_hash(dummy_string2),
 static_assert(cstring_hash(dummy_string1) != cstring_hash(dummy_string3),
               "Failed testing cstring_hash");
 
+/// Test hashing types
+namespace {
+struct SomeType {};
+}  // namespace
+static_assert(hash_type_name<int>() == hash_type_name<int>(),
+              "Failed testing hash_type_name");
+static_assert(hash_type_name<int>() != hash_type_name<double>(),
+              "Failed testing hash_type_name");
+static_assert(hash_type_name<int>() != hash_type_name<SomeType>(),
+              "Failed testing hash_type_name");
+static_assert(hash_type_name<SomeType>() == hash_type_name<SomeType>(),
+              "Failed testing hash_type_name");
+
 // Test array_equal and replace_at
 constexpr std::array<double, 3> array1{{1.2, 3, 4}};
 constexpr std::array<double, 3> array1_copy{{1.2, 3, 4}};
