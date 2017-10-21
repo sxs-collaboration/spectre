@@ -3,6 +3,8 @@
 
 mainmodule Test_ConstGlobalCache {
 
+  initnode void register_pupables();
+
   extern module ConstGlobalCache;
 
   namespace Parallel {
@@ -17,8 +19,8 @@ mainmodule Test_ConstGlobalCache {
     entry TestArrayChare();
   };
 
-  chare TestChare {
-    entry TestChare(int);
+  chare ParallelComponent {
+    entry ParallelComponent(int);
   };
 
   group TestGroupChare {

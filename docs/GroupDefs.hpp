@@ -71,56 +71,6 @@
 /*!
  * \defgroup EvolveSystem Evolve System
  * \brief Classes and functions used for starting a simulation
- *
- * The EvolveSystem class looks for a defined typelist called
- * `the_tentacle_list`
- * which is then parsed and used to create the Tentacles specified. First single
- * Tentacles (or chares) are created, that is, ones that are not groups or
- * arrays. Next the groups are created by calling the constructor of the group
- * that takes a `CProxy_GlobalCache<the_tentacle_list>&` from which only the
- * input options can be retrieved. During the constructor call no
- * parallelization calls can be made, this will be possible at a second phase
- * of initialization.
- *
- * Next an empty array is created for each of the array Tentacles, followed by
- * an update of the GlobalCache with the new Tentacles set. The second phase
- * of group construction now takes place by calling the
- * `initialize(TaggedTupleTypelist<the_tentacle_list>&, CkCallback)` member
- * function
- * of each group Tentacle distributed object class (i.e. the one that derives
- * off CBase...). The `initialize` function is allowed to communicate between
- * other group chares, however all arrays are still empty at this point. Each
- * `initialize` function must at least call `this->contribute(cb);`.
- *
- * The second last phase of initialization is inserting elements into the
- * arrays. This is done by an `initialize` function inside the *Tentacle*
- * struct. The function signature is:
- * \code
- * template <typename the_tentacle_list>
- * static void initialize(
- *     TaggedTupleTypelist<the_tentacle_list>& tentacles,
- *     CProxy_GlobalCache<the_tentacle_list>& global_cache_proxy);
- * \endcode
- *
- * Finally, if you want a Tentacle to start the simulation you must derive from
- * `Tentacles::is_startup` and define a static member function
- * \code
- * template <typename the_tentacle_list>
- * static void start_execution(
- *     TaggedTupleTypelist<the_tentacle_list>& tentacles,
- *     CProxy_GlobalCache<the_tentacle_list>& global_cache_proxy);
- * \endcode
- * To be concrete, for a dG evolution of a scalar wave only the Element
- * tentacle has a `start_execution` function which just calls the
- * `evolve_from_initial_data()` function on all Element Tentacles.
- *
- * \see
- * EvolveSystem::created_group EvolveSystem::updated_global_cache
- * EvolveSystem::call_group_constructor
- * EvolveSystem::initialize_group_chares
- * EvolveSystem::create_chare_array
- * EvolveSystem::initialize_next_chare_array
- * EvolveSystem::call_start_execution
  */
 
 /*!
@@ -179,8 +129,147 @@
  */
 
 /*!
- * \defgroup Parallel Parallel Info
- * \brief Functions to get info about parallelization and printing in parallel
+ * \defgroup Parallel Parallelization
+ * \brief Functions, classes and documentation related to parallelization and
+ * Charm++
+
+SpECTRE builds a layer on top of Charm++ that performs various safety checks and
+initialization for the user that can otherwise lead to difficult to debug
+undefined behavior. The central concept is what is called a %Parallel
+Component. A %Parallel Component is a struct with several type aliases that
+is used by SpECTRE to set up the Charm++ chares and allowed communication
+patterns. It might be most natural to think of %Parallel Components
+as input arguments to a metaprogram that writes the parallelization
+infrastructure that you requested for the executable. There is no restriction
+on the number of %Parallel Components, though practically it is best to have
+around 10 at most.
+
+Each %Parallel Component must have the following type aliases:
+1. `using chare_type` is set to one of `Parallel::Algorithms::Singleton`,
+   `Parallel::Algorithms::Array`, `Parallel::Algorithms::Group`, or
+   `Parallel::Algorithms::Nodegroup`. What these mean is explained below.
+2. `using metavariables` is set to the Metavariables struct that stores the
+   global metavariables. It is often easiest to have the %Parallel
+   Component struct have a template parameter `Metavariables` that is the
+   global metavariables struct. Examples of this are given below.
+3. `using action_list` is set to a `typelist` of the Actions that the Algorithm
+   running on the %Parallel Component executes. The Actions are executed in
+   the order that they are listed in in the typelist.
+4. `using inbox_tag_list` is set to a typelist of the Tags that can be sent to
+   the %Parallel Component by calling the `receive_data` method. If the Inbox
+   %Tag needs to have some temporal locality, then an optional type alias
+   `temporal_id` must be specified in the Inbox %Tag and sent along with the
+   data.
+5. `using initial_databox` is set to the type of the DataBox that will be passed
+   to the first Action of the `action_list`. Typically it is the output of some
+   `explicit_single_action` call made during the `initialize` function. More
+   on this below.
+6. `using options` is set to a (possibly empty) typelist of the option structs
+   which are read in from the input file specified in the main `Metavariables`
+   struct and passed to the `initialize` function described below.
+
+The following type aliases are not always required, but will be in some
+circumstances:
+1. `using array_index` is set to the type that indexes the %Parallel Component
+   Array and is only required if `chare_type = Parallel::Algorithms::Array`.
+   Charm++ allows arrays to be 1 through 6 dimensional or be indexed by a custom
+   type. The Charm++ provided indexes are wrapped as `Parallel::%ArrayIndex1D'
+   through `Parallel::ArrayIndex6D`. When writing custom array indices, the
+   Charm++ manual tells you to write your own `CkArrayIndex`, but we have
+   written a general implementation that provides this functionality; all that
+   you need to provide is a plain-old-data struct of the size of at most 3
+   integers.
+2. `using explicit_single_actions` is set to a typelist of typelists for Actions
+   that are not part of the algorithm but can be called remotely at any time,
+   similar in spirit to a member function. For each Action, a typelist is
+   specified with the Action as their first element, and the remaining elements
+   are types of the data that is sent to the %Parallel Component and passed into
+   the Action.
+3. `using reduction_actions_list` is set to a typelist of typelists. The nested
+   typelists must have exactly two elements. The first element is the Action to
+   call, and the second is the type being reduced. For example, the reduced type
+   could be an `int`, a `double`, or a specialization of
+   `Parallel::ReductionData`.
+
+%Parallel Components must also have two static member functions with the
+following signatures:
+
+\code
+static void initialize(
+   Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache, opts...);
+\endcode
+
+and
+
+\code
+static void execute_next_global_actions(
+    const typename metavariables::Phase next_phase,
+    const Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache);
+\endcode
+
+The `initialize` function is called by the Main %Parallel Component when
+the execution starts and will typically call an explicit single Action
+to set up the initial state of the Algorithm, similar to what a constructor
+does for classes. The `initialize` function also receives arguments that
+are read from the input file and can the be used to initialize the %Parallel
+Component. For example, the value of an option could be distributed to all
+members of a %Parallel Component Array, or could be used to control the size
+of the %Parallel Component Array.
+
+The `execute_next_global_actions` function gets run at the end of each
+%Parallel Phase and determines what the %Parallel Component should do
+during the next phase. For example, it may simply call `perform_algorithm`,
+call a series of single Actions, perform a reduction over an Array, or not
+do anything at all.
+
+An example of a singleton %Parallel Component is:
+
+\snippet Test_AlgorithmParallel.cpp singleton_parallel_component
+
+and similarly of a %Parallel Component Array:
+
+\snippet Test_AlgorithmParallel.cpp array_parallel_component
+
+Elements are inserted into the Array by using the Charm++ `insert` member
+function of the CProxy for the array. The `insert` function is is documented in
+the Charm++ manual. In the above Array example `array_proxy` is a `CProxy` to
+the `AlgorithmImpl<Parallel::Algorithms::Array, ...>` and so all the
+documentation for Charm++ array proxies applies. We always create empty
+Arrays with the constructor and require users to insert however many elements
+they want and on which cores they want them to be placed. Note that load
+balancing calls may result in Array elements being moved.
+
+There are four types of Algorithms with one Algorithm object per Charm++
+chare object. The four types of Algorithms are:
+1. A Parallel::Algorithms::Singleton where there is only one object
+   in the entire execution of the program.
+2. A Parallel::Algorithms::Array which holds zero or more
+   elements each of which is an object distributed to some core. An array can
+   grow and shrink in size dynamically if need be and can also be bound to
+   another array. A bound array has the same number of elements as
+   the array it is bound to, and elements with the same ID are on the same
+   core. See Charm++'s chare arrays for details.
+3. A Parallel::Algorithms::Group is an array with
+   one element per core which are not able to be moved around between
+   cores. These are typically useful for gathering data from array elements
+   on their core, and then processing or reducing it. See Charm++'s group
+   chares for details
+4. A Parallel::Algorithms::Nodegroup, which is similar to a
+   group except that there is one element per node. For Charm++ SMP (shared
+   memory parallelism) builds a node corresponds to the usual definition of a
+   node on a supercomputer. However, for non-SMP builds nodes and cores are
+   equivalent. We ensure that all entry method calls done through the
+   Algorithm's `explicit_single_action` and `receive_data` functions are
+   threadsafe. User controlled threading is possible by calling the non-entry
+   method member function `threaded_single_action`.
+
+### Entry Methods and Remote Function Invocation
+
+Charm++ refers to functions that can be called remotely as entry methods.
+The Parallel Components provide several generic entry methods. These fall
+into two classes:
+1. Entry methods that perform a single Action once
+2. Entry methods that iterate the Actions in the Algorithm's `action_list`.
  */
 
 /*!
@@ -226,8 +315,8 @@
  */
 
 /*!
- * \defgroup Tentacles Tentacles
- * Information about which Tentacles are available and how to use them
+ * \defgroup ParallelComponents ParallelComponents
+ * Information about which ParallelComponents are available and how to use them
  */
 
 /*!

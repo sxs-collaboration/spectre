@@ -22,7 +22,38 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+/*!
+ * \ingroup TestingFramework
+ * \brief A replacement for Catch's TEST_CASE that silences clang-tidy warnings
+ */
 #define SPECTRE_TEST_CASE(m, n) TEST_CASE(m, n)  // NOLINT
+
+/*!
+ * \ingroup TestingFramework
+ * \brief A similar to Catch's REQUIRE statement, but can be used in tests that
+ * spawn several chares with possibly complex interaction between the chares.
+ */
+#define SPECTRE_PARALLEL_REQUIRE(expr)                                  \
+  do {                                                                  \
+    if (not(expr)) {                                                    \
+      ERROR("\nFailed comparison: " << #expr << "\nLine: " << __LINE__  \
+                                    << "\nFile: " << __FILE__ << "\n"); \
+    }                                                                   \
+  } while (false)
+
+/*!
+ * \ingroup TestingFramework
+ * \brief A similar to Catch's REQUIRE_FALSE statement, but can be used in tests
+ * that spawn several chares with possibly complex interaction between the
+ * chares.
+ */
+#define SPECTRE_PARALLEL_REQUIRE_FALSE(expr)                            \
+  do {                                                                  \
+    if ((expr)) {                                                       \
+      ERROR("\nFailed comparison: " << #expr << "\nLine: " << __LINE__  \
+                                    << "\nFile: " << __FILE__ << "\n"); \
+    }                                                                   \
+  } while (false)
 
 /*!
  * \ingroup TestingFramework

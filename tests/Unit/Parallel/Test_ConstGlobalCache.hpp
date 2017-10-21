@@ -17,10 +17,10 @@ class TestArrayChare : public CBase_TestArrayChare {
   int my_index() const noexcept { return thisIndex; }
 };
 
-class TestChare : public CBase_TestChare {
+class ParallelComponent : public CBase_ParallelComponent {
  public:
-  explicit TestChare(int id) noexcept : id_(id) {}
-  explicit TestChare(CkMigrateMessage* /*unused*/) {}
+  explicit ParallelComponent(int id) noexcept : id_(id) {}
+  explicit ParallelComponent(CkMigrateMessage* /*unused*/) {}
   int my_id() const noexcept { return id_; }
 
  private:

@@ -7,6 +7,13 @@
 
 #include "Utilities/ForceInline.hpp"
 
+#if defined(__clang__) || __GNUC__ > 5
+#define OVERLOADER_CONSTEXPR \
+  constexpr
+#else
+#define OVERLOADER_CONSTEXPR
+#endif
+
 namespace overloader_details {
 struct no_such_type;
 }  // namespace overloader_details
@@ -25,8 +32,8 @@ template <class F1, class F2, class F3, class F4, class F5, class F6, class F7,
 class Overloader<F1, F2, F3, F4, F5, F6, F7, F8, Fs...>
     : F1, F2, F3, F4, F5, F6, F7, F8, Overloader<Fs...> {
  public:
-  constexpr Overloader(F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7, F8 f8,
-                       Fs... fs)
+  OVERLOADER_CONSTEXPR Overloader(F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6,
+                                  F7 f7, F8 f8, Fs... fs)
       : F1(std::move(f1)),
         F2(std::move(f2)),
         F3(std::move(f3)),
@@ -51,7 +58,7 @@ class Overloader<F1, F2, F3, F4, F5, F6, F7, F8, Fs...>
 template <class F1, class F2, class F3, class F4, class... Fs>
 class Overloader<F1, F2, F3, F4, Fs...> : F1, F2, F3, F4, Overloader<Fs...> {
  public:
-  constexpr Overloader(F1 f1, F2 f2, F3 f3, F4 f4, Fs... fs)
+  OVERLOADER_CONSTEXPR Overloader(F1 f1, F2 f2, F3 f3, F4 f4, Fs... fs)
       : F1(std::move(f1)),
         F2(std::move(f2)),
         F3(std::move(f3)),
@@ -68,7 +75,7 @@ class Overloader<F1, F2, F3, F4, Fs...> : F1, F2, F3, F4, Overloader<Fs...> {
 template <class F1, class F2, class... Fs>
 class Overloader<F1, F2, Fs...> : F1, F2, Overloader<Fs...> {
  public:
-  constexpr Overloader(F1 f1, F2 f2, Fs... fs)
+  OVERLOADER_CONSTEXPR Overloader(F1 f1, F2 f2, Fs... fs)
       : F1(std::move(f1)),
         F2(std::move(f2)),
         Overloader<Fs...>(std::move(fs)...) {}
@@ -81,7 +88,7 @@ class Overloader<F1, F2, Fs...> : F1, F2, Overloader<Fs...> {
 template <class F>
 class Overloader<F> : F {
  public:
-  explicit constexpr Overloader(F f) : F(std::move(f)) {}
+  explicit OVERLOADER_CONSTEXPR Overloader(F f) : F(std::move(f)) {}
 
   using F::operator();
 };
@@ -90,7 +97,7 @@ template <>
 class Overloader<> {
  public:
   using type = Overloader;
-  constexpr SPECTRE_ALWAYS_INLINE void operator()(
+  SPECTRE_ALWAYS_INLINE void operator()(
       const overloader_details::no_such_type& /*unused*/) noexcept {}
 };
 
@@ -99,6 +106,6 @@ class Overloader<> {
  * \brief Create `Overloader<Fs...>`, see Overloader for details
  */
 template <class... Fs>
-constexpr Overloader<Fs...> make_overloader(Fs... fs) {
+OVERLOADER_CONSTEXPR Overloader<Fs...> make_overloader(Fs... fs) {
   return Overloader<Fs...>{std::move(fs)...};
 }

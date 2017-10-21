@@ -251,6 +251,74 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   }
 }
 
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
+                  "[Unit][DataStructures]") {
+  auto original_box =
+      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                             test_databox_tags::Tag2>,
+                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                                         test_databox_tags::ComputeTag1>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
+        3.14 * 2.0);
+  /// [databox_mutate_example]
+  db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
+      original_box,
+      [](double& tag0, std::vector<double>& tag1, const double& compute_tag0) {
+        CHECK(6.28 == compute_tag0);
+        tag0 = 10.32;
+        tag1[0] = 837.2;
+      },
+      db::get<test_databox_tags::ComputeTag0>(original_box));
+  CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
+  CHECK(837.2 == db::get<test_databox_tags::Tag1>(original_box)[0]);
+  /// [databox_mutate_example]
+  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
+        10.32 * 2.0);
+}
+
+// [[OutputRegex, Unable to retrieve a \(compute\) item 'ComputeTag0' from the
+// DataBox from within a call to mutate. You must pass these either through the
+// capture list of the lambda or the constructor of a class, this restriction
+// exists to avoid complexity]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
+                  "[Unit][DataStructures]") {
+  ERROR_TEST();
+  auto original_box =
+      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                             test_databox_tags::Tag2>,
+                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                                         test_databox_tags::ComputeTag1>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
+      original_box, [&original_box](double& tag0, std::vector<double>& tag1) {
+        const auto& compute_tag0 =
+            db::get<test_databox_tags::ComputeTag0>(original_box);
+        tag0 = 10.32;
+        tag1[0] = 837.2;
+      });
+}
+
+// [[OutputRegex, Unable to mutate a DataBox that is already being mutated. This
+// error occurs when mutating a DataBox from inside the invokable passed to the
+// mutate function]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
+                  "[Unit][DataStructures]") {
+  ERROR_TEST();
+  auto original_box =
+      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                             test_databox_tags::Tag2>,
+                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                                         test_databox_tags::ComputeTag1>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  db::mutate<test_databox_tags::Tag0>(
+      original_box, [&original_box](double& /*unused*/) {
+        db::mutate<test_databox_tags::Tag1>(
+            original_box, [](std::vector<double>& tag1) { tag1[0] = 10.0; });
+      });
+}
+
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
                   "[Unit][DataStructures]") {
   /// [get_item_from_box]

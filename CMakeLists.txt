@@ -51,6 +51,8 @@ include(SetupLIBXSMM)
 include(SetupPapi)
 include(SetupYamlCpp)
 
+# Generate Charm++ files
+generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)
 
 enable_testing(true)
 include(SpectreAddCatchTests)
