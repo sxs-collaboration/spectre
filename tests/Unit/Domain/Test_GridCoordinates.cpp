@@ -10,19 +10,17 @@
 #include "Domain/GridCoordinates.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.GridCoordinates", "[Domain][Unit]") {
-  using affine_map_2d =
-      CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                     CoordinateMaps::AffineMap>;
-  using affine_map_3d =
-      CoordinateMaps::ProductOf3Maps<CoordinateMaps::AffineMap,
-                                     CoordinateMaps::AffineMap,
-                                     CoordinateMaps::AffineMap>;
+SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
+  using AffineMap2d = CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                                                     CoordinateMaps::AffineMap>;
+  using AffineMap3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::AffineMap,
+                                                     CoordinateMaps::AffineMap,
+                                                     CoordinateMaps::AffineMap>;
 
   const Index<1> extents_1d(Index<1>(3));
   const Index<2> extents_2d(Index<2>(2, 3));
 
-  /// [grid_coordinates_example]
+  /// [logical_coordinates_example]
   const Index<3> extents_3d(Index<3>(5, 3, 2));
 
   const CoordinateMaps::AffineMap x_map{-1.0, 1.0, -3.0, 7.0};
@@ -30,17 +28,17 @@ SPECTRE_TEST_CASE("Unit.Domain.GridCoordinates", "[Domain][Unit]") {
   const CoordinateMaps::AffineMap z_map{-1.0, 1.0, -32.0, 74.0};
 
   const auto map_3d = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      affine_map_3d{x_map, y_map, z_map});
+      AffineMap3d{x_map, y_map, z_map});
 
-  const auto x_3d = grid_coordinates(extents_3d, map_3d);
-  /// [grid_coordinates_example]
+  const auto x_3d = map_3d(logical_coordinates(extents_3d));
+  /// [logical_coordinates_example]
 
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::AffineMap{x_map});
   const auto map_2d = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      affine_map_2d{x_map, y_map});
-  const auto x_1d = grid_coordinates(extents_1d, map_1d);
-  const auto x_2d = grid_coordinates(extents_2d, map_2d);
+      AffineMap2d{x_map, y_map});
+  const auto x_1d = map_1d(logical_coordinates(extents_1d));
+  const auto x_2d = map_2d(logical_coordinates(extents_2d));
 
   CHECK(x_1d[0][0] == -3.0);
   CHECK(x_1d[0][1] == 2.0);
@@ -63,6 +61,25 @@ SPECTRE_TEST_CASE("Unit.Domain.GridCoordinates", "[Domain][Unit]") {
 
   CHECK(x_3d[2][0] == -32.0);
   CHECK(x_3d[2][15] == 74.0);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
+  using AffineMap2d = CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                                                     CoordinateMaps::AffineMap>;
+  using AffineMap3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::AffineMap,
+                                                     CoordinateMaps::AffineMap,
+                                                     CoordinateMaps::AffineMap>;
+
+  const CoordinateMaps::AffineMap x_map{-1.0, 1.0, -3.0, 7.0};
+  const CoordinateMaps::AffineMap y_map{-1.0, 1.0, -13.0, 47.0};
+  const CoordinateMaps::AffineMap z_map{-1.0, 1.0, -32.0, 74.0};
+
+  const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      CoordinateMaps::AffineMap{x_map});
+  const auto map_2d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      AffineMap2d{x_map, y_map});
+  const auto map_3d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      AffineMap3d{x_map, y_map, z_map});
 
   const Index<0> extents_0d;
 
