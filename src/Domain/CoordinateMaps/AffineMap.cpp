@@ -4,7 +4,9 @@
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/DereferenceWrapper.hpp"
 
 namespace CoordinateMaps {
 
@@ -36,12 +38,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-AffineMap::jacobian(const std::array<T, 1>& /*xi*/) const {
+AffineMap::jacobian(const std::array<T, 1>& xi) const {
   return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                 tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
-      jacobian_};
+      make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), jacobian_)};
 }
 
 template <typename T>
@@ -49,12 +52,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-AffineMap::inv_jacobian(const std::array<T, 1>& /*xi*/) const {
+AffineMap::inv_jacobian(const std::array<T, 1>& xi) const {
   return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                 tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
-      inverse_jacobian_};
+      make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), inverse_jacobian_)};
 }
 
 void AffineMap::pup(PUP::er& p) {

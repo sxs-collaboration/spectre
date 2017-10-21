@@ -3,9 +3,11 @@
 
 #include <catch.hpp>
 
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/GridCoordinates.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
@@ -89,6 +91,31 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
   CHECK(jac_A.get(1, 1) == jacobian_11);
   CHECK(jac_B.get(1, 1) == jacobian_11);
   CHECK(jac_xi.get(1, 1) == jacobian_11);
+
+  // Check Jacobians for DataVectors
+  const Index<2> mesh(8);
+  const auto tensor_logical_coords = logical_coordinates(mesh);
+  const std::array<DataVector, 2> logical_coords{
+      {tensor_logical_coords.get(0), tensor_logical_coords.get(1)}};
+  const auto volume_inv_jac = affine_map_xy.inv_jacobian(logical_coords);
+  const auto volume_jac = affine_map_xy.jacobian(logical_coords);
+  for (size_t i = 0; i < 2; ++i) {
+    for (size_t j = 0; j < 2; ++j) {
+      if (i == j) {
+        CHECK(volume_inv_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(),
+                         i == 0 ? inv_jacobian_00 : inv_jacobian_11));
+        CHECK(volume_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(),
+                         i == 0 ? jacobian_00 : jacobian_11));
+      } else {
+        CHECK(volume_inv_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(), 0.0));
+        CHECK(volume_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(), 0.0));
+      }
+    }
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
@@ -224,4 +251,32 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   CHECK(jac_A.get(2, 2) == jacobian_22);
   CHECK(jac_B.get(2, 2) == jacobian_22);
   CHECK(jac_xi.get(2, 2) == jacobian_22);
+
+  // Check Jacobians for DataVectors
+  const Index<3> mesh(8);
+  const auto tensor_logical_coords = logical_coordinates(mesh);
+  const std::array<DataVector, 3> logical_coords{
+      {tensor_logical_coords.get(0), tensor_logical_coords.get(1),
+       tensor_logical_coords.get(2)}};
+  const auto volume_inv_jac = affine_map_xyz.inv_jacobian(logical_coords);
+  const auto volume_jac = affine_map_xyz.jacobian(logical_coords);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      if (i == j) {
+        CHECK(volume_inv_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(),
+                         i == 0 ? inv_jacobian_00
+                                : i == 1 ? inv_jacobian_11 : inv_jacobian_22));
+        CHECK(volume_jac.get(i, j) ==
+              DataVector(
+                  logical_coords[0].size(),
+                  i == 0 ? jacobian_00 : i == 1 ? jacobian_11 : jacobian_22));
+      } else {
+        CHECK(volume_inv_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(), 0.0));
+        CHECK(volume_jac.get(i, j) ==
+              DataVector(logical_coords[0].size(), 0.0));
+      }
+    }
+  }
 }

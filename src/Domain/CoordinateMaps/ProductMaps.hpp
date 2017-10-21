@@ -8,9 +8,11 @@
 
 #include <memory>
 
+#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "Utilities/DereferenceWrapper.hpp"
 
 namespace CoordinateMaps {
 
@@ -53,7 +55,7 @@ apply_jac(const std::array<T, Size>& xi, const Map1& map1, const Map2& map2,
   Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<Size, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<Size, UpLo::Lo, Frame::NoFrame>>>
-      jac{0.0};
+      jac{make_with_value<T>(dereference_wrapper(xi[0]), 0.0)};
   for (size_t i = 0; i < Map1::dim; ++i) {
     for (size_t j = 0; j < Map1::dim; ++j) {
       jac.get(i, j) = std::move(map1_jac.get(i, j));
@@ -281,13 +283,19 @@ ProductOf3Maps<Map1, Map2, Map3>::inv_jacobian(
   Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{0.0};
-  inv_jac.template get<0, 0>() = map1_.inv_jacobian(
-      std::array<std::reference_wrapper<const T>, 1>{{xi[0]}})[0];
-  inv_jac.template get<1, 1>() = map2_.inv_jacobian(
-      std::array<std::reference_wrapper<const T>, 1>{{xi[1]}})[0];
-  inv_jac.template get<2, 2>() = map3_.inv_jacobian(
-      std::array<std::reference_wrapper<const T>, 1>{{xi[2]}})[0];
+      inv_jac{make_with_value<T>(dereference_wrapper(xi[0]), 0.0)};
+  inv_jac.template get<0, 0>() =
+      map1_
+          .inv_jacobian(std::array<std::reference_wrapper<const T>, 1>{{xi[0]}})
+          .template get<0, 0>();
+  inv_jac.template get<1, 1>() =
+      map2_
+          .inv_jacobian(std::array<std::reference_wrapper<const T>, 1>{{xi[1]}})
+          .template get<0, 0>();
+  inv_jac.template get<2, 2>() =
+      map3_
+          .inv_jacobian(std::array<std::reference_wrapper<const T>, 1>{{xi[2]}})
+          .template get<0, 0>();
   return inv_jac;
 }
 template <typename Map1, typename Map2, typename Map3>
@@ -301,13 +309,16 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(const std::array<T, dim>& xi) const {
   Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-      jac{0.0};
-  jac.template get<0, 0>() = map1_.jacobian(
-      std::array<std::reference_wrapper<const T>, 1>{{xi[0]}})[0];
-  jac.template get<1, 1>() = map2_.jacobian(
-      std::array<std::reference_wrapper<const T>, 1>{{xi[1]}})[0];
-  jac.template get<2, 2>() = map3_.jacobian(
-      std::array<std::reference_wrapper<const T>, 1>{{xi[2]}})[0];
+      jac{make_with_value<T>(dereference_wrapper(xi[0]), 0.0)};
+  jac.template get<0, 0>() =
+      map1_.jacobian(std::array<std::reference_wrapper<const T>, 1>{{xi[0]}})
+          .template get<0, 0>();
+  jac.template get<1, 1>() =
+      map2_.jacobian(std::array<std::reference_wrapper<const T>, 1>{{xi[1]}})
+          .template get<0, 0>();
+  jac.template get<2, 2>() =
+      map3_.jacobian(std::array<std::reference_wrapper<const T>, 1>{{xi[2]}})
+          .template get<0, 0>();
   return jac;
 }
 template <typename Map1, typename Map2, typename Map3>
