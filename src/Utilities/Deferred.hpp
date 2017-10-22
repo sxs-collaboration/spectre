@@ -57,7 +57,7 @@ template <typename Rt, typename Fp, typename... Args>
 class deferred_assoc_state : public assoc_state<Rt> {
  public:
   explicit deferred_assoc_state(Fp f, Args... args)
-      : func_(f), args_(std::make_tuple(std::move(args)...)) {}
+      : func_(std::move(f)), args_(std::make_tuple(std::move(args)...)) {}
   deferred_assoc_state(const deferred_assoc_state& /*rhs*/) = delete;
   deferred_assoc_state& operator=(const deferred_assoc_state& /*rhs*/) = delete;
   deferred_assoc_state(deferred_assoc_state&& /*rhs*/) = delete;
