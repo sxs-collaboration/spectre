@@ -5,8 +5,8 @@
 
 #include "DataStructures/Index.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "tests/Unit/TestHelpers.hpp"
