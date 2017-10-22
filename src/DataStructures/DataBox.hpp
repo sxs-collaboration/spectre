@@ -743,13 +743,13 @@ class DataBox<TagsList<Tags...>> {
 
 /// \cond HIDDEN_SYMBOLS
 namespace databox_detail {
-template <typename T, typename = void>
+template <typename T, typename = std::nullptr_t>
 struct select_if_variables {
   using type = tmpl::list<>;
 };
 template <typename T>
 struct select_if_variables<T, Requires<tt::is_a_v<Variables, item_type<T>>>> {
-  using type = typename item_type<T>::argument_tags;
+  using type = typename item_type<T>::tags_list;
 };
 
 template <
@@ -765,11 +765,11 @@ SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     typelist<Ts...> /*meta*/) {
   const auto helper = [lazy_function =
-                           data.template get<VariablesTag>()](auto&& tag) {
-    return lazy_function.get().template get<decltype(tag)>();
+                           data.template get<VariablesTag>()](auto tag) {
+    return get<decltype(tag)>(lazy_function.get());
   };
   static_cast<void>(std::initializer_list<char>{
-      (static_cast<void>(data.template get<Ts>() = make_deferred(helper(Ts{}))),
+      (static_cast<void>(data.template get<Ts>() = make_deferred(helper, Ts{})),
        '0')...});
 }
 
