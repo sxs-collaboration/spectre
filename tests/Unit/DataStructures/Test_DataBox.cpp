@@ -167,8 +167,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   // Check retrieving chained compute item result
   CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
         "My Sample String6.28"s);
-  CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) ==
-        3.0 * 3.14);
+  CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) == 3.0 * 3.14);
   CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   // No removal
   {
@@ -227,8 +226,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::RemoveTags<>, db::AddTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag3>(box) ==
-          "Yet another test string"s);
+    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
     CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
@@ -243,8 +241,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::AddTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag3>(box) ==
-          "Yet another test string"s);
+    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
     CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
@@ -317,7 +314,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
             original_box, [](std::vector<double>& tag1) { tag1[0] = 10.0; });
       });
 }
-
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
                   "[Unit][DataStructures]") {
@@ -457,7 +453,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
 // Test the tags
 namespace {
 
-auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st,2.0); }
+auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
 
 struct Var1 : db::ComputeItemTag {
   static constexpr db::DataBoxString_t label = "Var1";
@@ -488,17 +484,38 @@ static_assert(
         tnsr::iJ<DataVector, 3, Frame::Grid>>,
     "Failed db::wrap_tags_in vector_only");
 
-static_assert(
-    cpp17::is_same_v<
-        tmpl::back<db::wrap_tags_in<Tags::d, two_vars, tmpl::size_t<2>,
-                                    Frame::Grid>>::type,
-        tnsr::i<DataVector, 2, Frame::Grid>>,
-    "Failed db::wrap_tags_in two_vars scalar");
+static_assert(cpp17::is_same_v<
+                  tmpl::back<db::wrap_tags_in<
+                      Tags::d, two_vars, tmpl::size_t<2>, Frame::Grid>>::type,
+                  tnsr::i<DataVector, 2, Frame::Grid>>,
+              "Failed db::wrap_tags_in two_vars scalar");
 
-static_assert(
-    cpp17::is_same_v<
-        tmpl::front<db::wrap_tags_in<Tags::d, two_vars, tmpl::size_t<3>,
-                                    Frame::Grid>>::type,
-        tnsr::iJ<DataVector, 3, Frame::Grid>>,
-    "Failed db::wrap_tags_in two_vars vector");
+static_assert(cpp17::is_same_v<
+                  tmpl::front<db::wrap_tags_in<
+                      Tags::d, two_vars, tmpl::size_t<3>, Frame::Grid>>::type,
+                  tnsr::iJ<DataVector, 3, Frame::Grid>>,
+              "Failed db::wrap_tags_in two_vars vector");
 }  // namespace
+
+namespace test_databox_tags {
+struct ScalarTag : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString_t label = "ScalarTag";
+};
+struct VectorTag : db::DataBoxTag {
+  using type = tnsr::I<DataVector, 3>;
+  static constexpr db::DataBoxString_t label = "VectorTag";
+};
+}  // namespace test_databox_tags
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
+                  "[Unit][DataStructures]") {
+  auto box = db::create<db::AddTags<Tags::Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>>(
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(2, 3.));
+  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+        Scalar<DataVector>(DataVector(2, 3.)));
+  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
+}
