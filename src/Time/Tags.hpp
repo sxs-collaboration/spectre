@@ -53,6 +53,14 @@ namespace CacheTags {
 
 /// \ingroup CacheTags
 /// \ingroup TimeGroup
+/// \brief The final time
+struct FinalTime {
+  using type = double;
+  static constexpr OptionString_t help{"The final time"};
+};
+
+/// \ingroup CacheTags
+/// \ingroup TimeGroup
 /// \brief The ::TimeStepper
 struct TimeStepper {
   using type = std::unique_ptr<::TimeStepper>;
