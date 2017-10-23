@@ -7,6 +7,11 @@
 #pragma once
 
 /*!
+ * \defgroup ActionsGroup Actions
+ * \brief A collection of steps used in algorithms.
+ */
+
+/*!
  * \defgroup BoundaryConditions Boundary Conditions
  * A collection of boundary conditions used for evolutions.
  */
