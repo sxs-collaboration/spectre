@@ -16,7 +16,7 @@
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-static constexpr size_t number_of_1d_array_elements = 14;
+static constexpr int number_of_1d_array_elements = 14;
 
 /// [custom_reduce_function]
 CkReductionMsg* reduce_reduction_data(const int number_of_messages,
@@ -65,10 +65,9 @@ struct singleton_reduce_sum_int {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/, int value) noexcept {
-    SPECTRE_PARALLEL_REQUIRE(
-        static_cast<int>(number_of_1d_array_elements) *
-            (static_cast<int>(number_of_1d_array_elements) - 1) / 2 ==
-        value);
+    SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
+                                 (number_of_1d_array_elements - 1) / 2 ==
+                             value);
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -114,18 +113,16 @@ struct singleton_reduce_custom_reduction {
           value) noexcept {
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<0>(value) == 10);
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<1>(value).at("unity") ==
-                             static_cast<int>(number_of_1d_array_elements) - 1);
+                             number_of_1d_array_elements - 1);
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<1>(value).at("double") ==
-                             2 * static_cast<int>(number_of_1d_array_elements) -
-                                 2);
+                             2 * number_of_1d_array_elements - 2);
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<1>(value).at("negative") == 0);
     SPECTRE_PARALLEL_REQUIRE(
         Parallel::get<2>(value) ==
         (std::vector<int>{
-            number_of_1d_array_elements *
-                (static_cast<int>(number_of_1d_array_elements) - 1) / 2,
+            number_of_1d_array_elements * (number_of_1d_array_elements - 1) / 2,
             number_of_1d_array_elements * 10,
-            -8 * static_cast<int>(number_of_1d_array_elements)}));
+            -8 * number_of_1d_array_elements}));
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -230,9 +227,8 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
-    for (size_t i = 0, which_proc = 0,
-                number_of_procs =
-                    static_cast<size_t>(Parallel::number_of_procs());
+    for (int i = 0, which_proc = 0,
+             number_of_procs = Parallel::number_of_procs();
          i < number_of_1d_array_elements; ++i) {
       array_proxy[i].insert(global_cache, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
