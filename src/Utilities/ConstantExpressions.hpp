@@ -275,3 +275,8 @@ inline constexpr bool array_equal(const std::array<T, size>& lhs,
                      and array_equal(lhs, rhs, i + 1))
                   : true;
 }
+
+/// \ingroup ConstantExpressions
+/// \brief Returns a const reference to its argument.
+template <typename T>
+constexpr const T& as_const(const T& t) noexcept { return t; }
