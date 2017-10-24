@@ -4,6 +4,7 @@
 set(LIBRARY DomainCreators)
 
 set(LIBRARY_SOURCES
+    Brick.cpp
     Interval.cpp
     Rectangle.cpp
     )
