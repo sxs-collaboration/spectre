@@ -44,6 +44,7 @@ include(SetupBlaze)
 include(SetupBoost)
 include(SetupBrigand)
 include(SetupCatch)
+include(SetupGoogleBenchmark)
 include(SetupGsl)
 include(SetupHdf5)
 include(SetupJemalloc)
@@ -72,4 +73,3 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)
-

@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines function grid_coordinates and interface_grid_coordinates
+/// Defines functions logical_coordinates and interface_grid_coordinates
 
 #pragma once
 
@@ -16,25 +16,16 @@
 
 /*!
  * \ingroup ComputationalDomain
- * \brief Compute the grid coordinates in an Element
+ * \brief Compute the Legendre-Gauss-Lobatto coordinates in an Element
  *
- * \returns grid-frame vector holding coordinates
- *
- * \remarks assumes that the grid-points lies at the Legendre-Gauss-Lobatto
- * points of the reference cell
- *
- * \details
- * Computes the grid coordinates by applying the coordinate_map at the
- * Legendre-Gauss-Lobatto points of the reference cell.
+ * \returns logical-frame vector holding coordinates
  *
  * \example
- * \snippet Test_GridCoordinates.cpp grid_coordinates_example
+ * \snippet Test_GridCoordinates.cpp logical_coordinates_example
  */
-template <size_t VolumeDim, typename... Maps>
-tnsr::I<DataVector, VolumeDim, Frame::Grid> grid_coordinates(
-    const Index<VolumeDim>& extents,
-    const CoordinateMap<Frame::Logical, Frame::Grid, Maps...>& coordinate_map) {
-  // First construct the logical coordinates from the extents
+template <size_t VolumeDim>
+tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
+    const Index<VolumeDim>& extents) {
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
   for (size_t d = 0; d < VolumeDim; ++d) {
     const auto& collocation_points_in_this_dim =
@@ -44,7 +35,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Grid> grid_coordinates(
           collocation_points_in_this_dim[index()[d]];
     }
   }
-  return coordinate_map(logical_x);
+  return logical_x;
 }
 
 /*!
@@ -72,7 +63,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Grid> interface_grid_coordinates(
   const size_t sliced_away_dim = direction.dimension();
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
 
-  std::array<DataVector, VolumeDim - 1> collocation_points_in_each_dim;
+  std::array<DataVector, VolumeDim - 1> collocation_points_in_each_dim{};
   for (size_t d = 0; d < VolumeDim - 1; ++d) {
     gsl::at(collocation_points_in_each_dim, d) =
         Basis::lgl::collocation_points(extents[d]);

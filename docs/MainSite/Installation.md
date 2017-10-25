@@ -29,6 +29,8 @@ See LICENSE.txt for details.
 #### Optional:
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
   documentation
+* [Google Benchmark](https://github.com/google/benchmark) - to do
+  microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
   [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
   coverage

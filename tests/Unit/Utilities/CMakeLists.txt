@@ -7,6 +7,7 @@ set(UTILITIES_TESTS
     Utilities/Test_CachedFunction.cpp
     Utilities/Test_ConstantExpressions.cpp
     Utilities/Test_Deferred.cpp
+    Utilities/Test_DereferenceWrapper.cpp
     Utilities/Test_FakeVirtual.cpp
     Utilities/Test_FileSystem.cpp
     Utilities/Test_FractionUtilities.cpp
@@ -25,4 +26,3 @@ set(UTILITIES_TESTS
     )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${UTILITIES_TESTS}" PARENT_SCOPE)
-

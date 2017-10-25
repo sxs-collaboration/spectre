@@ -112,8 +112,7 @@ void test_logical_partial_derivatives_1d(const Index<1>& extents) {
       }
     }
 
-    const auto du =
-        logical_partial_derivatives<VariableTags, GradientTags>(u, extents);
+    const auto du = logical_partial_derivatives<GradientTags>(u, extents);
 
     for (size_t n = 0;
          n < Variables<GradientTags>::number_of_independent_components; ++n) {
@@ -142,18 +141,18 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
     }
   }
 
-  const auto du =
-      logical_partial_derivatives<VariableTags, GradientTags>(u, extents);
+  const auto du = logical_partial_derivatives<GradientTags>(u, extents);
 
   for (size_t n = 0;
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
     for (IndexIterator<2> ii(extents); ii; ++ii) {
       const double expected_dxi =
-          (0 == a ? 0.0 : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
-                              pow(eta[ii()[1]], b));
-      const double expected_deta =
-          (0 == b ? 0.0 : b * (n + 1) * pow(xi[ii()[0]], a) *
-                              pow(eta[ii()[1]], b - 1));
+          (0 == a
+               ? 0.0
+               : a * (n + 1) * pow(xi[ii()[0]], a - 1) * pow(eta[ii()[1]], b));
+      const double expected_deta = (0 == b ? 0.0
+                                           : b * (n + 1) * pow(xi[ii()[0]], a) *
+                                                 pow(eta[ii()[1]], b - 1));
       CHECK(du[0].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
       CHECK(du[1].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
@@ -180,21 +179,23 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
     }
   }
 
-  const auto du =
-      logical_partial_derivatives<VariableTags, GradientTags>(u, extents);
+  const auto du = logical_partial_derivatives<GradientTags>(u, extents);
 
   for (size_t n = 0;
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
     for (IndexIterator<3> ii(extents); ii; ++ii) {
       const double expected_dxi =
-          (0 == a ? 0.0 : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
-                              pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
+          (0 == a ? 0.0
+                  : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
+                        pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
       const double expected_deta =
-          (0 == b ? 0.0 : b * (n + 1) * pow(xi[ii()[0]], a) *
-                              pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
+          (0 == b ? 0.0
+                  : b * (n + 1) * pow(xi[ii()[0]], a) *
+                        pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
       const double expected_dzeta =
-          (0 == c ? 0.0 : c * (n + 1) * pow(xi[ii()[0]], a) *
-                              pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c - 1));
+          (0 == c ? 0.0
+                  : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
+                        pow(zeta[ii()[2]], c - 1));
       CHECK(du[0].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
       CHECK(du[1].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
@@ -211,7 +212,7 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
   const CoordinateMaps::AffineMap x_map{-1.0, 1.0, -0.3, 0.7};
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::AffineMap{x_map});
-  const auto x = grid_coordinates(extents, map_1d);
+  const auto x = map_1d(logical_coordinates(extents));
   const InverseJacobian<1, Frame::Logical, Frame::Grid> inverse_jacobian(
       extents.product(), 2.0);
 
@@ -231,8 +232,7 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
     });
 
     const auto du =
-        partial_derivatives<VariableTags, GradientTags, 1, Frame::Grid>(
-            u, extents, inverse_jacobian);
+        partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
 
     for (size_t n = 0; n < du.size(); ++n) {
       CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -249,7 +249,7 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
   const auto prod_map2d =
       make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_2d{
           affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55}});
-  const auto x = grid_coordinates(extents, prod_map2d);
+  const auto x = prod_map2d(logical_coordinates(extents));
   InverseJacobian<2, Frame::Logical, Frame::Grid> inverse_jacobian(
       number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
@@ -273,8 +273,7 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
           });
 
       const auto du =
-          partial_derivatives<VariableTags, GradientTags, 2, Frame::Grid>(
-              u, extents, inverse_jacobian);
+          partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
 
       for (size_t n = 0; n < du.size(); ++n) {
         CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -295,7 +294,7 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
       make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_3d{
           affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55},
           affine_map{-1.0, 1.0, 2.3, 2.8}});
-  const auto x = grid_coordinates(extents, prod_map3d);
+  const auto x = prod_map3d(logical_coordinates(extents));
   InverseJacobian<3, Frame::Logical, Frame::Grid> inverse_jacobian(
       extents.product(), 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
@@ -321,12 +320,11 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
             });
 
         const auto du =
-            partial_derivatives<VariableTags, GradientTags, 3, Frame::Grid>(
-                u, extents, inverse_jacobian);
+            partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
 
         for (size_t n = 0; n < du.size(); ++n) {
           CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
-          CHECK(du.data()[n] ==  // NOLINT
+          CHECK(du.data()[n] ==                                   // NOLINT
                 approx(expected_du.data()[n]).epsilon(1.e-11));
         }
       }

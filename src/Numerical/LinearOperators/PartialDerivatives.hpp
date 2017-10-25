@@ -24,8 +24,7 @@ struct LogicalImpl;
 /// \ingroup NumericalAlgorithms
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the logical coordinate.
-template <typename VariableTags, typename DerivativeTags = VariableTags,
-          size_t Dim>
+template <typename DerivativeTags, typename VariableTags, size_t Dim>
 auto logical_partial_derivatives(const Variables<VariableTags>& u,
                                  const Index<Dim>& extents) {
   return partial_derivatives_detail::LogicalImpl<
@@ -35,14 +34,16 @@ auto logical_partial_derivatives(const Variables<VariableTags>& u,
 /// \ingroup NumericalAlgorithms
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
-template <typename VariableTags, typename DerivativeTags = VariableTags,
-          size_t Dim, typename DerivativeFrame>
+template <typename DerivativeTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame>
 auto partial_derivatives(
     const Variables<VariableTags>& u, const Index<Dim>& extents,
-    const InverseJacobian<Dim, Frame::Logical, DerivativeFrame>&
+    const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+                 typelist<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
+                          SpatialIndex<Dim, UpLo::Lo, DerivativeFrame>>>&
         inverse_jacobian) {
   const auto logical_partial_derivatives_of_u =
-      logical_partial_derivatives(u, extents);
+      logical_partial_derivatives<DerivativeTags>(u, extents);
 
   Variables<db::wrap_tags_in<Tags::d, DerivativeTags, tmpl::size_t<Dim>,
                              DerivativeFrame>>
