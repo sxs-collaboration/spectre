@@ -38,8 +38,10 @@ struct OptionContext {
   bool top_level{true};
   /// (Part of) the parsing "backtrace" printed with an error
   std::string context;
-  /// Contains input file line and column number
-  YAML::Mark mark{YAML::Mark::null_mark()};
+  /// File line number (0 based)
+  int line{-1};
+  /// File column number (0 based)
+  int column{-1};
 
   /// Append a line to the context.  Automatically appends a colon.
   void append(const std::string& c) noexcept { context += c + ":\n"; }
@@ -47,7 +49,11 @@ struct OptionContext {
 
 inline std::ostream& operator<<(std::ostream& s,
                                 const OptionContext& c) noexcept {
-  return s << c.context << Options_details::mark_info(c.mark);
+  s << c.context;
+  if (c.line >= 0 and c.column >= 0) {
+    s << "At line " << c.line + 1 << " column " << c.column + 1 << ":\n";
+  }
+  return s;
 }
 
 /// \ingroup OptionParsing
@@ -84,7 +90,8 @@ class Option_t {
                     OptionContext context = OptionContext()) noexcept
       // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
       : node_(std::move(node)), context_(std::move(context)) {  // NOLINT
-    context_.mark = node_.Mark();
+    context_.line = node.Mark().line;
+    context_.column = node.Mark().column;
   }
 
   explicit Option_t(OptionContext context) noexcept
@@ -102,7 +109,8 @@ class Option_t {
   void set_node(YAML::Node node) noexcept {
     // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
     node_ = std::move(node);  // NOLINT
-    context_.mark = node_.Mark();
+    context_.line = node_.Mark().line;
+    context_.column = node_.Mark().column;
   }
 
   /// Convert to an object of type `T`.
@@ -128,7 +136,8 @@ T Option_t::parse_as() const {
       return T{};
     }
     OptionContext error_context = context();
-    error_context.mark = e.mark;
+    error_context.line = e.mark.line;
+    error_context.column = e.mark.column;
     std::ostringstream ss;
     ss << "Failed to convert value to type " << pretty_type::get_name<T>()
        << ":";
@@ -158,7 +167,8 @@ T Option_t::parse_as() const {
   } catch (const Options_details::propagate_context& e) {
     OptionContext error_context = context();
     // Avoid line numbers in the middle of the trace
-    error_context.mark = YAML::Mark::null_mark();
+    error_context.line = -1;
+    error_context.column = -1;
     PARSE_ERROR(error_context, e.message());
   } catch (std::exception& e) {
     ERROR("Unexpected exception: " << e.what());
@@ -419,7 +429,8 @@ void Options<OptionList>::parse(const YAML::Node& node) {
     const auto& name = name_and_value.first.as<std::string>();
     const auto& value = name_and_value.second;
     auto context = context_;
-    context.mark = name_and_value.first.Mark();
+    context.line = name_and_value.first.Mark().line;
+    context.column = name_and_value.first.Mark().column;
 
     // Check for invalid key
     if (1 != valid_names_.count(name)) {
@@ -580,12 +591,17 @@ std::string Options<OptionList>::parsing_help(
 template <typename OptionList>
 std::string Options<OptionList>::parser_error(
     const YAML::ParserException& e) const noexcept {
-  return Options_details::mark_info(e.mark) +
-      "Unable to correctly parse the input file because of a syntax error.\n"
+  std::ostringstream ss;
+  if (not e.mark.is_null()) {
+    ss << "At line " << e.mark.line + 1 << " column " << e.mark.column + 1
+       << ":\n";
+  }
+  ss << "Unable to correctly parse the input file because of a syntax error.\n"
       "This is typically due to placing a suboption on the same line as an "
       "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
       "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
       "IsPeriodicIn: [true]\n\nSee an example input file for help.";
+  return ss.str();
 }
 
 // yaml-cpp doesn't handle C++11 types yet

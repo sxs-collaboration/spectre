@@ -14,7 +14,6 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
-#include <yaml-cpp/yaml.h>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -174,13 +173,4 @@ class propagate_context : public std::exception {
  private:
   std::string message_;
 };
-
-inline std::string mark_info(const YAML::Mark& m) noexcept {
-  if (m.is_null()) {
-    return "";
-  }
-  std::ostringstream ss;
-  ss << "At line " << m.line + 1 << " column " << m.column + 1 << ":\n";
-  return ss.str();
-}
 }  // namespace Options_details
