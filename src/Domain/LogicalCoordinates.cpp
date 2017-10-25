@@ -4,7 +4,7 @@
 /// \file
 /// Defines functions logical_coordinates and interface_grid_coordinates
 
-#pragma once
+#include "Domain/LogicalCoordinates.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -14,15 +14,6 @@
 #include "Domain/Direction.hpp"
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 
-/*!
- * \ingroup ComputationalDomain
- * \brief Compute the Legendre-Gauss-Lobatto coordinates in an Element
- *
- * \returns logical-frame vector holding coordinates
- *
- * \example
- * \snippet Test_GridCoordinates.cpp logical_coordinates_example
- */
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
     const Index<VolumeDim>& extents) {
@@ -38,27 +29,9 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
   return logical_x;
 }
 
-/*!
- * \ingroup ComputationalDomain
- * \brief Compute the grid coordinates on a face of an Element
- *
- * \returns grid-frame vector holding coordinates
- *
- * \remarks assumes that the grid-points lies at the Legendre-Gauss-Lobatto
- * points of the reference cell of the face
- *
- * \details
- * Computes the grid coordinates by applying the coordinate_map at the
- * Legendre-Gauss-Lobatto points of the reference cell of the face lying
- * in the given direction.
- *
- * \example
- * \snippet Test_GridCoordinates.cpp interface_grid_coordinates_example
- */
-template <size_t VolumeDim, typename... Maps>
-tnsr::I<DataVector, VolumeDim, Frame::Grid> interface_grid_coordinates(
+template <size_t VolumeDim>
+tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
     const Index<VolumeDim - 1>& extents,
-    const CoordinateMap<Frame::Logical, Frame::Grid, Maps...>& coordinate_map,
     const Direction<VolumeDim>& direction) {
   const size_t sliced_away_dim = direction.dimension();
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
@@ -82,5 +55,23 @@ tnsr::I<DataVector, VolumeDim, Frame::Grid> interface_grid_coordinates(
           gsl::at(collocation_points_in_each_dim, d)[index()[d]];
     }
   }
-  return coordinate_map(logical_x);
+  return logical_x;
 }
+
+// Explicit instantiations
+template tnsr::I<DataVector, 1, Frame::Logical> logical_coordinates(
+    const Index<1>& extents);
+template tnsr::I<DataVector, 2, Frame::Logical> logical_coordinates(
+    const Index<2>& extents);
+template tnsr::I<DataVector, 3, Frame::Logical> logical_coordinates(
+    const Index<3>& extents);
+
+template tnsr::I<DataVector, 1, Frame::Logical> interface_logical_coordinates(
+    const Index<0>& extents,
+    const Direction<1>& direction);
+template tnsr::I<DataVector, 2, Frame::Logical> interface_logical_coordinates(
+    const Index<1>& extents,
+    const Direction<2>& direction);
+template tnsr::I<DataVector, 3, Frame::Logical> interface_logical_coordinates(
+    const Index<2>& extents,
+    const Direction<3>& direction);

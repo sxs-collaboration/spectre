@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
     Element.cpp
     ElementId.cpp
     ElementIndex.cpp
+    LogicalCoordinates.cpp
     Neighbors.cpp
     Orientation.cpp
     SegmentId.cpp
