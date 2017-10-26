@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "Options/Factory.hpp"
 #include "Options/Options.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -25,7 +24,7 @@ struct OptionType {
   static constexpr OptionString_t help = {"The type of OptionTest"};
 };
 
-class OptionTest : public Factory<OptionTest> {
+class OptionTest {
  public:
   using creatable_classes = tmpl::list<Test1, Test2, TestWithArg>;
 

@@ -620,3 +620,5 @@ struct convert<std::unordered_map<K, V, H, P>> {
   }
 };
 }  // namespace YAML
+
+#include "Options/Factory.hpp"

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "Options/Factory.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -69,7 +68,7 @@ struct domain_creators<3> {
 
 /// Base class for creating Domains from an option string.
 template <size_t VolumeDim, typename TargetFrame>
-class DomainCreator : public Factory<DomainCreator<VolumeDim, TargetFrame>> {
+class DomainCreator {
  public:
   using creatable_classes =
       typename DomainCreators_detail::domain_creators<VolumeDim>::type;

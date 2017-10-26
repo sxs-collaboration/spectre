@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Options/Factory.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 /// Holds classes implementing MathFunction (functions \f$R^n \to R\f$).
@@ -32,7 +31,7 @@ class MathFunction;
  * function \f$R \to R\f$.
  */
 template <>
-class MathFunction<1> : public Factory<MathFunction<1>>, public PUP::able {
+class MathFunction<1> : public PUP::able {
  public:
   using creatable_classes =
       typelist<MathFunctions::Gaussian, MathFunctions::PowX,
