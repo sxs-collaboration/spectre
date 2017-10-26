@@ -413,7 +413,7 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
   // Calculating the Adams-Bashforth coefficients is somewhat
   // expensive, so we cache them.  ab_coefs(it) returns the
   // coefficients used to step from *it to *(it + 1).
-  auto ab_coefs = [target_order_s, &union_times]() noexcept {
+  auto ab_coefs = [target_order_s]() noexcept {
     using Iter = decltype(union_times.cbegin());
     auto compare = [](const Iter& a, const Iter& b) noexcept {
       return Time::StructuralCompare{}(*a, *b);
