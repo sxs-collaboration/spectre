@@ -42,7 +42,7 @@ class MockProxy {
   void set_inboxes(Inboxes* inboxes) { inboxes_ = inboxes; }
 
   MockArrayElementProxy<InboxTagList> operator[](const Index& index) {
-    return {(*inboxes_)[index]};
+    return MockArrayElementProxy<InboxTagList>((*inboxes_)[index]);
   }
 
  private:
