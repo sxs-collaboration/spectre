@@ -13,7 +13,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Element.hpp"
-#include "Domain/GridCoordinates.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Numerical/LinearOperators/PartialDerivatives.hpp"
 #include "Numerical/Spectral/LegendreGaussLobatto.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"

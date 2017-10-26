@@ -5,9 +5,10 @@
 
 #include "DataStructures/Index.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/GridCoordinates.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
@@ -63,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d[2][15] == 74.0);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   using AffineMap2d = CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
                                                      CoordinateMaps::AffineMap>;
   using AffineMap3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::AffineMap,
@@ -85,20 +86,20 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
 
   const Index<0> extents_1d_xbdry(extents_0d);
 
-  const auto x_1d_lb = interface_grid_coordinates(extents_1d_xbdry, map_1d,
-                                                  Direction<1>::lower_xi());
+  const auto x_1d_lb = map_1d(interface_logical_coordinates(
+      extents_1d_xbdry, Direction<1>::lower_xi()));
 
   CHECK(x_1d_lb[0][0] == -3.0);
 
-  const auto x_1d_ub = interface_grid_coordinates(extents_1d_xbdry, map_1d,
-                                                  Direction<1>::upper_xi());
+  const auto x_1d_ub = map_1d(interface_logical_coordinates(
+      extents_1d_xbdry, Direction<1>::upper_xi()));
 
   CHECK(x_1d_ub[0][0] == 7.0);
 
   const Index<1> extents_2d_xbdry(Index<1>(3));
 
-  const auto x_2d_lb_xi = interface_grid_coordinates(extents_2d_xbdry, map_2d,
-                                                     Direction<2>::lower_xi());
+  const auto x_2d_lb_xi = map_2d(interface_logical_coordinates(
+      extents_2d_xbdry, Direction<2>::lower_xi()));
 
   CHECK(x_2d_lb_xi[0][0] == -3.0);
   CHECK(x_2d_lb_xi[0][1] == -3.0);
@@ -108,8 +109,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
   CHECK(x_2d_lb_xi[1][1] == 17.0);
   CHECK(x_2d_lb_xi[1][2] == 47.0);
 
-  const auto x_2d_ub_xi = interface_grid_coordinates(extents_2d_xbdry, map_2d,
-                                                     Direction<2>::upper_xi());
+  const auto x_2d_ub_xi = map_2d(interface_logical_coordinates(
+      extents_2d_xbdry, Direction<2>::upper_xi()));
 
   CHECK(x_2d_ub_xi[0][0] == 7.0);
   CHECK(x_2d_ub_xi[0][1] == 7.0);
@@ -121,8 +122,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
 
   const Index<1> extents_2d_ybdry(Index<1>(2));
 
-  const auto x_2d_lb_eta = interface_grid_coordinates(
-      extents_2d_ybdry, map_2d, Direction<2>::lower_eta());
+  const auto x_2d_lb_eta = map_2d(interface_logical_coordinates(
+      extents_2d_ybdry, Direction<2>::lower_eta()));
 
   CHECK(x_2d_lb_eta[0][0] == -3.0);
   CHECK(x_2d_lb_eta[0][1] == 7.0);
@@ -130,8 +131,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
   CHECK(x_2d_lb_eta[1][0] == -13.0);
   CHECK(x_2d_lb_eta[1][1] == -13.0);
 
-  const auto x_2d_ub_eta = interface_grid_coordinates(
-      extents_2d_ybdry, map_2d, Direction<2>::upper_eta());
+  const auto x_2d_ub_eta = map_2d(interface_logical_coordinates(
+      extents_2d_ybdry, Direction<2>::upper_eta()));
 
   CHECK(x_2d_ub_eta[0][0] == -3.0);
   CHECK(x_2d_ub_eta[0][1] == 7.0);
@@ -141,8 +142,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
 
   const Index<2> extents_3d_xbdry(Index<2>(3, 2));
 
-  const auto x_3d_lb_xi = interface_grid_coordinates(extents_3d_xbdry, map_3d,
-                                                     Direction<3>::lower_xi());
+  const auto x_3d_lb_xi = map_3d(interface_logical_coordinates(
+      extents_3d_xbdry, Direction<3>::lower_xi()));
 
   CHECK(x_3d_lb_xi[0][0] == -3.0);
   CHECK(x_3d_lb_xi[0][1] == -3.0);
@@ -165,8 +166,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_lb_xi[2][4] == 74.0);
   CHECK(x_3d_lb_xi[2][5] == 74.0);
 
-  const auto x_3d_ub_xi = interface_grid_coordinates(extents_3d_xbdry, map_3d,
-                                                     Direction<3>::upper_xi());
+  const auto x_3d_ub_xi = map_3d(interface_logical_coordinates(
+      extents_3d_xbdry, Direction<3>::upper_xi()));
 
   CHECK(x_3d_ub_xi[0][0] == 7.0);
   CHECK(x_3d_ub_xi[0][1] == 7.0);
@@ -191,8 +192,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
 
   const Index<2> extents_3d_ybdry(Index<2>(5, 2));
 
-  const auto x_3d_lb_eta = interface_grid_coordinates(
-      extents_3d_ybdry, map_3d, Direction<3>::lower_eta());
+  const auto x_3d_lb_eta = map_3d(interface_logical_coordinates(
+      extents_3d_ybdry, Direction<3>::lower_eta()));
 
   CHECK(x_3d_lb_eta[0][0] == -3.0);
   CHECK(x_3d_lb_eta[0][2] == 2.0);
@@ -215,8 +216,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_lb_eta[2][7] == 74.0);
   CHECK(x_3d_lb_eta[2][9] == 74.0);
 
-  const auto x_3d_ub_eta = interface_grid_coordinates(
-      extents_3d_ybdry, map_3d, Direction<3>::upper_eta());
+  const auto x_3d_ub_eta = map_3d(interface_logical_coordinates(
+      extents_3d_ybdry, Direction<3>::upper_eta()));
 
   CHECK(x_3d_ub_eta[0][0] == -3.0);
   CHECK(x_3d_ub_eta[0][2] == 2.0);
@@ -239,12 +240,12 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_ub_eta[2][7] == 74.0);
   CHECK(x_3d_ub_eta[2][9] == 74.0);
 
-  /// [interface_grid_coordinates_example]
+  /// [interface_logical_coordinates_example]
   const Index<2> extents_3d_zbdry(Index<2>(5, 3));
 
-  const auto x_3d_lb_zeta = interface_grid_coordinates(
-      extents_3d_zbdry, map_3d, Direction<3>::lower_zeta());
-  /// [interface_grid_coordinates_example]
+  const auto x_3d_lb_zeta = map_3d(interface_logical_coordinates(
+      extents_3d_zbdry, Direction<3>::lower_zeta()));
+  /// [interface_logical_coordinates_example]
 
   CHECK(x_3d_lb_zeta[0][0] == -3.0);
   CHECK(x_3d_lb_zeta[0][2] == 2.0);
@@ -276,8 +277,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceGridCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_lb_zeta[2][12] == -32.0);
   CHECK(x_3d_lb_zeta[2][14] == -32.0);
 
-  const auto x_3d_ub_zeta = interface_grid_coordinates(
-      extents_3d_zbdry, map_3d, Direction<3>::upper_zeta());
+  const auto x_3d_ub_zeta = map_3d(interface_logical_coordinates(
+      extents_3d_zbdry, Direction<3>::upper_zeta()));
 
   CHECK(x_3d_ub_zeta[0][0] == -3.0);
   CHECK(x_3d_ub_zeta[0][2] == 2.0);

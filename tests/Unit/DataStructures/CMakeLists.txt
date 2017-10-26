@@ -9,6 +9,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/Test_IndexIterator.cpp
     DataStructures/Test_MakeWithValue.cpp
     DataStructures/Test_Matrix.cpp
+    DataStructures/Test_OrientVariablesOnSlice.cpp
     DataStructures/Test_SliceIterator.cpp
     DataStructures/Test_StripeIterator.cpp
     DataStructures/Test_Tensor.cpp

@@ -6,11 +6,15 @@
 
 #pragma once
 
+#include <array>
+#include <boost/range/combine.hpp>
 #include <cstddef>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/Orientation.hpp"
 
 /*!
  * \ingroup DataStructures
@@ -42,4 +46,58 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
     }
   }
   return interface_vars;
+}
+
+namespace OrientVariablesOnSlice_detail {
+
+inline std::vector<size_t> oriented_offset(
+    const Index<0>& /*slice_mesh*/, const size_t /*sliced_dim*/,
+    const Orientation<1>& /*orientation_of_neighbor*/) noexcept {
+  // There is only one point on a slice of a 1D mesh
+  return {0};
+}
+
+std::vector<size_t> oriented_offset(
+    const Index<1>& slice_mesh, size_t sliced_dim,
+    const Orientation<2>& orientation_of_neighbor) noexcept;
+
+std::vector<size_t> oriented_offset(
+    const Index<2>& slice_mesh, size_t sliced_dim,
+    const Orientation<3>& orientation_of_neighbor) noexcept;
+}  // namespace OrientVariablesOnSlice_detail
+
+/// \ingroup DataStructures
+/// Orients variables on a slice to the data-storage order of a neighbor with
+/// the given orientation.
+template <size_t VolumeDim, typename TagsList>
+Variables<TagsList> orient_variables_on_slice(
+    const Variables<TagsList>& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_mesh, const size_t sliced_dim,
+    const Orientation<VolumeDim>& orientation_of_neighbor) noexcept {
+  const size_t number_of_grid_points = slice_mesh.product();
+
+  Variables<TagsList> oriented_variables(number_of_grid_points);
+  const auto oriented_offset = OrientVariablesOnSlice_detail::oriented_offset(
+      slice_mesh, sliced_dim, orientation_of_neighbor);
+
+  tmpl::for_each<TagsList>([&oriented_variables, &variables_on_slice,
+                            &oriented_offset,
+                            &number_of_grid_points](auto tag) {
+    using Tag = tmpl::type_from<decltype(tag)>;
+    auto& oriented_tensor = get<Tag>(oriented_variables);
+    const auto& tensor_on_slice = get<Tag>(variables_on_slice);
+    for (decltype(auto) oriented_and_slice_tensor_components :
+         boost::combine(oriented_tensor, tensor_on_slice)) {
+      DataVector& oriented_tensor_component =
+          boost::get<0>(oriented_and_slice_tensor_components);
+      const DataVector& tensor_component_on_slice =
+          boost::get<1>(oriented_and_slice_tensor_components);
+      for (size_t s = 0; s < number_of_grid_points; ++s) {
+        oriented_tensor_component[oriented_offset[s]] =
+            tensor_component_on_slice[s];
+      }
+    }
+  });
+
+  return oriented_variables;
 }

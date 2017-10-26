@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
     Matrix.cpp
     SliceIterator.cpp
     StripeIterator.cpp
+    VariablesHelpers.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

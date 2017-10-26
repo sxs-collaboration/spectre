@@ -7,7 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/GridCoordinates.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
