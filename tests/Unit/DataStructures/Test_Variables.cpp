@@ -297,3 +297,45 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
   CHECK(data_on_slice(vars, extents, 1, y_offset) == expected_vars_sliced_in_y);
   CHECK(data_on_slice(vars, extents, 2, z_offset) == expected_vars_sliced_in_z);
 }
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",
+                  "[DataStructures][Unit]") {
+  using Vector = VariablesTestTags_detail::vector::type;
+  const Index<2> extents{{{4, 2}}};
+  Variables<typelist<VariablesTestTags_detail::vector>> vars(extents.product());
+  get<VariablesTestTags_detail::vector>(vars) =
+      Vector{{{{1110000., 1120000., 1130000., 1140000.,
+                1210000., 1220000., 1230000., 1240000.},
+               {2110000., 2120000., 2130000., 2140000.,
+                2210000., 2220000., 2230000., 2240000.},
+               {3110000., 3120000., 3130000., 3140000.,
+                3210000., 3220000., 3230000., 3240000.}}}};
+
+  {
+    const auto slice_extents = extents.slice_away(0);
+    Variables<typelist<VariablesTestTags_detail::vector>> slice(
+        slice_extents.product(), 0.);
+    get<VariablesTestTags_detail::vector>(slice) = Vector{{{{1100., 1200.},
+                                                            {2100., 2200.},
+                                                            {3100., 3200.}}}};
+    add_slice_to_data(make_not_null(&vars), slice, extents, 0, 2);
+  }
+  {
+    const auto slice_extents = extents.slice_away(1);
+    Variables<typelist<VariablesTestTags_detail::vector>> slice(
+        slice_extents.product(), 0.);
+    get<VariablesTestTags_detail::vector>(slice) =
+        Vector{{{{11., 12., 13., 14.},
+                 {21., 22., 23., 24.},
+                 {31., 32., 33., 34.}}}};
+    add_slice_to_data(make_not_null(&vars), slice, extents, 1, 1);
+  }
+
+  CHECK((Vector{{{{1110000., 1120000., 1131100., 1140000.,
+                   1210011., 1220012., 1231213., 1240014.},
+                  {2110000., 2120000., 2132100., 2140000.,
+                   2210021., 2220022., 2232223., 2240024.},
+                  {3110000., 3120000., 3133100., 3140000.,
+                   3210031., 3220032., 3233233., 3240034.}}}}) ==
+    get<VariablesTestTags_detail::vector>(vars));
+}
