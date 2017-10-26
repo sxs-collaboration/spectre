@@ -19,8 +19,8 @@
 /// identifying the two faces with each other.
 /// \requires The pair of faces must belong to a single block.
 struct PairOfFaces {
-  const std::vector<size_t> first;
-  const std::vector<size_t> second;
+  std::vector<size_t> first;
+  std::vector<size_t> second;
 };
 
 /// \ingroup ComputationalDomain

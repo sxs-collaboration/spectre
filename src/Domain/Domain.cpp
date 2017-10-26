@@ -56,6 +56,10 @@ template class Domain<1, Frame::Inertial>;
 template class Domain<2, Frame::Inertial>;
 template class Domain<3, Frame::Inertial>;
 
+// Some compilers (clang 3.9.1) don't instantiate the default argument
+// to the second Domain constructor.
+template class std::vector<PairOfFaces>;
+
 template std::ostream& operator<<(std::ostream& os,
                                   const Domain<1, Frame::Grid>& block);
 template std::ostream& operator<<(std::ostream& os,
