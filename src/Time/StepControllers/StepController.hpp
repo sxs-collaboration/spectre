@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "Options/Factory.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -25,7 +24,7 @@ class SplitRemaining;
 /// StepControllers take desired step sizes (generally determined by
 /// StepChoosers) and convert them into TimeDeltas compatible with the
 /// slab requirements.
-class StepController : public Factory<StepController> {
+class StepController {
  public:
   using creatable_classes = tmpl::list<
     StepControllers::BinaryFraction,
