@@ -217,8 +217,8 @@ void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
       Parallel::get_parallel_component<TargetParallelComponent>(cache));
   Parallel::get_parallel_component<SenderParallelComponent>(cache)[array_index]
       .ckLocal()
-      ->contribute(reduction_data.size(), reduction_data.packed().get(),
-                   reducer, callback);
+      ->contribute(static_cast<int>(reduction_data.size()),
+                   reduction_data.packed().get(), reducer, callback);
 }
 /// \endcond
 
@@ -234,7 +234,7 @@ void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
 template <class... Ts>
 CkReductionMsg* new_reduction_msg(
     ReductionData<Ts...>& reduction_data) noexcept {
-  return CkReductionMsg::buildNew(reduction_data.size(),
+  return CkReductionMsg::buildNew(static_cast<int>(reduction_data.size()),
                                   reduction_data.packed().get());
 }
 }  // namespace Parallel

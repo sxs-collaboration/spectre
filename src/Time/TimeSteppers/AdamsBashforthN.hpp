@@ -27,6 +27,8 @@
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/Gsl.hpp"
 
+struct TimeId;
+
 namespace TimeSteppers {
 
 /// \ingroup TimeSteppersGroup
@@ -65,10 +67,9 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   ~AdamsBashforthN() noexcept override = default;
 
   template <typename Vars, typename DerivVars>
-  TimeDelta update_u(
-      gsl::not_null<Vars*> u,
-      const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
-      const TimeDelta& time_step) const noexcept;
+  void update_u(gsl::not_null<Vars*> u,
+                const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
+                const TimeDelta& time_step) const noexcept;
 
   /*!
    * An explanation of the computation being performed by this
@@ -190,6 +191,9 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
   double stable_step() const noexcept override;
 
+  TimeId next_time_id(const TimeId& current_id,
+                      const TimeDelta& time_step) const noexcept override;
+
  private:
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
@@ -250,7 +254,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 };
 
 template <typename Vars, typename DerivVars>
-TimeDelta AdamsBashforthN::update_u(
+void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
     const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
     const TimeDelta& time_step) const noexcept {
@@ -266,46 +270,40 @@ TimeDelta AdamsBashforthN::update_u(
                                               time_step);
 
   switch (history.size()) {
-    case 1: {
+    case 1:
       *u += time_step.value() * std::get<2>(history[0]);
-      return time_step;
-    }
-    case 2: {
+      return;
+    case 2:
       *u += time_step.value() * (coefficients[1] * std::get<2>(history[0]) +
                                  coefficients[0] * std::get<2>(history[1]));
-      return time_step;
-    }
-    case 3: {
+      return;
+    case 3:
       *u += time_step.value() * (coefficients[2] * std::get<2>(history[0]) +
                                  coefficients[1] * std::get<2>(history[1]) +
                                  coefficients[0] * std::get<2>(history[2]));
-      return time_step;
-    }
-    case 4: {
+      return;
+    case 4:
       *u += time_step.value() * (coefficients[3] * std::get<2>(history[0]) +
                                  coefficients[2] * std::get<2>(history[1]) +
                                  coefficients[1] * std::get<2>(history[2]) +
                                  coefficients[0] * std::get<2>(history[3]));
-      return time_step;
-    }
-    case 5: {
+      return;
+    case 5:
       *u += time_step.value() * (coefficients[4] * std::get<2>(history[0]) +
                                  coefficients[3] * std::get<2>(history[1]) +
                                  coefficients[2] * std::get<2>(history[2]) +
                                  coefficients[1] * std::get<2>(history[3]) +
                                  coefficients[0] * std::get<2>(history[4]));
-      return time_step;
-    }
-    case 6: {
+      return;
+    case 6:
       *u += time_step.value() * (coefficients[5] * std::get<2>(history[0]) +
                                  coefficients[4] * std::get<2>(history[1]) +
                                  coefficients[3] * std::get<2>(history[2]) +
                                  coefficients[2] * std::get<2>(history[3]) +
                                  coefficients[1] * std::get<2>(history[4]) +
                                  coefficients[0] * std::get<2>(history[5]));
-      return time_step;
-    }
-    case 7: {
+      return;
+    case 7:
       *u += time_step.value() * (coefficients[6] * std::get<2>(history[0]) +
                                  coefficients[5] * std::get<2>(history[1]) +
                                  coefficients[4] * std::get<2>(history[2]) +
@@ -313,9 +311,8 @@ TimeDelta AdamsBashforthN::update_u(
                                  coefficients[2] * std::get<2>(history[4]) +
                                  coefficients[1] * std::get<2>(history[5]) +
                                  coefficients[0] * std::get<2>(history[6]));
-      return time_step;
-    }
-    case 8: {
+      return;
+    case 8:
       *u += time_step.value() * (coefficients[7] * std::get<2>(history[0]) +
                                  coefficients[6] * std::get<2>(history[1]) +
                                  coefficients[5] * std::get<2>(history[2]) +
@@ -324,8 +321,7 @@ TimeDelta AdamsBashforthN::update_u(
                                  coefficients[2] * std::get<2>(history[5]) +
                                  coefficients[1] * std::get<2>(history[6]) +
                                  coefficients[0] * std::get<2>(history[7]));
-      return time_step;
-    }
+      return;
     default:
       ERROR("Bad amount of history data: " << history.size());
   }

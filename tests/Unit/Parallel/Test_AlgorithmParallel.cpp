@@ -13,7 +13,7 @@
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-static constexpr size_t number_of_1d_array_elements = 14;
+static constexpr int number_of_1d_array_elements = 14;
 
 namespace Tags {
 struct Int0 : db::DataBoxTag {
@@ -82,7 +82,7 @@ struct CountReceives {
       // groups and nodegroups
       auto& array_parallel_component = Parallel::get_parallel_component<
           ArrayParallelComponent<Metavariables>>(cache);
-      for (size_t i = 0; i < number_of_1d_array_elements; ++i) {
+      for (int i = 0; i < number_of_1d_array_elements; ++i) {
         // we do not do a broadcast so that we can check inline entry methods on
         // array work. We pass "true" as the second argument to start the
         // algorithm up again on the arrays
@@ -297,9 +297,8 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
-    for (size_t i = 0, which_proc = 0,
-                number_of_procs =
-                    static_cast<size_t>(Parallel::number_of_procs());
+    for (int i = 0, which_proc = 0,
+             number_of_procs = Parallel::number_of_procs();
          i < number_of_1d_array_elements; ++i) {
       array_proxy[i].insert(global_cache, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;

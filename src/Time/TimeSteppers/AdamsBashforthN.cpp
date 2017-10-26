@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace TimeSteppers {
@@ -47,6 +48,15 @@ double AdamsBashforthN::stable_step() const noexcept {
     sign = -sign;
   }
   return 1. / invstep;
+}
+
+TimeId AdamsBashforthN::next_time_id(
+    const TimeId& current_id,
+    const TimeDelta& time_step) const noexcept {
+  ASSERT(current_id.substep == 0, "Adams-Bashforth should not have substeps");
+  TimeId next_id = current_id;
+  next_id.time += time_step;
+  return next_id;
 }
 
 std::vector<double> AdamsBashforthN::get_coefficients_impl(

@@ -4,6 +4,7 @@
 #include <catch.hpp>
 
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -141,6 +142,15 @@ static_assert(
     array_equal(std::array<size_t, 3>{{1, 2, 5}},
                 make_array_from_list<tmpl::integral_list<size_t, 1, 2, 5>>()),
     "Failed testing make_array_from_list");
+
+// Test as_const
+static_assert(cpp17::is_same_v<const double&,
+                               decltype(as_const(std::declval<double>()))>,
+              "Failed testing as_const");
+static_assert(cpp17::is_same_v<const double&,
+                               decltype(as_const(std::declval<double&>()))>,
+              "Failed testing as_const");
+static_assert(5 == as_const(5), "Failed testing as_const");
 
 SPECTRE_TEST_CASE("Unit.Utilities.ConstantExpressions", "[Unit][Utilities]") {
   CHECK((std::array<std::array<size_t, 3>, 3>{

@@ -57,7 +57,7 @@
   template <typename Classes, typename... TArgs, typename Base,            \
             typename... Args,                                              \
             Requires<(tmpl::size<Classes>::value == 0)> = nullptr>         \
-  auto fake_virtual_##function(Base* obj, Args&&... args)                  \
+  [[noreturn]] auto fake_virtual_##function(Base* obj, Args&&... args)     \
       /* clang-tidy: macro arg in parentheses */                           \
       ->decltype(obj->template function<TArgs...>(args...)) {  /* NOLINT */\
     ERROR("Class " << pretty_type::get_runtime_type_name(*obj)             \
