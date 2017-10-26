@@ -18,6 +18,38 @@
 
 namespace blaze {
 template <typename ST>
+struct DivideScalarByVector {
+ public:
+  explicit inline DivideScalarByVector(ST scalar) : scalar_(scalar) {}
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const {
+    return scalar_ / a;
+  }
+
+  template <typename T>
+  static constexpr bool simdEnabled() {
+    return blaze::HasSIMDDiv<T, ST>::value;
+  }
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+    return set(scalar_) / a;
+  }
+
+ private:
+  ST scalar_;
+};
+
+template <typename Scalar, typename VT, bool TF,
+          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+BLAZE_ALWAYS_INLINE decltype(auto) operator/(
+    Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
+  return forEach(~vec, DivideScalarByVector<Scalar>(scalar));
+}
+
+template <typename ST>
 struct AddScalar {
  public:
   explicit inline AddScalar(ST scalar) : scalar_(scalar) {}

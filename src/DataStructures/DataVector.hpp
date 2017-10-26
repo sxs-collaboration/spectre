@@ -272,6 +272,10 @@ class DataVector {
     return lhs.data_ * ~rhs;
   }
 
+  friend decltype(auto) operator/(const double& lhs, const DataVector& rhs) {
+    return lhs / rhs.data_;
+  }
+
   friend decltype(auto) operator/(const DataVector& lhs, const double& rhs) {
     return lhs.data_ / rhs;
   }
