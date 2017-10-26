@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <blaze/math/typetraits/IsVector.h>
 #include <cstddef>
 #include <initializer_list>
 #include <iosfwd>
@@ -485,8 +486,7 @@ struct pow<DataVector, 0, std::nullptr_t> {
   }
 };
 template <typename BlazeVector>
-struct pow<BlazeVector, 0,
-           Requires<std::is_base_of<blaze::Expression, BlazeVector>::value>> {
+struct pow<BlazeVector, 0, Requires<blaze::IsVector<BlazeVector>::value>> {
   SPECTRE_ALWAYS_INLINE static constexpr double apply(
       const BlazeVector& /*t*/) {
     return 1.0;
