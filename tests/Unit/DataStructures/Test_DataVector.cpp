@@ -176,6 +176,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   check_vectors(DataVector(num_pts, -1.0 / 9.0), -one / nine);
   check_vectors(DataVector(num_pts, -8.0 / 9.0), -(nine - one) / nine);
   check_vectors(DataVector(num_pts, 18.0), (one / 0.5) * nine);
+  check_vectors(DataVector(num_pts, 1.0), 9.0 / nine);
+  check_vectors(DataVector(num_pts, 1.0), (one * 9.0) / nine);
 
   CHECK(-14 == min(val));
   CHECK(12 == max(val));

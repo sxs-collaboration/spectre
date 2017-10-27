@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <blaze/math/typetraits/IsVector.h>
 #include <type_traits>
 
 #include "Utilities/ForceInline.hpp"
@@ -14,10 +15,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-namespace blaze {
-struct Expression;
-}  // namespace blaze
 
 /// \ingroup ConstantExpressions
 /// Compute 2 to the n for integral types.
@@ -77,7 +74,7 @@ struct pow<T, N, Requires<(N < 0)>> {
 };
 
 template <typename T>
-struct pow<T, 0, Requires<not std::is_base_of<blaze::Expression, T>::value>> {
+struct pow<T, 0, Requires<not blaze::IsVector<T>::value>> {
   SPECTRE_ALWAYS_INLINE static constexpr T apply(const T& /*t*/) {
     return static_cast<T>(1);
   }
