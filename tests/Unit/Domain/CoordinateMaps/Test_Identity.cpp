@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 template <size_t Dim>
@@ -25,6 +26,8 @@ void test_identity() {
   // Checks the inequivalence operator
   CHECK_FALSE(identity_map != identity_map);
   CHECK(identity_map == serialize_and_deserialize(identity_map));
+
+  test_coordinate_map_argument_types(identity_map, xi);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Identity", "[Domain][Unit]") {

@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
@@ -53,6 +54,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
   CHECK_FALSE(half_pi_rotation_map != half_pi_rotation_map);
   CHECK(half_pi_rotation_map ==
         serialize_and_deserialize(half_pi_rotation_map));
+
+  test_coordinate_map_argument_types(half_pi_rotation_map, xi1);
 }
 
 template <typename T>
@@ -95,6 +98,8 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
   CHECK_FALSE(three_dim_rotation_map != three_dim_rotation_map);
   CHECK(three_dim_rotation_map ==
         serialize_and_deserialize(three_dim_rotation_map));
+
+  test_coordinate_map_argument_types(three_dim_rotation_map, xi);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<3>", "[Domain][Unit]") {

@@ -8,6 +8,7 @@
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
@@ -119,6 +120,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
 
   CHECK_FALSE(affine_map_xy != affine_map_xy);
   CHECK(affine_map_xy == serialize_and_deserialize(affine_map_xy));
+
+  test_coordinate_map_argument_types(affine_map_xy, point_xi);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
@@ -285,4 +288,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
 
   CHECK_FALSE(affine_map_xyz != affine_map_xyz);
   CHECK(affine_map_xyz == serialize_and_deserialize(affine_map_xyz));
+
+  test_coordinate_map_argument_types(affine_map_xyz, point_xi);
 }

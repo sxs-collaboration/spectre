@@ -3,6 +3,9 @@
 
 #include "Domain/CoordinateMaps/Rotation.hpp"
 
+#include "DataStructures/MakeWithValue.hpp"
+#include "Utilities/DereferenceWrapper.hpp"
+
 namespace CoordinateMaps {
 
 Rotation<2>::Rotation(const double rotation_angle)
@@ -39,12 +42,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::jacobian(const std::array<T, 2>& /*xi*/) const {
+Rotation<2>::jacobian(const std::array<T, 2>& xi) const {
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-      jac{};
+      jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), 0.0)};
   jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
   jac.template get<1, 0>() = rotation_matrix_.template get<1, 0>();
   jac.template get<0, 1>() = rotation_matrix_.template get<0, 1>();
@@ -57,12 +61,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::inv_jacobian(const std::array<T, 2>& /*xi*/) const {
+Rotation<2>::inv_jacobian(const std::array<T, 2>& xi) const {
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{};
+      inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), 0.0)};
   inv_jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
   inv_jac.template get<1, 0>() = rotation_matrix_.template get<0, 1>();
   inv_jac.template get<0, 1>() = rotation_matrix_.template get<1, 0>();
@@ -145,12 +150,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::jacobian(const std::array<T, 3>& /*xi*/) const {
+Rotation<3>::jacobian(const std::array<T, 3>& xi) const {
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-      jac{};
+      jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), 0.0)};
   jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
   jac.template get<1, 0>() = rotation_matrix_.template get<1, 0>();
   jac.template get<0, 1>() = rotation_matrix_.template get<0, 1>();
@@ -168,12 +174,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::inv_jacobian(const std::array<T, 3>& /*xi*/) const {
+Rotation<3>::inv_jacobian(const std::array<T, 3>& xi) const {
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{};
+      inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), 0.0)};
   inv_jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
   inv_jac.template get<1, 0>() = rotation_matrix_.template get<0, 1>();
   inv_jac.template get<0, 1>() = rotation_matrix_.template get<1, 0>();

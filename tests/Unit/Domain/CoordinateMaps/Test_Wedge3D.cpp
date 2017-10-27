@@ -41,6 +41,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Sphere",
 
   CHECK(serialize_and_deserialize(map) == map);
   CHECK_FALSE(serialize_and_deserialize(map) != map);
+
+  test_coordinate_map_argument_types<false>(map, test_point1);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Alignment",
