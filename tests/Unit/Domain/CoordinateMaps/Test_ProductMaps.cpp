@@ -93,8 +93,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
   CHECK(jac_xi.get(1, 1) == jacobian_11);
 
   // Check Jacobians for DataVectors
-  const Index<2> mesh(8);
-  const auto tensor_logical_coords = logical_coordinates(mesh);
+  const Index<2> extents(8);
+  const auto tensor_logical_coords = logical_coordinates(extents);
   const std::array<DataVector, 2> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1)}};
   const auto volume_inv_jac = affine_map_xy.inv_jacobian(logical_coords);
@@ -253,8 +253,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   CHECK(jac_xi.get(2, 2) == jacobian_22);
 
   // Check Jacobians for DataVectors
-  const Index<3> mesh(8);
-  const auto tensor_logical_coords = logical_coordinates(mesh);
+  const Index<3> extents(8);
+  const auto tensor_logical_coords = logical_coordinates(extents);
   const std::array<DataVector, 3> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1),
        tensor_logical_coords.get(2)}};
