@@ -95,27 +95,32 @@ class DataVector {
   /// \endcond
 
   /// Number of values stored
-  size_t size() const { return size_; }
+  size_t size() const noexcept { return size_; }
 
   // @{
   /// Set the DataVector to be a reference to another DataVector object
-  void set_data_ref(gsl::not_null<DataVector*> rhs) {
+  void set_data_ref(gsl::not_null<DataVector*> rhs) noexcept {
     set_data_ref(rhs->data(), rhs->size_);
   }
-  void set_data_ref(double* start, size_t size);
+  void set_data_ref(double* start, size_t size) noexcept {
+    size_ = size;
+    owned_data_ = decltype(owned_data_){};
+    data_ = decltype(data_){start, size_};
+    owning_ = false;
+  }
   // @}
 
   /// Returns true if the class owns the data
-  bool is_owning() const { return owning_; }
+  bool is_owning() const noexcept { return owning_; }
 
   // @{
   /// Access ith element
-  double& operator[](const size_type i) {
+  double& operator[](const size_type i) noexcept {
     ASSERT(i < size_, "i = " << i << ", size = " << size_);
     // clang-tidy: do not use pointer arithmetic
     return data_[i];  // NOLINT
   }
-  const double& operator[](const size_type i) const {
+  const double& operator[](const size_type i) const noexcept {
     ASSERT(i < size_, "i = " << i << ", size = " << size_);
     // clang-tidy: do not use pointer arithmetic
     return data_[i];  // NOLINT
@@ -124,237 +129,326 @@ class DataVector {
 
   // @{
   /// Access to the pointer
-  double* data() { return data_.data(); }
-  const double* data() const { return data_.data(); }
+  double* data() noexcept { return data_.data(); }
+  const double* data() const noexcept { return data_.data(); }
   // @}
 
   // @{
   /// Returns iterator to beginning of data
-  decltype(auto) begin() { return data_.begin(); }
-  decltype(auto) begin() const { return data_.begin(); }
+  decltype(auto) begin() noexcept { return data_.begin(); }
+  decltype(auto) begin() const noexcept { return data_.begin(); }
   // @}
   // @{
   /// Returns iterator to end of data
-  decltype(auto) end() { return data_.end(); }
-  decltype(auto) end() const { return data_.end(); }
+  decltype(auto) end() noexcept { return data_.end(); }
+  decltype(auto) end() const noexcept { return data_.end(); }
   // @}
 
   /// Serialization for Charm++
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
   // @{
   /// See the Blaze library documentation for details on these functions since
   /// they merely forward to Blaze.
   /// https://bitbucket.org/blaze-lib/blaze/overview
-  DataVector& operator=(const double& rhs) {
+  DataVector& operator=(const double& rhs) noexcept {
     data_ = rhs;
     return *this;
   }
 
-  DataVector& operator+=(const DataVector& rhs) {
+  DataVector& operator+=(const DataVector& rhs) noexcept {
     data_ += rhs.data_;
     return *this;
   }
   template <typename VT, bool VF>
-  DataVector& operator+=(const blaze::Vector<VT, VF>& rhs) {
+  DataVector& operator+=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ += rhs;
     return *this;
   }
-  DataVector& operator+=(const double& rhs) {
+  DataVector& operator+=(const double& rhs) noexcept {
     data_ += rhs;
     return *this;
   }
 
-  DataVector& operator-=(const DataVector& rhs) {
+  DataVector& operator-=(const DataVector& rhs) noexcept {
     data_ -= rhs.data_;
     return *this;
   }
   template <typename VT, bool VF>
-  DataVector& operator-=(const blaze::Vector<VT, VF>& rhs) {
+  DataVector& operator-=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ -= rhs;
     return *this;
   }
-  DataVector& operator-=(const double& rhs) {
+  DataVector& operator-=(const double& rhs) noexcept {
     data_ -= rhs;
     return *this;
   }
 
-  DataVector& operator*=(const DataVector& rhs) {
+  DataVector& operator*=(const DataVector& rhs) noexcept {
     data_ *= rhs.data_;
     return *this;
   }
   template <typename VT, bool VF>
-  DataVector& operator*=(const blaze::Vector<VT, VF>& rhs) {
+  DataVector& operator*=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ *= rhs;
     return *this;
   }
-  DataVector& operator*=(const double& rhs) {
+  DataVector& operator*=(const double& rhs) noexcept {
     data_ *= rhs;
     return *this;
   }
 
-  DataVector& operator/=(const DataVector& rhs) {
+  DataVector& operator/=(const DataVector& rhs) noexcept {
     data_ /= rhs.data_;
     return *this;
   }
   template <typename VT, bool VF>
-  DataVector& operator/=(const blaze::Vector<VT, VF>& rhs) {
+  DataVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ /= rhs;
     return *this;
   }
-  DataVector& operator/=(const double& rhs) {
+  DataVector& operator/=(const double& rhs) noexcept {
     data_ /= rhs;
     return *this;
   }
 
-  friend decltype(auto) operator+(const DataVector& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const DataVector& lhs, const DataVector& rhs) noexcept {
     return lhs.data_ + rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator+(const blaze::Vector<VT, VF>& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
     return ~lhs + rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator+(const DataVector& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ + ~rhs;
   }
-  friend decltype(auto) operator+(const DataVector& lhs, const double& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const DataVector& lhs, const double& rhs) noexcept {
     return lhs.data_ + rhs;
   }
-  friend decltype(auto) operator+(const double& lhs, const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const double& lhs, const DataVector& rhs) noexcept {
     return lhs + rhs.data_;
   }
 
-  friend decltype(auto) operator-(const DataVector& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const DataVector& lhs, const DataVector& rhs) noexcept {
     return lhs.data_ - rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator-(const blaze::Vector<VT, VF>& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
     return ~lhs - rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator-(const DataVector& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ - ~rhs;
   }
-  friend decltype(auto) operator-(const DataVector& lhs, const double& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const DataVector& lhs, const double& rhs) noexcept {
     return lhs.data_ - rhs;
   }
-  friend decltype(auto) operator-(const double& lhs, const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const double& lhs, const DataVector& rhs) noexcept {
     return lhs - rhs.data_;
   }
-  friend decltype(auto) operator-(const DataVector& rhs) { return -rhs.data_; };
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const DataVector& rhs) noexcept {
+    return -rhs.data_;
+  };
 
-  friend decltype(auto) operator*(const DataVector& lhs, const double& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const DataVector& lhs, const double& rhs) noexcept {
     return lhs.data_ * rhs;
   }
-  friend decltype(auto) operator*(const double& lhs, const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const double& lhs, const DataVector& rhs) noexcept {
     return lhs * rhs.data_;
   }
-  friend decltype(auto) operator*(const DataVector& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const DataVector& lhs, const DataVector& rhs) noexcept {
     return lhs.data_ * rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator*(const blaze::Vector<VT, VF>& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
     return ~lhs * rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator*(const DataVector& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ * ~rhs;
   }
 
-  friend decltype(auto) operator/(const double& lhs, const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const double& lhs, const DataVector& rhs) noexcept {
     return lhs / rhs.data_;
   }
 
-  friend decltype(auto) operator/(const DataVector& lhs, const double& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const DataVector& lhs, const double& rhs) noexcept {
     return lhs.data_ / rhs;
   }
-  friend decltype(auto) operator/(const DataVector& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const DataVector& lhs, const DataVector& rhs) noexcept {
     return lhs.data_ / rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator/(const blaze::Vector<VT, VF>& lhs,
-                                  const DataVector& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
     return ~lhs / rhs.data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator/(const DataVector& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ / ~rhs;
   }
 
-  friend decltype(auto) min(const DataVector& t) { return min(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) min(
+      const DataVector& t) noexcept {
+    return min(t.data_);
+  }
 
-  friend decltype(auto) max(const DataVector& t) { return max(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) max(
+      const DataVector& t) noexcept {
+    return max(t.data_);
+  }
 
-  friend decltype(auto) abs(const DataVector& t) { return abs(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) abs(
+      const DataVector& t) noexcept {
+    return abs(t.data_);
+  }
 
-  friend decltype(auto) sqrt(const DataVector& t) { return sqrt(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) sqrt(
+      const DataVector& t) noexcept {
+    return sqrt(t.data_);
+  }
 
-  friend decltype(auto) invsqrt(const DataVector& t) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) invsqrt(
+      const DataVector& t) noexcept {
     return invsqrt(t.data_);
   }
 
-  friend decltype(auto) cbrt(const DataVector& t) { return cbrt(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) cbrt(
+      const DataVector& t) noexcept {
+    return cbrt(t.data_);
+  }
 
-  friend decltype(auto) invcbrt(const DataVector& t) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) invcbrt(
+      const DataVector& t) noexcept {
     return invcbrt(t.data_);
   }
 
-  friend decltype(auto) pow(const DataVector& t, const double exponent) {
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) pow(
+      const DataVector& t, const double exponent) noexcept {
     return pow(t.data_, exponent);
   }
 
-  friend decltype(auto) exp(const DataVector& t) { return exp(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) exp(
+      const DataVector& t) noexcept {
+    return exp(t.data_);
+  }
 
-  friend decltype(auto) exp2(const DataVector& t) { return exp2(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) exp2(
+      const DataVector& t) noexcept {
+    return exp2(t.data_);
+  }
 
-  friend decltype(auto) exp10(const DataVector& t) { return exp10(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) exp10(
+      const DataVector& t) noexcept {
+    return exp10(t.data_);
+  }
 
-  friend decltype(auto) log(const DataVector& t) { return log(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) log(
+      const DataVector& t) noexcept {
+    return log(t.data_);
+  }
 
-  friend decltype(auto) log2(const DataVector& t) { return log2(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) log2(
+      const DataVector& t) noexcept {
+    return log2(t.data_);
+  }
 
-  friend decltype(auto) log10(const DataVector& t) { return log10(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) log10(
+      const DataVector& t) noexcept {
+    return log10(t.data_);
+  }
 
-  friend decltype(auto) sin(const DataVector& t) { return sin(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) sin(
+      const DataVector& t) noexcept {
+    return sin(t.data_);
+  }
 
-  friend decltype(auto) cos(const DataVector& t) { return cos(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) cos(
+      const DataVector& t) noexcept {
+    return cos(t.data_);
+  }
 
-  friend decltype(auto) tan(const DataVector& t) { return tan(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) tan(
+      const DataVector& t) noexcept {
+    return tan(t.data_);
+  }
 
-  friend decltype(auto) asin(const DataVector& t) { return asin(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) asin(
+      const DataVector& t) noexcept {
+    return asin(t.data_);
+  }
 
-  friend decltype(auto) acos(const DataVector& t) { return acos(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) acos(
+      const DataVector& t) noexcept {
+    return acos(t.data_);
+  }
 
-  friend decltype(auto) atan(const DataVector& t) { return atan(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) atan(
+      const DataVector& t) noexcept {
+    return atan(t.data_);
+  }
 
-  friend decltype(auto) sinh(const DataVector& t) { return sinh(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) sinh(
+      const DataVector& t) noexcept {
+    return sinh(t.data_);
+  }
 
-  friend decltype(auto) cosh(const DataVector& t) { return cosh(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) cosh(
+      const DataVector& t) noexcept {
+    return cosh(t.data_);
+  }
 
-  friend decltype(auto) tanh(const DataVector& t) { return tanh(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) tanh(
+      const DataVector& t) noexcept {
+    return tanh(t.data_);
+  }
 
-  friend decltype(auto) asinh(const DataVector& t) { return asinh(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) asinh(
+      const DataVector& t) noexcept {
+    return asinh(t.data_);
+  }
 
-  friend decltype(auto) acosh(const DataVector& t) { return acosh(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) acosh(
+      const DataVector& t) noexcept {
+    return acosh(t.data_);
+  }
 
-  friend decltype(auto) atanh(const DataVector& t) { return atanh(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) atanh(
+      const DataVector& t) noexcept {
+    return atanh(t.data_);
+  }
 
-  friend decltype(auto) erf(const DataVector& t) { return erf(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) erf(
+      const DataVector& t) noexcept {
+    return erf(t.data_);
+  }
 
-  friend decltype(auto) erfc(const DataVector& t) { return erfc(t.data_); }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) erfc(
+      const DataVector& t) noexcept {
+    return erfc(t.data_);
+  }
   // @}
 
  private:

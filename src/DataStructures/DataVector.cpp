@@ -67,14 +67,7 @@ DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
 }
 /// \endcond
 
-void DataVector::set_data_ref(double* start, size_t size) {
-  size_ = size;
-  owned_data_ = decltype(owned_data_){};
-  data_ = decltype(data_){start, size_};
-  owning_ = false;
-}
-
-void DataVector::pup(PUP::er& p) {  // NOLINT
+void DataVector::pup(PUP::er& p) noexcept {  // NOLINT
   p | size_;
   if (p.isUnpacking()) {
     owning_ = true;
