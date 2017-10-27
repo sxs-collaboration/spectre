@@ -66,7 +66,6 @@ using is_frame_physical =
 /// \snippet Test_Tensor.cpp is_frame_physical
 template <typename CheckFrame>
 constexpr bool is_frame_physical_v = is_frame_physical<CheckFrame>::value;
-}  // namespace Frame
 
 /// \cond HIDDEN_SYMBOLS
 inline std::ostream& operator<<(std::ostream& os,
@@ -89,6 +88,7 @@ inline std::ostream& operator<<(std::ostream& os,
   return os << "NoFrame";
 }
 /// \endcond
+}  // namespace Frame
 
 /// \ingroup Tensor
 /// Indicates whether the \ref SpacetimeIndex "TensorIndexType" is
