@@ -25,7 +25,7 @@ class Domain;
 
 /// Defines classes that create Domains.
 namespace DomainCreators {
-// class Brick;
+class Brick;
 // class Disk;
 class Interval;
 class Rectangle;
@@ -54,14 +54,16 @@ struct domain_creators<2> {
       typelist<DomainCreators::Rectangle  //, DomainCreators::Disk,
                                           // DomainCreators::RotatedRectangles
                >;
-  // };
-  // template <>
-  // struct domain_creators<3> {
-  //   using type =
-  //       typelist<DomainCreators::Brick, DomainCreators::RubiksCubeWithHole,
-  //                DomainCreators::Shell, DomainCreators::Sphere,
-  //                DomainCreators::RotatedBricks,
-  //                DomainCreators::UnevenBricks>;
+};
+template <>
+struct domain_creators<3> {
+  using type = typelist<
+      DomainCreators::Brick  //, DomainCreators::RubiksCubeWithHole,
+                             //                DomainCreators::Shell,
+                             //                DomainCreators::Sphere,
+                             //                DomainCreators::RotatedBricks,
+                             //                DomainCreators::UnevenBricks
+      >;
 };
 }  // namespace DomainCreators_detail
 
@@ -92,7 +94,7 @@ class DomainCreator : public Factory<DomainCreator<VolumeDim, TargetFrame>> {
       size_t block_index) const = 0;
 };
 
-// #include "Domain/DomainCreators/Brick.hpp"
+#include "Domain/DomainCreators/Brick.hpp"
 // #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
