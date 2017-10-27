@@ -20,6 +20,7 @@ set(DOMAIN_TESTS
     Domain/Test_Element.cpp
     Domain/Test_ElementId.cpp
     Domain/Test_ElementIndex.cpp
+    Domain/Test_GridNormal.cpp
     Domain/Test_LogicalCoordinates.cpp
     Domain/Test_Neighbors.cpp
     Domain/Test_Orientations.cpp
