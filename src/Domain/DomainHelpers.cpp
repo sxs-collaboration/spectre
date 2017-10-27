@@ -105,14 +105,16 @@ std::array<size_t, two_to_the(VolumeDim - 1)> get_common_local_corners(
 }
 
 template <size_t VolumeDim>
-std::array<Point<VolumeDim, Frame::Logical>, two_to_the(VolumeDim - 1)>
+std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+           two_to_the(VolumeDim - 1)>
 logical_coords_of_corners(
     const std::array<size_t, two_to_the(VolumeDim - 1)>& local_ids) {
-  std::array<Point<VolumeDim, Frame::Logical>, two_to_the(VolumeDim - 1)>
+  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+             two_to_the(VolumeDim - 1)>
       result{};
   std::transform(local_ids.begin(), local_ids.end(), result.begin(),
                  [](const size_t id) {
-                   Point<VolumeDim, Frame::Logical> point{};
+                   tnsr::I<double, VolumeDim, Frame::Logical> point{};
                    for (size_t i = 0; i < VolumeDim; i++) {
                      point[i] = 2.0 * get_nth_bit(id, i) - 1.0;
                    };
@@ -123,12 +125,13 @@ logical_coords_of_corners(
 
 template <size_t VolumeDim>
 Direction<VolumeDim> get_direction_normal_to_face(
-    const std::array<Point<VolumeDim, Frame::Logical>,
+    const std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
                      two_to_the(VolumeDim - 1)>& face_pts) {
   const auto summed_point = std::accumulate(
-      face_pts.begin(), face_pts.end(), Point<VolumeDim, Frame::Logical>(0),
-      [](Point<VolumeDim, Frame::Logical>& prior,
-         const Point<VolumeDim, Frame::Logical>& point) {
+      face_pts.begin(), face_pts.end(),
+      tnsr::I<double, VolumeDim, Frame::Logical>(0),
+      [](tnsr::I<double, VolumeDim, Frame::Logical>& prior,
+         const tnsr::I<double, VolumeDim, Frame::Logical>& point) {
         for (size_t i = 0; i < prior.size(); i++) {
           prior[i] += point[i];
         }

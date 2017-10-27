@@ -337,7 +337,3 @@ struct inverse_jacobian_impl {
 template <size_t Dim, typename Frame1, typename Frame2>
 using InverseJacobian =
     typename tnsr::detail::inverse_jacobian_impl<Dim, Frame1, Frame2>::type;
-
-template <size_t SpatialDim, typename Fr>
-using Point = Tensor<double, tmpl::integral_list<std::int32_t, 1>,
-                     index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
