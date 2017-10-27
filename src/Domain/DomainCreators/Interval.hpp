@@ -10,6 +10,8 @@
 #include "Options/Options.hpp"
 
 namespace DomainCreators {
+
+/// \ingroup DomainCreatorsGroup
 /// Create a 1D Domain consisting of a single Block.
 class Interval : public DomainCreator<1, Frame::Inertial> {
  public:
@@ -48,7 +50,7 @@ class Interval : public DomainCreator<1, Frame::Inertial> {
            typename IsPeriodicIn::type is_periodic_in_x,
            typename InitialRefinement::type initial_refinement_level_x,
            typename InitialGridPoints::type initial_number_of_grid_points_in_x,
-           const OptionContext& context = {});
+           const OptionContext& context = {}) noexcept;
 
   Interval() = default;
   Interval(const Interval&) = delete;
@@ -59,12 +61,13 @@ class Interval : public DomainCreator<1, Frame::Inertial> {
 
   explicit Interval(CkMigrateMessage* /*unused*/) noexcept {}
 
-  Domain<1, Frame::Inertial> create_domain() const override;
+  Domain<1, Frame::Inertial> create_domain() const noexcept override;
 
-  std::array<size_t, 1> initial_extents(size_t block_index) const override;
+  std::array<size_t, 1> initial_extents(size_t block_index) const
+      noexcept override;
 
-  std::array<size_t, 1> initial_refinement_levels(
-      size_t block_index) const override;
+  std::array<size_t, 1> initial_refinement_levels(size_t block_index) const
+      noexcept override;
 
  private:
   typename LowerBound::type lower_x_{};

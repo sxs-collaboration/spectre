@@ -91,3 +91,24 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Factory",
       "    InitialGridPoints: [3]\n"
       "    InitialRefinement: [2]\n");
 }
+
+// [[OutputRegex, index = 1]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Extents",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  DomainCreators::Interval default_interval{};
+  default_interval.initial_extents(1);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+// [[OutputRegex, index = 2]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Refinement",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  DomainCreators::Interval default_interval{};
+  default_interval.initial_refinement_levels(2);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
