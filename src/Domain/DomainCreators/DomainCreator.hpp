@@ -28,7 +28,7 @@ namespace DomainCreators {
 // class Brick;
 // class Disk;
 class Interval;
-// class Rectangle;
+class Rectangle;
 // class RotatedBricks;
 // class RotatedIntervals;
 // class RotatedRectangles;
@@ -48,18 +48,21 @@ struct domain_creators<1> {
                         //, DomainCreators::RotatedIntervals
                         >;
 };
-// template <>
-// struct domain_creators<2> {
-//   using type = typelist<DomainCreators::Rectangle, DomainCreators::Disk,
-//                         DomainCreators::RotatedRectangles>;
-// };
-// template <>
-// struct domain_creators<3> {
-//   using type =
-//       typelist<DomainCreators::Brick, DomainCreators::RubiksCubeWithHole,
-//                DomainCreators::Shell, DomainCreators::Sphere,
-//                DomainCreators::RotatedBricks, DomainCreators::UnevenBricks>;
-// };
+template <>
+struct domain_creators<2> {
+  using type =
+      typelist<DomainCreators::Rectangle  //, DomainCreators::Disk,
+                                          // DomainCreators::RotatedRectangles
+               >;
+  // };
+  // template <>
+  // struct domain_creators<3> {
+  //   using type =
+  //       typelist<DomainCreators::Brick, DomainCreators::RubiksCubeWithHole,
+  //                DomainCreators::Shell, DomainCreators::Sphere,
+  //                DomainCreators::RotatedBricks,
+  //                DomainCreators::UnevenBricks>;
+};
 }  // namespace DomainCreators_detail
 
 /// Base class for creating Domains from an option string.
@@ -92,7 +95,7 @@ class DomainCreator : public Factory<DomainCreator<VolumeDim, TargetFrame>> {
 // #include "Domain/DomainCreators/Brick.hpp"
 // #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
-// #include "Domain/DomainCreators/Rectangle.hpp"
+#include "Domain/DomainCreators/Rectangle.hpp"
 // #include "Domain/DomainCreators/RotatedBricks.hpp"
 // #include "Domain/DomainCreators/RotatedIntervals.hpp"
 // #include "Domain/DomainCreators/RotatedRectangles.hpp"

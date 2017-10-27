@@ -5,6 +5,7 @@ set(LIBRARY DomainCreators)
 
 set(LIBRARY_SOURCES
     Interval.cpp
+    Rectangle.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

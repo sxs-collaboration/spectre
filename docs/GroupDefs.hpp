@@ -64,8 +64,9 @@
  */
 
 /*!
- * \defgroup DomainCreators Domain Creators
- * A collection of different computational domains.
+ * \defgroup DomainCreatorsGroup Domain Creators
+ * A collection of domain creators for specifying the initial computational
+ * domain geometry.
  */
 
 /*!
