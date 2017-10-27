@@ -6,15 +6,100 @@
 
 #pragma once
 
+#include <cmath>
+
+// The Utilities/Blaze.hpp configures Blaze
 #include "Utilities/Blaze.hpp"
 
 #include <blaze/math/CustomVector.h>
+#include <blaze/system/Version.h>
 #include <blaze/util/typetraits/RemoveConst.h>
 
 // clang-tidy: do not use pointer arithmetic
 #define SPECTRE_BLAZE_ALLOCATOR(_TYPE_T, _SIZE_V) \
   new _TYPE_T[_SIZE_V]  // NOLINT
 #define SPECTRE_BLAZE_DEALLOCATOR blaze::ArrayDelete()
+
+// Blaze 3.3 and newer already has atan2 implemented
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
+namespace blaze {
+template <typename T0, typename T1>
+BLAZE_ALWAYS_INLINE const SIMDfloat atan2(const SIMDf32<T0>& a,
+                                          const SIMDf32<T1>& b) noexcept
+#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
+{
+  return _mm512_atan2_ps((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
+{
+  return _mm256_atan2_ps((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
+{
+  return _mm_atan2_ps((~a).eval().value, (~b).eval().value);
+}
+#else
+    = delete;
+#endif
+
+template <typename T0, typename T1>
+BLAZE_ALWAYS_INLINE const SIMDdouble atan2(const SIMDf64<T0>& a,
+                                           const SIMDf64<T1>& b) noexcept
+#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
+{
+  return _mm512_atan2_pd((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
+{
+  return _mm256_atan2_pd((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
+{
+  return _mm_atan2_pd((~a).eval().value, (~b).eval().value);
+}
+#else
+    = delete;
+#endif
+
+template <typename T0, typename T1>
+using HasSIMDAtan2 = std::integral_constant<
+    bool, std::is_same<std::decay_t<T0>, std::decay_t<T1>>::value and
+              std::is_arithmetic<std::decay_t<T0>>::value and bool(  // NOLINT
+                  BLAZE_SVML_MODE) and                               // NOLINT
+              (bool(BLAZE_SSE_MODE) || bool(BLAZE_AVX_MODE) ||       // NOLINT
+               bool(BLAZE_MIC_MODE) || bool(BLAZE_AVX512F_MODE))>;   // NOLINT
+
+struct Atan2 {
+  template <typename T1, typename T2>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T1& a, const T2& b) const
+      noexcept {
+    using std::atan2;
+    return atan2(a, b);
+  }
+
+  template <typename T1, typename T2>
+  static constexpr bool simdEnabled() noexcept {
+    return HasSIMDAtan2<T1, T2>::value;
+  }
+
+  template <typename T1, typename T2>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T1& a, const T2& b) const
+      noexcept {
+    using std::atan2;
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T1);
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T2);
+    return atan2(a, b);
+  }
+};
+}  // namespace blaze
+
+template <typename VT0, typename VT1, bool TF>
+BLAZE_ALWAYS_INLINE decltype(auto) atan2(
+    const blaze::DenseVector<VT0, TF>& y,
+    const blaze::DenseVector<VT1, TF>& x) noexcept {
+  return map(~y, ~x, blaze::Atan2{});
+}
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
 
 namespace blaze {
 template <typename ST>
