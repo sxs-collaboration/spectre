@@ -298,37 +298,32 @@ struct PointerVector
  private:
   template <typename VT>
   using VectorizedAssign = std::integral_constant<
-      bool,
-      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value>;
+      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
   using VectorizedAddAssign = std::integral_constant<
-      bool,
-      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-          blaze::HasSIMDAdd<Type, blaze::ElementType_<VT>>::value>;
+      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+                blaze::HasSIMDAdd<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
   using VectorizedSubAssign = std::integral_constant<
-      bool,
-      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-          blaze::HasSIMDSub<Type, blaze::ElementType_<VT>>::value>;
+      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+                blaze::HasSIMDSub<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
   using VectorizedMultAssign = std::integral_constant<
-      bool,
-      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-          blaze::HasSIMDMult<Type, blaze::ElementType_<VT>>::value>;
+      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+                blaze::HasSIMDMult<Type, blaze::ElementType_<VT>>::value>;
 
   template <typename VT>
   using VectorizedDivAssign = std::integral_constant<
-      bool,
-      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-          blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-          blaze::HasSIMDDiv<Type, blaze::ElementType_<VT>>::value>;
+      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
+                blaze::HasSIMDDiv<Type, blaze::ElementType_<VT>>::value>;
 
   //! The number of elements packed within a single SIMD element.
   enum : size_t { SIMDSIZE = blaze::SIMDTrait<ElementType>::size };
