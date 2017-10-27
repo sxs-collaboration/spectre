@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include "Options/Factory.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,7 +36,7 @@ DEFINE_FAKE_VIRTUAL(update_u)
 /// \ingroup TimeSteppersGroup
 ///
 /// Abstract base class for TimeSteppers.
-class TimeStepper : public Factory<TimeStepper> {
+class TimeStepper : public Factory<TimeStepper>, public PUP::able {
  public:
   using Inherit =
       TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
@@ -47,13 +48,15 @@ class TimeStepper : public Factory<TimeStepper> {
       TimeSteppers::AdamsBashforthN,
       TimeSteppers::RungeKutta3>;
 
+  WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
+
   /// \cond HIDDEN_SYMBOLS
-  TimeStepper() noexcept = default;
+  TimeStepper() = default;
   TimeStepper(const TimeStepper&) noexcept = default;
   TimeStepper& operator=(const TimeStepper&) noexcept = default;
   TimeStepper(TimeStepper&&) noexcept = default;
   TimeStepper& operator=(TimeStepper&&) noexcept = default;
-  virtual ~TimeStepper() noexcept = default;
+  ~TimeStepper() noexcept override = default;
   /// \endcond
 
   /// Add the change for the current substep to u.  New values should

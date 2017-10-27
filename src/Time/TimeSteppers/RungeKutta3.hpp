@@ -37,7 +37,7 @@ class RungeKutta3 : public TimeStepper::Inherit {
       "A third-order strong stability-preserving Runge-Kutta time-stepper."};
   explicit RungeKutta3(const OptionContext& /*context*/) noexcept {}
 
-  RungeKutta3() noexcept = default;
+  RungeKutta3() = default;
   RungeKutta3(const RungeKutta3&) noexcept = default;
   RungeKutta3& operator=(const RungeKutta3&) noexcept = default;
   RungeKutta3(RungeKutta3&&) noexcept = default;
@@ -79,6 +79,15 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   TimeId next_time_id(const TimeId& current_id,
                       const TimeDelta& time_step) const noexcept override;
+
+  WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
+
+  explicit RungeKutta3(CkMigrateMessage* /*unused*/) noexcept {}
+
+  // clang-tidy: do not pass by non-const reference
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+    TimeStepper::Inherit::pup(p);
+  }
 
  private:
   template <typename Vars, typename UnusedData, typename DerivVars>

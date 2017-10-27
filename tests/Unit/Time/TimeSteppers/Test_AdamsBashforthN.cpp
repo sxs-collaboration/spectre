@@ -9,6 +9,8 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/PupStlCpp11.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -377,4 +379,18 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
       next_check += dt[0].front();
     }
   }
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
+                  "[Unit][Time]") {
+  register_derived_classes_with_charm<TimeStepper>();
+  std::unique_ptr<TimeStepper> stepper =
+      std::make_unique<TimeSteppers::AdamsBashforthN>(4, false);
+  std::unique_ptr<TimeStepper> stepper_puped =
+      serialize_and_deserialize(stepper);
+  auto stepper_cast =
+      dynamic_cast<TimeSteppers::AdamsBashforthN* const>(stepper_puped.get());
+  CHECK_FALSE(stepper_cast == nullptr);
+  CHECK_FALSE(stepper_cast->is_self_starting());
+  CHECK(stepper_cast->number_of_past_steps() + 1 == 4);
 }

@@ -194,6 +194,13 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   TimeId next_time_id(const TimeId& current_id,
                       const TimeDelta& time_step) const noexcept override;
 
+  WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
+
+  explicit AdamsBashforthN(CkMigrateMessage* /*unused*/) noexcept {}
+
+  // clang-tidy: do not pass by non-const reference
+  void pup(PUP::er& p) noexcept override;  // NOLINT
+
  private:
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
