@@ -152,6 +152,55 @@ void check_vectors(const T1& t1, const T2& t2) {
 }
 }  // namespace
 
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
+                  "[Unit][DataStructures]") {
+  DataVector m0(10, 3.0), m1(10, 9.0);
+  {
+    DataVector a(10, 2.0);
+    DataVector b{};
+    b = std::move(a);
+    b = m0 + m1;
+    check_vectors(b, DataVector(10, 12.0));
+    // clang-tidy: use after move (intentional here)
+    CHECK(a.size() == 0);  // NOLINT
+    CHECK(a.is_owning());
+    a = m0 * m1;
+    check_vectors(a, DataVector(10, 27.0));
+    check_vectors(b, DataVector(10, 12.0));
+  }
+
+  {
+    DataVector a(10, 2.0);
+    DataVector b{};
+    b = std::move(a);
+    a = m0 + m1;
+    check_vectors(b, DataVector(10, 2.0));
+    check_vectors(a, DataVector(10, 12.0));
+  }
+
+  {
+    DataVector a(10, 2.0);
+    DataVector b{std::move(a)};
+    b = m0 + m1;
+    CHECK(b.size() == 10);
+    check_vectors(b, DataVector(10, 12.0));
+    // clang-tidy: use after move (intentional here)
+    CHECK(a.size() == 0);  // NOLINT
+    CHECK(a.is_owning());
+    a = m0 * m1;
+    check_vectors(a, DataVector(10, 27.0));
+    check_vectors(b, DataVector(10, 12.0));
+  }
+
+  {
+    DataVector a(10, 2.0);
+    DataVector b{std::move(a)};
+    a = m0 + m1;
+    check_vectors(b, DataVector(10, 2.0));
+    check_vectors(a, DataVector(10, 12.0));
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
                   "[Unit][DataStructures]") {
   constexpr size_t num_pts = 19;

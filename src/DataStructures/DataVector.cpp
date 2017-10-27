@@ -48,11 +48,24 @@ DataVector& DataVector::operator=(const DataVector& rhs) {
   return *this;
 }
 
+DataVector::DataVector(DataVector&& rhs) noexcept {
+  size_ = rhs.size_;
+  owned_data_ = std::move(rhs.owned_data_);
+  // clang-tidy: move trivially copyable type, future proof in case impl
+  // changes
+  data_ = std::move(rhs.data_);  // NOLINT
+  owning_ = rhs.owning_;
+
+  rhs.owning_ = true;
+  rhs.size_ = 0;
+  rhs.data_ = decltype(rhs.data_){};
+}
+
 DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
   if (this == &rhs) {
     return *this;
   }
-  if (owning_ or size_ == 0) {
+  if (owning_) {
     size_ = rhs.size_;
     owned_data_ = std::move(rhs.owned_data_);
     // clang-tidy: move trivially copyable type, future proof in case impl
@@ -63,6 +76,9 @@ DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
     ASSERT(rhs.size() == size(), "Must copy into same size");
     std::copy(rhs.begin(), rhs.end(), begin());
   }
+  rhs.owning_ = true;
+  rhs.size_ = 0;
+  rhs.data_ = decltype(rhs.data_){};
   return *this;
 }
 /// \endcond
