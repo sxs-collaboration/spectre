@@ -45,32 +45,32 @@ void check_orient_variables_on_slice(
     const Index<SpatialDim>& my_extents,
     const Index<SpatialDim>& neighbor_extents) {
   const size_t my_sliced_dim = direction_to_neighbor.dimension();
-  const Index<SpatialDim - 1> mesh_on_my_slice(
+  const Index<SpatialDim - 1> extents_on_my_slice(
       my_extents.slice_away(my_sliced_dim));
   Variables<tmpl::list<PhysicalCoords<SpatialDim>>> coords_on_my_slice(
-      mesh_on_my_slice.product());
+      extents_on_my_slice.product());
 
   get<PhysicalCoords<SpatialDim>>(coords_on_my_slice) =
       my_block.coordinate_map()(interface_logical_coordinates(
-          mesh_on_my_slice, direction_to_neighbor));
+          extents_on_my_slice, direction_to_neighbor));
 
   const Orientation<SpatialDim>& orientation =
       my_block.neighbors().at(direction_to_neighbor).orientation();
   const auto oriented_coords_on_neighbor_slice = orient_variables_on_slice(
-      coords_on_my_slice, mesh_on_my_slice, my_sliced_dim, orientation);
+      coords_on_my_slice, extents_on_my_slice, my_sliced_dim, orientation);
 
-  const Index<SpatialDim - 1> mesh_on_neighbor_slice(
+  const Index<SpatialDim - 1> extents_on_neighbor_slice(
       neighbor_extents.slice_away(orientation.mapped(my_sliced_dim)));
   const auto coords_on_neighbor_slice =
       neighbor_block.coordinate_map()(interface_logical_coordinates(
-          mesh_on_neighbor_slice,
+          extents_on_neighbor_slice,
           orientation.mapped(direction_to_neighbor).opposite()));
 
   const auto& computed_coords =
       get<PhysicalCoords<SpatialDim>>(oriented_coords_on_neighbor_slice);
   const auto& expected_coords = coords_on_neighbor_slice;
   for (size_t d = 0; d < SpatialDim; ++d) {
-    for (size_t s = 0; s < mesh_on_my_slice.product(); ++s) {
+    for (size_t s = 0; s < extents_on_my_slice.product(); ++s) {
       CHECK(computed_coords.get(d)[s] == approx(expected_coords.get(d)[s]));
     }
   }

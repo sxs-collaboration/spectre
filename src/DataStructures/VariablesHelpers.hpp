@@ -89,18 +89,18 @@ void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
 namespace OrientVariablesOnSlice_detail {
 
 inline std::vector<size_t> oriented_offset(
-    const Index<0>& /*slice_mesh*/, const size_t /*sliced_dim*/,
+    const Index<0>& /*slice_extents*/, const size_t /*sliced_dim*/,
     const Orientation<1>& /*orientation_of_neighbor*/) noexcept {
   // There is only one point on a slice of a 1D mesh
   return {0};
 }
 
 std::vector<size_t> oriented_offset(
-    const Index<1>& slice_mesh, size_t sliced_dim,
+    const Index<1>& slice_extents, size_t sliced_dim,
     const Orientation<2>& orientation_of_neighbor) noexcept;
 
 std::vector<size_t> oriented_offset(
-    const Index<2>& slice_mesh, size_t sliced_dim,
+    const Index<2>& slice_extents, size_t sliced_dim,
     const Orientation<3>& orientation_of_neighbor) noexcept;
 }  // namespace OrientVariablesOnSlice_detail
 
@@ -110,13 +110,13 @@ std::vector<size_t> oriented_offset(
 template <size_t VolumeDim, typename TagsList>
 Variables<TagsList> orient_variables_on_slice(
     const Variables<TagsList>& variables_on_slice,
-    const Index<VolumeDim - 1>& slice_mesh, const size_t sliced_dim,
+    const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
     const Orientation<VolumeDim>& orientation_of_neighbor) noexcept {
-  const size_t number_of_grid_points = slice_mesh.product();
+  const size_t number_of_grid_points = slice_extents.product();
 
   Variables<TagsList> oriented_variables(number_of_grid_points);
   const auto oriented_offset = OrientVariablesOnSlice_detail::oriented_offset(
-      slice_mesh, sliced_dim, orientation_of_neighbor);
+      slice_extents, sliced_dim, orientation_of_neighbor);
 
   tmpl::for_each<TagsList>([&oriented_variables, &variables_on_slice,
                             &oriented_offset,

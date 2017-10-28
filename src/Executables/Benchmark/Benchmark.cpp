@@ -79,7 +79,7 @@ struct Psi : db::DataBoxTag {
 static void bench_all_gradient(benchmark::State& state) {
   constexpr const size_t pts_1d = 4;
   constexpr const size_t Dim = 3;
-  const Index<Dim> mesh(pts_1d);
+  const Index<Dim> extents(pts_1d);
   CoordinateMaps::AffineMap map1d(-1.0, 1.0, -1.0, 1.0);
   using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::AffineMap,
                                                CoordinateMaps::AffineMap,
@@ -89,12 +89,13 @@ static void bench_all_gradient(benchmark::State& state) {
 
   using VarTags = typelist<Kappa<Dim>, Psi<Dim>>;
   const InverseJacobian<Dim, Frame::Logical, Frame::Grid> inv_jac =
-      map.inv_jacobian(logical_coordinates(mesh));
-  const auto grid_coords = map(logical_coordinates(mesh));
-  Variables<VarTags> vars(mesh.product(), 0.0);
+      map.inv_jacobian(logical_coordinates(extents));
+  const auto grid_coords = map(logical_coordinates(extents));
+  Variables<VarTags> vars(extents.product(), 0.0);
 
   while (state.KeepRunning()) {
-    benchmark::DoNotOptimize(partial_derivatives<VarTags>(vars, mesh, inv_jac));
+    benchmark::DoNotOptimize(
+        partial_derivatives<VarTags>(vars, extents, inv_jac));
   }
 }
 BENCHMARK(bench_all_gradient);

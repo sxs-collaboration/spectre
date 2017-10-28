@@ -6,14 +6,14 @@
 namespace OrientVariablesOnSlice_detail {
 
 std::vector<size_t> oriented_offset(
-    const Index<1>& slice_mesh, const size_t sliced_dim,
+    const Index<1>& slice_extents, const size_t sliced_dim,
     const Orientation<2>& orientation_of_neighbor) noexcept {
   // The slice of a 2D mesh is either aligned or anti-aligned
   const Direction<2> my_slice_axis =
       (0 == sliced_dim ? Direction<2>::upper_eta() : Direction<2>::upper_xi());
   const Direction<2> neighbor_slice_axis =
       orientation_of_neighbor.mapped(my_slice_axis);
-  std::vector<size_t> oriented_offsets(slice_mesh.product());
+  std::vector<size_t> oriented_offsets(slice_extents.product());
   std::iota(oriented_offsets.begin(), oriented_offsets.end(), 0);
 
   if (neighbor_slice_axis.side() == Side::Lower) {
@@ -28,7 +28,7 @@ std::vector<size_t> oriented_offset(
 // lowest dim or the highest dim, and by whether each axis is aligned or
 // anti-aligned.
 std::vector<size_t> oriented_offset(
-    const Index<2>& slice_mesh, const size_t sliced_dim,
+    const Index<2>& slice_extents, const size_t sliced_dim,
     const Orientation<3>& orientation_of_neighbor) noexcept {
   const std::array<size_t, 2> dims_of_slice =
       (0 == sliced_dim ? make_array(1_st, 2_st)
@@ -46,9 +46,9 @@ std::vector<size_t> oriented_offset(
   const bool neighbor_second_axis_flipped =
       (Side::Lower == neighbor_second_axis.side());
 
-  std::vector<size_t> oriented_offsets(slice_mesh.product());
-  const size_t num_pts_1 = slice_mesh[0];
-  const size_t num_pts_2 = slice_mesh[1];
+  std::vector<size_t> oriented_offsets(slice_extents.product());
+  const size_t num_pts_1 = slice_extents[0];
+  const size_t num_pts_2 = slice_extents[1];
   if (transpose_needed) {
     if (neighbor_first_axis_flipped) {
       if (neighbor_second_axis_flipped) {
