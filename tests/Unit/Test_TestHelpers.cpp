@@ -25,6 +25,22 @@ SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   u_set.insert(1);
   u_set.insert(0);
   test_iterators(u_set);
+
+  const std::vector<double> vec_a{1., 2., 3.5};
+  CHECK_ITERABLE_APPROX(vec_a, vec_a);
+  auto vec_b = vec_a;
+  vec_b[1] += 1e-15;
+  CHECK(vec_a != vec_b);
+  CHECK_ITERABLE_APPROX(vec_a, vec_b);
+
+  const std::vector<std::map<int, double>> vecmap_a{
+    {{1, 1.}, {2, 2.}},
+    {{1, 1.23}, {3, 4.56}, {5, 7.89}}};
+  CHECK_ITERABLE_APPROX(vecmap_a, vecmap_a);
+  auto vecmap_b = vecmap_a;
+  vecmap_b[1][1] += 1e-15;
+  CHECK(vecmap_a != vecmap_b);
+  CHECK_ITERABLE_APPROX(vecmap_a, vecmap_b);
 }
 
 SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {
