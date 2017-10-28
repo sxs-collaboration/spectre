@@ -80,7 +80,7 @@ class DataVector {
   ~DataVector() = default;
 
   DataVector(const DataVector& rhs);
-  DataVector(DataVector&& rhs) noexcept = default;
+  DataVector(DataVector&& rhs) noexcept;
   DataVector& operator=(const DataVector& rhs);
   DataVector& operator=(DataVector&& rhs) noexcept;
 
