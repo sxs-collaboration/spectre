@@ -116,6 +116,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
       }
     }
   }
+
+  CHECK_FALSE(affine_map_xy != affine_map_xy);
+  CHECK(affine_map_xy == serialize_and_deserialize(affine_map_xy));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
@@ -279,4 +282,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
       }
     }
   }
+
+  CHECK_FALSE(affine_map_xyz != affine_map_xyz);
+  CHECK(affine_map_xyz == serialize_and_deserialize(affine_map_xyz));
 }
