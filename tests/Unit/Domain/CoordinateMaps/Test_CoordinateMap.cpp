@@ -26,29 +26,31 @@ void test_single_coordinate_map() {
 
   for (const auto& coord : coords1d) {
     CHECK((make_array<double, 1>(static_cast<map_base<1>>(affine1d)(
-              Point<1, Frame::Logical>{{{coord[0]}}}))) ==
+              tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}}))) ==
           first_affine1d(coord));
     CHECK((make_array<double, 1>(static_cast<map_base<1>>(affine1d).inverse(
-              Point<1, Frame::Grid>{{{coord[0]}}}))) ==
+              tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}}))) ==
           first_affine1d.inverse(coord));
 
-    CHECK((make_array<double, 1>(affine1d(Point<1, Frame::Logical>{
+    CHECK((make_array<double, 1>(affine1d(tnsr::I<double, 1, Frame::Logical>{
               {{coord[0]}}}))) == first_affine1d(coord));
-    CHECK((make_array<double, 1>(affine1d.inverse(Point<1, Frame::Grid>{
-              {{coord[0]}}}))) == first_affine1d.inverse(coord));
+    CHECK((make_array<double, 1>(affine1d.inverse(
+              tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}}))) ==
+          first_affine1d.inverse(coord));
 
-    const auto jac = affine1d.jacobian(Point<1, Frame::Logical>{{{coord[0]}}});
+    const auto jac =
+        affine1d.jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}});
     const auto expected_jac = first_affine1d.jacobian(coord);
     CHECK((static_cast<map_base<1>>(affine1d)
-               .jacobian(Point<1, Frame::Logical>{{{coord[0]}}})
+               .jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}})
                .get(0, 0)) == expected_jac.get(0, 0));
     CHECK(jac.get(0, 0) == expected_jac.get(0, 0));
 
     const auto inv_jac =
-        affine1d.inv_jacobian(Point<1, Frame::Logical>{{{coord[0]}}});
+        affine1d.inv_jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}});
     const auto expected_inv_jac = first_affine1d.inv_jacobian(coord);
     CHECK((static_cast<map_base<1>>(affine1d)
-               .inv_jacobian(Point<1, Frame::Logical>{{{coord[0]}}})
+               .inv_jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}})
                .get(0, 0)) == expected_inv_jac.get(0, 0));
     CHECK(inv_jac.get(0, 0) == expected_inv_jac.get(0, 0));
   }
@@ -64,21 +66,22 @@ void test_single_coordinate_map() {
 
   for (const auto& coord : coords2d) {
     CHECK((make_array<double, 2>(static_cast<map_base<2>>(rotated2d)(
-              Point<2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
+              tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
           first_rotated2d(coord));
     CHECK((make_array<double, 2>(static_cast<map_base<2>>(rotated2d).inverse(
-              Point<2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
+              tnsr::I<double, 2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
           first_rotated2d.inverse(coord));
 
-    CHECK((make_array<double, 2>(rotated2d(Point<2, Frame::Logical>{
+    CHECK((make_array<double, 2>(rotated2d(tnsr::I<double, 2, Frame::Logical>{
               {{coord[0], coord[1]}}}))) == first_rotated2d(coord));
-    CHECK((make_array<double, 2>(rotated2d.inverse(Point<2, Frame::Grid>{
-              {{coord[0], coord[1]}}}))) == first_rotated2d.inverse(coord));
+    CHECK((make_array<double, 2>(rotated2d.inverse(
+              tnsr::I<double, 2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
+          first_rotated2d.inverse(coord));
 
-    const auto jac =
-        rotated2d.jacobian(Point<2, Frame::Logical>{{{coord[0], coord[1]}}});
+    const auto jac = rotated2d.jacobian(
+        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
     const auto jac2 = static_cast<map_base<2>>(rotated2d).jacobian(
-        Point<2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
     const auto expected_jac = first_rotated2d.jacobian(coord);
     for (size_t j = 0; j < 2; ++j) {
       for (size_t k = 0; k < 2; ++k) {
@@ -88,9 +91,9 @@ void test_single_coordinate_map() {
     }
 
     const auto inv_jac = rotated2d.inv_jacobian(
-        Point<2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
     const auto inv_jac2 = static_cast<map_base<2>>(rotated2d).inv_jacobian(
-        Point<2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
     const auto expected_inv_jac = first_rotated2d.inv_jacobian(coord);
     for (size_t j = 0; j < 2; ++j) {
       for (size_t k = 0; k < 2; ++k) {
@@ -112,23 +115,25 @@ void test_single_coordinate_map() {
                                                  {{2.9, 3.4, -7.8}}}};
 
   for (const auto& coord : coords3d) {
-    CHECK((make_array<double, 3>(static_cast<map_base<3>>(rotated3d)(
-              Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}}))) ==
-          first_rotated3d(coord));
+    CHECK((make_array<double, 3>(static_cast<map_base<3>>(
+              rotated3d)(tnsr::I<double, 3, Frame::Logical>{
+              {{coord[0], coord[1], coord[2]}}}))) == first_rotated3d(coord));
     CHECK((make_array<double, 3>(static_cast<map_base<3>>(rotated3d).inverse(
-              Point<3, Frame::Grid>{{{coord[0], coord[1], coord[2]}}}))) ==
+              tnsr::I<double, 3, Frame::Grid>{
+                  {{coord[0], coord[1], coord[2]}}}))) ==
           first_rotated3d.inverse(coord));
 
-    CHECK((make_array<double, 3>(rotated3d(Point<3, Frame::Logical>{
+    CHECK((make_array<double, 3>(rotated3d(tnsr::I<double, 3, Frame::Logical>{
               {{coord[0], coord[1], coord[2]}}}))) == first_rotated3d(coord));
-    CHECK((make_array<double, 3>(rotated3d.inverse(
-              Point<3, Frame::Grid>{{{coord[0], coord[1], coord[2]}}}))) ==
+    CHECK((make_array<double, 3>(
+              rotated3d.inverse(tnsr::I<double, 3, Frame::Grid>{
+                  {{coord[0], coord[1], coord[2]}}}))) ==
           first_rotated3d.inverse(coord));
 
     const auto jac = rotated3d.jacobian(
-        Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
     const auto jac2 = static_cast<map_base<3>>(rotated3d).jacobian(
-        Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
     const auto expected_jac = first_rotated3d.jacobian(coord);
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k < 3; ++k) {
@@ -138,9 +143,9 @@ void test_single_coordinate_map() {
     }
 
     const auto inv_jac = rotated3d.inv_jacobian(
-        Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
     const auto inv_jac2 = static_cast<map_base<3>>(rotated3d).inv_jacobian(
-        Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
     const auto expected_inv_jac = first_rotated3d.inv_jacobian(coord);
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k < 3; ++k) {
@@ -163,15 +168,18 @@ void test_coordinate_map_with_affine_map() {
   const auto map = make_coordinate_map<Frame::Logical, Frame::Grid>(
       affine_map{-1.0, 1.0, 0.0, 2.3}, affine_map{0.0, 2.3, -0.5, 0.5});
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    CHECK((Point<1, Frame::Grid>(1.0 / i + -0.5))[0] ==
-          approx(map(Point<1, Frame::Logical>{2.0 / i + -1.0})[0]));
-    CHECK((Point<1, Frame::Logical>(2.0 / i + -1.0))[0] ==
-          approx(map.inverse(Point<1, Frame::Grid>{1.0 / i + -0.5})[0]));
+    CHECK((tnsr::I<double, 1, Frame::Grid>(1.0 / i + -0.5))[0] ==
+          approx(map(tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})[0]));
+    CHECK((tnsr::I<double, 1, Frame::Logical>(2.0 / i + -1.0))[0] ==
+          approx(
+              map.inverse(tnsr::I<double, 1, Frame::Grid>{1.0 / i + -0.5})[0]));
 
-    CHECK(approx(map.inv_jacobian(Point<1, Frame::Logical>{2.0 / i + -1.0})
+    CHECK(approx(map.inv_jacobian(
+                        tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})
                      .get(0, 0)) == 2.0);
-    CHECK(approx(map.jacobian(Point<1, Frame::Logical>{2.0 / i + -1.0})
-                     .get(0, 0)) == 0.5);
+    CHECK(
+        approx(map.jacobian(tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})
+                   .get(0, 0)) == 0.5);
   }
 
   // Test 2D
@@ -181,33 +189,33 @@ void test_coordinate_map_with_affine_map() {
       affine_map_2d{affine_map{0.0, 2.0, 2.0, 6.0},
                     affine_map{-0.5, 0.5, 0.0, 8.0}});
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const auto mapped_point =
-        prod_map2d(Point<2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
+    const auto mapped_point = prod_map2d(
+        tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     const auto expected_mapped_point =
-        Point<2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}};
+        tnsr::I<double, 2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}};
     CHECK(expected_mapped_point.template get<0>() ==
           approx(mapped_point.template get<0>()));
     CHECK(expected_mapped_point.template get<1>() ==
           approx(mapped_point.template get<1>()));
 
     const auto inv_mapped_point = prod_map2d.inverse(
-        Point<2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}});
+        tnsr::I<double, 2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}});
     const auto expected_inv_mapped_point =
-        Point<2, Frame::Grid>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}};
+        tnsr::I<double, 2, Frame::Grid>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}};
     CHECK(expected_inv_mapped_point.template get<0>() ==
           approx(inv_mapped_point.template get<0>()));
     CHECK(expected_inv_mapped_point.template get<1>() ==
           approx(inv_mapped_point.template get<1>()));
 
     const auto inv_jac = prod_map2d.inv_jacobian(
-        Point<2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
+        tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     CHECK(0.5 == approx(inv_jac.template get<0, 0>()));
     CHECK(0.0 == approx(inv_jac.template get<1, 0>()));
     CHECK(0.0 == approx(inv_jac.template get<0, 1>()));
     CHECK(0.25 == approx(inv_jac.template get<1, 1>()));
 
     const auto jac = prod_map2d.jacobian(
-        Point<2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
+        tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     CHECK(2.0 == approx(jac.template get<0, 0>()));
     CHECK(0.0 == approx(jac.template get<1, 0>()));
     CHECK(0.0 == approx(jac.template get<0, 1>()));
@@ -224,10 +232,10 @@ void test_coordinate_map_with_affine_map() {
                     affine_map{-7.0, 7.0, 3.0, 23.0}});
 
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const auto mapped_point = prod_map3d(Point<3, Frame::Logical>{
+    const auto mapped_point = prod_map3d(tnsr::I<double, 3, Frame::Logical>{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
-    const auto expected_mapped_point =
-        Point<3, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}};
+    const auto expected_mapped_point = tnsr::I<double, 3, Frame::Grid>{
+        {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}};
     CHECK(expected_mapped_point.template get<0>() ==
           approx(mapped_point.template get<0>()));
     CHECK(expected_mapped_point.template get<1>() ==
@@ -235,10 +243,11 @@ void test_coordinate_map_with_affine_map() {
     CHECK(expected_mapped_point.template get<2>() ==
           approx(mapped_point.template get<2>()));
 
-    const auto inv_mapped_point = prod_map3d.inverse(Point<3, Frame::Grid>{
-        {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}});
-    const auto expected_inv_mapped_point =
-        Point<3, Frame::Grid>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}};
+    const auto inv_mapped_point =
+        prod_map3d.inverse(tnsr::I<double, 3, Frame::Grid>{
+            {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}});
+    const auto expected_inv_mapped_point = tnsr::I<double, 3, Frame::Grid>{
+        {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}};
     CHECK(expected_inv_mapped_point.template get<0>() ==
           approx(inv_mapped_point.template get<0>()));
     CHECK(expected_inv_mapped_point.template get<1>() ==
@@ -246,8 +255,9 @@ void test_coordinate_map_with_affine_map() {
     CHECK(expected_inv_mapped_point.template get<2>() ==
           approx(inv_mapped_point.template get<2>()));
 
-    const auto inv_jac = prod_map3d.inv_jacobian(Point<3, Frame::Logical>{
-        {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
+    const auto inv_jac =
+        prod_map3d.inv_jacobian(tnsr::I<double, 3, Frame::Logical>{
+            {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
     CHECK(0.5 == approx(inv_jac.template get<0, 0>()));
     CHECK(0.0 == approx(inv_jac.template get<1, 0>()));
     CHECK(0.0 == approx(inv_jac.template get<0, 1>()));
@@ -258,7 +268,7 @@ void test_coordinate_map_with_affine_map() {
     CHECK(0.0 == approx(inv_jac.template get<2, 1>()));
     CHECK(0.1 == approx(inv_jac.template get<2, 2>()));
 
-    const auto jac = prod_map3d.jacobian(Point<3, Frame::Logical>{
+    const auto jac = prod_map3d.jacobian(tnsr::I<double, 3, Frame::Logical>{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
     CHECK(2.0 == approx(jac.template get<0, 0>()));
     CHECK(0.0 == approx(jac.template get<1, 0>()));
@@ -291,14 +301,14 @@ void test_coordinate_map_with_rotation_map() {
   for (size_t i = 0; i < coords2d.size(); ++i) {
     const auto coord = gsl::at(coords2d, i);
     CHECK((make_array<double, 2>(double_rotated2d(
-              Point<2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
+              tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
           second_rotated2d(first_rotated2d(coord)));
     CHECK((make_array<double, 2>(double_rotated2d.inverse(
-              Point<2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
+              tnsr::I<double, 2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
           first_rotated2d.inverse(second_rotated2d.inverse(coord)));
 
     const auto jac = double_rotated2d.jacobian(
-        Point<2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
 
     const auto expected_jac = [&first_rotated2d, &second_rotated2d,
                                &coords2d](const size_t ii) {
@@ -334,7 +344,7 @@ void test_coordinate_map_with_rotation_map() {
     }
 
     const auto inv_jac = double_rotated2d.inv_jacobian(
-        Point<2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
 
     const auto expected_inv_jac = [&first_rotated2d, &second_rotated2d,
                                    &coords2d](const size_t ii) {
@@ -385,15 +395,17 @@ void test_coordinate_map_with_rotation_map() {
 
   for (size_t i = 0; i < coords3d.size(); ++i) {
     const auto coord = gsl::at(coords3d, i);
-    CHECK((make_array<double, 3>(double_rotated3d(
-              Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}}))) ==
+    CHECK((make_array<double, 3>(
+              double_rotated3d(tnsr::I<double, 3, Frame::Logical>{
+                  {{coord[0], coord[1], coord[2]}}}))) ==
           second_rotated3d(first_rotated3d(coord)));
-    CHECK((make_array<double, 3>(double_rotated3d.inverse(
-              Point<3, Frame::Grid>{{{coord[0], coord[1], coord[2]}}}))) ==
+    CHECK((make_array<double, 3>(
+              double_rotated3d.inverse(tnsr::I<double, 3, Frame::Grid>{
+                  {{coord[0], coord[1], coord[2]}}}))) ==
           first_rotated3d.inverse(second_rotated3d.inverse(coord)));
 
     const auto jac = double_rotated3d.jacobian(
-        Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
 
     const auto expected_jac = [&first_rotated3d, &second_rotated3d,
                                &coords3d](const size_t ii) {
@@ -429,7 +441,7 @@ void test_coordinate_map_with_rotation_map() {
     }
 
     const auto inv_jac = double_rotated3d.inv_jacobian(
-        Point<3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
 
     const auto expected_inv_jac = [&first_rotated3d, &second_rotated3d,
                                    &coords3d](const size_t ii) {
@@ -612,8 +624,8 @@ void test_coordinate_map_with_rotation_map_datavector() {
         for (size_t target = 0; target < 3; ++target) {
           second_jac.get(source, target) = gsl::at(temp, target);
         }
-    }
-    return second_jac;
+      }
+      return second_jac;
     }();
 
     for (size_t j = 0; j < 3; ++j) {

@@ -29,8 +29,8 @@ void test_block() {
 
   // Test that the block's coordinate_map is Identity:
   const auto& map = block.coordinate_map();
-  const Point<Dim, Frame::Logical> xi(1.0);
-  const Point<Dim, Frame::Grid> x(1.0);
+  const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
+  const tnsr::I<double, Dim, Frame::Grid> x(1.0);
   CHECK(map(xi) == x);
   CHECK(map.inverse(x) == xi);
 
