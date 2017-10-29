@@ -100,6 +100,9 @@ std::unique_ptr<BaseClass> Factory<BaseClass>::create(const Option_t& options) {
     }
     id = node.begin()->first.as<std::string>();
     derived_opts.set_node(node.begin()->second);
+  } else if (node.IsNull()) {
+    PARSE_ERROR(options.context(),
+                "Expected a class to create:\n" << help_derived());
   } else {
     PARSE_ERROR(options.context(),
                 "Expected a class or a class with options, got:\n"

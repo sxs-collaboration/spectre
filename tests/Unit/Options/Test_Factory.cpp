@@ -130,8 +130,8 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.object_map", "[Unit][Options]") {
   CHECK(arg.at("C")->name() == "Test1");
 }
 
-// [[OutputRegex, In string:.*At line 1 column 1:.Expected a class or a class
-// with options]]
+// [[OutputRegex, In string:.*At line 1 column 1:.Expected a class to
+// create:.Known Ids:.*Test1]]
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<OptionType>> opts("");
