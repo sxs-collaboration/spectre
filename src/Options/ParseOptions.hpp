@@ -74,7 +74,8 @@ class Option_t {
 template <typename T>
 T Option_t::parse_as() const {
   try {
-    return node().template as<T>();
+    return Options_detail::unwrap_create_types(
+        node().template as<Options_detail::wrap_create_types<T>>());
   } catch (const YAML::BadConversion& e) {
     // This happens when trying to parse an empty value as a container
     // with no entries.
@@ -549,21 +550,41 @@ std::string Options<OptionList>::parser_error(
   return ss.str();
 }
 
-// yaml-cpp doesn't handle C++11 types yet
+template <typename T>
+T create_from_yaml<T>::create(const Option_t& options) {
+  Options<typename T::options> parser(T::help);
+  parser.parse(options);
+  return parser.template apply<typename T::options>(
+      [&](auto&&... args) { return T(args...); });
+}
+
 namespace YAML {
-template <typename K, typename V, typename H, typename P>
-struct convert<std::unordered_map<K, V, H, P>> {
-  static bool decode(const Node& node, std::unordered_map<K, V, H, P>& rhs) {
-    std::map<K, V> ordered;
-    if (not convert<std::map<K, V>>::decode(node, ordered)) {
-      return false;
-    }
-    rhs.clear();
-    rhs.insert(std::make_move_iterator(ordered.begin()),
-               std::make_move_iterator(ordered.end()));
+template <typename T>
+struct convert<Options_detail::CreateWrapper<T>> {
+  /* clang-tidy: non-const reference parameter */
+  static bool decode(const Node& node,
+                     Options_detail::CreateWrapper<T>& rhs) { /* NOLINT */
+    OptionContext context;
+    context.top_level = false;
+    context.append("While creating a " + pretty_type::short_name<T>());
+    Option_t options(node, std::move(context));
+    rhs =
+        Options_detail::CreateWrapper<T>{create_from_yaml<T>::create(options)};
     return true;
   }
 };
 }  // namespace YAML
+
+// yaml-cpp doesn't handle C++11 types yet
+template <typename K, typename V, typename H, typename P>
+struct create_from_yaml<std::unordered_map<K, V, H, P>> {
+  static std::unordered_map<K, V, H, P> create(const Option_t& options) {
+    std::map<K, V> ordered = options.parse_as<std::map<K, V>>();
+    std::unordered_map<K, V, H, P> result;
+    result.insert(std::make_move_iterator(ordered.begin()),
+                  std::make_move_iterator(ordered.end()));
+    return result;
+  }
+};
 
 #include "Options/Factory.hpp"

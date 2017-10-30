@@ -2,8 +2,8 @@
 # See LICENSE.txt for details.
 
 set(OPTIONS_TESTS
+    Options/Test_CustomTypeConstruction.cpp
     Options/Test_Factory.cpp
-    Options/Test_MakeCreatableFromYaml.cpp
     Options/Test_Options.cpp
     )
 

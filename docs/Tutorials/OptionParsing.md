@@ -33,14 +33,12 @@ marked as constructible in their declarations.
 
 ## Constructible classes
 
-A class can be marked as constructible using the
-MAKE_CREATABLE_FROM_YAML() macro (defined in
-`Options/MakeCreatableFromYaml.hpp`.  The creatable class must define
-`static OptionString_t help` and a typelist of option structs
-`options` (but see [Custom parsing](#custom-parsing) below).  When the
-class is requested, the option parser will parse each of the options
-in the `options` list, and then supply them to the constructor of the
-class.
+A class that defines `static OptionString_t help` and a typelist of
+option structs `options` can be created by the option parser.  When
+the class is requested, the option parser will parse each of the
+options in the `options` list, and then supply them to the constructor
+of the class.  (See [Custom parsing](#custom-parsing) below for more
+general creation mechanisms.)
 
 Unlike option descriptions, which should be brief, the class help
 string has no length limits and should give a description of the class
@@ -50,7 +48,7 @@ described in their individual help strings.
 Creatable classes must be default constructible and move assignable.
 
 Example:
-\snippet Test_MakeCreatableFromYaml.cpp MCFY_example
+\snippet Test_CustomTypeConstruction.cpp class_creation_example
 
 ## Factory
 
@@ -71,16 +69,18 @@ Derived classes should:
 
 ## <a name="custom-parsing"></a>Custom parsing
 
-Occasionally, the requirements imposed by the default behavior of
-MAKE_CREATABLE_FROM_YAML are too stringent.  In these cases, the
-construction algorithm can be overridden by providing a specialization
-of the function
+Occasionally, the requirements imposed by the default creation
+mechanism are too stringent.  In these cases, the construction
+algorithm can be overridden by providing a specialization of the
+struct
 \code{cpp}
 template <typename T>
-T create_from_yaml(const Option_t&);
+struct create_from_yaml {
+  static T create(const Option_t& options);
+};
 \endcode
-That function can then perform any operations required to construct
-the class, so that no requirements are placed on members of the class.
+The create function can perform any operations required to construct
+the object.
 
 Example of using a specialization to parse an enum:
-\snippet Test_MakeCreatableFromYaml.cpp MCFY_enum_example
+\snippet Test_CustomTypeConstruction.cpp enum_creation_example

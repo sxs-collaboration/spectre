@@ -12,7 +12,6 @@
 #include <sstream>
 #include <string>
 #include <utility>
-#include <yaml-cpp/yaml.h>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
@@ -123,16 +122,9 @@ std::unique_ptr<BaseClass> create(const Option_t& options) {
 }
 }  // namespace Factory_detail
 
-namespace YAML {
 template <typename T>
-struct convert<std::unique_ptr<T>> {
-  static bool decode(const Node& node, std::unique_ptr<T>& rhs) {
-    OptionContext context;
-    context.top_level = false;
-    context.append("While creating a " + pretty_type::short_name<T>());
-    Option_t options(node, std::move(context));
-    rhs = Factory_detail::create<T>(options);
-    return true;
+struct create_from_yaml<std::unique_ptr<T>> {
+  static std::unique_ptr<T> create(const Option_t& options) {
+    return Factory_detail::create<T>(options);
   }
 };
-}  // namespace YAML
