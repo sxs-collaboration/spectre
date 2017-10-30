@@ -7,6 +7,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
+#include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
