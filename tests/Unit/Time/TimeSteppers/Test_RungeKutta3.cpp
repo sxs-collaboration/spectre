@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
