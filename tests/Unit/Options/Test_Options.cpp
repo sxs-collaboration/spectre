@@ -3,9 +3,11 @@
 
 #include <array>
 #include <catch.hpp>
+#include <list>
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "Options/Options.hpp"
@@ -320,6 +322,88 @@ SPECTRE_TEST_CASE("Unit.Options.UnorderedMap.success", "[Unit][Options]") {
   expected.emplace("A", 3);
   expected.emplace("Z", 2);
   CHECK(opts.get<UnorderedMap>() == expected);
+}
+
+namespace {
+template <typename T>
+struct Wrapped {
+  T data;
+};
+
+#define FORWARD_OP(op)                                          \
+  template <typename T>                                         \
+  bool operator op(const Wrapped<T>& a, const Wrapped<T>& b) {  \
+    return a.data op b.data;                                    \
+  }
+FORWARD_OP(==)
+FORWARD_OP(!=)
+FORWARD_OP(<)
+FORWARD_OP(>)
+FORWARD_OP(<=)
+FORWARD_OP(>=)
+}  // namespace
+
+namespace std {
+template <typename T>
+struct hash<Wrapped<T>> {
+  size_t operator()(const Wrapped<T>& x) const { return hash<T>{}(x.data); }
+};
+}  // namespace std
+
+template <typename T>
+struct create_from_yaml<Wrapped<T>> {
+  static Wrapped<T> create(const Option_t& options) {
+    return Wrapped<T>{options.parse_as<T>()};
+  }
+};
+
+namespace {
+struct WrapMap {
+  using type = std::map<Wrapped<int>, Wrapped<std::string>>;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct WrapVector {
+  using type = std::vector<Wrapped<int>>;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct WrapList {
+  using type = std::list<Wrapped<int>>;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct WrapArray {
+  using type = std::array<Wrapped<int>, 2>;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct WrapPair {
+  using type = std::pair<Wrapped<int>, Wrapped<std::string>>;
+  static constexpr OptionString_t help = {"halp"};
+};
+struct WrapUnorderedMap {
+  using type = std::unordered_map<Wrapped<int>, Wrapped<std::string>>;
+  static constexpr OptionString_t help = {"halp"};
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.ComplexContainers", "[Unit][Options]") {
+  Options<tmpl::list<WrapMap, WrapVector, WrapList, WrapArray, WrapPair,
+                     WrapUnorderedMap>> opts("");
+  opts.parse("WrapMap: {1: A, 2: B}\n"
+             "WrapVector: [1, 2, 3]\n"
+             "WrapList: [1, 2, 3]\n"
+             "WrapArray: [1, 2]\n"
+             "WrapPair: [1, X]\n"
+             "WrapUnorderedMap: {1: A, 2: B}\n");
+  CHECK(opts.get<WrapMap>() ==
+        (std::map<Wrapped<int>, Wrapped<std::string>>{
+          {{1}, {"A"}}, {{2}, {"B"}}}));
+  CHECK(opts.get<WrapVector>() == (std::vector<Wrapped<int>>{{1}, {2}, {3}}));
+  CHECK(opts.get<WrapList>() == (std::list<Wrapped<int>>{{1}, {2}, {3}}));
+  CHECK(opts.get<WrapArray>() == (std::array<Wrapped<int>, 2>{{{1}, {2}}}));
+  CHECK(opts.get<WrapPair>() ==
+        (std::pair<Wrapped<int>, Wrapped<std::string>>{{1}, {"X"}}));
+  CHECK(opts.get<WrapUnorderedMap>() ==
+        (std::unordered_map<Wrapped<int>, Wrapped<std::string>>{
+          {{1}, {"A"}}, {{2}, {"B"}}}));
 }
 
 namespace {

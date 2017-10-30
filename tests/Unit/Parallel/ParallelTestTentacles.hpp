@@ -5,7 +5,6 @@
 
 #include <iosfwd>
 
-#include "Options/MakeCreatableFromYaml.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.decl.h"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -35,7 +34,6 @@ inline std::ostream& operator<<(std::ostream& s,
   return s;
 }
 }  // namespace MainTestObjects
-MAKE_CREATABLE_FROM_YAML(/**/, MainTestObjects::CreatableNonCopyable)
 
 namespace Test_Tentacles {
 

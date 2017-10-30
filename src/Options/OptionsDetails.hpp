@@ -6,13 +6,17 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <iomanip>
+#include <list>
+#include <map>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -155,6 +159,138 @@ struct create_valid_names {
     const std::string label = pretty_type::short_name<T>();
     ASSERT(0 == value.count(label), "Duplicate option name: " << label);
     value.insert(label);
+  }
+};
+
+template <typename T>
+struct CreateWrapper {
+  T data;
+};
+#define CREATE_WRAPPER_FORWARD_OP(op)                                      \
+  template <typename T>                                                    \
+  bool operator op(const CreateWrapper<T>& a, const CreateWrapper<T>& b) { \
+    return a.data op b.data;                                               \
+  }
+CREATE_WRAPPER_FORWARD_OP(==)
+CREATE_WRAPPER_FORWARD_OP(!=)
+CREATE_WRAPPER_FORWARD_OP(<)
+CREATE_WRAPPER_FORWARD_OP(>)
+CREATE_WRAPPER_FORWARD_OP(<=)
+CREATE_WRAPPER_FORWARD_OP(>=)
+#undef CREATE_WRAPPER_FORWARD_OP
+
+template <typename, typename = std::nullptr_t>
+struct wrap_create_types_impl;
+
+template <typename T>
+using wrap_create_types = typename wrap_create_types_impl<T>::wrapped_type;
+
+template <typename T>
+auto unwrap_create_types(T wrapped) {
+  return wrap_create_types_impl<T>::unwrap(std::move(wrapped));
+}
+
+template <typename T, typename>
+struct wrap_create_types_impl {
+  using wrapped_type = CreateWrapper<T>;
+};
+
+template <typename T>
+struct wrap_create_types_impl<CreateWrapper<T>> {
+  // Never actually used, but instantiated during unwrapping
+  using wrapped_type = void;
+
+  static T unwrap(CreateWrapper<T> wrapped) { return std::move(wrapped.data); }
+};
+
+template <typename T>
+struct wrap_create_types_impl<T, Requires<std::is_fundamental<T>::value>> {
+  using wrapped_type = T;
+
+  static T unwrap(T wrapped) { return wrapped; }
+};
+
+// Classes convertible by yaml-cpp
+template <>
+struct wrap_create_types_impl<std::string> {
+  using wrapped_type = std::string;
+
+  static std::string unwrap(std::string wrapped) { return wrapped; }
+};
+
+template <typename K, typename V>
+struct wrap_create_types_impl<std::map<K, V>> {
+  using wrapped_type = std::map<wrap_create_types<K>, wrap_create_types<V>>;
+
+  static auto unwrap(std::map<K, V> wrapped) {
+    using UnwrappedK = decltype(unwrap_create_types<K>(std::declval<K>()));
+    using UnwrappedV = decltype(unwrap_create_types<V>(std::declval<V>()));
+    std::map<UnwrappedK, UnwrappedV> result;
+    for (auto& w : wrapped) {
+      result.emplace(unwrap_create_types<K>(std::move(w.first)),
+                     unwrap_create_types<V>(std::move(w.second)));
+    }
+    return result;
+  }
+};
+
+template <typename T>
+struct wrap_create_types_impl<std::vector<T>> {
+  using wrapped_type = std::vector<wrap_create_types<T>>;
+
+  static auto unwrap(std::vector<T> wrapped) {
+    using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
+    std::vector<UnwrappedT> result;
+    for (auto& w : wrapped) {
+      result.push_back(unwrap_create_types<T>(std::move(w)));
+    }
+    return result;
+  }
+};
+
+template <typename T>
+struct wrap_create_types_impl<std::list<T>> {
+  using wrapped_type = std::list<wrap_create_types<T>>;
+
+  static auto unwrap(std::list<T> wrapped) {
+    using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
+    std::list<UnwrappedT> result;
+    for (auto& w : wrapped) {
+      result.push_back(unwrap_create_types<T>(std::move(w)));
+    }
+    return result;
+  }
+};
+
+template <typename T, size_t N>
+struct wrap_create_types_impl<std::array<T, N>> {
+  using wrapped_type = std::array<wrap_create_types<T>, N>;
+
+  static auto unwrap(std::array<T, N> wrapped) {
+    return unwrap_helper(std::move(wrapped), std::make_index_sequence<N>{});
+  }
+
+  template <size_t... Is>
+  static auto unwrap_helper(
+      std::array<T, N> wrapped,
+      std::integer_sequence<size_t, Is...> /*meta*/) {
+    using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
+    static_cast<void>(wrapped);  // Work around broken GCC warning
+    return std::array<UnwrappedT, N>{
+      {unwrap_create_types<T>(std::move(wrapped[Is]))...}};
+  }
+};
+
+template <typename T, typename U>
+struct wrap_create_types_impl<std::pair<T, U>> {
+  using wrapped_type = std::pair<wrap_create_types<T>, wrap_create_types<U>>;
+
+  static auto unwrap(std::pair<T, U> wrapped) {
+    using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
+    using UnwrappedU = decltype(unwrap_create_types<U>(std::declval<U>()));
+    return std::pair<UnwrappedT, UnwrappedU>(
+        unwrap_create_types<T>(std::move(wrapped.first)),
+        unwrap_create_types<U>(std::move(wrapped.second)));
   }
 };
 }  // namespace Options_details
