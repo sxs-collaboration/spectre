@@ -36,3 +36,6 @@ check_and_add_cxx_flag("-Wstack-protector")
 check_and_add_cxx_flag("-Wswitch-default")
 check_and_add_cxx_flag("-Wunreachable-code")
 check_and_add_cxx_flag("-Wwrite-strings")
+# GCC 7.1ish and newer warn about noexcept changing mangled names,
+# but we don't care
+check_and_add_cxx_flag("-Wno-noexcept-type")
