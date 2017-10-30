@@ -113,6 +113,7 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
      \
      \
      && perl -pi -e 's/\(\\s*impl_obj->template\\s+explicit_single_action<\\s*Action\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/\(\\s*impl_obj->template\\s+explicit_single_action<\\s*Action, Args...\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \
      \
      \
      && perl -pi -e 's/ReceiveTag_temporal_id/typename ReceiveTag::temporal_id/g' Algorithm${ALGORITHM_NAME}.def.h \
