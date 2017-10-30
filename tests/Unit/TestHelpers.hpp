@@ -16,6 +16,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/MakeArray.hpp"

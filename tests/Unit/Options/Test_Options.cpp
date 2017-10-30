@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
