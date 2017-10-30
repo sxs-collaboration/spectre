@@ -9,6 +9,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -8,6 +8,7 @@
 
 #include "Options/MakeCreatableFromYaml.hpp"
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 /// [MCFY_example]

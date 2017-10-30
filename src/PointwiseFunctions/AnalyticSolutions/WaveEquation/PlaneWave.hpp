@@ -11,7 +11,7 @@
 
 #include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Options/OptionsDetails.hpp"
+#include "Options/Options.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeArray.hpp"
 

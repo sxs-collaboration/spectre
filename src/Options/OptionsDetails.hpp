@@ -7,7 +7,6 @@
 #pragma once
 
 #include <array>
-#include <exception>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -20,9 +19,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-/// The string used in option structs
-using OptionString_t = const char* const;
 
 /// Holds details of the implementation of Options
 namespace Options_details {
@@ -160,17 +156,5 @@ struct create_valid_names {
     ASSERT(0 == value.count(label), "Duplicate option name: " << label);
     value.insert(label);
   }
-};
-
-class propagate_context : public std::exception {
- public:
-  explicit propagate_context(std::string message) noexcept
-      : message_(std::move(message)) {}
-
-  const char* what() const noexcept override { return message_.c_str(); }
-  const std::string& message() const noexcept { return message_; }
-
- private:
-  std::string message_;
 };
 }  // namespace Options_details
