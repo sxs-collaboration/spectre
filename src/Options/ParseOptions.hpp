@@ -127,14 +127,6 @@ T Option_t::parse_as() const {
 /// \ingroup OptionParsing
 /// \brief Class that handles parsing an input file
 ///
-/// \details Options is templated on `OptionList`, which must be a
-/// typelist of structs.  Each of these structs corresponds to a
-/// parameter to be read from an input file.  These structs must
-/// define the type to be parsed and a help string, and may also
-/// define defaults and limits:
-/// \snippet Test_Options.cpp options_example_scalar_struct
-/// \snippet Test_Options.cpp options_example_vector_struct
-///
 /// Options must be given YAML data to parse before output can be
 /// extracted.  This can be done either from a file (parse_file
 /// method), from a string (parse method), or, in the case of
@@ -142,8 +134,12 @@ T Option_t::parse_as() const {
 /// can then be extracted using the get method.
 ///
 /// \example
-/// Using the above structs:
+/// \snippet Test_Options.cpp options_example_scalar_struct
 /// \snippet Test_Options.cpp options_example_scalar_parse
+///
+/// \see the \ref tuts_option_parsing tutorial
+///
+/// \tparam OptionList the list of option structs to parse
 template <typename OptionList>
 class Options {
  public:
