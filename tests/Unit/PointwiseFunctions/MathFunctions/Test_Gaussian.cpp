@@ -3,6 +3,7 @@
 
 #include <cmath>
 
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -47,7 +48,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
                   2 / square(width)) *
                  mapped_point[s]));
   }
-  test_pup_function(gauss);
+  test_math_helpers::test_pup_function(gauss);
+
+  // Test base class serialization
+  register_derived_classes_with_charm<MathFunction<1>>();
+  test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
+      std::make_unique<MathFunctions::Gaussian>(amplitude, width, center)});
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
