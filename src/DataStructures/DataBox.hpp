@@ -21,6 +21,13 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+/// \cond
+template <typename Tag, typename TagList>
+constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;
+template <typename Tag, typename TagList>
+constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept;
+/// \endcond
+
 /*!
  * \ingroup DataBoxGroup
  * \brief Namespace for DataBox related things
