@@ -58,6 +58,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
       "method starts at first order and increases the step-size until the\n"
       "desired order is reached."};
 
+  AdamsBashforthN() = default;
   AdamsBashforthN(size_t target_order, bool self_start,
                   const OptionContext& context = {});
   AdamsBashforthN(const AdamsBashforthN&) noexcept = default;
