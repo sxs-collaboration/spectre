@@ -5,14 +5,12 @@
 
 #include <cmath>
 
-#include "Options/Options.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace MathFunctions {
 
 Sinusoid::Sinusoid(const double amplitude, const double wavenumber,
-                   const double phase,
-                   const OptionContext& /* context */) noexcept
+                   const double phase) noexcept
     : amplitude_(amplitude), wavenumber_(wavenumber), phase_(phase) {}
 
 double Sinusoid::operator()(const double& x) const noexcept {

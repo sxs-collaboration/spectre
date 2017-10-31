@@ -44,7 +44,6 @@ class Test1 : public OptionTest {
   using options = tmpl::list<>;
   static constexpr OptionString_t help = {"A derived class"};
   Test1() = default;
-  explicit Test1(const OptionContext& /*context*/) {}
 
   std::string name() const override { return "Test1"; }
 };
@@ -55,7 +54,6 @@ class Test2 : public OptionTest {
   using options = tmpl::list<>;
   static constexpr OptionString_t help = {""};
   Test2() = default;
-  explicit Test2(const OptionContext& /*context*/) {}
 
   std::string name() const override { return "Test2"; }
 };
@@ -69,8 +67,7 @@ class TestWithArg : public OptionTest {
   using options = tmpl::list<Arg>;
   static constexpr OptionString_t help = {""};
   TestWithArg() = default;
-  TestWithArg(std::string arg, const OptionContext& /*context*/)
-      : arg_(std::move(arg)) {}
+  TestWithArg(std::string arg) : arg_(std::move(arg)) {}
 
   std::string name() const override { return "TestWithArg(" + arg_ + ")"; }
 

@@ -7,15 +7,11 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/MakeWithValue.hpp"
-#include "Options/Options.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace MathFunctions {
 
 PowX::PowX(const int power) noexcept : power_(power) {}
-
-PowX::PowX(const int power, const OptionContext& /*context*/) noexcept
-    : power_(power) {}
 
 double PowX::operator()(const double& x) const noexcept {
   return apply_call_operator(x);

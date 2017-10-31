@@ -39,8 +39,7 @@ class Sinusoid : public MathFunction<1> {
   static constexpr OptionString_t help = {
       "Applies a Sinusoid function to the input value"};
 
-  Sinusoid(double amplitude, double wavenumber, double phase,
-           const OptionContext& context = {}) noexcept;
+  Sinusoid(double amplitude, double wavenumber, double phase) noexcept;
 
   Sinusoid() = default;
   ~Sinusoid() override = default;
