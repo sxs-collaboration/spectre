@@ -30,7 +30,13 @@ class CreateFromOptions {
   static constexpr OptionString_t help = {"Class help text"};
 
   CreateFromOptions() = default;
-  explicit CreateFromOptions(std::string str) : str_(std::move(str)) {}
+  // The OptionContext argument can be left off if unneeded.
+  CreateFromOptions(std::string str, const OptionContext& context)
+      : str_(std::move(str)) {
+    if (str_[0] != 'f') {
+      PARSE_ERROR(context, "Option must start with an f");
+    }
+  }
 
   std::string str_;
 };
@@ -51,6 +57,15 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.error", "[Unit][Options]") {
   Options<tmpl::list<CFO>> opts("");
   opts.parse("CFO:\n"
              "  NotOption: foo");
+  opts.get<CFO>();
+}
+
+// [[OutputRegex, In string:.*At line 2 column 3:.Option must start with an f]]
+SPECTRE_TEST_CASE("Unit.Options.CustomType.custom_error", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<CFO>> opts("");
+  opts.parse("CFO:\n"
+             "  Option: zoo");
   opts.get<CFO>();
 }
 
