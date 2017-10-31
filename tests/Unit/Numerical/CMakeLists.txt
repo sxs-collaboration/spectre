@@ -3,6 +3,7 @@
 
 set(SPECTRE_UNIT_NUMERICAL_TESTS)
 
+add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Interpolation)
 add_subdirectory(LinearOperators)
 add_subdirectory(RootFinding)
