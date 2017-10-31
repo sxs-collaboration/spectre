@@ -34,6 +34,15 @@ SPECTRE_TEST_CASE("Unit.Options.Empty.not_map", "[Unit][Options]") {
   opts.parse("4");
 }
 
+// [[OutputRegex, In string:.*At line 1 column 30:.Unable to correctly parse
+// the input file because of a syntax error]]
+SPECTRE_TEST_CASE("Unit.Options.syntax_error", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<>> opts("");
+  opts.parse("DomainCreator: CreateInterval:\n"
+             "  IsPeriodicIn: [false]");
+}
+
 namespace {
 struct Simple {
   using type = int;
@@ -233,11 +242,25 @@ SPECTRE_TEST_CASE("Unit.Options.Array.success", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
-// 8:.Failed to convert value to type std::array<int, 3>]]
+// 8:.Failed to convert value to type std::array<int, 3>: .1, 2, 3, 4.]]
 SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Array>> opts("");
   opts.parse("Array: [1, 2, 3, 4]");
+  opts.get<Array>();
+}
+
+// [[OutputRegex, In string:.*While parsing option Array:.At line 2 column
+// 3:.Failed to convert value to type std::array<int, 3>:.  - 1.  - 2.  -
+// 3.  - 4]]
+SPECTRE_TEST_CASE("Unit.Options.Array.too_long.formatting", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<Array>> opts("");
+  opts.parse("Array:\n"
+             "  - 1\n"
+             "  - 2\n"
+             "  - 3\n"
+             "  - 4");
   opts.get<Array>();
 }
 

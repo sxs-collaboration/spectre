@@ -312,7 +312,7 @@ class Options {
   std::string parsing_help(const YAML::Node& options) const noexcept;
 
   /// Error message when failed to parse an input file.
-  std::string parser_error(const YAML::ParserException& e) const noexcept;
+  [[noreturn]] void parser_error(const YAML::ParserException& e) const noexcept;
 
   std::string help_text_{};
   OptionContext context_{};
@@ -349,7 +349,7 @@ void Options<OptionList>::parse_file(const std::string& file_name) noexcept {
   try {
     parse(YAML::LoadFile(file_name));
   } catch (const YAML::ParserException& e) {
-    ERROR(parser_error(e));
+    parser_error(e);
   } catch (YAML::BadFile& /*e*/) {
     ERROR("Could not open the input file " << file_name);
   }
@@ -361,7 +361,7 @@ void Options<OptionList>::parse(const std::string& options) noexcept {
   try {
     parse(YAML::Load(options));
   } catch (YAML::ParserException& e) {
-    ERROR(parser_error(e));
+    parser_error(e);
   }
 }
 
@@ -542,19 +542,20 @@ std::string Options<OptionList>::parsing_help(
 }
 
 template <typename OptionList>
-std::string Options<OptionList>::parser_error(
+[[noreturn]] void Options<OptionList>::parser_error(
     const YAML::ParserException& e) const noexcept {
-  std::ostringstream ss;
-  if (not e.mark.is_null()) {
-    ss << "At line " << e.mark.line + 1 << " column " << e.mark.column + 1
-       << ":\n";
-  }
-  ss << "Unable to correctly parse the input file because of a syntax error.\n"
-      "This is typically due to placing a suboption on the same line as an "
-      "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
-      "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
-      "IsPeriodicIn: [true]\n\nSee an example input file for help.";
-  return ss.str();
+  auto context = context_;
+  context.line = e.mark.line;
+  context.column = e.mark.column;
+  // Inline the top_level branch of PARSE_ERROR to avoid warning that
+  // the other branch would call terminate.  (Parser errors can only
+  // be generated at top level.)
+  ERROR("\n" << context <<
+        "Unable to correctly parse the input file because of a syntax error.\n"
+        "This is often due to placing a suboption on the same line as an "
+        "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
+        "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
+        "IsPeriodicIn: [true]\n\nSee an example input file for help.");
 }
 
 template <typename T>
