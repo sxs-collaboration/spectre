@@ -41,12 +41,7 @@ std::unique_ptr<BaseClass> create_derived(const std::string& id,
   ASSERT((not create_derived<BaseClass, tmpl::pop_front<CreateList>>(id, opts)),
          "Duplicate factory id: " << id);
 
-  Options<typename derived::options> options(derived::help);
-  options.parse(opts);
-  return options.template apply<typename derived::options>(
-      [&opts](auto&&... args) {
-        return std::make_unique<derived>(std::move(args)..., opts.context());
-      });
+  return std::make_unique<derived>(opts.parse_as<derived>());
 }
 
 struct print_derived {
@@ -91,12 +86,14 @@ template <typename BaseClass>
 std::unique_ptr<BaseClass> create(const Option_t& options) {
   const auto& node = options.node();
   Option_t derived_opts(options.context());
+  derived_opts.append_context("While operating factory for " +
+                              pretty_type::short_name<BaseClass>());
   std::string id;
   if (node.IsScalar()) {
     id = node.as<std::string>();
   } else if (node.IsMap()) {
     if (node.size() != 1) {
-      PARSE_ERROR(options.context(),
+      PARSE_ERROR(derived_opts.context(),
                   "Expected a single class to create, got "
                   << node.size() << ":\n" << node);
     }
@@ -106,7 +103,7 @@ std::unique_ptr<BaseClass> create(const Option_t& options) {
     PARSE_ERROR(options.context(),
                 "Expected a class to create:\n" << help_derived<BaseClass>());
   } else {
-    PARSE_ERROR(options.context(),
+    PARSE_ERROR(derived_opts.context(),
                 "Expected a class or a class with options, got:\n"
                 << node);
   }
@@ -117,7 +114,7 @@ std::unique_ptr<BaseClass> create(const Option_t& options) {
   if (derived != nullptr) {
     return derived;
   }
-  PARSE_ERROR(options.context(),
+  PARSE_ERROR(derived_opts.context(),
               "Unknown Id '" << id << "'\n" << help_derived<BaseClass>());
 }
 }  // namespace Factory_detail

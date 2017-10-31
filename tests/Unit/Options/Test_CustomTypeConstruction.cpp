@@ -34,13 +34,17 @@ class CreateFromOptions {
 
   std::string str_;
 };
+
+const char* const input_file_text = R"(
+CFO:
+  Option: foo
+)";
 /// [class_creation_example]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
   Options<tmpl::list<CFO>> opts("");
-  opts.parse("CFO:\n"
-             "  Option: foo");
+  opts.parse(input_file_text);
   CHECK(opts.get<CFO>().str_ == "foo");
 }
 

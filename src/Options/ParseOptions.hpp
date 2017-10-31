@@ -23,6 +23,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -74,8 +75,14 @@ class Option_t {
 template <typename T>
 T Option_t::parse_as() const {
   try {
-    return Options_detail::unwrap_create_types(
-        node().template as<Options_detail::wrap_create_types<T>>());
+    // yaml-cpp's `as` method won't parse empty nodes, so we need to
+    // inline a bit of its logic.
+    Options_detail::wrap_create_types<T> result{};
+    if (YAML::convert<decltype(result)>::decode(node(), result)) {
+      return Options_detail::unwrap_create_types(std::move(result));
+    }
+    // clang-tidy: thrown exception is not nothrow copy constructible
+    throw YAML::BadConversion(node().Mark());  // NOLINT
   } catch (const YAML::BadConversion& e) {
     // This happens when trying to parse an empty value as a container
     // with no entries.
@@ -554,8 +561,17 @@ template <typename T>
 T create_from_yaml<T>::create(const Option_t& options) {
   Options<typename T::options> parser(T::help);
   parser.parse(options);
-  return parser.template apply<typename T::options>(
-      [&](auto&&... args) { return T(args...); });
+  return parser.template apply<typename T::options>([&options](auto&&... args) {
+    return make_overloader(
+        [&options](std::true_type /*meta*/, auto&&... args2) {
+          return T(std::move(args2)..., options.context());
+        },
+        [](std::false_type /*meta*/, auto&&... args2) {
+          return T(std::move(args2)...);
+        })(cpp17::is_constructible_t<T, decltype(std::move(args))...,
+                                     const OptionContext&>{},
+           std::move(args)...);
+  });
 }
 
 namespace YAML {

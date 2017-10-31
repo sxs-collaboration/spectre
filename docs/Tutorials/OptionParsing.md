@@ -8,8 +8,8 @@ SpECTRE can read YAML configuration files at runtime to set parameters
 and choose between classes implementing an interface.  %Options are
 parsed during code initialization and can be used to construct objects
 placed in the Parallel::ConstGlobalCache and options passed to the
-parallel components.  Except as otherwise noted, the types necessary
-to mark objects for parsing are declared in `Options/Options.hpp`.
+parallel components.  The types necessary to mark objects for parsing
+are declared in `Options/Options.hpp`.
 
 ## General option format
 
@@ -26,19 +26,20 @@ Examples:
 \snippet Test_Options.cpp options_example_vector_struct
 
 The option type can be any type understood natively by yaml-cpp
-(fundamentals and `std::vector`, `std::list`, and `std::map` of
-parsable types) and types SpECTRE adds support for.  SpECTRE adds
-`std::unordered_map` (but only of ordered types), and various classes
-marked as constructible in their declarations.
+(fundamentals, `std::string`, and `std::map`, `std::vector`,
+`std::list`, `std::array`, and `std::pair` of parsable types) and
+types SpECTRE adds support for.  SpECTRE adds `std::unordered_map`
+(but only with ordered keys), and various classes marked as
+constructible in their declarations.
 
 ## Constructible classes
 
-A class that defines `static OptionString_t help` and a typelist of
-option structs `options` can be created by the option parser.  When
-the class is requested, the option parser will parse each of the
-options in the `options` list, and then supply them to the constructor
-of the class.  (See [Custom parsing](#custom-parsing) below for more
-general creation mechanisms.)
+A class that defines `static constexpr OptionString_t help` and a
+typelist of option structs `options` can be created by the option
+parser.  When the class is requested, the option parser will parse
+each of the options in the `options` list, and then supply them to the
+constructor of the class.  (See [Custom parsing](#custom-parsing)
+below for more general creation mechanisms.)
 
 Unlike option descriptions, which should be brief, the class help
 string has no length limits and should give a description of the class
@@ -59,13 +60,8 @@ derived classes that can be created.
 \code{cpp}
  using creatable_classes = tmpl::list<Derived1, ...>;
 \endcode
-
-Derived classes should:
--# define `static OptionString_t help` containing class-specific help
-   text
--# define a type `options` as a typelist of option structs required to
-   create the class
--# define a constructor taking those options and an OptionContext
+The requested derived class is created in the same way as an
+explicitly constructible class.
 
 ## <a name="custom-parsing"></a>Custom parsing
 
