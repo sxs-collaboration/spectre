@@ -73,6 +73,82 @@
 static Approx approx = Approx::custom().epsilon(    // NOLINT
     std::numeric_limits<double>::epsilon() * 100);  // NOLINT
 
+/*!
+ * \ingroup TestingFramework
+ * \brief A wrapper around Catch's CHECK macro that checks approximate
+ * equality of entries in iterable containers.  For maplike
+ * containers, keys are checked for strict equality and values are
+ * checked for approximate equality.
+ *
+ * \note This compares elements in order, so it will not work reliably
+ * on unordered containers.
+ */
+#define CHECK_ITERABLE_APPROX(a, b)                                          \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_iterable_approx<std::common_type_t<                                \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
+  } while (false)
+
+/// \cond HIDDEN_SYMBOLS
+template <typename T, typename = std::nullptr_t>
+struct check_iterable_approx {
+  static void apply(const T& a, const T& b) {
+    CHECK(a == approx(b));
+  }
+};
+
+template <typename T>
+struct check_iterable_approx<
+    T, Requires<not tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
+  static void apply(const T& a, const T& b) {
+    auto a_it = a.begin();
+    auto b_it = b.begin();
+    CHECK(a_it != a.end());
+    CHECK(b_it != b.end());
+    while (a_it != a.end() and b_it != b.end()) {
+      check_iterable_approx<std::decay_t<decltype(*a_it)>>::apply(*a_it, *b_it);
+      ++a_it;
+      ++b_it;
+    }
+    {
+      INFO("Iterable is longer in first argument than in second argument");
+      CHECK(a_it == a.end());
+    }
+    {
+      INFO("Iterable is shorter in first argument than in second argument");
+      CHECK(b_it == b.end());
+    }
+  }
+};
+
+template <typename T>
+struct check_iterable_approx<
+    T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
+  static void apply(const T& a, const T& b) {
+    auto a_it = a.begin();
+    auto b_it = b.begin();
+    CHECK(a_it != a.end());
+    CHECK(b_it != b.end());
+    while (a_it != a.end() and b_it != b.end()) {
+      CHECK(a_it->first == b_it->first);
+      check_iterable_approx<std::decay_t<decltype(a_it->second)>>::apply(
+          a_it->second, b_it->second);
+      ++a_it;
+      ++b_it;
+    }
+    {
+      INFO("Iterable is longer in first argument than in second argument");
+      CHECK(a_it == a.end());
+    }
+    {
+      INFO("Iterable is shorter in first argument than in second argument");
+      CHECK(b_it == b.end());
+    }
+  }
+};
+/// \endcond
+
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
   Parallel::abort("");
