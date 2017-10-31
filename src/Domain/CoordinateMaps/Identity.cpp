@@ -3,8 +3,10 @@
 
 #include "Domain/CoordinateMaps/Identity.hpp"
 
+#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/DereferenceWrapper.hpp"
 
 namespace CoordinateMaps {
 
@@ -28,12 +30,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
-Identity<Dim>::jacobian(const std::array<T, Dim>& /*xi*/) const {
+Identity<Dim>::jacobian(const std::array<T, Dim>& xi) const {
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
-      jac{0.0};
+      jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), 0.0)};
   for (size_t i = 0; i < Dim; ++i) {
     jac.get(i, i) = 1.0;
   }
@@ -46,12 +49,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
-Identity<Dim>::inv_jacobian(const std::array<T, Dim>& /*xi*/) const {
+Identity<Dim>::inv_jacobian(const std::array<T, Dim>& xi) const {
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<Dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<Dim, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{0.0};
+      inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+          dereference_wrapper(xi[0]), 0.0)};
   for (size_t i = 0; i < Dim; ++i) {
     inv_jac.get(i, i) = 1.0;
   }

@@ -296,11 +296,11 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
       [&inv_jac, &mapped_point](const auto& map, auto index,
                                 const std::tuple<Maps...>& maps) {
         constexpr const size_t count = decltype(index)::value;
-        auto temp_inv_jac = map.inv_jacobian(mapped_point);
 
         if (LIKELY(count != 0)) {
           mapped_point =
               std::get<(count != 0 ? count - 1 : 0)>(maps)(mapped_point);
+          const auto temp_inv_jac = map.inv_jacobian(mapped_point);
           std::array<T, dim> temp{};
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
@@ -316,6 +316,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
             }
           }
         } else {
+          auto temp_inv_jac = map.inv_jacobian(mapped_point);
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
               inv_jac.get(source, target) =
@@ -341,36 +342,36 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
          index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                     SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
       jac{};
-  tuple_transform<true>(
+  tuple_transform(
       maps_,
       [&jac, &mapped_point](const auto& map, auto index,
                             const std::tuple<Maps...>& maps) {
         constexpr const size_t count = decltype(index)::value;
-        auto noframe_jac = map.jacobian(mapped_point);
 
-        if (LIKELY(count != sizeof...(Maps) - 1)) {
-          mapped_point = std::get<(
-              count != sizeof...(Maps) - 1 ? count : sizeof...(Maps) - 1)>(
-              maps)(mapped_point);
+        if (LIKELY(count != 0)) {
+          mapped_point =
+              std::get<(count != 0 ? count - 1 : 0)>(maps)(mapped_point);
+          const auto noframe_jac = map.jacobian(mapped_point);
           std::array<T, dim> temp{};
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
               gsl::at(temp, target) =
-                  jac.get(source, 0) * noframe_jac.get(0, target);
+                  noframe_jac.get(target, 0) * jac.get(0, source);
               for (size_t dummy = 1; dummy < dim; ++dummy) {
                 gsl::at(temp, target) +=
-                    jac.get(source, dummy) * noframe_jac.get(dummy, target);
+                    noframe_jac.get(target, dummy) * jac.get(dummy, source);
               }
             }
             for (size_t target = 0; target < dim; ++target) {
-              jac.get(source, target) = std::move(gsl::at(temp, target));
+              jac.get(target, source) = std::move(gsl::at(temp, target));
             }
           }
         } else {
-          for (size_t source = 0; source < dim; ++source) {
-            for (size_t target = 0; target < dim; ++target) {
-              jac.get(source, target) =
-                  std::move(noframe_jac.get(source, target));
+          auto noframe_jac = map.jacobian(mapped_point);
+          for (size_t target = 0; target < dim; ++target) {
+            for (size_t source = 0; source < dim; ++source) {
+              jac.get(target, source) =
+                  std::move(noframe_jac.get(target, source));
             }
           }
         }

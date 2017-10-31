@@ -7,7 +7,12 @@
 #pragma once
 
 #include <array>
+#include <functional>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 /*!
@@ -119,5 +124,74 @@ void test_coordinate_map_implementation(const Map& map) {
       CHECK(coord_map.inv_jacobian(test_point_tensor).get(i, j) ==
             map.inv_jacobian(test_point).get(i, j));
     }
+  }
+}
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Checks that the CoordinateMap `map` functions as expected when used
+ * with different argument types.
+ */
+template <bool CheckInverse = true, typename Map, typename... Args>
+void test_coordinate_map_argument_types(
+    const Map& map, const std::array<double, Map::dim>& test_point) {
+  const auto make_array_data_vector = [](const auto& double_array) {
+    std::array<DataVector, Map::dim> result;
+    std::transform(double_array.begin(), double_array.end(), result.begin(),
+                   [](const double x) { return DataVector{x, x}; });
+    return result;
+  };
+  const auto make_tensor_data_vector = [](const auto& double_tensor) {
+    using Arg = std::decay_t<decltype(double_tensor)>;
+    Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list> result;
+    std::transform(double_tensor.begin(), double_tensor.end(), result.begin(),
+                   [](const double x) { return DataVector{x, x}; });
+    return result;
+  };
+  const auto add_reference_wrapper = [](const auto& unwrapped_array) {
+    using Arg = std::decay_t<decltype(unwrapped_array)>;
+    return make_array<std::reference_wrapper<const typename Arg::value_type>,
+                      Map::dim>(unwrapped_array);
+  };
+
+  const auto mapped_point = map(test_point);
+  CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point)), mapped_point);
+  CHECK_ITERABLE_APPROX(map(make_array_data_vector(test_point)),
+                        make_array_data_vector(mapped_point));
+  CHECK_ITERABLE_APPROX(
+      map(add_reference_wrapper(make_array_data_vector(test_point))),
+      make_array_data_vector(mapped_point));
+
+  if (CheckInverse) {
+    const auto expected = map.inverse(mapped_point);
+    CHECK_ITERABLE_APPROX(map.inverse(add_reference_wrapper(mapped_point)),
+                          expected);
+    CHECK_ITERABLE_APPROX(map.inverse(make_array_data_vector(mapped_point)),
+                          make_array_data_vector(expected));
+    CHECK_ITERABLE_APPROX(map.inverse(add_reference_wrapper(
+                              make_array_data_vector(mapped_point))),
+                          make_array_data_vector(expected));
+  }
+
+  {
+    const auto expected = map.jacobian(test_point);
+    CHECK_ITERABLE_APPROX(map.jacobian(add_reference_wrapper(test_point)),
+                          expected);
+    CHECK_ITERABLE_APPROX(map.jacobian(make_array_data_vector(test_point)),
+                          make_tensor_data_vector(expected));
+    CHECK_ITERABLE_APPROX(
+        map.jacobian(add_reference_wrapper(make_array_data_vector(test_point))),
+        make_tensor_data_vector(expected));
+  }
+
+  {
+    const auto expected = map.inv_jacobian(test_point);
+    CHECK_ITERABLE_APPROX(map.inv_jacobian(add_reference_wrapper(test_point)),
+                          expected);
+    CHECK_ITERABLE_APPROX(map.inv_jacobian(make_array_data_vector(test_point)),
+                          make_tensor_data_vector(expected));
+    CHECK_ITERABLE_APPROX(map.inv_jacobian(add_reference_wrapper(
+                              make_array_data_vector(test_point))),
+                          make_tensor_data_vector(expected));
   }
 }

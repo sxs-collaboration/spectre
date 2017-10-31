@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
@@ -50,4 +51,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   // Check inequivalence operator
   CHECK_FALSE(affine_map != affine_map);
   CHECK(affine_map == serialize_and_deserialize(affine_map));
+
+  test_coordinate_map_argument_types(affine_map, point_xi);
 }

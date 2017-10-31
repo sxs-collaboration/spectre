@@ -43,11 +43,14 @@ operator()(const std::array<T, 3>& x) const noexcept {
   const ReturnType& zeta = x[2];
   ReturnType x_inner_cubical_face = xi * radius_of_other_surface_ / sqrt(3.0);
   ReturnType y_inner_cubical_face = eta * radius_of_other_surface_ / sqrt(3.0);
-  auto z_inner_cubical_face =
+  // clang-tidy: use auto - This use would be OK, but there used to be
+  // major bugs in this function due to use of auto rather than
+  // ReturnType, so I'd prefer to avoid auto completely here.
+  ReturnType z_inner_cubical_face =  // NOLINT
       make_with_value<ReturnType>(xi, radius_of_other_surface_ / sqrt(3.0));
   const ReturnType x_unit_spherical_face = tan(M_PI_4 * xi);
   const ReturnType y_unit_spherical_face = tan(M_PI_4 * eta);
-  const auto z_spherical_faces_common_factor =
+  const ReturnType z_spherical_faces_common_factor =
       make_with_value<ReturnType>(xi, 1.) /
       sqrt(1.0 + square(x_unit_spherical_face) + square(y_unit_spherical_face));
   const ReturnType z_inner_spherical_face =
@@ -142,11 +145,11 @@ Wedge3D::jacobian(const std::array<T, 3>& x) const noexcept {
   const ReturnType& zeta = x[2];
   const double ratio_of_radii =
       radius_of_spherical_surface_ / radius_of_other_surface_;
-  const auto x_equiangular_secant =
+  const ReturnType x_equiangular_secant =
       make_with_value<ReturnType>(xi, 1.0) / cos(M_PI_4 * xi);
-  const auto y_equiangular_secant =
+  const ReturnType y_equiangular_secant =
       make_with_value<ReturnType>(xi, 1.0) / cos(M_PI_4 * eta);
-  const auto x_equiangular_tangent = tan(M_PI_4 * xi);
+  const ReturnType x_equiangular_tangent = tan(M_PI_4 * xi);
   const ReturnType y_equiangular_tangent = tan(M_PI_4 * eta);
 
   const ReturnType sy_square = square(y_equiangular_secant);

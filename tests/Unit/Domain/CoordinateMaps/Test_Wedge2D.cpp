@@ -112,5 +112,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D", "[Domain][Unit]") {
     CHECK(serialize_and_deserialize(map) == map);
 
     test_coordinate_map_implementation(map);
+
+    test_coordinate_map_argument_types<false>(map, test_point);
   }
 }
