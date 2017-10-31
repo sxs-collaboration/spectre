@@ -43,8 +43,7 @@ class Gaussian : public MathFunction<1> {
 
   explicit Gaussian(CkMigrateMessage* /*unused*/) noexcept {}
 
-  Gaussian(double amplitude, double width, double center,
-           const OptionContext& context = {}) noexcept;
+  Gaussian(double amplitude, double width, double center) noexcept;
 
   Gaussian() = default;
   ~Gaussian() override = default;

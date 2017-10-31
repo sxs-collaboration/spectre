@@ -27,8 +27,6 @@ class PowX : public MathFunction<1> {
   static constexpr OptionString_t help = {
       "Raises the input value to a given power"};
 
-  PowX(int power, const OptionContext& context) noexcept;
-
   PowX() = default;
   ~PowX() override = default;
   PowX(const PowX& /*rhs*/) = delete;
