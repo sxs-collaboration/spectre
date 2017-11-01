@@ -21,6 +21,7 @@ include(SetCxxStandard)
 include(EnableWarnings)
 include(SetupBuildInfo)
 include(SetupCCache)
+include(SetupVersionFile)
 include(SetupCharm)
 include(SetupCharmProjections)
 

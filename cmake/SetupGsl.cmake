@@ -17,3 +17,8 @@ list(APPEND SPECTRE_LIBRARIES "-lgslcblas")
 message(STATUS "GSL libs: ${GSL_LIBRARIES}")
 message(STATUS "GSL incl: ${GSL_INCLUDE_DIR}")
 message(STATUS "GSL vers: ${GSL_VERSION}")
+
+file(APPEND
+  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "GSL Version:  ${GSL_VERSION}\n"
+  )

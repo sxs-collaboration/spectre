@@ -32,3 +32,8 @@ configure_file(
 )
 
 include(SetupCharmModuleFunctions)
+
+file(APPEND
+  "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
+  "Charm Version:  ${CHARM_VERSION}\n"
+  )
