@@ -37,6 +37,7 @@ target_link_libraries(
   CoordinateMaps
   Domain
   DomainCreators
+  EinsteinSolutions
   IO
   NumericalAlgorithms
   Time
