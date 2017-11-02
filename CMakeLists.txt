@@ -37,6 +37,7 @@ include(SetupCppCheck)
 include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
+include(SetupMacOsx)
 include(SetupDoxygen)
 include(CodeCoverageDetection)
 

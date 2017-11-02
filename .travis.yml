@@ -280,7 +280,7 @@ script:
              -D CATCH_ROOT=$HOME/Catch
              -D LIBXSMM_ROOT=$HOME/libxsmm/build
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
-             -D CMAKE_EXE_LINKER_FLAGS="${SPECTRE_MIN_MACOS}"
+             -D MACOSX_MIN=10.11
              ${TRAVIS_BUILD_DIR}
     && make -j2
     && ctest --output-on-failure
