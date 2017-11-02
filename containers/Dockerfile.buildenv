@@ -71,7 +71,7 @@ WORKDIR /work/spack
 # Since spack/develop is rather unstable, we check out a commit we
 # know is stable. This should be updated periodically to update
 # installed packages.
-RUN git checkout dec6b609d8a093586eb10fe3023eac273cdd0dad
+RUN git checkout c4db3d384ecd7b75ebf92a5ea0f3740c5137a8ab
 WORKDIR /work
 
 # Spack needs to be pointed to the system OpenSSL to work properly, we add this
