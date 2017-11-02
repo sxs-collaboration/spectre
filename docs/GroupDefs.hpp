@@ -41,6 +41,11 @@
  */
 
 /*!
+ * \defgroup ControlSystemGroup Control System
+ * \brief Contains control system elements
+ */
+
+/*!
  * \defgroup CoordinateMapsGroup  Coordinate Maps
  * \brief Functions for mapping coordinates between different frames
  *

@@ -10,6 +10,7 @@ allowed_tags = [
                 "Actions",
                 "ApparentHorizons",
                 "CompilationTest",
+                "ControlSystem",
                 "DataStructures",
                 "Domain",
                 "ErrorHandling",
