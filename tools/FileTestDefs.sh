@@ -357,6 +357,25 @@ struct_td_test() {
 }
 standard_checks+=(struct_td)
 
+# Check for _details and details namespaces, request replacement with detail
+namespace_details() {
+    is_c++ "$1" && grep -q "\(_details\|namespace[[:space:]]\+details\)" "$1"
+}
+namespace_details_report() {
+    echo "Found '_details' namespace, please replace with '_detail'"
+    pretty_grep "\(_details\|namespace details\)" "$@"
+}
+namespace_details_test() {
+    test_check pass foo.cpp ''
+    test_check fail foo.cpp 'namespace details'
+    test_check fail foo.cpp 'namespace    details'
+    test_check fail foo.cpp 'namespace Test_details'
+    test_check pass foo.cpp 'namespace Test_detail'
+    test_check pass foo.cpp 'namespace detail'
+    test_check pass foo.cpp 'details'
+}
+standard_checks+=(namespace_details)
+
 [ "$1" = --test ] && run_tests "${standard_checks[@]}"
 
 # True result for sourcing
