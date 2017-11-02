@@ -26,7 +26,7 @@
 using OptionString_t = const char* const;
 
 /// Holds details of the implementation of Options
-namespace Options_details {
+namespace Options_detail {
 template <typename S, typename = cpp17::void_t<>>
 struct has_default : std::false_type {};
 template <typename S>
@@ -183,4 +183,4 @@ inline std::string mark_info(const YAML::Mark& m) noexcept {
   ss << "At line " << m.line + 1 << " column " << m.column + 1 << ":\n";
   return ss.str();
 }
-}  // namespace Options_details
+}  // namespace Options_detail

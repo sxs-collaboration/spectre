@@ -576,7 +576,7 @@ MakeWithValueImpl<DataVector, DataVector>::apply(const DataVector& input,
 }
 }  // namespace MakeWithValueImpls
 
-namespace ConstantExpressions_details {
+namespace ConstantExpressions_detail {
 template <>
 struct pow<DataVector, 0, std::nullptr_t> {
   SPECTRE_ALWAYS_INLINE static constexpr double apply(const DataVector& /*t*/) {
@@ -602,4 +602,4 @@ struct pow<DataVector, N, Requires<(N < 0)>> {
     return DataVector(t.size(), 1.0) / (t * pow<DataVector, -N - 1>::apply(t));
   }
 };
-}  // namespace ConstantExpressions_details
+}  // namespace ConstantExpressions_detail

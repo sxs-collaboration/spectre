@@ -581,11 +581,11 @@ template <typename T>
 using is_comparable_t = typename is_comparable<T>::type;
 // @}
 
-namespace TypeTraits_details {
+namespace TypeTraits_detail {
 template <typename T, std::size_t N>
 std::integral_constant<std::size_t, N> array_size_impl(
     const std::array<T, N>& /*array*/);
-}  // namespace TypeTraits_details
+}  // namespace TypeTraits_detail
 
 // @{
 /// \ingroup TypeTraits
@@ -616,7 +616,7 @@ std::integral_constant<std::size_t, N> array_size_impl(
 /// \tparam Array the whose size should be stored in value of array_size
 template <typename Array>
 using array_size =
-    decltype(TypeTraits_details::array_size_impl(std::declval<const Array&>()));
+    decltype(TypeTraits_detail::array_size_impl(std::declval<const Array&>()));
 // @}
 
 // @{

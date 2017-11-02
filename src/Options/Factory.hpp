@@ -115,7 +115,7 @@ std::unique_ptr<BaseClass> Factory<BaseClass>::create(const Option_t& options) {
               "Unknown Id '" << id << "'\n" << help_derived());
 }
 
-namespace Factory_details {
+namespace Factory_detail {
 struct print_derived {
   // Not a stream because brigand requires the functor to be copyable.
   std::string value;
@@ -145,14 +145,13 @@ struct print_derived {
     value += ss.str();
   }
 };
-}  // namespace Factory_details
+}  // namespace Factory_detail
 
 template <typename BaseClass>
 std::string Factory<BaseClass>::help_derived() noexcept {
-  return "Known Ids:\n" +
-         tmpl::for_each<typename BaseClass::creatable_classes>(
-             Factory_details::print_derived{})
-             .value;
+  return "Known Ids:\n" + tmpl::for_each<typename BaseClass::creatable_classes>(
+                              Factory_detail::print_derived{})
+                              .value;
 }
 
 namespace YAML {
