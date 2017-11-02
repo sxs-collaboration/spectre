@@ -342,6 +342,21 @@ enable_if_test() {
 }
 standard_checks+=(enable_if)
 
+# Check for struct TD and class TD asking to remove it
+struct_td() {
+    is_c++ "$1" && grep -q "\(struct TD;\|class TD;\)" "$1"
+}
+struct_td_report() {
+    echo "Found 'struct TD;' or 'class TD;' which should be removed"
+    pretty_grep "\(struct TD;\|class TD;\)" "$@"
+}
+struct_td_test() {
+    test_check pass foo.cpp ''
+    test_check fail foo.cpp 'struct TD;'
+    test_check fail foo.cpp 'class TD;'
+}
+standard_checks+=(struct_td)
+
 [ "$1" = --test ] && run_tests "${standard_checks[@]}"
 
 # True result for sourcing
