@@ -336,7 +336,9 @@ enable_if_report() {
 }
 enable_if_test() {
     test_check pass foo.cpp 'enable'
-    test_check fail foo.cpp 'enable_if'
+    test_check pass foo.cpp 'enable if'
+    test_check pass foo.cpp 'enable_if'
+    test_check fail foo.cpp 'std::enable_if'
 }
 standard_checks+=(enable_if)
 
