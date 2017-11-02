@@ -1,15 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(CHARM_VERSION_REQUIRED 6.8.0)
-
-find_package(Charm REQUIRED)
-
-if(NOT ${CHARM_VERSION} VERSION_EQUAL ${CHARM_VERSION_REQUIRED})
-  message(FATAL_ERROR
-    "Charm++ required version ${CHARM_VERSION_REQUIRED}, "
-    "found ${CHARM_VERSION}")
-endif()
+find_package(Charm 6.8.0 EXACT REQUIRED)
 
 include_directories(SYSTEM "${CHARM_INCLUDE_DIRS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -L${CHARM_LIBRARIES}")
