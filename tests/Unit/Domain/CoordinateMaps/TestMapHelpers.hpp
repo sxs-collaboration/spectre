@@ -195,3 +195,13 @@ void test_coordinate_map_argument_types(
                           make_tensor_data_vector(expected));
   }
 }
+
+/*!
+ * \ingroup TestingFramework
+ * \brief Given a Map `map`, checks that the inverse map gives expected results
+ */
+template <typename Map>
+void test_inverse_map(const Map& map,
+                      const std::array<double, Map::dim>& test_point) {
+  CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)));
+}

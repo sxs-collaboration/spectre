@@ -14,11 +14,13 @@ namespace CoordinateMaps {
 Wedge3D::Wedge3D(const double radius_of_other_surface,
                  const double radius_of_spherical_surface,
                  const Direction<3> direction_of_wedge,
-                 const double sphericity_of_other_surface) noexcept
+                 const double sphericity_of_other_surface,
+                 const bool with_equiangular_map) noexcept
     : radius_of_other_surface_(radius_of_other_surface),
       radius_of_spherical_surface_(radius_of_spherical_surface),
       direction_of_wedge_(direction_of_wedge),
-      sphericity_of_other_surface_(sphericity_of_other_surface) {
+      sphericity_of_other_surface_(sphericity_of_other_surface),
+      with_equiangular_map_(with_equiangular_map) {
   ASSERT(radius_of_other_surface > 0,
          "The radius of the other surface must be greater than zero.");
   ASSERT(radius_of_spherical_surface > 0,
@@ -38,56 +40,27 @@ std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> Wedge3D::
 operator()(const std::array<T, 3>& x) const noexcept {
   using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
 
-  const ReturnType& xi = x[0];
-  const ReturnType& eta = x[1];
+  const ReturnType cap_xi = with_equiangular_map_
+                                ? tan(M_PI_4 * static_cast<ReturnType>(x[0]))
+                                : static_cast<ReturnType>(x[0]);
+  const ReturnType cap_eta = with_equiangular_map_
+                                 ? tan(M_PI_4 * static_cast<ReturnType>(x[1]))
+                                 : static_cast<ReturnType>(x[1]);
   const ReturnType& zeta = x[2];
-  ReturnType x_inner_cubical_face = xi * radius_of_other_surface_ / sqrt(3.0);
-  ReturnType y_inner_cubical_face = eta * radius_of_other_surface_ / sqrt(3.0);
-  // clang-tidy: use auto - This use would be OK, but there used to be
-  // major bugs in this function due to use of auto rather than
-  // ReturnType, so I'd prefer to avoid auto completely here.
-  ReturnType z_inner_cubical_face =  // NOLINT
-      make_with_value<ReturnType>(xi, radius_of_other_surface_ / sqrt(3.0));
-  const ReturnType x_unit_spherical_face = tan(M_PI_4 * xi);
-  const ReturnType y_unit_spherical_face = tan(M_PI_4 * eta);
-  const ReturnType z_spherical_faces_common_factor =
-      make_with_value<ReturnType>(xi, 1.) /
-      sqrt(1.0 + square(x_unit_spherical_face) + square(y_unit_spherical_face));
-  const ReturnType z_inner_spherical_face =
-      radius_of_other_surface_ * z_spherical_faces_common_factor;
 
-  // If sphericity_of_other_surface_==0, the inner_cubical_face variables
-  // correspond to the
-  // face of a cube.
-  // If sphericity_of_other_surface_!=0, the inner_cubical_face variables have
-  // the
-  // spherical_face portions added to them to create a rounded-out cube face.
-  // At sphericity_of_other_surface_==1, the face becomes spherical.
+  const ReturnType first_blending_factor =
+      0.5 * (1.0 - sphericity_of_other_surface_) * radius_of_other_surface_ /
+      sqrt(3.0) * (1.0 - zeta);
+  const ReturnType second_blending_factor_over_rho =
+      (0.5 * sphericity_of_other_surface_ * radius_of_other_surface_ *
+           (1.0 - zeta) +
+       0.5 * radius_of_spherical_surface_ * (1.0 + zeta)) /
+      sqrt(1.0 + square(cap_xi) + square(cap_eta));
 
-  x_inner_cubical_face +=
-      sphericity_of_other_surface_ *
-      (z_inner_spherical_face * x_unit_spherical_face - x_inner_cubical_face);
-  y_inner_cubical_face +=
-      sphericity_of_other_surface_ *
-      (z_inner_spherical_face * y_unit_spherical_face - y_inner_cubical_face);
-  z_inner_cubical_face += sphericity_of_other_surface_ *
-                          (z_inner_spherical_face - z_inner_cubical_face);
-
-  const ReturnType z_outer_spherical_face =
-      radius_of_spherical_surface_ * z_spherical_faces_common_factor;
-  const ReturnType x_outer_spherical_face =
-      z_outer_spherical_face * x_unit_spherical_face;
-  const ReturnType y_outer_spherical_face =
-      z_outer_spherical_face * y_unit_spherical_face;
-  const ReturnType physical_x =
-      x_inner_cubical_face +
-      (x_outer_spherical_face - x_inner_cubical_face) * (zeta + 1) * 0.5;
-  const ReturnType physical_y =
-      y_inner_cubical_face +
-      (y_outer_spherical_face - y_inner_cubical_face) * (zeta + 1) * 0.5;
-  const ReturnType physical_z =
-      z_inner_cubical_face +
-      (z_outer_spherical_face - z_inner_cubical_face) * (zeta + 1) * 0.5;
+  ReturnType physical_z =
+      first_blending_factor + second_blending_factor_over_rho;
+  ReturnType physical_x = physical_z * cap_xi;
+  ReturnType physical_y = physical_z * cap_eta;
 
   // Assigns location of wedge based on passed "direction_of_wedge"
   // Wedges on z axis:
@@ -123,14 +96,75 @@ operator()(const std::array<T, 3>& x) const noexcept {
   ERROR("Improper axis passed to function.");
 }
 
-// LCOV_EXCL_START
-// Currently unimplemented, hence the noreturn attribute
 template <typename T>
-[[noreturn]] std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3>
-Wedge3D::inverse(const std::array<T, 3>& /*x*/) const noexcept {
-  ERROR("Inverse map is unimplemented for Wedge3D");
+std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> Wedge3D::inverse(
+    const std::array<T, 3>& x) const noexcept {
+  using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
+
+  ReturnType physical_x;
+  ReturnType physical_y;
+  ReturnType physical_z;
+
+  // Assigns location of wedge based on passed "direction_of_wedge"
+  // Wedges on z axis:
+  switch (direction_of_wedge_.axis()) {
+    case Direction<3>::Axis::Zeta:
+      if (direction_of_wedge_.side() == Side::Upper) {
+        physical_x = x[0];
+        physical_y = x[1];
+        physical_z = x[2];
+      } else {
+        physical_x = x[0];
+        physical_y = -x[1];
+        physical_z = -x[2];
+      }
+      break;
+      // Wedges on y axis:
+    case Direction<3>::Axis::Eta:
+      if (direction_of_wedge_.side() == Side::Upper) {
+        physical_x = x[2];
+        physical_y = x[0];
+        physical_z = x[1];
+      } else {
+        physical_x = -x[2];
+        physical_y = x[0];
+        physical_z = -x[1];
+      }
+      break;
+      // Wedges on x axis:
+    case Direction<3>::Axis::Xi:
+      if (direction_of_wedge_.side() == Side::Upper) {
+        physical_x = x[1];
+        physical_y = x[2];
+        physical_z = x[0];
+      } else {
+        physical_x = -x[1];
+        physical_y = x[2];
+        physical_z = -x[0];
+      }
+      break;
+    default:
+      ERROR("Switch failed... somehow?.");
+  }
+
+  ReturnType cap_xi = physical_x / physical_z;
+  ReturnType cap_eta = physical_y / physical_z;
+  ReturnType one_over_rho = 1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
+  ReturnType common_factor_one =
+      0.5 * radius_of_other_surface_ *
+      ((1.0 - sphericity_of_other_surface_) / sqrt(3.0) +
+       sphericity_of_other_surface_ * one_over_rho);
+  ReturnType common_factor_two =
+      0.5 * radius_of_spherical_surface_ * one_over_rho;
+  ReturnType zeta = (physical_z - (common_factor_two + common_factor_one)) /
+                    (common_factor_two - common_factor_one);
+  ReturnType xi =
+      with_equiangular_map_ ? atan(cap_xi) / M_PI_4 : std::move(cap_xi);
+  ReturnType eta =
+      with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : std::move(cap_eta);
+  return std::array<ReturnType, 3>{
+      {std::move(xi), std::move(eta), std::move(zeta)}};
 }
-// LCOV_EXCL_STOP
 
 template <typename T>
 Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
@@ -143,27 +177,35 @@ Wedge3D::jacobian(const std::array<T, 3>& x) const noexcept {
   const ReturnType& xi = x[0];
   const ReturnType& eta = x[1];
   const ReturnType& zeta = x[2];
-  const double ratio_of_radii =
-      radius_of_spherical_surface_ / radius_of_other_surface_;
-  const ReturnType x_equiangular_secant =
-      make_with_value<ReturnType>(xi, 1.0) / cos(M_PI_4 * xi);
-  const ReturnType y_equiangular_secant =
-      make_with_value<ReturnType>(xi, 1.0) / cos(M_PI_4 * eta);
-  const ReturnType x_equiangular_tangent = tan(M_PI_4 * xi);
-  const ReturnType y_equiangular_tangent = tan(M_PI_4 * eta);
 
-  const ReturnType sy_square = square(y_equiangular_secant);
-  const ReturnType sx_square = square(x_equiangular_secant);
-  const ReturnType scaling_and_sphericity = M_PI *
-      (ratio_of_radii * (1 + zeta) + sphericity_of_other_surface_ * (1 - zeta));
-  const ReturnType denominator_dzeta =
-      (2.0 * sqrt(sx_square + square(y_equiangular_tangent)));
-  const ReturnType denominator_other = pow<3>(denominator_dzeta);
-  const ReturnType nonsphericity = (-1.0 + sphericity_of_other_surface_) * 0.5 *
-                                   denominator_dzeta / sqrt(3.);
-  const ReturnType trigonometric_nonsphericity =
-      nonsphericity * (-1.0 + zeta) *
-      (3 + cos(M_PI_2 * xi) + 2 * cos(M_PI_2 * eta) * square(sin(M_PI_4 * xi)));
+  const ReturnType& cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+
+  const ReturnType cap_xi_deriv = with_equiangular_map_
+                                      ? M_PI_4 * (1 + square(cap_xi))
+                                      : make_with_value<ReturnType>(xi, 1.0);
+  const ReturnType cap_eta_deriv = with_equiangular_map_
+                                       ? M_PI_4 * (1 + square(cap_eta))
+                                       : make_with_value<ReturnType>(eta, 1.0);
+
+  const ReturnType one_over_rho =
+      1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
+  const ReturnType first_blending_factor =
+      0.5 * (1.0 - sphericity_of_other_surface_) * radius_of_other_surface_ /
+      sqrt(3.0) * (1.0 - zeta);
+  const double first_blending_rate = -0.5 *
+                                     (1.0 - sphericity_of_other_surface_) *
+                                     radius_of_other_surface_ / sqrt(3.0);
+  const ReturnType second_blending_factor_over_rho_cubed =
+      (0.5 * sphericity_of_other_surface_ * radius_of_other_surface_ *
+           (1.0 - zeta) +
+       0.5 * radius_of_spherical_surface_ * (1.0 + zeta)) *
+      pow<3>(one_over_rho);
+  const ReturnType second_blending_rate_over_rho =
+      0.5 *
+      (-sphericity_of_other_surface_ * radius_of_other_surface_ +
+       radius_of_spherical_surface_) *
+      one_over_rho;
 
   Tensor<ReturnType, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
@@ -180,30 +222,19 @@ Wedge3D::jacobian(const std::array<T, 3>& x) const noexcept {
        &dz_deta = jacobian_matrix.template get<2, 1>(),
        &dz_dzeta = jacobian_matrix.template get<2, 2>();
 
-  dx_dxi = sy_square * sx_square *
-           (scaling_and_sphericity + trigonometric_nonsphericity) /
-           denominator_other;
-  dx_deta = -scaling_and_sphericity * sy_square * y_equiangular_tangent *
-            x_equiangular_tangent / denominator_other;
-  dx_dzeta = (nonsphericity * xi +
-              (-sphericity_of_other_surface_ + ratio_of_radii) *
-                  x_equiangular_tangent) /
-             denominator_dzeta;
-  dy_dxi = -scaling_and_sphericity * sx_square * y_equiangular_tangent *
-           x_equiangular_tangent / denominator_other;
-  dy_deta = sy_square * sx_square *
-            (scaling_and_sphericity + trigonometric_nonsphericity) /
-            denominator_other;
-  dy_dzeta = (nonsphericity * eta +
-              (-sphericity_of_other_surface_ + ratio_of_radii) *
-                  y_equiangular_tangent) /
-             denominator_dzeta;
-  dz_dxi = -scaling_and_sphericity * sx_square * x_equiangular_tangent /
-           denominator_other;
-  dz_deta = -scaling_and_sphericity * sy_square * y_equiangular_tangent /
-            denominator_other;
-  dz_dzeta = (nonsphericity - sphericity_of_other_surface_ + ratio_of_radii) /
-             denominator_dzeta;
+  dz_dxi = -second_blending_factor_over_rho_cubed * cap_xi * cap_xi_deriv;
+  dz_deta = -second_blending_factor_over_rho_cubed * cap_eta * cap_eta_deriv;
+  dz_dzeta = first_blending_rate + second_blending_rate_over_rho;
+  dx_dxi = (first_blending_factor +
+            second_blending_factor_over_rho_cubed * (1.0 + square(cap_eta))) *
+           cap_xi_deriv;
+  dx_deta = dz_deta * cap_xi;
+  dx_dzeta = dz_dzeta * cap_xi;
+  dy_dxi = dz_dxi * cap_eta;
+  dy_deta = (first_blending_factor +
+             second_blending_factor_over_rho_cubed * (1.0 + square(cap_xi))) *
+            cap_eta_deriv;
+  dy_dzeta = dz_dzeta * cap_eta;
 
   // Implement Rotation:
   if (direction_of_wedge_ == Direction<3>::lower_zeta()) {
@@ -254,14 +285,6 @@ Wedge3D::jacobian(const std::array<T, 3>& x) const noexcept {
     }
   }
 
-  const double scaled_radius_of_other_surface = radius_of_other_surface_;
-
-  // multiply jacobian_matrix by scaling factor to get jacobian.
-  std::transform(jacobian_matrix.begin(), jacobian_matrix.end(),
-                 jacobian_matrix.begin(),
-                 [scaled_radius_of_other_surface](const T& jacobian_element) {
-                   return jacobian_element * scaled_radius_of_other_surface;
-                 });
   return jacobian_matrix;
 }
 
