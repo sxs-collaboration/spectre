@@ -64,6 +64,12 @@
  */
 
 /*!
+ * \defgroup DiscontinuousGalerkin Discontinuous Galerkin
+ * \brief Functions and classes specific to the Discontinuous Galerkin
+ * algorithm.
+ */
+
+/*!
  * \defgroup DomainCreatorsGroup Domain Creators
  * A collection of domain creators for specifying the initial computational
  * domain geometry.
