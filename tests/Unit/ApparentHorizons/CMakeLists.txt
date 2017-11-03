@@ -2,9 +2,9 @@
 # See LICENSE.txt for details.
 
 set(APPARENT_HORIZONS_TESTS
-    ApparentHorizons/YlmTestFunctions.cpp
     ApparentHorizons/Test_SpherepackIterator.cpp
     ApparentHorizons/Test_YlmSpherepack.cpp
+    ApparentHorizons/YlmTestFunctions.cpp
     )
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${APPARENT_HORIZONS_TESTS}" PARENT_SCOPE)

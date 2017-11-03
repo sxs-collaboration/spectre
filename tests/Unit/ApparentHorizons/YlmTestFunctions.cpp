@@ -8,10 +8,11 @@ namespace YlmTestFunctions {
 void Y00::func(const gsl::not_null<DataVector*> u, const size_t stride,
                const size_t offset, const std::vector<double>& thetas,
                const std::vector<double>& phis) const noexcept {
-  size_t s = 0;
-  for (size_t j = 0; j < phis.size(); ++j) {
+  // Can't make inv_sqrt_4_pi constexpr because sqrt isn't constexpr.
+  static const double inv_sqrt_4_pi = 0.5 / sqrt(M_PI);
+  for (size_t j = 0, s = 0; j < phis.size(); ++j) {
     for (size_t i = 0; i < thetas.size(); ++i, ++s) {
-      (*u)[s * stride + offset] = 1.0 / sqrt(4.0 * M_PI);
+      (*u)[s * stride + offset] = inv_sqrt_4_pi;
     }
   }
 }
@@ -21,8 +22,7 @@ void Y00::dfunc(const gsl::not_null<std::array<double*, 2>*> du,
                 const std::vector<double>& thetas,
                 const std::vector<double>& phis) const noexcept {
   for (size_t d = 0; d < du->size(); ++d) {
-    size_t s = 0;
-    for (size_t j = 0; j < phis.size(); ++j) {
+    for (size_t j = 0, s = 0; j < phis.size(); ++j) {
       for (size_t i = 0; i < thetas.size(); ++i, ++s) {
         gsl::at(*du, d)[s * stride + offset] = 0.0;
       }
@@ -35,8 +35,7 @@ void Y00::ddfunc(const gsl::not_null<SecondDeriv*> ddu, const size_t stride,
                  const std::vector<double>& phis) const noexcept {
   for (size_t d = 0; d < 2; ++d) {
     for (size_t e = 0; e < 2; ++e) {
-      size_t s = 0;
-      for (size_t j = 0; j < phis.size(); ++j) {
+      for (size_t j = 0, s = 0; j < phis.size(); ++j) {
         for (size_t i = 0; i < thetas.size(); ++i, ++s) {
           ddu->get(d, e)[s * stride + offset] = 0.0;
         }
@@ -61,8 +60,7 @@ void Y10::func(const gsl::not_null<DataVector*> u, const size_t stride,
                const size_t offset, const std::vector<double>& thetas,
                const std::vector<double>& phis) const noexcept {
   const double amplitude = sqrt(3.0 / 4.0 / M_PI);
-  size_t s = 0;
-  for (size_t j = 0; j < phis.size(); ++j) {
+  for (size_t j = 0, s = 0; j < phis.size(); ++j) {
     for (size_t i = 0; i < thetas.size(); ++i, ++s) {
       (*u)[s * stride + offset] = cos(thetas[i]) * amplitude;
     }
@@ -73,8 +71,7 @@ void Y10::dfunc(const gsl::not_null<std::array<double*, 2>*> du,
                 const std::vector<double>& thetas,
                 const std::vector<double>& phis) const noexcept {
   const double amplitude = sqrt(3.0 / 4.0 / M_PI);
-  size_t s = 0;
-  for (size_t j = 0; j < phis.size(); ++j) {
+  for (size_t j = 0, s = 0; j < phis.size(); ++j) {
     for (size_t i = 0; i < thetas.size(); ++i, ++s) {
       gsl::at(*du, 0)[s * stride + offset] =
           -sin(thetas[i]) * amplitude;             // d/dth
@@ -87,8 +84,7 @@ void Y10::ddfunc(const gsl::not_null<SecondDeriv*> ddu, const size_t stride,
                  const size_t offset, const std::vector<double>& thetas,
                  const std::vector<double>& phis) const noexcept {
   const double amplitude = sqrt(3.0 / 4.0 / M_PI);
-  size_t s = 0;
-  for (size_t j = 0; j < phis.size(); ++j) {
+  for (size_t j = 0, s = 0; j < phis.size(); ++j) {
     for (size_t i = 0; i < thetas.size(); ++i, ++s) {
       ddu->get(0, 0)[s * stride + offset] = -cos(thetas[i]) * amplitude;
       ddu->get(1, 1)[s * stride + offset] = 0.0;
@@ -103,8 +99,7 @@ void Y10::scalar_laplacian(const gsl::not_null<DataVector*> slap,
                            const std::vector<double>& thetas,
                            const std::vector<double>& phis) const noexcept {
   const double amplitude = sqrt(3.0 / 4.0 / M_PI);
-  size_t s = 0;
-  for (size_t j = 0; j < phis.size(); ++j) {
+  for (size_t j = 0, s = 0; j < phis.size(); ++j) {
     for (size_t i = 0; i < thetas.size(); ++i, ++s) {
       (*slap)[s * stride + offset] = -2.0 * cos(thetas[i]) * amplitude;
     }

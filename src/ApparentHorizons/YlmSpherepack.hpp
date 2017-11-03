@@ -9,6 +9,7 @@
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Blas.hpp"
 
 /// \ingroup Spectral
 /// \brief C++ interface to SPHEREPACK.
@@ -43,10 +44,12 @@ class YlmSpherepack {
   /// collocation points and spectral coefficients for a given l_max
   /// and m_max.  Useful for allocating space without having to create
   /// a YlmSpherepack.
-  static size_t physical_size(const size_t l_max, const size_t m_max) noexcept {
+  SPECTRE_ALWAYS_INLINE static constexpr size_t physical_size(
+      const size_t l_max, const size_t m_max) noexcept {
     return (l_max + 1) * (2 * m_max + 1);
   }
-  static size_t spectral_size(const size_t l_max, const size_t m_max) noexcept {
+  SPECTRE_ALWAYS_INLINE static constexpr size_t spectral_size(
+      const size_t l_max, const size_t m_max) noexcept {
     return 2 * (l_max + 1) * (m_max + 1);
   }
   ///@}
@@ -74,20 +77,20 @@ class YlmSpherepack {
   /// Spectral transformations.
   /// To act on a slice of the input and output arrays, specify strides
   /// and offsets.
-  void phys_to_spec(gsl::not_null<const double*> collocation_values,
-                    gsl::not_null<double*> spectral_coefs,
+  void phys_to_spec(gsl::not_null<double*> spectral_coefs,
+                    gsl::not_null<const double*> collocation_values,
                     size_t physical_stride = 1, size_t physical_offset = 0,
                     size_t spectral_stride = 1,
                     size_t spectral_offset = 0) const noexcept {
-    phys_to_spec_impl(collocation_values, spectral_coefs, physical_stride,
+    phys_to_spec_impl(spectral_coefs, collocation_values, physical_stride,
                       physical_offset, spectral_stride, spectral_offset, false);
   }
-  void spec_to_phys(gsl::not_null<const double*> spectral_coefs,
-                    gsl::not_null<double*> collocation_values,
+  void spec_to_phys(gsl::not_null<double*> collocation_values,
+                    gsl::not_null<const double*> spectral_coefs,
                     size_t spectral_stride = 1, size_t spectral_offset = 0,
                     size_t physical_stride = 1,
                     size_t physical_offset = 0) const noexcept {
-    spec_to_phys_impl(spectral_coefs, collocation_values, spectral_stride,
+    spec_to_phys_impl(collocation_values, spectral_coefs, spectral_stride,
                       spectral_offset, physical_stride, physical_offset, false);
   };
   ///@}
@@ -99,16 +102,16 @@ class YlmSpherepack {
   /// 'radial' points at once by internally looping over all values of
   /// the offset from zero to `stride`-1 (the physical and spectral
   /// strides are equal and are called `stride`).
-  void phys_to_spec_all_offsets(gsl::not_null<const double*> collocation_values,
-                                gsl::not_null<double*> spectral_coefs,
+  void phys_to_spec_all_offsets(gsl::not_null<double*> spectral_coefs,
+                                gsl::not_null<const double*> collocation_values,
                                 size_t stride) const noexcept {
-    phys_to_spec_impl(collocation_values, spectral_coefs, stride, 0, stride, 0,
+    phys_to_spec_impl(spectral_coefs, collocation_values, stride, 0, stride, 0,
                       true);
   }
-  void spec_to_phys_all_offsets(gsl::not_null<const double*> spectral_coefs,
-                                gsl::not_null<double*> collocation_values,
+  void spec_to_phys_all_offsets(gsl::not_null<double*> collocation_values,
+                                gsl::not_null<const double*> spectral_coefs,
                                 size_t stride) const noexcept {
-    spec_to_phys_impl(spectral_coefs, collocation_values, stride, 0, stride, 0,
+    spec_to_phys_impl(collocation_values, spectral_coefs, stride, 0, stride, 0,
                       true);
   };
   ///@}
@@ -138,9 +141,10 @@ class YlmSpherepack {
   /// the collocation values.
   /// To act on a slice of the input and output arrays, specify stride
   /// and offset (assumed to be the same for input and output).
-  void gradient(gsl::not_null<const double*> collocation_values,
-                const std::array<double*, 2>& df, size_t physical_stride = 1,
-                size_t physical_offset = 0) const noexcept;
+  void gradient(const std::array<double*, 2>& df,
+                gsl::not_null<const double*> collocation_values,
+                size_t physical_stride = 1, size_t physical_offset = 0) const
+      noexcept;
 
   /// Same as `gradient`, but takes the spectral coefficients (rather
   /// than collocation values) of the function.  This is more
@@ -148,13 +152,13 @@ class YlmSpherepack {
   /// coefficients.
   /// To act on a slice of the input and output arrays, specify strides
   /// and offsets.
-  void gradient_from_coefs(gsl::not_null<const double*> spectral_coefs,
-                           const std::array<double*, 2>& df,
+  void gradient_from_coefs(const std::array<double*, 2>& df,
+                           gsl::not_null<const double*> spectral_coefs,
                            size_t spectral_stride = 1,
                            size_t spectral_offset = 0,
                            size_t physical_stride = 1,
                            size_t physical_offset = 0) const noexcept {
-    gradient_from_coefs_impl(spectral_coefs, df, spectral_stride,
+    gradient_from_coefs_impl(df, spectral_coefs, spectral_stride,
                              spectral_offset, physical_stride, physical_offset,
                              false);
   }
@@ -164,14 +168,15 @@ class YlmSpherepack {
   /// 3-dimensional arrays (I1 x S2 topology), and the gradient is
   /// done for all 'radial' points at once by internally looping
   /// over all values of the offset from zero to `stride`-1.
-  void gradient_all_offsets(gsl::not_null<const double*> collocation_values,
-                            const std::array<double*, 2>& df,
+  void gradient_all_offsets(const std::array<double*, 2>& df,
+                            gsl::not_null<const double*> collocation_values,
                             size_t stride = 1) const noexcept;
 
-  void gradient_from_coefs_all_offsets(
-      gsl::not_null<const double*> spectral_coefs,
-      const std::array<double*, 2>& df, size_t stride = 1) const noexcept {
-    gradient_from_coefs_impl(spectral_coefs, df, stride, 0, stride, 0, true);
+  SPECTRE_ALWAYS_INLINE void gradient_from_coefs_all_offsets(
+      const std::array<double*, 2>& df,
+      gsl::not_null<const double*> spectral_coefs, size_t stride = 1) const
+      noexcept {
+    gradient_from_coefs_impl(df, spectral_coefs, stride, 0, stride, 0, true);
   }
   ///@}
 
@@ -198,8 +203,8 @@ class YlmSpherepack {
   /// Computes Laplacian in physical space.
   /// To act on a slice of the input and output arrays, specify stride
   /// and offset (assumed to be the same for input and output).
-  void scalar_laplacian(gsl::not_null<const double*> collocation_values,
-                        gsl::not_null<double*> scalar_laplacian,
+  void scalar_laplacian(gsl::not_null<double*> scalar_laplacian,
+                        gsl::not_null<const double*> collocation_values,
                         size_t physical_stride = 1,
                         size_t physical_offset = 0) const noexcept;
 
@@ -209,8 +214,8 @@ class YlmSpherepack {
   /// spectral coefficients.
   /// To act on a slice of the input and output arrays, specify strides
   /// and offsets.
-  void scalar_laplacian_from_coefs(gsl::not_null<const double*> spectral_coefs,
-                                   gsl::not_null<double*> scalar_laplacian,
+  void scalar_laplacian_from_coefs(gsl::not_null<double*> scalar_laplacian,
+                                   gsl::not_null<const double*> spectral_coefs,
                                    size_t spectral_stride = 1,
                                    size_t spectral_offset = 0,
                                    size_t physical_stride = 1,
@@ -235,9 +240,9 @@ class YlmSpherepack {
   /// ddf is not symmetric.
   /// To act on a slice of the input and output arrays, specify stride
   /// and offset (assumed to be the same for input and output).
-  void second_derivative(gsl::not_null<const double*> collocation_values,
-                         const std::array<double*, 2>& df,
+  void second_derivative(const std::array<double*, 2>& df,
                          gsl::not_null<SecondDeriv*> ddf,
+                         gsl::not_null<const double*> collocation_values,
                          size_t physical_stride = 1,
                          size_t physical_offset = 0) const noexcept;
 
@@ -246,38 +251,56 @@ class YlmSpherepack {
       const DataVector& collocation_values) const noexcept;
 
   /// Computes the integral over the sphere.
-  double definite_integral(gsl::not_null<const double*> collocation_values,
-                           size_t physical_stride = 1,
-                           size_t physical_offset = 0) const noexcept;
+  SPECTRE_ALWAYS_INLINE double definite_integral(
+      gsl::not_null<const double*> collocation_values,
+      size_t physical_stride = 1, size_t physical_offset = 0) const noexcept {
+    // clang-tidy: 'do not use pointer arithmetic'
+    return ddot_(n_theta_ * n_phi_, storage_.quadrature_weights.data(), 1,
+                 collocation_values.get() + physical_offset,  // NOLINT
+                 physical_stride);
+  }
 
   /// Returns weights \f$w_i\f$ such that \f$sum_i (c_i w_i)\f$
   /// is the definite integral, where \f$c_i\f$ are collocation values
   /// at point i.
-  const std::vector<double>& integration_weights() const noexcept;
+  SPECTRE_ALWAYS_INLINE const std::vector<double>& integration_weights() const
+      noexcept {
+    return storage_.quadrature_weights;
+  }
 
   /// Adds a constant (i.e. \f$f(\theta,\phi)\f$ += \f$c\f$) to the function
   /// given by the spectral coefficients, by modifying the coefficients.
-  void add_constant(gsl::not_null<DataVector*> spectral_coefs, double c) const
-      noexcept;
+  SPECTRE_ALWAYS_INLINE void add_constant(
+      const gsl::not_null<DataVector*> spectral_coefs, const double c) const
+      noexcept {
+    // The factor of sqrt(8) is because of the normalization of
+    // SPHEREPACK's coefficients.
+    (*spectral_coefs)[0] += sqrt(8.0) * c;
+  }
 
   /// Returns the average of \f$f(\theta,\phi)\f$ over \f$(\theta,\phi)\f$.
-  double average(const DataVector& spectral_coefs) const noexcept;
+  SPECTRE_ALWAYS_INLINE double average(const DataVector& spectral_coefs) const
+      noexcept {
+    // The factor of sqrt(8) is because of the normalization of
+    // SPHEREPACK's coefficients.  All other coefficients average to zero.
+    return spectral_coefs[0] / sqrt(8.0);
+  }
 
   /// Sets up the `InterpolationInfo` structure for interpolating onto
-  /// a set of target (theta,phi) points.  Does not depend on the function
-  /// being interpolated.
+  /// a set of target \f$(\theta,\phi)\f$ points.  Does not depend on
+  /// the function being interpolated.
   InterpolationInfo set_up_interpolation_info(
       const std::vector<std::array<double, 2>>& target_points) const noexcept;
 
-  /// Interpolates from `collocation_values` onto the points x that have
+  /// Interpolates from `collocation_values` onto the points that have
   /// been passed into the `set_up_interpolation_info` function.
   /// To interpolate a different function on the same spectral grid, there
   /// is no need to recompute `interpolation_info`.
   /// If you specify stride and offset, acts on a slice of the input values.
   /// The output has unit stride.
-  void interpolate(gsl::not_null<const double*> collocation_values,
+  void interpolate(gsl::not_null<std::vector<double>*> result,
+                   gsl::not_null<const double*> collocation_values,
                    const InterpolationInfo& interpolation_info,
-                   gsl::not_null<std::vector<double>*> result,
                    size_t physical_stride = 1, size_t physical_offset = 0) const
       noexcept;
 
@@ -287,9 +310,9 @@ class YlmSpherepack {
   /// If you specify stride and offset, acts on a slice of the input coefs.
   /// The output has unit stride.
   template <typename T>
-  void interpolate_from_coefs(const T& spectral_coefs,
+  void interpolate_from_coefs(gsl::not_null<std::vector<double>*> result,
+                              const T& spectral_coefs,
                               const InterpolationInfo& interpolation_info,
-                              gsl::not_null<std::vector<double>*> result,
                               size_t spectral_stride = 1,
                               size_t spectral_offset = 0) const noexcept;
 
@@ -305,7 +328,7 @@ class YlmSpherepack {
       const DataVector& spectral_coefs,
       const std::vector<std::array<double, 2>>& target_points) const noexcept;
 
-  /// Takes spectral coefficients compatible with *this, and either
+  /// Takes spectral coefficients compatible with `*this`, and either
   /// prolongs them or restricts them to be compatible with `target`.
   /// This is done by truncation (restriction) or padding with zeros
   /// (prolongation).
@@ -320,18 +343,18 @@ class YlmSpherepack {
   // all 'radial' points at once by looping over all values of the
   // offset from zero to stride-1.  If `loop_over_offset` is true,
   // `physical_stride` must equal `spectral_stride`.
-  void phys_to_spec_impl(gsl::not_null<const double*> collocation_values,
-                         gsl::not_null<double*> spectral_coefs,
+  void phys_to_spec_impl(gsl::not_null<double*> spectral_coefs,
+                         gsl::not_null<const double*> collocation_values,
                          size_t physical_stride = 1, size_t physical_offset = 0,
                          size_t spectral_stride = 1, size_t spectral_offset = 0,
                          bool loop_over_offset = false) const noexcept;
-  void spec_to_phys_impl(gsl::not_null<const double*> spectral_coefs,
-                         gsl::not_null<double*> collocation_values,
+  void spec_to_phys_impl(gsl::not_null<double*> collocation_values,
+                         gsl::not_null<const double*> spectral_coefs,
                          size_t spectral_stride = 1, size_t spectral_offset = 0,
                          size_t physical_stride = 1, size_t physical_offset = 0,
                          bool loop_over_offset = false) const noexcept;
-  void gradient_from_coefs_impl(gsl::not_null<const double*> spectral_coefs,
-                                const std::array<double*, 2>& df,
+  void gradient_from_coefs_impl(const std::array<double*, 2>& df,
+                                gsl::not_null<const double*> spectral_coefs,
                                 size_t spectral_stride = 1,
                                 size_t spectral_offset = 0,
                                 size_t physical_stride = 1,

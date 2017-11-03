@@ -7,30 +7,32 @@
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Spherepack.hpp"
 
 //============================================================================
-// Note that SPHEREPACK (which is wrapped by YlmSpherepack) takes n_th
-// and n_ph as input, and is ok with arbitrary values of n_th and n_ph.
-// Spherepack computes the maximum Ylm l and m using the formulas
-// l_max=n_th-1 and m_max=min(l_max,n_ph/2).
+// Note that SPHEREPACK (which is wrapped by YlmSpherepack) takes
+// n_theta and n_phi as input, and is ok with arbitrary values of
+// n_theta and n_phi.  SPHEREPACK computes the maximum Ylm l and m
+// using the formulas l_max=n_theta-1 and m_max=min(l_max,n_phi/2).
 //
-// However, some combinations of n_th and n_ph have strange properties:
-// - The maximum m that is AT LEAST PARTIALLY represented by (n_th,n_ph)
-//   is std::min(n_th-1,n_ph/2). This is called m_max here. But an arbitrary
-//   (n_th,n_ph) does not necessarily fully represent all m's up to m_max,
+// However, some combinations of n_theta and n_phi have strange properties:
+// - The maximum m that is AT LEAST PARTIALLY represented by (n_theta,n_phi)
+//   is std::min(n_theta-1,n_phi/2). This is called m_max here. But an arbitrary
+//   (n_theta,n_phi) does not necessarily fully represent all m's up to m_max,
 //   because sin(m_max phi) might be zero at all collocation points, and
 //   therefore sin(m_max phi) might not be representable on the grid.
-// - The largest m that is fully represented by (n_th,n_ph) is
-//   m_max_represented = std::min(n_th-1,(n_ph-1)/2).
-// - Therefore, if n_ph is odd,  m_max = m_max_represented,
-//              if n_ph is even, m_max = m_max_represented+1.
+// - The largest m that is fully represented by (n_theta,n_phi) is
+//   m_max_represented = std::min(n_theta-1,(n_phi-1)/2).
+// - Therefore, if n_phi is odd,  m_max = m_max_represented,
+//              if n_phi is even, m_max = m_max_represented+1.
 // - To remedy this situation, we choose YlmSpherepack to take as arguments
-//   l_max and m_max, instead of n_th and n_ph.
+//   l_max and m_max, instead of n_theta and n_phi.
 //   We then choose
-//      n_th = l_max+1
-//      n_ph = 2*m_max+1
-//   This ensures that m_max = m_max_represented.
+//      n_theta = l_max+1
+//      n_phi   = 2*m_max+1
+//   This ensures that m_max = m_max_represented
+//   (as opposed to m_max = m_max_represented+1)
 //============================================================================
 
 YlmSpherepack::YlmSpherepack(const size_t l_max, const size_t m_max) noexcept
@@ -39,20 +41,21 @@ YlmSpherepack::YlmSpherepack(const size_t l_max, const size_t m_max) noexcept
       n_theta_{l_max_ + 1},
       n_phi_{2 * m_max_ + 1},
       spectral_size_{2 * (l_max_ + 1) * (m_max_ + 1)} {
-  if (n_theta_ < 3) {
-    ERROR("Must use at least 3 grid points in theta, not n_theta=" << n_theta_);
+  if (l_max_ < 2) {
+    ERROR("Must use l_max>=2, not l_max=" << l_max_);
   }
-  if (n_phi_ < 4) {
-    ERROR("Must use at least 4 grid points in phi, not n_phi=" << n_phi_);
+  if (m_max_ < 2) {
+    ERROR("Must use m_max>=2, not m_max=" << m_max_);
   }
   fill_scalar_work_arrays();
 }
 
 void YlmSpherepack::phys_to_spec_impl(
+    const gsl::not_null<double*> spectral_coefs,
     const gsl::not_null<const double*> collocation_values,
-    const gsl::not_null<double*> spectral_coefs, const size_t physical_stride,
-    const size_t physical_offset, const size_t spectral_stride,
-    const size_t spectral_offset, const bool loop_over_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset,
+    const size_t spectral_stride, const size_t spectral_offset,
+    const bool loop_over_offset) const noexcept {
   size_t work_size = 2 * n_theta_ * n_phi_;
   if (loop_over_offset) {
     ASSERT(physical_stride == spectral_stride, "invalid call");
@@ -64,24 +67,29 @@ void YlmSpherepack::phys_to_spec_impl(
   double* const b =
       a + (m_max_ + 1) * (l_max_ + 1) * spectral_stride;  // NOLINT
   int err = 0;
-  const int po = loop_over_offset ? -1 : int(physical_offset);
-  const int so = loop_over_offset ? -1 : int(spectral_offset);
+  const int effective_physical_offset =
+      loop_over_offset ? -1 : int(physical_offset);
+  const int effective_spectral_offset =
+      loop_over_offset ? -1 : int(spectral_offset);
   auto& work_phys_to_spec = storage_.work_phys_to_spec;
   shags_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
-         po, so, static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
+         effective_physical_offset, effective_spectral_offset,
+         static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
          collocation_values, static_cast<int>(n_theta_),
          static_cast<int>(n_phi_), a, b, static_cast<int>(m_max_ + 1),
          static_cast<int>(l_max_ + 1), static_cast<int>(m_max_ + 1),
          static_cast<int>(l_max_ + 1), work_phys_to_spec.data(),
          static_cast<int>(work_phys_to_spec.size()), work.data(),
          static_cast<int>(work_size), &err);
-  ASSERT(0 == err, "shags error " << err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("shags error " << err << " in YlmSpherepack");
+  }
   memory_pool_.free(work);
 }
 
 void YlmSpherepack::spec_to_phys_impl(
-    const gsl::not_null<const double*> spectral_coefs,
     const gsl::not_null<double*> collocation_values,
+    const gsl::not_null<const double*> spectral_coefs,
     const size_t spectral_stride, const size_t spectral_offset,
     const size_t physical_stride, const size_t physical_offset,
     const bool loop_over_offset) const noexcept {
@@ -97,19 +105,24 @@ void YlmSpherepack::spec_to_phys_impl(
   const double* const b =
       a + (m_max_ + 1) * (l_max_ + 1) * spectral_stride;  // NOLINT
   int err = 0;
-  const int po = loop_over_offset ? -1 : int(physical_offset);
-  const int so = loop_over_offset ? -1 : int(spectral_offset);
+  const int effective_physical_offset =
+      loop_over_offset ? -1 : int(physical_offset);
+  const int effective_spectral_offset =
+      loop_over_offset ? -1 : int(spectral_offset);
 
-  auto& work_spec_to_phys = storage_.work_spec_to_phys;
+  auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
   shsgs_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
-         po, so, static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
+         effective_physical_offset, effective_spectral_offset,
+         static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
          collocation_values, static_cast<int>(n_theta_),
          static_cast<int>(n_phi_), a, b, static_cast<int>(m_max_ + 1),
          static_cast<int>(l_max_ + 1), static_cast<int>(m_max_ + 1),
-         static_cast<int>(l_max_ + 1), work_spec_to_phys.data(),
-         static_cast<int>(work_spec_to_phys.size()), work.data(),
+         static_cast<int>(l_max_ + 1), work_scalar_spec_to_phys.data(),
+         static_cast<int>(work_scalar_spec_to_phys.size()), work.data(),
          static_cast<int>(work_size), &err);
-  ASSERT(0 == err, "shsgs error " << err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("shsgs error " << err << " in YlmSpherepack");
+  }
   memory_pool_.free(work);
 }
 
@@ -121,7 +134,7 @@ DataVector YlmSpherepack::phys_to_spec(const DataVector& collocation_values,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * physical_stride);
   DataVector result(spectral_size());
-  phys_to_spec_impl(collocation_values.data(), result.data(), physical_stride,
+  phys_to_spec_impl(result.data(), collocation_values.data(), physical_stride,
                     physical_offset, 1, 0, false);
   return result;
 }
@@ -134,7 +147,7 @@ DataVector YlmSpherepack::spec_to_phys(const DataVector& spectral_coefs,
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * spectral_stride);
   DataVector result(physical_size());
-  spec_to_phys_impl(spectral_coefs.data(), result.data(), spectral_stride,
+  spec_to_phys_impl(result.data(), spectral_coefs.data(), spectral_stride,
                     spectral_offset, 1, 0, false);
   return result;
 }
@@ -145,7 +158,7 @@ DataVector YlmSpherepack::phys_to_spec_all_offsets(
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * stride);
   DataVector result(spectral_size() * stride);
-  phys_to_spec_impl(collocation_values.data(), result.data(), stride, 0, stride,
+  phys_to_spec_impl(result.data(), collocation_values.data(), stride, 0, stride,
                     0, true);
   return result;
 }
@@ -156,20 +169,20 @@ DataVector YlmSpherepack::spec_to_phys_all_offsets(
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * stride);
   DataVector result(physical_size() * stride);
-  spec_to_phys_impl(spectral_coefs.data(), result.data(), stride, 0, stride, 0,
+  spec_to_phys_impl(result.data(), spectral_coefs.data(), stride, 0, stride, 0,
                     true);
   return result;
 }
 
 /// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::gradient(
+    const std::array<double*, 2>& df,
     const gsl::not_null<const double*> collocation_values,
-    const std::array<double*, 2>& df, const size_t physical_stride,
-    const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const noexcept {
   auto& f_k = memory_pool_.get(spectral_size());
-  phys_to_spec_impl(collocation_values, f_k.data(), physical_stride,
+  phys_to_spec_impl(f_k.data(), collocation_values, physical_stride,
                     physical_offset, 1, 0, false);
-  gradient_from_coefs_impl(f_k.data(), df, 1, 0, physical_stride,
+  gradient_from_coefs_impl(df, f_k.data(), 1, 0, physical_stride,
                            physical_offset, false);
   memory_pool_.free(f_k);
 }
@@ -177,23 +190,25 @@ void YlmSpherepack::gradient(
 
 /// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::gradient_all_offsets(
+    const std::array<double*, 2>& df,
     const gsl::not_null<const double*> collocation_values,
-    const std::array<double*, 2>& df, const size_t stride) const noexcept {
+    const size_t stride) const noexcept {
   const size_t spectral_stride = stride;
   auto& f_k = memory_pool_.get(spectral_stride * spectral_size());
-  phys_to_spec_impl(collocation_values, f_k.data(), stride, 0, spectral_stride,
+  phys_to_spec_impl(f_k.data(), collocation_values, stride, 0, spectral_stride,
                     0, true);
-  gradient_from_coefs_impl(f_k.data(), df, spectral_stride, 0, stride, 0, true);
+  gradient_from_coefs_impl(df, f_k.data(), spectral_stride, 0, stride, 0, true);
   memory_pool_.free(f_k);
 }
 /// \endcond
 
 void YlmSpherepack::gradient_from_coefs_impl(
+    const std::array<double*, 2>& df,
     const gsl::not_null<const double*> spectral_coefs,
-    const std::array<double*, 2>& df, const size_t spectral_stride,
-    const size_t spectral_offset, const size_t physical_stride,
-    const size_t physical_offset, bool loop_over_offset) const noexcept {
-  ASSERT(!loop_over_offset or spectral_stride == physical_stride,
+    const size_t spectral_stride, const size_t spectral_offset,
+    const size_t physical_stride, const size_t physical_offset,
+    bool loop_over_offset) const noexcept {
+  ASSERT((not loop_over_offset) or spectral_stride == physical_stride,
          "physical and spectral strides must be equal "
          "for loop_over_offset=true");
 
@@ -201,8 +216,8 @@ void YlmSpherepack::gradient_from_coefs_impl(
     fill_vector_work_arrays();
   }
   const size_t l1 = m_max_ + 1;
-  const double* const& f_k = spectral_coefs;
-  const double* const& a = f_k;
+  const double* const f_k = spectral_coefs;
+  const double* const a = f_k;
   // clang-tidy: 'do not use pointer arithmetic'.
   const double* const b = f_k + l1 * n_theta_ * spectral_stride;  // NOLINT
 
@@ -212,18 +227,23 @@ void YlmSpherepack::gradient_from_coefs_impl(
   }
   auto& work = memory_pool_.get(work_size);
   int err = 0;
-  const int po = loop_over_offset ? -1 : int(physical_offset);
-  const int so = loop_over_offset ? -1 : int(spectral_offset);
+  const int effective_physical_offset =
+      loop_over_offset ? -1 : int(physical_offset);
+  const int effective_spectral_offset =
+      loop_over_offset ? -1 : int(spectral_offset);
   auto& work_vector_spec_to_phys = storage_.work_vector_spec_to_phys;
   gradgs_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
-          po, so, static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
-          df[0], df[1], static_cast<int>(n_theta_), static_cast<int>(n_phi_), a,
-          b, static_cast<int>(l1), static_cast<int>(n_theta_),
+          effective_physical_offset, effective_spectral_offset,
+          static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1, df[0],
+          df[1], static_cast<int>(n_theta_), static_cast<int>(n_phi_), a, b,
+          static_cast<int>(l1), static_cast<int>(n_theta_),
           work_vector_spec_to_phys.data(),
           static_cast<int>(work_vector_spec_to_phys.size()), work.data(),
           static_cast<int>(work_size), &err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("gradgs error " << err << " in YlmSpherepack");
+  }
   memory_pool_.free(work);
-  ASSERT(0 == err, "gradgs error");
 }
 
 YlmSpherepack::FirstDeriv YlmSpherepack::gradient(
@@ -233,11 +253,11 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient(
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * physical_stride);
   auto& f_k = memory_pool_.get(spectral_size());
-  phys_to_spec_impl(collocation_values.data(), f_k.data(), physical_stride,
+  phys_to_spec_impl(f_k.data(), collocation_values.data(), physical_stride,
                     physical_offset, 1, 0, false);
   FirstDeriv result(physical_size());
   std::array<double*, 2> temp = {{result.get(0).data(), result.get(1).data()}};
-  gradient_from_coefs_impl(f_k.data(), temp, 1, 0, 1, 0, false);
+  gradient_from_coefs_impl(temp, f_k.data(), 1, 0, 1, 0, false);
   memory_pool_.free(f_k);
   return result;
 }
@@ -249,7 +269,7 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_all_offsets(
                                << physical_size() * stride);
   FirstDeriv result(physical_size() * stride);
   std::array<double*, 2> temp = {{result.get(0).data(), result.get(1).data()}};
-  gradient_all_offsets(collocation_values.data(), temp, stride);
+  gradient_all_offsets(temp, collocation_values.data(), stride);
   return result;
 }
 
@@ -261,7 +281,7 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs(
                                << spectral_size() * spectral_stride);
   FirstDeriv result(physical_size());
   std::array<double*, 2> temp = {{result.get(0).data(), result.get(1).data()}};
-  gradient_from_coefs_impl(spectral_coefs.data(), temp, spectral_stride,
+  gradient_from_coefs_impl(temp, spectral_coefs.data(), spectral_stride,
                            spectral_offset, 1, 0, false);
   return result;
 }
@@ -273,20 +293,20 @@ YlmSpherepack::FirstDeriv YlmSpherepack::gradient_from_coefs_all_offsets(
                                << spectral_size() * stride);
   FirstDeriv result(physical_size() * stride);
   std::array<double*, 2> temp = {{result.get(0).data(), result.get(1).data()}};
-  gradient_from_coefs_impl(spectral_coefs.data(), temp, stride, 0, stride, 0,
+  gradient_from_coefs_impl(temp, spectral_coefs.data(), stride, 0, stride, 0,
                            true);
   return result;
 }
 
 /// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::scalar_laplacian(
+    const gsl::not_null<double*> scalar_laplacian,
     const gsl::not_null<const double*> collocation_values,
-    const gsl::not_null<double*> scalar_laplacian, const size_t physical_stride,
-    const size_t physical_offset) const noexcept {
+    const size_t physical_stride, const size_t physical_offset) const noexcept {
   auto& f_k = memory_pool_.get(spectral_size());
-  phys_to_spec(collocation_values, f_k.data(), physical_stride, physical_offset,
+  phys_to_spec(f_k.data(), collocation_values, physical_stride, physical_offset,
                1, 0);
-  scalar_laplacian_from_coefs(f_k.data(), scalar_laplacian, 1, 0,
+  scalar_laplacian_from_coefs(scalar_laplacian, f_k.data(), 1, 0,
                               physical_stride, physical_offset);
   memory_pool_.free(f_k);
 }
@@ -294,10 +314,10 @@ void YlmSpherepack::scalar_laplacian(
 
 /// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::scalar_laplacian_from_coefs(
+    const gsl::not_null<double*> scalar_laplacian,
     const gsl::not_null<const double*> spectral_coefs,
-    const gsl::not_null<double*> scalar_laplacian, const size_t spectral_stride,
-    const size_t spectral_offset, const size_t physical_stride,
-    const size_t physical_offset) const noexcept {
+    const size_t spectral_stride, const size_t spectral_offset,
+    const size_t physical_stride, const size_t physical_offset) const noexcept {
   const size_t l1 = m_max_ + 1;
   const double* const a = spectral_coefs;
   // clang-tidy: 'do not use pointer arithmetic'.
@@ -305,17 +325,19 @@ void YlmSpherepack::scalar_laplacian_from_coefs(
   const size_t work_size = n_theta_ * (3 * n_phi_ + 2 * l1 + 1);
   auto& work = memory_pool_.get(work_size);
   int err = 0;
-  auto& work_spec_to_phys = storage_.work_spec_to_phys;
+  auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
   slapgs_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
           static_cast<int>(physical_offset), static_cast<int>(spectral_offset),
           static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
           scalar_laplacian, static_cast<int>(n_theta_),
           static_cast<int>(n_phi_), a, b, static_cast<int>(l1),
-          static_cast<int>(n_theta_), work_spec_to_phys.data(),
-          static_cast<int>(work_spec_to_phys.size()), work.data(),
+          static_cast<int>(n_theta_), work_scalar_spec_to_phys.data(),
+          static_cast<int>(work_scalar_spec_to_phys.size()), work.data(),
           static_cast<int>(work_size), &err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("slapgs error " << err << " in YlmSpherepack");
+  }
   memory_pool_.free(work);
-  ASSERT(0 == err, "Slapgs failure");
 }
 /// \endcond
 
@@ -327,7 +349,7 @@ DataVector YlmSpherepack::scalar_laplacian(const DataVector& collocation_values,
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size() * physical_stride);
   DataVector result(physical_size());
-  scalar_laplacian(collocation_values.data(), result.data(), physical_stride,
+  scalar_laplacian(result.data(), collocation_values.data(), physical_stride,
                    physical_offset);
   return result;
 }
@@ -339,21 +361,20 @@ DataVector YlmSpherepack::scalar_laplacian_from_coefs(
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size() * spectral_stride);
   DataVector result(physical_size());
-  scalar_laplacian_from_coefs(spectral_coefs.data(), result.data(),
+  scalar_laplacian_from_coefs(result.data(), spectral_coefs.data(),
                               spectral_stride, spectral_offset);
   return result;
 }
 
 std::array<DataVector, 2> YlmSpherepack::theta_phi_points() const noexcept {
   std::array<DataVector, 2> result = make_array<2>(DataVector(physical_size()));
-  auto& th = theta_points();
-  auto& ph = phi_points();
-  size_t s = 0;
+  const auto& theta = theta_points();
+  const auto& phi = phi_points();
   // Storage in SPHEREPACK: theta varies fastest (i.e. fortran ordering).
-  for (size_t i_ph = 0; i_ph < n_phi_; ++i_ph) {
-    for (size_t i_th = 0; i_th < n_theta_; ++i_th, ++s) {
-      result[0][s] = th[i_th];
-      result[1][s] = ph[i_ph];
+  for (size_t i_phi = 0, s = 0; i_phi < n_phi_; ++i_phi) {
+    for (size_t i_theta = 0; i_theta < n_theta_; ++i_theta, ++s) {
+      result[0][s] = theta[i_theta];
+      result[1][s] = phi[i_phi];
     }
   }
   return result;
@@ -363,34 +384,37 @@ const std::vector<double>& YlmSpherepack::theta_points() const noexcept {
   auto& theta = storage_.theta;
   if (theta.empty()) {
     theta.resize(n_theta_);
-    {
-      auto& cwork = memory_pool_.get(n_theta_ + 1);
-      auto& dummy = memory_pool_.get(n_theta_);
-      int err = 0;
-      gaqd_(static_cast<int>(n_theta_), theta.data(), dummy.data(),
-            cwork.data(), static_cast<int>(n_theta_ + 1), &err);
-      memory_pool_.free(dummy);
-      memory_pool_.free(cwork);
-      ASSERT(0 == err, "Failure in gaqd");
+    auto& work = memory_pool_.get(n_theta_ + 1);
+    auto& unused_weights = memory_pool_.get(n_theta_);
+    int err = 0;
+    gaqd_(static_cast<int>(n_theta_), theta.data(), unused_weights.data(),
+          work.data(), static_cast<int>(n_theta_ + 1), &err);
+    memory_pool_.free(unused_weights);
+    memory_pool_.free(work);
+    if (UNLIKELY(err != 0)) {
+      ERROR("gaqd error " << err << " in YlmSpherepack");
     }
   }
   return theta;
 }
 
 const std::vector<double>& YlmSpherepack::phi_points() const noexcept {
+  // The following is not static or constexpr because n_phi_ depends
+  // on *this.
+  const double two_pi_over_n_phi = 2.0 * M_PI / n_phi_;
   auto& phi = storage_.phi;
   if (phi.empty()) {
     phi.resize(n_phi_);
     for (size_t i = 0; i < n_phi_; ++i) {
-      phi[i] = 2.0 * i * M_PI / n_phi_;
+      phi[i] = two_pi_over_n_phi * i;
     }
   }
   return phi;
 }
 
 void YlmSpherepack::second_derivative(
-    const gsl::not_null<const double*> collocation_values,
     const std::array<double*, 2>& df, gsl::not_null<SecondDeriv*> ddf,
+    const gsl::not_null<const double*> collocation_values,
     const size_t physical_stride, const size_t physical_offset) const noexcept {
   // Initialize trig functions at collocation points
   auto& cos_theta = storage_.cos_theta;
@@ -421,7 +445,7 @@ void YlmSpherepack::second_derivative(
     }
   }
   // Get first derivatives
-  gradient(collocation_values, df, physical_stride, physical_offset);
+  gradient(df, collocation_values, physical_stride, physical_offset);
 
   // Now get Cartesian derivatives.
 
@@ -430,53 +454,44 @@ void YlmSpherepack::second_derivative(
   for (size_t i = 0; i < 3; ++i) {
     dfc[i] = memory_pool_.get(physical_size()).data();
   }
-  {
-    size_t s = 0;
-    for (size_t j = 0; j < n_phi_; ++j) {
-      for (size_t i = 0; i < n_theta_; ++i, ++s) {
-        dfc[0][s] = cos_theta[i] * cos_phi[j] *
-                        df[0][s * physical_stride + physical_offset] -
-                    sin_phi[j] * df[1][s * physical_stride + physical_offset];
-        dfc[1][s] = cos_theta[i] * sin_phi[j] *
-                        df[0][s * physical_stride + physical_offset] +
-                    cos_phi[j] * df[1][s * physical_stride + physical_offset];
-        dfc[2][s] =
-            -sin_theta[i] * df[0][s * physical_stride + physical_offset];
-      }
+  for (size_t j = 0, s = 0; j < n_phi_; ++j) {
+    for (size_t i = 0; i < n_theta_; ++i, ++s) {
+      dfc[0][s] = cos_theta[i] * cos_phi[j] *
+                      df[0][s * physical_stride + physical_offset] -
+                  sin_phi[j] * df[1][s * physical_stride + physical_offset];
+      dfc[1][s] = cos_theta[i] * sin_phi[j] *
+                      df[0][s * physical_stride + physical_offset] +
+                  cos_phi[j] * df[1][s * physical_stride + physical_offset];
+      dfc[2][s] = -sin_theta[i] * df[0][s * physical_stride + physical_offset];
     }
   }
 
   // Take derivatives of Cartesian derivatives to get second derivatives.
   std::vector<std::array<double*, 2>> ddfc(3, {{nullptr, nullptr}});
-  {
-    for (size_t i = 0; i < 3; ++i) {
-      for (size_t j = 0; j < 2; ++j) {
-        gsl::at(ddfc[i], j) = memory_pool_.get(physical_size()).data();
-      }
-      gradient(dfc[i], ddfc[i], 1, 0);
-      // Here we free the storage for dfc[i], so we can reuse it in ddfc.
-      memory_pool_.free(dfc[i]);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 2; ++j) {
+      gsl::at(ddfc[i], j) = memory_pool_.get(physical_size()).data();
     }
+    gradient(ddfc[i], dfc[i], 1, 0);
+    // Here we free the storage for dfc[i], so we can reuse it in ddfc.
+    memory_pool_.free(dfc[i]);
   }
 
   // Combine into Pfaffian second derivatives
-  {
-    size_t s = 0;
-    for (size_t j = 0; j < n_phi_; ++j) {
-      for (size_t i = 0; i < n_theta_; ++i, ++s) {
-        ddf->get(1, 0)[s * physical_stride + physical_offset] =
-            -ddfc[2][1][s] * cosec_theta[i];
-        ddf->get(0, 1)[s * physical_stride + physical_offset] =
-            ddf->get(1, 0)[s * physical_stride + physical_offset] -
-            cot_theta[i] * df[1][s * physical_stride + physical_offset];
-        ddf->get(1, 1)[s * physical_stride + physical_offset] =
-            cos_phi[j] * ddfc[1][1][s] - sin_phi[j] * ddfc[0][1][s] -
-            cot_theta[i] * df[0][s * physical_stride + physical_offset];
-        ddf->get(0, 0)[s * physical_stride + physical_offset] =
-            cos_theta[i] *
-                (cos_phi[j] * ddfc[0][0][s] + sin_phi[j] * ddfc[1][0][s]) -
-            sin_theta[i] * ddfc[2][0][s];
-      }
+  for (size_t j = 0, s = 0; j < n_phi_; ++j) {
+    for (size_t i = 0; i < n_theta_; ++i, ++s) {
+      ddf->get(1, 0)[s * physical_stride + physical_offset] =
+          -ddfc[2][1][s] * cosec_theta[i];
+      ddf->get(0, 1)[s * physical_stride + physical_offset] =
+          ddf->get(1, 0)[s * physical_stride + physical_offset] -
+          cot_theta[i] * df[1][s * physical_stride + physical_offset];
+      ddf->get(1, 1)[s * physical_stride + physical_offset] =
+          cos_phi[j] * ddfc[1][1][s] - sin_phi[j] * ddfc[0][1][s] -
+          cot_theta[i] * df[0][s * physical_stride + physical_offset];
+      ddf->get(0, 0)[s * physical_stride + physical_offset] =
+          cos_theta[i] *
+              (cos_phi[j] * ddfc[0][0][s] + sin_phi[j] * ddfc[1][0][s]) -
+          sin_theta[i] * ddfc[2][0][s];
     }
   }
 
@@ -498,48 +513,17 @@ YlmSpherepack::first_and_second_derivative(
       std::forward_as_tuple(physical_size()));
   std::array<double*, 2> temp = {
       {std::get<0>(result).get(0).data(), std::get<0>(result).get(1).data()}};
-  second_derivative(collocation_values.data(), temp, &std::get<1>(result));
+  second_derivative(temp, &std::get<1>(result), collocation_values.data());
   return result;
-}
-
-//============================================================================
-
-double YlmSpherepack::definite_integral(
-    const gsl::not_null<const double*> collocation_values,
-    const size_t physical_stride, const size_t physical_offset) const noexcept {
-  auto& quadrature_weights = storage_.quadrature_weights;
-  ASSERT(quadrature_weights.size() == n_theta_ * n_phi_, "invalid cached size");
-  // use BLAS to compute quadrature as a dot product
-  // integral = sum_i weight_i value_i
-  const double* const colloc = collocation_values;
-  // clang-tidy: 'do not use pointer arithmetic'
-  const double* const colloc_plus_offset = colloc + physical_offset;  // NOLINT
-  return ddot_(n_theta_ * n_phi_, quadrature_weights.data(), 1,
-               colloc_plus_offset, physical_stride);
-}
-
-const std::vector<double>& YlmSpherepack::integration_weights() const noexcept {
-  return storage_.quadrature_weights;
-}
-
-void YlmSpherepack::add_constant(gsl::not_null<DataVector*> spectral_coefs,
-                                 const double c) const noexcept {
-  // The factor of sqrt(8) is because of the normalization of
-  // SPHEREPACK's coefficients.
-  (*spectral_coefs)[0] += sqrt(8.0) * c;
-}
-
-double YlmSpherepack::average(const DataVector& spectral_coefs) const noexcept {
-  // The factor of sqrt(8) is because of the normalization of
-  // SPHEREPACK's coefficients.  All other coefficients average to zero.
-  return spectral_coefs[0] / sqrt(8.0);
 }
 
 YlmSpherepack::InterpolationInfoPerPoint::InterpolationInfoPerPoint(
     const size_t m_max, const std::vector<double>& pmm,
     const std::array<double, 2>& target)
-    : cos_m_phi(m_max + 1), sin_m_phi(m_max + 1), pbar_factor(m_max + 1) {
-  cos_theta = cos(target[0]);
+    : cos_theta(cos(target[0])),
+      cos_m_phi(m_max + 1),
+      sin_m_phi(m_max + 1),
+      pbar_factor(m_max + 1) {
   const double sin_theta = sin(target[0]);
   const double phi = target[1];
 
@@ -682,25 +666,25 @@ YlmSpherepack::InterpolationInfo YlmSpherepack::set_up_interpolation_info(
 
 /// \cond DOXYGEN_FAILS_TO_PARSE_THIS
 void YlmSpherepack::interpolate(
+    const gsl::not_null<std::vector<double>*> result,
     const gsl::not_null<const double*> collocation_values,
-    const InterpolationInfo& interpolation_info,
-    gsl::not_null<std::vector<double>*> result, const size_t physical_stride,
+    const InterpolationInfo& interpolation_info, const size_t physical_stride,
     const size_t physical_offset) const noexcept {
   ASSERT(result->size() == interpolation_info.size(),
          "Size mismatch: " << result->size() << ","
                            << interpolation_info.size());
   auto& f_k = memory_pool_.get(spectral_size());
-  phys_to_spec(collocation_values, f_k.data(), physical_stride, physical_offset,
+  phys_to_spec(f_k.data(), collocation_values, physical_stride, physical_offset,
                1, 0);
-  interpolate_from_coefs(f_k, interpolation_info, result);
+  interpolate_from_coefs(result, f_k, interpolation_info);
   memory_pool_.free(f_k);
 }
 /// \endcond
 
 template <typename T>
 void YlmSpherepack::interpolate_from_coefs(
-    const T& spectral_coefs, const InterpolationInfo& interpolation_info,
-    gsl::not_null<std::vector<double>*> result, const size_t spectral_stride,
+    const gsl::not_null<std::vector<double>*> result, const T& spectral_coefs,
+    const InterpolationInfo& interpolation_info, const size_t spectral_stride,
     const size_t spectral_offset) const noexcept {
   const auto& alpha = storage_.work_interp_alpha;
   const auto& beta = storage_.work_interp_beta;
@@ -719,9 +703,9 @@ void YlmSpherepack::interpolate_from_coefs(
   const size_t a_offset = spectral_offset;
   const size_t b_offset = spectral_offset + (l1 * n_theta_) * spectral_stride;
 
-  for (size_t i = 0; i < result->size(); ++i) {
-    (*result)[i] = 0.0;
+  std::fill(result->begin(), result->end(), 0.0);
 
+  for (size_t i = 0; i < result->size(); ++i) {
     const auto& intrp_info = interpolation_info[i];
     const auto& cos_theta = intrp_info.cos_theta;
 
@@ -783,8 +767,8 @@ std::vector<double> YlmSpherepack::interpolate(
          "Sizes don't match: " << collocation_values.size() << " vs "
                                << physical_size());
   std::vector<double> result(target_points.size());
-  interpolate(collocation_values.data(),
-              set_up_interpolation_info(target_points), &result);
+  interpolate(&result, collocation_values.data(),
+              set_up_interpolation_info(target_points));
   return result;
 }
 
@@ -795,8 +779,8 @@ std::vector<double> YlmSpherepack::interpolate_from_coefs(
          "Sizes don't match: " << spectral_coefs.size() << " vs "
                                << spectral_size());
   std::vector<double> result(target_points.size());
-  interpolate_from_coefs(spectral_coefs,
-                         set_up_interpolation_info(target_points), &result);
+  interpolate_from_coefs(&result, spectral_coefs,
+                         set_up_interpolation_info(target_points));
   return result;
 }
 
@@ -816,24 +800,24 @@ void YlmSpherepack::fill_vector_work_arrays() const noexcept {
 
   // Initialize vector work arrays
   const size_t ldwg = (3 * n_theta_ * (n_theta_ + 3) + 2) / 2;
-  {
-    auto& dworkg = memory_pool_.get(ldwg);
-    int err = 0;
-    vhsgsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
-            work_vector_spec_to_phys.data(), static_cast<int>(l_vhsgs),
-            dworkg.data(), static_cast<int>(ldwg), &err);
-    memory_pool_.free(dworkg);
-    ASSERT(0 == err, "Error in vhsgsi");
+  auto& dworkg = memory_pool_.get(ldwg);
+  int err = 0;
+  vhsgsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
+          work_vector_spec_to_phys.data(), static_cast<int>(l_vhsgs),
+          dworkg.data(), static_cast<int>(ldwg), &err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("vhsgsi error " << err << " in YlmSpherepack");
   }
+  memory_pool_.free(dworkg);
 }
 
 void YlmSpherepack::fill_scalar_work_arrays() const noexcept {
   auto& work_phys_to_spec = storage_.work_phys_to_spec;
-  auto& work_spec_to_phys = storage_.work_spec_to_phys;
+  auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
   auto& quadrature_weights = storage_.quadrature_weights;
 
-  std::vector<double> weights(n_theta_);
   {
+    auto& weights = memory_pool_.get(n_theta_);
     auto& work0 = memory_pool_.get(n_theta_);
     auto& work1 = memory_pool_.get(n_theta_ + 1);
     int err = 0;
@@ -841,52 +825,55 @@ void YlmSpherepack::fill_scalar_work_arrays() const noexcept {
           work1.data(), static_cast<int>(n_theta_ + 1), &err);
     memory_pool_.free(work0);
     memory_pool_.free(work1);
-    ASSERT(0 == err, "Failure in gaqd");
-  }
-
-  quadrature_weights.assign(n_theta_ * n_phi_, 2 * M_PI / n_phi_);
-  for (size_t i = 0; i < n_theta_; ++i) {
-    for (size_t j = 0; j < n_phi_; ++j) {
-      quadrature_weights[i + j * n_theta_] *= weights[i];
+    if (UNLIKELY(err != 0)) {
+      ERROR("gaqd error " << err << " in YlmSpherepack");
     }
+
+    quadrature_weights.assign(n_theta_ * n_phi_, 2 * M_PI / n_phi_);
+    for (size_t i = 0; i < n_theta_; ++i) {
+      for (size_t j = 0; j < n_phi_; ++j) {
+        quadrature_weights[i + j * n_theta_] *= weights[i];
+      }
+    }
+    memory_pool_.free(weights);
   }
 
   // Allocate memory for scalar work arrays.
 
-  // Below note that l1, l2, and l_ylmi are ints, not size_ts, and
-  // note the use of iNph and iNth.  The reason for this: The last
-  // term in the expression for l_ylmi can sometimes be negative.  If
+  // Below note that l1, l2, and ylm_work_size are ints, not size_ts, and
+  // note the use of n_phi and n_theta.  The reason for this: The last
+  // term in the expression for ylm_work_size can sometimes be negative.  If
   // evaluated using unsigned ints instead of ints, then this will
   // underflow and give a huge number.
   const auto l1 = static_cast<int>(m_max_ + 1);
   const auto l2 = static_cast<int>(n_theta_ + 1) / 2;
-  const auto iNph = static_cast<int>(n_phi_);
-  const auto iNth = static_cast<int>(n_theta_);
-  const int l_ylmi = iNph + 15 + iNth * (3 * (l1 + l2) - 2) +
-                     (l1 - 1) * (l2 * (2 * iNth - l1) - 3 * l1) / 2;
-  ASSERT(l_ylmi >= 0, "Bad size " << l_ylmi);
-  const auto l_ylm = static_cast<size_t>(l_ylmi);
+  const auto n_phi = static_cast<int>(n_phi_);
+  const auto n_theta = static_cast<int>(n_theta_);
+  const int ylm_work_size = n_phi + 15 + n_theta * (3 * (l1 + l2) - 2) +
+                            (l1 - 1) * (l2 * (2 * n_theta - l1) - 3 * l1) / 2;
+  ASSERT(ylm_work_size >= 0, "Bad size " << ylm_work_size);
+  const auto l_ylm = static_cast<size_t>(ylm_work_size);
 
   work_phys_to_spec.assign(l_ylm, 0.0);
-  work_spec_to_phys.assign(l_ylm, 0.0);
+  work_scalar_spec_to_phys.assign(l_ylm, 0.0);
 
   // Initialize scalar work arrays
   const size_t work_size = 4 * n_theta_ * (n_theta_ + 2) + 2;
   auto& work = memory_pool_.get(work_size);
   const size_t deriv_work_size = n_theta_ * (n_theta_ + 4);
   auto& deriv_work = memory_pool_.get(deriv_work_size);
-  {
-    int err = 0;
-    shagsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
-            work_phys_to_spec.data(), static_cast<int>(l_ylm), work.data(),
-            static_cast<int>(work_size), deriv_work.data(),
-            static_cast<int>(deriv_work_size), &err);
-    ASSERT(0 == err, "Error in shagsi");
-    shsgsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
-            work_spec_to_phys.data(), static_cast<int>(l_ylm), work.data(),
-            static_cast<int>(work_size), deriv_work.data(),
-            static_cast<int>(deriv_work_size), &err);
-    ASSERT(0 == err, "Error in shsgsi");
+  int err = 0;
+  shagsi_(n_theta, n_phi, work_phys_to_spec.data(), ylm_work_size, work.data(),
+          static_cast<int>(work_size), deriv_work.data(),
+          static_cast<int>(deriv_work_size), &err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("shagsi error " << err << " in YlmSpherepack");
+  }
+  shsgsi_(n_theta, n_phi, work_scalar_spec_to_phys.data(), ylm_work_size,
+          work.data(), static_cast<int>(work_size), deriv_work.data(),
+          static_cast<int>(deriv_work_size), &err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("shsgsi error " << err << " in YlmSpherepack");
   }
   memory_pool_.free(deriv_work);
   memory_pool_.free(work);
@@ -919,5 +906,5 @@ bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs) noexcept {
 
 // Explicit instantiations
 template void YlmSpherepack::interpolate_from_coefs<std::vector<double>>(
-    const std::vector<double>&, const InterpolationInfo&,
-    gsl::not_null<std::vector<double>*>, size_t, size_t) const noexcept;
+    const gsl::not_null<std::vector<double>*>, const std::vector<double>&,
+    const InterpolationInfo&, size_t, size_t) const noexcept;
