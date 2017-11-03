@@ -396,6 +396,18 @@ make_coordinate_map(Maps&&... maps) {
       std::forward<Maps>(maps)...);
 }
 
+/// \ingroup ComputationalDomain
+/// \brief Creates a std::unique_ptr<CoordinateMapBase> of `maps...`
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+std::unique_ptr<CoordinateMapBase<
+    SourceFrame, TargetFrame,
+    CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>::dim>>
+make_coordinate_map_base(Maps&&... maps) noexcept {
+  return std::make_unique<
+      CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>>(
+      std::forward<Maps>(maps)...);
+}
+
 /// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 PUP::able::PUP_ID
