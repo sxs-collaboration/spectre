@@ -47,7 +47,7 @@ struct OptionContext {
 
 inline std::ostream& operator<<(std::ostream& s,
                                 const OptionContext& c) noexcept {
-  return s << c.context << Options_details::mark_info(c.mark);
+  return s << c.context << Options_detail::mark_info(c.mark);
 }
 
 /// \ingroup OptionParsing
@@ -68,7 +68,7 @@ inline std::ostream& operator<<(std::ostream& s,
       std::ostringstream avoid_name_collisions_PARSE_ERROR;             \
       /* clang-tidy: macro arg in parentheses */                        \
       avoid_name_collisions_PARSE_ERROR << (context) << m; /* NOLINT */ \
-      throw Options_details::propagate_context(                         \
+      throw Options_detail::propagate_context(                          \
           avoid_name_collisions_PARSE_ERROR.str());                     \
     }                                                                   \
   } while (false)
@@ -155,7 +155,7 @@ T Option_t::parse_as() const {
           "separate line, indented and preceeded by a dash (  - foo).";
     }
     PARSE_ERROR(error_context, ss.str());
-  } catch (const Options_details::propagate_context& e) {
+  } catch (const Options_detail::propagate_context& e) {
     OptionContext error_context = context();
     // Avoid line numbers in the middle of the trace
     error_context.mark = YAML::Mark::null_mark();
@@ -236,17 +236,17 @@ class Options {
   ///
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <typename T,
-            Requires<Options_details::has_lower_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<Options_detail::has_lower_bound_on_size<T>::value> = nullptr>
   void check_lower_bound_on_size(const typename T::type& t,
                                  const OptionContext& context) const;
-  template <typename T,
-            Requires<not Options_details::has_lower_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<not Options_detail::has_lower_bound_on_size<T>::value> = nullptr>
   constexpr void check_lower_bound_on_size(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+      const typename T::type& /*t*/, const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -254,17 +254,17 @@ class Options {
   ///
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <typename T,
-            Requires<Options_details::has_upper_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<Options_detail::has_upper_bound_on_size<T>::value> = nullptr>
   void check_upper_bound_on_size(const typename T::type& t,
                                  const OptionContext& context) const;
-  template <typename T,
-            Requires<not Options_details::has_upper_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<not Options_detail::has_upper_bound_on_size<T>::value> = nullptr>
   constexpr void check_upper_bound_on_size(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+      const typename T::type& /*t*/, const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -272,7 +272,7 @@ class Options {
   ///
   /// \tparam T the option struct
   template <typename T,
-            Requires<Options_details::has_default<T>::value> = nullptr>
+            Requires<Options_detail::has_default<T>::value> = nullptr>
   typename T::type get_default() const noexcept {
     static_assert(
         cpp17::is_same_v<decltype(T::default_value()), typename T::type>,
@@ -280,7 +280,7 @@ class Options {
     return T::default_value();
   }
   template <typename T,
-            Requires<not Options_details::has_default<T>::value> = nullptr>
+            Requires<not Options_detail::has_default<T>::value> = nullptr>
   [[noreturn]] typename T::type get_default() const {
     PARSE_ERROR(context_,
                 "You did not specify the option '"
@@ -296,14 +296,14 @@ class Options {
   /// \tparam T the option struct
   /// \param t the value of the read in option
   template <typename T,
-            Requires<Options_details::has_lower_bound<T>::value> = nullptr>
+            Requires<Options_detail::has_lower_bound<T>::value> = nullptr>
   void check_lower_bound(const typename T::type& t,
                          const OptionContext& context) const;
   template <typename T,
-            Requires<not Options_details::has_lower_bound<T>::value> = nullptr>
-  constexpr void check_lower_bound(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+            Requires<not Options_detail::has_lower_bound<T>::value> = nullptr>
+  constexpr void check_lower_bound(const typename T::type& /*t*/,
+                                   const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -312,16 +312,15 @@ class Options {
   /// Note: Upper bounds are <=, not just <.
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <
-      typename T,
-      Requires<Options_details::has_upper_bound<T>::value> = nullptr>
+  template <typename T,
+            Requires<Options_detail::has_upper_bound<T>::value> = nullptr>
   void check_upper_bound(const typename T::type& t,
                          const OptionContext& context) const;
   template <typename T,
-            Requires<not Options_details::has_upper_bound<T>::value> = nullptr>
-  constexpr void check_upper_bound(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+            Requires<not Options_detail::has_upper_bound<T>::value> = nullptr>
+  constexpr void check_upper_bound(const typename T::type& /*t*/,
+                                   const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -329,7 +328,7 @@ class Options {
   ///
   /// \tparam T the option struct
   template <typename T,
-            Requires<Options_details::has_default<T>::value> = nullptr>
+            Requires<Options_detail::has_default<T>::value> = nullptr>
   void validate_default() const {
     OptionContext context;
     context.append("Checking DEFAULT value for " +
@@ -341,7 +340,7 @@ class Options {
     check_upper_bound<T>(default_value, context);
   }
   template <typename T,
-            Requires<not Options_details::has_default<T>::value> = nullptr>
+            Requires<not Options_detail::has_default<T>::value> = nullptr>
   constexpr void validate_default() const noexcept {}
   //@}
 
@@ -361,7 +360,7 @@ template <typename OptionList>
 Options<OptionList>::Options(std::string help_text) noexcept
     : help_text_(std::move(help_text)),
       valid_names_(
-          tmpl::for_each<opts_t>(Options_details::create_valid_names{}).value) {
+          tmpl::for_each<opts_t>(Options_detail::create_valid_names{}).value) {
   tmpl::for_each<opts_t>([](auto t) noexcept {
     using T = typename decltype(t)::type;
     const std::string label = pretty_type::short_name<T>();
@@ -464,7 +463,7 @@ typename T::type Options<OptionList>::get() const {
   return t;
 }
 
-namespace Options_details {
+namespace Options_detail {
 template <typename>
 struct apply_helper;
 
@@ -475,15 +474,15 @@ struct apply_helper<tmpl::list<Tags...>> {
     return func(opts.template get<Tags>()...);
   }
 };
-}  // namespace Options_details
+}  // namespace Options_detail
 
 // \cond
 // Doxygen is confused by decltype(auto)
 template <typename OptionList>
 template <typename TagList, typename F>
 decltype(auto) Options<OptionList>::apply(F&& func) const {
-  return Options_details::apply_helper<TagList>::apply(*this,
-                                                       std::forward<F>(func));
+  return Options_detail::apply_helper<TagList>::apply(*this,
+                                                      std::forward<F>(func));
 }
 // \endcond
 
@@ -493,7 +492,7 @@ std::string Options<OptionList>::help() const noexcept {
   ss << "\n==== Description of expected options:\n" << help_text_;
   if (tmpl::size<opts_t>::value > 0) {
     ss << "\n\nOptions:\n"
-       << tmpl::for_each<opts_t>(Options_details::print{max_label_size_}).value;
+       << tmpl::for_each<opts_t>(Options_detail::print{max_label_size_}).value;
   } else {
     ss << "\n\n<No options>\n";
   }
@@ -502,7 +501,7 @@ std::string Options<OptionList>::help() const noexcept {
 
 template <typename OptionList>
 template <typename T,
-          Requires<Options_details::has_lower_bound_on_size<T>::value>>
+          Requires<Options_detail::has_lower_bound_on_size<T>::value>>
 void Options<OptionList>::check_lower_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
@@ -517,7 +516,7 @@ void Options<OptionList>::check_lower_bound_on_size(
 
 template <typename OptionList>
 template <typename T,
-          Requires<Options_details::has_upper_bound_on_size<T>::value>>
+          Requires<Options_detail::has_upper_bound_on_size<T>::value>>
 void Options<OptionList>::check_upper_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
@@ -531,7 +530,7 @@ void Options<OptionList>::check_upper_bound_on_size(
 }
 
 template <typename OptionList>
-template <typename T, Requires<Options_details::has_lower_bound<T>::value>>
+template <typename T, Requires<Options_detail::has_lower_bound<T>::value>>
 inline void Options<OptionList>::check_lower_bound(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::lower_bound()), typename T::type>,
@@ -547,7 +546,7 @@ inline void Options<OptionList>::check_lower_bound(
 }
 
 template <typename OptionList>
-template <typename T, Requires<Options_details::has_upper_bound<T>::value>>
+template <typename T, Requires<Options_detail::has_upper_bound<T>::value>>
 inline void Options<OptionList>::check_upper_bound(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::upper_bound()), typename T::type>,
@@ -580,12 +579,12 @@ std::string Options<OptionList>::parsing_help(
 template <typename OptionList>
 std::string Options<OptionList>::parser_error(
     const YAML::ParserException& e) const noexcept {
-  return Options_details::mark_info(e.mark) +
-      "Unable to correctly parse the input file because of a syntax error.\n"
-      "This is typically due to placing a suboption on the same line as an "
-      "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
-      "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
-      "IsPeriodicIn: [true]\n\nSee an example input file for help.";
+  return Options_detail::mark_info(e.mark) +
+         "Unable to correctly parse the input file because of a syntax error.\n"
+         "This is typically due to placing a suboption on the same line as an "
+         "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
+         "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
+         "IsPeriodicIn: [true]\n\nSee an example input file for help.";
 }
 
 // yaml-cpp doesn't handle C++11 types yet

@@ -14,9 +14,9 @@
 #define OVERLOADER_CONSTEXPR
 #endif
 
-namespace overloader_details {
+namespace overloader_detail {
 struct no_such_type;
-}  // namespace overloader_details
+}  // namespace overloader_detail
 
 /*!
  * \ingroup Utilities
@@ -98,7 +98,7 @@ class Overloader<> {
  public:
   using type = Overloader;
   SPECTRE_ALWAYS_INLINE void operator()(
-      const overloader_details::no_such_type& /*unused*/) noexcept {}
+      const overloader_detail::no_such_type& /*unused*/) noexcept {}
 };
 
 /*!

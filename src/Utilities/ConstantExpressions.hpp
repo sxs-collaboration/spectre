@@ -54,7 +54,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
 }
 
 /// \ingroup ConstantExpressions
-namespace ConstantExpressions_details {
+namespace ConstantExpressions_detail {
 template <typename T, int N, typename = std::nullptr_t>
 struct pow;
 
@@ -80,7 +80,7 @@ struct pow<T, 0, Requires<not blaze::IsVector<T>::value>> {
   }
 };
 /// \endcond
-}  // namespace ConstantExpressions_details
+}  // namespace ConstantExpressions_detail
 
 /// \ingroup ConstantExpressions
 /// \brief Compute t^N where N is an integer (positive or negative)
@@ -93,7 +93,7 @@ struct pow<T, 0, Requires<not blaze::IsVector<T>::value>> {
 /// \return value t^N of type T
 template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
-  return ConstantExpressions_details::pow<T, N>::apply(t);
+  return ConstantExpressions_detail::pow<T, N>::apply(t);
 }
 
 /// \ingroup ConstantExpressions
@@ -105,14 +105,14 @@ constexpr T constexpr_abs(const T& x) noexcept(noexcept(x < 0 ? -x : x)) {
   return x < 0 ? -x : x;
 }
 
-namespace ConstantExpressions_details {
+namespace ConstantExpressions_detail {
 struct CompareByMagnitude {
   template <typename T>
   constexpr bool operator()(const T& a, const T& b) {
     return constexpr_abs(a) < constexpr_abs(b);
   }
 };
-}  // namespace ConstantExpressions_details
+}  // namespace ConstantExpressions_detail
 
 /// \ingroup ConstantExpressions
 /// \brief Return the argument with the largest magnitude
@@ -122,13 +122,13 @@ struct CompareByMagnitude {
 //@{
 template <typename T>
 constexpr const T& max_by_magnitude(const T& a, const T& b) {
-  return std::max(a, b, ConstantExpressions_details::CompareByMagnitude{});
+  return std::max(a, b, ConstantExpressions_detail::CompareByMagnitude{});
 }
 
 template <typename T>
 constexpr T max_by_magnitude(std::initializer_list<T> ilist) {
   return std::max(std::move(ilist),
-                  ConstantExpressions_details::CompareByMagnitude{});
+                  ConstantExpressions_detail::CompareByMagnitude{});
 }
 //@}
 
@@ -140,13 +140,13 @@ constexpr T max_by_magnitude(std::initializer_list<T> ilist) {
 //@{
 template <typename T>
 constexpr const T& min_by_magnitude(const T& a, const T& b) {
-  return std::min(a, b, ConstantExpressions_details::CompareByMagnitude{});
+  return std::min(a, b, ConstantExpressions_detail::CompareByMagnitude{});
 }
 
 template <typename T>
 constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
   return std::min(std::move(ilist),
-                  ConstantExpressions_details::CompareByMagnitude{});
+                  ConstantExpressions_detail::CompareByMagnitude{});
 }
 //@}
 

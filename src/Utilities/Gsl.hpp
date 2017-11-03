@@ -77,12 +77,12 @@ SPECTRE_ALWAYS_INLINE constexpr T narrow_cast(U&& u) noexcept {
   return static_cast<T>(std::forward<U>(u));
 }
 
-namespace details {
+namespace gsl_detail {
 template <class T, class U>
 struct is_same_signedness
-    : public std::integral_constant<
-          bool, std::is_signed<T>::value == std::is_signed<U>::value> {};
-}  // namespace details
+    : public std::integral_constant<bool, std::is_signed<T>::value ==
+                                              std::is_signed<U>::value> {};
+}  // namespace gsl_detail
 
 /*!
  * \ingroup Utilities
@@ -96,7 +96,7 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
     ERROR("Failed to cast " << u << " of type " << pretty_type::get_name<U>()
                             << " to type " << pretty_type::get_name<T>());
   }
-  if (not details::is_same_signedness<T, U>::value and
+  if (not gsl_detail::is_same_signedness<T, U>::value and
       ((t < T{}) != (u < U{}))) {
     ERROR("Failed to cast " << u << " of type " << pretty_type::get_name<U>()
                             << " to type " << pretty_type::get_name<T>());

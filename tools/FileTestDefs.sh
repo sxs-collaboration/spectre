@@ -202,6 +202,8 @@ license() {
               'cmake/Findcppcheck.cmake$' \
               'cmake/Findcppcheck.cpp$' \
               'LICENSE' \
+              '.github/ISSUE_TEMPLATE.md' \
+              '.github/PULL_REQUEST_TEMPLATE.md' \
               '.clang-format$' && \
         ! grep -q "Distributed under the MIT License" "$1"
 }
@@ -334,9 +336,45 @@ enable_if_report() {
 }
 enable_if_test() {
     test_check pass foo.cpp 'enable'
-    test_check fail foo.cpp 'enable_if'
+    test_check pass foo.cpp 'enable if'
+    test_check pass foo.cpp 'enable_if'
+    test_check fail foo.cpp 'std::enable_if'
 }
 standard_checks+=(enable_if)
+
+# Check for struct TD and class TD asking to remove it
+struct_td() {
+    is_c++ "$1" && grep -q "\(struct TD;\|class TD;\)" "$1"
+}
+struct_td_report() {
+    echo "Found 'struct TD;' or 'class TD;' which should be removed"
+    pretty_grep "\(struct TD;\|class TD;\)" "$@"
+}
+struct_td_test() {
+    test_check pass foo.cpp ''
+    test_check fail foo.cpp 'struct TD;'
+    test_check fail foo.cpp 'class TD;'
+}
+standard_checks+=(struct_td)
+
+# Check for _details and details namespaces, request replacement with detail
+namespace_details() {
+    is_c++ "$1" && grep -q "\(_details\|namespace[[:space:]]\+details\)" "$1"
+}
+namespace_details_report() {
+    echo "Found '_details' namespace, please replace with '_detail'"
+    pretty_grep "\(_details\|namespace details\)" "$@"
+}
+namespace_details_test() {
+    test_check pass foo.cpp ''
+    test_check fail foo.cpp 'namespace details'
+    test_check fail foo.cpp 'namespace    details'
+    test_check fail foo.cpp 'namespace Test_details'
+    test_check pass foo.cpp 'namespace Test_detail'
+    test_check pass foo.cpp 'namespace detail'
+    test_check pass foo.cpp 'details'
+}
+standard_checks+=(namespace_details)
 
 [ "$1" = --test ] && run_tests "${standard_checks[@]}"
 
