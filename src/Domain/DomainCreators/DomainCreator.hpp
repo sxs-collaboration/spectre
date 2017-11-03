@@ -32,6 +32,8 @@ template <typename TargetFrame>
 class Interval;
 template <typename TargetFrame>
 class Rectangle;
+template <typename TargetFrame>
+class Shell;
 }  // namespace DomainCreators
 
 namespace DomainCreators_detail {
@@ -52,7 +54,8 @@ struct domain_creators<2> {
 template <>
 struct domain_creators<3> {
   template <typename Frame>
-  using creators = typelist<DomainCreators::Brick<Frame>>;
+  using creators =
+      typelist<DomainCreators::Brick<Frame>, DomainCreators::Shell<Frame>>;
 };
 }  // namespace DomainCreators_detail
 
@@ -87,3 +90,4 @@ class DomainCreator {
 #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
+#include "Domain/DomainCreators/Shell.hpp"

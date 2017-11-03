@@ -6,6 +6,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace DomainCreators {
@@ -41,6 +42,8 @@ void register_with_charm<3>() {
                       CoordinateMaps::ProductOf3Maps<
                           CoordinateMaps::AffineMap, CoordinateMaps::AffineMap,
                           CoordinateMaps::AffineMap>>));
+  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                         CoordinateMaps::Wedge3D>));
 }
 }  // namespace DomainCreators_detail
 
