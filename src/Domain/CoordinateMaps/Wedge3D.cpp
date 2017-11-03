@@ -14,11 +14,13 @@ namespace CoordinateMaps {
 Wedge3D::Wedge3D(const double radius_of_other_surface,
                  const double radius_of_spherical_surface,
                  const Direction<3> direction_of_wedge,
-                 const double sphericity_of_other_surface) noexcept
+                 const double sphericity_of_other_surface,
+                 const bool with_tan_map) noexcept
     : radius_of_other_surface_(radius_of_other_surface),
       radius_of_spherical_surface_(radius_of_spherical_surface),
       direction_of_wedge_(direction_of_wedge),
-      sphericity_of_other_surface_(sphericity_of_other_surface) {
+      sphericity_of_other_surface_(sphericity_of_other_surface),
+      with_tan_map_(with_tan_map) {
   ASSERT(radius_of_other_surface > 0,
          "The radius of the other surface must be greater than zero.");
   ASSERT(radius_of_spherical_surface > 0,
@@ -42,7 +44,7 @@ operator()(const std::array<T, 3>& x) const noexcept {
   const ReturnType& eta = x[1];
   const ReturnType& zeta = x[2];
 
-  const bool with_tan_map = true;
+  const bool with_tan_map = with_tan_map_;
   const double r_inner = radius_of_other_surface_;
   const double r_outer = radius_of_spherical_surface_;
   const double sphericity = sphericity_of_other_surface_;
@@ -117,7 +119,7 @@ Wedge3D::jacobian(const std::array<T, 3>& x) const noexcept {
   const ReturnType& eta = x[1];
   const ReturnType& zeta = x[2];
 
-  const bool with_tan_map = true;
+  const bool with_tan_map = with_tan_map_;
   const double r_inner = radius_of_other_surface_;
   const double r_outer = radius_of_spherical_surface_;
   const double sphericity = sphericity_of_other_surface_;

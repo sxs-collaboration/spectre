@@ -47,8 +47,8 @@ class Wedge3D {
    * somewhere in between
    */
   Wedge3D(double radius_of_other_surface, double radius_of_spherical_surface,
-          Direction<3> direction_of_wedge,
-          double sphericity_of_other_surface) noexcept;
+          Direction<3> direction_of_wedge, double sphericity_of_other_surface,
+          bool with_tan_map) noexcept;
 
   Wedge3D() = default;
   ~Wedge3D() = default;
