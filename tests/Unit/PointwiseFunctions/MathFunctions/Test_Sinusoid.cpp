@@ -4,6 +4,7 @@
 #include <cmath>
 #include <random>
 
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -42,7 +43,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
     CHECK(sinusoid.first_deriv(one)[s] == approx(mapped_first_deriv[s]));
     CHECK(sinusoid.second_deriv(one)[s] == approx(mapped_second_deriv[s]));
   }
-  test_pup_function(sinusoid);
+  test_math_helpers::test_pup_function(sinusoid);
+
+  // Test base class serialization
+  register_derived_classes_with_charm<MathFunction<1>>();
+  test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
+      std::make_unique<MathFunctions::Sinusoid>(amplitude, wavenumber, phase)});
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
