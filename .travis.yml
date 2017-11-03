@@ -148,7 +148,8 @@ before_install:
 
       ccache -z;
       git clone https://github.com/hfp/libxsmm.git;
-      cd libxsmm && mkdir build && cd build && make -f ../Makefile;
+      cd libxsmm && git checkout 1.8.1;
+      mkdir build && cd build && make -f ../Makefile;
       ccache -s;
       cd $HOME;
 
