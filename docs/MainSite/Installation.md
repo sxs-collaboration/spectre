@@ -14,7 +14,7 @@ See LICENSE.txt for details.
 * [Charm++](http://charm.cs.illinois.edu/) 6.8 or newer (must be compiled from source)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
-* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview)
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.2
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
 * [Catch](https://github.com/philsquared/Catch)

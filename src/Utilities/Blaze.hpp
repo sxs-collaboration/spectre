@@ -33,4 +33,7 @@ constexpr bool useOptimizedKernels = true;
 // Disable MPI parallelization
 #define _BLAZE_SYSTEM_MPI_H_
 #define BLAZE_MPI_PARALLEL_MODE 0
+
+// Disable HPX parallelization
+#define BLAZE_HPX_PARALLEL_MODE 0
 /// \endcond

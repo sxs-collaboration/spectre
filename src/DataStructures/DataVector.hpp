@@ -410,6 +410,11 @@ class DataVector {
     return atan(t.data_);
   }
 
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) atan2(
+      const DataVector& y, const DataVector& x) noexcept {
+    return atan2(~(y.data_), ~(x.data_));
+  }
+
   SPECTRE_ALWAYS_INLINE friend decltype(auto) sinh(
       const DataVector& t) noexcept {
     return sinh(t.data_);
