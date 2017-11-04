@@ -132,7 +132,7 @@ before_install:
   - export CHARM_PATCH=v6.8.patch
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export CHARM_VERSION=6.8.0;
-      export BLAZE_VERSION=3.1;
+      export BLAZE_VERSION=3.2;
       export HDF5_VERSION=1.8.17;
       export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11;
       cd $HOME;
