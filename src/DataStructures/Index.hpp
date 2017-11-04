@@ -117,8 +117,8 @@ std::ostream& operator<<(std::ostream& os, const Index<N>& i) {
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t N>
-bool operator==(const Index<N>& lhs, const Index<N>& rhs);
+bool operator==(const Index<N>& lhs, const Index<N>& rhs) noexcept;
 
 template <size_t N>
-bool operator!=(const Index<N>& lhs, const Index<N>& rhs);
+bool operator!=(const Index<N>& lhs, const Index<N>& rhs) noexcept;
 /// \endcond
