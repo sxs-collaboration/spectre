@@ -40,7 +40,4 @@ check_and_add_cxx_flag("-Wwrite-strings")
 # but we don't care
 check_and_add_cxx_flag("-Wno-noexcept-type")
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR
-    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-  set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -Qunused-arguments")
-endif()
+check_and_add_cxx_link_flag("-Qunused-arguments")

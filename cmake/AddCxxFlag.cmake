@@ -15,3 +15,16 @@ function(check_and_add_cxx_flag FLAG_TO_CHECK)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG_TO_CHECK}" PARENT_SCOPE)
   endif()
 endfunction()
+
+# Checks if a flag is supported by the linker and adds it if it is
+function(check_and_add_cxx_link_flag FLAG_TO_CHECK)
+  include(CheckCxxLinkerFlag)
+  unset(CXX_LINKER_FLAG_WORKS CACHE)
+  set(CMAKE_REQUIRED_QUIET 1)
+  check_cxx_linker_flag(${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
+  unset(CMAKE_REQUIRED_QUIET)
+  if(CXX_LINKER_FLAG_WORKS)
+    set(CMAKE_CXX_LINK_FLAGS
+      "${CMAKE_CXX_LINK_FLAGS} ${FLAG_TO_CHECK}" PARENT_SCOPE)
+  endif()
+endfunction()
