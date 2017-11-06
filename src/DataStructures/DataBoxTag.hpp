@@ -367,4 +367,55 @@ template <template <typename...> class Wrapper, typename TagList,
           typename... Args>
 using wrap_tags_in =
     tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, Args...>>;
+
+namespace detail {
+template <bool IsVariables>
+struct add_tag_prefix_impl;
+
+template <>
+struct add_tag_prefix_impl<false> {
+  template <template <typename...> class Prefix, typename Tag, typename... Args>
+  using f = Prefix<Tag, Args...>;
+};
+
+template <>
+struct add_tag_prefix_impl<true> {
+  template <template <typename...> class Prefix, typename Tag, typename... Args>
+  using f = Prefix<
+      Tags::Variables<wrap_tags_in<Prefix, typename Tag::tags_list, Args...>>,
+      Args...>;
+};
+
+template <typename>
+struct remove_tag_prefix_impl;
+
+template <typename UnprefixedTag, template <typename...> class Prefix,
+          typename... Args>
+struct remove_tag_prefix_impl<Prefix<UnprefixedTag, Args...>> {
+  static_assert(cpp17::is_base_of_v<db::DataBoxTag, UnprefixedTag>,
+                "Unwrapped tag is not a DataBoxTag");
+  using type = UnprefixedTag;
+};
+
+template <typename... VariablesTags, template <typename...> class Prefix,
+          typename... Args>
+struct remove_tag_prefix_impl<
+    Prefix<Tags::Variables<tmpl::list<VariablesTags...>>, Args...>> {
+  using type = Tags::Variables<
+      tmpl::list<typename remove_tag_prefix_impl<VariablesTags>::type...>>;
+};
+}  // namespace detail
+
+/// \ingroup DataBoxTags
+/// Wrap `Tag` in `Prefix<_, Args...>`, also wrapping variables tags
+/// if `Tag` is a `Tags::Variables`.
+template <template <typename...> class Prefix, typename Tag, typename... Args>
+using add_tag_prefix = typename detail::add_tag_prefix_impl<
+    tt::is_a_v<Tags::Variables, Tag>>::template f<Prefix, Tag, Args...>;
+
+/// \ingroup DataBoxTags
+/// Remove a prefix from `Tag`, also removing it from the variables
+/// tags if the unwrapped tag is a `Tags::Variables`.
+template <typename Tag>
+using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
 }  // namespace db

@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace Tags {
 /// \ingroup DataBoxTags
