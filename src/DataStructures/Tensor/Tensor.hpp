@@ -306,7 +306,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// Given an iterator or storage index, get the canonical tensor index.
   /// For scalars this is defined to be std::array<int, 1>{{0}}
   SPECTRE_ALWAYS_INLINE constexpr std::array<size_t, sizeof...(Indices)>
-  get_tensor_index(const const_iterator& iter) noexcept {
+  get_tensor_index(const const_iterator& iter) const noexcept {
     return structure::get_canonical_tensor_index(
         static_cast<size_t>(iter - begin()));
   }
