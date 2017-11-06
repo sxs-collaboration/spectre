@@ -32,7 +32,7 @@ struct d<Tag, VolumeDim, Fr, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
 
 template <typename Tag, typename VolumeDim, typename Fr>
 struct d<Tag, VolumeDim, Fr,
-         Requires<tt::is_a_v<Variables, db::item_type<Tag>>>>
+         Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
     : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
@@ -67,7 +67,7 @@ struct Flux<Tag, VolumeDim, Fr,
 
 template <typename Tag, typename VolumeDim, typename Fr>
 struct Flux<Tag, VolumeDim, Fr,
-            Requires<tt::is_a_v<Variables, db::item_type<Tag>>>>
+            Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
     : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
