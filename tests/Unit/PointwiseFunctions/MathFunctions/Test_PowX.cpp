@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
   test_math_helpers::test_pup_function(power);
 
   // Test base class serialization
-  register_derived_classes_with_charm<MathFunction<1>>();
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
   test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
       std::make_unique<MathFunctions::PowX>(3)});
 }

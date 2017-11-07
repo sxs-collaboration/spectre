@@ -384,7 +384,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
                   "[Unit][Time]") {
-  register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   std::unique_ptr<TimeStepper> stepper =
       std::make_unique<TimeSteppers::AdamsBashforthN>(4, false);
   std::unique_ptr<TimeStepper> stepper_puped =

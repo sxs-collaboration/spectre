@@ -50,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal.Backwards",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Serialization",
                   "[Unit][Time]") {
-  register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   std::unique_ptr<TimeStepper> stepper =
       std::make_unique<TimeSteppers::RungeKutta3>();
   std::unique_ptr<TimeStepper> stepper_puped =
