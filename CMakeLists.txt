@@ -18,12 +18,13 @@ include(SetOutputDirectory)
 include(SetupGitHooks)
 include(SetBuildType)
 include(SetCxxStandard)
-include(EnableWarnings)
 include(SetupBuildInfo)
 include(SetupCCache)
 include(SetupVersionFile)
 include(SetupCharm)
 include(SetupCharmProjections)
+include(SetupMacOsx)
+include(EnableWarnings)
 
 # In order to use certain code analysis tools like clang-tidy and cppcheck the
 # compile commands need to be accessible. CMake can write these to a
@@ -37,7 +38,6 @@ include(SetupCppCheck)
 include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
-include(SetupMacOsx)
 include(SetupDoxygen)
 include(CodeCoverageDetection)
 
