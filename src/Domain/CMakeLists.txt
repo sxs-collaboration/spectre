@@ -9,6 +9,7 @@ set(LIBRARY Domain)
 set(LIBRARY_SOURCES
     Block.cpp
     BlockNeighbor.cpp
+    CreateInitialElement.cpp
     Domain.cpp
     DomainHelpers.cpp
     Direction.cpp
