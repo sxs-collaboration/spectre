@@ -5,6 +5,7 @@ set(LIBRARY CoordinateMaps)
 
 set(LIBRARY_SOURCES
     Affine.cpp
+    BulgedCube.cpp
     Equiangular.cpp
     Identity.cpp
     Rotation.cpp

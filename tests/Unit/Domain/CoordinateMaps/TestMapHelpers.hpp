@@ -222,8 +222,8 @@ void test_coordinate_map_argument_types(
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse map gives expected results
  */
-template <typename Map>
+template <typename Map, typename T>
 void test_inverse_map(const Map& map,
-                      const std::array<double, Map::dim>& test_point) {
+                      const std::array<T, Map::dim>& test_point) {
   CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)));
 }
