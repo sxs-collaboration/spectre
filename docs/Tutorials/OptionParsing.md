@@ -2,7 +2,7 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Option Parsing {#tuts_option_parsing}
+# Option Parsing {#tutorial_option_parsing}
 
 SpECTRE can read YAML configuration files at runtime to set parameters
 and choose between classes implementing an interface.  %Options are

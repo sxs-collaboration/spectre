@@ -2,7 +2,7 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Orientation {#tuts_orientations}
+# Orientation {#tutorial_orientations}
 
 ### %Orientations between %Blocks
 The Orientations between Blocks are used to properly communicate fluxes
