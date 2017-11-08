@@ -3,29 +3,31 @@
 
 #include "DataStructures/Index.hpp"
 
+#include "Utilities/GenerateInstantiations.hpp"
+
 /// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
-bool operator==(const Index<Dim>& lhs, const Index<Dim>& rhs) {
+bool operator==(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
   return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 template <size_t Dim>
-bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) {
+bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-template class Index<0>;
-template class Index<1>;
-template class Index<2>;
-template class Index<3>;
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define GEN_OP(op, dim)                            \
+  template bool operator op(const Index<dim>& lhs, \
+                            const Index<dim>& rhs) noexcept;
+#define INSTANTIATE(_, data)       \
+  template class Index<DIM(data)>; \
+  GEN_OP(==, DIM(data))            \
+  GEN_OP(!=, DIM(data))
 
-template bool operator==(const Index<0>& lhs, const Index<0>& rhs);
-template bool operator==(const Index<1>& lhs, const Index<1>& rhs);
-template bool operator==(const Index<2>& lhs, const Index<2>& rhs);
-template bool operator==(const Index<3>& lhs, const Index<3>& rhs);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
 
-template bool operator!=(const Index<0>& lhs, const Index<0>& rhs);
-template bool operator!=(const Index<1>& lhs, const Index<1>& rhs);
-template bool operator!=(const Index<2>& lhs, const Index<2>& rhs);
-template bool operator!=(const Index<3>& lhs, const Index<3>& rhs);
+#undef DIM
+#undef GEN_OP
+#undef INSTANTIATE
 /// \endcond
