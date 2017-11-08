@@ -7,6 +7,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
+#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -169,6 +170,21 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
            {Direction<3>::lower_zeta(), {0, aligned_orientation}},
            {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<3>>>{{}});
+
+  // Test serialization of the map
+  DomainCreators::register_derived_with_charm();
+
+  const auto base_map =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
+                      AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
+                      AffineMap{-1., 1., lower_bound[2], upper_bound[2]}});
+  are_maps_equal(
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
+                      AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
+                      AffineMap{-1., 1., lower_bound[2], upper_bound[2]}}),
+      *serialize_and_deserialize(base_map));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",

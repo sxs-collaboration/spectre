@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Brick.cpp
   Interval.cpp
   Rectangle.cpp
+  RegisterDerivedWithCharm.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

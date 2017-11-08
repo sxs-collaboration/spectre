@@ -6,6 +6,7 @@
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
+#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -85,6 +86,19 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval", "[Domain][Unit]") {
       refinement_level[0], grid_points[0]};
   test_periodic_interval(periodic_interval, lower_bound, upper_bound,
                          grid_points, refinement_level);
+
+  // Test serialization of the map
+  DomainCreators::register_derived_with_charm();
+  const auto base_map =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]});
+  const auto base_map_deserialized = serialize_and_deserialize(base_map);
+  using MapType = const CoordinateMap<Frame::Logical, Frame::Inertial,
+                                      CoordinateMaps::AffineMap>*;
+  REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
+  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]});
+  CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Factory",

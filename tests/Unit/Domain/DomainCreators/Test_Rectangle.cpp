@@ -7,6 +7,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
+#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -100,6 +101,22 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
            {Direction<2>::lower_eta(), {0, aligned_orientation}},
            {Direction<2>::upper_eta(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<2>>>{{}});
+
+  // Test serialization of the map
+  DomainCreators::register_derived_with_charm();
+
+  const auto base_map =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          AffineMap2D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
+                      AffineMap{-1., 1., lower_bound[1], upper_bound[1]}});
+  const auto base_map_deserialized = serialize_and_deserialize(base_map);
+  using MapType =
+      const CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>*;
+  REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
+  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      AffineMap2D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
+                  AffineMap{-1., 1., lower_bound[1], upper_bound[1]}});
+  CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Factory",
