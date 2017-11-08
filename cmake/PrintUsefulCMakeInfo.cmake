@@ -15,7 +15,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-message("\nUseful Information:")
+message(STATUS "\nUseful Information:")
 message(STATUS "Git Branch: " ${GIT_BRANCH})
 message(STATUS "Git Hash: " ${GIT_COMMIT_HASH})
 message(STATUS "Build Directory: " ${CMAKE_BINARY_DIR})
