@@ -15,7 +15,7 @@
 
 #include "ErrorHandling/Error.hpp"
 
-class Option_t;
+class Option;
 
 /// The string used in option structs
 using OptionString_t = const char* const;
@@ -91,8 +91,8 @@ class propagate_context : public std::exception {
 /// parse options using `T::options`.  This struct may be specialized
 /// to change that behavior for specific types.
 ///
-/// Do not call create directly.  Use Option_t::parse_as instead.
+/// Do not call create directly.  Use Option::parse_as instead.
 template <typename T>
 struct create_from_yaml {
-  static T create(const Option_t& options);
+  static T create(const Option& options);
 };

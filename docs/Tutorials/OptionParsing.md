@@ -72,7 +72,7 @@ struct
 \code{cpp}
 template <typename T>
 struct create_from_yaml {
-  static T create(const Option_t& options);
+  static T create(const Option& options);
 };
 \endcode
 The create function can perform any operations required to construct

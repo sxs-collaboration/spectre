@@ -85,7 +85,7 @@ struct CFOAnimal {
 
 template <>
 struct create_from_yaml<CreateFromOptionsAnimal> {
-  static CreateFromOptionsAnimal create(const Option_t& options) {
+  static CreateFromOptionsAnimal create(const Option& options) {
     const std::string animal = options.parse_as<std::string>();
     if (animal == "Cat") {
       return CreateFromOptionsAnimal::Cat;

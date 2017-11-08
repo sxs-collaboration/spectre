@@ -32,19 +32,19 @@
 /// \ingroup OptionParsing
 /// The type that options are passed around as.  Contains YAML node
 /// data and an OptionContext.
-class Option_t {
+class Option {
  public:
   /// NOTE: This constructor overwrites the mark data in the supplied
   /// context with the one from the node.
-  explicit Option_t(YAML::Node node,
-                    OptionContext context = OptionContext()) noexcept
+  explicit Option(YAML::Node node,
+                  OptionContext context = OptionContext()) noexcept
       // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
       : node_(std::move(node)), context_(std::move(context)) {  // NOLINT
     context_.line = node.Mark().line;
     context_.column = node.Mark().column;
   }
 
-  explicit Option_t(OptionContext context) noexcept
+  explicit Option(OptionContext context) noexcept
       : context_(std::move(context)) {}
 
   const YAML::Node& node() const noexcept { return node_; }
@@ -73,7 +73,7 @@ class Option_t {
 };
 
 template <typename T>
-T Option_t::parse_as() const {
+T Option::parse_as() const {
   try {
     // yaml-cpp's `as` method won't parse empty nodes, so we need to
     // inline a bit of its logic.
@@ -138,7 +138,7 @@ T Option_t::parse_as() const {
 /// Options must be given YAML data to parse before output can be
 /// extracted.  This can be done either from a file (parse_file
 /// method), from a string (parse method), or, in the case of
-/// recursive parsing, from an Option_t (parse method).  The options
+/// recursive parsing, from an Option (parse method).  The options
 /// can then be extracted using the get method.
 ///
 /// \example
@@ -159,8 +159,8 @@ class Options {
   /// \param options the string holding the YAML formatted options
   void parse(const std::string& options) noexcept;
 
-  /// Parse an Option_t to obtain options and their values.
-  void parse(const Option_t& options);
+  /// Parse an Option to obtain options and their values.
+  void parse(const Option& options);
 
   /// Parse a file containing options
   ///
@@ -366,7 +366,7 @@ void Options<OptionList>::parse(const std::string& options) noexcept {
 }
 
 template <typename OptionList>
-void Options<OptionList>::parse(const Option_t& options) {
+void Options<OptionList>::parse(const Option& options) {
   context_ = options.context();
   parse(options.node());
 }
@@ -416,7 +416,7 @@ typename T::type Options<OptionList>::get() const {
     return get_default<T>();
   }
 
-  Option_t option(parsed_options_.find(label)->second, context_);
+  Option option(parsed_options_.find(label)->second, context_);
   option.append_context("While parsing option " + label);
 
   auto t = option.parse_as<typename T::type>();
@@ -559,7 +559,7 @@ template <typename OptionList>
 }
 
 template <typename T>
-T create_from_yaml<T>::create(const Option_t& options) {
+T create_from_yaml<T>::create(const Option& options) {
   Options<typename T::options> parser(T::help);
   parser.parse(options);
   return parser.template apply<typename T::options>([&options](auto&&... args) {
@@ -584,7 +584,7 @@ struct convert<Options_detail::CreateWrapper<T>> {
     OptionContext context;
     context.top_level = false;
     context.append("While creating a " + pretty_type::short_name<T>());
-    Option_t options(node, std::move(context));
+    Option options(node, std::move(context));
     rhs =
         Options_detail::CreateWrapper<T>{create_from_yaml<T>::create(options)};
     return true;
@@ -595,7 +595,7 @@ struct convert<Options_detail::CreateWrapper<T>> {
 // yaml-cpp doesn't handle C++11 types yet
 template <typename K, typename V, typename H, typename P>
 struct create_from_yaml<std::unordered_map<K, V, H, P>> {
-  static std::unordered_map<K, V, H, P> create(const Option_t& options) {
+  static std::unordered_map<K, V, H, P> create(const Option& options) {
     std::map<K, V> ordered = options.parse_as<std::map<K, V>>();
     std::unordered_map<K, V, H, P> result;
     result.insert(std::make_move_iterator(ordered.begin()),

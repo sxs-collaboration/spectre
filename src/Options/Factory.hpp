@@ -24,14 +24,14 @@ namespace Factory_detail {
 template <typename BaseClass, typename CreateList,
           Requires<(tmpl::size<CreateList>::value == 0)> = nullptr>
 std::unique_ptr<BaseClass> create_derived(
-    const std::string& /*id*/, const Option_t& /*opts*/) noexcept {
+    const std::string& /*id*/, const Option& /*opts*/) noexcept {
   return std::unique_ptr<BaseClass>{};
 }
 
 template <typename BaseClass, typename CreateList,
           Requires<(tmpl::size<CreateList>::value != 0)> = nullptr>
 std::unique_ptr<BaseClass> create_derived(const std::string& id,
-                                          const Option_t& opts) {
+                                          const Option& opts) {
   using derived = tmpl::front<CreateList>;
 
   if (pretty_type::short_name<derived>() != id) {
@@ -83,9 +83,9 @@ std::string help_derived() noexcept {
 }
 
 template <typename BaseClass>
-std::unique_ptr<BaseClass> create(const Option_t& options) {
+std::unique_ptr<BaseClass> create(const Option& options) {
   const auto& node = options.node();
-  Option_t derived_opts(options.context());
+  Option derived_opts(options.context());
   derived_opts.append_context("While operating factory for " +
                               pretty_type::short_name<BaseClass>());
   std::string id;
@@ -121,7 +121,7 @@ std::unique_ptr<BaseClass> create(const Option_t& options) {
 
 template <typename T>
 struct create_from_yaml<std::unique_ptr<T>> {
-  static std::unique_ptr<T> create(const Option_t& options) {
+  static std::unique_ptr<T> create(const Option& options) {
     return Factory_detail::create<T>(options);
   }
 };
