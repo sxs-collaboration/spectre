@@ -47,9 +47,9 @@ std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a);
 template <typename... Args>
 std::ostream& operator<<(std::ostream& os, const std::tuple<Args...>& t);
 
-template <typename K, typename V>
+template <typename K, typename V, typename H>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::unordered_map<K, V>& m);
+                                const std::unordered_map<K, V, H>& m);
 
 template <typename K, typename V, typename C>
 inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m);

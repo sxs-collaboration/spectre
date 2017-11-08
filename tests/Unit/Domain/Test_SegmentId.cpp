@@ -34,14 +34,20 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
          ++segment_index) {
       SegmentId id(level, segment_index);
       CHECK(id.midpoint() == midpoint);
+      CHECK((id.endpoint(Side::Upper) + id.endpoint(Side::Lower)) / 2. ==
+            midpoint);
+      CHECK(id.endpoint(Side::Upper) - id.endpoint(Side::Lower) ==
+            segment_length);
       midpoint += segment_length;
       CHECK(id == id.id_of_child(Side::Lower).id_of_parent());
       CHECK(id == id.id_of_child(Side::Upper).id_of_parent());
-      if (0 == segment_index % 2) {
-        CHECK(id == id.id_of_parent().id_of_child(Side::Lower));
-      } else {
-        CHECK(id == id.id_of_parent().id_of_child(Side::Upper));
-      }
+      CHECK(id.overlaps(id));
+      CHECK(id.overlaps(id.id_of_parent()));
+      const Side side_of_parent =
+          0 == segment_index % 2 ? Side::Lower : Side::Upper;
+      CHECK(id == id.id_of_parent().id_of_child(side_of_parent));
+      CHECK_FALSE(
+          id.overlaps(id.id_of_parent().id_of_child(opposite(side_of_parent))));
     }
   }
 

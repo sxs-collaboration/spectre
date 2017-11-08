@@ -3,6 +3,7 @@
 
 set(DATA_STRUCTURES_TESTS
     DataStructures/Test_DataBox.cpp
+    DataStructures/Test_DataBoxTag.cpp
     DataStructures/Test_DataVector.cpp
     DataStructures/Test_GeneralIndexIterator.cpp
     DataStructures/Test_Index.cpp

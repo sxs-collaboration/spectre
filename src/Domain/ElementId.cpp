@@ -52,14 +52,19 @@ std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id) {
 }
 
 // LCOV_EXCL_START
-namespace std {
 template <size_t VolumeDim>
-size_t hash<ElementId<VolumeDim>>::operator()(
-    const ElementId<VolumeDim>& c) const noexcept {
+size_t hash_value(const ElementId<VolumeDim>& c) noexcept {
   size_t h = 0;
   boost::hash_combine(h, c.block_id());
   boost::hash_combine(h, c.segment_ids());
   return h;
+}
+
+namespace std {
+template <size_t VolumeDim>
+size_t hash<ElementId<VolumeDim>>::operator()(
+    const ElementId<VolumeDim>& c) const noexcept {
+  return hash_value(c);
 }
 }  // namespace std
 // LCOV_EXCL_STOP
@@ -71,6 +76,10 @@ template class ElementId<3>;
 template std::ostream& operator<<(std::ostream&, const ElementId<1>&);
 template std::ostream& operator<<(std::ostream&, const ElementId<2>&);
 template std::ostream& operator<<(std::ostream&, const ElementId<3>&);
+
+template size_t hash_value(const ElementId<1>&) noexcept;
+template size_t hash_value(const ElementId<2>&) noexcept;
+template size_t hash_value(const ElementId<3>&) noexcept;
 
 namespace std {
 template struct hash<ElementId<1>>;

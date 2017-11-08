@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <boost/functional/hash.hpp>
 #include <catch.hpp>
 #include <list>
 #include <map>
@@ -55,7 +56,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   std::tuple<> tuple0{};
   CHECK(get_output(tuple0) == "()");
 
-  std::unordered_map<std::string, int> my_unordered_map;
+  std::unordered_map<std::string, int, boost::hash<std::string>>
+      my_unordered_map;
   CHECK(get_output(my_unordered_map) == "()");
   CHECK(keys_of(my_unordered_map) == "()");
   my_unordered_map["aaa"] = 1;
