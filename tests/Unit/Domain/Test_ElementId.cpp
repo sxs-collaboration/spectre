@@ -4,6 +4,7 @@
 #include <catch.hpp>
 
 #include "Domain/ElementId.hpp"
+#include "Domain/ElementIndex.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -47,4 +48,27 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
 
   // Test output operator:
   CHECK(get_output(block_2_3d) == "[B2,(L2I3,L1I0,L1I1)]");
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.ElementId.ElementIndexConversion",
+                  "[Domain][Unit]") {
+  auto segment_ids = std::array<SegmentId, 3>(
+      {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}});
+  ElementId<3> block_2_3d(2, segment_ids);
+  CHECK(block_2_3d.block_id() == 2);
+  CHECK(block_2_3d.segment_ids() == segment_ids);
+
+  ElementIndex<3> block_2_3d_index(block_2_3d);
+  CHECK(block_2_3d_index.block_id() == 2);
+  CHECK(block_2_3d_index.segments().size() == segment_ids.size());
+  for (size_t i = 0; i < segment_ids.size(); ++i) {
+    CHECK(gsl::at(block_2_3d_index.segments(), i).block_id() == 2);
+    CHECK(gsl::at(block_2_3d_index.segments(), i).index() ==
+          gsl::at(segment_ids, i).index());
+    CHECK(gsl::at(block_2_3d_index.segments(), i).refinement_level() ==
+          gsl::at(segment_ids, i).refinement_level());
+  }
+  ElementId<3> block_2_3d_from_index(block_2_3d_index);
+  CHECK(block_2_3d_from_index.block_id() == 2);
+  CHECK(block_2_3d_from_index.segment_ids() == segment_ids);
 }

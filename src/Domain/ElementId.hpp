@@ -12,8 +12,12 @@
 
 #include "Domain/SegmentId.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
+
+template <size_t>
+class ElementIndex;
 
 /// \ingroup ComputationalDomainGroup
 /// An ElementId uniquely labels a Element.
@@ -29,12 +33,15 @@ class ElementId {
   /// Create the ElementId of the root Element of a Block.
   explicit ElementId(size_t block_id) noexcept;
 
+  /// Convert an ElementIndex to an ElementId
+  // clang-tidy: mark explicit: we want to allow conversion
+  ElementId(const ElementIndex<VolumeDim>& index) noexcept;  // NOLINT
+
   /// Create an arbitrary ElementId.
   ElementId(size_t block_id,
-                      std::array<SegmentId, VolumeDim> segment_ids) noexcept;
+            std::array<SegmentId, VolumeDim> segment_ids) noexcept;
 
-  ElementId<VolumeDim> id_of_child(size_t dim, Side side) const
-      noexcept;
+  ElementId<VolumeDim> id_of_child(size_t dim, Side side) const noexcept;
 
   ElementId<VolumeDim> id_of_parent(size_t dim) const noexcept;
 
@@ -45,7 +52,7 @@ class ElementId {
   }
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   size_t block_id_ = std::numeric_limits<size_t>::max();

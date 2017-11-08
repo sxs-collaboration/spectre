@@ -6,6 +6,7 @@
 #include <boost/functional/hash.hpp>
 #include <limits>
 
+#include "Domain/ElementIndex.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -23,8 +24,19 @@ ElementId<VolumeDim>::ElementId(
     : block_id_{block_id}, segment_ids_(std::move(segment_ids)) {}
 
 template <size_t VolumeDim>
-ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(
-    const size_t dim, const Side side) const noexcept {
+ElementId<VolumeDim>::ElementId(const ElementIndex<VolumeDim>& index) noexcept {
+  block_id_ = index.block_id();
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    gsl::at(segment_ids_, d) =
+        SegmentId{gsl::at(index.segments(), d).refinement_level(),
+                  gsl::at(index.segments(), d).index()};
+  }
+}
+
+template <size_t VolumeDim>
+ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(const size_t dim,
+                                                       const Side side) const
+    noexcept {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
   gsl::at(new_segment_ids, dim) =
       gsl::at(new_segment_ids, dim).id_of_child(side);
@@ -32,15 +44,15 @@ ElementId<VolumeDim> ElementId<VolumeDim>::id_of_child(
 }
 
 template <size_t VolumeDim>
-ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(
-    const size_t dim) const noexcept {
+ElementId<VolumeDim> ElementId<VolumeDim>::id_of_parent(const size_t dim) const
+    noexcept {
   std::array<SegmentId, VolumeDim> new_segment_ids = segment_ids_;
   gsl::at(new_segment_ids, dim) = gsl::at(new_segment_ids, dim).id_of_parent();
   return {block_id_, new_segment_ids};
 }
 
 template <size_t VolumeDim>
-void ElementId<VolumeDim>::pup(PUP::er& p) {
+void ElementId<VolumeDim>::pup(PUP::er& p) noexcept {
   p | block_id_;
   p | segment_ids_;
 }
