@@ -8,8 +8,8 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-template<typename T>
-struct TestT {
+template <typename T>
+struct TestTwoToThe {
   static constexpr T zero = 0;
   static constexpr T one = 1;
   static constexpr T two = 2;
@@ -30,22 +30,22 @@ struct TestT {
                 "Failed test Unit.Utilities.ConstantExpressions");
 };
 
-template
-struct TestT<int>;
-template
-struct TestT<short>;
-template
-struct TestT<long>;
-template
-struct TestT<long long>;
-template
-struct TestT<unsigned int>;
-template
-struct TestT<unsigned short>;
-template
-struct TestT<unsigned long>;
-template
-struct TestT<unsigned long long>;
+template struct TestTwoToThe<unsigned int>;
+template struct TestTwoToThe<unsigned short>;
+template struct TestTwoToThe<unsigned long>;
+template struct TestTwoToThe<unsigned long long>;
+
+// [[OutputRegex, two_to_the is overflowing!]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.ConstantExpressions.TwoToThe",
+                               "[Unit][Utilities]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const size_t n = 8 * sizeof(size_t);
+  // clang-tidy: value stored ... never used
+  const size_t two_to_the_n = two_to_the(n);  // NOLINT
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
 
 static_assert(square(2) == 4, "Failed test Unit.Utilities.ConstantExpressions");
 
