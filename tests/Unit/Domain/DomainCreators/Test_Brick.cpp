@@ -9,7 +9,7 @@
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
-#include "tests/Unit/Domain/TestDomainHelpers.hpp"
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
