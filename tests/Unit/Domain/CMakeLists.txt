@@ -12,6 +12,7 @@ set(DOMAIN_TESTS
     Domain/DomainCreators/Test_Brick.cpp
     Domain/DomainCreators/Test_Interval.cpp
     Domain/DomainCreators/Test_Rectangle.cpp
+    Domain/DomainTestHelpers.cpp
     Domain/Test_Block.cpp
     Domain/Test_BlockNeighbor.cpp
     Domain/Test_Direction.cpp

@@ -1,38 +1,32 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines helper functions for testing Domain and DomainCreators.
-
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Domain.hpp"
-#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 
-template <size_t Dim, typename Map>
+template <size_t VolumeDim>
+class BlockNeighbor;
+template <typename SourceFrame, typename TargetFrame, size_t Dim>
+class CoordinateMapBase;
+template <size_t VolumeDim>
+class Direction;
+template <size_t VolumeDim, typename TargetFrame>
+class Domain;
+
+template <size_t VolumeDim>
 void test_domain_construction(
-    const Domain<Dim, Frame::Inertial>& domain,
-    const std::vector<std::unordered_map<Direction<Dim>, BlockNeighbor<Dim>>>&
+    const Domain<VolumeDim, Frame::Inertial>& domain,
+    const std::vector<
+        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
-    const std::vector<std::unordered_set<Direction<Dim>>>&
+    const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<Map>& expected_maps) {
-  const auto& blocks = domain.blocks();
-  CHECK(blocks.size() == expected_external_boundaries.size());
-  CHECK(blocks.size() == expected_block_neighbors.size());
-  CHECK(blocks.size() == expected_maps.size());
-  for (size_t i = 0; i < blocks.size(); ++i) {
-    const auto& block = blocks[i];
-    CHECK(block.id() == i);
-    CHECK(block.neighbors() == expected_block_neighbors[i]);
-    CHECK(block.external_boundaries() == expected_external_boundaries[i]);
-    CHECK(are_maps_equal(expected_maps[i], block.coordinate_map()));
-  }
-}
+    const std::vector<std::unique_ptr<
+        CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+        expected_maps);

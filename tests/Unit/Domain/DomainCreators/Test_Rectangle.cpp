@@ -37,7 +37,7 @@ void test_rectangle_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           AffineMap2D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
                       AffineMap{-1., 1., lower_bound[1], upper_bound[1]}})));
 }

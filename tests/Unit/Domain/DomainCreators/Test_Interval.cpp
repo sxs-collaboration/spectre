@@ -32,7 +32,7 @@ void test_interval(const DomainCreators::Interval& interval,
       std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>{{}},
       std::vector<std::unordered_set<Direction<1>>>{
           {{Direction<1>::lower_xi()}, {Direction<1>::upper_xi()}}},
-      make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]})));
 }
 
@@ -60,7 +60,7 @@ void test_periodic_interval(
           {{Direction<1>::lower_xi(), {0, aligned_orientation}},
            {Direction<1>::upper_xi(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<1>>>{{}},
-      make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]})));
 }
 }  // namespace
