@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
@@ -20,6 +21,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Side.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -183,9 +185,18 @@ struct InterfaceBase;
 /// applied on a slice, it may indicate them using a `volume_tags`
 /// typelist in the tag struct.
 ///
+/// If the type of the item is a Variables, then each tag in the
+/// Variables must specify whether it should be sliced from the volume
+/// or computed (or set) on the interface.  This is done using a
+/// `static constexpr bool should_be_sliced_to_boundary` member of the
+/// tag.  All tags in the Variables must have the same value for this
+/// member.  DataBox tags for sliced Variables will be compute items
+/// performing the slicing.  %Tags for non-sliced Variables will
+/// perform the same action as the corresponding volume tag.
+///
 /// \tparam DirectionsTag the item of directions
 /// \tparam Tag the tag labeling the item
-template <typename DirectionsTag, typename Tag>
+template <typename DirectionsTag, typename Tag, typename = std::nullptr_t>
 struct Interface : InterfaceBase<DirectionsTag, Tag, Tag> {};
 
 namespace Interface_detail {
@@ -408,3 +419,56 @@ struct Subitems<Tags::Interface<DirectionsTag, VariablesTag>,
   }
 };
 }  // namespace db
+
+namespace Tags {
+namespace detail {
+template <size_t VolumeDim, typename>
+struct Slice;
+
+template <size_t VolumeDim, typename... SlicedTags>
+struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeItemTag {
+  static constexpr auto function(
+      const ::Index<VolumeDim>& extents,
+      const ::Direction<VolumeDim>& direction,
+      const db::item_type<SlicedTags>&... tensors) noexcept {
+    return data_on_slice<SlicedTags...>(
+        extents, direction.dimension(),
+        direction.side() == Side::Lower ? 0
+                                        : extents[direction.dimension()] - 1,
+        tensors...);
+  }
+  using argument_tags =
+      tmpl::list<Extents<VolumeDim>, Direction<VolumeDim>, SlicedTags...>;
+  using volume_tags = tmpl::list<Extents<VolumeDim>, SlicedTags...>;
+};
+
+template <typename Tag>
+struct ShouldBeSlicedToBoundary {
+  using type = std::integral_constant<bool, Tag::should_be_sliced_to_boundary>;
+};
+}  // namespace detail
+
+/// \cond
+template <typename DirectionsTag, typename VariablesTag>
+struct Interface<
+    DirectionsTag, VariablesTag,
+    Requires<tmpl::all<typename db::item_type<VariablesTag>::tags_list,
+                       detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value>>
+    : InterfaceBase<
+          DirectionsTag, VariablesTag,
+          detail::Slice<db::item_type<DirectionsTag>::value_type::volume_dim,
+                        typename db::item_type<VariablesTag>::tags_list>> {};
+
+template <typename DirectionsTag, typename VariablesTag>
+struct Interface<
+    DirectionsTag, VariablesTag,
+    Requires<
+        tmpl::any<typename db::item_type<VariablesTag>::tags_list,
+                  detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value and
+        not tmpl::all<typename db::item_type<VariablesTag>::tags_list,
+                      detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value>> {
+  static_assert(cpp17::is_same_v<VariablesTag, void> && false,
+                "Cannot compute a partially-sliced Variables");
+};
+/// \endcond
+}  // namespace Tags

@@ -18,6 +18,8 @@
 template <size_t VolumeDim>
 class Direction {
  public:
+  static constexpr const size_t volume_dim = VolumeDim;
+
   /// The logical-coordinate names of each dimension
   enum class Axis;
 

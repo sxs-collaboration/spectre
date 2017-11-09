@@ -183,6 +183,9 @@ template <size_t N>
 struct Var : db::DataBoxTag {
   static constexpr db::DataBoxString label = "Var";
   using type = Scalar<DataVector>;
+  static constexpr bool should_be_sliced_to_boundary =
+      N == 3 or N == 30 or  // sliced_simple_item_tag below
+      N == 2 or N == 20;    // sliced_compute_item_tag below
 };
 
 template <size_t VolumeDim>
@@ -208,6 +211,24 @@ auto make_interface_variables(DataVector value_xi,
   std::unordered_map<Direction<dim>, decltype(make(value_xi))> ret;
   ret.emplace(Direction<dim>::lower_xi(), make(std::move(value_xi)));
   ret.emplace(Direction<dim>::upper_eta(), make(std::move(value_eta)));
+  return ret;
+}
+
+template <size_t N0, size_t N1>
+auto make_interface_variables(
+    DataVector value_xi0, DataVector value_xi1,
+    DataVector value_eta0, DataVector value_eta1) noexcept {
+  const auto make = [](DataVector value0, DataVector value1) noexcept {
+    Variables<tmpl::list<Var<N0>, Var<N1>>> v(value0.size());
+    get(get<Var<N0>>(v)) = std::move(value0);
+    get(get<Var<N1>>(v)) = std::move(value1);
+    return v;
+  };
+  std::unordered_map<Direction<dim>, decltype(make(value_xi0, value_xi1))> ret;
+  ret.emplace(Direction<dim>::lower_xi(),
+              make(std::move(value_xi0), std::move(value_xi1)));
+  ret.emplace(Direction<dim>::upper_eta(),
+              make(std::move(value_eta0), std::move(value_eta1)));
   return ret;
 }
 
@@ -249,4 +270,125 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
       });
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
         make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));
+}
+
+namespace {
+using simple_item_tag = Tags::Variables<tmpl::list<Var<0>>>;
+using compute_item_tag = Compute<1>;
+using sliced_compute_item_tag = Compute<2>;
+using sliced_simple_item_tag = Tags::Variables<tmpl::list<Var<3>>>;
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
+  const Index<dim> extents{{{4, 3}}};
+
+  db::item_type<sliced_simple_item_tag> volume_vars(extents.product());
+  get<Var<3>>(volume_vars).get() =
+      DataVector{0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
+  const DataVector boundary_vars_xi{10., 11., 12.};
+  const DataVector boundary_vars_eta{20., 21., 22., 23.};
+
+  auto box = db::create<
+      db::AddTags<Tags::Extents<dim>, sliced_simple_item_tag,
+                  Tags::Interface<Dirs, simple_item_tag>>,
+      db::AddComputeItemsTags<Dirs, sliced_compute_item_tag,
+                              Tags::Interface<Dirs, Tags::Direction<dim>>,
+                              Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
+                              Tags::Interface<Dirs, compute_item_tag>,
+                              Tags::Interface<Dirs, sliced_compute_item_tag>,
+                              Tags::Interface<Dirs, sliced_simple_item_tag>>>(
+      extents, std::move(volume_vars),
+      make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+
+  CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
+        make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+  CHECK((db::get<Tags::Interface<Dirs, compute_item_tag>>(box)) ==
+        (make_interface_variables<1, 10>({1., 1., 1.}, {5., 5., 5.},
+                                         {1., 1., 1., 1.}, {5., 5., 5., 5.})));
+  CHECK((db::get<Tags::Interface<Dirs, sliced_compute_item_tag>>(box)) ==
+        (make_interface_variables<2, 20>(
+             {2., 2., 2.}, {10., 10., 10.},
+             {2., 2., 2., 2.}, {10., 10., 10., 10.})));
+  CHECK((db::get<Tags::Interface<Dirs, sliced_simple_item_tag>>(box)) ==
+        make_interface_variables<3>({0., 4., 8.}, {8., 9., 10., 11.}));
+}
+
+namespace partial_slice {
+template <size_t N>
+struct Scalar : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Scalar";
+  using type = ::Scalar<DataVector>;
+  static constexpr bool should_be_sliced_to_boundary = N == 0;
+};
+
+constexpr size_t vector_dim = 3;
+template <size_t N>
+struct Vector : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Vector";
+  using type = tnsr::i<DataVector, vector_dim, Frame::Logical>;
+  static constexpr bool should_be_sliced_to_boundary = N == 1;
+};
+
+template <size_t VolumeDim>
+struct ComputedVars : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "ComputedVars";
+  static auto function(const Index<VolumeDim>& extents) noexcept {
+    const DataVector volume_data{
+      11., 10., 9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};
+
+    Variables<tmpl::list<Scalar<1>, Vector<1>>> vars(extents.product());
+    get<Scalar<1>>(vars).get() = volume_data;
+    for (size_t i = 0; i < vector_dim; ++i) {
+      get<Vector<1>>(vars).get(i) = volume_data * (i + 2);
+    }
+    return vars;
+  }
+  using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
+};
+
+using volume_vars_tag = Tags::Variables<tmpl::list<Scalar<0>, Vector<0>>>;
+using slice_tag = Tags::Variables<tmpl::list<Vector<1>, Scalar<0>>>;
+}  // namespace partial_slice
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.PartialSlice", "[Unit][Domain]") {
+  const Index<dim> extents{{{4, 3}}};
+
+  const DataVector volume_data{
+    0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
+
+  db::item_type<partial_slice::volume_vars_tag> volume_vars(extents.product());
+  get<partial_slice::Scalar<0>>(volume_vars).get() = volume_data;
+  for (size_t i = 0; i < partial_slice::vector_dim; ++i) {
+    get<partial_slice::Vector<0>>(volume_vars).get(i) = volume_data * (i + 2);
+  }
+
+  const auto box = db::create<
+      db::AddTags<Tags::Extents<dim>, partial_slice::volume_vars_tag>,
+      db::AddComputeItemsTags<Dirs, partial_slice::ComputedVars<dim>,
+                              Tags::Interface<Dirs, Tags::Direction<dim>>,
+                              Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
+                              Tags::Interface<Dirs, partial_slice::slice_tag>>>(
+      extents, std::move(volume_vars));
+
+  Variables<tmpl::list<partial_slice::Vector<1>, partial_slice::Scalar<0>>>
+      expected_xi(3);
+  get(get<partial_slice::Scalar<0>>(expected_xi)) = DataVector{0., 4., 8.};
+  for (size_t i = 0; i < partial_slice::vector_dim; ++i) {
+    get<partial_slice::Vector<1>>(expected_xi).get(i) =
+        (i + 2) * DataVector{11., 7., 3.};
+  }
+
+  Variables<tmpl::list<partial_slice::Vector<1>, partial_slice::Scalar<0>>>
+      expected_eta(4);
+  get(get<partial_slice::Scalar<0>>(expected_eta)) =
+      DataVector{8., 9., 10., 11.};
+  for (size_t i = 0; i < partial_slice::vector_dim; ++i) {
+    get<partial_slice::Vector<1>>(expected_eta).get(i) =
+        (i + 2) * DataVector{3., 2., 1., 0.};
+  }
+
+  CHECK((db::get<Tags::Interface<Dirs, partial_slice::slice_tag>>(box)) ==
+        (std::unordered_map<Direction<dim>, decltype(expected_xi)>{
+            {Direction<dim>::lower_xi(), expected_xi},
+            {Direction<dim>::upper_eta(), expected_eta}}));
 }
