@@ -22,5 +22,4 @@ class ElementId;
 template <size_t VolumeDim, typename TargetFrame>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id,
-    const Block<VolumeDim, TargetFrame>& block,
-    const std::array<size_t, VolumeDim>& initial_refinement_levels) noexcept;
+    const Block<VolumeDim, TargetFrame>& block) noexcept;
