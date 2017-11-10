@@ -10,6 +10,8 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/ElementId.hpp"
+#include "Domain/SegmentId.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
@@ -23,7 +25,7 @@ void test_domain_construction(
         expected_external_boundaries,
     const std::vector<std::unique_ptr<
         CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
-        expected_maps) {
+        expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
   CHECK(blocks.size() == expected_block_neighbors.size());
@@ -38,6 +40,18 @@ void test_domain_construction(
   }
 }
 
+template <size_t VolumeDim>
+boost::rational<size_t> fraction_of_block_volume(
+    const ElementId<VolumeDim>& element_id) noexcept {
+  const auto& segment_ids = element_id.segment_ids();
+  size_t sum_of_refinement_levels = 0;
+  for (const auto& segment_id : segment_ids) {
+    sum_of_refinement_levels += segment_id.refinement_level();
+  }
+  return boost::rational<size_t>(1, two_to_the(sum_of_refinement_levels));
+}
+
+/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -50,9 +64,12 @@ void test_domain_construction(
           expected_external_boundaries,                                        \
       const std::vector<std::unique_ptr<                                       \
           CoordinateMapBase<Frame::Logical, Frame::Inertial, DIM(data)>>>&     \
-          expected_maps);
+          expected_maps) noexcept;                                             \
+  template boost::rational<size_t> fraction_of_block_volume(                   \
+      const ElementId<DIM(data)>& element_id) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
+/// \endcond
