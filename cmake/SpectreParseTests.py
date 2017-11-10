@@ -13,6 +13,7 @@ allowed_tags = [
                 "DataStructures",
                 "Domain",
                 "ErrorHandling",
+                "GeneralizedHarmonic",
                 "H5",
                 "IO",
                 "LinearOperators",
