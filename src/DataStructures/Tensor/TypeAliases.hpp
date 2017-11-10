@@ -94,6 +94,10 @@ template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using IJ = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
                   index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
                              SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using ia = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
@@ -319,6 +323,19 @@ using iAA = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>,
                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Iaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
+           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+
+// Rank 4 - Mixed
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using ijaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 
 namespace detail {
 template <size_t Dim, typename Frame1, typename Frame2>
