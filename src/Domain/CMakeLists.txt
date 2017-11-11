@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
     Element.cpp
     ElementId.cpp
     ElementIndex.cpp
+    ElementMap.cpp
     GridNormal.cpp
     InitialElementIds.cpp
     LogicalCoordinates.cpp
