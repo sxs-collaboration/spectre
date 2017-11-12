@@ -43,15 +43,12 @@ Domain<1, Frame::Inertial> Interval::create_domain() const noexcept {
                            : std::vector<PairOfFaces>{}};
 }
 
-std::array<size_t, 1> Interval::initial_extents(const size_t block_index) const
-    noexcept {
-  ASSERT(0 == block_index, "index = " << block_index);
-  return initial_number_of_grid_points_in_x_;
+std::vector<std::array<size_t, 1>> Interval::initial_extents() const noexcept {
+  return {{{initial_number_of_grid_points_in_x_}}};
 }
 
-std::array<size_t, 1> Interval::initial_refinement_levels(
-    const size_t block_index) const noexcept {
-  ASSERT(0 == block_index, "index = " << block_index);
-  return initial_refinement_level_x_;
+std::vector<std::array<size_t, 1>> Interval::initial_refinement_levels() const
+    noexcept {
+  return {{{initial_refinement_level_x_}}};
 }
 }  // namespace DomainCreators

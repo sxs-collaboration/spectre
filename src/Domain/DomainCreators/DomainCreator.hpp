@@ -85,12 +85,12 @@ class DomainCreator {
   virtual Domain<VolumeDim, TargetFrame> create_domain() const = 0;
 
   /// Obtain the initial grid extents of the block with the given index.
-  virtual std::array<size_t, VolumeDim> initial_extents(
-      size_t block_index) const = 0;
+  virtual std::vector<std::array<size_t, VolumeDim>> initial_extents() const
+      noexcept = 0;
 
-  /// Obtain the initial refinement levels of the block with the given index.
-  virtual std::array<size_t, VolumeDim> initial_refinement_levels(
-      size_t block_index) const = 0;
+  /// Obtain the initial refinement levels of the blocks.
+  virtual std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels()
+      const noexcept = 0;
 };
 
 #include "Domain/DomainCreators/Brick.hpp"

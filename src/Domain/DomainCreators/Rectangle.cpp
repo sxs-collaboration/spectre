@@ -54,15 +54,12 @@ Domain<2, Frame::Inertial> Rectangle::create_domain() const noexcept {
       std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};
 }
 
-std::array<size_t, 2> Rectangle::initial_extents(const size_t block_index) const
-    noexcept {
-  ASSERT(0 == block_index, "index = " << block_index);
-  return initial_number_of_grid_points_in_xy_;
+std::vector<std::array<size_t, 2>> Rectangle::initial_extents() const noexcept {
+  return {initial_number_of_grid_points_in_xy_};
 }
 
-std::array<size_t, 2> Rectangle::initial_refinement_levels(
-    const size_t block_index) const noexcept {
-  ASSERT(0 == block_index, "index = " << block_index);
-  return initial_refinement_level_xy_;
+std::vector<std::array<size_t, 2>> Rectangle::initial_refinement_levels() const
+    noexcept {
+  return {initial_refinement_level_xy_};
 }
 }  // namespace DomainCreators

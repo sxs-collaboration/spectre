@@ -65,10 +65,9 @@ class Brick : public DomainCreator<3, Frame::Inertial> {
 
   Domain<3, Frame::Inertial> create_domain() const noexcept override;
 
-  std::array<size_t, 3> initial_extents(size_t block_index) const
-      noexcept override;
+  std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 
-  std::array<size_t, 3> initial_refinement_levels(size_t block_index) const
+  std::vector<std::array<size_t, 3>> initial_refinement_levels() const
       noexcept override;
 
  private:
