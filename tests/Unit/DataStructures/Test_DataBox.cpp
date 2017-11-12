@@ -296,6 +296,27 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
       });
 }
 
+// [[OutputRegex, Unable to retrieve a \(compute\) item 'ComputeTag0' from the
+// DataBox from within a call to mutate. You must pass these either through the
+// capture list of the lambda or the constructor of a class, this restriction
+// exists to avoid complexity]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get_lazy",
+                  "[Unit][DataStructures]") {
+  ERROR_TEST();
+  auto original_box =
+      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                             test_databox_tags::Tag2>,
+                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                                         test_databox_tags::ComputeTag1>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
+      original_box,
+      [&original_box](double& /*tag0*/, std::vector<double>& /*tag1*/) {
+        const auto& compute_tag0 =
+            original_box.template get_lazy<test_databox_tags::ComputeTag0>();
+      });
+}
+
 // [[OutputRegex, Unable to mutate a DataBox that is already being mutated. This
 // error occurs when mutating a DataBox from inside the invokable passed to the
 // mutate function]]
