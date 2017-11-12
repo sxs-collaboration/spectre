@@ -1694,4 +1694,39 @@ using remove_tags_from_keep_tags =
     tmpl::filter<DataBoxTagsList,
                  detail::filter_helper<tmpl::pin<KeepTagsList>, tmpl::_1>>;
 
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get all the Tags that are compute items from the `TagList`
+ */
+template <class TagList>
+using get_compute_items = tmpl::filter<TagList, db::is_compute_item<tmpl::_1>>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get all the Tags that are items from the `TagList`
+ */
+template <class TagList>
+using get_items =
+    tmpl::filter<TagList,
+                 tmpl::not_<tmpl::bind<db::is_compute_item, tmpl::_1>>>;
+
+namespace databox_detail {
+template <class ItemsList, class ComputeItemsList>
+struct compute_dbox_type;
+
+template <class... ItemsPack, class ComputeItemsList>
+struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
+  using type = decltype(db::create<tmpl::list<ItemsPack...>, ComputeItemsList>(
+      std::declval<db::item_type<ItemsPack>>()...));
+};
+}  // namespace databox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Returns the type of the DataBox that would be constructed from the
+ * `TagList` of tags.
+ */
+template <class TagList>
+using compute_databox_type = typename databox_detail::compute_dbox_type<
+    get_items<TagList>, get_compute_items<TagList>>::type;
 }  // namespace db

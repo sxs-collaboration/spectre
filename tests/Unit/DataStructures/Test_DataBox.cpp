@@ -971,3 +971,42 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
         (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
 }
+
+namespace {
+static_assert(
+    cpp17::is_same_v<
+        tmpl::list<test_databox_tags::ComputeTag0,
+                   test_databox_tags::ComputeTag1,
+                   test_databox_tags::MultiplyScalarByTwo>,
+        db::get_compute_items<
+            tmpl::list<test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
+                       test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
+                        test_databox_tags::MultiplyScalarByTwo>>>,
+                "Failed testing db::get_compute_items");
+  static_assert(
+      cpp17::is_same_v<
+          tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
+          db::get_items<tmpl::list<
+              test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
+              test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
+              test_databox_tags::MultiplyScalarByTwo>>>,
+      "Failed testing db::get_items");
+
+  static_assert(
+      cpp17::is_same_v<
+          db::compute_databox_type<tmpl::list<
+              test_databox_tags::Tag0,
+              Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                         test_databox_tags::VectorTag>>,
+              test_databox_tags::ComputeTag0, test_databox_tags::Tag1,
+              test_databox_tags::MultiplyScalarByTwo>>,
+          db::DataBox<db::get_databox_list<tmpl::list<
+              test_databox_tags::Tag0, test_databox_tags::Tag1,
+              test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
+              Tags::Variables<brigand::list<test_databox_tags::ScalarTag,
+                                            test_databox_tags::VectorTag>>,
+              test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2,
+              test_databox_tags::MultiplyScalarByTwo,
+              test_databox_tags::ComputeTag0>>>>,
+      "Failed testing db::compute_databox_type");
+}  // namespace
