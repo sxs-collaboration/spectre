@@ -17,6 +17,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Deferred.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -1508,6 +1509,117 @@ template <typename TagsList, typename F, typename... BoxTags, typename... Args>
 inline constexpr auto apply(F f, const DataBox<BoxTags...>& box,
                             Args&&... args) {
   return detail::Apply<TagsList>::apply(f, box, std::forward<Args>(args)...);
+}
+
+namespace databox_detail {
+CREATE_IS_CALLABLE(apply)
+
+template <typename... ReturnTags, typename... ArgumentTags, typename F,
+          typename... BoxTags, typename... Args,
+          Requires<is_apply_callable_v<
+              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+              Args...>> = nullptr>
+inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags...>& box,
+                                   tmpl::list<ReturnTags...> /*meta*/,
+                                   tmpl::list<ArgumentTags...> /*meta*/,
+                                   Args&&... args)
+    // clang-format off
+    noexcept(noexcept(F::apply(
+        std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
+        std::declval<const db::item_type<ArgumentTags>&>()...,
+        std::forward<Args>(args)...))) {
+  // clang-format on
+  ::db::mutate<ReturnTags...>(
+      box,
+      [](db::item_type<ReturnTags> & ... mutated_items,
+         const db::item_type<ArgumentTags>&... args_items,
+         decltype(std::forward<Args>(args))... l_args)
+      // clang-format off
+      noexcept(noexcept(F::apply(
+          std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
+          std::declval<const db::item_type<ArgumentTags>&>()...,
+          std::forward<Args>(args)...))) {
+        // clang-format on
+        return F::apply(make_not_null(&mutated_items)..., args_items...,
+                        std::forward<Args>(l_args)...);
+      },
+      db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+}
+
+template <typename... ReturnTags, typename... ArgumentTags, typename F,
+          typename... BoxTags, typename... Args,
+          Requires<::tt::is_callable_v<
+              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+              Args...>> = nullptr>
+inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags...>& box,
+                                   tmpl::list<ReturnTags...> /*meta*/,
+                                   tmpl::list<ArgumentTags...> /*meta*/,
+                                   Args&&... args)
+    // clang-format off
+    noexcept(noexcept(f(
+        std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
+        std::declval<const db::item_type<ArgumentTags>&>()...,
+        std::forward<Args>(args)...))) {
+  // clang-format on
+  ::db::mutate<ReturnTags...>(
+      box,
+      [&f](db::item_type<ReturnTags> & ... mutated_items,
+           const db::item_type<ArgumentTags>&... args_items,
+           decltype(std::forward<Args>(args))... l_args)
+      // clang-format off
+      noexcept(noexcept(f(make_not_null(&mutated_items)...,
+                          args_items..., std::forward<Args>(
+                              l_args)...)))
+      // clang-format on
+      {
+        return f(make_not_null(&mutated_items)..., args_items...,
+                 std::forward<Args>(l_args)...);
+      },
+      db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+}
+}  // namespace databox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the function `f` mutating items `MutateTags` and taking as
+ * additional arguments `ArgumentTags` and `args`.
+ *
+ * \details
+ * `f` must either by invokable with the arguments of type
+ * `db::item_type<ReturnTags>..., db::item_type<ArgumentTags>..., Args...` where
+ * the first two pack expansions are over the elements in the type lists
+ * `MutateTags` and `ArgumentTags`, or have a static `apply` function  that is
+ * callable with the same types.
+ *
+ * \example
+ * An example of using `mutate_apply` with a lambda:
+ * \snippet Test_DataBox.cpp mutate_apply_example
+ *
+ * An example of a class with a static `apply` function
+ *
+ * \snippet Test_DataBox.cpp mutate_apply_apply_struct_example
+ * and how to use `mutate_apply` with the class
+ * \snippet Test_DataBox.cpp mutate_apply_apply_example
+ *
+ * \see apply apply_with_box
+ * \tparam MutateTags typelist of Tags to mutate
+ * \tparam ArgumentTags typelist of additional items to retrieve from the
+ * DataBox
+ * \param f the function to apply
+ * \param box the DataBox out of which to retrieve the Tags and to pass to `f`
+ * \param args the arguments to pass to the function that are not in the
+ * DataBox, `box`
+ */
+template <typename MutateTags, typename ArgumentTags, typename F,
+          typename... BoxTags, typename... Args>
+inline constexpr auto
+mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
+    noexcept(databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
+                                          std::forward<Args>(args)...))) {
+  return databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
+                                      std::forward<Args>(args)...);
 }
 
 /*!
