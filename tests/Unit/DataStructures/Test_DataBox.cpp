@@ -527,16 +527,337 @@ struct VectorTag : db::DataBoxTag {
   using type = tnsr::I<DataVector, 3>;
   static constexpr db::DataBoxString_t label = "VectorTag";
 };
+struct ScalarTag2 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString_t label = "ScalarTag2";
+};
+struct VectorTag2 : db::DataBoxTag {
+  using type = tnsr::I<DataVector, 3>;
+  static constexpr db::DataBoxString_t label = "VectorTag2";
+};
+struct ScalarTag3 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString_t label = "ScalarTag3";
+};
+struct VectorTag3 : db::DataBoxTag {
+  using type = tnsr::I<DataVector, 3>;
+  static constexpr db::DataBoxString_t label = "VectorTag3";
+};
+struct ScalarTag4 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString_t label = "ScalarTag4";
+};
+struct VectorTag4 : db::DataBoxTag {
+  using type = tnsr::I<DataVector, 3>;
+  static constexpr db::DataBoxString_t label = "VectorTag4";
+};
+}  // namespace test_databox_tags
+
+namespace {
+auto multiply_scalar_by_two(const Scalar<DataVector>& scalar) {
+  Variables<
+      tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>
+      vars{scalar.begin()->size(), 2.0};
+  get<test_databox_tags::ScalarTag2>(vars).get() = scalar.get() * 2.0;
+  return vars;
+}
+
+auto multiply_scalar_by_four(const Scalar<DataVector>& scalar) {
+  return Scalar<DataVector>(scalar.get() * 4.0);
+}
+
+auto multiply_scalar_by_three(const Scalar<DataVector>& scalar) {
+  return Scalar<DataVector>(scalar.get() * 3.0);
+}
+
+auto divide_scalar_by_three(const Scalar<DataVector>& scalar) {
+  return Scalar<DataVector>(scalar.get() / 3.0);
+}
+
+auto divide_scalar_by_two(const Scalar<DataVector>& scalar) {
+  Variables<
+      tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>
+      vars{scalar.begin()->size(), 10.0};
+  get<test_databox_tags::ScalarTag3>(vars).get() = scalar.get() / 2.0;
+  return vars;
+}
+
+auto multiply_variables_by_two(
+    const Variables<tmpl::list<test_databox_tags::ScalarTag,
+                               test_databox_tags::VectorTag>>& vars) {
+  Variables<
+      tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>
+      out_vars(vars.number_of_grid_points(), 2.0);
+  get<test_databox_tags::ScalarTag4>(out_vars).get() *=
+      get<test_databox_tags::ScalarTag>(vars).get();
+  get<test_databox_tags::VectorTag4>(out_vars).get<0>() *=
+      get<test_databox_tags::VectorTag>(vars).get<0>();
+  get<test_databox_tags::VectorTag4>(out_vars).get<1>() *=
+      get<test_databox_tags::VectorTag>(vars).get<1>();
+  get<test_databox_tags::VectorTag4>(out_vars).get<2>() *=
+      get<test_databox_tags::VectorTag>(vars).get<2>();
+  return out_vars;
+}
+}  // namespace
+
+namespace test_databox_tags {
+struct MultiplyScalarByTwo : db::ComputeItemTag {
+  using variables_tags =
+      tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>;
+  static constexpr db::DataBoxString_t label = "MultiplyScalarByTwo";
+  static constexpr auto function = multiply_scalar_by_two;
+  using argument_tags = typelist<test_databox_tags::ScalarTag>;
+};
+
+struct MultiplyScalarByFour : db::ComputeItemTag {
+  static constexpr db::DataBoxString_t label = "MultiplyScalarByFour";
+  static constexpr auto function = multiply_scalar_by_four;
+  using argument_tags = typelist<test_databox_tags::ScalarTag2>;
+};
+
+struct MultiplyScalarByThree : db::ComputeItemTag {
+  static constexpr db::DataBoxString_t label = "MultiplyScalarByThree";
+  static constexpr auto function = multiply_scalar_by_three;
+  using argument_tags = typelist<test_databox_tags::MultiplyScalarByFour>;
+};
+
+struct DivideScalarByThree : db::ComputeItemTag {
+  static constexpr db::DataBoxString_t label = "DivideScalarByThree";
+  static constexpr auto function = divide_scalar_by_three;
+  using argument_tags = typelist<test_databox_tags::MultiplyScalarByThree>;
+};
+
+struct DivideScalarByTwo : db::ComputeItemTag {
+  static constexpr db::DataBoxString_t label = "DivideScalarByTwo";
+  static constexpr auto function = divide_scalar_by_two;
+  using argument_tags = typelist<test_databox_tags::DivideScalarByThree>;
+};
+
+struct MultiplyVariablesByTwo : db::ComputeItemTag {
+  static constexpr db::DataBoxString_t label = "MultiplyVariablesByTwo";
+  static constexpr auto function = multiply_variables_by_two;
+  using argument_tags = typelist<Tags::Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>;
+};
 }  // namespace test_databox_tags
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
                   "[Unit][DataStructures]") {
-  auto box = db::create<db::AddTags<Tags::Variables<
-      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>>(
+  auto box = db::create<
+      db::AddTags<Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                             test_databox_tags::VectorTag>>>,
+      db::AddComputeItemsTags<test_databox_tags::MultiplyScalarByTwo,
+                              test_databox_tags::MultiplyScalarByFour,
+                              test_databox_tags::MultiplyScalarByThree,
+                              test_databox_tags::DivideScalarByThree,
+                              test_databox_tags::DivideScalarByTwo,
+                              test_databox_tags::MultiplyVariablesByTwo>>(
       Variables<tmpl::list<test_databox_tags::ScalarTag,
                            test_databox_tags::VectorTag>>(2, 3.));
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
   CHECK(db::get<test_databox_tags::VectorTag>(box) ==
         (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
+  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 6.)));
+  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(box) ==
+        Scalar<DataVector>(DataVector(2, 24.)));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 72.)));
+  CHECK(db::get<test_databox_tags::DivideScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 24.)));
+  CHECK(db::get<test_databox_tags::ScalarTag3>(box) ==
+        Scalar<DataVector>(DataVector(2, 12.)));
+  CHECK(db::get<test_databox_tags::VectorTag3>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
+  CHECK(db::get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 6.)));
+  CHECK(db::get<test_databox_tags::VectorTag4>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  {
+    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
+    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
+          Scalar<DataVector>(DataVector(2, 6.)));
+    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  }
+
+  db::mutate<test_databox_tags::ScalarTag>(
+      box, [](Scalar<DataVector>& scalar) { scalar.get() = 4.0; });
+
+  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+        Scalar<DataVector>(DataVector(2, 4.)));
+  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
+  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 8.)));
+  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(box) ==
+        Scalar<DataVector>(DataVector(2, 32.)));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 96.)));
+  CHECK(db::get<test_databox_tags::DivideScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 32.)));
+  CHECK(db::get<test_databox_tags::ScalarTag3>(box) ==
+        Scalar<DataVector>(DataVector(2, 16.)));
+  CHECK(db::get<test_databox_tags::VectorTag3>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
+  CHECK(db::get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 8.)));
+  CHECK(db::get<test_databox_tags::VectorTag4>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  {
+    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
+    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
+          Scalar<DataVector>(DataVector(2, 8.)));
+    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  }
+
+  db::mutate<Tags::Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
+      box, [](auto& vars) {
+        const auto size = vars.number_of_grid_points();
+        get<test_databox_tags::ScalarTag>(vars).get() = 6.0;
+      });
+
+  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+        Scalar<DataVector>(DataVector(2, 6.)));
+  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
+  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 12.)));
+  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(box) ==
+        Scalar<DataVector>(DataVector(2, 48.)));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 144.)));
+  CHECK(db::get<test_databox_tags::DivideScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 48.)));
+  CHECK(db::get<test_databox_tags::ScalarTag3>(box) ==
+        Scalar<DataVector>(DataVector(2, 24.)));
+  CHECK(db::get<test_databox_tags::VectorTag3>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
+  CHECK(db::get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 12.)));
+  CHECK(db::get<test_databox_tags::VectorTag4>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  {
+    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
+    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
+          Scalar<DataVector>(DataVector(2, 12.)));
+    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  }
+
+  db::mutate<Tags::Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
+      box, [](auto& vars) {
+        const auto size = vars.number_of_grid_points();
+        get<test_databox_tags::ScalarTag>(vars).get() = 4.0;
+        get<test_databox_tags::VectorTag>(vars) =
+            tnsr::I<DataVector, 3>(DataVector(2, 6.));
+      });
+
+  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+        Scalar<DataVector>(DataVector(2, 4.)));
+  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 8.)));
+  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(box) ==
+        Scalar<DataVector>(DataVector(2, 32.)));
+  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 96.)));
+  CHECK(db::get<test_databox_tags::DivideScalarByThree>(box) ==
+        Scalar<DataVector>(DataVector(2, 32.)));
+  CHECK(db::get<test_databox_tags::ScalarTag3>(box) ==
+        Scalar<DataVector>(DataVector(2, 16.)));
+  CHECK(db::get<test_databox_tags::VectorTag3>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
+  CHECK(db::get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 8.)));
+  CHECK(db::get<test_databox_tags::VectorTag4>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 12.))));
+  {
+    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
+    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
+          Scalar<DataVector>(DataVector(2, 8.)));
+    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 12.))));
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
+                  "[Unit][DataStructures]") {
+  auto box = db::create<
+      db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                  test_databox_tags::Tag2,
+                  Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                             test_databox_tags::VectorTag>>>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1,
+                              test_databox_tags::MultiplyScalarByTwo,
+                              test_databox_tags::MultiplyVariablesByTwo>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(2, 3.));
+  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+        Scalar<DataVector>(DataVector(2, 3.)));
+  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
+  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+        Scalar<DataVector>(DataVector(2, 6.)));
+  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  CHECK(db::get<test_databox_tags::ScalarTag4>(box) ==
+        Scalar<DataVector>(DataVector(2, 6.)));
+  CHECK(db::get<test_databox_tags::VectorTag4>(box) ==
+        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  {
+    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
+    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
+          Scalar<DataVector>(DataVector(2, 6.)));
+    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
+  }
+
+  auto box2 = db::create_from<
+      db::RemoveTags<test_databox_tags::Tag0,
+                     Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                                test_databox_tags::VectorTag>>>,
+      db::AddTags<test_databox_tags::Tag0,
+                  Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                             test_databox_tags::VectorTag>>>>(
+      box, 3.84,
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(4, 8.0));
+
+  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box2)) == 3.84 * 2.0);
+  CHECK(db::get<test_databox_tags::ScalarTag>(box2) ==
+        Scalar<DataVector>(DataVector(4, 8.)));
+  CHECK(db::get<test_databox_tags::VectorTag>(box2) ==
+        (tnsr::I<DataVector, 3>(DataVector(4, 8.))));
+  CHECK(db::get<test_databox_tags::ScalarTag2>(box2) ==
+        Scalar<DataVector>(DataVector(4, 16.)));
+  CHECK(db::get<test_databox_tags::VectorTag2>(box2) ==
+        (tnsr::I<DataVector, 3>(DataVector(4, 2.))));
+  CHECK(db::get<test_databox_tags::ScalarTag4>(box2) ==
+        Scalar<DataVector>(DataVector(4, 16.)));
+  CHECK(db::get<test_databox_tags::VectorTag4>(box2) ==
+        (tnsr::I<DataVector, 3>(DataVector(4, 16.))));
+  {
+    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box2);
+    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
+          Scalar<DataVector>(DataVector(4, 16.)));
+    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
+          (tnsr::I<DataVector, 3>(DataVector(4, 16.))));
+  }
 }
