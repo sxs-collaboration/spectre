@@ -146,48 +146,15 @@ using build_action_return_typelist =
         sizeof...(ActionsPack) != 0, AdditionalArgsList>::
         template f<FirstInputParameterType, tmpl::list<>, ActionsPack...>;
 
-template <typename TT, typename... TArgs>
-class has_is_ready {
- private:
-  /// \cond
-  template <typename T, typename... Args>
-  static auto test_callable(int) noexcept
-      -> decltype(T::is_ready(std::declval<Args>()...), std::true_type());
+CREATE_IS_CALLABLE(is_ready)
 
-  template <typename, typename...>
-  static auto test_callable(...) noexcept -> std::false_type;
-  /// \endcond
-
- public:
-  static constexpr bool value = decltype(test_callable<TT, TArgs...>(0))::value;
-  using type = std::integral_constant<bool, value>;
-};
-
-template <typename TT, typename... TArgs>
-using has_is_ready_t = typename has_is_ready<TT, TArgs...>::type;
-
-template <typename TT, typename... TArgs>
-class is_apply_callable {
- private:
-  /// \cond
-  template <typename T, typename... Args>
-  static auto test_callable(int) noexcept
-      -> decltype(T::apply(std::declval<Args>()...), std::true_type());
-
-  template <typename, typename...>
-  static auto test_callable(...) noexcept -> std::false_type;
-  /// \endcond
-
- public:
-  static constexpr bool value = decltype(test_callable<TT, TArgs...>(0))::value;
-  using type = std::integral_constant<bool, value>;
-};
+CREATE_IS_CALLABLE(apply)
 
 template <typename Invokable, typename ThisVariant, typename... Variants,
           typename... Args,
-          Requires<is_apply_callable<Invokable,
-                                     std::add_lvalue_reference_t<ThisVariant>,
-                                     Args&&...>::value> = nullptr>
+          Requires<is_apply_callable_v<
+              Invokable, std::add_lvalue_reference_t<ThisVariant>, Args&&...>> =
+              nullptr>
 void apply_visitor_helper(boost::variant<Variants...>& box,
                           const gsl::not_null<int*> iter,
                           const gsl::not_null<bool*> already_visited,
@@ -221,9 +188,9 @@ void apply_visitor_helper(boost::variant<Variants...>& box,
 
 template <typename Invokable, typename ThisVariant, typename... Variants,
           typename... Args,
-          Requires<not is_apply_callable<
-              Invokable, std::add_lvalue_reference_t<ThisVariant>,
-              Args&&...>::value> = nullptr>
+          Requires<not is_apply_callable_v<
+              Invokable, std::add_lvalue_reference_t<ThisVariant>, Args&&...>> =
+              nullptr>
 void apply_visitor_helper(boost::variant<Variants...>& box,
                           const gsl::not_null<int*> iter,
                           const gsl::not_null<bool*> already_visited,
@@ -809,7 +776,7 @@ constexpr bool AlgorithmImpl<
         [](std::false_type /*has_is_ready*/, auto) { return true; });
 
     if (not check_if_ready(
-            Algorithm_detail::has_is_ready_t<
+            Algorithm_detail::is_is_ready_callable_t<
                 this_action, this_databox,
                 tuples::TaggedTuple<InboxTagsPack...>,
                 Parallel::ConstGlobalCache<Metavariables>, array_index>{},
