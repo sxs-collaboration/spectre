@@ -10,7 +10,6 @@
 #include <pup.h>
 #include <unordered_set>
 
-#include "Domain/Direction.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Orientation.hpp"
 
