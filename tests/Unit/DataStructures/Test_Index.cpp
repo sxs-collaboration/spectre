@@ -16,6 +16,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   CHECK(index_1d.product() == 3);
   CHECK(index_1d[0] == 3);
   CHECK(index_1d.size() == 1);
+  CHECK(get_output(index_1d) == "(3)");
   const Index<2> index_2d(4);
   CHECK(index_2d.product() == 16);
   CHECK(index_2d[0] == 4);
@@ -26,6 +27,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   // clang-tidy: do not use pointer arithmetic
   CHECK(index_2d.data()[0] == 4);  // NOLINT
   CHECK(index_2d.data()[1] == 4);  // NOLINT
+  CHECK(get_output(index_2d) == "(4,4)");
   Index<3> index_3d(1, 2, 3);
   CHECK(index_3d.size() == 3);
   CHECK(index_3d.product() == 6);
@@ -52,6 +54,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
 
   // Test inequivalence operator
   CHECK(index_3d != Index<3>(2, 4, 9));
+
+  CHECK(get_output(index_3d) == "(1,2,3)");
 
   test_copy_semantics(index_3d);
   auto index_3d_copy = index_3d;
