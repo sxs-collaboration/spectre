@@ -11,8 +11,8 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Numerical/LinearOperators/Transpose.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/MakeArray.hpp"
 

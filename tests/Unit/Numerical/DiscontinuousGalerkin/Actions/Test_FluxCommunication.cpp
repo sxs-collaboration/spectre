@@ -15,7 +15,8 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/Tags.hpp"
-#include "Numerical/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
+#include \
+  "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"

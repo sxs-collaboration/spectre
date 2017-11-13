@@ -3,7 +3,7 @@
 
 #include <catch.hpp>
 
-#include "Numerical/RootFinding/RootFinder.hpp"
+#include "NumericalAlgorithms/RootFinding/RootFinder.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

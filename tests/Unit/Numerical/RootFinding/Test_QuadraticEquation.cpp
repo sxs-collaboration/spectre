@@ -3,7 +3,7 @@
 
 #include <catch.hpp>
 
-#include "Numerical/RootFinding/QuadraticEquation.hpp"
+#include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 // [[OutputRegex, Assumes that there are two real roots]]

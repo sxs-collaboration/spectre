@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Numerical/Spectral/Linearize.hpp"
+#include "NumericalAlgorithms/Spectral/Linearize.hpp"
 
 #include <array>
 
@@ -9,7 +9,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/MakeArray.hpp"
 

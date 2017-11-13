@@ -14,8 +14,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/GridNormal.hpp"
-#include "Numerical/DiscontinuousGalerkin/LiftFlux.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

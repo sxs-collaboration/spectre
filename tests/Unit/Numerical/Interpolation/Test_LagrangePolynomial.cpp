@@ -4,7 +4,7 @@
 #include <array>
 #include <catch.hpp>
 
-#include "Numerical/Interpolation/LagrangePolynomial.hpp"
+#include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.LagrangePolynomial",

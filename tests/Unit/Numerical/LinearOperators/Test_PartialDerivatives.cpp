@@ -13,8 +13,8 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Numerical/LinearOperators/PartialDerivatives.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

@@ -27,7 +27,7 @@
 #include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Numerical/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"

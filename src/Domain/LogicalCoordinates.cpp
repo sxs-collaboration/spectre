@@ -12,7 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(

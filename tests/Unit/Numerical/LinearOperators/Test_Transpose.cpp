@@ -5,7 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Numerical/LinearOperators/Transpose.hpp"
+#include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

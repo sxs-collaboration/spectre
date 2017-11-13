@@ -8,8 +8,8 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
-#include "Numerical/Spectral/Linearize.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Linearize.hpp"
 #include "Utilities/Blas.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

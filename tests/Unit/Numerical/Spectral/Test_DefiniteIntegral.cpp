@@ -8,8 +8,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "Numerical/Spectral/DefiniteIntegral.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

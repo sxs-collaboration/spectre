@@ -1,12 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Numerical/Spectral/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/Spectral/DefiniteIntegral.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
 
 namespace {

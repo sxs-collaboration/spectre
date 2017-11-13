@@ -8,9 +8,9 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "Numerical/Spectral/LegendreGaussLobatto.hpp"
-#include "Numerical/Spectral/Linearize.hpp"
-#include "Numerical/Spectral/MeanValue.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Linearize.hpp"
+#include "NumericalAlgorithms/Spectral/MeanValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValue",
