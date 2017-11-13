@@ -39,7 +39,8 @@ target_link_libraries(
   DomainCreators
   EinsteinSolutions
   IO
-  NumericalAlgorithms
+  RootFinding
+  Spectral
   Time
   WaveEquation
   ${SPECTRE_LIBRARIES}

@@ -19,7 +19,7 @@ if(${benchmark_FOUND} AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     ${executable}
     benchmark
     CoordinateMaps
-    NumericalAlgorithms
+    Spectral
     ${SPECTRE_LIBRARIES}
     )
 

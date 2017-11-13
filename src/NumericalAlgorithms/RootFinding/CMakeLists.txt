@@ -1,8 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(MY_LIBRARY_SOURCES
-    RootFinding/QuadraticEquation.cpp
+set(LIBRARY RootFinding)
+
+set(LIBRARY_SOURCES
+    QuadraticEquation.cpp
    )
 
-set(LIBRARY_SOURCES "${LIBRARY_SOURCES};${MY_LIBRARY_SOURCES}" PARENT_SCOPE)
+add_library(${LIBRARY} ${LIBRARY_SOURCES})
+
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE ErrorHandling
+  )
