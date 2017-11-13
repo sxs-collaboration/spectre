@@ -5,14 +5,12 @@
 
 #include <cmath>
 
-#include "Options/Options.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace MathFunctions {
 
 Gaussian::Gaussian(const double amplitude, const double width,
-                   const double center,
-                   const OptionContext& /* context */) noexcept
+                   const double center) noexcept
     : amplitude_(amplitude), inverse_width_(1.0 / width), center_(center) {}
 
 double Gaussian::operator()(const double& x) const noexcept {

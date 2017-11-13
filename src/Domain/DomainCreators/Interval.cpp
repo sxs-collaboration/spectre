@@ -20,8 +20,8 @@ Interval::Interval(
     typename LowerBound::type lower_x, typename UpperBound::type upper_x,
     typename IsPeriodicIn::type is_periodic_in_x,
     typename InitialRefinement::type initial_refinement_level_x,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_x,
-    const OptionContext& /*context*/) noexcept
+    typename InitialGridPoints::type
+        initial_number_of_grid_points_in_x) noexcept
     // clang-tidy: trivially copyable
     : lower_x_(std::move(lower_x)),                          // NOLINT
       upper_x_(std::move(upper_x)),                          // NOLINT

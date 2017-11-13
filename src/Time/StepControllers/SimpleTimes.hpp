@@ -28,7 +28,6 @@ class SimpleTimes : public StepController {
       "Chooses steps by dividing the remainder of the slab approximately\n"
       "evenly, but preferring evaluation times that are simple (i.e., small\n"
       "denominator) fractions of the slab."};
-  explicit SimpleTimes(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

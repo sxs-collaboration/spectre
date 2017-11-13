@@ -24,7 +24,6 @@ class BinaryFraction : public StepController {
   using options = tmpl::list<>;
   static constexpr OptionString_t help = {
       "Chooses steps to be binary fractions of a slab"};
-  explicit BinaryFraction(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

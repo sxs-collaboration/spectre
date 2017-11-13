@@ -15,7 +15,6 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -434,24 +433,6 @@ std::array<double, VolumeDim> numerical_derivative(
          (0.75 / delta) * map(x_1ahead) + (-0.75 / delta) * map(x_1behind) +
          (3.0 / (20.0 * delta)) * map(x_2behind) +
          (-1.0 / (60.0 * delta)) * map(x_3behind);
-}
-
-namespace TestHelpers_detail {
-template <typename T>
-struct Opt {
-  using type = std::unique_ptr<T>;
-  static constexpr OptionString_t help = {"halp"};
-};
-}  // namespace TestHelpers_detail
-
-/// Construct a factory object from a given string.  Each line in the
-/// string must be indented.
-template <typename BaseClass>
-std::unique_ptr<BaseClass> test_factory_creation(
-    const std::string& construction_string) {
-  Options<tmpl::list<TestHelpers_detail::Opt<BaseClass>>> options("halp");
-  options.parse("Opt:\n" + construction_string);
-  return options.template get<TestHelpers_detail::Opt<BaseClass>>();
 }
 
 struct NonCopyable {

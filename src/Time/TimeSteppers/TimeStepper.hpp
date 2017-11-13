@@ -10,7 +10,6 @@
 #include <tuple>
 #include <type_traits>
 
-#include "Options/Factory.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
@@ -36,7 +35,7 @@ DEFINE_FAKE_VIRTUAL(update_u)
 /// \ingroup TimeSteppersGroup
 ///
 /// Abstract base class for TimeSteppers.
-class TimeStepper : public Factory<TimeStepper>, public PUP::able {
+class TimeStepper : public PUP::able {
  public:
   using Inherit =
       TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<

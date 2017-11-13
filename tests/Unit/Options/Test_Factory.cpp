@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "Options/Factory.hpp"
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -25,7 +25,7 @@ struct OptionType {
   static constexpr OptionString_t help = {"The type of OptionTest"};
 };
 
-class OptionTest : public Factory<OptionTest> {
+class OptionTest {
  public:
   using creatable_classes = tmpl::list<Test1, Test2, TestWithArg>;
 
@@ -43,7 +43,7 @@ class Test1 : public OptionTest {
  public:
   using options = tmpl::list<>;
   static constexpr OptionString_t help = {"A derived class"};
-  explicit Test1(const OptionContext& /*context*/) {}
+  Test1() = default;
 
   std::string name() const override { return "Test1"; }
 };
@@ -53,7 +53,7 @@ class Test2 : public OptionTest {
  public:
   using options = tmpl::list<>;
   static constexpr OptionString_t help = {""};
-  explicit Test2(const OptionContext& /*context*/) {}
+  Test2() = default;
 
   std::string name() const override { return "Test2"; }
 };
@@ -66,8 +66,8 @@ class TestWithArg : public OptionTest {
   };
   using options = tmpl::list<Arg>;
   static constexpr OptionString_t help = {""};
-  TestWithArg(std::string arg, const OptionContext& /*context*/)
-      : arg_(std::move(arg)) {}
+  TestWithArg() = default;
+  explicit TestWithArg(std::string arg) : arg_(std::move(arg)) {}
 
   std::string name() const override { return "TestWithArg(" + arg_ + ")"; }
 

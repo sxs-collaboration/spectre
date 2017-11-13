@@ -2,7 +2,7 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Visualization {#visualization}
+# Visualization {#tutorial_visualization}
 
 ### 1D %Data Volume %Data
 

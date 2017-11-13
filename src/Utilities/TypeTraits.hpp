@@ -230,8 +230,11 @@ constexpr bool is_reference_v = std::is_reference<T>::value;
 
 /// \ingroup TypeTraits
 template <class T, class... Args>
-constexpr bool is_constructible_v =
-    std::is_constructible<T, Args...>::value;
+using is_constructible_t = typename std::is_constructible<T, Args...>::type;
+
+/// \ingroup TypeTraits
+template <class T, class... Args>
+constexpr bool is_constructible_v = std::is_constructible<T, Args...>::value;
 
 /// \ingroup TypeTraits
 template <class T, class... Args>

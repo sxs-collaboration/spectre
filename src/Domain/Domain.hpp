@@ -34,7 +34,7 @@ class Domain {
    * \details Each element of `corners_of_all_blocks` contains the corner
    * numbering of that block's corners according to the global corner number
    * scheme. The details of the corner numbering scheme are described in the
-   * [tutorial](@ref tuts_orientations). `identifications` is for imposing
+   * [tutorial](@ref tutorial_orientations). `identifications` is for imposing
    * periodic boundary conditions on the domain. To identify two faces,
    * `identifications` should contain the corners corresponding to the first
    * face as its first element, and the second face as its second. If periodic

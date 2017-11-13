@@ -22,7 +22,6 @@ class FullSlab : public StepController {
  public:
   using options = tmpl::list<>;
   static constexpr OptionString_t help = {"Chooses the full slab."};
-  explicit FullSlab(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

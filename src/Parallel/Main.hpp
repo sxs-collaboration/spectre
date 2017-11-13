@@ -14,7 +14,7 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Informer.hpp"
-#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"

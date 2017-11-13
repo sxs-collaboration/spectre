@@ -26,7 +26,6 @@ class SplitRemaining : public StepController {
       "Chooses steps by dividing the remainder of the slab evenly.\n"
       "WARNING: With many steps per slab this often leads to overflow in the\n"
       "  time representations."};
-  explicit SplitRemaining(const OptionContext& /*context*/ = {}) noexcept {}
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

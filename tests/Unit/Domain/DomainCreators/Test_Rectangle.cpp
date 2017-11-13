@@ -10,6 +10,7 @@
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/TestDomainHelpers.hpp"
+#include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
