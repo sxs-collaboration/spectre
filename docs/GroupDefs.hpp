@@ -76,6 +76,11 @@
  */
 
 /*!
+ * \defgroup EinsteinSolutionsGroup Einstein Solutions
+ * \brief Classes which implement analytic solutions to Einstein's equations
+ */
+
+/*!
  * \defgroup ErrorHandling Error Handling
  * Macros and functions used for handling errors
  */
