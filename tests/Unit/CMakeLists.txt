@@ -40,6 +40,7 @@ target_link_libraries(
   DomainCreators
   EinsteinSolutions
   GeneralizedHarmonic
+  GeneralRelativity
   IO
   NumericalAlgorithms
   Time
