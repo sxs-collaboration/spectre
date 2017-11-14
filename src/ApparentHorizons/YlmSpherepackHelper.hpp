@@ -6,12 +6,14 @@
 #include <array>
 #include <vector>
 
+#include "Utilities/Gsl.hpp"
+
 namespace YlmSpherepack_detail {
 
 /// Holds the various 'work' arrays for YlmSpherepack.
 struct Storage {
   std::vector<double> work_phys_to_spec;
-  std::vector<double> work_spec_to_phys;
+  std::vector<double> work_scalar_spec_to_phys;
   std::vector<double> work_vector_spec_to_phys;
   std::vector<double> theta, phi, sin_theta, cos_theta;
   std::vector<double> cos_phi, sin_phi, cosec_theta, cot_theta;
@@ -32,7 +34,7 @@ class MemoryPool {
   MemoryPool() = default;
   std::vector<double>& get(size_t n_pts) noexcept;
   void free(const std::vector<double>& to_be_freed) noexcept;
-  void free(const double* to_be_freed) noexcept;
+  void free(gsl::not_null<double*> to_be_freed) noexcept;
 
  private:
   struct StorageAndAvailability {

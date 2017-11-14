@@ -5,6 +5,7 @@
 #include <random>
 
 #include "ApparentHorizons/YlmSpherepack.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -32,9 +33,7 @@ void test_prolong_restrict() {
     const auto u_coef_a2b = ylm_a.prolong_or_restrict(u_coef_a, ylm_b);
     const auto u_coef_a2b2a = ylm_b.prolong_or_restrict(u_coef_a2b, ylm_a);
     const auto u_b_test = ylm_a.spec_to_phys(u_coef_a2b2a);
-    for (size_t s = 0; s < ylm_a.physical_size(); ++s) {
-      CHECK(u_b[s] == approx(u_b_test[s]));
-    }
+    CHECK_ITERABLE_APPROX(u_b, u_b_test);
   }
 
   {
@@ -42,9 +41,7 @@ void test_prolong_restrict() {
     const auto u_coef_a2c = ylm_a.prolong_or_restrict(u_coef_a, ylm_c);
     const auto u_coef_a2c2a = ylm_c.prolong_or_restrict(u_coef_a2c, ylm_a);
     const auto u_c_test = ylm_a.spec_to_phys(u_coef_a2c2a);
-    for (size_t s = 0; s < ylm_a.physical_size(); ++s) {
-      CHECK(u_c[s] == approx(u_c_test[s]));
-    }
+    CHECK_ITERABLE_APPROX(u_c, u_c_test);
   }
 }
 
@@ -66,13 +63,13 @@ void test_loop_over_offset(
   }
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec_all_offsets(u.data(), u_spec.data(),
+  ylm_spherepack.phys_to_spec_all_offsets(u_spec.data(), u.data(),
                                           physical_stride);
 
   // Test whether phys_to_spec and spec_to_phys are inverses.
   {
     std::vector<double> u_test(physical_size);
-    ylm_spherepack.spec_to_phys_all_offsets(u_spec.data(), u_test.data(),
+    ylm_spherepack.spec_to_phys_all_offsets(u_test.data(), u_spec.data(),
                                             physical_stride);
     for (size_t s = 0; s < physical_size; ++s) {
       CHECK(u[s] == approx(u_test[s]));
@@ -83,15 +80,11 @@ void test_loop_over_offset(
   {
     auto u_spec_simple =
         ylm_spherepack.phys_to_spec_all_offsets(u, physical_stride);
-    for (size_t s = 0; s < spectral_size; ++s) {
-      CHECK(u_spec[s] == u_spec_simple[s]);
-    }
+    CHECK_ITERABLE_APPROX(u_spec, u_spec_simple);
 
     auto u_test =
         ylm_spherepack.spec_to_phys_all_offsets(u_spec_simple, physical_stride);
-    for (size_t s = 0; s < physical_size; ++s) {
-      CHECK(u[s] == approx(u_test[s]));
-    }
+    CHECK_ITERABLE_APPROX(u, u_test);
   }
 
   // Test gradient
@@ -114,9 +107,9 @@ void test_loop_over_offset(
     }
 
     // Differentiate
-    ylm_spherepack.gradient_from_coefs_all_offsets(u_spec.data(), duSpec,
+    ylm_spherepack.gradient_from_coefs_all_offsets(duSpec, u_spec.data(),
                                                    physical_stride);
-    ylm_spherepack.gradient_all_offsets(u.data(), du, physical_stride);
+    ylm_spherepack.gradient_all_offsets(du, u.data(), physical_stride);
 
     // Test vs analytic result
     for (size_t d = 0; d < 2; ++d) {
@@ -163,9 +156,7 @@ void test_theta_phi_points(
     func.func(&u_test, 1, s, {gsl::at(theta_phi, 0)[s]},
               {gsl::at(theta_phi, 1)[s]});
   }
-  for (size_t s = 0; s < ylm_spherepack.physical_size(); ++s) {
-    CHECK(u[s] == u_test[s]);
-  }
+  CHECK_ITERABLE_APPROX(u, u_test);
 }
 
 void test_phys_to_spec(const size_t l_max, const size_t m_max,
@@ -190,15 +181,15 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
   func.func(&u, physical_stride, 0, theta, phi);
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec(u.data(), u_spec.data(), physical_stride, 0,
+  ylm_spherepack.phys_to_spec(u_spec.data(), u.data(), physical_stride, 0,
                               spectral_stride, 0);
 
   // Test whether phys_to_spec and spec_to_phys are inverses.
   {
     std::vector<double> u_test(physical_size), u_spec_test(spectral_size);
-    ylm_spherepack.phys_to_spec(u.data(), u_spec_test.data(), physical_stride,
+    ylm_spherepack.phys_to_spec(u_spec_test.data(), u.data(), physical_stride,
                                 0, spectral_stride, 0);
-    ylm_spherepack.spec_to_phys(u_spec.data(), u_test.data(), spectral_stride,
+    ylm_spherepack.spec_to_phys(u_test.data(), u_spec.data(), spectral_stride,
                                 0, physical_stride, 0);
     for (size_t s = 0; s < physical_size; s += physical_stride) {
       CHECK(u[s] == approx(u_test[s]));
@@ -211,14 +202,10 @@ void test_phys_to_spec(const size_t l_max, const size_t m_max,
   // Test simplified interface of phys_to_spec/spec_to_phys
   if (physical_stride == 1 and spectral_stride == 1) {
     auto u_spec_simple = ylm_spherepack.phys_to_spec(u);
-    for (size_t s = 0; s < spectral_size; ++s) {
-      CHECK(u_spec[s] == u_spec_simple[s]);
-    }
+    CHECK_ITERABLE_APPROX(u_spec, u_spec_simple);
 
     auto u_test = ylm_spherepack.spec_to_phys(u_spec_simple);
-    for (size_t s = 0; s < physical_size; ++s) {
-      CHECK(u[s] == approx(u_test[s]));
-    }
+    CHECK_ITERABLE_APPROX(u, u_test);
   }
 }
 
@@ -238,7 +225,7 @@ void test_gradient(const size_t l_max, const size_t m_max,
   func.func(&u, physical_stride, 0, theta, phi);
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec(u.data(), u_spec.data(), physical_stride, 0,
+  ylm_spherepack.phys_to_spec(u_spec.data(), u.data(), physical_stride, 0,
                               spectral_stride, 0);
 
   // Test gradient
@@ -256,9 +243,9 @@ void test_gradient(const size_t l_max, const size_t m_max,
         {{duteststor[0].data(), duteststor[1].data()}});
 
     // Differentiate
-    ylm_spherepack.gradient_from_coefs(u_spec.data(), duSpec, spectral_stride,
+    ylm_spherepack.gradient_from_coefs(duSpec, u_spec.data(), spectral_stride,
                                        0, physical_stride, 0);
-    ylm_spherepack.gradient(u.data(), du, physical_stride, 0);
+    ylm_spherepack.gradient(du, u.data(), physical_stride, 0);
 
     // Test vs analytic result
     func.dfunc(&dutest, physical_stride, 0, theta, phi);
@@ -271,8 +258,8 @@ void test_gradient(const size_t l_max, const size_t m_max,
 
     if (physical_stride == 1 && spectral_stride == 1) {
       // Without strides and offsets.
-      ylm_spherepack.gradient_from_coefs(u_spec.data(), duSpec);
-      ylm_spherepack.gradient(u.data(), du);
+      ylm_spherepack.gradient_from_coefs(duSpec, u_spec.data());
+      ylm_spherepack.gradient(du, u.data());
       for (size_t d = 0; d < 2; ++d) {
         for (size_t s = 0; s < physical_size; ++s) {
           CHECK(gsl::at(dutest, d)[s] == approx(gsl::at(du, d)[s]));
@@ -330,7 +317,7 @@ void test_second_derivative(
   func.func(&u, physical_stride, 0, theta, phi);
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec(u.data(), u_spec.data(), physical_stride, 0,
+  ylm_spherepack.phys_to_spec(u_spec.data(), u.data(), physical_stride, 0,
                               spectral_stride, 0);
 
   // Test second_derivative
@@ -344,7 +331,7 @@ void test_second_derivative(
     std::array<double*, 2> du{{dustor[0].data(), dustor[1].data()}};
 
     // Differentiate
-    ylm_spherepack.second_derivative(u.data(), du, &ddu, physical_stride, 0);
+    ylm_spherepack.second_derivative(du, &ddu, u.data(), physical_stride, 0);
 
     // Test ylm_spherepack derivative against func analytical result
     func.ddfunc(&ddutest, physical_stride, 0, theta, phi);
@@ -357,12 +344,10 @@ void test_second_derivative(
     }
 
     if (physical_stride == 1 && spectral_stride == 1) {
-      ylm_spherepack.second_derivative(u.data(), du, &ddu);
+      ylm_spherepack.second_derivative(du, &ddu, u.data());
       for (size_t i = 0; i < 2; ++i) {
         for (size_t j = 0; j < 2; ++j) {
-          for (size_t s = 0; s < physical_size; ++s) {
-            CHECK(ddutest.get(i, j)[s] == approx(ddu.get(i, j)[s]));
-          }
+          CHECK_ITERABLE_APPROX(ddutest.get(i, j), ddu.get(i, j));
         }
       }
 
@@ -373,10 +358,8 @@ void test_second_derivative(
           CHECK(std::get<0>(deriv_test).get(i)[s] == approx(gsl::at(du, i)[s]));
         }
         for (size_t j = 0; j < 2; ++j) {
-          for (size_t s = 0; s < physical_size; ++s) {
-            CHECK(std::get<1>(deriv_test).get(i, j)[s] ==
-                  approx(ddu.get(i, j)[s]));
-          }
+          CHECK_ITERABLE_APPROX(std::get<1>(deriv_test).get(i, j),
+                                ddu.get(i, j));
         }
       }
     }
@@ -400,7 +383,7 @@ void test_scalar_laplacian(
   func.func(&u, physical_stride, 0, theta, phi);
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec(u.data(), u_spec.data(), physical_stride, 0,
+  ylm_spherepack.phys_to_spec(u_spec.data(), u.data(), physical_stride, 0,
                               spectral_stride, 0);
 
   // Test scalar_laplacian
@@ -409,9 +392,9 @@ void test_scalar_laplacian(
         slapSpec(physical_size);
 
     // Differentiate
-    ylm_spherepack.scalar_laplacian(u.data(), slap.data(), physical_stride, 0);
+    ylm_spherepack.scalar_laplacian(slap.data(), u.data(), physical_stride, 0);
     ylm_spherepack.scalar_laplacian_from_coefs(
-        u_spec.data(), slapSpec.data(), spectral_stride, 0, physical_stride, 0);
+        slapSpec.data(), u_spec.data(), spectral_stride, 0, physical_stride, 0);
 
     // Test ylm_spherepack derivative against func analytical result
     func.scalar_laplacian(&slaptest, physical_stride, 0, theta, phi);
@@ -422,21 +405,17 @@ void test_scalar_laplacian(
 
     // Test the default arguments for stride and offset
     if (physical_stride == 1 && spectral_stride == 1) {
-      ylm_spherepack.scalar_laplacian(u.data(), slap.data());
-      ylm_spherepack.scalar_laplacian_from_coefs(u_spec.data(),
-                                                 slapSpec.data());
-      for (size_t s = 0; s < physical_size; ++s) {
-        CHECK(slaptest[s] == approx(slap[s]));
-        CHECK(slaptest[s] == approx(slapSpec[s]));
-      }
+      ylm_spherepack.scalar_laplacian(slap.data(), u.data());
+      ylm_spherepack.scalar_laplacian_from_coefs(slapSpec.data(),
+                                                 u_spec.data());
+      CHECK_ITERABLE_APPROX(slaptest, slap);
+      CHECK_ITERABLE_APPROX(slaptest, slapSpec);
 
       // Test simplified interface of scalar_laplacian
       auto slap1 = ylm_spherepack.scalar_laplacian(u);
       auto slap2 = ylm_spherepack.scalar_laplacian_from_coefs(u_spec);
-      for (size_t s = 0; s < physical_size; ++s) {
-        CHECK(slaptest[s] == approx(slap1[s]));
-        CHECK(slaptest[s] == approx(slap2[s]));
-      }
+      CHECK_ITERABLE_APPROX(slaptest, slap1);
+      CHECK_ITERABLE_APPROX(slaptest, slap2);
     }
   }
 }
@@ -458,7 +437,7 @@ void test_interpolation(
   func.func(&u, physical_stride, 0, theta, phi);
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec(u.data(), u_spec.data(), physical_stride, 0,
+  ylm_spherepack.phys_to_spec(u_spec.data(), u.data(), physical_stride, 0,
                               spectral_stride, 0);
 
   // Test interpolation
@@ -481,9 +460,9 @@ void test_interpolation(
     // Interpolate
     std::vector<double> uintPhys(interpolation_info.size()),
         uintSpec(interpolation_info.size());
-    ylm_spherepack.interpolate(u.data(), interpolation_info, &uintPhys,
+    ylm_spherepack.interpolate(&uintPhys, u.data(), interpolation_info,
                                physical_stride, 0);
-    ylm_spherepack.interpolate_from_coefs(u_spec, interpolation_info, &uintSpec,
+    ylm_spherepack.interpolate_from_coefs(&uintSpec, u_spec, interpolation_info,
                                           spectral_stride);
 
     // Test vs analytic solution
@@ -496,7 +475,7 @@ void test_interpolation(
 
     // Tests default values of stride and offset.
     if (physical_stride == 1 && spectral_stride == 1) {
-      ylm_spherepack.interpolate(u.data(), interpolation_info, &uintPhys);
+      ylm_spherepack.interpolate(&uintPhys, u.data(), interpolation_info);
       for (size_t s = 0; s < uintanal.size(); ++s) {
         CHECK(uintanal[s] == approx(uintPhys[s]));
       }
@@ -534,7 +513,7 @@ void test_integral(const size_t l_max, const size_t m_max,
   func.func(&u, physical_stride, 0, theta, phi);
 
   // Evaluate spectral coefficients of initial scalar function
-  ylm_spherepack.phys_to_spec(u.data(), u_spec.data(), physical_stride, 0,
+  ylm_spherepack.phys_to_spec(u_spec.data(), u.data(), physical_stride, 0,
                               spectral_stride, 0);
 
   // Test integral
@@ -636,6 +615,15 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_error",
                   "[ApparentHorizons][Unit]") {
   ERROR_TEST();
   YlmSpherepack_detail::MemoryPool pool;
+  std::vector<double> dum(1, 0.0);
+  pool.free(dum);
+}
+
+// [[OutputRegex, Attempt to free temp that was never allocated.]]
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_empty_error",
+                  "[ApparentHorizons][Unit]") {
+  ERROR_TEST();
+  YlmSpherepack_detail::MemoryPool pool;
   std::vector<double> dum;
   pool.free(dum);
 }
@@ -649,14 +637,14 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepackHelper.free_ptr_error",
   pool.free(dum.data());
 }
 
-// [[OutputRegex, Must use at least 3 grid points in theta]]
+// [[OutputRegex, Must use l_max>=2, not l_max=1]]
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack.too_few_theta_pts",
                   "[ApparentHorizons][Unit]") {
   ERROR_TEST();
   YlmSpherepack ylm(1, 1);
 }
 
-// [[OutputRegex, Must use at least 4 grid points in phi]]
+// [[OutputRegex, Must use m_max>=2, not m_max=1]]
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack.too_few_phi_pts",
                   "[ApparentHorizons][Unit]") {
   ERROR_TEST();
