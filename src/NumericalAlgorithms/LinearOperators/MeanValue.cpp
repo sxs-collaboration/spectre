@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/MeanValue.hpp"
+#include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"

@@ -8,13 +8,13 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
+#include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "NumericalAlgorithms/Spectral/Linearize.hpp"
 #include "Utilities/Blas.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Linearize",
-                  "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
+                  "[Numerical][LinearOperators][Unit]") {
   // The start and end are chosen to give fast tests
   const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
@@ -47,8 +47,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Linearize",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearizeALinearFunction",
-                  "[Numerical][Spectral][Unit]"){
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
+                  "[Numerical][LinearOperators][Unit]"){
   const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
     const DataVector& x = Basis::lgl::collocation_points(nx);
@@ -70,8 +70,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearizeALinearFunction",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearizeInOneDim",
-                  "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
+                  "[Numerical][LinearOperators][Unit]") {
   // The start and end are chosen to give fast tests
   const size_t n_start = 3, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {

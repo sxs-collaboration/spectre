@@ -8,7 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "NumericalAlgorithms/Spectral/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -81,8 +81,8 @@ void test_definite_integral_3d(const Index<3>& extents) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.DefiniteIntegral",
-                  "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
+                  "[Numerical][LinearOperators][Unit]") {
   const size_t min_extents = 2;
   for (size_t n0 = min_extents; n0 <= Basis::lgl::maximum_number_of_pts; ++n0) {
     test_definite_integral_1d(Index<1>(n0));

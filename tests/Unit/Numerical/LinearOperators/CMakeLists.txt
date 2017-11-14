@@ -2,6 +2,9 @@
 # See LICENSE.txt for details.
 
 set(SPECTRE_UNIT_LINEAR_OPERATORS_TESTS
+  Numerical/LinearOperators/Test_DefiniteIntegral.cpp
+  Numerical/LinearOperators/Test_Linearize.cpp
+  Numerical/LinearOperators/Test_MeanValue.cpp
   Numerical/LinearOperators/Test_PartialDerivatives.cpp
   Numerical/LinearOperators/Test_Transpose.cpp
   )

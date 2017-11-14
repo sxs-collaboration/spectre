@@ -8,13 +8,13 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
+#include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "NumericalAlgorithms/Spectral/Linearize.hpp"
-#include "NumericalAlgorithms/Spectral/MeanValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValue",
-                  "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
+                  "[Numerical][LinearOperators][Unit]") {
   for (size_t nx = 2; nx < 7; ++nx) {
     const DataVector& x = Basis::lgl::collocation_points(nx);
     for (size_t ny = 2; ny < 7; ++ny) {
@@ -35,8 +35,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValue",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValueOnBoundary",
-                  "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
+                  "[Numerical][LinearOperators][Unit]") {
   for (size_t nx = 2; nx < 7; ++nx) {
     const DataVector& x = Basis::lgl::collocation_points(nx);
     for (size_t ny = 2; ny < 7; ++ny) {
@@ -95,8 +95,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValueOnBoundary",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.Spectral.MeanValueOnBoundary1D",
-                  "[Numerical][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
+                  "[Numerical][LinearOperators][Unit]") {
   for (size_t nx = 2; nx < 7; ++nx) {
     const DataVector& x = Basis::lgl::collocation_points(nx);
     const Index<1> extents(nx);

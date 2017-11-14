@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Domain/Side.hpp"
-#include "NumericalAlgorithms/Spectral/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 /*!

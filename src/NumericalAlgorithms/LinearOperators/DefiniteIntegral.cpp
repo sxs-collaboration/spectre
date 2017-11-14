@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
