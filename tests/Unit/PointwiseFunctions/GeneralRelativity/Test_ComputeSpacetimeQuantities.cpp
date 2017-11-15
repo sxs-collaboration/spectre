@@ -66,6 +66,65 @@ void test_compute_3d_spacetime_metric(const DataVector &used_for_size) {
                                make_spatial_metric<dim>(used_for_size)),
       psi);
 }
+
+void test_compute_1d_inverse_spacetime_metric(const DataVector &used_for_size) {
+  const size_t dim = 1;
+  const auto inverse_spacetime_metric =
+      compute_inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                       make_inverse_spatial_metric<dim>(0.));
+  CHECK(inverse_spacetime_metric.get(0, 0) == approx(-1. / 9.));
+  CHECK(inverse_spacetime_metric.get(0, 1) == approx(0.0));
+  CHECK(inverse_spacetime_metric.get(1, 1) == approx(1.0));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_inverse_spacetime_metric(
+          make_lapse(used_for_size), make_shift<dim>(used_for_size),
+          make_inverse_spatial_metric<dim>(used_for_size)),
+      inverse_spacetime_metric);
+}
+
+void test_compute_2d_inverse_spacetime_metric(const DataVector &used_for_size) {
+  const size_t dim = 2;
+  const auto inverse_spacetime_metric =
+      compute_inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                       make_inverse_spatial_metric<dim>(0.));
+  CHECK(inverse_spacetime_metric.get(0, 0) == approx(-1. / 9.));
+  CHECK(inverse_spacetime_metric.get(0, 1) == approx(0.0));
+  CHECK(inverse_spacetime_metric.get(0, 2) == approx(1. / 9.));
+  CHECK(inverse_spacetime_metric.get(1, 1) == approx(1.0));
+  CHECK(inverse_spacetime_metric.get(1, 2) == approx(2.0));
+  CHECK(inverse_spacetime_metric.get(2, 2) == approx(35. / 9.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_inverse_spacetime_metric(
+          make_lapse(used_for_size), make_shift<dim>(used_for_size),
+          make_inverse_spatial_metric<dim>(used_for_size)),
+      inverse_spacetime_metric);
+}
+
+void test_compute_3d_inverse_spacetime_metric(const DataVector &used_for_size) {
+  const size_t dim = 3;
+  const auto inverse_spacetime_metric =
+      compute_inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                       make_inverse_spatial_metric<dim>(0.));
+  CHECK(inverse_spacetime_metric.get(0, 0) == approx(-1. / 9.));
+  CHECK(inverse_spacetime_metric.get(0, 1) == approx(0.));
+  CHECK(inverse_spacetime_metric.get(0, 2) == approx(1. / 9.));
+  CHECK(inverse_spacetime_metric.get(0, 3) == approx(2. / 9.));
+  CHECK(inverse_spacetime_metric.get(1, 1) == approx(1.));
+  CHECK(inverse_spacetime_metric.get(1, 2) == approx(2.));
+  CHECK(inverse_spacetime_metric.get(1, 3) == approx(3.));
+  CHECK(inverse_spacetime_metric.get(2, 2) == approx(35. / 9.));
+  CHECK(inverse_spacetime_metric.get(2, 3) == approx(52. / 9.));
+  CHECK(inverse_spacetime_metric.get(3, 3) == approx(77. / 9.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_inverse_spacetime_metric(
+          make_lapse(used_for_size), make_shift<dim>(used_for_size),
+          make_inverse_spatial_metric<dim>(used_for_size)),
+      inverse_spacetime_metric);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrFunctions.SpacetimeDecomp",
@@ -74,4 +133,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrFunctions.SpacetimeDecomp",
   test_compute_1d_spacetime_metric(dv);
   test_compute_2d_spacetime_metric(dv);
   test_compute_3d_spacetime_metric(dv);
+  test_compute_1d_inverse_spacetime_metric(dv);
+  test_compute_2d_inverse_spacetime_metric(dv);
+  test_compute_3d_inverse_spacetime_metric(dv);
 }
