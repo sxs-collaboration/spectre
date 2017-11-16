@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "tests/TestHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 template <typename Symmetry, typename IndexList>
 void check_tensor_doubles_equals_tensor_datavectors(

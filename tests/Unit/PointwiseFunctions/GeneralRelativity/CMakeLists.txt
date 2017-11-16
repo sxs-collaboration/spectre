@@ -3,6 +3,7 @@
 
 set(SPECTRE_UNIT_GENERAL_RELATIVITY
     PointwiseFunctions/GeneralRelativity/GrTestHelpers.cpp
+    PointwiseFunctions/GeneralRelativity/Test_Christoffel.cpp
     PointwiseFunctions/GeneralRelativity/Test_ComputeSpacetimeQuantities.cpp
     )
 
