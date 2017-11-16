@@ -22,8 +22,21 @@ iostream_test() {
     test_check fail foo.cpp '#include <iostream>'$'\n'
 }
 
+# Check for TmplDebugging header
+tmpl_debugging() {
+    is_c++ "$1" && grep -q '#include "Utilities/TmplDebugging.hpp"' "$1"
+}
+tmpl_debugging_report() {
+    echo "Found Utilities/TmplDebugging header:"
+    pretty_grep '#include "Utilities/TmplDebugging.hpp"' "$@"
+}
+tmpl_debugging_test() {
+    test_check pass foo.cpp '#include <vector>'$'\n'
+    test_check fail foo.cpp '#include "Utilities/TmplDebugging.hpp"'$'\n'
+}
+
 if [ "$1" = --test ] ; then
-    run_tests iostream
+    run_tests iostream tmpl_debugging
     exit 0
 fi
 
