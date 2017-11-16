@@ -27,6 +27,10 @@
 namespace PUP {
 class er;
 }  // namespace PUP
+
+// clang-tidy: no using declarations in header files
+//             We want the std::abs to be used
+using std::abs;  // NOLINT
 /// \endcond
 
 /*!
