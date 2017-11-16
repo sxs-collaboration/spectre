@@ -328,6 +328,11 @@ class DataVector {
     return abs(t.data_);
   }
 
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) fabs(
+      const DataVector& t) noexcept {
+    return abs(t.data_);
+  }
+
   SPECTRE_ALWAYS_INLINE friend decltype(auto) sqrt(
       const DataVector& t) noexcept {
     return sqrt(t.data_);
