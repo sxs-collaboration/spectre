@@ -47,11 +47,10 @@ See LICENSE.txt for details.
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
 be used to build SpECTRE on a personal machine.
-
-**Note**: The Docker image is the recommended way of using SpECTRE on a personal
-Linux machine. Because of the wide variety of operating systems available today
+This is the recommended way of using SpECTRE on a personal
+Linux or MacOS machine. (Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
-as outlined below is a supported alternative to Docker images.
+as outlined below is a supported alternative to Docker images.)
 
 To build with the docker image:
 
@@ -64,9 +63,10 @@ To build with the docker image:
    ```
    docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
-   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
-   of your choice. If you don't name your container, docker will generate an
-   arbitrary name.)
+   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a
+   name of your choice. If you don't name your container, docker will
+   generate an arbitrary name.  `SPECTRE_ROOT:SPECTRE_ROOT` should be
+   two copies of the path `SPECTRE_ROOT`)
    You will end up in a shell in a docker container,
    as root (you need to be root).
    Within the container, SPECTRE_ROOT is available and
@@ -82,7 +82,7 @@ To build with the docker image:
    `make -jN`
    to compile the code, and `ctest` to run the tests.
 
-Notes:
+**Notes**:
   * Everything in your build directory is owned by root, and is
     accessible only within the container.
   * You should edit source files in SPECTRE_ROOT in a separate terminal
@@ -167,7 +167,7 @@ or (equivalently) use the `module load` command.
 it is recommended you read the [documentation](https://spack.readthedocs.io) if
 you require features such as packages installed with different compilers.
 
-### Building SpECTRE
+### Building SpECTRE (within Spack environment)
 
 After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
 Follow these steps:
@@ -181,7 +181,7 @@ Follow these steps:
     `git checkout v6.8.0` to switch to a supported, stable release of Charm++.
   * Charm++ is compiled by running
     `./build charm++ ARCH OPTIONS`.
-    To figure out the correct target architecture and options, you can simply
+    To figure out the correct target architecture and options, you can
     run `./build`; the script will then ask you questions to guide you towards
     the correct settings (see notes below for additional details).
     Then compile Charm++.
