@@ -54,12 +54,13 @@ as outlined below is a supported alternative to Docker images.)
 
 To build with the docker image:
 
-1. Clone SpECTRE into $SPECTRE_ROOT, a directory of your choice.
-2. Retrieve the docker image (you may need `sudo` in front of this command)
+1. Clone SpECTRE into a directory of your choice.
+1. `export SPECTRE_ROOT=/path/to/your/spectre`
+1. Retrieve the docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
    ```
-3. Start the docker container (you may need `sudo`)
+1. Start the docker container (you may need `sudo`)
    ```
    docker run -v $SPECTRE_ROOT:$SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
@@ -71,12 +72,12 @@ To build with the docker image:
    Within the container, the directory $SPECTRE_ROOT is available and
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
-4. `export SPECTRE_ROOT=path/to/your/spectre`
-5. `cd` into /work/charm, and apply the Charm++ patch by
+1. `export SPECTRE_ROOT=/path/to/your/spectre`
+1. `cd` into /work/charm, and apply the Charm++ patch by
    running `git apply $SPECTRE_ROOT/support/Charm/v6.8.patch`.
-6. Make a build directory somewhere inside the container, e.g.
+1. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
-7. Build SpECTRE with
+1. Build SpECTRE with
    `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc $SPECTRE_ROOT`
    then
    `make -jN`
