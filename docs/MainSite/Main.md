@@ -18,6 +18,6 @@ Table of Contents
 Introduction {#intro_sec}
 ==============================================================================
 
-This is the introduction.
-
-We need an introduction because we don't have one...
+SpECTRE is a computational astrophysics code under active development.
+The overall goal is a highly scalable code for general relativistic
+systems like compact object binaries.
