@@ -52,7 +52,9 @@ class FaceCornerIterator {
       corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
     }
   }
-  explicit operator bool() noexcept { return index_ < two_to_the(VolumeDim); }
+  explicit operator bool() noexcept {
+    return face_index_ < two_to_the(VolumeDim - 1);
+  }
   tnsr::I<double, VolumeDim, Frame::Logical> operator()() noexcept {
     return corner_;
   }
@@ -166,13 +168,15 @@ double physical_separation(
     const Block<VolumeDim, TargetFrame>& block2) noexcept {
   double max_separation = 0;
   // Find Direction to block2:
-  const auto& direction = find_direction_to_neighbor(block1, block2);
+  const auto direction = find_direction_to_neighbor(block1, block2);
   // Find Orientation relative to block2:
-  const auto& orientation = find_neighbor_orientation(block1, block2);
+  const auto orientation = find_neighbor_orientation(block1, block2);
   // Construct shared Points, in frame of block1:
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>, VolumeDim>
+  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+             two_to_the(VolumeDim - 1)>
       shared_points1;
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>, VolumeDim>
+  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+             two_to_the(VolumeDim - 1)>
       shared_points2;
   for (FaceCornerIterator<VolumeDim> fci(direction); fci; ++fci) {
     shared_points1[fci.face_index()] = fci();
