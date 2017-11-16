@@ -545,3 +545,13 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
  */
 template <typename... Ts>
 constexpr void swallow(Ts&&...) noexcept {}
+
+namespace brigand {
+/// Check if a typelist contains an item.
+template <typename Sequence, typename Item>
+using list_contains =
+    tmpl::found<Sequence, std::is_same<tmpl::_1, tmpl::pin<Item>>>;
+
+template <typename Sequence, typename Item>
+constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
+}  // namespace brigand
