@@ -91,6 +91,11 @@
  */
 
 /*!
+ * \defgroup EventsAndTriggersGroup Events and Triggers
+ * \brief Classes and functions related to events and triggers
+ */
+
+/*!
  * \defgroup EvolutionSystemsGroup Evolution Systems
  * \brief Contains the namespaces of all the available evolution systems.
  */
