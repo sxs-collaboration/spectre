@@ -6,49 +6,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-template <typename Symmetry, typename IndexList>
-void check_tensor_doubles_equals_tensor_datavectors(
-    const Tensor<DataVector, Symmetry, IndexList>& tensor_dv,
-    const Tensor<double, Symmetry, IndexList>& tensor_double) {
-  const size_t n_pts = tensor_dv.begin()->size();
-  for (decltype(auto) datavector_and_double_components :
-       boost::combine(tensor_dv, tensor_double)) {
-    for (size_t s = 0; s < n_pts; ++s) {
-      CHECK(boost::get<0>(datavector_and_double_components)[s] ==
-            boost::get<1>(datavector_and_double_components));
-    }
-  }
-}
-
-template <typename DataType>
-auto make_lapse(const DataType& structure) {
-  return Scalar<DataType>{make_with_value<DataType>(structure, 3.)};
-}
-
-template <typename DataType>
-auto make_shift(const DataType& structure) {
-  tnsr::I<DataType, 3> shift{};
-  for (size_t i = 0; i < 3; ++i) {
-    shift.get(i) = make_with_value<DataType>(structure, i);
-  }
-  return shift;
-}
-
-template <typename DataType>
-auto make_spatial_metric(const DataType& structure) {
-  tnsr::ii<DataType, 3> metric{};
-  for (size_t i = 0; i < 3; ++i) {
-    for (size_t j = i; j < 3; ++j) {
-      metric.get(i, j) =
-          make_with_value<DataType>(structure, (i + 1.) * (j + 1.));
-    }
-  }
-  return metric;
-}
-
 void test_compute_spacetime_metric(const DataVector& structure) {
   const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift(0.),
                                             make_spatial_metric(0.));
