@@ -20,7 +20,7 @@
 #include "DataStructures/MakeWithValue.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Numerical/Interpolation/LagrangePolynomial.hpp"
+#include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"

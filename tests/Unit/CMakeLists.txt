@@ -13,7 +13,7 @@ add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Evolution)
 add_subdirectory(IO)
-add_subdirectory(Numerical)
+add_subdirectory(NumericalAlgorithms)
 add_subdirectory(Options)
 add_subdirectory(Parallel)
 add_subdirectory(PointwiseFunctions)
@@ -41,7 +41,8 @@ target_link_libraries(
   EinsteinSolutions
   GeneralizedHarmonic
   IO
-  NumericalAlgorithms
+  LinearOperators
+  RootFinding
   Time
   WaveEquation
   ${SPECTRE_LIBRARIES}
