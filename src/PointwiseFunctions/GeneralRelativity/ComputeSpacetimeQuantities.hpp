@@ -47,3 +47,32 @@ tnsr::AA<DataType, SpatialDim, Frame> compute_inverse_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes spacetime derivative of spacetime metric from spatial metric,
+ * lapse, shift, and their space and time derivatives.
+ *
+ * \details Computes the derivatives as:
+ * \f{align}
+ *     \partial_\mu \psi_{tt} &=& - 2 N \partial_\mu N
+ *                 + 2 g_{mn} N^m \partial_\mu N^n
+ *                 + N^m N^n \partial_\mu g_{mn} \\
+ *     \partial_\mu \psi_{ti} &=& g_{mi} \partial_\mu N^m
+ *                 + N^m \partial_\mu g_{mi} \\
+ *     \partial_\mu \psi_{ij} &=& \partial_\mu g_{ij}
+ * \f}
+ * where \f$ N, N^i, g \f$ are the lapse, shift, and spatial metric
+ * respectively.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::abb<DataType, SpatialDim, Frame> compute_derivatives_of_spacetime_metric(
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>&
+        deriv_spatial_metric) noexcept;
