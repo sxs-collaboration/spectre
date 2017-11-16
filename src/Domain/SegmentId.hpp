@@ -77,8 +77,8 @@ bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept;
 //##############################################################################
 
 inline SegmentId SegmentId::id_of_parent() const noexcept {
-  CASSERT(0 != refinement_level_,
-          "Cannot call id_of_parent() on root refinement level!");
+  ASSERT(0 != refinement_level_,
+         "Cannot call id_of_parent() on root refinement level!");
   // The parent has half as many segments as the child.
   return {refinement_level_ - 1, index_ / 2};
 }

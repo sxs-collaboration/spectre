@@ -708,19 +708,6 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-// [[OutputRegex, For a scalar the 0th storage index should be retrieved for
-// consistency.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index_scalar",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Scalar<double> tensor(1_st);
-  const auto& t = tensor.get_tensor_index(1000);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 // [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index_vector",

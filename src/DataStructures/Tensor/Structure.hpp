@@ -292,11 +292,7 @@ struct Structure {
   template <size_t Rank = sizeof...(Indices),
             std::enable_if_t<Rank == 0>* = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, 0>
-  get_canonical_tensor_index(const size_t storage_index) noexcept {
-    static_cast<void>(storage_index);
-    CASSERT(0 == storage_index,
-            "For a scalar the 0th storage index should be retrieved for "
-            "consistency.");
+  get_canonical_tensor_index(const size_t /*storage_index*/) noexcept {
     return std::array<size_t, 0>{};
   }
 

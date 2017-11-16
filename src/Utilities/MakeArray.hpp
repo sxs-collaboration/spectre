@@ -97,12 +97,14 @@ make_array(T&& t, V&&... values) noexcept(
 
 namespace MakeArray_detail {
 template <typename T, size_t size, typename Seq, size_t... indexes>
-std::array<T, size> make_array_from_iterator_impl(
+constexpr std::array<T, size> make_array_from_iterator_impl(
     Seq&& s,
     std::integer_sequence<
         size_t, indexes...> /*meta*/) noexcept(noexcept(std::array<T, size>{
     {static_cast<T>(*(std::begin(s) + indexes))...}})) {
-  return std::array<T, size>{{static_cast<T>(*(std::begin(s) + indexes))...}};
+  // clang-tidy: do not use pointer arithmetic
+  return std::array<T, size>{
+      {static_cast<T>(*(std::begin(s) + indexes))...}};  // NOLINT
 }
 }  // namespace MakeArray_detail
 
@@ -118,9 +120,6 @@ template <typename T, size_t size, typename Seq>
 constexpr std::array<T, size> make_array(Seq&& seq) noexcept(
     noexcept(MakeArray_detail::make_array_from_iterator_impl<T, size>(
         std::forward<Seq>(seq), std::make_index_sequence<size>{}))) {
-  CASSERT(size <= seq.size(),
-          "The sequence size must be at least as large as the array being "
-          "created from it.");
   return MakeArray_detail::make_array_from_iterator_impl<T, size>(
       std::forward<Seq>(seq), std::make_index_sequence<size>{});
 }

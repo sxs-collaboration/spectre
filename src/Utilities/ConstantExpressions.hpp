@@ -25,7 +25,6 @@
 template <typename T,
           Requires<tt::is_integer_v<T> and cpp17::is_unsigned_v<T>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
-  CASSERT(n < 8 * sizeof(T), "two_to_the is overflowing!");
   return T(1) << n;
 }
 
