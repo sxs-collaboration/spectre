@@ -339,6 +339,10 @@ constexpr bool is_nothrow_move_assignable_v =
 template <class Base, class Derived>
 constexpr bool is_base_of_v = std::is_base_of<Base, Derived>::value;
 
+/// \ingroup TypeTraits
+template <class T>
+constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
+
 }  // namespace cpp17
 
 /// \ingroup TypeTraits

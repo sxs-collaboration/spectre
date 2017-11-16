@@ -30,6 +30,27 @@ bool are_maps_equal(
   return map_derived == nullptr ? false : (*map_derived == map);
 }
 
+/// \ingroup TestingFramework
+/// \brief Given two coordinate maps (but not their types), check that the maps
+/// are equal by evaluating them at a random set of points.
+template <typename SourceFrame, typename TargetFrame, size_t VolumeDim>
+void check_if_maps_are_equal(
+    const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_one,
+    const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_two) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> real_dis(-1, 1);
+
+  for (size_t n = 0; n < 10; ++n) {
+    tnsr::I<double, VolumeDim, SourceFrame> source_point{};
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      source_point.get(d) = real_dis(gen);
+    }
+    CAPTURE_PRECISE(source_point);
+    CHECK_ITERABLE_APPROX(map_one(source_point), map_two(source_point));
+  }
+}
+
 /*!
  * \ingroup TestingFramework
  * \brief Given a Map `map`, checks that the jacobian gives expected results

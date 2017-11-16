@@ -33,15 +33,16 @@ class BinaryFraction : public StepController {
     const TimeDelta full_slab =
         desired_step > 0 ? time.slab().duration() : -time.slab().duration();
     const double desired_step_count = full_slab.value() / desired_step;
-    const ssize_t desired_step_power =
+    const size_t desired_step_power =
         desired_step_count <= 1
             ? 0
-            : static_cast<ssize_t>(std::ceil(std::log2(desired_step_count)));
+            : static_cast<size_t>(std::ceil(std::log2(desired_step_count)));
 
     // Ensure we will hit the slab boundary if we continue taking
     // constant-sized steps.
     const ssize_t step_count =
-        std::max(two_to_the(desired_step_power), time.fraction().denominator());
+        std::max(static_cast<ssize_t>(two_to_the(desired_step_power)),
+                 time.fraction().denominator());
 
     return full_slab / step_count;
   }

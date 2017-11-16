@@ -10,6 +10,7 @@
 #include <blaze/math/typetraits/IsVector.h>
 #include <type_traits>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -22,10 +23,10 @@
 /// \param n the power of two to compute.
 /// \return 2^n
 template <typename T,
-          Requires<std::is_integral<T>::value and
-                   not std::is_same<bool, T>::value> = nullptr>
+          Requires<tt::is_integer_v<T> and cpp17::is_unsigned_v<T>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
-  return static_cast<T>(1) << n;
+  CASSERT(n < 8 * sizeof(T), "two_to_the is overflowing!");
+  return T(1) << n;
 }
 
 /// \ingroup ConstantExpressions

@@ -12,8 +12,10 @@ set(DOMAIN_TESTS
     Domain/DomainCreators/Test_Brick.cpp
     Domain/DomainCreators/Test_Interval.cpp
     Domain/DomainCreators/Test_Rectangle.cpp
+    Domain/DomainTestHelpers.cpp
     Domain/Test_Block.cpp
     Domain/Test_BlockNeighbor.cpp
+    Domain/Test_CreateInitialElement.cpp
     Domain/Test_Direction.cpp
     Domain/Test_Domain.cpp
     Domain/Test_DomainCreators.cpp
@@ -22,6 +24,7 @@ set(DOMAIN_TESTS
     Domain/Test_ElementId.cpp
     Domain/Test_ElementIndex.cpp
     Domain/Test_GridNormal.cpp
+    Domain/Test_InitialElementIds.cpp
     Domain/Test_LogicalCoordinates.cpp
     Domain/Test_Neighbors.cpp
     Domain/Test_Orientations.cpp

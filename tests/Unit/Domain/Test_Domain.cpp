@@ -8,7 +8,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Utilities/MakeVector.hpp"
-#include "tests/Unit/Domain/TestDomainHelpers.hpp"
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -44,9 +44,9 @@ void test_1d_domains() {
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
 
     const auto expected_maps =
-        make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                         CoordinateMaps::AffineMap{-1., 1., -2., 0.}),
-                    make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                    make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                         CoordinateMaps::AffineMap{-1., 1., 0., 2.}));
 
     test_domain_construction(domain, expected_neighbors, expected_boundaries,
@@ -92,7 +92,7 @@ void test_1d_domains() {
   {
     // Test construction of a periodic domain
     const auto expected_maps =
-        make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             CoordinateMaps::AffineMap{-1., 1., -2., 2.}));
 
     const Domain<1, Frame::Inertial> domain{

@@ -9,7 +9,7 @@
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
-#include "tests/Unit/Domain/TestDomainHelpers.hpp"
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -38,7 +38,7 @@ void test_brick_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
                       AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
                       AffineMap{-1., 1., lower_bound[2], upper_bound[2]}})));
