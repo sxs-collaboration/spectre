@@ -9,6 +9,15 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+  DataVector a{2};
+  CHECK(a.size() == 2);
+  DataVector b{2, 10.0};
+  CHECK(b.size() == 2);
+  for (size_t i = 0; i < b.size(); ++i) {
+    INFO(i);
+    CHECK(b[i] == 10.0);
+  }
+
   DataVector t(5, 10.0);
   CHECK(t.size() == 5);
   for (size_t i = 0; i < t.size(); ++i) {
@@ -204,7 +213,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
                   "[Unit][DataStructures]") {
   constexpr size_t num_pts = 19;
-  DataVector val{1, 2, 3, -4, 8, 12, -14};
+  DataVector val{1., 2., 3., -4., 8., 12., -14.};
   DataVector nine(num_pts, 9.0);
   DataVector one(num_pts, 1.0);
 
@@ -230,7 +239,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
 
   CHECK(-14 == min(val));
   CHECK(12 == max(val));
-  check_vectors(DataVector{1, 2, 3, 4, 8, 12, 14}, abs(val));
+  check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, abs(val));
 
   check_vectors(DataVector(num_pts, 81.0), nine * nine);
   check_vectors(DataVector(num_pts, 81.0), nine * (nine * one));
