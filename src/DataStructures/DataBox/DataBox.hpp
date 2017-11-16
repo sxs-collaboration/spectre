@@ -1451,7 +1451,7 @@ struct Apply;
 template <template <typename...> class TagsList, typename... Tags>
 struct Apply<TagsList<Tags...>> {
   template <typename F, typename... BoxTags, typename... Args>
-  static constexpr auto apply(F f, const DataBox<BoxTags...>& box,
+  static constexpr auto apply(F&& f, const DataBox<BoxTags...>& box,
                               Args&&... args) {
     static_assert(
         tt::is_callable_v<
@@ -1462,11 +1462,12 @@ struct Apply<TagsList<Tags...>> {
         "Cannot call the function f with the list of tags and "
         "arguments specified. Check that the Tags::type and the "
         "types of the Args match the function f.");
-    return f(::db::get<Tags>(box)..., std::forward<Args>(args)...);
+    return std::forward<F>(f)(::db::get<Tags>(box)...,
+                              std::forward<Args>(args)...);
   }
 
   template <typename F, typename... BoxTags, typename... Args>
-  static constexpr auto apply_with_box(F f, const DataBox<BoxTags...>& box,
+  static constexpr auto apply_with_box(F&& f, const DataBox<BoxTags...>& box,
                                        Args&&... args) {
     static_assert(
         tt::is_callable_v<
@@ -1478,7 +1479,8 @@ struct Apply<TagsList<Tags...>> {
         "arguments specified. Check that the Tags::type and the "
         "types of the Args match the function f and that f is "
         "receiving the correct type of DataBox.");
-    return f(box, ::db::get<Tags>(box)..., std::forward<Args>(args)...);
+    return std::forward<F>(f)(box, ::db::get<Tags>(box)...,
+                              std::forward<Args>(args)...);
   }
 };
 }  // namespace detail
@@ -1522,9 +1524,10 @@ struct Apply<TagsList<Tags...>> {
  * DataBox, `box`
  */
 template <typename TagsList, typename F, typename... BoxTags, typename... Args>
-inline constexpr auto apply(F f, const DataBox<BoxTags...>& box,
+inline constexpr auto apply(F&& f, const DataBox<BoxTags...>& box,
                             Args&&... args) {
-  return detail::Apply<TagsList>::apply(f, box, std::forward<Args>(args)...);
+  return detail::Apply<TagsList>::apply(std::forward<F>(f), box,
+                                        std::forward<Args>(args)...);
 }
 
 namespace databox_detail {
@@ -1692,9 +1695,9 @@ mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
  * DataBox, `box`
  */
 template <typename TagsList, typename F, typename... BoxTags, typename... Args>
-inline constexpr auto apply_with_box(F f, const DataBox<BoxTags...>& box,
+inline constexpr auto apply_with_box(F&& f, const DataBox<BoxTags...>& box,
                                      Args&&... args) {
-  return detail::Apply<TagsList>::apply_with_box(f, box,
+  return detail::Apply<TagsList>::apply_with_box(std::forward<F>(f), box,
                                                  std::forward<Args>(args)...);
 }
 
