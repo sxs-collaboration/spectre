@@ -11,6 +11,7 @@ add_subdirectory(ApparentHorizons)
 add_subdirectory(DataStructures)
 add_subdirectory(Domain)
 add_subdirectory(ErrorHandling)
+add_subdirectory(Evolution)
 add_subdirectory(IO)
 add_subdirectory(Numerical)
 add_subdirectory(Options)
@@ -38,6 +39,7 @@ target_link_libraries(
   Domain
   DomainCreators
   EinsteinSolutions
+  GeneralizedHarmonic
   IO
   NumericalAlgorithms
   Time
