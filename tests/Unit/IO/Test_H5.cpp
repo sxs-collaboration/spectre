@@ -545,7 +545,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile1D", "[Unit][IO][H5]") {
       DataVector{0.0, 1.0, 2.0});
   const Index<1> extents{3};
   const std::string element_id{"[0][0]"};
-  const Scalar<DataVector> scalar(DataVector{0, 8, 4});
+  const Scalar<DataVector> scalar(DataVector{0., 8., 4.});
   const tnsr::I<DataVector, 1, Frame::Grid> vector{
       {{DataVector{3.8, 9.7, 2.8}}}};
   std::unordered_map<
@@ -556,7 +556,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile1D", "[Unit][IO][H5]") {
   detyped_tensors.emplace(
       "weird_scalar"s,
       std::make_pair(std::vector<std::string>{},
-                     std::vector<DataVector>{DataVector{9, 7, 4}}));
+                     std::vector<DataVector>{DataVector{9., 7., 4.}}));
   {
     vis::VolumeFile my_file(file_name, 2);
     my_file.write_xdmf_time(time);
@@ -573,10 +573,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile1D", "[Unit][IO][H5]") {
   CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
   h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
   CHECK(extents == h5::read_extents<1>(group.id(), "Extents"));
-  CHECK((DataVector{0, 1, 2}) == h5::read_data(group.id(), "x-coord"));
-  CHECK((DataVector{0, 8, 4}) == h5::read_data(group.id(), "scalar"));
+  CHECK((DataVector{0., 1., 2.}) == h5::read_data(group.id(), "x-coord"));
+  CHECK((DataVector{0., 8., 4.}) == h5::read_data(group.id(), "scalar"));
   CHECK((DataVector{3.8, 9.7, 2.8}) == h5::read_data(group.id(), "vector_x"));
-  CHECK((DataVector{9, 7, 4}) == h5::read_data(group.id(), "weird_scalar"));
+  CHECK((DataVector{9., 7., 4.}) == h5::read_data(group.id(), "weird_scalar"));
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }
 
@@ -593,7 +593,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile2D", "[Unit][IO][H5]") {
   my_file.write_xdmf_time(time);
   my_file.write_element_connectivity_and_coordinates(time, grid_coords, extents,
                                                      element_id);
-  const Scalar<DataVector> scalar(DataVector{0, 8, 4, 7, 5, 2});
+  const Scalar<DataVector> scalar(DataVector{0., 8., 4., 7., 5., 2.});
   const tnsr::I<DataVector, dim, Frame::Grid> vector(
       DataVector{3.8, 9.7, 2.8, 8.9, 2.4, 8.3});
   std::unordered_map<
@@ -636,7 +636,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile3D", "[Unit][IO][H5]") {
   my_file.write_element_connectivity_and_coordinates(time, grid_coords, extents,
                                                      element_id);
   const Scalar<DataVector> scalar(
-      DataVector{0, 8, 4, 7, 5, 2, 8.9, 3.8, 39.0, 9.384, 38.2, 7.8});
+      DataVector{0., 8., 4., 7., 5., 2., 8.9, 3.8, 39.0, 9.384, 38.2, 7.8});
   const tnsr::I<DataVector, dim, Frame::Grid> vector(
       DataVector{3.8, 9.7, 2.8, 8.9, 2.4, 8.3, 3.8, 9.7, 2.8, 8.9, 2.4, 8.3});
   std::unordered_map<

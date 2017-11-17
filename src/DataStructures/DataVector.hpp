@@ -21,6 +21,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PointerVector.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond HIDDEN_SYMBOLS
 namespace PUP {
@@ -71,8 +72,10 @@ class DataVector {
   /// Create a non-owning DataVector that points to `start`
   DataVector(double* start, size_t size);
 
-  /// Create from an initializer list
-  DataVector(std::initializer_list<double> list);
+  /// Create from an initializer list of doubles. All elements in the
+  /// `std::initializer_list` must have decimal points
+  template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
+  DataVector(std::initializer_list<T> list);
 
   /// Empty DataVector
   DataVector() = default;

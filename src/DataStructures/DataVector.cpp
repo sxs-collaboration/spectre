@@ -12,8 +12,11 @@ DataVector::DataVector(const size_t size, const double value)
       owned_data_(size_, value),
       data_(owned_data_.data(), size_) {}
 
-DataVector::DataVector(std::initializer_list<double> list)
-    : size_(list.size()), owned_data_(list), data_(owned_data_.data(), size_) {}
+template <class T, Requires<cpp17::is_same_v<T, double>>>
+DataVector::DataVector(std::initializer_list<T> list)
+    : size_(list.size()),
+      owned_data_(std::move(list)),
+      data_(owned_data_.data(), size_) {}
 
 DataVector::DataVector(double* start, size_t size)
     : size_(size), owned_data_(0), data_(start, size_), owning_(false) {}
@@ -117,3 +120,7 @@ bool operator==(const DataVector& lhs, const DataVector& rhs) {
 bool operator!=(const DataVector& lhs, const DataVector& rhs) {
   return not(lhs == rhs);
 }
+
+/// \cond
+template DataVector::DataVector(std::initializer_list<double> list);
+/// \endcond
