@@ -31,3 +31,18 @@ SPECTRE_TEST_CASE("Unit.Utilities.swallow", "[Utilities][Unit]") {
   CHECK(std::get<2>(my_tupull_output) == 16.4f);
 }
 /// [swallow_example]
+
+namespace {
+template <typename>
+struct Templated {};
+}  // namespace
+
+static_assert(tmpl::list_contains_v<tmpl::list<Templated<int>,
+                                               Templated<double>>,
+                                    Templated<double>>,
+              "Failed testing list_contains");
+
+static_assert(not tmpl::list_contains_v<tmpl::list<Templated<int>,
+                                                   Templated<double>>,
+                                        double>,
+              "Failed testing list_contains");
