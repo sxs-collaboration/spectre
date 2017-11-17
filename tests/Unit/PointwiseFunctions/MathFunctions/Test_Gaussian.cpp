@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
   test_math_helpers::test_pup_function(gauss);
 
   // Test base class serialization
-  register_derived_classes_with_charm<MathFunction<1>>();
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
   test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
       std::make_unique<MathFunctions::Gaussian>(amplitude, width, center)});
 }

@@ -355,6 +355,25 @@ static_assert(not tt::is_callable<BClassInTestTypeTraits>::value,
               "Failed testing type trait is_callable");
 /// [is_callable_example]
 
+namespace  {
+/// [CREATE_IS_CALLABLE_EXAMPLE]
+CREATE_IS_CALLABLE(foo)
+CREATE_IS_CALLABLE(foobar)
+struct bar {
+  void foo(int /*unused*/, double /*unused*/) {}
+};
+
+static_assert(is_foo_callable_v<bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foo_callable_v<bar, int>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foo_callable_v<bar>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foobar_callable_v<bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
+/// [CREATE_IS_CALLABLE_EXAMPLE]
+}  // namespace
+
 /// [is_hashable_example]
 static_assert(tt::is_hashable<double>::value,
               "Failed testing type trait is_hashable");

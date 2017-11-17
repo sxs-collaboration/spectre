@@ -787,6 +787,48 @@ template <typename T, typename... Args>
 using is_callable_t = typename is_callable<T, Args...>::type;
 // @}
 
+/*!
+ * \ingroup TypeTraits
+ * \brief Generate a type trait to check if a class has a member function that
+ * can be invoked with arguments of type `TArgs...`
+ *
+ * The usage of the type trait is identical to the usage of the
+ * `tt::is_callable` type trait. The name of the type trait is
+ * `is_METHOD_NAME_callable` and is not placed in
+ * the `tt` namespace. To avoid collisions it is highly recommended that type
+ * traits generated with this macro are generated into `_detail` namespaces.
+ * This will reduce redefinition compilation errors. Note that a variable
+ * template `is_METHOD_NAME_callable_v`, and a `is_METHOD_NAME_callable_t` that
+ * is either `std::true_type` or `std::false_type` is also generated.
+ *
+ * \example
+ * \snippet Utilities/Test_TypeTraits.cpp CREATE_IS_CALLABLE_EXAMPLE
+ *
+ * \see tt::is_callable
+ */
+#define CREATE_IS_CALLABLE(METHOD_NAME)                                     \
+  template <typename TT, typename... TArgs>                                 \
+  class is_##METHOD_NAME##_callable {                                       \
+   private:                                                                 \
+    template <typename T, typename... Args>                                 \
+    static auto test_callable(int) noexcept                                 \
+        -> decltype(std::declval<T>().METHOD_NAME(std::declval<Args>()...), \
+                    std::true_type());                                      \
+    template <typename, typename...>                                        \
+    static auto test_callable(...) noexcept -> std::false_type;             \
+                                                                            \
+   public:                                                                  \
+    static constexpr bool value =                                           \
+        decltype(test_callable<TT, TArgs...>(0))::value;                    \
+    using type = std::integral_constant<bool, value>;                       \
+  };                                                                        \
+  template <typename T, typename... Args>                                   \
+  static constexpr const bool is_##METHOD_NAME##_callable_v =               \
+      is_##METHOD_NAME##_callable<T, Args...>::value;                       \
+  template <typename T, typename... Args>                                   \
+  using is_##METHOD_NAME##_callable_t =                                     \
+      typename is_##METHOD_NAME##_callable<T, Args...>::type;
+
 // @{
 /// \ingroup TypeTraits
 /// \brief Check if std::hash and std::equal_to are defined for type T

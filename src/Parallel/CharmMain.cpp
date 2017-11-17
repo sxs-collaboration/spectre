@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/Main.hpp"
 #include "Utilities/NoSuchType.hpp"
 
 namespace Parallel {

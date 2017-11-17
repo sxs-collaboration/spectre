@@ -17,11 +17,14 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Deferred.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
+template <typename TagList>
+class Variables;
 template <typename Tag, typename TagList>
 constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;
 template <typename Tag, typename TagList>
@@ -52,14 +55,6 @@ using get_databox_list =
 template <typename TagsList>
 class DataBox;
 /// \endcond
-
-namespace detail {
-template <typename PoppedTagList, typename FullTagList>
-struct DataBoxAddHelper;
-
-template <typename DependencyGraph, typename Vertices>
-struct ResetComputeItems;
-}  // namespace detail
 
 // @{
 /*!
@@ -541,6 +536,24 @@ struct extract_dependent_items<
       tmpl::append<typelist<Element>, typename item_type<Element>::tags_list>;
 };
 
+template <bool IsVariables>
+struct closure_extract_dependent_items {
+  template <typename Element>
+  using f = tmpl::list<Element>;
+};
+
+template <>
+struct closure_extract_dependent_items<true> {
+  template <typename Element>
+  using f = tmpl::append<typelist<Element>,
+                         typename ::db::item_type<Element>::tags_list>;
+};
+
+// Given a typelist List, returns a new typelist with all the Variables Tags
+template <typename List>
+using extracted_items = tmpl::flatten<
+    tmpl::transform<List, databox_detail::extract_dependent_items<tmpl::_1>>>;
+
 template <typename Caller, typename Callee, typename List,
           typename = std::nullptr_t>
 struct create_dependency_graph {
@@ -553,9 +566,9 @@ struct create_dependency_graph {
 template <typename Caller, typename Callee, typename List>
 struct create_dependency_graph<
     Caller, Callee, List, Requires<is_simple_compute_item<Callee>::value>> {
-  using sub_tree =
-      tmpl::fold<typename Callee::argument_tags, List,
-                 create_dependency_graph<Callee, tmpl::_element, tmpl::_state>>;
+  using sub_tree = tmpl::fold<
+      typename Callee::argument_tags, List,
+      create_dependency_graph<tmpl::pin<Callee>, tmpl::_element, tmpl::_state>>;
   using type = tmpl::conditional_t<
       cpp17::is_same_v<void, Caller>, sub_tree,
       tmpl::push_back<sub_tree, tmpl::edge<Callee, Caller>>>;
@@ -576,6 +589,9 @@ struct create_dependency_graph<
       cpp17::is_same_v<void, Caller>, sub_tree,
       tmpl::push_back<sub_tree, tmpl::edge<Callee, Caller>>>;
 };
+
+template <class T>
+using is_variables = tt::is_a<Variables, T>;
 }  // namespace databox_detail
 
 /*!
@@ -616,8 +632,25 @@ class DataBox<TagsList<Tags...>> {
   using tags_list = typelist<Tags...>;
 
   using compute_item_tags =
+      tmpl::filter<tags_list, std::is_base_of<db::ComputeItemTag, tmpl::_1>>;
+
+  using item_tags =
       tmpl::filter<tags_list,
-                   tmpl::bind<std::is_base_of, db::ComputeItemTag, tmpl::_1>>;
+                   tmpl::not_<std::is_base_of<db::ComputeItemTag, tmpl::_1>>>;
+
+  using variables_item_tags =
+      tmpl::filter<item_tags, tmpl::bind<databox_detail::is_variables,
+                                         tmpl::bind<db::item_type, tmpl::_1>>>;
+
+  using extracted_from_variables =
+      tmpl::filter<databox_detail::extracted_items<variables_item_tags>,
+                   tmpl::not_<tmpl::bind<databox_detail::is_variables,
+                                         tmpl::bind<db::item_type, tmpl::_1>>>>;
+
+  using edge_list =
+      tmpl::fold<compute_item_tags, typelist<>,
+                 databox_detail::create_dependency_graph<void, tmpl::_element,
+                                                         tmpl::_state>>;
 
   /// \cond HIDDEN_SYMBOLS
   /*!
@@ -728,12 +761,13 @@ class DataBox<TagsList<Tags...>> {
 
   template <typename OldTags, typename... KeepTags, typename... NewTags,
             typename... NewComputeItems, typename ComputeItemsToKeep,
-            typename... Args>
+            typename... MutatedTags, typename... Args>
   constexpr DataBox(const DataBox<OldTags>& old_box,
                     typelist<KeepTags...> /*meta*/,
                     typelist<NewTags...> /*meta*/,
                     typelist<NewComputeItems...> /*meta*/,
-                    ComputeItemsToKeep /*meta*/, Args&&... args);
+                    ComputeItemsToKeep /*meta*/,
+                    tmpl::list<MutatedTags...> /*meta*/, Args&&... args);
 
   SPECTRE_ALWAYS_INLINE void check_tags() const {
 #ifdef SPECTRE_DEBUG
@@ -762,13 +796,13 @@ struct select_if_variables<T, Requires<tt::is_a_v<Variables, item_type<T>>>> {
 template <
     typename VariablesTag, typename... Ts, typename... Tags,
     Requires<not tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_tags_to_box(
+SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
     typelist<Ts...> /*meta*/) {}
 
 template <typename VariablesTag, typename... Ts, typename... Tags,
           Requires<tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_tags_to_box(
+SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     typelist<Ts...> /*meta*/) {
   const auto helper = [lazy_function =
@@ -780,6 +814,35 @@ SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_tags_to_box(
        '0')...});
 }
 
+template <
+    typename VariablesTag, typename... Ts, typename... Tags,
+    Requires<not tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr void add_variables_item_tags_to_box(
+    databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
+    typelist<Ts...> /*meta*/) {}
+
+template <typename VariablesTag, typename... Ts, typename... Tags,
+          Requires<tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr void add_variables_item_tags_to_box(
+    databox_detail::TaggedDeferredTuple<Tags...>& data,
+    typelist<Ts...> /*meta*/) {
+  const auto helper = [&data](auto tag_v) {
+    using tag = decltype(tag_v);
+    auto& vars = get<tag>(data.template get<VariablesTag>().mutate());
+    data.template get<tag>() =
+        Deferred<db::item_type<tag>>(db::item_type<tag>{});
+    auto& var = data.template get<tag>().mutate();
+    for (auto vars_it = vars.begin(), var_it = var.begin();
+         vars_it != vars.end(); ++vars_it, ++var_it) {
+      var_it->set_data_ref(
+          gsl::not_null<std::add_pointer_t<decltype(*vars_it)>>(&*vars_it));
+    }
+  };
+
+  static_cast<void>(
+      std::initializer_list<char>{(static_cast<void>(helper(Ts{})), '0')...});
+}
+
 template <size_t ArgsIndex, typename Tag, typename... Tags, typename... Ts>
 SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
     std::tuple<Ts...>& tupull,
@@ -787,7 +850,7 @@ SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
         data) noexcept(noexcept(data.template get<Tag>() =
                                     Deferred<item_type<Tag>>(std::move(
                                         std::get<ArgsIndex>(tupull)))) and
-                       noexcept(add_variables_compute_tags_to_box<Tag>(
+                       noexcept(add_variables_item_tags_to_box<Tag>(
                            data, typename select_if_variables<Tag>::type{}))) {
   static_assert(
       not tt::is_a<Deferred,
@@ -799,7 +862,7 @@ SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
   data.template get<Tag>() =
       Deferred<item_type<Tag>>(std::move(std::get<ArgsIndex>(tupull)));
   // If `tag` holds a Variables then add the contained Tensor's
-  add_variables_compute_tags_to_box<Tag>(
+  add_variables_item_tags_to_box<Tag>(
       data, typename select_if_variables<Tag>::type{});
   return cpp17::void_type{};  // must return in constexpr function
 }
@@ -846,10 +909,14 @@ SPECTRE_ALWAYS_INLINE constexpr void add_compute_item_to_box(
   add_compute_item_to_box_impl<Tag, FullTagList>(data,
                                                  typename Tag::argument_tags{});
   // If `tag` holds a Variables then add the contained Tensor's
-  add_variables_compute_tags_to_box<Tag>(
+  add_variables_compute_item_tags_to_box<Tag>(
       data, typename select_if_variables<Tag>::type{});
 }
 
+// Add items or compute items to the TaggedDeferredTuple `data`. If
+// `AddItemTags...` is an empty pack then only compute items are added, while if
+// `AddComputeItemTags...` is an empty pack only items are added. Items are
+// always added before compute items.
 template <typename FullTagList, typename... Ts, typename... Tags,
           typename... AddItemTags, typename... AddComputeItemTags, size_t... Is,
           bool... DependenciesAddedBefore>
@@ -874,61 +941,74 @@ SPECTRE_ALWAYS_INLINE constexpr void merge_old_box(
        '0')...});
 }
 
-template <typename ComputeItem, typename... Tags, typename... ComputeItemTags>
+template <bool IsComputeItemTag>
+struct get_argument_list_impl {
+  template <class Tag>
+  using f = tmpl::list<>;
+};
+
+template <>
+struct get_argument_list_impl<true> {
+  template <class Tag>
+  using f = typename Tag::argument_tags;
+};
+
+template <class Tag>
+using get_argument_list = typename get_argument_list_impl<
+    ::db::is_compute_item_v<Tag>>::template f<Tag>;
+
+template <typename ComputeItem, typename... Tags, typename... ComputeItemTags,
+          Requires<db::is_compute_item_v<ComputeItem>> = nullptr>
 SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemTags...> /*meta*/) {
   data.template get<ComputeItem>() = make_deferred(
       ComputeItem::function, data.template get<ComputeItemTags>()...);
-}
-
-// We do not need all the static_assert checks in add_item_to_box and since
-// these are expensive we avoid them to reduce compilation time
-template <typename Tag, typename... Tags,
-          Requires<not is_compute_item<Tag>::value> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr void reset_compute_item(
-    databox_detail::TaggedDeferredTuple<Tags...>& /*data*/) {}
-
-template <typename Tag, typename... Tags,
-          Requires<is_compute_item<Tag>::value> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr void reset_compute_item(
-    databox_detail::TaggedDeferredTuple<Tags...>& data) {
-  add_reset_compute_item_to_box<Tag>(data, typename Tag::argument_tags{});
   // If `tag` holds a Variables then add the contained Tensor's
-  add_variables_compute_tags_to_box<Tag>(
-      data, typename select_if_variables<Tag>::type{});
+  add_variables_compute_item_tags_to_box<ComputeItem>(
+      data, typename select_if_variables<ComputeItem>::type{});
 }
 
-template <typename DependencyGraph, typename... Tags,
-          typename... ComputeItemsToKeep>
-SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items(
-    databox_detail::TaggedDeferredTuple<Tags...>& data,
-    tmpl::list<ComputeItemsToKeep...> /*meta*/);
+template <typename ComputeItem, typename... Tags,
+          Requires<not db::is_compute_item_v<ComputeItem>> = nullptr>
+SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
+    databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
+    tmpl::list<> /*meta*/) {}
 
-template <typename DependencyGraph, typename current_vertex, typename... Tags>
-SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items_apply(
-    databox_detail::TaggedDeferredTuple<Tags...>& data) {
-  // Reset me first
-  reset_compute_item<current_vertex>(data);
-  // Reset what depends on me next
-  using outgoing_edges = tmpl::branch_if_t<
-      tmpl::size<typename current_vertex::argument_tags>::value == 0,
-      tmpl::list<>,
-      tmpl::bind<tmpl::outgoing_edges, DependencyGraph, current_vertex>>;
-  using next_vertices =
-      tmpl::transform<outgoing_edges, tmpl::get_destination<tmpl::_1>>;
-  reset_compute_items<DependencyGraph>(data, next_vertices{});
-}
+template <bool empty, class full_edge_list, class mutate_tags_list>
+struct reset_compute_items_after_mutate;
 
-template <typename DependencyGraph, typename... Tags,
-          typename... ComputeItemsToKeep>
-SPECTRE_ALWAYS_INLINE constexpr void reset_compute_items(
-    databox_detail::TaggedDeferredTuple<Tags...>& data,
-    tmpl::list<ComputeItemsToKeep...> /*meta*/) {
-  static_cast<void>(std::initializer_list<char>{
-      (reset_compute_items_apply<DependencyGraph, ComputeItemsToKeep>(data),
-       '0')...});
-}
+template <class full_edge_list, class... tags, template <class...> class F>
+struct reset_compute_items_after_mutate<false, full_edge_list, F<tags...>> {
+  using tags_dependent_on_current_tags = tmpl::transform<
+      tmpl::append<tmpl::filter<
+          full_edge_list,
+          std::is_same<tmpl::pin<tags>, tmpl::get_source<tmpl::_1>>>...>,
+      tmpl::get_destination<tmpl::_1>>;
+
+  template <typename... Tags>
+  SPECTRE_ALWAYS_INLINE static constexpr void apply(
+      databox_detail::TaggedDeferredTuple<Tags...>& data) noexcept {
+    (void)std::initializer_list<bool>{
+        (add_reset_compute_item_to_box<tags>(data, get_argument_list<tags>{}),
+         false)...};
+    reset_compute_items_after_mutate<
+        tmpl::size<tags_dependent_on_current_tags>::value == 0, full_edge_list,
+        tags_dependent_on_current_tags>::apply(data);
+  }
+};
+
+template <class full_edge_list, template <class...> class F>
+struct reset_compute_items_after_mutate<true, full_edge_list, F<>> {
+  template <typename... Tags>
+  SPECTRE_ALWAYS_INLINE static constexpr void apply(
+      databox_detail::TaggedDeferredTuple<Tags...>& /*data*/) noexcept {}
+};
+
+template <class VariablesTag>
+struct get_tags_list {
+  using type = typename db::item_type<VariablesTag>::tags_list;
+};
 }  // namespace databox_detail
 
 /*!
@@ -956,6 +1036,7 @@ template <typename... MutateTags, typename TagList, typename Invokable,
           typename... Args>
 void mutate(DataBox<TagList>& box, Invokable&& invokable,
             Args&&... args) noexcept {
+  using mutate_tags_list = tmpl::list<MutateTags...>;
   static_assert(not tmpl2::flat_any_v<db::is_compute_item_v<MutateTags>...>,
                 "Cannot mutate a compute item");
   if (UNLIKELY(box.mutate_locked_box_)) {
@@ -967,12 +1048,41 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
   box.mutate_locked_box_ = true;
   invokable(box.data_.template get<MutateTags>().mutate()...,
             std::forward<Args>(args)...);
-  using edge_list =
-      tmpl::fold<typename DataBox<TagList>::compute_item_tags, typelist<>,
-                 databox_detail::create_dependency_graph<void, tmpl::_element,
-                                                         tmpl::_state>>;
-  databox_detail::reset_compute_items<tmpl::digraph<edge_list>>(
-      box.data_, typename DataBox<TagList>::compute_item_tags{});
+  // For all the variable tags in the DataBox, check if one of their Tags is
+  // being mutated and if so add it to the list of tags being mutated. Then,
+  // remove any Variables tags that would be passed multiple times.
+  using variables_tags = tmpl::filter<
+      tmpl::filter<
+          typename DataBox<TagList>::variables_item_tags,
+          tmpl::bind<
+              tmpl::found, databox_detail::get_tags_list<tmpl::_1>,
+              tmpl::bind<tmpl::found, tmpl::pin<tmpl::list<MutateTags...>>,
+                         tmpl::bind<std::is_same, tmpl::pin<tmpl::_1>,
+                                    tmpl::parent<tmpl::_1>>>>>,
+      tmpl::bind<tmpl::not_found, tmpl::pin<mutate_tags_list>,
+                 tmpl::bind<std::is_same, tmpl::bind<tmpl::pin, tmpl::_1>,
+                            tmpl::parent<tmpl::_1>>>>;
+
+  // Since MutateTags could contain Variables Tags we need to extract the Tags
+  // inside the Variables class and reset compute items depending on those too.
+  using mutated_items_including_variables = tmpl::append<
+      typename databox_detail::closure_extract_dependent_items<tt::is_a_v<
+          Variables, item_type<MutateTags>>>::template f<MutateTags>...,
+      variables_tags>;
+  using first_compute_items_to_reset = tmpl::transform<
+      tmpl::filter<
+          typename DataBox<TagList>::edge_list,
+          tmpl::bind<
+              tmpl::found, tmpl::pin<mutated_items_including_variables>,
+              tmpl::bind<std::is_same,
+                         tmpl::bind<tmpl::pin, tmpl::get_source<tmpl::_1>>,
+                         tmpl::parent<tmpl::_1>>>>,
+      tmpl::get_destination<tmpl::_1>>;
+  databox_detail::reset_compute_items_after_mutate<
+      tmpl::size<first_compute_items_to_reset>::value == 0,
+      typename DataBox<TagList>::edge_list,
+      first_compute_items_to_reset>::apply(box.data_);
+
   box.mutate_locked_box_ = false;
 }
 
@@ -1027,11 +1137,12 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
 template <template <typename...> class TagsList, typename... Tags>
 template <typename OldTags, typename... KeepTags, typename... NewTags,
           typename... NewComputeItems, typename ComputeItemsToKeep,
-          typename... Args>
+          typename... MutatedTags, typename... Args>
 constexpr DataBox<TagsList<Tags...>>::DataBox(
     const DataBox<OldTags>& old_box, typelist<KeepTags...> /*meta*/,
     typelist<NewTags...> /*meta*/, typelist<NewComputeItems...> /*meta*/,
-    ComputeItemsToKeep /*meta*/, Args&&... args) {
+    ComputeItemsToKeep /*meta*/, tmpl::list<MutatedTags...> /*meta*/,
+    Args&&... args) {
   static_assert(sizeof...(NewTags) == sizeof...(Args),
                 "Must pass in as many arguments as AddTags");
   static_assert(
@@ -1039,12 +1150,6 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
           cpp17::is_same_v<typename NewTags::type, std::decay_t<Args>>...>,
       "The type of each Tag must be the same as the type being passed into "
       "the function creating the new DataBox.");
-  // Create dependency graph between compute items and items being reset
-  using edge_list =
-      tmpl::fold<ComputeItemsToKeep, typelist<>,
-                 databox_detail::create_dependency_graph<void, tmpl::_element,
-                                                         tmpl::_state>>;
-  using DependencyGraph = tmpl::digraph<edge_list>;
 
   check_tags();
   // Merge old tags, including all ComputeItems even though they might be
@@ -1056,8 +1161,36 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
       args_tuple, data_, typelist<NewTags...>{},
       std::make_index_sequence<sizeof...(NewTags)>{}, typelist<>{});
 
-  databox_detail::reset_compute_items<DependencyGraph>(data_,
-                                                       ComputeItemsToKeep{});
+  // For all the variable tags in the DataBox, check if one of their Tags is
+  // being mutated. We do not allow this to be done in create_from so it results
+  // in an error
+  using mutated_tags_list = tmpl::list<MutatedTags...>;
+  using variables_tags_from_single_tags = tmpl::filter<
+      extracted_from_variables,
+      tmpl::bind<tmpl::found, tmpl::pin<mutated_tags_list>,
+                 tmpl::bind<std::is_same, tmpl::_1, tmpl::parent<tmpl::_1>>>>;
+  static_assert(cpp17::is_same_v<tmpl::list<>, variables_tags_from_single_tags>,
+                "You are not allowed to mutate a single component of a "
+                "Variables with db::create_from, you must mutate the entire "
+                "Variables instead.");
+
+  // Reset dependent compute items
+  using mutated_items_including_variables = tmpl::append<
+      typename databox_detail::closure_extract_dependent_items<tt::is_a_v<
+          Variables, item_type<MutatedTags>>>::template f<MutatedTags>...>;
+  using first_compute_items_to_reset = tmpl::transform<
+      tmpl::filter<
+          edge_list,
+          tmpl::bind<
+              tmpl::found, tmpl::pin<mutated_items_including_variables>,
+              tmpl::bind<std::is_same,
+                         tmpl::bind<tmpl::pin, tmpl::get_source<tmpl::_1>>,
+                         tmpl::parent<tmpl::_1>>>>,
+      tmpl::get_destination<tmpl::_1>>;
+
+  databox_detail::reset_compute_items_after_mutate<
+      tmpl::size<first_compute_items_to_reset>::value == 0, edge_list,
+      first_compute_items_to_reset>::apply(data_);
 
   // Add new compute items
   databox_detail::add_items_to_box<
@@ -1124,26 +1257,23 @@ constexpr auto DataBox<TagsList<Tags...>>::create_from(const Box& box,
   // Build list of tags where we expand the tags inside Variables<Tags...>
   // objects. This is needed since we actually want those tags to be part of the
   // DataBox type as well
-  using full_remove_tags = tmpl::fold<
-      RemoveTags, tmpl::list<>,
-      tmpl::bind<tmpl::append, tmpl::_state,
-                 databox_detail::extract_dependent_items<tmpl::_element>>>;
-  using full_items = tmpl::fold<
-      AddTags, tmpl::list<>,
-      tmpl::bind<tmpl::append, tmpl::_state,
-                 databox_detail::extract_dependent_items<tmpl::_element>>>;
-  using full_compute_items = tmpl::fold<
-      AddComputeItems, tmpl::list<>,
-      tmpl::bind<tmpl::append, tmpl::_state,
-                 databox_detail::extract_dependent_items<tmpl::_element>>>;
+  using full_remove_tags = databox_detail::extracted_items<RemoveTags>;
+  using full_items = databox_detail::extracted_items<AddTags>;
+  using full_compute_items = databox_detail::extracted_items<AddComputeItems>;
   using remaining_tags =
       tmpl::fold<full_remove_tags, old_tags_list,
                  tmpl::bind<tmpl::remove, tmpl::_state, tmpl::_element>>;
   using new_tags = tmpl::append<remaining_tags, full_items, full_compute_items>;
   using sorted_tags = ::db::get_databox_list<new_tags>;
+  // List of tags that were both removed and added, and therefore were mutated
+  using mutated_tags =
+      tmpl::filter<AddTags,
+                   tmpl::bind<tmpl::found, tmpl::pin<RemoveTags>,
+                              tmpl::bind<std::is_same, tmpl::pin<tmpl::_1>,
+                                         tmpl::parent<tmpl::_1>>>>;
   return DataBox<sorted_tags>(box, remaining_tags{}, AddTags{},
                               AddComputeItems{}, compute_items_to_keep{},
-                              std::forward<Args>(args)...);
+                              mutated_tags{}, std::forward<Args>(args)...);
 }
 /// \endcond
 
@@ -1381,6 +1511,117 @@ inline constexpr auto apply(F f, const DataBox<BoxTags...>& box,
   return detail::Apply<TagsList>::apply(f, box, std::forward<Args>(args)...);
 }
 
+namespace databox_detail {
+CREATE_IS_CALLABLE(apply)
+
+template <typename... ReturnTags, typename... ArgumentTags, typename F,
+          typename... BoxTags, typename... Args,
+          Requires<is_apply_callable_v<
+              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+              Args...>> = nullptr>
+inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags...>& box,
+                                   tmpl::list<ReturnTags...> /*meta*/,
+                                   tmpl::list<ArgumentTags...> /*meta*/,
+                                   Args&&... args)
+    // clang-format off
+    noexcept(noexcept(F::apply(
+        std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
+        std::declval<const db::item_type<ArgumentTags>&>()...,
+        std::forward<Args>(args)...))) {
+  // clang-format on
+  ::db::mutate<ReturnTags...>(
+      box,
+      [](db::item_type<ReturnTags> & ... mutated_items,
+         const db::item_type<ArgumentTags>&... args_items,
+         decltype(std::forward<Args>(args))... l_args)
+      // clang-format off
+      noexcept(noexcept(F::apply(
+          std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
+          std::declval<const db::item_type<ArgumentTags>&>()...,
+          std::forward<Args>(args)...))) {
+        // clang-format on
+        return F::apply(make_not_null(&mutated_items)..., args_items...,
+                        std::forward<Args>(l_args)...);
+      },
+      db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+}
+
+template <typename... ReturnTags, typename... ArgumentTags, typename F,
+          typename... BoxTags, typename... Args,
+          Requires<::tt::is_callable_v<
+              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+              Args...>> = nullptr>
+inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags...>& box,
+                                   tmpl::list<ReturnTags...> /*meta*/,
+                                   tmpl::list<ArgumentTags...> /*meta*/,
+                                   Args&&... args)
+    // clang-format off
+    noexcept(noexcept(f(
+        std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
+        std::declval<const db::item_type<ArgumentTags>&>()...,
+        std::forward<Args>(args)...))) {
+  // clang-format on
+  ::db::mutate<ReturnTags...>(
+      box,
+      [&f](db::item_type<ReturnTags> & ... mutated_items,
+           const db::item_type<ArgumentTags>&... args_items,
+           decltype(std::forward<Args>(args))... l_args)
+      // clang-format off
+      noexcept(noexcept(f(make_not_null(&mutated_items)...,
+                          args_items..., std::forward<Args>(
+                              l_args)...)))
+      // clang-format on
+      {
+        return f(make_not_null(&mutated_items)..., args_items...,
+                 std::forward<Args>(l_args)...);
+      },
+      db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+}
+}  // namespace databox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the function `f` mutating items `MutateTags` and taking as
+ * additional arguments `ArgumentTags` and `args`.
+ *
+ * \details
+ * `f` must either by invokable with the arguments of type
+ * `db::item_type<ReturnTags>..., db::item_type<ArgumentTags>..., Args...` where
+ * the first two pack expansions are over the elements in the type lists
+ * `MutateTags` and `ArgumentTags`, or have a static `apply` function  that is
+ * callable with the same types.
+ *
+ * \example
+ * An example of using `mutate_apply` with a lambda:
+ * \snippet Test_DataBox.cpp mutate_apply_example
+ *
+ * An example of a class with a static `apply` function
+ *
+ * \snippet Test_DataBox.cpp mutate_apply_apply_struct_example
+ * and how to use `mutate_apply` with the class
+ * \snippet Test_DataBox.cpp mutate_apply_apply_example
+ *
+ * \see apply apply_with_box
+ * \tparam MutateTags typelist of Tags to mutate
+ * \tparam ArgumentTags typelist of additional items to retrieve from the
+ * DataBox
+ * \param f the function to apply
+ * \param box the DataBox out of which to retrieve the Tags and to pass to `f`
+ * \param args the arguments to pass to the function that are not in the
+ * DataBox, `box`
+ */
+template <typename MutateTags, typename ArgumentTags, typename F,
+          typename... BoxTags, typename... Args>
+inline constexpr auto
+mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
+    noexcept(databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
+                                          std::forward<Args>(args)...))) {
+  return databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
+                                      std::forward<Args>(args)...);
+}
+
 /*!
  * \ingroup DataBoxGroup
  * \brief Apply the function `f` with argument Tags `TagList` from DataBox `box`
@@ -1453,4 +1694,39 @@ using remove_tags_from_keep_tags =
     tmpl::filter<DataBoxTagsList,
                  detail::filter_helper<tmpl::pin<KeepTagsList>, tmpl::_1>>;
 
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get all the Tags that are compute items from the `TagList`
+ */
+template <class TagList>
+using get_compute_items = tmpl::filter<TagList, db::is_compute_item<tmpl::_1>>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get all the Tags that are items from the `TagList`
+ */
+template <class TagList>
+using get_items =
+    tmpl::filter<TagList,
+                 tmpl::not_<tmpl::bind<db::is_compute_item, tmpl::_1>>>;
+
+namespace databox_detail {
+template <class ItemsList, class ComputeItemsList>
+struct compute_dbox_type;
+
+template <class... ItemsPack, class ComputeItemsList>
+struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
+  using type = decltype(db::create<tmpl::list<ItemsPack...>, ComputeItemsList>(
+      std::declval<db::item_type<ItemsPack>>()...));
+};
+}  // namespace databox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Returns the type of the DataBox that would be constructed from the
+ * `TagList` of tags.
+ */
+template <class TagList>
+using compute_databox_type = typename databox_detail::compute_dbox_type<
+    get_items<TagList>, get_compute_items<TagList>>::type;
 }  // namespace db

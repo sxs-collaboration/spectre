@@ -13,19 +13,20 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-void test_interval(const DomainCreators::Interval& interval,
-                   const std::array<double, 1>& lower_bound,
-                   const std::array<double, 1>& upper_bound,
-                   const std::array<size_t, 1>& expected_extents,
-                   const std::array<size_t, 1>& expected_refinement_level) {
+void test_interval(
+    const DomainCreators::Interval& interval,
+    const std::array<double, 1>& lower_bound,
+    const std::array<double, 1>& upper_bound,
+    const std::vector<std::array<size_t, 1>>& expected_extents,
+    const std::vector<std::array<size_t, 1>>& expected_refinement_level) {
   const auto domain = interval.create_domain();
   const auto& block = domain.blocks()[0];
   const auto& neighbors = block.neighbors();
   const auto& external_boundaries = block.external_boundaries();
 
   CHECK(block.id() == 0);
-  CHECK(interval.initial_extents(0) == expected_extents);
-  CHECK(interval.initial_refinement_levels(0) == expected_refinement_level);
+  CHECK(interval.initial_extents() == expected_extents);
+  CHECK(interval.initial_refinement_levels() == expected_refinement_level);
 
   test_domain_construction(
       domain,
@@ -40,16 +41,16 @@ void test_periodic_interval(
     const DomainCreators::Interval& interval,
     const std::array<double, 1>& lower_bound,
     const std::array<double, 1>& upper_bound,
-    const std::array<size_t, 1>& expected_extents,
-    const std::array<size_t, 1>& expected_refinement_level) {
+    const std::vector<std::array<size_t, 1>>& expected_extents,
+    const std::vector<std::array<size_t, 1>>& expected_refinement_level) {
   const auto domain = interval.create_domain();
   const auto& block = domain.blocks()[0];
   const auto& neighbors = block.neighbors();
   const auto& external_boundaries = block.external_boundaries();
 
   CHECK(block.id() == 0);
-  CHECK(interval.initial_extents(0) == expected_extents);
-  CHECK(interval.initial_refinement_levels(0) == expected_refinement_level);
+  CHECK(interval.initial_extents() == expected_extents);
+  CHECK(interval.initial_refinement_levels() == expected_refinement_level);
 
   const Orientation<1> aligned_orientation{{{Direction<1>::lower_xi()}},
                                            {{Direction<1>::lower_xi()}}};
@@ -66,20 +67,22 @@ void test_periodic_interval(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval", "[Domain][Unit]") {
-  const std::array<size_t, 1> grid_points{{4}}, num_elements{{3}};
+  const std::vector<std::array<size_t, 1>> grid_points{{{4}}},
+      refinement_level{{{3}}};
   const std::array<double, 1> lower_bound{{-1.2}}, upper_bound{{0.8}};
 
   const DomainCreators::Interval interval{lower_bound, upper_bound,
                                           std::array<bool, 1>{{false}},
-                                          num_elements, grid_points};
+                                          refinement_level[0], grid_points[0]};
 
-  test_interval(interval, lower_bound, upper_bound, grid_points, num_elements);
+  test_interval(interval, lower_bound, upper_bound, grid_points,
+                refinement_level);
 
-  const DomainCreators::Interval periodic_interval{lower_bound, upper_bound,
-                                                   std::array<bool, 1>{{true}},
-                                                   num_elements, grid_points};
+  const DomainCreators::Interval periodic_interval{
+      lower_bound, upper_bound, std::array<bool, 1>{{true}},
+      refinement_level[0], grid_points[0]};
   test_periodic_interval(periodic_interval, lower_bound, upper_bound,
-                         grid_points, num_elements);
+                         grid_points, refinement_level);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Factory",
@@ -91,25 +94,4 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Factory",
       "    IsPeriodicIn: [True]\n"
       "    InitialGridPoints: [3]\n"
       "    InitialRefinement: [2]\n");
-}
-
-// [[OutputRegex, index = 1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Extents",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DomainCreators::Interval default_interval{};
-  default_interval.initial_extents(1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-// [[OutputRegex, index = 2]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Refinement",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DomainCreators::Interval default_interval{};
-  default_interval.initial_refinement_levels(2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
 }

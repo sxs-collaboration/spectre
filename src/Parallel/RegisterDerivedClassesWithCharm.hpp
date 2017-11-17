@@ -12,6 +12,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace Parallel {
 namespace register_derived_classes_with_charm_detail {
 template <typename Type>
 SPECTRE_ALWAYS_INLINE void make_type_pupable() noexcept {
@@ -32,3 +33,4 @@ SPECTRE_ALWAYS_INLINE void register_derived_classes_with_charm() noexcept {
   register_derived_classes_with_charm_detail::make_list_pupable(
       typename Base::creatable_classes{});
 }
+}  // namespace Parallel

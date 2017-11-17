@@ -20,8 +20,8 @@ void test_rectangle_construction(
     const DomainCreators::Rectangle& rectangle,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& upper_bound,
-    const std::array<size_t, 2>& expected_extents,
-    const std::array<size_t, 2>& expected_refinement_level,
+    const std::vector<std::array<size_t, 2>>& expected_extents,
+    const std::vector<std::array<size_t, 2>>& expected_refinement_level,
     const std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
@@ -32,8 +32,8 @@ void test_rectangle_construction(
   const auto& external_boundaries = block.external_boundaries();
 
   CHECK(block.id() == 0);
-  CHECK(rectangle.initial_extents(0) == expected_extents);
-  CHECK(rectangle.initial_refinement_levels(0) == expected_refinement_level);
+  CHECK(rectangle.initial_extents() == expected_extents);
+  CHECK(rectangle.initial_refinement_levels() == expected_refinement_level);
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
@@ -44,16 +44,17 @@ void test_rectangle_construction(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
-  const std::array<size_t, 2> grid_points{{4, 6}}, num_elements{{3, 2}};
+  const std::vector<std::array<size_t, 2>> grid_points{{{4, 6}}},
+      refinement_level{{{3, 2}}};
   const std::array<double, 2> lower_bound{{-1.2, 3.0}}, upper_bound{{0.8, 5.0}};
   // default Orientation is aligned
   const Orientation<2> aligned_orientation{};
 
-  const DomainCreators::Rectangle rectangle{lower_bound, upper_bound,
-                                            std::array<bool, 2>{{false, false}},
-                                            num_elements, grid_points};
+  const DomainCreators::Rectangle rectangle{
+      lower_bound, upper_bound, std::array<bool, 2>{{false, false}},
+      refinement_level[0], grid_points[0]};
   test_rectangle_construction(
-      rectangle, lower_bound, upper_bound, grid_points, num_elements,
+      rectangle, lower_bound, upper_bound, grid_points, refinement_level,
       std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{{}},
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_xi()},
@@ -63,9 +64,10 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
 
   const DomainCreators::Rectangle periodic_x_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, false}},
-      num_elements, grid_points};
+      refinement_level[0], grid_points[0]};
   test_rectangle_construction(
-      periodic_x_rectangle, lower_bound, upper_bound, grid_points, num_elements,
+      periodic_x_rectangle, lower_bound, upper_bound, grid_points,
+      refinement_level,
       std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
           {{Direction<2>::lower_xi(), {0, aligned_orientation}},
            {Direction<2>::upper_xi(), {0, aligned_orientation}}}},
@@ -74,9 +76,10 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
 
   const DomainCreators::Rectangle periodic_y_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, true}},
-      num_elements, grid_points};
+      refinement_level[0], grid_points[0]};
   test_rectangle_construction(
-      periodic_y_rectangle, lower_bound, upper_bound, grid_points, num_elements,
+      periodic_y_rectangle, lower_bound, upper_bound, grid_points,
+      refinement_level,
       std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
           {{Direction<2>::lower_eta(), {0, aligned_orientation}},
            {Direction<2>::upper_eta(), {0, aligned_orientation}}}},
@@ -84,11 +87,11 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
           {{Direction<2>::lower_xi()}, {Direction<2>::upper_xi()}}});
 
   const DomainCreators::Rectangle periodic_xy_rectangle{
-      lower_bound, upper_bound, std::array<bool, 2>{{true, true}}, num_elements,
-      grid_points};
+      lower_bound, upper_bound, std::array<bool, 2>{{true, true}},
+      refinement_level[0], grid_points[0]};
   test_rectangle_construction(
       periodic_xy_rectangle, lower_bound, upper_bound, grid_points,
-      num_elements,
+      refinement_level,
       std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
           {{Direction<2>::lower_xi(), {0, aligned_orientation}},
            {Direction<2>::upper_xi(), {0, aligned_orientation}},
@@ -106,25 +109,4 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Factory",
       "    IsPeriodicIn: [True,False]\n"
       "    InitialGridPoints: [3,4]\n"
       "    InitialRefinement: [2,3]\n");
-}
-
-// [[OutputRegex, index = 1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Extents",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DomainCreators::Rectangle default_rectangle{};
-  default_rectangle.initial_extents(1);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-// [[OutputRegex, index = 2]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainCreators.Rectangle.Refinement", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DomainCreators::Rectangle default_rectangle{};
-  default_rectangle.initial_refinement_levels(2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
 }

@@ -59,14 +59,11 @@ class Interval : public DomainCreator<1, Frame::Inertial> {
   Interval& operator=(Interval&&) noexcept = default;
   ~Interval() override = default;
 
-  explicit Interval(CkMigrateMessage* /*unused*/) noexcept {}
-
   Domain<1, Frame::Inertial> create_domain() const noexcept override;
 
-  std::array<size_t, 1> initial_extents(size_t block_index) const
-      noexcept override;
+  std::vector<std::array<size_t, 1>> initial_extents() const noexcept override;
 
-  std::array<size_t, 1> initial_refinement_levels(size_t block_index) const
+  std::vector<std::array<size_t, 1>> initial_refinement_levels() const
       noexcept override;
 
  private:

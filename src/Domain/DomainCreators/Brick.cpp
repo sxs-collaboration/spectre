@@ -60,15 +60,12 @@ Domain<3, Frame::Inertial> Brick::create_domain() const noexcept {
       identifications};
 }
 
-std::array<size_t, 3> Brick::initial_extents(const size_t block_index) const
-    noexcept {
-  ASSERT(0 == block_index, "index = " << block_index);
-  return initial_number_of_grid_points_in_xyz_;
+std::vector<std::array<size_t, 3>> Brick::initial_extents() const noexcept {
+  return {initial_number_of_grid_points_in_xyz_};
 }
 
-std::array<size_t, 3> Brick::initial_refinement_levels(
-    const size_t block_index) const noexcept {
-  ASSERT(0 == block_index, "index = " << block_index);
-  return initial_refinement_level_xyz_;
+std::vector<std::array<size_t, 3>> Brick::initial_refinement_levels() const
+    noexcept {
+  return {initial_refinement_level_xyz_};
 }
 }  // namespace DomainCreators

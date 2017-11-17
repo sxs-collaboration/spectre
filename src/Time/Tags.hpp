@@ -97,3 +97,25 @@ struct TimeStepper {
 };
 
 }  // namespace CacheTags
+
+namespace OptionTags {
+
+/// \ingroup OptionTags
+/// \ingroup TimeGroup
+/// \brief The time at which to start the simulation
+struct InitialTime {
+  using type = double;
+  static constexpr OptionString_t help = {
+      "The time at which the evolution is started."};
+  static type default_value() { return 0.0; }
+};
+
+/// \ingroup OptionTags
+/// \ingroup TimeGroup
+/// \brief The initial time step taken by the time stepper. This may be
+/// overridden by an adaptive stepper
+struct DeltaT {
+  using type = double;
+  static constexpr OptionString_t help = {"The initial time step size."};
+};
+}  // namespace OptionTags

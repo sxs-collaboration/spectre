@@ -4,10 +4,10 @@
 set(LIBRARY DomainCreators)
 
 set(LIBRARY_SOURCES
-    Brick.cpp
-    Interval.cpp
-    Rectangle.cpp
-    )
+  Brick.cpp
+  Interval.cpp
+  Rectangle.cpp
+  )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
 
