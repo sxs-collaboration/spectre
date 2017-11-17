@@ -27,6 +27,24 @@ struct Variables;
 }  // namespace Tags
 /// \endcond
 
+namespace Tags {
+/*!
+ * \ingroup DataBoxTags
+ * \brief Tag used to retrieve the DataBox from the `db::get` function
+ *
+ * The main use of this tag is to allow fetching the DataBox from itself. The
+ * primary use case is to allow an invokable to take a DataBox as an argument
+ * when called through `db::apply`.
+ *
+ * \snippet Test_DataBox.cpp databox_self_tag_example
+ */
+struct DataBox {
+  // Trick to get friend function declaration to compile but a const void& is
+  // rather useless
+  using type = void;
+};
+}  // namespace Tags
+
 namespace db {
 
 /*!
