@@ -56,32 +56,3 @@
     }                                                  \
   } while (false)
 #endif
-
-// If SPECTRE_DEBUG is not defined, a void cast is used to avoid an unused
-// variable compiler warning when a passed parameter is only used in an ASSERT.
-// This is inside an if(false) statement so that the code never actually gets
-// executed and only placates the compiler.
-
-/*!
- * \ingroup ErrorHandling
- * \brief Assert that an expression should be true.
- *
- * Just like ASSERT and so the same guidelines apply. However, because
- * it does not use std::stringstream it can be used in some constexpr
- * functions where ASSERT cannot be.
- * \param a the expression that must be satisfied
- * \param m a std::string holding the error message
- */
-#ifdef SPECTRE_DEBUG
-#define CASSERT(a, m)                                                         \
-  do {                                                                        \
-    if (!(a)) {                                                               \
-      Parallel::abort("\n############ ASSERT FAILED ############\nLine: "s +  \
-                      std::to_string(__LINE__) + " of file '"s + __FILE__ +   \
-                      "'\n"s + "Condition: "s + #a + "\n"s + m + /* NOLINT */ \
-                      "\n#######################################\n"s);        \
-    }                                                                         \
-  } while (false)
-#else
-#define CASSERT(a, m)
-#endif

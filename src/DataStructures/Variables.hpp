@@ -219,12 +219,12 @@ class Variables<tmpl::list<Tags...>> {
   }
   //@}
 
-  static SPECTRE_ALWAYS_INLINE void constexpr add_reference_variable_data(
+  static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
       typelist<> /*unused*/, const size_t /*variable_offset*/ = 0) {
-    CASSERT(sizeof...(Tags) > 0,
-            "This ASSERT is triggered if you try to construct a Variables "
-            "with no Tags. A Variables with no Tags is a valid type, but "
-            "cannot be used in a meaningful way.");
+    ASSERT(sizeof...(Tags) > 0,
+           "This ASSERT is triggered if you try to construct a Variables "
+           "with no Tags. A Variables with no Tags is a valid type, but "
+           "cannot be used in a meaningful way.");
   }
 
   template <
@@ -358,12 +358,12 @@ template <typename TagToAdd, typename... Rest,
           Requires<tt::is_a<Tensor, typename TagToAdd::type>::value>>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
     typelist<TagToAdd, Rest...> /*unused*/, const size_t variable_offset) {
-  CASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *
-                      number_of_grid_points_,
-          "This ASSERT is typically triggered because a Variables class was "
-          "default constructed. The only reason the Variables class has a "
-          "default constructor is because Charm++ uses it, you are not "
-          "supposed to use it otherwise.");
+  ASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *
+                     number_of_grid_points_,
+         "This ASSERT is typically triggered because a Variables class was "
+         "default constructed. The only reason the Variables class has a "
+         "default constructor is because Charm++ uses it, you are not "
+         "supposed to use it otherwise.");
   typename TagToAdd::type& var =
       tuples::get<TagToAdd>(reference_variable_data_);
   for (size_t i = 0; i < TagToAdd::type::size(); ++i) {

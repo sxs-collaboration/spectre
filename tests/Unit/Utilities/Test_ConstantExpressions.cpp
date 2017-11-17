@@ -35,18 +35,6 @@ template struct TestTwoToThe<unsigned short>;
 template struct TestTwoToThe<unsigned long>;
 template struct TestTwoToThe<unsigned long long>;
 
-// [[OutputRegex, two_to_the is overflowing!]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.ConstantExpressions.TwoToThe",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const size_t n = 8 * sizeof(size_t);
-  // clang-tidy: value stored ... never used
-  const size_t two_to_the_n = two_to_the(n);  // NOLINT
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 static_assert(square(2) == 4, "Failed test Unit.Utilities.ConstantExpressions");
 
 static_assert(cube(2) == 8, "Failed test Unit.Utilities.ConstantExpressions");
