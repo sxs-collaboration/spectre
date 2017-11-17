@@ -1,0 +1,10 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+set(SPECTRE_UNIT_GENERAL_RELATIVITY
+    PointwiseFunctions/GeneralRelativity/Test_ComputeSpacetimeQuantities.cpp
+    )
+
+set(SPECTRE_UNIT_POINTWISE_FUNCTIONS
+  "${SPECTRE_UNIT_POINTWISE_FUNCTIONS};${SPECTRE_UNIT_GENERAL_RELATIVITY}"
+  PARENT_SCOPE)

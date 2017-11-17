@@ -111,6 +111,11 @@
  */
 
 /*!
+ * \defgroup GeneralRelavitiyGroup General Relativity
+ * \brief Contains functions used in General Relativistic simulations
+ */
+
+/*!
  * \defgroup GlobalCache Global Cache
  * How to access and utilize the global cache
  */

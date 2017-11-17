@@ -40,6 +40,7 @@ target_link_libraries(
   DomainCreators
   EinsteinSolutions
   GeneralizedHarmonic
+  GeneralRelativity
   IO
   LinearOperators
   RootFinding
