@@ -27,6 +27,10 @@
 namespace PUP {
 class er;
 }  // namespace PUP
+
+// clang-tidy: no using declarations in header files
+//             We want the std::abs to be used
+using std::abs;  // NOLINT
 /// \endcond
 
 /*!
@@ -324,6 +328,11 @@ class DataVector {
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) abs(
+      const DataVector& t) noexcept {
+    return abs(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) fabs(
       const DataVector& t) noexcept {
     return abs(t.data_);
   }
