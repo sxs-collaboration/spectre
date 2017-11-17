@@ -29,48 +29,41 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup OptionParsingGroup
-/// The type that options are passed around as.  Contains YAML node
-/// data and an OptionContext.
-class Option {
- public:
-  /// NOTE: This constructor overwrites the mark data in the supplied
-  /// context with the one from the node.
-  explicit Option(YAML::Node node,
-                  OptionContext context = OptionContext()) noexcept
-      // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
-      : node_(std::move(node)), context_(std::move(context)) {  // NOLINT
+// Defining methods as inline in a different header from the class
+// definition is somewhat strange.  It is done here to minimize the
+// amount of code in the frequently-included Options.hpp file.  The
+// only external consumers of Option should be create_from_yaml
+// specializations, and they should only be instantiated by code in
+// this file.  (Or explicitly instantiated in cpp files, which can
+// include this file.)
+
+inline Option::Option(YAML::Node node, OptionContext context) noexcept
+  // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
+  : node_(std::make_unique<YAML::Node>(std::move(node))),
+    context_(std::move(context)) {  // NOLINT
     context_.line = node.Mark().line;
     context_.column = node.Mark().column;
   }
 
-  explicit Option(OptionContext context) noexcept
-      : context_(std::move(context)) {}
+inline Option::Option(OptionContext context) noexcept
+  : node_(std::make_unique<YAML::Node>()), context_(std::move(context)) {}
 
-  const YAML::Node& node() const noexcept { return node_; }
-  const OptionContext& context() const noexcept { return context_; }
+inline const YAML::Node& Option::node() const noexcept { return *node_; }
+inline const OptionContext& Option::context() const noexcept {
+  return context_;
+}
 
-  /// Append a line to the contained context.
-  void append_context(const std::string& context) noexcept {
-    context_.append(context);
-  }
+/// Append a line to the contained context.
+inline void Option::append_context(const std::string& context) noexcept {
+  context_.append(context);
+}
 
-  /// Sets the node and updates the context's mark to correspond to it.
-  void set_node(YAML::Node node) noexcept {
-    // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
-    node_ = std::move(node);  // NOLINT
-    context_.line = node_.Mark().line;
-    context_.column = node_.Mark().column;
-  }
-
-  /// Convert to an object of type `T`.
-  template <typename T>
-  T parse_as() const;
-
- private:
-  YAML::Node node_;
-  OptionContext context_;
-};
+inline void Option::set_node(YAML::Node node) noexcept {
+  // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
+  *node_ = std::move(node);  // NOLINT
+  context_.line = node_->Mark().line;
+  context_.column = node_->Mark().column;
+}
 
 template <typename T>
 T Option::parse_as() const {

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <exception>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -15,7 +16,11 @@
 
 #include "ErrorHandling/Error.hpp"
 
-class Option;
+/// \cond
+namespace YAML {
+class Node;
+}  // namespace YAML
+/// \endcond
 
 /// The string used in option structs
 using OptionString = const char* const;
@@ -85,6 +90,47 @@ class propagate_context : public std::exception {
   std::string message_;
 };
 }  // namespace Options_detail
+
+/// \ingroup OptionParsingGroup
+/// The type that options are passed around as.  Contains YAML node
+/// data and an OptionContext.
+///
+/// \note To use any methods on this class in a concrete function you
+/// must include ParseOptions.hpp, but you do *not* need to include
+/// that header to use this in an uninstantiated
+/// `create_from_yaml::create` function.
+class Option {
+ public:
+  const OptionContext& context() const noexcept;
+
+  /// Append a line to the contained context.
+  void append_context(const std::string& context) noexcept;
+
+  /// Convert to an object of type `T`.
+  template <typename T>
+  T parse_as() const;
+
+  /// \note This constructor overwrites the mark data in the supplied
+  /// context with the one from the node.
+  ///
+  /// \warning This method is for internal use of the option parser.
+  explicit Option(YAML::Node node, OptionContext context = {}) noexcept;
+
+  /// \warning This method is for internal use of the option parser.
+  explicit Option(OptionContext context) noexcept;
+
+  /// \warning This method is for internal use of the option parser.
+  const YAML::Node& node() const noexcept;
+
+  /// Sets the node and updates the context's mark to correspond to it.
+  ///
+  /// \warning This method is for internal use of the option parser.
+  void set_node(YAML::Node node) noexcept;
+
+ private:
+  std::unique_ptr<YAML::Node> node_;
+  OptionContext context_;
+};
 
 /// \ingroup OptionParsingGroup
 /// Used by the parser to create an object.  The default action is to
