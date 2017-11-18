@@ -40,6 +40,41 @@ using std::abs;  // NOLINT
  * A Data holds an array of contiguous data and can be either owning (the array
  * is deleted when the Data goes out of scope) or non-owning, meaning it just
  * has a pointer to an array.
+ *
+ * A variety of mathematical operations are supported with DataVectors. In
+ * addition to the addition, subtraction, multiplication, division, etc. there
+ * are the following element-wise operations:
+ *
+ * - abs
+ * - acos
+ * - acosh
+ * - asin
+ * - asinh
+ * - atan
+ * - atan2
+ * - atanh
+ * - cbrt
+ * - cos
+ * - cosh
+ * - erf
+ * - erfc
+ * - exp
+ * - exp2
+ * - exp10
+ * - fabs
+ * - invsqrt
+ * - log
+ * - log2
+ * - log10
+ * - max
+ * - min
+ * - pow
+ * - sin
+ * - sinh
+ * - sqrt
+ * - step_function: if less than zero returns zero, otherwise returns one
+ * - tan
+ * - tanh
  */
 class DataVector {
   /// \cond HIDDEN_SYMBOLS
