@@ -212,15 +212,15 @@ Wedge3D::jacobian(const std::array<T, 3>& x) const noexcept {
                     SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
       jacobian_matrix{};
 
-  auto &dx_dxi = jacobian_matrix.template get<0, 0>(),
-       &dx_deta = jacobian_matrix.template get<0, 1>(),
-       &dx_dzeta = jacobian_matrix.template get<0, 2>(),
-       &dy_dxi = jacobian_matrix.template get<1, 0>(),
-       &dy_deta = jacobian_matrix.template get<1, 1>(),
-       &dy_dzeta = jacobian_matrix.template get<1, 2>(),
-       &dz_dxi = jacobian_matrix.template get<2, 0>(),
-       &dz_deta = jacobian_matrix.template get<2, 1>(),
-       &dz_dzeta = jacobian_matrix.template get<2, 2>();
+  auto &dx_dxi = get<0, 0>(jacobian_matrix),
+       &dx_deta = get<0, 1>(jacobian_matrix),
+       &dx_dzeta = get<0, 2>(jacobian_matrix),
+       &dy_dxi = get<1, 0>(jacobian_matrix),
+       &dy_deta = get<1, 1>(jacobian_matrix),
+       &dy_dzeta = get<1, 2>(jacobian_matrix),
+       &dz_dxi = get<2, 0>(jacobian_matrix),
+       &dz_deta = get<2, 1>(jacobian_matrix),
+       &dz_dzeta = get<2, 2>(jacobian_matrix);
 
   dz_dxi = -second_blending_factor_over_rho_cubed * cap_xi * cap_xi_deriv;
   dz_deta = -second_blending_factor_over_rho_cubed * cap_eta * cap_eta_deriv;

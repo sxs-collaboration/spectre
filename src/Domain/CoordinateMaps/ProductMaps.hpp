@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "DataStructures/MakeWithValue.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
@@ -301,21 +302,12 @@ ProductOf3Maps<Map1, Map2, Map3>::inv_jacobian(
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
       inv_jac{make_with_value<UnwrappedT>(dereference_wrapper(xi[0]), 0.0)};
-  inv_jac.template get<0, 0>() =
-      map1_
-          .inv_jacobian(
-              std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[0]}})
-          .template get<0, 0>();
-  inv_jac.template get<1, 1>() =
-      map2_
-          .inv_jacobian(
-              std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[1]}})
-          .template get<0, 0>();
-  inv_jac.template get<2, 2>() =
-      map3_
-          .inv_jacobian(
-              std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[2]}})
-          .template get<0, 0>();
+  get<0, 0>(inv_jac) = get<0, 0>(map1_.inv_jacobian(
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[0]}}));
+  get<1, 1>(inv_jac) = get<0, 0>(map2_.inv_jacobian(
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[1]}}));
+  get<2, 2>(inv_jac) = get<0, 0>(map3_.inv_jacobian(
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[2]}}));
   return inv_jac;
 }
 template <typename Map1, typename Map2, typename Map3>
@@ -332,21 +324,12 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(const std::array<T, dim>& xi) const {
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
       jac{make_with_value<UnwrappedT>(dereference_wrapper(xi[0]), 0.0)};
-  jac.template get<0, 0>() =
-      map1_
-          .jacobian(
-              std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[0]}})
-          .template get<0, 0>();
-  jac.template get<1, 1>() =
-      map2_
-          .jacobian(
-              std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[1]}})
-          .template get<0, 0>();
-  jac.template get<2, 2>() =
-      map3_
-          .jacobian(
-              std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[2]}})
-          .template get<0, 0>();
+  get<0, 0>(jac) = get<0, 0>(map1_.jacobian(
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[0]}}));
+  get<1, 1>(jac) = get<0, 0>(map2_.jacobian(
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[1]}}));
+  get<2, 2>(jac) = get<0, 0>(map3_.jacobian(
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[2]}}));
   return jac;
 }
 template <typename Map1, typename Map2, typename Map3>

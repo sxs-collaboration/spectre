@@ -632,12 +632,12 @@ auto multiply_variables_by_two(
       out_vars(vars.number_of_grid_points(), 2.0);
   get<test_databox_tags::ScalarTag4>(out_vars).get() *=
       get<test_databox_tags::ScalarTag>(vars).get();
-  get<test_databox_tags::VectorTag4>(out_vars).get<0>() *=
-      get<test_databox_tags::VectorTag>(vars).get<0>();
-  get<test_databox_tags::VectorTag4>(out_vars).get<1>() *=
-      get<test_databox_tags::VectorTag>(vars).get<1>();
-  get<test_databox_tags::VectorTag4>(out_vars).get<2>() *=
-      get<test_databox_tags::VectorTag>(vars).get<2>();
+  get<0>(get<test_databox_tags::VectorTag4>(out_vars)) *=
+      get<0>(get<test_databox_tags::VectorTag>(vars));
+  get<1>(get<test_databox_tags::VectorTag4>(out_vars)) *=
+      get<1>(get<test_databox_tags::VectorTag>(vars));
+  get<2>(get<test_databox_tags::VectorTag4>(out_vars)) *=
+      get<2>(get<test_databox_tags::VectorTag>(vars));
   return out_vars;
 }
 }  // namespace
@@ -912,9 +912,9 @@ struct test_databox_mutate_apply {
                     const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
                     const std::string& tag2) {
     scalar->get() *= 2.0;
-    vector->template get<0>() *= 3.0;
-    vector->template get<1>() *= 4.0;
-    vector->template get<2>() *= 5.0;
+    get<0>(*vector) *= 3.0;
+    get<1>(*vector) *= 4.0;
+    get<2>(*vector) *= 5.0;
     CHECK(tag2 == "My Sample String"s);
   }
 };
@@ -968,9 +968,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
          const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
          const std::string& tag2) {
         scalar->get() *= 2.0;
-        vector->template get<0>() *= 3.0;
-        vector->template get<1>() *= 4.0;
-        vector->template get<2>() *= 5.0;
+        get<0>(*vector) *= 3.0;
+        get<1>(*vector) *= 4.0;
+        get<2>(*vector) *= 5.0;
         CHECK(tag2 == "My Sample String"s);
       },
       box);
@@ -995,9 +995,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
              vars,
          const std::string& tag2) {
         get<test_databox_tags::ScalarTag>(*vars).get() *= 2.0;
-        get<test_databox_tags::VectorTag>(*vars).template get<0>() *= 3.0;
-        get<test_databox_tags::VectorTag>(*vars).template get<1>() *= 4.0;
-        get<test_databox_tags::VectorTag>(*vars).template get<2>() *= 5.0;
+        get<0>(get<test_databox_tags::VectorTag>(*vars)) *= 3.0;
+        get<1>(get<test_databox_tags::VectorTag>(*vars)) *= 4.0;
+        get<2>(get<test_databox_tags::VectorTag>(*vars)) *= 5.0;
         CHECK(tag2 == "My Sample String"s);
       },
       box);

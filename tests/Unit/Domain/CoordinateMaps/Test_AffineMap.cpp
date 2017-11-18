@@ -36,17 +36,14 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
 
-  CHECK((affine_map.inv_jacobian(point_A).template get<0, 0>()) ==
-        inv_jacobian_00);
-  CHECK((affine_map.inv_jacobian(point_B).template get<0, 0>()) ==
-        inv_jacobian_00);
-  CHECK((affine_map.inv_jacobian(point_xi).template get<0, 0>()) ==
-        inv_jacobian_00);
+  CHECK((get<0, 0>(affine_map.inv_jacobian(point_A))) == inv_jacobian_00);
+  CHECK((get<0, 0>(affine_map.inv_jacobian(point_B))) == inv_jacobian_00);
+  CHECK((get<0, 0>(affine_map.inv_jacobian(point_xi))) == inv_jacobian_00);
 
   const double jacobian_00 = (xb - xa) / (xB - xA);
-  CHECK((affine_map.jacobian(point_A).template get<0, 0>()) == jacobian_00);
-  CHECK((affine_map.jacobian(point_B).template get<0, 0>()) == jacobian_00);
-  CHECK((affine_map.jacobian(point_xi).template get<0, 0>()) == jacobian_00);
+  CHECK((get<0, 0>(affine_map.jacobian(point_A))) == jacobian_00);
+  CHECK((get<0, 0>(affine_map.jacobian(point_B))) == jacobian_00);
+  CHECK((get<0, 0>(affine_map.jacobian(point_xi))) == jacobian_00);
 
   // Check inequivalence operator
   CHECK_FALSE(affine_map != affine_map);

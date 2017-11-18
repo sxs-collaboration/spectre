@@ -228,20 +228,15 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
   // @{
   /// Retrieve the index `N...` by computing the storage index at compile time
-  template <int... N>
-  SPECTRE_ALWAYS_INLINE constexpr reference get() {
-    static_assert(sizeof...(Indices) == sizeof...(N),
-                  "the number of tensor indices specified must match the rank "
-                  "of the tensor");
-    return gsl::at(data_, structure::template get_storage_index<N...>());
-  }
-  template <int... N>
-  SPECTRE_ALWAYS_INLINE constexpr const_reference get() const {
-    static_assert(sizeof...(Indices) == sizeof...(N),
-                  "the number of tensor indices specified must match the rank "
-                  "of the tensor");
-    return gsl::at(data_, structure::template get_storage_index<N...>());
-  }
+  // clang-tidy: redundant declaration (bug in clang-tidy)
+  template <int... N, typename... Args>
+  friend SPECTRE_ALWAYS_INLINE constexpr typename Tensor<Args...>::reference
+  get(Tensor<Args...>& t) noexcept;  // NOLINT
+  // clang-tidy: redundant declaration (bug in clang-tidy)
+  template <int... N, typename... Args>
+  friend SPECTRE_ALWAYS_INLINE constexpr
+      typename Tensor<Args...>::const_reference
+      get(const Tensor<Args...>& t) noexcept;  // NOLINT
   // @}
 
   // @{
@@ -456,6 +451,26 @@ Tensor<X, Symm, IndexList<Indices...>>::get_vector_of_data() const {
     serialized_tensor[i] = gsl::at(data_, i);
   }
   return std::make_pair(component_names, serialized_tensor);
+}
+
+template <int... N, typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr typename Tensor<Args...>::reference get(
+    Tensor<Args...>& t) noexcept {
+  static_assert(Tensor<Args...>::rank() == sizeof...(N),
+                "the number of tensor indices specified must match the rank "
+                "of the tensor");
+  return gsl::at(
+      t.data_, Tensor<Args...>::structure::template get_storage_index<N...>());
+}
+
+template <int... N, typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr typename Tensor<Args...>::const_reference get(
+    const Tensor<Args...>& t) noexcept {
+  static_assert(Tensor<Args...>::rank() == sizeof...(N),
+                "the number of tensor indices specified must match the rank "
+                "of the tensor");
+  return gsl::at(
+      t.data_, Tensor<Args...>::structure::template get_storage_index<N...>());
 }
 
 template <typename X, typename Symm, template <typename...> class IndexList,

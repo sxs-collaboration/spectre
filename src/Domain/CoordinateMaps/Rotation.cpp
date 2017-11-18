@@ -13,28 +13,28 @@ Rotation<2>::Rotation(const double rotation_angle)
       rotation_matrix_(std::numeric_limits<double>::signaling_NaN()) {
   const double cos_alpha = cos(rotation_angle_);
   const double sin_alpha = sin(rotation_angle_);
-  rotation_matrix_.template get<0, 0>() = cos_alpha;
-  rotation_matrix_.template get<0, 1>() = -sin_alpha;
-  rotation_matrix_.template get<1, 0>() = sin_alpha;
-  rotation_matrix_.template get<1, 1>() = cos_alpha;
+  get<0, 0>(rotation_matrix_) = cos_alpha;
+  get<0, 1>(rotation_matrix_) = -sin_alpha;
+  get<1, 0>(rotation_matrix_) = sin_alpha;
+  get<1, 1>(rotation_matrix_) = cos_alpha;
 }
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> Rotation<2>::
 operator()(const std::array<T, 2>& xi) const {
-  return {{xi[0] * rotation_matrix_.template get<0, 0>() +
-               xi[1] * rotation_matrix_.template get<0, 1>(),
-           xi[0] * rotation_matrix_.template get<1, 0>() +
-               xi[1] * rotation_matrix_.template get<1, 1>()}};
+  return {{xi[0] * get<0, 0>(rotation_matrix_) +
+               xi[1] * get<0, 1>(rotation_matrix_),
+           xi[0] * get<1, 0>(rotation_matrix_) +
+               xi[1] * get<1, 1>(rotation_matrix_)}};
 }
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2>
 Rotation<2>::inverse(const std::array<T, 2>& x) const {
-  return {{x[0] * rotation_matrix_.template get<0, 0>() +
-               x[1] * rotation_matrix_.template get<1, 0>(),
-           x[0] * rotation_matrix_.template get<0, 1>() +
-               x[1] * rotation_matrix_.template get<1, 1>()}};
+  return {
+      {x[0] * get<0, 0>(rotation_matrix_) + x[1] * get<1, 0>(rotation_matrix_),
+       x[0] * get<0, 1>(rotation_matrix_) +
+           x[1] * get<1, 1>(rotation_matrix_)}};
 }
 
 template <typename T>
@@ -49,10 +49,10 @@ Rotation<2>::jacobian(const std::array<T, 2>& xi) const {
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
       jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
           dereference_wrapper(xi[0]), 0.0)};
-  jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
-  jac.template get<1, 0>() = rotation_matrix_.template get<1, 0>();
-  jac.template get<0, 1>() = rotation_matrix_.template get<0, 1>();
-  jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
+  get<0, 0>(jac) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(jac) = get<1, 0>(rotation_matrix_);
+  get<0, 1>(jac) = get<0, 1>(rotation_matrix_);
+  get<1, 1>(jac) = get<1, 1>(rotation_matrix_);
   return jac;
 }
 
@@ -68,10 +68,10 @@ Rotation<2>::inv_jacobian(const std::array<T, 2>& xi) const {
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
       inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
           dereference_wrapper(xi[0]), 0.0)};
-  inv_jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
-  inv_jac.template get<1, 0>() = rotation_matrix_.template get<0, 1>();
-  inv_jac.template get<0, 1>() = rotation_matrix_.template get<1, 0>();
-  inv_jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
+  get<0, 0>(inv_jac) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(inv_jac) = get<0, 1>(rotation_matrix_);
+  get<0, 1>(inv_jac) = get<1, 0>(rotation_matrix_);
+  get<1, 1>(inv_jac) = get<1, 1>(rotation_matrix_);
   return inv_jac;
 }
 
@@ -101,48 +101,46 @@ Rotation<3>::Rotation(const double rotation_about_z,
   const double sin_beta = sin(rotation_about_rotated_y_);
   const double cos_gamma = cos(rotation_about_rotated_z_);
   const double sin_gamma = sin(rotation_about_rotated_z_);
-  rotation_matrix_.template get<0, 0>() =
+  get<0, 0>(rotation_matrix_) =
       cos_gamma * cos_beta * cos_alpha - sin_gamma * sin_alpha;
-  rotation_matrix_.template get<0, 1>() =
+  get<0, 1>(rotation_matrix_) =
       -sin_gamma * cos_beta * cos_alpha - cos_gamma * sin_alpha;
-  rotation_matrix_.template get<0, 2>() = sin_beta * cos_alpha;
-  rotation_matrix_.template get<1, 0>() =
+  get<0, 2>(rotation_matrix_) = sin_beta * cos_alpha;
+  get<1, 0>(rotation_matrix_) =
       cos_gamma * cos_beta * sin_alpha + sin_gamma * cos_alpha;
-  rotation_matrix_.template get<1, 1>() =
+  get<1, 1>(rotation_matrix_) =
       -sin_gamma * cos_beta * sin_alpha + cos_gamma * cos_alpha;
-  rotation_matrix_.template get<1, 2>() = sin_beta * sin_alpha;
-  rotation_matrix_.template get<2, 0>() = -cos_gamma * sin_beta;
-  rotation_matrix_.template get<2, 1>() = sin_gamma * sin_beta;
-  rotation_matrix_.template get<2, 2>() = cos_beta;
+  get<1, 2>(rotation_matrix_) = sin_beta * sin_alpha;
+  get<2, 0>(rotation_matrix_) = -cos_gamma * sin_beta;
+  get<2, 1>(rotation_matrix_) = sin_gamma * sin_beta;
+  get<2, 2>(rotation_matrix_) = cos_beta;
 }
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> Rotation<3>::
 operator()(const std::array<T, 3>& xi) const {
-  return {{xi[0] * rotation_matrix_.template get<0, 0>() +
-               xi[1] * rotation_matrix_.template get<0, 1>() +
-               xi[2] * rotation_matrix_.template get<0, 2>(),
-           xi[0] * rotation_matrix_.template get<1, 0>() +
-               xi[1] * rotation_matrix_.template get<1, 1>() +
-               xi[2] * rotation_matrix_.template get<1, 2>(),
-           xi[0] * rotation_matrix_.template get<2, 0>() +
-               xi[1] * rotation_matrix_.template get<2, 1>() +
-               xi[2] * rotation_matrix_.template get<2, 2>()}};
+  return {{xi[0] * get<0, 0>(rotation_matrix_) +
+               xi[1] * get<0, 1>(rotation_matrix_) +
+               xi[2] * get<0, 2>(rotation_matrix_),
+           xi[0] * get<1, 0>(rotation_matrix_) +
+               xi[1] * get<1, 1>(rotation_matrix_) +
+               xi[2] * get<1, 2>(rotation_matrix_),
+           xi[0] * get<2, 0>(rotation_matrix_) +
+               xi[1] * get<2, 1>(rotation_matrix_) +
+               xi[2] * get<2, 2>(rotation_matrix_)}};
 }
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3>
 Rotation<3>::inverse(const std::array<T, 3>& x) const {
   // Inverse rotation matrix is the same as the transpose.
-  return {{x[0] * rotation_matrix_.template get<0, 0>() +
-               x[1] * rotation_matrix_.template get<1, 0>() +
-               x[2] * rotation_matrix_.template get<2, 0>(),
-           x[0] * rotation_matrix_.template get<0, 1>() +
-               x[1] * rotation_matrix_.template get<1, 1>() +
-               x[2] * rotation_matrix_.template get<2, 1>(),
-           x[0] * rotation_matrix_.template get<0, 2>() +
-               x[1] * rotation_matrix_.template get<1, 2>() +
-               x[2] * rotation_matrix_.template get<2, 2>()}};
+  return {
+      {x[0] * get<0, 0>(rotation_matrix_) + x[1] * get<1, 0>(rotation_matrix_) +
+           x[2] * get<2, 0>(rotation_matrix_),
+       x[0] * get<0, 1>(rotation_matrix_) + x[1] * get<1, 1>(rotation_matrix_) +
+           x[2] * get<2, 1>(rotation_matrix_),
+       x[0] * get<0, 2>(rotation_matrix_) + x[1] * get<1, 2>(rotation_matrix_) +
+           x[2] * get<2, 2>(rotation_matrix_)}};
 }
 
 template <typename T>
@@ -157,15 +155,15 @@ Rotation<3>::jacobian(const std::array<T, 3>& xi) const {
                     SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
       jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
           dereference_wrapper(xi[0]), 0.0)};
-  jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
-  jac.template get<1, 0>() = rotation_matrix_.template get<1, 0>();
-  jac.template get<0, 1>() = rotation_matrix_.template get<0, 1>();
-  jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
-  jac.template get<2, 0>() = rotation_matrix_.template get<2, 0>();
-  jac.template get<2, 1>() = rotation_matrix_.template get<2, 1>();
-  jac.template get<0, 2>() = rotation_matrix_.template get<0, 2>();
-  jac.template get<1, 2>() = rotation_matrix_.template get<1, 2>();
-  jac.template get<2, 2>() = rotation_matrix_.template get<2, 2>();
+  get<0, 0>(jac) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(jac) = get<1, 0>(rotation_matrix_);
+  get<0, 1>(jac) = get<0, 1>(rotation_matrix_);
+  get<1, 1>(jac) = get<1, 1>(rotation_matrix_);
+  get<2, 0>(jac) = get<2, 0>(rotation_matrix_);
+  get<2, 1>(jac) = get<2, 1>(rotation_matrix_);
+  get<0, 2>(jac) = get<0, 2>(rotation_matrix_);
+  get<1, 2>(jac) = get<1, 2>(rotation_matrix_);
+  get<2, 2>(jac) = get<2, 2>(rotation_matrix_);
   return jac;
 }
 
@@ -181,15 +179,15 @@ Rotation<3>::inv_jacobian(const std::array<T, 3>& xi) const {
                     SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
       inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
           dereference_wrapper(xi[0]), 0.0)};
-  inv_jac.template get<0, 0>() = rotation_matrix_.template get<0, 0>();
-  inv_jac.template get<1, 0>() = rotation_matrix_.template get<0, 1>();
-  inv_jac.template get<0, 1>() = rotation_matrix_.template get<1, 0>();
-  inv_jac.template get<1, 1>() = rotation_matrix_.template get<1, 1>();
-  inv_jac.template get<2, 0>() = rotation_matrix_.template get<0, 2>();
-  inv_jac.template get<2, 1>() = rotation_matrix_.template get<1, 2>();
-  inv_jac.template get<0, 2>() = rotation_matrix_.template get<2, 0>();
-  inv_jac.template get<1, 2>() = rotation_matrix_.template get<2, 1>();
-  inv_jac.template get<2, 2>() = rotation_matrix_.template get<2, 2>();
+  get<0, 0>(inv_jac) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(inv_jac) = get<0, 1>(rotation_matrix_);
+  get<0, 1>(inv_jac) = get<1, 0>(rotation_matrix_);
+  get<1, 1>(inv_jac) = get<1, 1>(rotation_matrix_);
+  get<2, 0>(inv_jac) = get<0, 2>(rotation_matrix_);
+  get<2, 1>(inv_jac) = get<1, 2>(rotation_matrix_);
+  get<0, 2>(inv_jac) = get<2, 0>(rotation_matrix_);
+  get<1, 2>(inv_jac) = get<2, 1>(rotation_matrix_);
+  get<2, 2>(inv_jac) = get<2, 2>(rotation_matrix_);
   return inv_jac;
 }
 

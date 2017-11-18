@@ -22,7 +22,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
       one_d_covector{{{two}}};
   const auto normalized_one_d_covector = divide_by(one_d_covector, two);
   for (size_t s = 0; s < npts; ++s) {
-    CHECK(normalized_one_d_covector.get<0>()[s] == 1.0);
+    CHECK(get<0>(normalized_one_d_covector)[s] == 1.0);
   }
 
   const Tensor<DataVector, Symmetry<1>,
@@ -30,8 +30,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
       two_d_vector{{{three, four}}};
   const auto normalized_two_d_vector = divide_by(two_d_vector, five);
   for (size_t s = 0; s < npts; ++s) {
-    CHECK(normalized_two_d_vector.get<0>()[s] == 0.6);
-    CHECK(normalized_two_d_vector.get<1>()[s] == 0.8);
+    CHECK(get<0>(normalized_two_d_vector)[s] == 0.6);
+    CHECK(get<1>(normalized_two_d_vector)[s] == 0.8);
   }
 
   const Tensor<DataVector, Symmetry<1>,
@@ -40,8 +40,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   const auto normalized_two_d_spatial_vector =
       divide_by(two_d_spatial_vector, thirteen);
   for (size_t s = 0; s < npts; ++s) {
-    CHECK(normalized_two_d_spatial_vector.get<0>()[s] == 5.0 / 13.0);
-    CHECK(normalized_two_d_spatial_vector.get<1>()[s] == 12.0 / 13.0);
+    CHECK(get<0>(normalized_two_d_spatial_vector)[s] == 5.0 / 13.0);
+    CHECK(get<1>(normalized_two_d_spatial_vector)[s] == 12.0 / 13.0);
   }
 
   const Tensor<DataVector, Symmetry<1>,
@@ -50,9 +50,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   const auto normalized_three_d_covector =
       divide_by(three_d_covector, thirteen);
   for (size_t s = 0; s < npts; ++s) {
-    CHECK(normalized_three_d_covector.get<0>()[s] == 3.0 / 13.0);
-    CHECK(normalized_three_d_covector.get<1>()[s] == 12.0 / 13.0);
-    CHECK(normalized_three_d_covector.get<2>()[s] == 4.0 / 13.0);
+    CHECK(get<0>(normalized_three_d_covector)[s] == 3.0 / 13.0);
+    CHECK(get<1>(normalized_three_d_covector)[s] == 12.0 / 13.0);
+    CHECK(get<2>(normalized_three_d_covector)[s] == 4.0 / 13.0);
   }
 
   const Tensor<DataVector, Symmetry<1>,
@@ -60,10 +60,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
       five_d_covector{{{two, twelve, four, one, two}}};
   const auto normalized_five_d_covector = divide_by(five_d_covector, thirteen);
   for (size_t s = 0; s < npts; ++s) {
-    CHECK(normalized_five_d_covector.get<0>()[s] == 2.0 / 13.0);
-    CHECK(normalized_five_d_covector.get<1>()[s] == 12.0 / 13.0);
-    CHECK(normalized_five_d_covector.get<2>()[s] == 4.0 / 13.0);
-    CHECK(normalized_five_d_covector.get<3>()[s] == 1.0 / 13.0);
-    CHECK(normalized_five_d_covector.get<4>()[s] == 2.0 / 13.0);
+    CHECK(get<0>(normalized_five_d_covector)[s] == 2.0 / 13.0);
+    CHECK(get<1>(normalized_five_d_covector)[s] == 12.0 / 13.0);
+    CHECK(get<2>(normalized_five_d_covector)[s] == 4.0 / 13.0);
+    CHECK(get<3>(normalized_five_d_covector)[s] == 1.0 / 13.0);
+    CHECK(get<4>(normalized_five_d_covector)[s] == 2.0 / 13.0);
   }
 }

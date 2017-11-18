@@ -15,13 +15,13 @@ tnsr::aa<DataType, Dim, Fr> compute_spacetime_metric(
   tnsr::aa<DataType, Dim, Fr> spacetime_metric{
       make_with_value<DataType>(lapse.get(), 0.)};
 
-  spacetime_metric.template get<0, 0>() = -lapse.get() * lapse.get();
+  get<0, 0>(spacetime_metric) = -lapse.get() * lapse.get();
 
   for (size_t m = 0; m < Dim; ++m) {
-    spacetime_metric.template get<0, 0>() +=
+    get<0, 0>(spacetime_metric) +=
         spatial_metric.get(m, m) * shift.get(m) * shift.get(m);
     for (size_t n = 0; n < m; ++n) {
-      spacetime_metric.template get<0, 0>() +=
+      get<0, 0>(spacetime_metric) +=
           2 * spatial_metric.get(m, n) * shift.get(m) * shift.get(n);
     }
   }

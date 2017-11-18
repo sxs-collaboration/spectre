@@ -42,8 +42,8 @@ struct System {
     static auto apply(const Variables<tmpl::list<Var>>& value) noexcept {
       using flux_tag = Tags::Flux<Var, tmpl::size_t<2>, Frame::Grid>;
       Variables<tmpl::list<flux_tag>> result(value.number_of_grid_points());
-      get<flux_tag>(result).get<0>() = 10. * value;
-      get<flux_tag>(result).get<1>() = 20. * value;
+      get<0>(get<flux_tag>(result)) = 10. * value;
+      get<1>(get<flux_tag>(result)) = 20. * value;
       return result;
     }
   };
