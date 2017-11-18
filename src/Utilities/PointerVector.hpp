@@ -20,6 +20,63 @@
   new _TYPE_T[_SIZE_V]  // NOLINT
 #define SPECTRE_BLAZE_DEALLOCATOR blaze::ArrayDelete()
 
+namespace blaze {
+template <typename T>
+BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
+#if BLAZE_AVX512F_MODE || BLAZE_MIC_MODE
+{
+  return _mm512_set_pd((~v)[7] < 0.0 ? 0.0 : 1.0, (~v)[6] < 0.0 ? 0.0 : 1.0,
+                       (~v)[5] < 0.0 ? 0.0 : 1.0, (~v)[4] < 0.0 ? 0.0 : 1.0,
+                       (~v)[3] < 0.0 ? 0.0 : 1.0, (~v)[2] < 0.0 ? 0.0 : 1.0,
+                       (~v)[1] < 0.0 ? 0.0 : 1.0, (~v)[0] < 0.0 ? 0.0 : 1.0);
+}
+#elif BLAZE_AVX_MODE
+{
+  return _mm256_set_pd((~v)[3] < 0.0 ? 0.0 : 1.0, (~v)[2] < 0.0 ? 0.0 : 1.0,
+                       (~v)[1] < 0.0 ? 0.0 : 1.0, (~v)[0] < 0.0 ? 0.0 : 1.0);
+}
+#elif BLAZE_SSE2_MODE
+{
+  return _mm_set_pd((~v)[1] < 0.0 ? 0.0 : 1.0, (~v)[0] < 0.0 ? 0.0 : 1.0);
+}
+#else
+{
+  return SIMDdouble{(~v).value < 0.0 ? 0.0 : 1.0};
+}
+#endif
+
+BLAZE_ALWAYS_INLINE double step_function(const double& v) noexcept {
+  return v < 0.0 ? 0.0 : 1.0;
+}
+
+struct StepFunction {
+  explicit inline StepFunction() = default;
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T& a) const noexcept {
+    return step_function(a);
+  }
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const noexcept {
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+    return step_function(a);
+  }
+};
+}  // namespace blaze
+
+template <typename VT, bool TF>
+BLAZE_ALWAYS_INLINE decltype(auto) step_function(
+    const blaze::DenseVector<VT, TF>& vec) noexcept {
+  return map(~vec, blaze::StepFunction{});
+}
+
+template <typename VT, bool TF>
+BLAZE_ALWAYS_INLINE decltype(auto) StepFunction(
+    const blaze::DenseVector<VT, TF>& vec) noexcept {
+  return map(~vec, blaze::StepFunction{});
+}
+
 // Blaze 3.3 and newer already has atan2 implemented
 #if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
 namespace blaze {
