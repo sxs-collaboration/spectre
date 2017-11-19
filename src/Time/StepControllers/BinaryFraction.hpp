@@ -22,7 +22,7 @@ namespace StepControllers {
 class BinaryFraction : public StepController {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "Chooses steps to be binary fractions of a slab"};
 
   TimeDelta choose_step(const Time& time,

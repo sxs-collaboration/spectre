@@ -18,7 +18,7 @@
 class Option;
 
 /// The string used in option structs
-using OptionString_t = const char* const;
+using OptionString = const char* const;
 
 /// \ingroup OptionParsingGroup
 /// Information about the nested operations being performed by the

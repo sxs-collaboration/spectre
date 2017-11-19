@@ -16,7 +16,7 @@ template <typename>
 class CreateFromOptions;
 struct CFO {
   using type = CreateFromOptions<int>;
-  static constexpr OptionString_t help = {"help"};
+  static constexpr OptionString help = {"help"};
 };
 
 template <typename T>
@@ -24,10 +24,10 @@ class CreateFromOptions {
  public:
   struct Option {
     using type = std::string;
-    static constexpr OptionString_t help = {"Option help text"};
+    static constexpr OptionString help = {"Option help text"};
   };
   using options = tmpl::list<Option>;
-  static constexpr OptionString_t help = {"Class help text"};
+  static constexpr OptionString help = {"Class help text"};
 
   CreateFromOptions() = default;
   // The OptionContext argument can be left off if unneeded.
@@ -79,7 +79,7 @@ enum class CreateFromOptionsAnimal { Cat, Dog };
 
 struct CFOAnimal {
   using type = CreateFromOptionsAnimal;
-  static constexpr OptionString_t help = {"Option help text"};
+  static constexpr OptionString help = {"Option help text"};
 };
 }  // namespace
 

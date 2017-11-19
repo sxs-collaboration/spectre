@@ -19,12 +19,12 @@ class PowX : public MathFunction<1> {
  public:
   struct Power {
     using type = int;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "The power that the double is raised to."};
   };
   using options = tmpl::list<Power>;
 
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "Raises the input value to a given power"};
 
   PowX() = default;

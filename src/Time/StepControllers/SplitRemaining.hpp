@@ -22,7 +22,7 @@ namespace StepControllers {
 class SplitRemaining : public StepController {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "Chooses steps by dividing the remainder of the slab evenly.\n"
       "WARNING: With many steps per slab this often leads to overflow in the\n"
       "  time representations."};

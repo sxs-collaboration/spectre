@@ -21,22 +21,22 @@ class Gaussian : public MathFunction<1> {
  public:
   struct Amplitude {
     using type = double;
-    static constexpr OptionString_t help = {"The amplitude."};
+    static constexpr OptionString help = {"The amplitude."};
   };
 
   struct Width {
     using type = double;
-    static constexpr OptionString_t help = {"The width."};
+    static constexpr OptionString help = {"The width."};
     static type lower_bound() { return 0.; }
   };
 
   struct Center {
     using type = double;
-    static constexpr OptionString_t help = {"The center."};
+    static constexpr OptionString help = {"The center."};
   };
   using options = tmpl::list<Amplitude, Width, Center>;
 
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "Applies a Gaussian function to the input value"};
 
   WRAPPED_PUPable_decl_template(Gaussian);  // NOLINT

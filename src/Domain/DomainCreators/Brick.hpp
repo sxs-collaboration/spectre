@@ -17,37 +17,37 @@ class Brick : public DomainCreator<3, Frame::Inertial> {
  public:
   struct LowerBound {
     using type = std::array<double, 3>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Sequence of [x,y,z] for lower bounds."};
   };
 
   struct UpperBound {
     using type = std::array<double, 3>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Sequence of [x,y,z] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 3>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Sequence for [x,y,z], true if periodic."};
     static type default_value() { return make_array<3>(false); }
   };
 
   struct InitialRefinement {
     using type = std::array<size_t, 3>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Initial refinement level in [x,y,z]."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 3>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Initial number of grid points in [x,y,z]."};
   };
   using options = tmpl::list<LowerBound, UpperBound, IsPeriodicIn,
                              InitialRefinement, InitialGridPoints>;
 
-  static constexpr OptionString_t help{"Creates a 3D brick."};
+  static constexpr OptionString help{"Creates a 3D brick."};
 
   Brick(typename LowerBound::type lower_xyz,
         typename UpperBound::type upper_xyz,

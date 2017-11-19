@@ -85,7 +85,7 @@ namespace CacheTags {
 /// \brief The final time
 struct FinalTime {
   using type = double;
-  static constexpr OptionString_t help{"The final time"};
+  static constexpr OptionString help{"The final time"};
 };
 
 /// \ingroup CacheTagsGroup
@@ -93,7 +93,7 @@ struct FinalTime {
 /// \brief The ::TimeStepper
 struct TimeStepper {
   using type = std::unique_ptr<::TimeStepper>;
-  static constexpr OptionString_t help{"The time stepper"};
+  static constexpr OptionString help{"The time stepper"};
 };
 
 }  // namespace CacheTags
@@ -105,7 +105,7 @@ namespace OptionTags {
 /// \brief The time at which to start the simulation
 struct InitialTime {
   using type = double;
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "The time at which the evolution is started."};
   static type default_value() { return 0.0; }
 };
@@ -116,6 +116,6 @@ struct InitialTime {
 /// overridden by an adaptive stepper
 struct DeltaT {
   using type = double;
-  static constexpr OptionString_t help = {"The initial time step size."};
+  static constexpr OptionString help = {"The initial time step size."};
 };
 }  // namespace OptionTags

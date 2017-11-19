@@ -13,7 +13,7 @@ namespace TestFactoryCreation_detail {
 template <typename T>
 struct Opt {
   using type = std::unique_ptr<T>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace TestFactoryCreation_detail
 

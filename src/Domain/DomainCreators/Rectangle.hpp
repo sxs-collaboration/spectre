@@ -17,37 +17,37 @@ class Rectangle : public DomainCreator<2, Frame::Inertial> {
  public:
   struct LowerBound {
     using type = std::array<double, 2>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Sequence of [x,y] for lower bounds."};
   };
 
   struct UpperBound {
     using type = std::array<double, 2>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Sequence of [x,y] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 2>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Sequence for [x,y], true if periodic."};
     static type default_value() { return make_array<2>(false); }
   };
 
   struct InitialRefinement {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Initial refinement level in [x,y]."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Initial number of grid points in [x,y]."};
   };
   using options = tmpl::list<LowerBound, UpperBound, IsPeriodicIn,
                              InitialRefinement, InitialGridPoints>;
 
-  static constexpr OptionString_t help{"Creates a 2D rectangle."};
+  static constexpr OptionString help{"Creates a 2D rectangle."};
 
   Rectangle(
       typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,

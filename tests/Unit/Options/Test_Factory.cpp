@@ -22,7 +22,7 @@ class TestWithArg;
 /// [factory_example]
 struct OptionType {
   using type = std::unique_ptr<OptionTest>;
-  static constexpr OptionString_t help = {"The type of OptionTest"};
+  static constexpr OptionString help = {"The type of OptionTest"};
 };
 
 class OptionTest {
@@ -42,7 +42,7 @@ class OptionTest {
 class Test1 : public OptionTest {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString_t help = {"A derived class"};
+  static constexpr OptionString help = {"A derived class"};
   Test1() = default;
 
   std::string name() const override { return "Test1"; }
@@ -52,7 +52,7 @@ class Test1 : public OptionTest {
 class Test2 : public OptionTest {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString_t help = {""};
+  static constexpr OptionString help = {""};
   Test2() = default;
 
   std::string name() const override { return "Test2"; }
@@ -62,10 +62,10 @@ class TestWithArg : public OptionTest {
  public:
   struct Arg {
     using type = std::string;
-    static constexpr OptionString_t help = {"halp"};
+    static constexpr OptionString help = {"halp"};
   };
   using options = tmpl::list<Arg>;
-  static constexpr OptionString_t help = {""};
+  static constexpr OptionString help = {""};
   TestWithArg() = default;
   explicit TestWithArg(std::string arg) : arg_(std::move(arg)) {}
 
@@ -77,12 +77,12 @@ class TestWithArg : public OptionTest {
 
 struct Vector {
   using type = std::vector<std::unique_ptr<OptionTest>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 
 struct Map {
   using type = std::map<std::string, std::unique_ptr<OptionTest>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 

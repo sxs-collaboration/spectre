@@ -21,7 +21,7 @@ namespace StepControllers {
 class FullSlab : public StepController {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString_t help = {"Chooses the full slab."};
+  static constexpr OptionString help = {"Chooses the full slab."};
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

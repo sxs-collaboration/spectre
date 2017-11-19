@@ -23,7 +23,7 @@ struct CreatableNonCopyable {
   ~CreatableNonCopyable() = default;
 
   using options = tmpl::list<>;
-  static constexpr OptionString_t help{""};
+  static constexpr OptionString help{""};
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) {}  // NOLINT
@@ -42,13 +42,13 @@ namespace Options {
 // all have to have default values.
 struct Integer {
   using type = int;
-  static constexpr OptionString_t help{"halp"};
+  static constexpr OptionString help{"halp"};
   static type default_value() { return 7; }
 };
 
 struct NonCopyable {
   using type = MainTestObjects::CreatableNonCopyable;
-  static constexpr OptionString_t help{"halp"};
+  static constexpr OptionString help{"halp"};
   static type default_value() { return {}; }
 };
 }  // namespace Options
