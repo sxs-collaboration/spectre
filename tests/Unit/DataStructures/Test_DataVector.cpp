@@ -242,6 +242,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, abs(val));
   check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, fabs(val));
 
+  check_vectors(step_function(DataVector{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0}),
+                DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
+
   check_vectors(DataVector(num_pts, 81.0), nine * nine);
   check_vectors(DataVector(num_pts, 81.0), nine * (nine * one));
   check_vectors(DataVector(num_pts, 81.0), (nine * nine) * one);
