@@ -85,9 +85,19 @@ EXCLUDE                =
 
 EXCLUDE_SYMLINKS       = NO
 
-EXCLUDE_PATTERNS = */support/* */cmake/* */README.md @PROJECT_SOURCE_DIR@/tests/*
+EXCLUDE_PATTERNS       = @PROJECT_SOURCE_DIR@/build*                  \
+                         @PROJECT_SOURCE_DIR@/cmake/*                 \
+                         @PROJECT_SOURCE_DIR@/README.md               \
+                         @PROJECT_SOURCE_DIR@/support/*               \
+                         @PROJECT_SOURCE_DIR@/tests/*
 
-EXCLUDE_SYMBOLS = *detail* *brigand* std* PUP* YAML* charm* SPECTRE_TEST_CASE*
+EXCLUDE_SYMBOLS        = *brigand*                                    \
+                         charm*                                       \
+                         *detail*                                     \
+                         PUP*                                         \
+                         SPECTRE_TEST_CASE*                           \
+                         std*                                         \
+                         YAML*
 
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/Unit/
 
