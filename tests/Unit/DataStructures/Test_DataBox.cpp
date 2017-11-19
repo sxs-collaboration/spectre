@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 #include <catch.hpp>
+#include <memory>
 
 #include "DataStructures/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -246,6 +247,47 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     // Check retrieving compute item result
     CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
   }
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
+                  "[Unit][DataStructures]") {
+  auto original_box =
+      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                             test_databox_tags::Tag2>,
+                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                                         test_databox_tags::ComputeTag1>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  CHECK(std::addressof(original_box) ==
+        std::addressof(db::get<Tags::DataBox>(original_box)));
+  /// [databox_self_tag_example]
+  auto check_result_no_args = [](const auto& box) {
+    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
+    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
+          "My Sample String6.28"s);
+  };
+  db::apply<typelist<Tags::DataBox>>(check_result_no_args, original_box);
+  /// [databox_self_tag_example]
+}
+
+// [[OutputRegex, Unable to retrieve a \(compute\) item 'DataBox' from the
+// DataBox from within a call to mutate. You must pass these either through the
+// capture list of the lambda or the constructor of a class, this restriction
+// exists to avoid complexity.]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
+                  "[Unit][DataStructures]") {
+  ERROR_TEST();
+  auto original_box =
+      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                             test_databox_tags::Tag2>,
+                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                                         test_databox_tags::ComputeTag1>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  CHECK(std::addressof(original_box) ==
+        std::addressof(db::get<Tags::DataBox>(original_box)));
+  db::mutate<test_databox_tags::Tag0>(
+      original_box, [&original_box](double& /*tag0*/) {
+        (void)db::get<Tags::DataBox>(original_box);
+      });
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",

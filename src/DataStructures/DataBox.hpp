@@ -716,8 +716,10 @@ class DataBox<TagsList<Tags...>> {
 
   template <typename T, typename TagList>
   // clang-tidy: redundant declaration
-  friend const item_type<T>& get(  // NOLINT
-      const DataBox<TagList>& t) noexcept;
+  friend auto get(  // NOLINT
+      const DataBox<TagList>& t) noexcept
+      -> const tmpl::conditional_t<cpp17::is_same_v<T, ::Tags::DataBox>,
+                                   DataBox<TagList>, item_type<T>>&;
 
   /// \cond HIDDEN_SYMBOLS
   /*!
@@ -749,6 +751,14 @@ class DataBox<TagsList<Tags...>> {
                      Invokable&& invokable, Args&&... args) noexcept;  // NOLINT
 
  private:
+  template <typename Tag,
+            Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
+  const db::item_type<Tag>& get_impl() const noexcept;
+
+  template <typename Tag,
+            Requires<cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
+  const DataBox& get_impl() const noexcept;
+
   template <typename... TagsInArgsOrder, typename... FullItems,
             typename... ComputeItemTags, typename... FullComputeItems,
             typename... Args,
@@ -1094,16 +1104,39 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
  * \return The object corresponding to the Tag `T`
  */
 template <typename T, typename TagList>
-const item_type<T>& get(const DataBox<TagList>& t) noexcept {
-  if (UNLIKELY(t.mutate_locked_box_)) {
+SPECTRE_ALWAYS_INLINE auto get(const DataBox<TagList>& t) noexcept
+    -> const tmpl::conditional_t<cpp17::is_same_v<T, ::Tags::DataBox>,
+                                 DataBox<TagList>, item_type<T>>& {
+  return t.template get_impl<T>();
+}
+
+template <template <typename...> class TagsList, typename... Tags>
+template <typename Tag, Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>>>
+inline const db::item_type<Tag>& DataBox<TagsList<Tags...>>::get_impl() const
+    noexcept {
+  if (UNLIKELY(mutate_locked_box_)) {
     ERROR("Unable to retrieve a (compute) item '"
-          << T::label
+          << Tag::label
           << "' from the DataBox from within a "
              "call to mutate. You must pass these either through the capture "
              "list of the lambda or the constructor of a class, this "
              "restriction exists to avoid complexity.");
   }
-  return t.data_.template get<T>().get();
+  return data_.template get<Tag>().get();
+}
+
+template <template <typename...> class TagsList, typename... Tags>
+template <typename Tag, Requires<cpp17::is_same_v<Tag, ::Tags::DataBox>>>
+inline const DataBox<TagsList<Tags...>>& DataBox<TagsList<Tags...>>::get_impl()
+    const noexcept {
+  if (UNLIKELY(mutate_locked_box_)) {
+    ERROR(
+        "Unable to retrieve a (compute) item 'DataBox' from the DataBox from "
+        "within a call to mutate. You must pass these either through the "
+        "capture list of the lambda or the constructor of a class, this "
+        "restriction exists to avoid complexity.");
+  }
+  return *this;
 }
 
 template <template <typename...> class TagsList, typename... Tags>
@@ -1445,11 +1478,15 @@ struct Apply<TagsList<Tags...>> {
   template <typename F, typename... BoxTags, typename... Args>
   static constexpr auto apply(F f, const DataBox<BoxTags...>& box,
                               Args&&... args) {
-    static_assert(tt::is_callable_v<std::remove_pointer_t<F>,
-                                    item_type<Tags>..., Args...>,
-                  "Cannot call the function f with the list of tags and "
-                  "arguments specified. Check that the Tags::type and the "
-                  "types of the Args match the function f.");
+    static_assert(
+        tt::is_callable_v<
+            std::remove_pointer_t<F>,
+            tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
+                                const DataBox<BoxTags...>&, item_type<Tags>>...,
+            Args...>,
+        "Cannot call the function f with the list of tags and "
+        "arguments specified. Check that the Tags::type and the "
+        "types of the Args match the function f.");
     return f(::db::get<Tags>(box)..., std::forward<Args>(args)...);
   }
 
@@ -1457,7 +1494,11 @@ struct Apply<TagsList<Tags...>> {
   static constexpr auto apply_with_box(F f, const DataBox<BoxTags...>& box,
                                        Args&&... args) {
     static_assert(
-        tt::is_callable_v<F, DataBox<BoxTags...>, item_type<Tags>..., Args...>,
+        tt::is_callable_v<
+            F, DataBox<BoxTags...>,
+            tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
+                                const DataBox<BoxTags...>&, item_type<Tags>>...,
+            Args...>,
         "Cannot call the function f with the list of tags and "
         "arguments specified. Check that the Tags::type and the "
         "types of the Args match the function f and that f is "
@@ -1530,6 +1571,12 @@ inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags...>& box,
         std::declval<const db::item_type<ArgumentTags>&>()...,
         std::forward<Args>(args)...))) {
   // clang-format on
+  static_assert(
+      not tmpl2::flat_any_v<
+          cpp17::is_same_v<ArgumentTags, Tags::DataBox>...> and
+          not tmpl2::flat_any_v<cpp17::is_same_v<ReturnTags, Tags::DataBox>...>,
+      "Cannot pass a DataBox to mutate_apply since the db::get won't work "
+      "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
       box,
       [](db::item_type<ReturnTags> & ... mutated_items,
@@ -1563,6 +1610,12 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags...>& box,
         std::declval<const db::item_type<ArgumentTags>&>()...,
         std::forward<Args>(args)...))) {
   // clang-format on
+  static_assert(
+      not tmpl2::flat_any_v<
+          cpp17::is_same_v<ArgumentTags, Tags::DataBox>...> and
+          not tmpl2::flat_any_v<cpp17::is_same_v<ReturnTags, Tags::DataBox>...>,
+      "Cannot pass a DataBox to mutate_apply since the db::get won't work "
+      "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
       box,
       [&f](db::item_type<ReturnTags> & ... mutated_items,
