@@ -86,6 +86,10 @@ matrix:
     dist: trusty
     env: RUN_CPPCHECK=true BUILD_TYPE=Debug
     compiler: clang
+  - os: linux
+    dist: trusty
+    env: TEST_CHECK_FILES=true
+    compiler: clang
     # Run full builds after static analysis
   - os: linux
     compiler: gcc
@@ -226,6 +230,8 @@ script:
     ./tools/CheckCommits.sh;
   elif [ "${CHECK_FILES}" ==  "true" ]; then
     ./tools/CheckFiles.sh;
+  elif [ "${TEST_CHECK_FILES}" ==  "true" ]; then
+    ./tools/CheckFiles.sh --test;
   elif [ ${TRAVIS_OS_NAME} = linux ]; then
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
