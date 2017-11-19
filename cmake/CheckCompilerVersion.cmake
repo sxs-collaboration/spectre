@@ -2,8 +2,8 @@
 # See LICENSE.txt for details.
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2)
-    message(FATAL_ERROR "GCC version must be at least 5.2")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.4)
+    message(FATAL_ERROR "GCC version must be at least 5.4")
   endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)

@@ -8,7 +8,7 @@ See LICENSE.txt for details.
 
 #### Required:
 
-* [GCC](https://gcc.gnu.org/) 5.2 or later,
+* [GCC](https://gcc.gnu.org/) 5.4 or later,
 [Clang](https://clang.llvm.org/) 3.6 or later, or AppleClang 6.0 or later
 * [CMake](https://cmake.org/) 3.3.2 or later
 * [Charm++](http://charm.cs.illinois.edu/) 6.8 or newer (must be compiled from source)
