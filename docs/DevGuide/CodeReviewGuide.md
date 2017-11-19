@@ -43,6 +43,8 @@ the class by the following line, which contains exactly 64 equal signs
   (<code>// \@{</code> and <code>// \@}</code>).
 * Use the [alternative tokens](http://en.cppreference.com/w/cpp/language/operator_alternative) `or`, `and` and `not` instead of `||`, `&&`, and `!`.
 * Use C-style Doxygen comments (`/*! ... */`) when using multi-line math, otherwise C-style and C++ style comments are accepted.
+* When addressing requests on a PR, the commit message must start with
+  `fixup` followed by a descriptive message.
 
 Code Quality Items:
 
@@ -79,3 +81,9 @@ is not the same as the number of grid points in the determinant."
 * Variable names in macros must avoid name collisions, e.g. inside the `PARSE_ERROR` macro you would write `double variable_name_avoid_name_collisions_PARSE_ERROR = 0.0;`
 * Avoid macros if possible. Prefer `constexpr` functions, constexpr variables,
 and/or template metaprogramming
+* Explicitly specify `double`s, e.g. `sqrt(2.)` or `sqrt(2.0)` instead of
+  `sqrt(2)`.
+* When the index of a `Tensor` is known at compile time, use
+  `get<a, b>(tensor)` instead of the member `get` function.
+* All necessary header files must be included. In header files, prefer
+  forward declarations if class definitions aren't necessary.
