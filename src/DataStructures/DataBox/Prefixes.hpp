@@ -28,7 +28,7 @@ struct d<Tag, VolumeDim, Fr, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Fr>;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "d";
+  static constexpr db::DataBoxString label = "d";
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
@@ -37,14 +37,14 @@ struct d<Tag, VolumeDim, Fr,
     : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "d";
+  static constexpr db::DataBoxString label = "d";
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
 struct dt : db::DataBoxPrefix {
-  static constexpr db::DataBoxString_t label = "dt";
+  static constexpr db::DataBoxString label = "dt";
   using type = db::item_type<Tag>;
   using tag = Tag;
 };
@@ -63,7 +63,7 @@ struct Flux<Tag, VolumeDim, Fr,
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "Flux";
+  static constexpr db::DataBoxString label = "Flux";
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
@@ -72,7 +72,7 @@ struct Flux<Tag, VolumeDim, Fr,
     : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "Flux";
+  static constexpr db::DataBoxString label = "Flux";
 };
 /// \endcond
 
@@ -83,7 +83,7 @@ template <typename Tag>
 struct NormalDotFlux : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "NormalDotFlux";
+  static constexpr db::DataBoxString label = "NormalDotFlux";
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -93,6 +93,6 @@ template <typename Tag>
 struct NormalDotNumericalFlux : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString_t label = "NormalDotNumericalFlux";
+  static constexpr db::DataBoxString label = "NormalDotNumericalFlux";
 };
 }  // namespace Tags

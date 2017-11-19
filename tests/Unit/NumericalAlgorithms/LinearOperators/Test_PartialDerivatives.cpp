@@ -23,7 +23,7 @@ namespace {
 template <size_t Dim>
 struct Var1 : db::DataBoxTag {
   using type = tnsr::i<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "Vector_t";
+  static constexpr db::DataBoxString label = "Vector_t";
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame::Grid>& x) {
     tnsr::i<DataVector, Dim, Frame::Grid> result(x.begin()->size(), 0.);
@@ -61,7 +61,7 @@ struct Var1 : db::DataBoxTag {
 
 struct Var2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString_t label = "Scalar_t";
+  static constexpr db::DataBoxString label = "Scalar_t";
   template <size_t Dim>
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame::Grid>& x) {

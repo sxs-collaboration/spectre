@@ -49,22 +49,22 @@ struct ElementId {};
 /// \endcond
 
 struct CountActionsCalled : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "CountActionsCalled";
+  static constexpr db::DataBoxString label = "CountActionsCalled";
   using type = int;
 };
 
 struct Int0 : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "Int0";
+  static constexpr db::DataBoxString label = "Int0";
   using type = int;
 };
 
 struct Int1 : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "Int1";
+  static constexpr db::DataBoxString label = "Int1";
   using type = int;
 };
 
 struct TemporalId : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "TemporalId";
+  static constexpr db::DataBoxString label = "TemporalId";
   using type = TestAlgorithmArrayInstance;
 };
 }  // namespace

@@ -51,7 +51,7 @@ namespace db {
  * \ingroup DataBoxGroup
  * \brief The string used to give a runtime name to a DataBoxTag
  */
-using DataBoxString_t = const char* const;
+using DataBoxString = const char* const;
 
 /*!
  * \ingroup DataBoxGroup
@@ -63,13 +63,13 @@ using DataBoxString_t = const char* const;
  *
  * \derivedrequires
  * - type alias `type` of the type this DataBoxTag represents
- * - `static constexpr DataBoxString_t` that is the same as the type name
+ * - `static constexpr DataBoxString` that is the same as the type name
  *    and named `label`
  *
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
  *
- * \see DataBox DataBoxPrefix DataBoxString_t get_tag_name
+ * \see DataBox DataBoxPrefix DataBoxString get_tag_name
  */
 struct DataBoxTag {};
 
@@ -88,7 +88,7 @@ struct DataBoxTag {};
  * \derivedrequires
  * - type alias `tag` of the DataBoxTag that this tag is a prefix to
  * - type alias `type` that is the type that this DataBoxPrefix holds
- * - DataBoxString_t `label` that is the prefix to the `tag`
+ * - DataBoxString `label` that is the prefix to the `tag`
  *
  * \example
  * A DataBoxPrefix tag has the structure:
@@ -98,7 +98,7 @@ struct DataBoxTag {};
  * \snippet Test_DataBox.cpp databox_name_prefix
  *
  *
- * \see DataBox DataBoxTag DataBoxString_t get_tag_name ComputeItemTag
+ * \see DataBox DataBoxTag DataBoxString get_tag_name ComputeItemTag
  */
 struct DataBoxPrefix : DataBoxTag {};
 
@@ -124,7 +124,7 @@ struct DataBoxPrefix : DataBoxTag {};
  * which offers a lot of simplicity for very simple compute items.
  * \snippet Test_DataBox.cpp compute_item_tag_function
  *
- * \see DataBox DataBoxTag DataBoxString_t get_tag_name DataBoxPrefix
+ * \see DataBox DataBoxTag DataBoxString get_tag_name DataBoxPrefix
  */
 struct ComputeItemTag : DataBoxTag {};
 
@@ -159,11 +159,11 @@ struct tag_has_label<T, cpp17::void_t<decltype(T::label)>> : std::true_type {};
 // @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if a Tag label has type DataBoxString_t
+ * \brief Check if a Tag label has type DataBoxString
  *
  * \details
  * For a type `T`, check that the static member variable named `label` has type
- * DataBoxString_t
+ * DataBoxString
  *
  * \usage
  * For any type `T`
@@ -180,7 +180,7 @@ struct tag_label_correct_type : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct tag_label_correct_type<
-    T, Requires<std::is_same<DataBoxString_t, decltype(T::label)>::value>>
+    T, Requires<std::is_same<DataBoxString, decltype(T::label)>::value>>
     : std::true_type {};
 /// \endcond
 // @}

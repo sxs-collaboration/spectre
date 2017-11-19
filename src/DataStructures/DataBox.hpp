@@ -619,12 +619,12 @@ class DataBox<TagsList<Tags...>> {
   static_assert(
       tmpl2::flat_all_v<detail::tag_has_label<Tags>::value...>,
       "Missing a label on a Tag. All Tags must have a static "
-      "constexpr db::DataBoxString_t member variable named 'label' with "
+      "constexpr db::DataBoxString member variable named 'label' with "
       "the name of the Tag.");
   static_assert(
       tmpl2::flat_all_v<detail::tag_label_correct_type<Tags>::value...>,
       "One of the labels of the Tags in a DataBox has the incorrect "
-      "type. It should be a DataBoxString_t.");
+      "type. It should be a DataBoxString.");
 
  public:
   /*!

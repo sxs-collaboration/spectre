@@ -24,7 +24,7 @@ namespace Tags {
 /// \ingroup TimeGroup
 /// \brief Tag for ::TimeId for the algorithm state
 struct TimeId : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "TimeId";
+  static constexpr db::DataBoxString label = "TimeId";
   using type = ::TimeId;
 };
 
@@ -32,7 +32,7 @@ struct TimeId : db::DataBoxTag {
 /// \ingroup TimeGroup
 /// \brief Tag for step size
 struct TimeStep : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "TimeStep";
+  static constexpr db::DataBoxString label = "TimeStep";
   using type = ::TimeDelta;
 };
 
@@ -44,7 +44,7 @@ inline ::Time time_from_id(const ::TimeId& id) noexcept { return id.time; }
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current ::Time (from TimeId)
 struct Time : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "Time";
+  static constexpr db::DataBoxString label = "Time";
   static constexpr auto function = TimeTags_detail::time_from_id;
   using argument_tags = tmpl::list<TimeId>;
 };
@@ -57,7 +57,7 @@ struct Time : db::ComputeItemTag {
 /// \tparam DtTag tag for the time derivative of the variables
 template <typename Tag, typename DtTag>
 struct HistoryEvolvedVariables : db::DataBoxPrefix {
-  static constexpr db::DataBoxString_t label = "HistoryEvolvedVariables";
+  static constexpr db::DataBoxString label = "HistoryEvolvedVariables";
   using tag = Tag;
   using type =
       std::deque<std::tuple<::Time, db::item_type<Tag>, db::item_type<DtTag>>>;
@@ -71,7 +71,7 @@ struct HistoryEvolvedVariables : db::DataBoxPrefix {
 /// \tparam Tag tag for boundary variables
 template <typename Key, typename Tag>
 struct HistoryBoundaryVariables : db::DataBoxPrefix {
-  static constexpr db::DataBoxString_t label = "HistoryBoundaryVariables";
+  static constexpr db::DataBoxString label = "HistoryBoundaryVariables";
   using tag = Tag;
   using type = std::unordered_map<Key, db::item_type<Tag>>;
 };

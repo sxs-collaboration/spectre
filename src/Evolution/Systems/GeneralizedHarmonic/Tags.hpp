@@ -7,7 +7,7 @@ namespace GeneralizedHarmonic {
 template <size_t Dim>
 struct SpacetimeMetric : db::DataBoxTag {
   using type = tnsr::aa<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "SpacetimeMetric";
+  static constexpr db::DataBoxString label = "SpacetimeMetric";
 };
 
 /*!
@@ -21,7 +21,7 @@ struct SpacetimeMetric : db::DataBoxTag {
 template <size_t Dim>
 struct Pi : db::DataBoxTag {
   using type = tnsr::aa<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "Pi";
+  static constexpr db::DataBoxString label = "Pi";
 };
 
 /*!
@@ -33,12 +33,12 @@ struct Pi : db::DataBoxTag {
 template <size_t Dim>
 struct Phi : db::DataBoxTag {
   using type = tnsr::abb<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "Phi";
+  static constexpr db::DataBoxString label = "Phi";
 };
 
 template <size_t Dim>
 struct InverseSpatialMetric : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "InverseSpatialMetric";
+  static constexpr db::DataBoxString label = "InverseSpatialMetric";
   // static constexpr auto function =
   // compute_inverse_spatial_metric_from_spacetime_metric<Dim,
   //      Frame::Grid>;
@@ -46,7 +46,7 @@ struct InverseSpatialMetric : db::ComputeItemTag {
 };
 template <size_t Dim>
 struct Shift : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "Shift";
+  static constexpr db::DataBoxString label = "Shift";
   // static constexpr auto function =
   //      compute_shift_from_spacetime_metric_and_invg<Dim, Frame::Grid>;
   using argument_tags =
@@ -54,36 +54,36 @@ struct Shift : db::ComputeItemTag {
 };
 template <size_t Dim>
 struct Lapse : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "Lapse";
+  static constexpr db::DataBoxString label = "Lapse";
   // static constexpr auto function =
   //     compute_lapse_from_spacetime_metric_shift<Dim, Frame::Grid>;
   using argument_tags = typelist<SpacetimeMetric<Dim>, Shift<Dim>>;
 };
 struct ConstraintGamma0 : db::DataBoxTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString_t label = "ConstraintGamma0";
+  static constexpr db::DataBoxString label = "ConstraintGamma0";
 };
 struct ConstraintGamma1 : db::DataBoxTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString_t label = "ConstraintGamma1";
+  static constexpr db::DataBoxString label = "ConstraintGamma1";
 };
 struct ConstraintGamma2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString_t label = "ConstraintGamma2";
+  static constexpr db::DataBoxString label = "ConstraintGamma2";
 };
 template <size_t Dim>
 struct GaugeH : db::DataBoxTag {
   using type = tnsr::a<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "GaugeH";
+  static constexpr db::DataBoxString label = "GaugeH";
 };
 template <size_t Dim>
 struct SpacetimeDerivGaugeH : db::DataBoxTag {
   using type = tnsr::ab<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "SpacetimeDerivGaugeH";
+  static constexpr db::DataBoxString label = "SpacetimeDerivGaugeH";
 };
 template <size_t Dim>
 struct InverseSpacetimeMetric : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "InverseSpacetimeMetric";
+  static constexpr db::DataBoxString label = "InverseSpacetimeMetric";
   // static constexpr auto function =
   //     compute_inverse_spacetime_metric_from_invg_lapse_shift<Dim,
   //     Frame::Grid>;
@@ -92,7 +92,7 @@ struct InverseSpacetimeMetric : db::ComputeItemTag {
 };
 template <size_t Dim>
 struct SpacetimeChristoffelFirstKind : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "SpacetimeChristoffelFirstKind";
+  static constexpr db::DataBoxString label = "SpacetimeChristoffelFirstKind";
   // static constexpr auto function =
   //     compute_christoffel_first_kind_from_gh<Dim, Frame::Grid>;
   using argument_tags =
@@ -100,7 +100,7 @@ struct SpacetimeChristoffelFirstKind : db::ComputeItemTag {
 };
 template <size_t Dim>
 struct SpacetimeChristoffelSecondKind : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "SpactimeChristoffelSecondKind";
+  static constexpr db::DataBoxString label = "SpactimeChristoffelSecondKind";
   // static constexpr auto function =
   //     raise_index_1_of_3<Dim, Frame::Grid, IndexType::Spacetime>;
   using argument_tags =
@@ -108,21 +108,21 @@ struct SpacetimeChristoffelSecondKind : db::ComputeItemTag {
 };
 template <size_t Dim>
 struct SpacetimeNormalOneForm : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "SpacetimeNormalOneForm";
+  static constexpr db::DataBoxString label = "SpacetimeNormalOneForm";
   // static constexpr auto function =
   //     compute_normal_one_form_from_lapse<Dim, Frame::Grid>;
   using argument_tags = typelist<Lapse<Dim>>;
 };
 template <size_t Dim>
 struct SpacetimeNormalVector : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label = "SpacetimeNormalVector";
+  static constexpr db::DataBoxString label = "SpacetimeNormalVector";
   // static constexpr auto function =
   //     compute_normal_vector_from_lapse_and_shift<Dim, Frame::Grid>;
   using argument_tags = typelist<Lapse<Dim>, Shift<Dim>>;
 };
 template <size_t Dim>
 struct TraceSpacetimeChristoffelFirstKind : db::ComputeItemTag {
-  static constexpr db::DataBoxString_t label =
+  static constexpr db::DataBoxString label =
       "TraceSpacetimeChristoffelFirstKind";
   // static constexpr auto function =
   //     compute_trace_23_of_3<Dim, Frame::Grid, IndexType::Spacetime>;
