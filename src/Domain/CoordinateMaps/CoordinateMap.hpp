@@ -387,7 +387,7 @@ bool operator!=(
   return not(lhs == rhs);
 }
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// \brief Creates a CoordinateMap of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 constexpr CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>
@@ -396,7 +396,7 @@ make_coordinate_map(Maps&&... maps) {
       std::forward<Maps>(maps)...);
 }
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// \brief Creates a std::unique_ptr<CoordinateMapBase> of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 std::unique_ptr<CoordinateMapBase<

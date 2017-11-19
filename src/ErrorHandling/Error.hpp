@@ -14,7 +14,7 @@
 #include "Utilities/Literals.hpp"
 
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief prints an error message to the standard error stream and aborts the
  * program.
  *
@@ -42,7 +42,7 @@
   } while (false)
 
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief prints an error message to the standard error and aborts the
  * program.
  *

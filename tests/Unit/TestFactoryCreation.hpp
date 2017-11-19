@@ -17,7 +17,7 @@ struct Opt {
 };
 }  // namespace TestFactoryCreation_detail
 
-/// \ingroup TestingFramework
+/// \ingroup TestingFrameworkGroup
 /// Construct a factory object from a given string.  Each line in the
 /// string must be indented.
 template <typename BaseClass>

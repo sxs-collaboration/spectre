@@ -253,7 +253,7 @@ struct disable_constructors {
 }  // namespace tuples_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief An associative container that is indexed by structs
  *
  * A data structure that is indexed by Tags. A Tag is a struct that contains
@@ -633,7 +633,7 @@ struct tuple_size<const volatile TaggedTuple<Tags...>>
 // C++17 Draft 23.5.3.7 Element access
 // @{
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Retrieve the element of `Tag` in the TaggedTuple
  */
 template <class Tag, class... Tags>
@@ -820,7 +820,7 @@ struct tagged_tuple_typelist_impl<List<Tags...>> {
 };
 }  // namespace TaggedTuple_detail
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 template <typename T>
 using TaggedTupleTypelist =
     typename TaggedTuple_detail::tagged_tuple_typelist_impl<T>::type;

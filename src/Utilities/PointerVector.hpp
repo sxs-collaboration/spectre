@@ -307,7 +307,7 @@ VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
 /// \endcond
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A raw pointer endowed with expression template support via the Blaze
  * library
  *

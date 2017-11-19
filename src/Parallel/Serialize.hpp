@@ -11,7 +11,7 @@
 #include <pup.h>
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Serialize an object using PUP.
  *
  * The type to serialize as must be explicitly specified.  We require
@@ -41,7 +41,7 @@ std::vector<char> serialize(const U& obj) {
 }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Deserialize an object using PUP.
  *
  * \tparam T the type to deserialize to

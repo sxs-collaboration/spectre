@@ -12,7 +12,7 @@
 #include "ErrorHandling/Assert.hpp"
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief compute the Euclidean magnitude of a rank-1 tensor
  *
  * \returns the Euclidean magnitude of the rank-1 tensor
@@ -32,7 +32,7 @@ DataType magnitude(
 }
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief compute the magnitude of a rank-1 tensor
  *
  * \returns the magnitude of the rank-1 tensor

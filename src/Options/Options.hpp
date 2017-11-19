@@ -20,7 +20,7 @@ class Option;
 /// The string used in option structs
 using OptionString_t = const char* const;
 
-/// \ingroup OptionParsing
+/// \ingroup OptionParsingGroup
 /// Information about the nested operations being performed by the
 /// parser, for use in printing errors.  A default-constructed
 /// OptionContext is printed as an empty string.  This struct is
@@ -49,7 +49,7 @@ inline std::ostream& operator<<(std::ostream& s,
   return s;
 }
 
-/// \ingroup OptionParsing
+/// \ingroup OptionParsingGroup
 /// Like ERROR("\n" << (context) << m), but instead throws an
 /// exception that will be caught in a higher level Options if not
 /// passed a top-level context.  This is used to print a parsing
@@ -86,7 +86,7 @@ class propagate_context : public std::exception {
 };
 }  // namespace Options_detail
 
-/// \ingroup OptionParsing
+/// \ingroup OptionParsingGroup
 /// Used by the parser to create an object.  The default action is to
 /// parse options using `T::options`.  This struct may be specialized
 /// to change that behavior for specific types.

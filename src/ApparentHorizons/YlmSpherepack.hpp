@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Blas.hpp"
 
-/// \ingroup Spectral
+/// \ingroup SpectralGroup
 /// \brief C++ interface to SPHEREPACK.
 class YlmSpherepack {
  public:

@@ -10,7 +10,7 @@
 
 using namespace std::literals::string_literals;  // NOLINT
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// Defines the _st size_t suffix
 inline constexpr size_t operator"" _st(const unsigned long long n) {  // NOLINT
   return static_cast<size_t>(n);

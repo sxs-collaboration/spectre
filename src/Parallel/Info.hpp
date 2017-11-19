@@ -10,31 +10,31 @@
 
 namespace Parallel {
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Number of processing elements.
  */
 inline int number_of_procs() { return CkNumPes(); }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief %Index of my processing element.
  */
 inline int my_proc() { return CkMyPe(); }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Number of nodes.
  */
 inline int number_of_nodes() { return CkNumNodes(); }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief %Index of my node.
  */
 inline int my_node() { return CkMyNode(); }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Number of processing elements on the given node.
  */
 inline int procs_on_node(const int node_index) {
@@ -51,14 +51,14 @@ inline int procs_on_node(const int node_index) {
 }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief The local index of my processing element on my node.
  * This is in the interval 0, ..., procs_on_node(my_node()) - 1.
  */
 inline int my_local_rank() { return CkMyRank(); }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief %Index of first processing element on the given node.
  */
 inline int first_proc_on_node(const int node_index) {
@@ -67,7 +67,7 @@ inline int first_proc_on_node(const int node_index) {
 }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief %Index of the node for the given processing element.
  */
 inline int node_of(const int proc_index) {
@@ -76,7 +76,7 @@ inline int node_of(const int proc_index) {
 }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief The local index for the given processing element on its node.
  */
 inline int local_rank_of(const int proc_index) {
@@ -85,7 +85,7 @@ inline int local_rank_of(const int proc_index) {
 }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief The current wall time in seconds
  */
 inline double wall_time() { return CmiWallTimer(); }

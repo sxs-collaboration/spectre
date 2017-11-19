@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Divides the components of a tensor by a scalar
  *
  * \returns a tensor of the same type as the input tensor

@@ -18,7 +18,7 @@
 #include "Utilities/Gsl.hpp"
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief Slices the data within `vars` to a codimension 1 slice. The
  * slice has a constant logical coordinate in direction `sliced_dim`,
  * slicing the volume at `fixed_index` in that dimension.  For
@@ -55,7 +55,7 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
 }
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief Adds data on a codimension 1 slice to a volume quantity. The
  * slice has a constant logical coordinate in direction `sliced_dim`,
  * slicing the volume at `fixed_index` in that dimension.  For
@@ -104,7 +104,7 @@ std::vector<size_t> oriented_offset(
     const Orientation<3>& orientation_of_neighbor) noexcept;
 }  // namespace OrientVariablesOnSlice_detail
 
-/// \ingroup DataStructures
+/// \ingroup DataStructuresGroup
 /// Orients variables on a slice to the data-storage order of a neighbor with
 /// the given orientation.
 template <size_t VolumeDim, typename TagsList>

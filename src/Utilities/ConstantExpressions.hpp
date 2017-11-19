@@ -17,7 +17,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// Compute 2 to the n for integral types.
 ///
 /// \param n the power of two to compute.
@@ -28,7 +28,7 @@ SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
   return T(1) << n;
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// Get the nth bit from the right, counting from zero.
 ///
 /// \param i the value to be acted on.
@@ -39,21 +39,21 @@ SPECTRE_ALWAYS_INLINE constexpr size_t get_nth_bit(const size_t i,
   return (i >> N) % 2;
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Compute the square of `x`
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) square(const T& x) {
   return x * x;
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Compute the cube of `x`
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
   return x * x * x;
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 namespace ConstantExpressions_detail {
 template <typename T, int N, typename = std::nullptr_t>
 struct pow;
@@ -82,7 +82,7 @@ struct pow<T, 0, Requires<not blaze::IsVector<T>::value>> {
 /// \endcond
 }  // namespace ConstantExpressions_detail
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Compute t^N where N is an integer (positive or negative)
 ///
 /// \warning If passing an integer this will do integer arithmatic, e.g.
@@ -96,7 +96,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
   return ConstantExpressions_detail::pow<T, N>::apply(t);
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Compute the absolute value of of its argument
 ///
 /// The argument must be comparable to an int and muste be negatable.
@@ -114,7 +114,7 @@ struct CompareByMagnitude {
 };
 }  // namespace ConstantExpressions_detail
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Return the argument with the largest magnitude
 ///
 /// Magnitude is determined by constexpr_abs.  In case of a tie,
@@ -132,7 +132,7 @@ constexpr T max_by_magnitude(std::initializer_list<T> ilist) {
 }
 //@}
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Return the argument with the smallest magnitude
 ///
 /// Magnitude is determined by constexpr_abs.  In case of a tie,
@@ -163,7 +163,7 @@ make_array_from_list_helper(
 }
 }  // namespace detail
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// Make an array from a typelist that holds std::integral_constant's all of
 /// which have the same `value_type`
 ///
@@ -204,7 +204,7 @@ make_array_from_list_helper(
 }
 }  // namespace detail
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 ///
 /// Make an array of arrays from a typelist that holds typelists of
 /// std::integral_constant's all of which have the same `value_type`
@@ -218,7 +218,7 @@ inline constexpr auto make_array_from_list() {
       std::make_integer_sequence<size_t, tmpl::size<List>::value>{});
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Compute the length of a const char* at compile time
 SPECTRE_ALWAYS_INLINE constexpr size_t cstring_length(
     const char* str) noexcept {
@@ -226,7 +226,7 @@ SPECTRE_ALWAYS_INLINE constexpr size_t cstring_length(
   return *str != 0 ? 1 + cstring_length(str + 1) : 0;  // NOLINT
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Compute a hash of a const char* at compile time
 SPECTRE_ALWAYS_INLINE constexpr size_t cstring_hash(const char* str) noexcept {
   // clang-tidy: do not use pointer arithmetic
@@ -249,7 +249,7 @@ inline constexpr std::array<std::decay_t<T>, Size> replace_at_helper(
 }
 }  // namespace ConstantExpression_detail
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// Replace at compile time the `I`th entry in the array with `value`
 template <size_t I, typename T, size_t Size>
 inline constexpr std::array<std::decay_t<T>, Size> replace_at(
@@ -260,7 +260,7 @@ inline constexpr std::array<std::decay_t<T>, Size> replace_at(
       std::make_integer_sequence<size_t, Size - I - 1>{});
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// Check at compile time if two `std::array`s are equal
 template <typename T, typename S, size_t size>
 inline constexpr bool array_equal(const std::array<T, size>& lhs,
@@ -273,7 +273,7 @@ inline constexpr bool array_equal(const std::array<T, size>& lhs,
                   : true;
 }
 
-/// \ingroup ConstantExpressions
+/// \ingroup ConstantExpressionsGroup
 /// \brief Returns a const reference to its argument.
 template <typename T>
 constexpr const T& as_const(const T& t) noexcept { return t; }

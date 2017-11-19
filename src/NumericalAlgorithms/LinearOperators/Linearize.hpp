@@ -13,7 +13,7 @@ template <size_t>
 class Index;
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * Truncate u to a linear function in each dimension.
  * Ex in 2D: \f$u^{Lin} = U_0 + U_x x + U_y y + U_{xy} xy\f$
  *
@@ -23,7 +23,7 @@ template <size_t Dim>
 DataVector linearize(const DataVector& u, const Index<Dim>& extents);
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * Truncate u to a linear function in the given dimension.
  *
  * \returns the linearization of `u`

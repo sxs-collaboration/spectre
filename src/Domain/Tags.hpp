@@ -18,8 +18,8 @@
 
 namespace Tags {
 
-/// \ingroup DataBoxTags
-/// \ingroup ComputationalDomain
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::DataBoxTag {
@@ -27,8 +27,8 @@ struct Element : db::DataBoxTag {
   using type = ::Element<VolumeDim>;
 };
 
-/// \ingroup DataBoxTags
-/// \ingroup ComputationalDomain
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The extents of DataVectors in the DataBox
 template <size_t VolumeDim>
 struct Extents : db::DataBoxTag {
@@ -36,8 +36,8 @@ struct Extents : db::DataBoxTag {
   using type = ::Index<VolumeDim>;
 };
 
-/// \ingroup DataBoxTags
-/// \ingroup ComputationalDomain
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim>
 struct ElementMap : db::DataBoxTag {
@@ -63,8 +63,8 @@ auto make_unnormalized_grid_normals(
 }
 }  // namespace detail
 
-/// \ingroup DataBoxTags
-/// \ingroup ComputationalDomain
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The unnormalized grid normal one form on each side
 template <size_t VolumeDim>
 struct UnnormalizedGridNormal : db::ComputeItemTag {

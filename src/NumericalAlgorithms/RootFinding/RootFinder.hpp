@@ -12,7 +12,7 @@
 #include <boost/math/tools/toms748_solve.hpp>
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Finds the root of the function f with the TOMS_748 method.
  *
  * \requires Function f be callable

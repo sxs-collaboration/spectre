@@ -14,7 +14,7 @@ class er;
 }  // namespace PUP
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief Iterate over a (dim-1)-dimensional slice
  */
 class SliceIterator {

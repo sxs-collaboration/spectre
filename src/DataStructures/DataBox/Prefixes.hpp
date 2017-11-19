@@ -15,7 +15,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace Tags {
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \brief prefix for a `VolumeDim` spatial derivatives with respect to the `Fr`
 /// coordinate frame.
 template <typename Tag, typename VolumeDim, typename Fr,
@@ -40,7 +40,7 @@ struct d<Tag, VolumeDim, Fr,
   static constexpr db::DataBoxString_t label = "d";
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
 struct dt : db::DataBoxPrefix {
@@ -49,7 +49,7 @@ struct dt : db::DataBoxPrefix {
   using tag = Tag;
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a flux
 template <typename Tag, typename VolumeDim, typename Fr,
           typename = std::nullptr_t>
@@ -76,7 +76,7 @@ struct Flux<Tag, VolumeDim, Fr,
 };
 /// \endcond
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating an unnormalized boundary normal vector
 /// dotted into the flux
 template <typename Tag>
@@ -86,7 +86,7 @@ struct NormalDotFlux : db::DataBoxPrefix {
   static constexpr db::DataBoxString_t label = "NormalDotFlux";
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating an unnormalized boundary normal vector
 /// dotted into the numerical flux
 template <typename Tag>

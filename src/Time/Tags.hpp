@@ -20,7 +20,7 @@ class TimeStepper;
 
 namespace Tags {
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for ::TimeId for the algorithm state
 struct TimeId : db::DataBoxTag {
@@ -28,7 +28,7 @@ struct TimeId : db::DataBoxTag {
   using type = ::TimeId;
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for step size
 struct TimeStep : db::DataBoxTag {
@@ -40,7 +40,7 @@ namespace TimeTags_detail {
 inline ::Time time_from_id(const ::TimeId& id) noexcept { return id.time; }
 }  // namespace TimeTags_detail
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current ::Time (from TimeId)
 struct Time : db::ComputeItemTag {
@@ -49,7 +49,7 @@ struct Time : db::ComputeItemTag {
   using argument_tags = tmpl::list<TimeId>;
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Prefix for TimeStepper history
 ///
@@ -63,7 +63,7 @@ struct HistoryEvolvedVariables : db::DataBoxPrefix {
       std::deque<std::tuple<::Time, db::item_type<Tag>, db::item_type<DtTag>>>;
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// Prefix for TimeStepper boundary history
 ///
@@ -80,7 +80,7 @@ struct HistoryBoundaryVariables : db::DataBoxPrefix {
 
 namespace CacheTags {
 
-/// \ingroup CacheTags
+/// \ingroup CacheTagsGroup
 /// \ingroup TimeGroup
 /// \brief The final time
 struct FinalTime {
@@ -88,7 +88,7 @@ struct FinalTime {
   static constexpr OptionString_t help{"The final time"};
 };
 
-/// \ingroup CacheTags
+/// \ingroup CacheTagsGroup
 /// \ingroup TimeGroup
 /// \brief The ::TimeStepper
 struct TimeStepper {

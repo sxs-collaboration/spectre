@@ -73,16 +73,16 @@ inline void print_helper(const std::string& format, Ts&&... t) {
 }  // namespace detail
 
 /*!
-   * \ingroup Parallel
-   * \brief Print an atomic message to stdout with C printf usage.
-   *
-   * Similar to Python, you can print any object that's streamable by passing it
-   * in as an argument and using the formatter "%s". For example,
-   * \code
-   * std::vector<double> a{0.8, 73, 9.8};
-   * Parallel::printf("%s\n", a);
-   * \endcode
-   */
+ * \ingroup ParallelGroup
+ * \brief Print an atomic message to stdout with C printf usage.
+ *
+ * Similar to Python, you can print any object that's streamable by passing it
+ * in as an argument and using the formatter "%s". For example,
+ * \code
+ * std::vector<double> a{0.8, 73, 9.8};
+ * Parallel::printf("%s\n", a);
+ * \endcode
+ */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
   disable_floating_point_exceptions();

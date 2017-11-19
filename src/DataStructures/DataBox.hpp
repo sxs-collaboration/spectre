@@ -58,7 +58,7 @@ class DataBox;
 
 // @{
 /*!
- * \ingroup TypeTraits DataBox
+ * \ingroup TypeTraitsGroup DataBox
  * \brief Determines if a type `T` is as db::DataBox
  *
  * \effects Inherits from std::true_type if `T` is a specialization of

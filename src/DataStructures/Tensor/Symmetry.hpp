@@ -12,7 +12,7 @@
 
 namespace detail {
 // @{
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// \brief Metafunction that computes the new sign map
 ///
 /// \details
@@ -45,7 +45,7 @@ struct compute_sign_map_helper<true> {
 // @}
 
 // @{
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Metafunction to compute the new `sign_map` which is a map between indices
 /// and +/-1 depending on whether the index is symmetric (or has no symmetry) or
 /// is anti-symmetric, respectively.
@@ -90,7 +90,7 @@ struct compute_sign_map<false> {
 // @}
 
 // @{
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// A metafunction that, given the current and past SignMap, returns either 1
 /// if the absolute value of index is not in the `PastSignMap` or returns the
 /// signed value in the `CurrentSignMap` if the absolute value of index is in
@@ -121,20 +121,20 @@ struct compute_sign<false> {
 /// \endcond
 // @}
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Metafunction to compute the symmetry typelist. See the Symmetry type alias
 /// for details of how to use.
 template <std::int32_t... T>
 struct symm;
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Scalar tensor case
 template <>
 struct symm<> {
   using type = tmpl::integral_list<std::int32_t>;
 };
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Last index case to end recursion.
 template <std::int32_t index>
 struct symm<index> {
@@ -147,7 +147,7 @@ struct symm<index> {
       tmpl::pair<tmpl::int32_t<index>, tmpl::sign<tmpl::int32_t<index>>>>;
 };
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Metafunction that computes symmetry as a typelist of std::integral_constant.
 /// The `added_map` is a typemap used to keep track of whether or not a
 /// particular index has already been added to the list. If it or its negative
@@ -208,7 +208,7 @@ struct symm<index, T...> {
 };
 }  // namespace detail
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// \brief Computes the canonical symmetry from the integers `T`
 ///
 /// \details

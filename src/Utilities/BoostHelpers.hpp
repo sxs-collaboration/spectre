@@ -24,7 +24,7 @@ struct make_boost_variant_over_impl<Sequence<Ts...>> {
 }  // namespace detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Create a boost::variant with all all the types inside the typelist
  * Sequence
  *

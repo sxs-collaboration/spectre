@@ -13,7 +13,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Orientation.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// Information about the neighbors of an Element in a particular direction.
 ///
 /// \tparam VolumeDim the volume dimension.

@@ -13,7 +13,7 @@
 #endif
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Mark derived classes as serializable
  *
  * Any class that derives off of a non-class template base class must contain
@@ -23,7 +23,7 @@
   PUPable_decl_template(SINGLE_ARG(className))
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Mark derived template classes as serializable
  *
  * Any class that derives off of a class template base class must contain

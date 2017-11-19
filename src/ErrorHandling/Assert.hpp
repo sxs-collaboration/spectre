@@ -14,7 +14,7 @@
 #include "Utilities/Literals.hpp"
 
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief Assert that an expression should be true.
  *
  * If the preprocessor macro SPECTRE_DEBUG is defined and the expression is

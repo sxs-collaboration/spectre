@@ -17,9 +17,8 @@
 #endif
 #endif
 
-
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief check expectation of pre-conditions of a function
  *
  * The Expects macro sets the preconditions to a function's arguments, it is a
@@ -42,7 +41,7 @@
 #endif
 
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief Check that a post-condition of a function is true
  *
  * The Ensures macro sets the postconditions of function, it is a contract

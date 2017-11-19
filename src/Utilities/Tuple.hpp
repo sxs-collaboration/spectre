@@ -77,7 +77,7 @@ constexpr inline void tuple_transform_impl(
 
 // @{
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Perform a fold over a std::tuple
  *
  * \details
@@ -140,7 +140,7 @@ constexpr inline void tuple_counted_fold(
 // @}
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Perform a transform over a std::tuple
  *
  * \details

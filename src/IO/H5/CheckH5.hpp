@@ -9,7 +9,7 @@
 #include "ErrorHandling/Error.hpp"
 
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Check if an HDF5 operation was successful
  *
  * \requires `h5_status` is a valid HDF5 return type, `m` is a stringstream

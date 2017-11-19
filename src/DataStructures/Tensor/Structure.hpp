@@ -21,7 +21,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Contains details of the implementation of Tensor
 namespace Tensor_detail {
 namespace detail {
@@ -144,7 +144,7 @@ SPECTRE_ALWAYS_INLINE constexpr size_t compute_collapsed_index(
       static_cast<std::size_t>(i)...));
 }
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// A lookup table between each tensor_index and storage_index
 ///
 /// 1. tensor_index: (a, b, c,...). There are Dim^rank tensor_index's

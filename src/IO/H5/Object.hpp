@@ -8,7 +8,7 @@
 
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Abstract base class representing an object in an HDF5 file
  */
 class Object {

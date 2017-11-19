@@ -7,7 +7,7 @@
 #pragma once
 
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Contains functions and classes for manipulating HDF5 files
  *
  * Wraps many underlying C H5 routines making them easier to use and easier to
@@ -15,7 +15,7 @@
  */
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Set the access type to the H5File
  */
 enum class AccessType {

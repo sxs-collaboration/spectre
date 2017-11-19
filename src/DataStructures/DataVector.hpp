@@ -34,7 +34,7 @@ using std::abs;  // NOLINT
 /// \endcond
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief A class for storing data on a mesh.
  *
  * A Data holds an array of contiguous data and can be either owning (the array

@@ -36,7 +36,7 @@
 
 namespace Actions {
 /// \ingroup ActionsGroup
-/// \ingroup DiscontinuousGalerkin
+/// \ingroup DiscontinuousGalerkinGroup
 /// \brief Receive boundary data from neighbors and compute boundary
 /// contribution to the time derivative.
 ///
@@ -222,7 +222,7 @@ struct ComputeBoundaryFlux {
 };
 
 /// \ingroup ActionsGroup
-/// \ingroup DiscontinuousGalerkin
+/// \ingroup DiscontinuousGalerkinGroup
 /// \brief Compute local boundary data needed for fluxes and send it
 /// to neighbors.
 ///

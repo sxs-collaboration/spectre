@@ -17,7 +17,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// A spectral element with knowledge of its neighbors.
 ///
 /// \tparam VolumeDim the volume dimension.

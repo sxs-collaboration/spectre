@@ -10,7 +10,7 @@
 #include "DataStructures/Variables.hpp"
 
 namespace dg {
-/// \ingroup DiscontinuousGalerkin
+/// \ingroup DiscontinuousGalerkinGroup
 /// \brief Lifts the flux contribution from an interface to the volume.
 ///
 /// The lifting operation takes the (d-1)-dimensional flux term at the

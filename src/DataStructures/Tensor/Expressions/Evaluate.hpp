@@ -13,7 +13,7 @@
 namespace TensorExpressions {
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  * \brief Evaluate a Tensor Expression with LHS indices set in the template
  * parameters
  *

@@ -14,7 +14,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// A SegmentId labels a segment of the interval [-1,1].
 /// A SegmentId is used to (partially) identify an Element.
 /// The segment is the interval [-1 + 2*(N/D), -1 + 2*(N+1)/D]

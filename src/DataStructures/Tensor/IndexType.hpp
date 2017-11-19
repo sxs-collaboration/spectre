@@ -12,7 +12,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Whether a \ref SpacetimeIndex "TensorIndexType" is covariant or
 /// contravariant
 enum class UpLo {
@@ -28,11 +28,11 @@ inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) {
 }
 /// \endcond
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Indicates the ::Frame that a \ref SpacetimeIndex "TensorIndexType"
 /// is in.
 namespace Frame {
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Marks a Frame as being "physical" in the sense that it is meaningful to
 /// evaluate an analytic solution in that frame.
 struct FrameIsPhysical {};
@@ -49,7 +49,7 @@ struct NoFrame {};
 /// for jacobians.
 using ordered_frame_list = typelist<Logical, Grid, Inertial, Distorted>;
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Returns std::true_type if the frame is "physical" in the sense that it is
 /// meaningful to evaluate an analytic solution in that frame.
 /// \example
@@ -59,7 +59,7 @@ using is_frame_physical =
     std::integral_constant<bool,
                            cpp17::is_base_of_v<FrameIsPhysical, CheckFrame>>;
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Returns true if the frame is "physical" in the sense that it is
 /// meaningful to evaluate an analytic solution in that frame.
 /// \example
@@ -90,7 +90,7 @@ inline std::ostream& operator<<(std::ostream& os,
 /// \endcond
 }  // namespace Frame
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Indicates whether the \ref SpacetimeIndex "TensorIndexType" is
 /// Spatial or Spacetime
 enum class IndexType : char {
@@ -107,7 +107,7 @@ inline std::ostream& operator<<(std::ostream& os, const IndexType& index_type) {
 /// \endcond
 
 namespace Tensor_detail {
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// A ::TensorIndexType holds information about what type of index an index of a
 /// Tensor is. It holds the information about the number of spatial dimensions,
 /// whether the index is covariant or contravariant (::UpLo), the ::Frame the
@@ -134,7 +134,7 @@ struct TensorIndexType {
 };
 }  // namespace Tensor_detail
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// A SpatialIndex holds information about the number of spatial
 /// dimensions, whether the index is covariant or contravariant (::UpLo), and
 /// the ::Frame the index is in.
@@ -147,7 +147,7 @@ template <size_t SpatialDim, UpLo Ul, typename Fr>
 using SpatialIndex =
     Tensor_detail::TensorIndexType<SpatialDim, Ul, Fr, IndexType::Spatial>;
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// A SpacetimeIndex holds information about the number of spatial
 /// dimensions, whether the index is covariant or contravariant (::UpLo), and
 /// the ::Frame the index is in.
@@ -163,7 +163,7 @@ using SpacetimeIndex =
 
 namespace tt {
 // @{
-/// \ingroup Tensor TypeTraits
+/// \ingroup TensorGroup TypeTraits
 /// Inherits from std::true_type if T is a \ref SpacetimeIndex
 /// "TensorIndexType"
 /// \tparam T the type to check
@@ -181,7 +181,7 @@ using is_tensor_index_type_t = typename is_tensor_index_type<T>::type;
 // @}
 }  // namespace tt
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Change the \ref SpacetimeIndex "TensorIndexType" to be covariant
 /// if it's contravariant and vice-versa
 ///

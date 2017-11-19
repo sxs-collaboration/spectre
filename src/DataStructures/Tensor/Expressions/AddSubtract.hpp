@@ -99,7 +99,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
 }  // namespace TensorExpressions
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  */
 template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
           typename IndexList1, typename IndexList2, typename Args1,
@@ -121,7 +121,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
 }
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  */
 template <typename T1, typename T2, typename X, typename Symm1, typename Symm2,
           typename IndexList1, typename IndexList2, typename Args1,

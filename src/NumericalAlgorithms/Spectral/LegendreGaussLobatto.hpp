@@ -11,10 +11,10 @@
 class DataVector;
 class Matrix;
 
-/// \ingroup NumericalAlgorithms
+/// \ingroup NumericalAlgorithmsGroup
 /// Basis functions, derivative matrices, etc. for spectral-type methods
 namespace Basis {
-/// \ingroup NumericalAlgorithms
+/// \ingroup NumericalAlgorithmsGroup
 /// Functions for using Legendre-Gauss-Lobatto basis
 namespace lgl {
 /// Collocation points.

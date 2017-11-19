@@ -28,7 +28,7 @@
 
 namespace Parallel {
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
 ///
 /// Metavariables must define the following:

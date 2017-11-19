@@ -8,7 +8,7 @@
 
 #include "Utilities/ForceInline.hpp"
 
-/// \ingroup DataStructures
+/// \ingroup DataStructuresGroup
 /// Implementations of make_with_value.
 namespace MakeWithValueImpls {
 template <typename R, typename T>
@@ -17,7 +17,7 @@ struct MakeWithValueImpl {
 };
 }  // namespace MakeWithValueImpls
 
-/// \ingroup DataStructures
+/// \ingroup DataStructuresGroup
 /// \brief Given an object of type `T`, create an object of type `R` whose
 /// elements are initialized to `value`.
 ///

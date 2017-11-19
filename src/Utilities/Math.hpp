@@ -9,7 +9,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Returns the number of digits in an integer number
  */
 template <typename T>

@@ -40,7 +40,7 @@ struct is_tensor<Tensor<X, Symm, IndexList>> : std::true_type {};
 }  // namespace Tensor_detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Represents an object with multiple components
  *
  * \details

@@ -467,25 +467,25 @@ using branch_if_t = typename branch_if<B>::template type<T, F>;
 
 namespace tmpl = brigand;
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Construct a typelist of types `Ts`.
 template <typename... Ts>
 using typelist = tmpl::list<Ts...>;
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Metaprogramming things that are not planned to be submitted to Brigand
  */
 namespace tmpl2 {
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A compile-time list of values of the same type
  */
 template <class T, T...>
 struct value_list {};
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A non-short-circuiting logical AND between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
@@ -497,7 +497,7 @@ using flat_all =
                  value_list<bool, (static_cast<void>(Bs), true)...>>;
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A non-short-circuiting logical AND between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
@@ -507,7 +507,7 @@ template <bool... Bs>
 constexpr bool flat_all_v = flat_all<Bs...>::value;
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A non-short-circuiting logical OR between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
@@ -521,7 +521,7 @@ using flat_any = std::integral_constant<
         value_list<bool, (static_cast<void>(Bs), false)...>>::value>;
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A non-short-circuiting logical OR between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
@@ -532,7 +532,7 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
 }  // namespace tmpl2
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Allows zero-cost unordered expansion of a parameter
  *
  * \details

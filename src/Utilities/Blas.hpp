@@ -31,7 +31,7 @@ void dgemv_(const char& TRANS, const int& M, const int& N, const double& ALPHA,
 }  // namespace blas_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * The dot product of two vectors.
  *
  * \param N the length of the vectors.
@@ -54,7 +54,7 @@ inline double ddot_(const size_t& N, const double* X, const size_t& INCX,
 
 // @{
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Perform a matrix-matrix multiplication
  *
  * Perform the matrix-matrix multiplication
@@ -127,7 +127,7 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
 
 // @{
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Perform a matrix-vector multiplication
  *
  * \f[

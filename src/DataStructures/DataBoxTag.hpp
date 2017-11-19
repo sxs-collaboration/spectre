@@ -29,7 +29,7 @@ struct Variables;
 
 namespace Tags {
 /*!
- * \ingroup DataBoxTags
+ * \ingroup DataBoxTagsGroup
  * \brief Tag used to retrieve the DataBox from the `db::get` function
  *
  * The main use of this tag is to allow fetching the DataBox from itself. The
@@ -378,7 +378,7 @@ struct is_variables_compute_item<
     Requires<is_compute_item<T>::value and tt::is_a_v<Variables, item_type<T>>>>
     : std::true_type {};
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \brief Create a new list of Tags by wrapping each tag in `TagList` using the
 /// `Wrapper`.
 template <template <typename...> class Wrapper, typename TagList,
@@ -424,14 +424,14 @@ struct remove_tag_prefix_impl<
 };
 }  // namespace detail
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// Wrap `Tag` in `Prefix<_, Args...>`, also wrapping variables tags
 /// if `Tag` is a `Tags::Variables`.
 template <template <typename...> class Prefix, typename Tag, typename... Args>
 using add_tag_prefix = typename detail::add_tag_prefix_impl<
     tt::is_a_v<Tags::Variables, Tag>>::template f<Prefix, Tag, Args...>;
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// Remove a prefix from `Tag`, also removing it from the variables
 /// tags if the unwrapped tag is a `Tags::Variables`.
 template <typename Tag>

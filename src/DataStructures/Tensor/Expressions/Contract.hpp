@@ -12,7 +12,7 @@
 #include "Utilities/Requires.hpp"
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  * Holds all possible TensorExpressions currently implemented
  */
 namespace TensorExpressions {
@@ -69,7 +69,7 @@ struct ComputeContractionImpl<0, Index1, Index2> {
 }  // namespace detail
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  */
 template <typename Index1, typename Index2, typename T, typename X,
           typename Symm, typename IndexList, typename ArgsList>
@@ -162,7 +162,7 @@ struct TensorContract
 };
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  */
 template <int Index1, int Index2, typename T, typename X, typename Symm,
           typename IndexList, typename Args>
@@ -216,7 +216,7 @@ struct fully_contract_helper<TE, ReplacedArgList,
 }  // namespace detail
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  * \brief Represents a fully contracted Tensor
  */
 template <template <typename> class TE, typename ReplacedArgList, typename I,

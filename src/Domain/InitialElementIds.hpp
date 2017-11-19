@@ -9,7 +9,7 @@
 template <size_t VolumeDim>
 class ElementId;
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// \brief Create the ElementIds of the initial computational domain.
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> initial_element_ids(

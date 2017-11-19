@@ -17,7 +17,7 @@ template<size_t Dim>
 class Direction;
 
 /*!
- * \ingroup ComputationalDomain
+ * \ingroup ComputationalDomainGroup
  * \brief Compute the Legendre-Gauss-Lobatto coordinates in an Element
  *
  * \returns logical-frame vector holding coordinates
@@ -30,7 +30,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
     const Index<VolumeDim>& extents);
 
 /*!
- * \ingroup ComputationalDomain
+ * \ingroup ComputationalDomainGroup
  * \brief Compute the logical coordinates on a face of an Element
  *
  * \returns logical-frame vector holding coordinates

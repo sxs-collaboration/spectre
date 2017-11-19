@@ -18,7 +18,7 @@ template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
 
 /*!
- *  \ingroup ComputationalDomain
+ *  \ingroup ComputationalDomainGroup
  *  \brief A wrapper around a vector of Blocks that represent the computational
  * domain.
  */

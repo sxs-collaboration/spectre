@@ -12,7 +12,7 @@
 
 namespace Parallel {
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Used for reducing heterogeneous collection of types in a single
  * reduction call
  *
@@ -112,7 +112,7 @@ size_t ReductionData<Ts...>::size() noexcept {
 /// \endcond
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Retrieve the `Index`th element from a `ReductionData<Ts...>`, similar
  * to `std::get` for `std::tuple`s
  *
@@ -161,7 +161,7 @@ constexpr bool is_custom_reduction_type_v = is_custom_reduction_type<T>::value;
 }  // namespace Parallel_detail
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Perform a reduction from the current ParallelComponent to the
  * `TargetParallelComponent`, performing the `Action` upon receiving the
  * reduction
@@ -223,7 +223,7 @@ void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
 /// \endcond
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Convert a `ReductionData` to a `CkReductionMsg`. Used in custom
  * reducers.
  *

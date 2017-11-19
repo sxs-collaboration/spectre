@@ -67,7 +67,7 @@ struct get_array_index<ActionTesting_detail::MockArrayChare> {
 /// \endcond
 
 namespace ActionTesting {
-/// \ingroup TestingFramework
+/// \ingroup TestingFrameworkGroup
 /// A mock parallel component that acts like a component with
 /// chare_type Parallel::Algorithms::Array.
 template <typename Metavariables, typename Index,
@@ -84,7 +84,7 @@ struct MockArrayComponent {
   using initial_databox = NoSuchType;
 };
 
-/// \ingroup TestingFramework
+/// \ingroup TestingFrameworkGroup
 /// A class that mocks the infrastructure needed to run actions.  It
 /// simulates message passing using the inbox infrastructure and
 /// handles most of the arguments to the apply and is_ready action

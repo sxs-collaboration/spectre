@@ -19,7 +19,7 @@
 /// \endcond
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * \brief Contains all functions that are part of PrettyType, used for printing
  * types in a pretty manner.
  */
@@ -178,7 +178,7 @@ std::string add_qualifiers() {
 }
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * Used to construct the name of a container
  *
  * \tparam T the type whose name to print
@@ -611,7 +611,7 @@ struct construct_name<
 }  // namespace detail
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * \brief typelist of basic types that can be pretty printed
  *
  * These are specializations of tt::Type<T>
@@ -623,7 +623,7 @@ using basics_map =
                           float, double, long double, bool, std::string>;
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * \brief A list of type traits to check if something is an STL member
  *
  * Contains a template alias with the name template_list of type traits that
@@ -645,7 +645,7 @@ struct stl_templates {
 };
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  *  \brief Returns a string with the prettiest typename known for the type T.
  *
  *  Example usage: auto name = get_name<T>();
@@ -664,7 +664,7 @@ std::string get_name() {
 }
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * \brief Returns a string with the prettiest typename known for the runtime
  * type of x.
  *
@@ -678,14 +678,14 @@ std::string get_runtime_type_name(const T& x) {
 }
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * \brief Extract the "short name" from a name, that is, the name
  * without template parameters or scopes.
  */
 std::string extract_short_name(std::string name);
 
 /*!
- * \ingroup PrettyType
+ * \ingroup PrettyTypeGroup
  * \brief Return the "short name" of a class, that is, the name
  * without template parameters or scopes.
  */

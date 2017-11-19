@@ -15,7 +15,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// An ElementId uniquely labels a Element.
 /// It is constructed from the BlockId of the Block to which the Element belongs
 /// and the VolumeDim SegementIds that label the segments of the Block that the

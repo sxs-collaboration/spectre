@@ -13,7 +13,7 @@
 #include "Domain/Side.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// A particular Side along a particular coordinate Axis.
 template <size_t VolumeDim>
 class Direction {
