@@ -166,16 +166,16 @@ template <class... Tags>
 class TaggedDeferredTuple;
 
 template <class Tag, class... Tags>
-constexpr const Deferred<typename Tag::type>& get(
+constexpr const Deferred<::db::item_type<Tag>>& get(
     const TaggedDeferredTuple<Tags...>& t) noexcept;
 template <class Tag, class... Tags>
-constexpr Deferred<typename Tag::type>& get(
+constexpr Deferred<::db::item_type<Tag>>& get(
     TaggedDeferredTuple<Tags...>& t) noexcept;
 template <class Tag, class... Tags>
-constexpr const Deferred<typename Tag::type>&& get(
+constexpr const Deferred<::db::item_type<Tag>>&& get(
     const TaggedDeferredTuple<Tags...>&& t) noexcept;
 template <class Tag, class... Tags>
-constexpr Deferred<typename Tag::type>&& get(
+constexpr Deferred<::db::item_type<Tag>>&& get(
     TaggedDeferredTuple<Tags...>&& t) noexcept;
 
 // clang-tidy: does not define copy or move assignment operator, false positive
@@ -273,16 +273,16 @@ class TaggedDeferredTuple  // NOLINT
 
   // clang-tidy: redundant declaration
   template <class Tag, class... LTags>
-  friend constexpr const typename Tag::type& get(  // NOLINT
+  friend constexpr const Deferred<::db::item_type<Tag>>& get(  // NOLINT
       const TaggedDeferredTuple<LTags...>& t) noexcept;
   template <class Tag, class... LTags>
-  friend constexpr typename Tag::type& get(  // NOLINT
+  friend constexpr Deferred<::db::item_type<Tag>>& get(  // NOLINT
       TaggedDeferredTuple<LTags...>& t) noexcept;
   template <class Tag, class... LTags>
-  friend constexpr const typename Tag::type&& get(  // NOLINT
+  friend constexpr const Deferred<::db::item_type<Tag>>&& get(  // NOLINT
       const TaggedDeferredTuple<LTags...>&& t) noexcept;
   template <class Tag, class... LTags>
-  friend constexpr typename Tag::type&& get(  // NOLINT
+  friend constexpr Deferred<::db::item_type<Tag>>&& get(  // NOLINT
       TaggedDeferredTuple<LTags...>&& t) noexcept;
 
  public:
@@ -292,27 +292,6 @@ class TaggedDeferredTuple  // NOLINT
   void pup(PUP::er& p) {  // NOLINT
     static_cast<void>(std::initializer_list<char>{
         (tuples_detail::TaggedDeferredTupleLeaf<Tags>::pup(p), '0')...});
-  }
-
-  // Element access
-  template <typename Tag>
-  constexpr Deferred<item_type<Tag>>& get() noexcept {
-    static_assert(
-        cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
-                            TaggedDeferredTuple>,
-        "Could not retrieve Tag from DataBox. See the instantiation for "
-        "what Tag is being retrieved and what Tags are available.");
-    return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
-  }
-
-  template <typename Tag>
-  constexpr const Deferred<item_type<Tag>>& get() const noexcept {
-    static_assert(
-        cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
-                            TaggedDeferredTuple>,
-        "Could not retrieve Tag from DataBox. See the instantiation for "
-        "what Tag is being retrieved and what Tags are available.");
-    return tuples_detail::TaggedDeferredTupleLeaf<Tag>::get();
   }
 
   // C++17 Draft 23.5.3.1 Construction
@@ -448,7 +427,8 @@ class TaggedDeferredTuple  // NOLINT
     if (&t == this) {
       return *this;
     }
-    swallow((get<Tags>() = t.template get<Tags>())...);
+    swallow((::db::databox_detail::get<Tags>(*this) =
+                 ::db::databox_detail::get<Tags>(t))...);
     return *this;
   }
 
@@ -459,8 +439,9 @@ class TaggedDeferredTuple  // NOLINT
     if (&t == this) {
       return *this;
     }
-    swallow((get<Tags>() = std::forward<Deferred<item_type<Tags>>>(
-                 t.template get<Tags>()))...);
+    swallow((::db::databox_detail::get<Tags>(*this) =
+                 std::forward<Deferred<item_type<Tags>>>(
+                     ::db::databox_detail::get<Tags>(t)))...);
     return *this;
   }
 
@@ -500,27 +481,47 @@ class TaggedDeferredTuple<> {
 };
 
 template <class Tag, class... Tags>
-inline constexpr const Deferred<typename Tag::type>& get(
+inline constexpr const Deferred<::db::item_type<Tag>>& get(
     const TaggedDeferredTuple<Tags...>& t) noexcept {
+  static_assert(
+      cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
+                          TaggedDeferredTuple<Tags...>>,
+      "Could not retrieve Tag from DataBox. See the instantiation for "
+      "what Tag is being retrieved and what Tags are available.");
   return static_cast<const tuples_detail::TaggedDeferredTupleLeaf<Tag>&>(t)
       .get();
 }
 template <class Tag, class... Tags>
-inline constexpr Deferred<typename Tag::type>& get(
+inline constexpr Deferred<::db::item_type<Tag>>& get(
     TaggedDeferredTuple<Tags...>& t) noexcept {
+  static_assert(
+      cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
+                          TaggedDeferredTuple<Tags...>>,
+      "Could not retrieve Tag from DataBox. See the instantiation for "
+      "what Tag is being retrieved and what Tags are available.");
   return static_cast<tuples_detail::TaggedDeferredTupleLeaf<Tag>&>(t).get();
 }
 template <class Tag, class... Tags>
-inline constexpr const Deferred<typename Tag::type>&& get(
+inline constexpr const Deferred<::db::item_type<Tag>>&& get(
     const TaggedDeferredTuple<Tags...>&& t) noexcept {
-  return static_cast<const typename Tag::type&&>(
+  static_assert(
+      cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
+                          TaggedDeferredTuple<Tags...>>,
+      "Could not retrieve Tag from DataBox. See the instantiation for "
+      "what Tag is being retrieved and what Tags are available.");
+  return static_cast<const ::db::item_type<Tag>&&>(
       static_cast<const tuples_detail::TaggedDeferredTupleLeaf<Tag>&&>(t)
           .get());
 }
 template <class Tag, class... Tags>
-inline constexpr Deferred<typename Tag::type>&& get(
+inline constexpr Deferred<::db::item_type<Tag>>&& get(
     TaggedDeferredTuple<Tags...>&& t) noexcept {
-  return static_cast<typename Tag::type&&>(
+  static_assert(
+      cpp17::is_base_of_v<tuples_detail::TaggedDeferredTupleLeaf<Tag>,
+                          TaggedDeferredTuple<Tags...>>,
+      "Could not retrieve Tag from DataBox. See the instantiation for "
+      "what Tag is being retrieved and what Tags are available.");
+  return static_cast<::db::item_type<Tag>&&>(
       static_cast<tuples_detail::TaggedDeferredTupleLeaf<Tag>&&>(t).get());
 }
 
@@ -740,7 +741,7 @@ class DataBox<TagsList<Tags...>> {
                "list of the lambda or the constructor of a class, this "
                "restriction exists to avoid complexity.");
     }
-    return data_.template get<T>();
+    return ::db::databox_detail::get<T>(data_);
   }
   /// \endcond
 
@@ -815,12 +816,13 @@ template <typename VariablesTag, typename... Ts, typename... Tags,
 SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     typelist<Ts...> /*meta*/) {
-  const auto helper = [lazy_function =
-                           data.template get<VariablesTag>()](auto tag) {
+  const auto helper = [lazy_function = ::db::databox_detail::get<VariablesTag>(
+                           data)](auto tag) {
     return get<decltype(tag)>(lazy_function.get());
   };
   static_cast<void>(std::initializer_list<char>{
-      (static_cast<void>(data.template get<Ts>() = make_deferred(helper, Ts{})),
+      (static_cast<void>(::db::databox_detail::get<Ts>(data) =
+                             make_deferred(helper, Ts{})),
        '0')...});
 }
 
@@ -838,10 +840,11 @@ SPECTRE_ALWAYS_INLINE constexpr void add_variables_item_tags_to_box(
     typelist<Ts...> /*meta*/) {
   const auto helper = [&data](auto tag_v) {
     using tag = decltype(tag_v);
-    auto& vars = get<tag>(data.template get<VariablesTag>().mutate());
-    data.template get<tag>() =
+    auto& vars =
+        get<tag>(::db::databox_detail::get<VariablesTag>(data).mutate());
+    ::db::databox_detail::get<tag>(data) =
         Deferred<db::item_type<tag>>(db::item_type<tag>{});
-    auto& var = data.template get<tag>().mutate();
+    auto& var = ::db::databox_detail::get<tag>(data).mutate();
     for (auto vars_it = vars.begin(), var_it = var.begin();
          vars_it != vars.end(); ++vars_it, ++var_it) {
       var_it->set_data_ref(
@@ -857,7 +860,7 @@ template <size_t ArgsIndex, typename Tag, typename... Tags, typename... Ts>
 SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
     std::tuple<Ts...>& tupull,
     databox_detail::TaggedDeferredTuple<Tags...>&
-        data) noexcept(noexcept(data.template get<Tag>() =
+        data) noexcept(noexcept(::db::databox_detail::get<Tag>(data) =
                                     Deferred<item_type<Tag>>(std::move(
                                         std::get<ArgsIndex>(tupull)))) and
                        noexcept(add_variables_item_tags_to_box<Tag>(
@@ -869,7 +872,7 @@ SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
       "functionally can trivially be added, however it is "
       "intentionally omitted because users of DataBox are not "
       "supposed to deal with Deferred.");
-  data.template get<Tag>() =
+  ::db::databox_detail::get<Tag>(data) =
       Deferred<item_type<Tag>>(std::move(std::get<ArgsIndex>(tupull)));
   // If `tag` holds a Variables then add the contained Tensor's
   add_variables_item_tags_to_box<Tag>(
@@ -884,9 +887,9 @@ SPECTRE_ALWAYS_INLINE constexpr void
 add_compute_item_to_box_impl(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept(
-        noexcept(data.template get<ComputeItem>() = make_deferred(
+        noexcept(::db::databox_detail::get<ComputeItem>(data) = make_deferred(
             ComputeItem::function,
-            data.template get<ComputeItemArgumentsTags>()...))) {
+            ::db::databox_detail::get<ComputeItemArgumentsTags>(data)...))) {
   // clang-format on
   static_assert(
       tmpl2::flat_all_v<
@@ -906,8 +909,9 @@ add_compute_item_to_box_impl(
       "ComputeItem itself. This is done to ensure no cyclic "
       "dependencies arise.");
 
-  data.template get<ComputeItem>() = make_deferred(
-      ComputeItem::function, data.template get<ComputeItemArgumentsTags>()...);
+  ::db::databox_detail::get<ComputeItem>(data) = make_deferred(
+      ComputeItem::function,
+      ::db::databox_detail::get<ComputeItemArgumentsTags>(data)...);
 }
 
 template <typename Tag, typename FullTagList, typename... Tags>
@@ -946,7 +950,7 @@ SPECTRE_ALWAYS_INLINE constexpr void merge_old_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<OldTags...> /*meta*/) {
   static_cast<void>(std::initializer_list<char>{
-      (static_cast<void>(data.template get<OldTags>() =
+      (static_cast<void>(::db::databox_detail::get<OldTags>(data) =
                              old_box.template get_lazy<OldTags>()),
        '0')...});
 }
@@ -972,8 +976,9 @@ template <typename ComputeItem, typename... Tags, typename... ComputeItemTags,
 SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemTags...> /*meta*/) {
-  data.template get<ComputeItem>() = make_deferred(
-      ComputeItem::function, data.template get<ComputeItemTags>()...);
+  ::db::databox_detail::get<ComputeItem>(data) =
+      make_deferred(ComputeItem::function,
+                    ::db::databox_detail::get<ComputeItemTags>(data)...);
   // If `tag` holds a Variables then add the contained Tensor's
   add_variables_compute_item_tags_to_box<ComputeItem>(
       data, typename select_if_variables<ComputeItem>::type{});
@@ -1056,7 +1061,7 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
         "passed to the mutate function.");
   }
   box.mutate_locked_box_ = true;
-  invokable(box.data_.template get<MutateTags>().mutate()...,
+  invokable(::db::databox_detail::get<MutateTags>(box.data_).mutate()...,
             std::forward<Args>(args)...);
   // For all the variable tags in the DataBox, check if one of their Tags is
   // being mutated and if so add it to the list of tags being mutated. Then,
@@ -1122,7 +1127,7 @@ inline const db::item_type<Tag>& DataBox<TagsList<Tags...>>::get_impl() const
              "list of the lambda or the constructor of a class, this "
              "restriction exists to avoid complexity.");
   }
-  return data_.template get<Tag>().get();
+  return ::db::databox_detail::get<Tag>(data_).get();
 }
 
 template <template <typename...> class TagsList, typename... Tags>
