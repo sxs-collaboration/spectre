@@ -34,15 +34,15 @@
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
-#define ASSERT(a, m)                                                \
-  do {                                                              \
-    if (!(a)) {                                                     \
-      std::ostringstream avoid_name_collisions_ASSERT;              \
-      /* clang-tidy: macro arg in parentheses */                    \
-      avoid_name_collisions_ASSERT << m; /* NOLINT */               \
-      abort_with_error_message(#a, __FILE__, __LINE__,              \
-                               avoid_name_collisions_ASSERT.str()); \
-    }                                                               \
+#define ASSERT(a, m)                                                        \
+  do {                                                                      \
+    if (!(a)) {                                                             \
+      std::ostringstream avoid_name_collisions_ASSERT;                      \
+      /* clang-tidy: macro arg in parentheses */                            \
+      avoid_name_collisions_ASSERT << m; /* NOLINT */                       \
+      abort_with_error_message(#a, __FILE__, __LINE__, __PRETTY_FUNCTION__, \
+                               avoid_name_collisions_ASSERT.str());         \
+    }                                                                       \
   } while (false)
 #else
 #define ASSERT(a, m)                                   \

@@ -99,7 +99,7 @@ class H5File {
    */
   template <
       typename ObjectType, typename... Args,
-      typename std::enable_if_t<(sizeof(ObjectType),
+      typename std::enable_if_t<((void)sizeof(ObjectType),
                                  Access_t == AccessType::ReadWrite)>* = nullptr>
   ObjectType& get(const std::string& path, Args&&... args);
 
@@ -134,7 +134,7 @@ class H5File {
  private:
   /// \cond HIDDEN_SYMBOLS
   template <typename ObjectType,
-            std::enable_if_t<(sizeof(ObjectType),
+            std::enable_if_t<((void)sizeof(ObjectType),
                               Access_t == AccessType::ReadWrite)>* = nullptr>
   ObjectType& convert_to_derived(
       std::unique_ptr<h5::Object>& current_object);  // NOLINT
@@ -161,7 +161,7 @@ class H5File {
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args,
-          typename std::enable_if_t<(sizeof(ObjectType),
+          typename std::enable_if_t<((void)sizeof(ObjectType),
                                      Access_t == AccessType::ReadWrite)>*>
 ObjectType& H5File<Access_t>::get(const std::string& path, Args&&... args) {
   // Ensure we call the const version of the get function to avoid infinite
@@ -242,7 +242,7 @@ ObjectType& H5File<Access_t>::insert(const std::string& path,
 /// \cond HIDDEN_SYMBOLS
 template <AccessType Access_t>
 template <typename ObjectType,
-          typename std::enable_if_t<(sizeof(ObjectType),
+          typename std::enable_if_t<((void)sizeof(ObjectType),
                                      Access_t == AccessType::ReadWrite)>*>
 ObjectType& H5File<Access_t>::convert_to_derived(
     std::unique_ptr<h5::Object>& current_object) {
