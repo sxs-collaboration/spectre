@@ -47,6 +47,10 @@ void test_1d() {
 
   // Test serialization:
   test_serialization(custom2);
+
+  // Test inverse:
+  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(custom2.inverse_map() == custom2);
 }
 
 void test_2d() {
@@ -156,6 +160,16 @@ void test_2d() {
 
   // Test serialization:
   test_serialization(rotated_copy);
+
+  // Test inverse:
+  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(Orientation<2>(std::array<Direction<2>, 2>{{Direction<2>::lower_eta(),
+                                                    Direction<2>::upper_xi()}})
+            .inverse_map() ==
+        Orientation<2>(std::array<Direction<2>, 2>{
+            {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}));
+  CHECK(custom1.inverse_map().inverse_map() == custom1);
+  CHECK(custom2.inverse_map().inverse_map() == custom2);
 }
 
 void test_3d() {
@@ -216,6 +230,18 @@ void test_3d() {
 
   // Test serialzation:
   test_serialization(custom2);
+
+  // Test inverse:
+  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(Orientation<3>(std::array<Direction<3>, 3>{{Direction<3>::lower_eta(),
+                                                    Direction<3>::lower_zeta(),
+                                                    Direction<3>::upper_xi()}})
+            .inverse_map() ==
+        Orientation<3>(std::array<Direction<3>, 3>{
+            {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
+             Direction<3>::lower_eta()}}));
+  CHECK(custom1.inverse_map().inverse_map() == custom1);
+  CHECK(custom2.inverse_map().inverse_map() == custom2);
 }
 
 }  // namespace

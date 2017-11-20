@@ -15,10 +15,10 @@
 
 /*!
  * \ingroup DomainCreators
- * \brief Allows one to construct a custom Orientation between two Blocks.
- *
- * \usage The user provides `2*VolumeDim` Directions, encoding
- * the correspondence between the directions in each block.
+ * \brief A mapping of the logical coordinate axes of a host to the logical
+ * coordinate axes of a neighbor of the host.
+ * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
+ * host, an `Orientation` will give the corresponding value in the neighbor.
  * \tparam VolumeDim the dimension of the blocks.
  */
 template <size_t VolumeDim>
@@ -57,6 +57,9 @@ class Orientation {
   /// The corresponding SegmentIds in the neighbor.
   std::array<SegmentId, VolumeDim> mapped(
       const std::array<SegmentId, VolumeDim>& segmentIds) const;
+
+  /// The corresponding Orientation of the host in the frame of the neighbor.
+  Orientation<VolumeDim> inverse_map() const noexcept;
 
   /// Serialization for Charm++
   void pup(PUP::er& p);  // NOLINT

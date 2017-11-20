@@ -54,6 +54,16 @@ std::array<SegmentId, VolumeDim> Orientation<VolumeDim>::mapped(
 }
 
 template <size_t VolumeDim>
+Orientation<VolumeDim> Orientation<VolumeDim>::inverse_map() const noexcept {
+  std::array<Direction<VolumeDim>, VolumeDim> result;
+  for (size_t i = 0; i < VolumeDim; i++) {
+    gsl::at(result, gsl::at(mapped_directions_, i).dimension()) =
+        Direction<VolumeDim>(i, gsl::at(mapped_directions_, i).side());
+  }
+  return Orientation<VolumeDim>{result};
+}
+
+template <size_t VolumeDim>
 void Orientation<VolumeDim>::pup(PUP::er& p) {
   p | mapped_directions_;
   p | is_aligned_;
