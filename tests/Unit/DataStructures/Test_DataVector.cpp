@@ -6,6 +6,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
@@ -392,8 +393,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   x = DataVector(num_pts, 2.);
   check_vectors(DataVector(num_pts, 0.82682181043180603), square(sin(x)));
   check_vectors(DataVector(num_pts, -0.072067555747765299), cube(cos(x)));
+}
 
-  // Test addition of arrays of DataVectors to arrays of doubles.
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math_array<DataVector>",
+                  "[Unit][DataStructures]") {
   const DataVector t1{0.0, 1.0, 2.0, 3.0};
   const DataVector t2{-0.1, -0.2, -0.3, -0.4};
   const DataVector t3{5.0, 4.0, 3.0, 2.0};
@@ -410,40 +413,46 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   const DataVector e11{-20.0, -20.0, -20.0, -20.0};
   const DataVector e12{-30.0, -30.0, -30.0, -30.0};
 
-  const std::array<double, 3> point{{10.0, 20.0, 30.0}};
-  std::array<DataVector, 3> points{{t1, t2, t3}};
-  const std::array<DataVector, 3> expected{{e1, e2, e3}};
-  const std::array<DataVector, 3> expected2{{e4, e5, e6}};
-  std::array<DataVector, 3> dvectors1{{t1, t2, t3}};
-  const std::array<DataVector, 3> dvectors2{{e1, e2, e3}};
-  const std::array<DataVector, 3> expected3{{e7, e8, e9}};
-  const std::array<DataVector, 3> expected4{{e10, e11, e12}};
-  CHECK(points + point == expected);
-  CHECK(point + points == expected);
-  CHECK(points - point == expected2);
-  CHECK(point - points == -expected2);
+  // Test +/- on array<DataVector> with array<double>
+  {
+    std::array<DataVector, 3> array_dvecs{{t1, t2, t3}};
+    const std::array<double, 3> array_doubles{{10.0, 20.0, 30.0}};
+    const std::array<DataVector, 3> expected1{{e1, e2, e3}};
+    const std::array<DataVector, 3> expected2{{e4, e5, e6}};
 
-  points += point;
-  CHECK(points == expected);
-  points -= point;
-  points -= point;
-  CHECK(points == expected2);
-
-  for (size_t i = 0; i < 3; i++) {
-    check_vectors(gsl::at((dvectors1 + dvectors2), i), gsl::at(expected3, i));
-    check_vectors(gsl::at((dvectors1 - dvectors2), i), gsl::at(expected4, i));
-  }
-  dvectors1 += dvectors2;
-  for (size_t i = 0; i < 3; i++) {
-    check_vectors(gsl::at(dvectors1, i), gsl::at(expected3, i));
-  }
-  dvectors1 -= dvectors2;
-  dvectors1 -= dvectors2;
-  for (size_t i = 0; i < 3; i++) {
-    check_vectors(gsl::at(dvectors1, i), gsl::at(expected4, i));
+    CHECK(array_dvecs + array_doubles == expected1);
+    CHECK(array_doubles + array_dvecs == expected1);
+    CHECK(array_dvecs - array_doubles == expected2);
+    CHECK(array_doubles - array_dvecs == -expected2);
+    array_dvecs += array_doubles;
+    CHECK(array_dvecs == expected1);
+    array_dvecs -= array_doubles;
+    array_dvecs -= array_doubles;
+    CHECK(array_dvecs == expected2);
   }
 
-  // Test calculation of magnitude of DataVector
+  // Test +/- on array<DataVector> with array<DataVector>
+  {
+    std::array<DataVector, 3> array0{{t1, t2, t3}};
+    const std::array<DataVector, 3> array1{{e1, e2, e3}};
+    const std::array<DataVector, 3> expected3{{e7, e8, e9}};
+    const std::array<DataVector, 3> expected4{{e10, e11, e12}};
+    for (size_t i = 0; i < 3; i++) {
+      check_vectors(gsl::at((array0 + array1), i), gsl::at(expected3, i));
+      check_vectors(gsl::at((array0 - array1), i), gsl::at(expected4, i));
+    }
+    array0 += array1;
+    for (size_t i = 0; i < 3; i++) {
+      check_vectors(gsl::at(array0, i), gsl::at(expected3, i));
+    }
+    array0 -= array1;
+    array0 -= array1;
+    for (size_t i = 0; i < 3; i++) {
+      check_vectors(gsl::at(array0, i), gsl::at(expected4, i));
+    }
+  }
+
+  // Test calculation of magnitude for array<DataVector>
   const std::array<DataVector, 1> d1{{DataVector{-2.5, 3.4}}};
   const DataVector expected_d1{2.5, 3.4};
   const auto magnitude_d1 = magnitude(d1);
