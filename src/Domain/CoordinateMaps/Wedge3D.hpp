@@ -222,7 +222,7 @@ class Wedge3D {
   inv_jacobian(const std::array<T, 3>& xi) const noexcept;
 
   // clang-tidy: google runtime references
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   friend bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept;

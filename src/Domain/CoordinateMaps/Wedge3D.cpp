@@ -297,11 +297,12 @@ Wedge3D::inv_jacobian(const std::array<T, 3>& xi) const noexcept {
   return determinant_and_inverse(jacobian(xi)).second;
 }
 
-void Wedge3D::pup(PUP::er& p) {
+void Wedge3D::pup(PUP::er& p) noexcept {
   p | radius_of_other_surface_;
   p | radius_of_spherical_surface_;
   p | direction_of_wedge_;
   p | sphericity_of_other_surface_;
+  p | with_equiangular_map_;
 }
 
 bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
@@ -309,7 +310,9 @@ bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
          lhs.radius_of_spherical_surface_ ==
              rhs.radius_of_spherical_surface_ and
          lhs.direction_of_wedge_ == rhs.direction_of_wedge_ and
-         lhs.sphericity_of_other_surface_ == rhs.sphericity_of_other_surface_;
+         lhs.sphericity_of_other_surface_ ==
+             rhs.sphericity_of_other_surface_ and
+         lhs.with_equiangular_map_ == rhs.with_equiangular_map_;
 }
 
 bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
