@@ -171,6 +171,223 @@ void check_vectors(const T1& t1, const T2& t2) {
 }
 }  // namespace
 
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
+                  "[Unit][DataStructures]") {
+  // Test min/max/abs
+  {
+    const DataVector val{1., 2., 3., -4., 8., 12., -14.};
+    CHECK(-14. == min(val));
+    CHECK(12. == max(val));
+    check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, abs(val));
+    check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, fabs(val));
+  }
+
+  constexpr size_t num_pts = 19;
+  DataVector one(num_pts, 1.0);
+  DataVector eight(num_pts, 8.0);
+  DataVector nine(num_pts, 9.0);
+  {
+    // Test unary minus
+    check_vectors(-nine, DataVector(num_pts, -9.0));
+
+    // Test expressions with one DataVector, one double
+    check_vectors(nine + 2.0, DataVector(num_pts, 11.0));
+    check_vectors(2.0 + nine, DataVector(num_pts, 11.0));
+    check_vectors(nine - 2.0, DataVector(num_pts, 7.0));
+    check_vectors(2.0 - nine, DataVector(num_pts, -7.0));
+    check_vectors(DataVector(num_pts, 81.0), 9.0 * nine);
+    check_vectors(DataVector(num_pts, 81.0), nine * 9.0);
+    check_vectors(DataVector(num_pts, 1.0), 9.0 / nine);
+    check_vectors(DataVector(num_pts, 1.0), nine / 9.0);
+
+    // Test expressions with two DataVectors
+    check_vectors(nine + nine, DataVector(num_pts, 18.0));
+    check_vectors(nine - eight, DataVector(num_pts, 1.0));
+    check_vectors(DataVector(num_pts, 81.0), nine * nine);
+    check_vectors(DataVector(num_pts, -1.0 / 9.0), -one / nine);
+
+    // Test more complex expressions
+    check_vectors(nine + (one * nine), DataVector(num_pts, 18.0));
+    check_vectors((one * nine) + nine, DataVector(num_pts, 18.0));
+    check_vectors(nine - (one * nine), DataVector(num_pts, 0.0));
+    check_vectors((one * nine) - nine, DataVector(num_pts, 0.0));
+    check_vectors(DataVector(num_pts, -8.0 / 9.0), -(nine - one) / nine);
+    check_vectors(DataVector(num_pts, 18.0), (one / 0.5) * nine);
+    check_vectors(DataVector(num_pts, 1.0), (one * 9.0) / nine);
+
+    check_vectors(DataVector(num_pts, 81.0), nine * (nine * one));
+    check_vectors(DataVector(num_pts, 81.0), (nine * nine) * one);
+    check_vectors(DataVector(num_pts, 1.0), nine / (one * 9.0));
+    check_vectors(DataVector(num_pts, 9.0), (one * nine) / one);
+
+    // Test powers
+    check_vectors(sqrt(nine), DataVector(num_pts, 3.0));
+    check_vectors(invsqrt(nine), DataVector(num_pts, 1.0 / 3.0));
+    check_vectors(cbrt(eight), DataVector(num_pts, 2.0));
+    check_vectors(invcbrt(eight), DataVector(num_pts, 0.5));
+    check_vectors(DataVector(num_pts, 81.0), pow(nine, 2));
+
+    check_vectors(DataVector(num_pts, 81.0), pow<2>(nine));
+    check_vectors(DataVector(num_pts, 81.0), pow<2>(nine * one));
+    check_vectors(DataVector(num_pts, 1.0 / 81.0),
+                  DataVector(num_pts, 1.0) / pow<2>(nine));
+
+    // Test exp/log
+    check_vectors(DataVector(num_pts, exp(9.0)), exp(nine));
+    check_vectors(DataVector(num_pts, exp2(9.0)), exp2(nine));
+    check_vectors(DataVector(num_pts, pow<9>(10.0)), DataVector(exp10(nine)));
+    check_vectors(DataVector(num_pts, log(9.0)), log(nine));
+    check_vectors(DataVector(num_pts, log2(9.0)), log2(nine));
+    check_vectors(DataVector(num_pts, log10(9.0)), log10(nine));
+
+    // Test trig and other special functions
+    DataVector point_nine(num_pts, 0.9);
+    check_vectors(DataVector(num_pts, sin(9.0)), sin(nine));
+    check_vectors(DataVector(num_pts, cos(9.0)), cos(nine));
+    check_vectors(DataVector(num_pts, tan(9.0)), tan(nine));
+    check_vectors(DataVector(num_pts, asin(0.9)), asin(point_nine));
+    check_vectors(DataVector(num_pts, acos(0.9)), acos(point_nine));
+    check_vectors(DataVector(num_pts, atan(0.9)), atan(point_nine));
+    check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
+                  atan2(point_nine, nine));
+    check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
+                  atan2(point_nine * one, nine));
+    check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
+                  atan2(point_nine, nine * one));
+    check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
+                  atan2(point_nine * one, nine * one));
+
+    check_vectors(DataVector(num_pts, sinh(9.0)), sinh(nine));
+    check_vectors(DataVector(num_pts, cosh(9.0)), cosh(nine));
+    check_vectors(DataVector(num_pts, tanh(9.0)), tanh(nine));
+    check_vectors(DataVector(num_pts, asinh(9.0)), asinh(nine));
+    check_vectors(DataVector(num_pts, acosh(9.0)), acosh(nine));
+    check_vectors(DataVector(num_pts, atanh(0.9)), atanh(point_nine));
+
+    check_vectors(DataVector(num_pts, erf(0.9)), erf(point_nine));
+    check_vectors(DataVector(num_pts, erfc(0.9)), erfc(point_nine));
+
+    check_vectors(step_function(DataVector{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0}),
+                  DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
+  }
+
+  // Test composition of constant expressions with DataVector math member
+  // functions
+  {
+    DataVector x(num_pts, 2.);
+    check_vectors(DataVector(num_pts, 0.82682181043180603), square(sin(x)));
+    check_vectors(DataVector(num_pts, -0.072067555747765299), cube(cos(x)));
+  }
+
+  // Test assignment
+  {
+    DataVector test_81(num_pts, -1.0);
+    test_81 = nine * nine;
+    check_vectors(DataVector(num_pts, 81.0), test_81);
+    CHECK(test_81.is_owning());
+  }
+
+  // Test assignment with various RHS's
+  {
+    DataVector test_assignment(num_pts, 7.0);
+    test_assignment += nine;
+    check_vectors(DataVector(num_pts, 16.0), test_assignment);
+    test_assignment += 3.0;
+    check_vectors(DataVector(num_pts, 19.0), test_assignment);
+    test_assignment += (nine * nine);
+    check_vectors(DataVector(num_pts, 100.0), test_assignment);
+
+    test_assignment = 7.0;
+    test_assignment -= nine;
+    check_vectors(DataVector(num_pts, -2.0), test_assignment);
+    test_assignment -= 3.0;
+    check_vectors(DataVector(num_pts, -5.0), test_assignment);
+    test_assignment -= nine * nine;
+    check_vectors(DataVector(num_pts, -86.0), test_assignment);
+
+    test_assignment = 2.0;
+    test_assignment *= 3.0;
+    check_vectors(DataVector(num_pts, 6.0), test_assignment);
+    test_assignment *= nine;
+    check_vectors(DataVector(num_pts, 54.0), test_assignment);
+    test_assignment = 1.0;
+    test_assignment *= nine * nine;
+    check_vectors(DataVector(num_pts, 81.0), test_assignment);
+
+    test_assignment = 2.0;
+    test_assignment /= 2.0;
+    check_vectors(DataVector(num_pts, 1.0), test_assignment);
+    test_assignment /= DataVector(num_pts, 0.5);
+    check_vectors(DataVector(num_pts, 2.0), test_assignment);
+    test_assignment /= (DataVector(num_pts, 2.0) * DataVector(num_pts, 3.0));
+    check_vectors(DataVector(num_pts, 1.0 / 3.0), test_assignment);
+  }
+
+  // Test assignment where the RHS is an expression that contains the LHS
+  {
+    DataVector x(num_pts, 4.);
+    x += sqrt(x);
+    check_vectors(DataVector(num_pts, 6.0), x);
+    x -= sqrt(x - 2.0);
+    check_vectors(DataVector(num_pts, 4.0), x);
+    x = sqrt(x);
+    check_vectors(DataVector(num_pts, 2.0), x);
+    x *= x;
+    check_vectors(DataVector(num_pts, 4.0), x);
+    x /= x;
+    check_vectors(DataVector(num_pts, 1.0), x);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math_Ref",
+                  "[Unit][DataStructures]") {
+  constexpr size_t num_pts = 19;
+  DataVector nine(num_pts, 9.0);
+  DataVector t(num_pts, -1.0);
+
+  // Test expressions with reference DataVectors
+  DataVector t_ref(t.data(), t.size());
+  t_ref = 0.0;
+  CHECK(t.is_owning());
+  CHECK_FALSE(t_ref.is_owning());
+  check_vectors(DataVector(num_pts, 0.0), t);
+  check_vectors(DataVector(num_pts, 0.0), t_ref);
+  t = 1.0;
+  CHECK(t.is_owning());
+  CHECK_FALSE(t_ref.is_owning());
+  check_vectors(DataVector(num_pts, 1.0), t);
+  check_vectors(DataVector(num_pts, 1.0), t_ref);
+  t_ref = nine * nine;
+  CHECK(t.is_owning());
+  CHECK_FALSE(t_ref.is_owning());
+  check_vectors(DataVector(num_pts, 81.0), t);
+  check_vectors(DataVector(num_pts, 81.0), t_ref);
+  t = nine + nine;
+  CHECK(t.is_owning());
+  CHECK_FALSE(t_ref.is_owning());
+  check_vectors(DataVector(num_pts, 18.0), t);
+  check_vectors(DataVector(num_pts, 18.0), t_ref);
+
+  DataVector t_refref(t_ref.data(), t_ref.size());
+  CHECK_FALSE(t_refref.is_owning());
+  check_vectors(DataVector(num_pts, 18.0), t_refref);
+  t_ref -= nine;
+  CHECK(t.is_owning());
+  CHECK_FALSE(t_ref.is_owning());
+  CHECK_FALSE(t_refref.is_owning());
+  check_vectors(DataVector(num_pts, 9.0), t);
+  check_vectors(DataVector(num_pts, 9.0), t_ref);
+  check_vectors(DataVector(num_pts, 9.0), t_refref);
+  t_refref = square(nine);
+  check_vectors(DataVector(num_pts, 81.0), t);
+  check_vectors(DataVector(num_pts, 81.0), t_ref);
+  check_vectors(DataVector(num_pts, 81.0), t_refref);
+  t = sqrt(t_ref);
+  check_vectors(DataVector(num_pts, 9.0), t);
+  check_vectors(DataVector(num_pts, 9.0), t_ref);
+  check_vectors(DataVector(num_pts, 9.0), t_refref);
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
                   "[Unit][DataStructures]") {
   const DataVector m0(10, 3.0);
@@ -211,189 +428,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
     check_vectors(a, DataVector(10, 27.0));
     check_vectors(b, DataVector(10, 12.0));
   }
-
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
-                  "[Unit][DataStructures]") {
-  constexpr size_t num_pts = 19;
-  DataVector val{1., 2., 3., -4., 8., 12., -14.};
-  DataVector nine(num_pts, 9.0);
-  DataVector one(num_pts, 1.0);
-
-  // Test unary minus
-  check_vectors(-nine, DataVector(num_pts, -9.0));
-
-  check_vectors(nine + 2.0, DataVector(num_pts, 11.0));
-  check_vectors(2.0 + nine, DataVector(num_pts, 11.0));
-  check_vectors(nine - 2.0, DataVector(num_pts, 7.0));
-  check_vectors(2.0 - nine, DataVector(num_pts, -7.0));
-  check_vectors(nine + nine, DataVector(num_pts, 18.0));
-  check_vectors(nine + (one * nine), DataVector(num_pts, 18.0));
-  check_vectors((one * nine) + nine, DataVector(num_pts, 18.0));
-  check_vectors(nine - DataVector(num_pts, 8.0), DataVector(num_pts, 1.0));
-  check_vectors(nine - (one * nine), DataVector(num_pts, 0.0));
-  check_vectors((one * nine) - nine, DataVector(num_pts, 0.0));
-
-  check_vectors(DataVector(num_pts, -1.0 / 9.0), -one / nine);
-  check_vectors(DataVector(num_pts, -8.0 / 9.0), -(nine - one) / nine);
-  check_vectors(DataVector(num_pts, 18.0), (one / 0.5) * nine);
-  check_vectors(DataVector(num_pts, 1.0), 9.0 / nine);
-  check_vectors(DataVector(num_pts, 1.0), (one * 9.0) / nine);
-
-  CHECK(-14 == min(val));
-  CHECK(12 == max(val));
-  check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, abs(val));
-  check_vectors(DataVector{1., 2., 3., 4., 8., 12., 14.}, fabs(val));
-
-  check_vectors(step_function(DataVector{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0}),
-                DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
-
-  check_vectors(DataVector(num_pts, 81.0), nine * nine);
-  check_vectors(DataVector(num_pts, 81.0), nine * (nine * one));
-  check_vectors(DataVector(num_pts, 81.0), (nine * nine) * one);
-  check_vectors(DataVector(num_pts, 81.0), 9.0 * nine);
-  check_vectors(DataVector(num_pts, 81.0), nine * 9.0);
-  check_vectors(DataVector(num_pts, 1.0), nine / 9.0);
-  check_vectors(DataVector(num_pts, 1.0), nine / (one * 9.0));
-  check_vectors(DataVector(num_pts, 9.0), (one * nine) / one);
-
-  check_vectors(sqrt(nine), DataVector(num_pts, 3.0));
-  check_vectors(invsqrt(nine), DataVector(num_pts, 1.0 / 3.0));
-  DataVector eight(num_pts, 8.0);
-  check_vectors(cbrt(eight), DataVector(num_pts, 2.0));
-  check_vectors(invcbrt(eight), DataVector(num_pts, 0.5));
-  check_vectors(DataVector(num_pts, 81.0), pow(nine, 2));
-
-  DataVector dummy(nine * nine * 1.0);
-  check_vectors(DataVector(num_pts, 81.0), dummy);
-  check_vectors(DataVector(num_pts, 81.0), pow<2>(nine));
-  check_vectors(DataVector(num_pts, 81.0), pow<2>(nine * one));
-  check_vectors(DataVector(num_pts, 1.0 / 81.0),
-                DataVector(num_pts, 1.0) / pow<2>(nine));
-
-  check_vectors(DataVector(num_pts, exp(9.0)), exp(nine));
-  check_vectors(DataVector(num_pts, exp2(9.0)), exp2(nine));
-  check_vectors(DataVector(num_pts, pow<9>(10.0)), DataVector(exp10(nine)));
-  check_vectors(DataVector(num_pts, log(9.0)), log(nine));
-  check_vectors(DataVector(num_pts, log2(9.0)), log2(nine));
-  check_vectors(DataVector(num_pts, log10(9.0)), log10(nine));
-
-  DataVector point_nine(num_pts, 0.9);
-  check_vectors(DataVector(num_pts, sin(9.0)), sin(nine));
-  check_vectors(DataVector(num_pts, cos(9.0)), cos(nine));
-  check_vectors(DataVector(num_pts, tan(9.0)), tan(nine));
-  check_vectors(DataVector(num_pts, asin(0.9)), asin(point_nine));
-  check_vectors(DataVector(num_pts, acos(0.9)), acos(point_nine));
-  check_vectors(DataVector(num_pts, atan(0.9)), atan(point_nine));
-  check_vectors(DataVector(num_pts, atan2(0.9, 9.0)), atan2(point_nine, nine));
-  check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
-                atan2(point_nine * one, nine));
-  check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
-                atan2(point_nine, nine * one));
-  check_vectors(DataVector(num_pts, atan2(0.9, 9.0)),
-                atan2(point_nine * one, nine * one));
-
-  check_vectors(DataVector(num_pts, sinh(9.0)), sinh(nine));
-  check_vectors(DataVector(num_pts, cosh(9.0)), cosh(nine));
-  check_vectors(DataVector(num_pts, tanh(9.0)), tanh(nine));
-  check_vectors(DataVector(num_pts, asinh(9.0)), asinh(nine));
-  check_vectors(DataVector(num_pts, acosh(9.0)), acosh(nine));
-  check_vectors(DataVector(num_pts, atanh(0.9)), atanh(point_nine));
-
-  check_vectors(DataVector(num_pts, erf(0.9)), erf(point_nine));
-  check_vectors(DataVector(num_pts, erfc(0.9)), erfc(point_nine));
-
-  // Test assignment
-  DataVector test_81(num_pts, -1.0);
-  test_81 = nine * nine;
-  check_vectors(DataVector(num_pts, 81.0), test_81);
-  CHECK(test_81.is_owning());
-  DataVector test_81_ref(test_81.data(), test_81.size());
-  test_81_ref = 0.0;
-  test_81 = 0.0;
-  test_81_ref = nine * nine;
-  check_vectors(DataVector(num_pts, 81.0), test_81);
-  CHECK(test_81.is_owning());
-  check_vectors(DataVector(num_pts, 81.0), test_81_ref);
-  CHECK_FALSE(test_81_ref.is_owning());
-  DataVector second_81(num_pts);
-  second_81 = test_81;
-  check_vectors(DataVector(num_pts, 81.0), second_81);
-  CHECK(second_81.is_owning());
-  test_81_ref = 0.0;
-  check_vectors(DataVector(num_pts, 0.0), test_81_ref);
-  test_81_ref = second_81;
-  check_vectors(DataVector(num_pts, 81.0), test_81_ref);
-  second_81 = 0.0;
-  test_81_ref.set_data_ref(&test_81);
-  second_81 = std::move(test_81_ref);
-  check_vectors(DataVector(num_pts, 81.0), second_81);
-  CHECK_FALSE(second_81.is_owning());
-  second_81 = 0.0;
-  check_vectors(DataVector(num_pts, 0.0), second_81);
-  test_81 = 81.0;
-  check_vectors(DataVector(num_pts, 81.0), second_81);
-  CHECK_FALSE(second_81.is_owning());
-
-  test_81 = 81.0;
-  DataVector test_081;
-  test_081.set_data_ref(&test_81);
-  check_vectors(DataVector(num_pts, 81.0), test_081);
-  CHECK_FALSE(test_081.is_owning());
-  test_081 = square(point_nine);
-  check_vectors(DataVector(num_pts, 0.81), test_081);
-  CHECK_FALSE(test_081.is_owning());
-
-  DataVector test_assignment(num_pts, 7.0);
-  test_assignment += nine;
-  check_vectors(DataVector(num_pts, 16.0), test_assignment);
-  test_assignment += 3.0;
-  check_vectors(DataVector(num_pts, 19.0), test_assignment);
-  test_assignment += (nine * nine);
-  check_vectors(DataVector(num_pts, 100.0), test_assignment);
-
-  test_assignment = 7.0;
-  test_assignment -= nine;
-  check_vectors(DataVector(num_pts, -2.0), test_assignment);
-  test_assignment -= 3.0;
-  check_vectors(DataVector(num_pts, -5.0), test_assignment);
-  test_assignment -= nine * nine;
-  check_vectors(DataVector(num_pts, -86.0), test_assignment);
-
-  test_assignment = 2.0;
-  test_assignment *= 3.0;
-  check_vectors(DataVector(num_pts, 6.0), test_assignment);
-  test_assignment *= nine;
-  check_vectors(DataVector(num_pts, 54.0), test_assignment);
-  test_assignment = 1.0;
-  test_assignment *= nine * nine;
-  check_vectors(DataVector(num_pts, 81.0), test_assignment);
-
-  test_assignment = 2.0;
-  test_assignment /= 2.0;
-  check_vectors(DataVector(num_pts, 1.0), test_assignment);
-  test_assignment /= DataVector(num_pts, 0.5);
-  check_vectors(DataVector(num_pts, 2.0), test_assignment);
-  test_assignment /= (DataVector(num_pts, 2.0) * DataVector(num_pts, 3.0));
-  check_vectors(DataVector(num_pts, 1.0 / 3.0), test_assignment);
-
-  // Test assignment where the RHS is an expression that contains the LHS
-  DataVector x(num_pts, 4.);
-  x += sqrt(x);
-  check_vectors(DataVector(num_pts, 6.0), x);
-  x -= sqrt(x - 2.0);
-  check_vectors(DataVector(num_pts, 4.0), x);
-  x = sqrt(x);
-  check_vectors(DataVector(num_pts, 2.0), x);
-  x *= x;
-  check_vectors(DataVector(num_pts, 4.0), x);
-  x /= x;
-  check_vectors(DataVector(num_pts, 1.0), x);
-
-  // Test composition of constant expressions with DataVector math member
-  // functions
-  x = DataVector(num_pts, 2.);
-  check_vectors(DataVector(num_pts, 0.82682181043180603), square(sin(x)));
-  check_vectors(DataVector(num_pts, -0.072067555747765299), cube(cos(x)));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math_array<DataVector>",
