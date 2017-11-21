@@ -8,11 +8,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-template <size_t Dim, typename Fr, typename DataType>
-tnsr::aa<DataType, Dim, Fr> compute_spacetime_metric(
-    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift,
-    const tnsr::ii<DataType, Dim, Fr>& spatial_metric) noexcept {
-  tnsr::aa<DataType, Dim, Fr> spacetime_metric{
+template <size_t Dim, typename Frame, typename DataType>
+tnsr::aa<DataType, Dim, Frame> compute_spacetime_metric(
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept {
+  tnsr::aa<DataType, Dim, Frame> spacetime_metric{
       make_with_value<DataType>(lapse.get(), 0.)};
 
   get<0, 0>(spacetime_metric) = -lapse.get() * lapse.get();

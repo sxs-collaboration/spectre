@@ -10,9 +10,45 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-void test_compute_spacetime_metric(const DataVector& structure) {
-  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift(0.),
-                                            make_spatial_metric(0.));
+void test_compute_1d_spacetime_metric(const DataVector &used_for_size) {
+  const size_t dim = 1;
+  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                            make_spatial_metric<dim>(0.));
+
+  CHECK(psi.get(0, 0) == approx(-9.0));
+  CHECK(psi.get(0, 1) == approx(0.0));
+  CHECK(psi.get(1, 1) == approx(1.0));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_spacetime_metric(make_lapse(used_for_size),
+                               make_shift<dim>(used_for_size),
+                               make_spatial_metric<dim>(used_for_size)),
+      psi);
+}
+
+void test_compute_2d_spacetime_metric(const DataVector &used_for_size) {
+  const size_t dim = 2;
+  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                            make_spatial_metric<dim>(0.));
+
+  CHECK(psi.get(0, 0) == approx(-5.0));
+  CHECK(psi.get(0, 1) == approx(2.0));
+  CHECK(psi.get(0, 2) == approx(4.0));
+  CHECK(psi.get(1, 1) == approx(1.0));
+  CHECK(psi.get(1, 2) == approx(2.0));
+  CHECK(psi.get(2, 2) == approx(4.0));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_spacetime_metric(make_lapse(used_for_size),
+                               make_shift<dim>(used_for_size),
+                               make_spatial_metric<dim>(used_for_size)),
+      psi);
+}
+
+void test_compute_3d_spacetime_metric(const DataVector &used_for_size) {
+  const size_t dim = 3;
+  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                            make_spatial_metric<dim>(0.));
   CHECK(psi.get(0, 0) == approx(55.));
   CHECK(psi.get(0, 1) == approx(8.));
   CHECK(psi.get(0, 2) == approx(16.));
@@ -25,9 +61,9 @@ void test_compute_spacetime_metric(const DataVector& structure) {
   CHECK(psi.get(3, 3) == approx(9.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_metric(make_lapse(structure),
-                               make_shift(structure),
-                               make_spatial_metric(structure)),
+      compute_spacetime_metric(make_lapse(used_for_size),
+                               make_shift<dim>(used_for_size),
+                               make_spatial_metric<dim>(used_for_size)),
       psi);
 }
 }  // namespace
@@ -35,5 +71,7 @@ void test_compute_spacetime_metric(const DataVector& structure) {
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GrFunctions.SpacetimeDecomp",
                   "[PointwiseFunctions][Unit]") {
   const DataVector dv(2);
-  test_compute_spacetime_metric(dv);
+  test_compute_1d_spacetime_metric(dv);
+  test_compute_2d_spacetime_metric(dv);
+  test_compute_3d_spacetime_metric(dv);
 }

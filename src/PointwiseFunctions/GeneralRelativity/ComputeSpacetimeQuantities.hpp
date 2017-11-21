@@ -21,7 +21,8 @@
 * where \f$ N, N^i\f$ and \f$ g_{ij}\f$ are the lapse, shift and spatial metric
 * respectively
 */
-template <size_t Dim, typename Fr, typename DataType>
-tnsr::aa<DataType, Dim, Fr> compute_spacetime_metric(
-    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift,
-    const tnsr::ii<DataType, Dim, Fr>& spatial_metric) noexcept;
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::aa<DataType, SpatialDim, Frame> compute_spacetime_metric(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept;
