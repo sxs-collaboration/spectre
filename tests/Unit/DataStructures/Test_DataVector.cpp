@@ -191,26 +191,26 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
     check_vectors(-nine, DataVector(num_pts, -9.0));
 
     // Test expressions with one DataVector, one double
-    check_vectors(nine + 2.0, DataVector(num_pts, 11.0));
-    check_vectors(2.0 + nine, DataVector(num_pts, 11.0));
-    check_vectors(nine - 2.0, DataVector(num_pts, 7.0));
-    check_vectors(2.0 - nine, DataVector(num_pts, -7.0));
+    check_vectors(DataVector(num_pts, 11.0), nine + 2.0);
+    check_vectors(DataVector(num_pts, 11.0), 2.0 + nine);
+    check_vectors(DataVector(num_pts, 7.0)), nine - 2.0;
+    check_vectors(DataVector(num_pts, -7.0), 2.0 - nine);
     check_vectors(DataVector(num_pts, 81.0), 9.0 * nine);
     check_vectors(DataVector(num_pts, 81.0), nine * 9.0);
     check_vectors(DataVector(num_pts, 1.0), 9.0 / nine);
     check_vectors(DataVector(num_pts, 1.0), nine / 9.0);
 
     // Test expressions with two DataVectors
-    check_vectors(nine + nine, DataVector(num_pts, 18.0));
-    check_vectors(nine - eight, DataVector(num_pts, 1.0));
+    check_vectors(DataVector(num_pts, 18.0), nine + nine);
+    check_vectors(DataVector(num_pts, 1.0), nine - eight;
     check_vectors(DataVector(num_pts, 81.0), nine * nine);
     check_vectors(DataVector(num_pts, -1.0 / 9.0), -one / nine);
 
     // Test more complex expressions
-    check_vectors(nine + (one * nine), DataVector(num_pts, 18.0));
-    check_vectors((one * nine) + nine, DataVector(num_pts, 18.0));
-    check_vectors(nine - (one * nine), DataVector(num_pts, 0.0));
-    check_vectors((one * nine) - nine, DataVector(num_pts, 0.0));
+    check_vectors(DataVector(num_pts, 18.0), nine + (one * nine));
+    check_vectors(DataVector(num_pts, 18.0), (one * nine) + nine);
+    check_vectors(DataVector(num_pts, 0.0)), nine - (one * nine);
+    check_vectors(DataVector(num_pts, 0.0)), (one * nine) - nine;
     check_vectors(DataVector(num_pts, -8.0 / 9.0), -(nine - one) / nine);
     check_vectors(DataVector(num_pts, 18.0), (one / 0.5) * nine);
     check_vectors(DataVector(num_pts, 1.0), (one * 9.0) / nine);
@@ -221,10 +221,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
     check_vectors(DataVector(num_pts, 9.0), (one * nine) / one);
 
     // Test powers
-    check_vectors(sqrt(nine), DataVector(num_pts, 3.0));
-    check_vectors(invsqrt(nine), DataVector(num_pts, 1.0 / 3.0));
-    check_vectors(cbrt(eight), DataVector(num_pts, 2.0));
-    check_vectors(invcbrt(eight), DataVector(num_pts, 0.5));
+    check_vectors(DataVector(num_pts, 3.0), sqrt(nine));
+    check_vectors(DataVector(num_pts, 1.0 / 3.0), invsqrt(nin));
+    check_vectors(DataVector(num_pts, 2.0), cbrt(eight));
+    check_vectors(DataVector(num_pts, 0.5), invcbrt(eight));
     check_vectors(DataVector(num_pts, 81.0), pow(nine, 2));
 
     check_vectors(DataVector(num_pts, 81.0), pow<2>(nine));
@@ -267,8 +267,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
     check_vectors(DataVector(num_pts, erf(0.9)), erf(point_nine));
     check_vectors(DataVector(num_pts, erfc(0.9)), erfc(point_nine));
 
-    check_vectors(step_function(DataVector{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0}),
-                  DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
+    check_vectors(DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0},
+                  step_function(DataVector{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0}));
   }
 
   // Test composition of constant expressions with DataVector math member
@@ -402,13 +402,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
     CHECK(a.is_owning());
     CHECK(b.size() == 10);
     CHECK(b.is_owning());
-    check_vectors(b, DataVector(10, 2.0));
+    check_vectors(DataVector(10, 2.0), b);
     b = m0 + m1;
     CHECK(a.size() == 0);  // NOLINT
-    check_vectors(b, DataVector(10, 12.0));
+    check_vectors(DataVector(10, 12.0), b);
     a = m0 * m1;
-    check_vectors(a, DataVector(10, 27.0));
-    check_vectors(b, DataVector(10, 12.0));
+    check_vectors(DataVector(10, 27.0), a);
+    check_vectors(DataVector(10, 12.0), b);
   }
 
   // Test math after a move constructor
@@ -420,13 +420,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
     CHECK(a.is_owning());
     CHECK(b.size() == 10);
     CHECK(b.is_owning());
-    check_vectors(b, DataVector(10, 2.0));
+    check_vectors(DataVector(10, 2.0), b);
     b = m0 + m1;
     CHECK(a.size() == 0);  // NOLINT
-    check_vectors(b, DataVector(10, 12.0));
+    check_vectors(DataVector(10, 12.0), b);
     a = m0 * m1;
-    check_vectors(a, DataVector(10, 27.0));
-    check_vectors(b, DataVector(10, 12.0));
+    check_vectors(DataVector(10, 27.0), a);
+    check_vectors(DataVector(10, 12.0), b);
   }
 }
 
