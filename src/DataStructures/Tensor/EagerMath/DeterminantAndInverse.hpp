@@ -33,7 +33,7 @@ struct DetAndInverseImpl<Symm, Index0, Index1, Requires<Index0::dim == 1>> {
   template <typename T>
   static determinant_inverse_pair<T, Symm, Index0, Index1> apply(
       const Tensor<T, Symm, typelist<Index0, Index1>>& tensor) {
-    const T& t00 = tensor.template get<0, 0>();
+    const T& t00 = get<0, 0>(tensor);
     // inv is non-const so that it can be moved into the std::pair:
     Tensor<T, Symm, inverse_indices<Index0, Index1>> inv{
         make_with_value<T>(t00, 1.0) / t00};
@@ -48,18 +48,18 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
       const Tensor<T, Symmetry<2, 1>, typelist<Index0, Index1>>& tensor) {
-    const T& t00 = tensor.template get<0, 0>();
-    const T& t01 = tensor.template get<0, 1>();
-    const T& t10 = tensor.template get<1, 0>();
-    const T& t11 = tensor.template get<1, 1>();
+    const T& t00 = get<0, 0>(tensor);
+    const T& t01 = get<0, 1>(tensor);
+    const T& t10 = get<1, 0>(tensor);
+    const T& t11 = get<1, 1>(tensor);
     // det is non-const so that it can be moved into the std::pair:
     Scalar<T> det{t00 * t11 - t01 * t10};
     const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>> inv{};
-    inv.template get<0, 0>() = t11 * one_over_det;
-    inv.template get<0, 1>() = -t01 * one_over_det;
-    inv.template get<1, 0>() = -t10 * one_over_det;
-    inv.template get<1, 1>() = t00 * one_over_det;
+    get<0, 0>(inv) = t11 * one_over_det;
+    get<0, 1>(inv) = -t01 * one_over_det;
+    get<1, 0>(inv) = -t10 * one_over_det;
+    get<1, 1>(inv) = t00 * one_over_det;
     return std::make_pair(std::move(det), std::move(inv));
   }
 };
@@ -70,16 +70,16 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
       const Tensor<T, Symmetry<1, 1>, typelist<Index0, Index0>>& tensor) {
-    const T& t00 = tensor.template get<0, 0>();
-    const T& t01 = tensor.template get<0, 1>();
-    const T& t11 = tensor.template get<1, 1>();
+    const T& t00 = get<0, 0>(tensor);
+    const T& t01 = get<0, 1>(tensor);
+    const T& t11 = get<1, 1>(tensor);
     // det is non-const so that it can be moved into the std::pair:
     Scalar<T> det{t00 * t11 - t01 * t01};
     const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>> inv{};
-    inv.template get<0, 0>() = t11 * one_over_det;
-    inv.template get<0, 1>() = -t01 * one_over_det;
-    inv.template get<1, 1>() = t00 * one_over_det;
+    get<0, 0>(inv) = t11 * one_over_det;
+    get<0, 1>(inv) = -t01 * one_over_det;
+    get<1, 1>(inv) = t00 * one_over_det;
     return std::make_pair(std::move(det), std::move(inv));
   }
 };
@@ -92,15 +92,15 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
       const Tensor<T, Symmetry<2, 1>, typelist<Index0, Index1>>& tensor) {
-    const T& t00 = tensor.template get<0, 0>();
-    const T& t01 = tensor.template get<0, 1>();
-    const T& t02 = tensor.template get<0, 2>();
-    const T& t10 = tensor.template get<1, 0>();
-    const T& t11 = tensor.template get<1, 1>();
-    const T& t12 = tensor.template get<1, 2>();
-    const T& t20 = tensor.template get<2, 0>();
-    const T& t21 = tensor.template get<2, 1>();
-    const T& t22 = tensor.template get<2, 2>();
+    const T& t00 = get<0, 0>(tensor);
+    const T& t01 = get<0, 1>(tensor);
+    const T& t02 = get<0, 2>(tensor);
+    const T& t10 = get<1, 0>(tensor);
+    const T& t11 = get<1, 1>(tensor);
+    const T& t12 = get<1, 2>(tensor);
+    const T& t20 = get<2, 0>(tensor);
+    const T& t21 = get<2, 1>(tensor);
+    const T& t22 = get<2, 2>(tensor);
     const T a = t11 * t22 - t12 * t21;
     const T b = t12 * t20 - t10 * t22;
     const T c = t10 * t21 - t11 * t20;
@@ -108,15 +108,15 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
     Scalar<T> det{t00 * a + t01 * b + t02 * c};
     const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>> inv{};
-    inv.template get<0, 0>() = a * one_over_det;
-    inv.template get<0, 1>() = (t21 * t02 - t22 * t01) * one_over_det;
-    inv.template get<0, 2>() = (t01 * t12 - t02 * t11) * one_over_det;
-    inv.template get<1, 0>() = b * one_over_det;
-    inv.template get<1, 1>() = (t22 * t00 - t20 * t02) * one_over_det;
-    inv.template get<1, 2>() = (t02 * t10 - t00 * t12) * one_over_det;
-    inv.template get<2, 0>() = c * one_over_det;
-    inv.template get<2, 1>() = (t20 * t01 - t21 * t00) * one_over_det;
-    inv.template get<2, 2>() = (t00 * t11 - t01 * t10) * one_over_det;
+    get<0, 0>(inv) = a * one_over_det;
+    get<0, 1>(inv) = (t21 * t02 - t22 * t01) * one_over_det;
+    get<0, 2>(inv) = (t01 * t12 - t02 * t11) * one_over_det;
+    get<1, 0>(inv) = b * one_over_det;
+    get<1, 1>(inv) = (t22 * t00 - t20 * t02) * one_over_det;
+    get<1, 2>(inv) = (t02 * t10 - t00 * t12) * one_over_det;
+    get<2, 0>(inv) = c * one_over_det;
+    get<2, 1>(inv) = (t20 * t01 - t21 * t00) * one_over_det;
+    get<2, 2>(inv) = (t00 * t11 - t01 * t10) * one_over_det;
     return std::make_pair(std::move(det), std::move(inv));
   }
 };
@@ -127,12 +127,12 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
       const Tensor<T, Symmetry<1, 1>, typelist<Index0, Index0>>& tensor) {
-    const T& t00 = tensor.template get<0, 0>();
-    const T& t01 = tensor.template get<0, 1>();
-    const T& t02 = tensor.template get<0, 2>();
-    const T& t11 = tensor.template get<1, 1>();
-    const T& t12 = tensor.template get<1, 2>();
-    const T& t22 = tensor.template get<2, 2>();
+    const T& t00 = get<0, 0>(tensor);
+    const T& t01 = get<0, 1>(tensor);
+    const T& t02 = get<0, 2>(tensor);
+    const T& t11 = get<1, 1>(tensor);
+    const T& t12 = get<1, 2>(tensor);
+    const T& t22 = get<2, 2>(tensor);
     const T a = t11 * t22 - t12 * t12;
     const T b = t12 * t02 - t01 * t22;
     const T c = t01 * t12 - t11 * t02;
@@ -140,12 +140,12 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
     Scalar<T> det{t00 * a + t01 * b + t02 * c};
     const T one_over_det = make_with_value<T>(det, 1.0) / det.get();
     Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>> inv{};
-    inv.template get<0, 0>() = (t11 * t22 - t12 * t12) * one_over_det;
-    inv.template get<0, 1>() = (t12 * t02 - t22 * t01) * one_over_det;
-    inv.template get<0, 2>() = (t01 * t12 - t02 * t11) * one_over_det;
-    inv.template get<1, 1>() = (t22 * t00 - t02 * t02) * one_over_det;
-    inv.template get<1, 2>() = (t02 * t01 - t00 * t12) * one_over_det;
-    inv.template get<2, 2>() = (t00 * t11 - t01 * t01) * one_over_det;
+    get<0, 0>(inv) = (t11 * t22 - t12 * t12) * one_over_det;
+    get<0, 1>(inv) = (t12 * t02 - t22 * t01) * one_over_det;
+    get<0, 2>(inv) = (t01 * t12 - t02 * t11) * one_over_det;
+    get<1, 1>(inv) = (t22 * t00 - t02 * t02) * one_over_det;
+    get<1, 2>(inv) = (t02 * t01 - t00 * t12) * one_over_det;
+    get<2, 2>(inv) = (t00 * t11 - t01 * t01) * one_over_det;
     return std::make_pair(std::move(det), std::move(inv));
   }
 };
@@ -172,40 +172,40 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
       const Tensor<T, Symmetry<2, 1>, typelist<Index0, Index1>>& tensor) {
-    const T& p00 = tensor.template get<0, 0>();
-    const T& p01 = tensor.template get<0, 1>();
-    const T& p10 = tensor.template get<1, 0>();
-    const T& p11 = tensor.template get<1, 1>();
-    const T& q00 = tensor.template get<0, 2>();
-    const T& q01 = tensor.template get<0, 3>();
-    const T& q10 = tensor.template get<1, 2>();
-    const T& q11 = tensor.template get<1, 3>();
-    const T& r00 = tensor.template get<2, 0>();
-    const T& r01 = tensor.template get<2, 1>();
-    const T& r10 = tensor.template get<3, 0>();
-    const T& r11 = tensor.template get<3, 1>();
-    const T& s00 = tensor.template get<2, 2>();
-    const T& s01 = tensor.template get<2, 3>();
-    const T& s10 = tensor.template get<3, 2>();
-    const T& s11 = tensor.template get<3, 3>();
+    const T& p00 = get<0, 0>(tensor);
+    const T& p01 = get<0, 1>(tensor);
+    const T& p10 = get<1, 0>(tensor);
+    const T& p11 = get<1, 1>(tensor);
+    const T& q00 = get<0, 2>(tensor);
+    const T& q01 = get<0, 3>(tensor);
+    const T& q10 = get<1, 2>(tensor);
+    const T& q11 = get<1, 3>(tensor);
+    const T& r00 = get<2, 0>(tensor);
+    const T& r01 = get<2, 1>(tensor);
+    const T& r10 = get<3, 0>(tensor);
+    const T& r11 = get<3, 1>(tensor);
+    const T& s00 = get<2, 2>(tensor);
+    const T& s01 = get<2, 3>(tensor);
+    const T& s10 = get<3, 2>(tensor);
+    const T& s11 = get<3, 3>(tensor);
 
     Tensor<T, Symmetry<2, 1>, inverse_indices<Index0, Index1>> inv{};
-    T& u00 = inv.template get<0, 0>();
-    T& u01 = inv.template get<0, 1>();
-    T& u10 = inv.template get<1, 0>();
-    T& u11 = inv.template get<1, 1>();
-    T& v00 = inv.template get<0, 2>();
-    T& v01 = inv.template get<0, 3>();
-    T& v10 = inv.template get<1, 2>();
-    T& v11 = inv.template get<1, 3>();
-    T& w00 = inv.template get<2, 0>();
-    T& w01 = inv.template get<2, 1>();
-    T& w10 = inv.template get<3, 0>();
-    T& w11 = inv.template get<3, 1>();
-    T& x00 = inv.template get<2, 2>();
-    T& x01 = inv.template get<2, 3>();
-    T& x10 = inv.template get<3, 2>();
-    T& x11 = inv.template get<3, 3>();
+    T& u00 = get<0, 0>(inv);
+    T& u01 = get<0, 1>(inv);
+    T& u10 = get<1, 0>(inv);
+    T& u11 = get<1, 1>(inv);
+    T& v00 = get<0, 2>(inv);
+    T& v01 = get<0, 3>(inv);
+    T& v10 = get<1, 2>(inv);
+    T& v11 = get<1, 3>(inv);
+    T& w00 = get<2, 0>(inv);
+    T& w01 = get<2, 1>(inv);
+    T& w10 = get<3, 0>(inv);
+    T& w11 = get<3, 1>(inv);
+    T& x00 = get<2, 2>(inv);
+    T& x01 = get<2, 3>(inv);
+    T& x10 = get<3, 2>(inv);
+    T& x11 = get<3, 3>(inv);
 
     const T det_p = p00 * p11 - p01 * p10;
     const T one_over_det_p = make_with_value<T>(det_p, 1.0) / det_p;
@@ -264,28 +264,28 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
       const Tensor<T, Symmetry<1, 1>, typelist<Index0, Index0>>& tensor) {
-    const T& p00 = tensor.template get<0, 0>();
-    const T& p01 = tensor.template get<0, 1>();
-    const T& p11 = tensor.template get<1, 1>();
-    const T& q00 = tensor.template get<0, 2>();
-    const T& q01 = tensor.template get<0, 3>();
-    const T& q10 = tensor.template get<1, 2>();
-    const T& q11 = tensor.template get<1, 3>();
-    const T& s00 = tensor.template get<2, 2>();
-    const T& s01 = tensor.template get<2, 3>();
-    const T& s11 = tensor.template get<3, 3>();
+    const T& p00 = get<0, 0>(tensor);
+    const T& p01 = get<0, 1>(tensor);
+    const T& p11 = get<1, 1>(tensor);
+    const T& q00 = get<0, 2>(tensor);
+    const T& q01 = get<0, 3>(tensor);
+    const T& q10 = get<1, 2>(tensor);
+    const T& q11 = get<1, 3>(tensor);
+    const T& s00 = get<2, 2>(tensor);
+    const T& s01 = get<2, 3>(tensor);
+    const T& s11 = get<3, 3>(tensor);
 
     Tensor<T, Symmetry<1, 1>, inverse_indices<Index0, Index0>> inv{};
-    T& u00 = inv.template get<0, 0>();
-    T& u01 = inv.template get<0, 1>();
-    T& u11 = inv.template get<1, 1>();
-    T& v00 = inv.template get<0, 2>();
-    T& v01 = inv.template get<0, 3>();
-    T& v10 = inv.template get<1, 2>();
-    T& v11 = inv.template get<1, 3>();
-    T& x00 = inv.template get<2, 2>();
-    T& x01 = inv.template get<2, 3>();
-    T& x11 = inv.template get<3, 3>();
+    T& u00 = get<0, 0>(inv);
+    T& u01 = get<0, 1>(inv);
+    T& u11 = get<1, 1>(inv);
+    T& v00 = get<0, 2>(inv);
+    T& v01 = get<0, 3>(inv);
+    T& v10 = get<1, 2>(inv);
+    T& v11 = get<1, 3>(inv);
+    T& x00 = get<2, 2>(inv);
+    T& x01 = get<2, 3>(inv);
+    T& x11 = get<3, 3>(inv);
 
     const T det_p = p00 * p11 - p01 * p01;
     const T one_over_det_p = make_with_value<T>(det_p, 1.0) / det_p;
@@ -326,7 +326,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
 }  // namespace determinant_and_inverse_detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Computes the determinant and inverse of a rank-2 Tensor.
  *
  * Computes the determinant and inverse together, because this leads to fewer

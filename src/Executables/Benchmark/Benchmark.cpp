@@ -68,12 +68,12 @@ namespace {
 template <size_t Dim>
 struct Kappa : db::DataBoxTag {
   using type = tnsr::abb<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "Kappa";
+  static constexpr db::DataBoxString label = "Kappa";
 };
 template <size_t Dim>
 struct Psi : db::DataBoxTag {
   using type = tnsr::aa<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString_t label = "Psi";
+  static constexpr db::DataBoxString label = "Psi";
 };
 
 static void bench_all_gradient(benchmark::State& state) {

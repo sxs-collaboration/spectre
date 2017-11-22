@@ -13,7 +13,7 @@
 #include "ErrorHandling/Assert.hpp"
 
 /*!
- * \ingroup Spectral
+ * \ingroup SpectralGroup
  * \brief
  * Iterates over spectral coefficients stored in SPHEREPACK format.
  *

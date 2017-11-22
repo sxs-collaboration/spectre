@@ -11,7 +11,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the mean value of a grid-function over a manifold.
  * \f$mean value = \int f dV / \int dV\f$
  *
@@ -30,7 +30,7 @@ double mean_value(const DataVector& f, const Index<Dim>& extents) {
 }
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * Compute the mean value of a grid-function on a boundary of a manifold.
  * \f$mean value = \int f dV / \int dV\f$
  *

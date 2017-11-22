@@ -12,7 +12,7 @@
 
 namespace Parallel {
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Abort the program with an error message.
 [[noreturn]] inline void abort(const std::string& message) {
   CkAbort(message.c_str());

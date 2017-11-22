@@ -9,7 +9,7 @@
 #include <string>
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Information about the version, date, host, git commit, and link time
  *
  * The information returned by this function is invaluable for identifying
@@ -19,25 +19,25 @@
 std::string info_from_build();
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Retrieve a string containing the current version of SpECTRE
  */
 std::string spectre_version();
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Returns major version
  */
 int spectre_major_version();
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Returns minor version
  */
 int spectre_minor_version();
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Returns patch version
  */
 int spectre_patch_version();

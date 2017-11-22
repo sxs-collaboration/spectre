@@ -23,7 +23,7 @@
 /// \endcond
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Macro useful for generating many explicit instantiations of function
  * or class templates
  *

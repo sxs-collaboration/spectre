@@ -28,7 +28,7 @@ template <typename T>
 constexpr bool is_fraction_v = is_fraction<T>::value;
 //@}
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Compute the continued fraction representation of a number
 ///
 /// The template argument may be a fraction type or a floating point
@@ -99,7 +99,7 @@ class ContinuedFraction {
   bool done_{false};
 };
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Sum a continued fraction
 ///
 /// \tparam Fraction the result type, which must be a fraction type
@@ -130,7 +130,7 @@ class ContinuedFractionSummer {
   Term_t prev_denominator_{1};
 };
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Find the fraction in the supplied interval with the
 /// smallest denominator
 ///

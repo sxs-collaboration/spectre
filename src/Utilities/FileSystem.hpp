@@ -10,7 +10,7 @@
 #include <vector>
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief A light-weight file system library based on POSIX.
  *
  * We use this library instead of a subprocess based library because OpenMPI
@@ -21,7 +21,7 @@
 namespace file_system {
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Wraps the dirname function to get the pathname of the parent directory
  *
  * See the opengroup documentation:
@@ -36,7 +36,7 @@ namespace file_system {
 std::string get_parent_path(const std::string& path);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Given a path to a file returns the file name
  *
  * \example
@@ -48,7 +48,7 @@ std::string get_parent_path(const std::string& path);
 std::string get_file_name(const std::string& file_path);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Get the absolute path, resolving symlinks
  *
  * \requires `rel_path` is a valid path on the filesystem
@@ -57,7 +57,7 @@ std::string get_file_name(const std::string& file_path);
 std::string get_absolute_path(const std::string& rel_path);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Creates a directory, including any parents that don't exist. If the
  * directory exists `create_directory` does nothing.
  *
@@ -73,7 +73,7 @@ void create_directory(const std::string& dir, double wait_time = 1,
                       size_t num_tries = 40);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Returns true if the directory exists
  *
  * \returns `true` if the directory exists
@@ -81,7 +81,7 @@ void create_directory(const std::string& dir, double wait_time = 1,
 bool check_if_dir_exists(const std::string& dir);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Returns true if the regular file or link to the regular file exists.
  *
  * \note See the stat(2) documentation, e.g. at
@@ -92,7 +92,7 @@ bool check_if_dir_exists(const std::string& dir);
 bool check_if_file_exists(const std::string& file);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Returns true if the path points to a regular file or a link to a
  * regular file.
  *
@@ -105,7 +105,7 @@ bool check_if_file_exists(const std::string& file);
 bool is_file(const std::string& path);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Returns the file size in bytes
  *
  * \requires `file` is a valid file on the filesystem
@@ -114,13 +114,13 @@ bool is_file(const std::string& path);
 size_t file_size(const std::string& file);
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Returns the current working directory, resolving symlinks
  */
 std::string cwd();
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Gets a list of files in a directory
  *
  * \returns vector of all files and directories inside `dir_name`
@@ -128,7 +128,7 @@ std::string cwd();
 std::vector<std::string> ls(const std::string& dir_name = "./");
 
 /*!
- * \ingroup FileSystem
+ * \ingroup FileSystemGroup
  * \brief Deletes a file or directory.
  *
  * \requires `path` be a valid path on the filesystem

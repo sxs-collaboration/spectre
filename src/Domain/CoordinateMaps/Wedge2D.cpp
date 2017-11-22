@@ -69,10 +69,10 @@ Wedge2D::jacobian(const std::array<T, 2>& xi) const noexcept {
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
       jacobian_matrix{};
 
-  auto &dxdxi = jacobian_matrix.template get<0, 0>(),
-       &dydeta = jacobian_matrix.template get<1, 1>(),
-       &dxdeta = jacobian_matrix.template get<0, 1>(),
-       &dydxi = jacobian_matrix.template get<1, 0>();
+  auto &dxdxi = get<0, 0>(jacobian_matrix),
+       &dydeta = get<1, 1>(jacobian_matrix),
+       &dxdeta = get<0, 1>(jacobian_matrix),
+       &dydxi = get<1, 0>(jacobian_matrix);
 
   dxdxi = -0.5 * inner_radius_ / sqrt(2.0) + 0.5 * outer_radius_ * cos(theta);
   dxdeta = -0.5 * (1 + xi[0]) * outer_radius_ * sin(theta) * M_PI_4;

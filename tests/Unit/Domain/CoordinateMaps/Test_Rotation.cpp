@@ -39,16 +39,16 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
   CHECK(half_pi_rotation_map.inverse(x2)[1] == approx(xi2[1]));
 
   const auto inv_jac = half_pi_rotation_map.inv_jacobian(xi2);
-  CHECK((inv_jac.template get<0, 0>()) == approx(0.0));
-  CHECK((inv_jac.template get<0, 1>()) == approx(1.0));
-  CHECK((inv_jac.template get<1, 0>()) == approx(-1.0));
-  CHECK((inv_jac.template get<1, 1>()) == approx(0.0));
+  CHECK((get<0, 0>(inv_jac)) == approx(0.0));
+  CHECK((get<0, 1>(inv_jac)) == approx(1.0));
+  CHECK((get<1, 0>(inv_jac)) == approx(-1.0));
+  CHECK((get<1, 1>(inv_jac)) == approx(0.0));
 
   const auto jac = half_pi_rotation_map.jacobian(xi2);
-  CHECK((jac.template get<0, 0>()) == approx(0.0));
-  CHECK((jac.template get<0, 1>()) == approx(-1.0));
-  CHECK((jac.template get<1, 0>()) == approx(1.0));
-  CHECK((jac.template get<1, 1>()) == approx(0.0));
+  CHECK((get<0, 0>(jac)) == approx(0.0));
+  CHECK((get<0, 1>(jac)) == approx(-1.0));
+  CHECK((get<1, 0>(jac)) == approx(1.0));
+  CHECK((get<1, 1>(jac)) == approx(0.0));
 
   // Check inequivalence operator
   CHECK_FALSE(half_pi_rotation_map != half_pi_rotation_map);

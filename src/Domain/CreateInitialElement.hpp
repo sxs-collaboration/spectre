@@ -16,7 +16,7 @@ class ElementId;
 /// \endcond
 
 /*!
- * \ingroup ComputationalDomain
+ * \ingroup ComputationalDomainGroup
  * \brief Creates an initial element of a Block.
  */
 template <size_t VolumeDim, typename TargetFrame>

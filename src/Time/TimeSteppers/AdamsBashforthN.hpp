@@ -40,19 +40,19 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
   struct TargetOrder {
     using type = size_t;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Target order of Adams-Bashforth method."};
     static type lower_bound() { return 1; }
     static type upper_bound() { return maximum_order; }
   };
   struct SelfStart {
     using type = bool;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "Start at first order and increase."};
     static type default_value() { return false; }
   };
   using options = tmpl::list<TargetOrder, SelfStart>;
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "An Adams-Bashforth Nth order time-stepper. The target order is the\n"
       "order of the method. If a self-starting approach is chosen then the\n"
       "method starts at first order and increases the step-size until the\n"

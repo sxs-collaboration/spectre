@@ -156,7 +156,7 @@ using has_edge = ::brigand::detail::has_edge_impl<Graph, S, D>;
 }  // namespace lazy
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Check if a digraph has an edge with source `S` and destination `D`
  *
  *

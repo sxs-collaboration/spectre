@@ -9,7 +9,7 @@
 #include <array>
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Returns the positive root of a quadratic equation ax^2 + bx + c = 0
  * \returns The positive root of a quadratic equation.
  * \requires That there are two real roots, of which only one is positive.
@@ -17,7 +17,7 @@
 double positive_root(double a, double b, double c);
 
 /*!
- * \ingroup NumericalAlgorithms
+ * \ingroup NumericalAlgorithmsGroup
  * \brief Returns the two real roots of a quadratic equation ax^2 + bx + c =
  * 0
  * \returns An array of the roots of a quadratic equation

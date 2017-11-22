@@ -18,7 +18,7 @@
 
 namespace vis {
 
-/// \ingroup HDF5
+/// \ingroup HDF5Group
 /// Writes out volume data as an HDF5 file and an XDMF file to be visualized in
 /// ParaView or VisIt
 class VolumeFile {

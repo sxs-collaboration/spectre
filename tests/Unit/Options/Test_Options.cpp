@@ -46,7 +46,7 @@ SPECTRE_TEST_CASE("Unit.Options.syntax_error", "[Unit][Options]") {
 namespace {
 struct Simple {
   using type = int;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 
@@ -96,7 +96,7 @@ namespace {
 /// [options_example_scalar_struct]
 struct Bounded {
   using type = int;
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
     "Option with bounds and a default value"};
   // These are optional
   static type default_value() { return 3; }
@@ -153,7 +153,7 @@ SPECTRE_TEST_CASE("Unit.Options.Bounded.above", "[Unit][Options]") {
 namespace {
 struct BadDefault {
   using type = int;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
   static type default_value() { return 3; }
   static type lower_bound() { return 4; }
 };
@@ -172,7 +172,7 @@ namespace {
 /// [options_example_vector_struct]
 struct Vector {
   using type = std::vector<int>;
-  static constexpr OptionString_t help = {"A vector with length limits"};
+  static constexpr OptionString help = {"A vector with length limits"};
   // These are optional
   static size_t lower_bound_on_size() { return 2; }
   static size_t upper_bound_on_size() { return 5; }
@@ -222,7 +222,7 @@ SPECTRE_TEST_CASE("Unit.Options.Vector.empty_too_short", "[Unit][Options]") {
 namespace {
 struct Array {
   using type = std::array<int, 3>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 
@@ -276,7 +276,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.missing", "[Unit][Options]") {
 namespace {
 struct ZeroArray {
   using type = std::array<int, 0>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 
@@ -289,7 +289,7 @@ SPECTRE_TEST_CASE("Unit.Options.ZeroArray.missing", "[Unit][Options]") {
 namespace {
 struct Map {
   using type = std::map<std::string, int>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 
@@ -332,7 +332,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
 namespace {
 struct UnorderedMap {
   using type = std::unordered_map<std::string, int>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 
@@ -383,27 +383,27 @@ struct create_from_yaml<Wrapped<T>> {
 namespace {
 struct WrapMap {
   using type = std::map<Wrapped<int>, Wrapped<std::string>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct WrapVector {
   using type = std::vector<Wrapped<int>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct WrapList {
   using type = std::list<Wrapped<int>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct WrapArray {
   using type = std::array<Wrapped<int>, 2>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct WrapPair {
   using type = std::pair<Wrapped<int>, Wrapped<std::string>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct WrapUnorderedMap {
   using type = std::unordered_map<Wrapped<int>, Wrapped<std::string>>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 
@@ -433,13 +433,13 @@ namespace {
 struct A {
   struct Duplicate {
     using type = int;
-    static constexpr OptionString_t help = {"halp"};
+    static constexpr OptionString help = {"halp"};
   };
 };
 struct B {
   struct Duplicate {
     using type = int;
-    static constexpr OptionString_t help = {"halp"};
+    static constexpr OptionString help = {"halp"};
   };
 };
 }  // namespace
@@ -456,15 +456,15 @@ struct B {
 namespace {
 struct TooooooooooooooooooooLong {
   using type = int;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct NoHelp {
   using type = int;
-  static constexpr OptionString_t help = {""};
+  static constexpr OptionString help = {""};
 };
 struct TooLongHelp {
   using type = int;
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
     "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
 }  // namespace
@@ -500,15 +500,15 @@ struct TooLongHelp {
 namespace {
 struct Apply1 {
   using type = int;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct Apply2 {
   using type = std::string;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 struct Apply3 {
   using type = std::vector<int>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 

@@ -12,7 +12,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Orientation.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// Information about the neighbor of a Block in a particular direction.
 ///
 /// \tparam VolumeDim the volume dimension.

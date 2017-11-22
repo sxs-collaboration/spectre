@@ -22,13 +22,13 @@
 #include "Utilities/TypeTraits.hpp"
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief A replacement for Catch's TEST_CASE that silences clang-tidy warnings
  */
 #define SPECTRE_TEST_CASE(m, n) TEST_CASE(m, n)  // NOLINT
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief A similar to Catch's REQUIRE statement, but can be used in tests that
  * spawn several chares with possibly complex interaction between the chares.
  */
@@ -41,7 +41,7 @@
   } while (false)
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief A similar to Catch's REQUIRE_FALSE statement, but can be used in tests
  * that spawn several chares with possibly complex interaction between the
  * chares.
@@ -55,7 +55,7 @@
   } while (false)
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Set a default tolerance for floating-point number comparison
  *
  * \details
@@ -73,7 +73,7 @@ static Approx approx = Approx::custom().epsilon(    // NOLINT
     std::numeric_limits<double>::epsilon() * 100);  // NOLINT
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief A wrapper around Catch's CHECK macro that checks approximate
  * equality of entries in iterable containers.  For maplike
  * containers, keys are checked for strict equality and values are
@@ -155,7 +155,7 @@ struct check_iterable_approx<
 /// \endcond
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Mark a test as checking a call to ERROR
  *
  * \details
@@ -173,7 +173,7 @@ struct check_iterable_approx<
   } while (false)
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Mark a test to be checking an ASSERT
  *
  * \details
@@ -206,7 +206,7 @@ struct check_iterable_approx<
 #endif
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Serializes and deserializes an object `t` of type `T`
  *
  * \example
@@ -339,7 +339,7 @@ void test_reverse_iterators(Container& c) {
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Function to test comparison operators.  Pass values with
  * less < greater.
  */
@@ -364,7 +364,7 @@ void check_cmp(const T& less, const T& greater) {
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Check a op b == c and also the op= version.
  */
 #define CHECK_OP(a, op, b, c)   \
@@ -379,7 +379,7 @@ void check_cmp(const T& less, const T& greater) {
   } while (false)
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Get the streamed output `c` as a `std::string`
  */
 template <typename Container>
@@ -390,7 +390,7 @@ std::string get_output(const Container& c) {
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Alternative to Catch's CAPTURE that prints more digits.
  */
 #define CAPTURE_PRECISE(variable)                                    \
@@ -398,7 +398,7 @@ std::string get_output(const Container& c) {
                        << (variable));
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Calculates the derivative of an Invocable at a point x - represented
  * by an array of doubles - in the domain of `map` with a sixth-order finite
  * difference method.

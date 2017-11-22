@@ -19,7 +19,7 @@ struct no_such_type;
 }  // namespace overloader_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Used for overloading lambdas, useful for lambda-SFINAE
  *
  * \snippet Utilities/Test_Overloader.cpp overloader_example
@@ -102,7 +102,7 @@ class Overloader<> {
 };
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Create `Overloader<Fs...>`, see Overloader for details
  */
 template <class... Fs>

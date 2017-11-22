@@ -10,6 +10,7 @@
 
 namespace GeneralizedHarmonic {
 
+/// \cond
 template <size_t Dim>
 void ComputeDuDt<Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
@@ -244,6 +245,7 @@ void ComputeDuDt<Dim>::apply(
     }
   }
 }
+/// \endcond
 }  // namespace GeneralizedHarmonic
 
 template struct GeneralizedHarmonic::ComputeDuDt<1>;

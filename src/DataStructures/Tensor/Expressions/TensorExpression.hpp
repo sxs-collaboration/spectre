@@ -12,7 +12,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  * \brief Represents the indices in a TensorExpression
  *
  * \details
@@ -32,20 +32,20 @@ struct TensorIndex {
   static constexpr value_type value = I;
 };
 
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// Given an `TensorIndex<size_t>` return `TensorIndex<size_t + 1>`
 /// \tparam T the args to increment
 template <typename T>
 using next_tensor_index = TensorIndex<T::value + 1>;
 
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// Metafunction to return the sum of two TensorIndex's
 template <typename A, typename B>
 using plus_tensor_index = TensorIndex<A::value + B::value>;
 
 // @{
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  * \brief The available TensorIndex's to use in a TensorExpression
  *
  * Available tensor indices to use in a Tensor Expression.
@@ -98,20 +98,20 @@ using ti_J_t = decltype(ti_J);
 // @}
 
 /// \cond HIDDEN_SYMBOLS
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// Type alias used when Tensor Expressions manipulate indices. These are used
 /// to denote contracted as opposed to free indices.
 template <int I>
 using ti_contracted_t = TensorIndex<static_cast<size_t>(I + 1000)>;
 
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 template <int I>
 TensorIndex<static_cast<size_t>(I + 1000)> ti_contracted();
 /// \endcond
 
 namespace tt {
 /*!
- * \ingroup TypeTraits TensorExpressions
+ * \ingroup TypeTraitsGroup TensorExpressions
  * \brief Check if a type `T` is a TensorIndex used in TensorExpressions
  */
 template <typename T>
@@ -129,7 +129,7 @@ struct rhs_elements_in_lhs_helper {
 };
 }  // namespace detail
 
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// Returns a list of all the elements in the typelist Rhs that are also in the
 /// typelist Lhs.
 ///
@@ -183,7 +183,7 @@ struct generate_transformation_impl {
 };
 }  // namespace detail
 
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// \brief Generate transformation to account for index order difference in RHS
 /// and LHS.
 ///
@@ -219,7 +219,7 @@ struct repeated_helper {
 }  // namespace detail
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  * Returns a list of all the types that occurred more than once in List.
  */
 template <typename List>
@@ -250,13 +250,13 @@ struct replace_indices_impl<List, tmpl::list<>, I> {
 }  // namespace detail
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  */
 template <typename List, typename ReplaceList>
 using replace_indices =
     typename detail::replace_indices_impl<List, ReplaceList, 0>::type;
 
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// \brief Marks a class as being a TensorExpression
 ///
 /// \details
@@ -273,7 +273,7 @@ class Tensor;
 /// \endcond
 
 // @{
-/// \ingroup TensorExpressions
+/// \ingroup TensorExpressionsGroup
 /// \brief The base class all tensor expression implementations derive from
 ///
 /// \tparam Derived the derived class needed for
@@ -337,7 +337,7 @@ struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>> {
 
   // @{
   /// \cond HIDDEN_SYMBOLS
-  /// \ingroup TensorExpressions
+  /// \ingroup TensorExpressionsGroup
   /// Helper struct to compute the correct tensor index array from a
   /// typelist of std::integral_constant's indicating the ordering. This is
   /// needed for dealing with expressions such as \f$T_{ab} = F_{ba}\f$ and gets

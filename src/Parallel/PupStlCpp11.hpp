@@ -19,7 +19,7 @@
 namespace PUP {
 
 // @{
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::array for Charm++
 template <typename T, std::size_t N,
           Requires<not std::is_arithmetic<T>::value> = nullptr>
@@ -34,14 +34,14 @@ inline void pup(PUP::er& p, std::array<T, N>& a) {  // NOLINT
 }
 // @}
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::array for Charm++
 template <typename T, std::size_t N>
 inline void operator|(er& p, std::array<T, N>& a) {  // NOLINT
   pup(p, a);
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::unordered_map for Charm++
 /// \warning This does not work with custom hash functions that have state
 template <typename K, typename V, typename H>
@@ -61,7 +61,7 @@ inline void pup(PUP::er& p, std::unordered_map<K, V, H>& m) {  // NOLINT
   }
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::unordered_map for Charm++
 /// \warning This does not work with custom hash functions that have state
 template <typename K, typename V, typename H>
@@ -69,7 +69,7 @@ inline void operator|(er& p, std::unordered_map<K, V, H>& m) {  // NOLINT
   pup(p, m);
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::unordered_set for Charm++
 template <typename T>
 inline void pup(PUP::er& p, std::unordered_set<T>& s) {  // NOLINT
@@ -91,14 +91,14 @@ inline void pup(PUP::er& p, std::unordered_set<T>& s) {  // NOLINT
   }
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::unordered_set for Charm++
 template <class T>
 inline void operator|(er& p, std::unordered_set<T>& s) {  // NOLINT
   pup(p, s);
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of enum for Charm++
 ///
 /// \note This requires a change to Charm++ to work
@@ -125,7 +125,7 @@ void pup_tuple_impl(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
   pup_tuple_impl<N - 1>(p, t);
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::tuple for Charm++
 template <typename... Args>
 inline void pup(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
@@ -135,7 +135,7 @@ inline void pup(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
   pup_tuple_impl<sizeof...(Args) - 1>(p, t);
 }
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of std::tuple for Charm++
 template <typename... Args>
 inline void operator|(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
@@ -143,7 +143,7 @@ inline void operator|(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
 }
 
 // @{
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of a unique_ptr for Charm++
 template <typename T,
           Requires<not std::is_base_of<PUP::able, T>::value> = nullptr>
@@ -177,7 +177,7 @@ inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
 }
 // @}
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// Serialization of a unique_ptr for Charm++
 template <typename T>
 inline void operator|(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT

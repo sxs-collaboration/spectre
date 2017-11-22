@@ -13,7 +13,7 @@
 
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Writes header info about the build, git commit, branch, etc.
  *
  * A Header object is used to store the ::info_from_build() result in the HDF5

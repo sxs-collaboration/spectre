@@ -21,7 +21,7 @@ template <size_t Dim, typename VariableTags, typename DerivativeTags>
 struct LogicalImpl;
 }  // namespace partial_derivatives_detail
 
-/// \ingroup NumericalAlgorithms
+/// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the logical coordinate.
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
@@ -31,7 +31,7 @@ auto logical_partial_derivatives(const Variables<VariableTags>& u,
       Dim, VariableTags, DerivativeTags>::apply(u, extents);
 }
 
-/// \ingroup NumericalAlgorithms
+/// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
 template <typename DerivativeTags, typename VariableTags, size_t Dim,

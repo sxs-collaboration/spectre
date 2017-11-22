@@ -14,12 +14,12 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Contains all metafunctions related to Tensor manipulations
 namespace TensorMetafunctions {
 namespace detail {
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * Compute the number of components and independent components for a given
  * Symmetry and TensorIndex list
  * \tparam Symmetry_t Symmetry of the Tensor
@@ -29,7 +29,7 @@ template <typename Symmetry_t, typename Indices_t, typename = std::nullptr_t>
 struct number_of_independent_components_impl;
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * Case where the Tensor is a scalar
  */
 template <>
@@ -39,7 +39,7 @@ struct number_of_independent_components_impl<tmpl::list<>, tmpl::list<>> {
 };
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * End recursion, only one index left. The component number is 1 (first
  * component) and the number of components and independent components is the
  * dimensionality of the first index
@@ -55,7 +55,7 @@ struct number_of_independent_components_impl<typelist<SymmetryValue>,
 
 /// \cond HIDDEN_SYMBOLS
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  *
  * General case for computing the number of (independent) components. The type
  * alias `next` computes the number of components with one fewer TensorIndex,
@@ -108,7 +108,7 @@ struct number_of_independent_components_impl<
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Compute the number of independent components for a given ::Symmetry
  * and \ref SpacetimeIndex "TensorIndexType" list
  * \tparam Symmetry_t Symmetry of the Tensor
@@ -120,7 +120,7 @@ using independent_components =
         Symmetry_t, Indices_t>::number_of_independent_components;
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Compute the number of components for a given ::Symmetry and \ref
  * SpacetimeIndex "TensorIndexType" list
  * \tparam Symmetry_t Symmetry of the Tensor
@@ -158,7 +158,7 @@ struct increment_tensor_index_impl<true> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Increment a tensor index
  *
  * \details
@@ -231,7 +231,7 @@ struct tensor_index_to_swap_impl<false> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  */
 template <typename Symm, typename TensorIndex, size_t Rank, size_t I,
           size_t Offset>
@@ -265,7 +265,7 @@ struct canonicalize_tensor_index_impl<true> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  */
 template <typename Symm, typename IndexList, typename TensorIndex>
 using canonicalize_tensor_index =
@@ -298,7 +298,7 @@ struct compute_collapsed_index_impl<true> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  *
  * \requires `is_a<typelist, IndexList>::%value` is true, `tt::is_a<typelist,
  * TensorIndex>::%value` is true, and `tmpl::all<TensorIndex,
@@ -333,7 +333,7 @@ struct update_collapsed_to_storage_using_canonical_tensor_index_impl<true> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \note Cannot use `std::conditional_t` because `typelist<>` will fail
  */
 template <typename IndexList, typename CanonicalTensorIndex,
@@ -347,7 +347,7 @@ using update_collapsed_to_storage_using_canonical_tensor_index =
                           CollapsedToStorageList, I, Count>;
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief given a `TensorIndex` checks if it is the canonical form, if so
  * returns `tmpl::plus<Count, tmpl::size_t<1>>` otherwise returns `Count`
  */
@@ -390,7 +390,7 @@ struct compute_collapsed_to_storage_impl<true> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Compute the collapse index to storage index ::typelist
  */
 template <typename IndexList, typename Symm, typename NumComps>
@@ -446,7 +446,7 @@ struct compute_storage_to_tensor_impl<2> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Compute a ::typelist holding the tensor index for each storage index
  */
 template <typename Symm, typename IndexList, typename CollapsedToStorageList,
@@ -496,7 +496,7 @@ struct compute_multiplicity_impl<true> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Compute ::typelist of the multiplicity of each storage index of a
  * Tensor
  *
@@ -554,7 +554,7 @@ struct check_index_symmetry_impl<2> {
 }  // namespace detail
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Check that each of symmetric indices is in the same frame and have the
  * same dimensionality.
  */
@@ -567,7 +567,7 @@ constexpr bool check_index_symmetry_v =
     check_index_symmetry<Symm, IndexList>::value;
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Add a spatial index to the from of a Tensor
  *
  * \tparam Tensor_t the tensor type to prepend
@@ -587,7 +587,7 @@ using prepend_spatial_index = Tensor<
                      SpatialIndex<VolumeDim, Ul, Fr>>>;
 
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Add a spacetime index to the from of a Tensor
  *
  * \tparam Tensor_t the tensor type to prepend

@@ -33,25 +33,25 @@ class PlaneWave {
  public:
   struct WaveVector {
     using type = std::array<double, Dim>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "The direction of propagation of the wave."};
   };
 
   struct Center {
     using type = std::array<double, Dim>;
-    static constexpr OptionString_t help = {
+    static constexpr OptionString help = {
         "The initial center of the profile of the wave."};
     static type default_value() { return make_array<Dim>(0.0); }
   };
 
   struct Profile {
     using type = std::unique_ptr<MathFunction<1>>;
-    static constexpr OptionString_t help = {"The profile of the wave."};
+    static constexpr OptionString help = {"The profile of the wave."};
   };
 
   using options = tmpl::list<WaveVector, Center, Profile>;
 
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "A plane wave solution of the Euclidean wave equation"};
 
   PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,

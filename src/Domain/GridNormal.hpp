@@ -17,7 +17,7 @@ template <size_t>
 class Index;
 
 /*!
- * \ingroup ComputationalDomain
+ * \ingroup ComputationalDomainGroup
  * \brief Compute the outward grid normal on a face of an Element
  *
  * \returns outward grid-frame one-form holding the normal

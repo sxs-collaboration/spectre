@@ -14,7 +14,7 @@
 #include "Utilities/Literals.hpp"
 
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief prints an error message to the standard error stream and aborts the
  * program.
  *
@@ -32,17 +32,18 @@
 // 20160415) can't figure out that the else branch and everything
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
-#define ERROR(m)                                                      \
-  do {                                                                \
-    std::ostringstream avoid_name_collisions_ERROR;                   \
-    /* clang-tidy: macro arg in parentheses */                        \
-    avoid_name_collisions_ERROR << m; /* NOLINT */                    \
-    abort_with_error_message(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
-                             avoid_name_collisions_ERROR.str());      \
+#define ERROR(m)                                                            \
+  do {                                                                      \
+    std::ostringstream avoid_name_collisions_ERROR;                         \
+    /* clang-tidy: macro arg in parentheses */                              \
+    avoid_name_collisions_ERROR << m; /* NOLINT */                          \
+    abort_with_error_message(__FILE__, __LINE__,                            \
+                             static_cast<const char*>(__PRETTY_FUNCTION__), \
+                             avoid_name_collisions_ERROR.str());            \
   } while (false)
 
 /*!
- * \ingroup ErrorHandling
+ * \ingroup ErrorHandlingGroup
  * \brief prints an error message to the standard error and aborts the
  * program.
  *

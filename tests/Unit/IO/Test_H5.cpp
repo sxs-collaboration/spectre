@@ -611,11 +611,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile2D", "[Unit][IO][H5]") {
   CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
   h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
   CHECK(extents == h5::read_extents<dim>(group.id(), "Extents"));
-  CHECK(grid_coords.get<0>() == h5::read_data(group.id(), "x-coord"));
-  CHECK(grid_coords.get<1>() == h5::read_data(group.id(), "y-coord"));
+  CHECK(get<0>(grid_coords) == h5::read_data(group.id(), "x-coord"));
+  CHECK(get<1>(grid_coords) == h5::read_data(group.id(), "y-coord"));
   CHECK(scalar.get() == h5::read_data(group.id(), "scalar"));
-  CHECK(vector.get<0>() == h5::read_data(group.id(), "vector_x"));
-  CHECK(vector.get<1>() == h5::read_data(group.id(), "vector_y"));
+  CHECK(get<0>(vector) == h5::read_data(group.id(), "vector_x"));
+  CHECK(get<1>(vector) == h5::read_data(group.id(), "vector_y"));
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }
 
@@ -654,12 +654,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile3D", "[Unit][IO][H5]") {
   CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
   h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
   CHECK(extents == h5::read_extents<dim>(group.id(), "Extents"));
-  CHECK(grid_coords.get<0>() == h5::read_data(group.id(), "x-coord"));
-  CHECK(grid_coords.get<1>() == h5::read_data(group.id(), "y-coord"));
-  CHECK(grid_coords.get<2>() == h5::read_data(group.id(), "z-coord"));
+  CHECK(get<0>(grid_coords) == h5::read_data(group.id(), "x-coord"));
+  CHECK(get<1>(grid_coords) == h5::read_data(group.id(), "y-coord"));
+  CHECK(get<2>(grid_coords) == h5::read_data(group.id(), "z-coord"));
   CHECK(scalar.get() == h5::read_data(group.id(), "scalar"));
-  CHECK(vector.get<0>() == h5::read_data(group.id(), "vector_x"));
-  CHECK(vector.get<1>() == h5::read_data(group.id(), "vector_y"));
-  CHECK(vector.get<2>() == h5::read_data(group.id(), "vector_z"));
+  CHECK(get<0>(vector) == h5::read_data(group.id(), "vector_x"));
+  CHECK(get<1>(vector) == h5::read_data(group.id(), "vector_y"));
+  CHECK(get<2>(vector) == h5::read_data(group.id(), "vector_z"));
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }

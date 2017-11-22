@@ -15,7 +15,7 @@
 namespace h5 {
 namespace detail {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Open an H5 group
  *
  * Opens a group recursively on creation and closes the groups when destructed.

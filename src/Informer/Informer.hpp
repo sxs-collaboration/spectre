@@ -8,7 +8,7 @@
 
 #include <charm++.h>
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// The Informer manages textual output regarding the status of a simulation.
 class Informer {
  public:

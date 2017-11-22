@@ -15,7 +15,7 @@ class er;
 }  // namespace PUP
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief A dynamically sized matrix.
  *
  * \note The data layout is column-major (0-based)

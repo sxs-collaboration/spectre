@@ -8,7 +8,7 @@
 
 #include "DataStructures/Index.hpp"
 
-/// \ingroup DataStructures
+/// \ingroup DataStructuresGroup
 /// IndexIterator iterates over a unique set of Index.
 ///
 /// \example

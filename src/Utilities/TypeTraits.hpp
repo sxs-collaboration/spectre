@@ -28,12 +28,12 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// C++ STL code present in C++17
 namespace cpp17 {
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Mark a return type as being "void". In C++17 void is a regular type
  * under certain circumstances, so this can be replaced by `void` then.
  *
@@ -42,7 +42,7 @@ namespace cpp17 {
  */
 struct void_type {};
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief A compile-time boolean
 ///
 /// \usage
@@ -57,7 +57,7 @@ template <bool B>
 using bool_constant = std::integral_constant<bool, B>;
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief A logical AND on the template parameters
 ///
 /// \details
@@ -105,7 +105,7 @@ constexpr bool conjunction_v = conjunction<B...>::value;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief A logical OR on the template parameters
 ///
 /// \details
@@ -152,7 +152,7 @@ template <class... B>
 constexpr bool disjunction_v = disjunction<B...>::value;
 // @}
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Negate a ::bool_constant
 ///
 /// \details
@@ -180,7 +180,7 @@ constexpr bool disjunction_v = disjunction<B...>::value;
 template <class B>
 struct negation : bool_constant<!B::value> {};
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Given a set of types, returns `void`
 ///
 /// \details
@@ -210,146 +210,146 @@ template <typename... Ts>
 using void_t = void;
 
 /*!
- * \ingroup TypeTraits
+ * \ingroup TypeTraitsGroup
  * \brief Variable template for is_same
  */
 template <typename T, typename U>
 constexpr bool is_same_v = std::is_same<T, U>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <typename T>
 constexpr bool is_lvalue_reference_v = std::is_lvalue_reference<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <typename T>
 constexpr bool is_rvalue_reference_v = std::is_rvalue_reference<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <typename T>
 constexpr bool is_reference_v = std::is_reference<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class... Args>
 using is_constructible_t = typename std::is_constructible<T, Args...>::type;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class... Args>
 constexpr bool is_constructible_v = std::is_constructible<T, Args...>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class... Args>
 constexpr bool is_trivially_constructible_v =
     std::is_trivially_constructible<T, Args...>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class... Args>
 constexpr bool is_nothrow_constructible_v =
     std::is_nothrow_constructible<T, Args...>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_default_constructible_v =
     std::is_default_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_trivially_default_constructible_v =
     std::is_trivially_default_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_nothrow_default_constructible_v =
     std::is_nothrow_default_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_copy_constructible_v = std::is_copy_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_trivially_copy_constructible_v =
     std::is_trivially_copy_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_nothrow_copy_constructible_v =
     std::is_nothrow_copy_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_move_constructible_v = std::is_move_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_trivially_move_constructible_v =
     std::is_trivially_move_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_nothrow_move_constructible_v =
     std::is_nothrow_move_constructible<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class U>
 constexpr bool is_assignable_v = std::is_assignable<T, U>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class U>
 constexpr bool is_trivially_assignable_v =
     std::is_trivially_assignable<T, U>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T, class U>
 constexpr bool is_nothrow_assignable_v =
     std::is_nothrow_assignable<T, U>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class From, class To>
 constexpr bool is_convertible_v = std::is_convertible<From, To>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_copy_assignable_v = std::is_copy_assignable<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_trivially_copy_assignable_v =
     std::is_trivially_copy_assignable<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_nothrow_copy_assignable_v =
     std::is_nothrow_copy_assignable<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_move_assignable_v = std::is_move_assignable<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_trivially_move_assignable_v =
     std::is_trivially_move_assignable<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_nothrow_move_assignable_v =
     std::is_nothrow_move_assignable<T>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class Base, class Derived>
 constexpr bool is_base_of_v = std::is_base_of<Base, Derived>::value;
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
 
 }  // namespace cpp17
 
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// A collection of useful type traits
 namespace tt {
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type T is a std::array
 ///
 /// \details
@@ -395,7 +395,7 @@ using is_std_array_t = typename is_std_array<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type T is a std::array of a given size
 ///
 /// \details
@@ -441,7 +441,7 @@ using is_std_array_of_size_t = typename is_std_array_of_size<N, T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` is a template specialization of `U`
 ///
 /// \requires `U` is a class template
@@ -487,7 +487,7 @@ using is_a_t = typename is_a<U, Args...>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type T has a begin() and end() function
 ///
 /// \details
@@ -535,7 +535,7 @@ using is_iterable_t = typename is_iterable<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type T has <, <=, >, >=, ==, !=
 ///
 /// \details
@@ -595,7 +595,7 @@ std::integral_constant<std::size_t, N> array_size_impl(
 }  // namespace TypeTraits_detail
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Get the size of a std::array as a std::integral_constant
 ///
 /// \details
@@ -627,7 +627,7 @@ using array_size =
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has operator== defined.
 ///
 /// \details
@@ -675,7 +675,7 @@ using has_equivalence_t = typename has_equivalence<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has operator!= defined.
 ///
 /// \details
@@ -723,7 +723,7 @@ using has_inequivalence_t = typename has_inequivalence<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if a type `T` is callable, i.e. `T(Args...)` is evaluable.
 ///
 /// \details
@@ -788,7 +788,7 @@ using is_callable_t = typename is_callable<T, Args...>::type;
 // @}
 
 /*!
- * \ingroup TypeTraits
+ * \ingroup TypeTraitsGroup
  * \brief Generate a type trait to check if a class has a member function that
  * can be invoked with arguments of type `TArgs...`
  *
@@ -830,7 +830,7 @@ using is_callable_t = typename is_callable<T, Args...>::type;
       typename is_##METHOD_NAME##_callable<T, Args...>::type;
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if std::hash and std::equal_to are defined for type T
 ///
 /// \details
@@ -878,7 +878,7 @@ using is_hashable_t = typename is_hashable<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` is like a std::map or std::unordored_map
 ///
 /// \details
@@ -932,7 +932,7 @@ using is_maplike_t = typename is_maplike<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has operator<<(`S`, `T`) defined.
 ///
 /// \details
@@ -984,7 +984,7 @@ using is_streamable_t = typename is_streamable<S, T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` is a std::string, or a C-style string
 ///
 /// \details
@@ -1035,7 +1035,7 @@ using is_string_like_t = typename is_string_like<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has a `get_clone()` member function
 ///
 /// \details
@@ -1094,7 +1094,7 @@ using has_get_clone_t = typename has_get_clone<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has a `clone()` member function
 ///
 /// \details
@@ -1148,7 +1148,7 @@ using has_clone_t = typename has_clone<T>::type;
 // @}
 
 // @{
-/// \ingroup TypeTraits
+/// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` has a `size()` member function
 ///
 /// \details
@@ -1195,7 +1195,7 @@ using has_size_t = typename has_size<T>::type;
 
 // @{
 /*!
- * \ingroup TypeTraits
+ * \ingroup TypeTraitsGroup
  * \brief Check if `I` is an integer type (non-bool, non-character), unlike
  * std::is_integral
  *
@@ -1247,7 +1247,7 @@ constexpr bool is_integer_v = is_integer<T>::value;
 
 // @{
 /*!
- * \ingroup TypeTraits
+ * \ingroup TypeTraitsGroup
  * \brief Gets the underlying type if the type is a std::reference_wrapper,
  * otherwise returns the type itself
  *

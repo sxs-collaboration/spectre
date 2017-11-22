@@ -72,44 +72,48 @@ matrix:
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CLANG_TIDY=true BUILD_TYPE=Release
+    env: RUN_CLANG_TIDY=true BUILD_TYPE=Release BUILD_CODE=true
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug
+    env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug BUILD_CODE=true
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CPPCHECK=true BUILD_TYPE=Release
+    env: RUN_CPPCHECK=true BUILD_TYPE=Release BUILD_CODE=true
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CPPCHECK=true BUILD_TYPE=Debug
+    env: RUN_CPPCHECK=true BUILD_TYPE=Debug BUILD_CODE=true
+    compiler: clang
+  - os: linux
+    dist: trusty
+    env: TEST_CHECK_FILES=true
     compiler: clang
     # Run full builds after static analysis
   - os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON
+    env: BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON BUILD_CODE=true
   - os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Release
+    env: BUILD_TYPE=Release BUILD_CODE=true
   - os: linux
     compiler: clang
     dist: trusty
-    env: BUILD_TYPE=Debug
+    env: BUILD_TYPE=Debug BUILD_CODE=true
   - os: linux
     compiler: clang
     dist: trusty
-    env: BUILD_TYPE=Release
+    env: BUILD_TYPE=Release BUILD_CODE=true
   - os: osx
-    env: BUILD_TYPE=Debug
+    env: BUILD_TYPE=Debug BUILD_CODE=true
     osx_image: xcode7.3
     compiler: clang
   - os: osx
     osx_image: xcode8.3
-    env: BUILD_TYPE=Release
+    env: BUILD_TYPE=Release BUILD_CODE=true
     compiler: clang
 
 
@@ -222,11 +226,14 @@ script:
 - export UPSTREAM_BRANCH="develop"
 - export GH_PAGES_REPO="git@github.com:sxs-collaboration/spectre.git"
 - export GH_PAGES_SOURCE_BRANCH="develop"
+- printenv
 - if [ "${CHECK_COMMITS}" == "true" ]; then
     ./tools/CheckCommits.sh;
   elif [ "${CHECK_FILES}" ==  "true" ]; then
     ./tools/CheckFiles.sh;
-  elif [ ${TRAVIS_OS_NAME} = linux ]; then
+  elif [ "${TEST_CHECK_FILES}" ==  "true" ]; then
+    ./tools/CheckFiles.sh --test;
+  elif [ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${BUILD_CODE}" == "true" ]; then
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
     && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
@@ -269,7 +276,7 @@ script:
     && docker cp ${CON}:/root/.sonar ${HOME}/
     && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
                  ${HOME}/docker/spectre;
-  else
+  elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "${BUILD_CODE}" == "true" ]; then
     cd $HOME
     && mkdir build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
     && cd ./build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
@@ -285,6 +292,9 @@ script:
     && make -j2
     && ctest --output-on-failure
     && ccache -s;
+  else
+    echo "Unknown build environment"
+    && exit -1;
   fi
 
 # After a successful build the results are pushed to codecov.io, which doesn't

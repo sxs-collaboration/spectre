@@ -13,11 +13,11 @@ namespace TestFactoryCreation_detail {
 template <typename T>
 struct Opt {
   using type = std::unique_ptr<T>;
-  static constexpr OptionString_t help = {"halp"};
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace TestFactoryCreation_detail
 
-/// \ingroup TestingFramework
+/// \ingroup TestingFrameworkGroup
 /// Construct a factory object from a given string.  Each line in the
 /// string must be indented.
 template <typename BaseClass>

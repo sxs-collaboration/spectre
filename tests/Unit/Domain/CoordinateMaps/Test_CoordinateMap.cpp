@@ -244,33 +244,31 @@ void test_coordinate_map_with_affine_map() {
         tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     const auto expected_mapped_point =
         tnsr::I<double, 2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}};
-    CHECK(expected_mapped_point.template get<0>() ==
-          approx(mapped_point.template get<0>()));
-    CHECK(expected_mapped_point.template get<1>() ==
-          approx(mapped_point.template get<1>()));
+    CHECK(get<0>(expected_mapped_point) == approx(get<0>(mapped_point)));
+    CHECK(get<1>(expected_mapped_point) == approx(get<1>(mapped_point)));
 
     const auto inv_mapped_point = prod_map2d.inverse(
         tnsr::I<double, 2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}});
     const auto expected_inv_mapped_point =
         tnsr::I<double, 2, Frame::Grid>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}};
-    CHECK(expected_inv_mapped_point.template get<0>() ==
-          approx(inv_mapped_point.template get<0>()));
-    CHECK(expected_inv_mapped_point.template get<1>() ==
-          approx(inv_mapped_point.template get<1>()));
+    CHECK(get<0>(expected_inv_mapped_point) ==
+          approx(get<0>(inv_mapped_point)));
+    CHECK(get<1>(expected_inv_mapped_point) ==
+          approx(get<1>(inv_mapped_point)));
 
     const auto inv_jac = prod_map2d.inv_jacobian(
         tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
-    CHECK(0.5 == approx(inv_jac.template get<0, 0>()));
-    CHECK(0.0 == approx(inv_jac.template get<1, 0>()));
-    CHECK(0.0 == approx(inv_jac.template get<0, 1>()));
-    CHECK(0.25 == approx(inv_jac.template get<1, 1>()));
+    CHECK(0.5 == approx(get<0, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<1, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<0, 1>(inv_jac)));
+    CHECK(0.25 == approx(get<1, 1>(inv_jac)));
 
     const auto jac = prod_map2d.jacobian(
         tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
-    CHECK(2.0 == approx(jac.template get<0, 0>()));
-    CHECK(0.0 == approx(jac.template get<1, 0>()));
-    CHECK(0.0 == approx(jac.template get<0, 1>()));
-    CHECK(4.0 == approx(jac.template get<1, 1>()));
+    CHECK(2.0 == approx(get<0, 0>(jac)));
+    CHECK(0.0 == approx(get<1, 0>(jac)));
+    CHECK(0.0 == approx(get<0, 1>(jac)));
+    CHECK(4.0 == approx(get<1, 1>(jac)));
   }
 
   // Test 3D
@@ -287,49 +285,46 @@ void test_coordinate_map_with_affine_map() {
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
     const auto expected_mapped_point = tnsr::I<double, 3, Frame::Grid>{
         {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}};
-    CHECK(expected_mapped_point.template get<0>() ==
-          approx(mapped_point.template get<0>()));
-    CHECK(expected_mapped_point.template get<1>() ==
-          approx(mapped_point.template get<1>()));
-    CHECK(expected_mapped_point.template get<2>() ==
-          approx(mapped_point.template get<2>()));
+    CHECK(get<0>(expected_mapped_point) == approx(get<0>(mapped_point)));
+    CHECK(get<1>(expected_mapped_point) == approx(get<1>(mapped_point)));
+    CHECK(get<2>(expected_mapped_point) == approx(get<2>(mapped_point)));
 
     const auto inv_mapped_point =
         prod_map3d.inverse(tnsr::I<double, 3, Frame::Grid>{
             {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}});
     const auto expected_inv_mapped_point = tnsr::I<double, 3, Frame::Grid>{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}};
-    CHECK(expected_inv_mapped_point.template get<0>() ==
-          approx(inv_mapped_point.template get<0>()));
-    CHECK(expected_inv_mapped_point.template get<1>() ==
-          approx(inv_mapped_point.template get<1>()));
-    CHECK(expected_inv_mapped_point.template get<2>() ==
-          approx(inv_mapped_point.template get<2>()));
+    CHECK(get<0>(expected_inv_mapped_point) ==
+          approx(get<0>(inv_mapped_point)));
+    CHECK(get<1>(expected_inv_mapped_point) ==
+          approx(get<1>(inv_mapped_point)));
+    CHECK(get<2>(expected_inv_mapped_point) ==
+          approx(get<2>(inv_mapped_point)));
 
     const auto inv_jac =
         prod_map3d.inv_jacobian(tnsr::I<double, 3, Frame::Logical>{
             {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
-    CHECK(0.5 == approx(inv_jac.template get<0, 0>()));
-    CHECK(0.0 == approx(inv_jac.template get<1, 0>()));
-    CHECK(0.0 == approx(inv_jac.template get<0, 1>()));
-    CHECK(0.25 == approx(inv_jac.template get<1, 1>()));
-    CHECK(0.0 == approx(inv_jac.template get<0, 2>()));
-    CHECK(0.0 == approx(inv_jac.template get<1, 2>()));
-    CHECK(0.0 == approx(inv_jac.template get<2, 0>()));
-    CHECK(0.0 == approx(inv_jac.template get<2, 1>()));
-    CHECK(0.1 == approx(inv_jac.template get<2, 2>()));
+    CHECK(0.5 == approx(get<0, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<1, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<0, 1>(inv_jac)));
+    CHECK(0.25 == approx(get<1, 1>(inv_jac)));
+    CHECK(0.0 == approx(get<0, 2>(inv_jac)));
+    CHECK(0.0 == approx(get<1, 2>(inv_jac)));
+    CHECK(0.0 == approx(get<2, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<2, 1>(inv_jac)));
+    CHECK(0.1 == approx(get<2, 2>(inv_jac)));
 
     const auto jac = prod_map3d.jacobian(tnsr::I<double, 3, Frame::Logical>{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
-    CHECK(2.0 == approx(jac.template get<0, 0>()));
-    CHECK(0.0 == approx(jac.template get<1, 0>()));
-    CHECK(0.0 == approx(jac.template get<0, 1>()));
-    CHECK(4.0 == approx(jac.template get<1, 1>()));
-    CHECK(0.0 == approx(jac.template get<0, 2>()));
-    CHECK(0.0 == approx(jac.template get<1, 2>()));
-    CHECK(0.0 == approx(jac.template get<2, 0>()));
-    CHECK(0.0 == approx(jac.template get<2, 1>()));
-    CHECK(10.0 == approx(jac.template get<2, 2>()));
+    CHECK(2.0 == approx(get<0, 0>(jac)));
+    CHECK(0.0 == approx(get<1, 0>(jac)));
+    CHECK(0.0 == approx(get<0, 1>(jac)));
+    CHECK(4.0 == approx(get<1, 1>(jac)));
+    CHECK(0.0 == approx(get<0, 2>(jac)));
+    CHECK(0.0 == approx(get<1, 2>(jac)));
+    CHECK(0.0 == approx(get<2, 0>(jac)));
+    CHECK(0.0 == approx(get<2, 1>(jac)));
+    CHECK(10.0 == approx(get<2, 2>(jac)));
   }
 }
 

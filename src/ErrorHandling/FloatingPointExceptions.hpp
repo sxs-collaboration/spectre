@@ -6,12 +6,12 @@
 
 #pragma once
 
-/// \ingroup ErrorHandling
+/// \ingroup ErrorHandlingGroup
 /// After a call to this function, the code will terminate with a floating
 /// point exception on overflow, divide-by-zero, and invalid operations.
 void enable_floating_point_exceptions();
 
-/// \ingroup ErrorHandling
+/// \ingroup ErrorHandlingGroup
 /// After a call to this function, the code will NOT terminate with a floating
 /// point exception on overflow, divide-by-zero, and invalid operations.
 void disable_floating_point_exceptions();

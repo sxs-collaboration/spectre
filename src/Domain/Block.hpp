@@ -16,7 +16,7 @@
 #include "Domain/Direction.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// A Block<VolumeDim> is a region of a VolumeDim-dimensional computational
 /// domain that defines the root node of a tree which is used to construct the
 /// Elements that cover a region of the computational domain.

@@ -15,7 +15,7 @@
 
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Used to store the version of the file
  *
  * A Version object should be stored inside each H5 object that is to represent

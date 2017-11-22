@@ -9,7 +9,7 @@
 #include "Utilities/TMPL.hpp"
 
 /*!
- * \ingroup Utilities TypeTraits
+ * \ingroup UtilitiesGroup TypeTraits
  * \brief Get compiler error with type of template parameter
  *
  * The compiler error generated when using an object of type
@@ -31,7 +31,7 @@ template <typename...>
 struct TypeDisplayer;
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Metafunction to turn a parameter pack into a typelist
  *
  * This metafunction is really only useful for debugging metaprograms. For

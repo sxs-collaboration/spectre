@@ -12,7 +12,7 @@
 #include "Utilities/Gsl.hpp"
 
 // @{
-/// \ingroup NumericalAlgorithms
+/// \ingroup NumericalAlgorithmsGroup
 /// \brief Function to compute transposed data.
 ///
 /// The primary use of this function is to rearrange the memory layout so that

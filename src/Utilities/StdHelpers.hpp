@@ -111,7 +111,7 @@ struct TuplePrinter<0> {
 }  // namespace StdHelpers_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::list
  */
 template <typename T>
@@ -121,7 +121,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::vector
  */
 template <typename T>
@@ -131,7 +131,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::deque
  */
 template <typename T>
@@ -141,7 +141,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::array
  */
 template <typename T, size_t N>
@@ -151,7 +151,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Stream operator for tuples
  */
 template <typename... Args>
@@ -164,7 +164,7 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output all the key, value pairs of a std::unordered_map
  */
 template <typename K, typename V, typename H>
@@ -180,7 +180,7 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output all the key, value pairs of a std::map
  */
 template <typename K, typename V, typename C>
@@ -194,7 +194,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::unordered_set
  */
 template <typename T>
@@ -205,7 +205,7 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::set
  */
 template <typename T, typename C>
@@ -215,7 +215,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Stream operator for std::unique_ptr
  */
 template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
@@ -224,7 +224,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Stream operator for std::shared_ptr
  */
 template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
@@ -233,7 +233,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Stream operator for std::pair
  */
 template <typename T, typename U>
@@ -242,7 +242,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Construct a string containing the keys of a std::unordered_map
  */
 template <typename K, typename V, typename H>
@@ -258,7 +258,7 @@ inline std::string keys_of(const std::unordered_map<K, V, H>& m) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Construct a string containing the keys of a std::map
  */
 template <typename K, typename V, typename C>
@@ -273,7 +273,7 @@ inline std::string keys_of(const std::map<K, V, C>& m) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Format a string like printf
  *
  * Given a formatting string and arguments this returns the corresponding
@@ -299,7 +299,7 @@ std::string formatted_string(const std::string& fmt, Args... args) {
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Get the current date and time
  */
 inline std::string current_date_and_time() {
@@ -385,7 +385,7 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept {
   return result;
 }
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Construct an array from an existing array omitting one element
 template <size_t ElementToRemove, typename T, size_t Dim>
 inline std::array<T, Dim - 1> all_but_specified_element_of(
@@ -402,7 +402,7 @@ inline std::array<T, Dim - 1> all_but_specified_element_of(
 }
 
 //@{
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Euclidean magnitude of the elements of the array.
 ///
 /// \details If T is a container the magnitude is computed separately for each

@@ -37,39 +37,39 @@
 #if defined(__clang__) || defined(__GNUC__)
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * The if statement is expected to evaluate true most of the time
  */
 #define LIKELY(x) __builtin_expect(!!(x), 1)
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * The if statement is expected to evaluate false most of the time
  */
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
 
 #else
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * The if statement is expected to evaluate true most of the time
  */
 #define LIKELY(x) (x)
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * The if statement is expected to evaluate false most of the time
  */
 #define UNLIKELY(x) (x)
 #endif
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Implementations from the Guideline Support Library
  */
 namespace gsl {
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Cast `u` to a type `T` where the cast may result in narrowing
  */
 template <class T, class U>
@@ -85,7 +85,7 @@ struct is_same_signedness
 }  // namespace gsl_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief A checked version of narrow_cast() that ERRORs if the cast changed
  * the value
  */
@@ -106,7 +106,7 @@ SPECTRE_ALWAYS_INLINE T narrow(U u) {
 
 // @{
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Retrieve a entry from a container, with checks in Debug mode that
  * the index being retrieved is valid.
  */
@@ -132,7 +132,7 @@ SPECTRE_ALWAYS_INLINE constexpr const T& at(std::initializer_list<T> cont,
 // @}
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Require a pointer to not be a `nullptr`
  *
  * Restricts a pointer or smart pointer to only hold non-null values.

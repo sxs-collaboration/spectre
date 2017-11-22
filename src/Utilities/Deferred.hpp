@@ -104,7 +104,7 @@ using get_type_from_deferred = typename get_type_from_deferred_impl<T>::type;
 }  // namespace Deferred_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Provides deferred or lazy evaluation of a function or function object,
  * as well as efficient storage of an object that is mutable.
  *
@@ -145,7 +145,7 @@ class Deferred {
 };
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Create a deferred function call object
  *
  * If creating a Deferred with a function object the call operator of the

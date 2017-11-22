@@ -29,7 +29,7 @@ struct type_for_get<std::unique_ptr<T, D>> {
 };
 }  // namespace ConstGlobalCache_detail
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// A Charm++ chare that caches constant data once per Charm++ node.
 ///
 /// Metavariables must define the following metavariables:
@@ -97,7 +97,7 @@ void ConstGlobalCache<Metavariables>::set_parallel_components(
 }
 
 // @{
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// \brief Access the Charm++ proxy associated with a ParallelComponent
 ///
 /// \requires ParallelComponentTag is a tag in component_list
@@ -122,7 +122,7 @@ get_parallel_component(const ConstGlobalCache<Metavariables>& cache) noexcept {
 // @}
 
 // @{
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// \brief Access data in the cache
 ///
 /// \requires ConstGlobalCacheTag is a tag in tag_list

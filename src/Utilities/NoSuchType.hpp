@@ -4,7 +4,7 @@
 #pragma once
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Used to mark "no type" or "bad state" for metaprogramming
  */
 struct NoSuchType {};

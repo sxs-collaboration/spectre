@@ -20,7 +20,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup DataStructures
+/// \ingroup DataStructuresGroup
 /// An integer multi-index.
 ///
 /// \tparam Dim the number of integers in the Index.

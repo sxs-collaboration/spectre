@@ -411,9 +411,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     CHECK(spatial_vector3.get(0) == 1);
     CHECK(spatial_vector3.get(1) == 8);
     CHECK(spatial_vector3.get(2) == 3);
-    CHECK(spatial_vector3.get<0>() == 1);
-    CHECK(spatial_vector3.get<1>() == 8);
-    CHECK(spatial_vector3.get<2>() == 3);
+    CHECK(get<0>(spatial_vector3) == 1);
+    CHECK(get<1>(spatial_vector3) == 8);
+    CHECK(get<2>(spatial_vector3) == 3);
   }
 
   {
@@ -428,9 +428,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     CHECK(spatial_vector3.get(0) == 1);
     CHECK(spatial_vector3.get(1) == 8);
     CHECK(spatial_vector3.get(2) == 3);
-    CHECK(spatial_vector3.get<0>() == 1);
-    CHECK(spatial_vector3.get<1>() == 8);
-    CHECK(spatial_vector3.get<2>() == 3);
+    CHECK(get<0>(spatial_vector3) == 1);
+    CHECK(get<1>(spatial_vector3) == 8);
+    CHECK(get<2>(spatial_vector3) == 3);
   }
 
   Tensor<double, Symmetry<3>,

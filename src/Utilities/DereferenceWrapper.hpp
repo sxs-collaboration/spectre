@@ -9,7 +9,7 @@
 #include <functional>
 #include <utility>
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Returns the reference object held by a reference wrapper, if a
 /// non-reference_wrapper type is passed in then the object is returned
 template <typename T>

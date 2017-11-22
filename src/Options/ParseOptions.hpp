@@ -29,7 +29,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup OptionParsing
+/// \ingroup OptionParsingGroup
 /// The type that options are passed around as.  Contains YAML node
 /// data and an OptionContext.
 class Option {
@@ -132,7 +132,7 @@ T Option::parse_as() const {
   }
 }
 
-/// \ingroup OptionParsing
+/// \ingroup OptionParsingGroup
 /// \brief Class that handles parsing an input file
 ///
 /// Options must be given YAML data to parse before output can be

@@ -16,7 +16,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Given a Map and a CoordinateMapBase, checks that the maps are equal by
  * downcasting `map_base` and then comparing to `map`. Returns false if the
  * downcast fails.
@@ -30,7 +30,7 @@ bool are_maps_equal(
   return map_derived == nullptr ? false : (*map_derived == map);
 }
 
-/// \ingroup TestingFramework
+/// \ingroup TestingFrameworkGroup
 /// \brief Given two coordinate maps (but not their types), check that the maps
 /// are equal by evaluating them at a random set of points.
 template <typename SourceFrame, typename TargetFrame, size_t VolumeDim>
@@ -52,7 +52,7 @@ void check_if_maps_are_equal(
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the jacobian gives expected results
  * when compared to the numerical derivative in each direction.
  */
@@ -72,7 +72,7 @@ void test_jacobian(const Map& map,
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse jacobian and jacobian
  * multiply together to produce the identity matrix
  */
@@ -105,7 +105,7 @@ void test_inv_jacobian(const Map& map,
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Checks that the CoordinateMap `map` functions as expected when used as
  * the template parameter to the `CoordinateMap` type.
  */
@@ -149,7 +149,7 @@ void test_coordinate_map_implementation(const Map& map) {
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Checks that the CoordinateMap `map` functions as expected when used
  * with different argument types.
  */
@@ -218,7 +218,7 @@ void test_coordinate_map_argument_types(
 }
 
 /*!
- * \ingroup TestingFramework
+ * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse map gives expected results
  */
 template <typename Map>

@@ -13,7 +13,7 @@ class er;
 }  // namespace PUP
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief Iterates over the 1-dimensional stripes with info on how to
  * iterate over the current stripe
  */

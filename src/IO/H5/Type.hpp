@@ -14,7 +14,7 @@
 
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Returns the HDF5 datatype for the corresponding type `T`
  *
  * \requires `T` is a valid type with a corresponding HDF5 datatype, i.e.

@@ -20,7 +20,7 @@ struct requires_impl<false> {};
 }  // namespace Requires_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Express requirements on the template parameters of a function or
  * class, replaces `std::enable_if_t`
  *

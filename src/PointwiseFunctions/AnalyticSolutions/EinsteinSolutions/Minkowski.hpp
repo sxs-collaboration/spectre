@@ -20,7 +20,7 @@ template <size_t Dim>
 class Minkowski {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString_t help{
+  static constexpr OptionString help{
       "Minkowski solution to Einstein's Equations"};
 
   Minkowski() = default;

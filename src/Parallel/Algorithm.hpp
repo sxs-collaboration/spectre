@@ -57,7 +57,7 @@ std::string get_template_parameters_as_string() {
 }  // namespace charmxx
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Lock a converse CmiNodeLock
  */
 inline void lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
@@ -73,7 +73,7 @@ constexpr inline void lock(
 /// \endcond
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Returns true if the lock was successfully acquired and false if the
  * lock is already acquired by another processor.
  */
@@ -85,7 +85,7 @@ inline bool try_lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
 }
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Unlock a converse CmiNodeLock
  */
 inline void unlock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
@@ -127,7 +127,7 @@ struct build_action_return_types_impl<true, tmpl::list<AdditionalArgs...>> {
 };
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief Returns a typelist of the return types of all Actions in ActionList
  *
  * \metareturns
@@ -237,7 +237,7 @@ class AlgorithmImpl;
 /// \endcond
 
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief A distributed object (Charm++ Chare) that executes a series of Actions
  * and is capable of sending and receiving data. Acts as an interface to
  * Charm++.

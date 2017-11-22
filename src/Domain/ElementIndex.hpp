@@ -46,7 +46,7 @@ template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& s,
                          const ElementIndex<VolumeDim>& index) noexcept;
 
-/// \ingroup Parallel
+/// \ingroup ParallelGroup
 /// A class for indexing a Charm array by Element.
 template <size_t VolumeDim>
 class ElementIndex {

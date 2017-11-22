@@ -11,7 +11,7 @@
 namespace TensorExpressions {
 
 /*!
- * \ingroup TensorExpressions
+ * \ingroup TensorExpressionsGroup
  *
  * @tparam T1
  * @tparam T2
@@ -68,7 +68,7 @@ struct Product<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>>
 }  // namespace TensorExpressions
 
 /*!
- * @ingroup TensorExpressions
+ * @ingroup TensorExpressionsGroup
  *
  * @tparam T1
  * @tparam T2

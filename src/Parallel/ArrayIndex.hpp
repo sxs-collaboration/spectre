@@ -8,7 +8,7 @@
 
 namespace Parallel {
 /*!
- * \ingroup Parallel
+ * \ingroup ParallelGroup
  * \brief The array index used for indexing Chare Arrays, mostly an
  * implementation detail
  *

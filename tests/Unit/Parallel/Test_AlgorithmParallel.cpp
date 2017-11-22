@@ -17,17 +17,17 @@ static constexpr int number_of_1d_array_elements = 14;
 
 namespace Tags {
 struct Int0 : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "Int0";
+  static constexpr db::DataBoxString label = "Int0";
   using type = int;
 };
 
 struct Int1 : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "Int1";
+  static constexpr db::DataBoxString label = "Int1";
   using type = int;
 };
 
 struct CountActionsCalled : db::DataBoxTag {
-  static constexpr db::DataBoxString_t label = "CountActionsCalled";
+  static constexpr db::DataBoxString label = "CountActionsCalled";
   using type = int;
 };
 

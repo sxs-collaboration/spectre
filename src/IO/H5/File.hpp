@@ -26,7 +26,7 @@
 
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Opens an HDF5 file for access and allows manipulation of data
  *
  * Opens an HDF5 file either in ReadOnly or ReadWrite mode depending on the

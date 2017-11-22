@@ -21,22 +21,22 @@ class Sinusoid : public MathFunction<1> {
  public:
   struct Amplitude {
     using type = double;
-    static constexpr OptionString_t help = {"The amplitude."};
+    static constexpr OptionString help = {"The amplitude."};
   };
 
   struct Wavenumber {
     using type = double;
-    static constexpr OptionString_t help = {"The wavenumber."};
+    static constexpr OptionString help = {"The wavenumber."};
   };
 
   struct Phase {
     using type = double;
-    static constexpr OptionString_t help = {"The phase shift."};
+    static constexpr OptionString help = {"The phase shift."};
     static type default_value() { return 0.; }
   };
   using options = tmpl::list<Amplitude, Wavenumber, Phase>;
 
-  static constexpr OptionString_t help = {
+  static constexpr OptionString help = {
       "Applies a Sinusoid function to the input value"};
 
   Sinusoid(double amplitude, double wavenumber, double phase) noexcept;

@@ -64,7 +64,7 @@ SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
 }
 // clang-format on
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Helper class to initialize a std::array.
  *
  * \tparam size the length of the array
@@ -78,7 +78,7 @@ make_array(T&& value) noexcept(noexcept(make_array(
 }
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Helper function to initialize a std::array with varying number of
  * arguments
  */
@@ -109,7 +109,7 @@ constexpr std::array<T, size> make_array_from_iterator_impl(
 }  // namespace MakeArray_detail
 
 /*!
- * \ingroup Utilities
+ * \ingroup UtilitiesGroup
  * \brief Create an `std::array<T, size>` from the first `size` values of `seq`
  *
  * \requires `Seq` has a `begin` function

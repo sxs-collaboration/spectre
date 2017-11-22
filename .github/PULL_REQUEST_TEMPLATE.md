@@ -34,6 +34,7 @@ At a high level, describe what this PR does.
 - [ ] Almost always `auto`, except with expression templates, i.e. `DataVector`
 - [ ] All commits for performance changes provide quantitative evidence and the tests used to obtain said evidence.
 - [ ] Make sure error messages are helpful, e.g. "The number of grid points in the matrix 'F' is not the same as the number of grid points in the determinant."
+- [ ] Prefix commits addressing PR requests with `fixup`
 
 
 ### Further comments

@@ -15,15 +15,13 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-/// \ingroup Tensor
+/// \ingroup TensorGroup
 /// Scalar type
 template <typename T>
 using Scalar = Tensor<T, Symmetry<>, index_list<>>;
 
-
-
 /*!
- * \ingroup Tensor
+ * \ingroup TensorGroup
  * \brief Type aliases to construct common Tensors
  *
  * Lower case letters represent covariant indices and upper case letters

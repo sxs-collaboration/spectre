@@ -17,7 +17,7 @@ class Matrix;
 
 namespace h5 {
 /*!
- * \ingroup HDF5
+ * \ingroup HDF5Group
  * \brief Represents a multicolumn dat file inside an HDF5 file
  *
  * A Dat object represents a dat file inside an H5File. A dat file is a

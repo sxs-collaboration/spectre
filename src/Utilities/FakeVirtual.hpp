@@ -12,7 +12,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Define a function that acts similarly to a virtual
 /// function, but can take template parameters.
 ///

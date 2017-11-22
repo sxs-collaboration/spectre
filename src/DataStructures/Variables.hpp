@@ -31,7 +31,7 @@ struct Variables : db::DataBoxTag {
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
   using type = ::Variables<TagsList>;
-  static constexpr db::DataBoxString_t label = "Variables";
+  static constexpr db::DataBoxString label = "Variables";
 };
 }  // namespace Tags
 
@@ -41,7 +41,7 @@ class Variables;
 /// \endcond
 
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief A Variables holds a contiguous memory block with Tensors pointing
  * into it
  */
@@ -297,7 +297,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 
 // {@
 /*!
- * \ingroup DataStructures
+ * \ingroup DataStructuresGroup
  * \brief Return Tag::type pointing into the contiguous array
  *
  * \tparam Tag the variable to return

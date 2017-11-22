@@ -11,7 +11,7 @@
 
 #include "Parallel/PupStlCpp11.hpp"
 
-/// \ingroup ComputationalDomain
+/// \ingroup ComputationalDomainGroup
 /// A label for the side of a manifold.
 ///
 /// Lower and Upper are with respect to the logical coordinate whose axis is

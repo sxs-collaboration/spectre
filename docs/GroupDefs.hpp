@@ -12,12 +12,12 @@
  */
 
 /*!
- * \defgroup BoundaryConditions Boundary Conditions
+ * \defgroup BoundaryConditionsGroup Boundary Conditions
  * A collection of boundary conditions used for evolutions.
  */
 
 /*!
- * \defgroup ComputationalDomain  Computational Domain
+ * \defgroup ComputationalDomainGroup  Computational Domain
  * \brief The building blocks used to describe the computational domain.
  *
  * ### Description
@@ -30,7 +30,7 @@
  */
 
 /*!
- * \defgroup ConstantExpressions Constant Expressions
+ * \defgroup ConstantExpressionsGroup Constant Expressions
  * \brief Contains an assortment of constexpr functions
  *
  * ### Description
@@ -54,17 +54,17 @@
  */
 
 /*!
- * \defgroup DataBoxTags DataBox Tags
+ * \defgroup DataBoxTagsGroup DataBox Tags
  * \brief Structures and metafunctions for labeling the contents of DataBoxes
  */
 
 /*!
- * \defgroup DataStructures Data Structures
+ * \defgroup DataStructuresGroup Data Structures
  * \brief Various useful data structures used in SpECTRE
  */
 
 /*!
- * \defgroup DiscontinuousGalerkin Discontinuous Galerkin
+ * \defgroup DiscontinuousGalerkinGroup Discontinuous Galerkin
  * \brief Functions and classes specific to the Discontinuous Galerkin
  * algorithm.
  */
@@ -81,17 +81,12 @@
  */
 
 /*!
- * \defgroup ErrorHandling Error Handling
+ * \defgroup ErrorHandlingGroup Error Handling
  * Macros and functions used for handling errors
  */
 
 /*!
- * \defgroup EvolveSystem Evolve System
- * \brief Classes and functions used for starting a simulation
- */
-
-/*!
- * \defgroup Executables Executables
+ * \defgroup ExecutablesGroup Executables
  * \brief A list of executables and how to use them
  *
  * <table class="doxtable">
@@ -106,7 +101,7 @@
  */
 
 /*!
- * \defgroup FileSystem File System
+ * \defgroup FileSystemGroup File System
  * \brief A light-weight file system library.
  */
 
@@ -116,42 +111,27 @@
  */
 
 /*!
- * \defgroup GlobalCache Global Cache
- * How to access and utilize the global cache
- */
-
-/*!
- * \defgroup CacheTags Global Cache Tags
+ * \defgroup CacheTagsGroup Global Cache Tags
  * \brief Tags for common data stored in the GlabalCache
  */
 
 /*!
- * \defgroup HDF5 HDF5
+ * \defgroup HDF5Group HDF5
  * \brief Functions and classes for manipulating HDF5 files
  */
 
 /*!
- * \defgroup InputOptions Input File Options
- * \brief Options for input files for different systems
- */
-
-/*!
- * \defgroup NumericalAlgorithms Numerical Algorithms
+ * \defgroup NumericalAlgorithmsGroup Numerical Algorithms
  * \brief Generic numerical algorithms
  */
 
 /*!
- * \defgroup NumericalFluxes Numerical Fluxes
- * A collection of numerical fluxes used by discontinuous Galerkin methods.
- */
-
-/*!
- * \defgroup OptionParsing Option Parsing
+ * \defgroup OptionParsingGroup Option Parsing
  * Things related to parsing YAML input files.
  */
 
 /*!
- * \defgroup Parallel Parallelization
+ * \defgroup ParallelGroup Parallelization
  * \brief Functions, classes and documentation related to parallelization and
  * Charm++
 
@@ -295,35 +275,22 @@ into two classes:
  */
 
 /*!
- * \defgroup PrettyType Pretty Type
+ * \defgroup PrettyTypeGroup Pretty Type
  * \brief Pretty printing of types
  */
 
 /*!
- * \defgroup Profiling Profiling
- * \brief Functions and variables useful for profiling SpECTRE
- *
- * See the \ref profiling_with_projections "Profiling With Charm++ Projections"
- * section of the dev guide for more details.
- */
-
-/*!
- * \defgroup SlopeLimiters Slope Limiters
- * A collection of slope limiters used for handling shocks.
- */
-
-/*!
- * \defgroup Spectral Spectral
+ * \defgroup SpectralGroup Spectral
  * Things related to spectral transformations.
  */
 
 /*!
- * \defgroup Tensor Tensor
+ * \defgroup TensorGroup Tensor
  * Tensor use documentation.
  */
 
 /*!
- * \defgroup TensorExpressions Tensor Expressions
+ * \defgroup TensorExpressionsGroup Tensor Expressions
  * Tensor Expressions allow writing expressions of
  * tensors in a way similar to what is used with pen and paper.
  *
@@ -337,12 +304,12 @@ into two classes:
  */
 
 /*!
- * \defgroup ParallelComponents ParallelComponents
+ * \defgroup ParallelComponentsGroup ParallelComponents
  * Information about which ParallelComponents are available and how to use them
  */
 
 /*!
- * \defgroup TestingFramework Testing Framework
+ * \defgroup TestingFrameworkGroup Testing Framework
  * \brief Classes, functions, macros, and instructions for developing tests
  *
  * \details
@@ -498,18 +465,12 @@ into two classes:
  */
 
 /*!
- * \defgroup TypeTraits Type Traits
+ * \defgroup TypeTraitsGroup Type Traits
  * A collection of useful type traits, including C++14 and C++17 additions to
  * the standard library.
  */
 
 /*!
- * \defgroup Utilities Utilities
+ * \defgroup UtilitiesGroup Utilities
  * \brief A collection of useful classes, functions and metafunctions.
- */
-
-/*!
- * \defgroup VariableFixers Variable Fixers
- * A collection of methods for correcting conservative variables that have
- * unphysical primitive variables.
  */

@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     const tnsr::i<DataVector, 1, Frame::Grid> one_d_covector{{{two}}};
     const tnsr::II<DataVector, 1, Frame::Grid> inv_h = [&four]() {
       tnsr::II<DataVector, 1, Frame::Grid> tensor;
-      tensor.template get<0, 0>() = four;
+      get<0, 0>(tensor) = four;
       return tensor;
     }();
 
@@ -100,12 +100,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     const tnsr::II<DataVector, 3, Frame::Grid> inv_g =
         [&two, &minus_three, &four, &minus_five, &twelve, &thirteen]() {
           tnsr::II<DataVector, 3, Frame::Grid> tensor;
-          tensor.get<0, 0>() = two;
-          tensor.get<0, 1>() = minus_three;
-          tensor.get<0, 2>() = four;
-          tensor.get<1, 1>() = minus_five;
-          tensor.get<1, 2>() = twelve;
-          tensor.get<2, 2>() = thirteen;
+          get<0, 0>(tensor) = two;
+          get<0, 1>(tensor) = minus_three;
+          get<0, 2>(tensor) = four;
+          get<1, 1>(tensor) = minus_five;
+          get<1, 2>(tensor) = twelve;
+          get<2, 2>(tensor) = thirteen;
           return tensor;
         }();
     const DataVector magnitude_three_d_covector =
@@ -120,7 +120,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     const tnsr::i<double, 1, Frame::Grid> one_d_covector{2};
     const tnsr::II<double, 1, Frame::Grid> inv_h = []() {
       tnsr::II<double, 1, Frame::Grid> tensor{};
-      tensor.template get<0, 0>() = 4.;
+      get<0, 0>(tensor) = 4.;
       return tensor;
     }();
 
@@ -129,12 +129,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     const tnsr::i<double, 3, Frame::Grid> three_d_covector{{{-3, 12, 4}}};
     const tnsr::II<double, 3, Frame::Grid> inv_g = []() {
       tnsr::II<double, 3, Frame::Grid> tensor{};
-      tensor.get<0, 0>() = 2;
-      tensor.get<0, 1>() = -3;
-      tensor.get<0, 2>() = 4;
-      tensor.get<1, 1>() = -5;
-      tensor.get<1, 2>() = 12;
-      tensor.get<2, 2>() = 13;
+      get<0, 0>(tensor) = 2;
+      get<0, 1>(tensor) = -3;
+      get<0, 2>(tensor) = 4;
+      get<1, 1>(tensor) = -5;
+      get<1, 2>(tensor) = 12;
+      get<2, 2>(tensor) = 13;
       return tensor;
     }();
     CHECK(magnitude(three_d_covector, inv_g) == sqrt(778.0));
