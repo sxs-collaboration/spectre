@@ -173,52 +173,44 @@ void check_vectors(const T1& t1, const T2& t2) {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
                   "[Unit][DataStructures]") {
-  DataVector m0(10, 3.0), m1(10, 9.0);
+  const DataVector m0(10, 3.0);
+  const DataVector m1(10, 9.0);
+  // Test math after a move assignment
   {
     DataVector a(10, 2.0);
     DataVector b{};
     b = std::move(a);
-    b = m0 + m1;
-    check_vectors(b, DataVector(10, 12.0));
     // clang-tidy: use after move (intentional here)
     CHECK(a.size() == 0);  // NOLINT
     CHECK(a.is_owning());
-    a = m0 * m1;
-    check_vectors(a, DataVector(10, 27.0));
-    check_vectors(b, DataVector(10, 12.0));
-  }
-
-  {
-    DataVector a(10, 2.0);
-    DataVector b{};
-    b = std::move(a);
-    a = m0 + m1;
-    check_vectors(b, DataVector(10, 2.0));
-    check_vectors(a, DataVector(10, 12.0));
-  }
-
-  {
-    DataVector a(10, 2.0);
-    DataVector b{std::move(a)};
-    b = m0 + m1;
     CHECK(b.size() == 10);
-    check_vectors(b, DataVector(10, 12.0));
-    // clang-tidy: use after move (intentional here)
+    CHECK(b.is_owning());
+    check_vectors(b, DataVector(10, 2.0));
+    b = m0 + m1;
     CHECK(a.size() == 0);  // NOLINT
-    CHECK(a.is_owning());
+    check_vectors(b, DataVector(10, 12.0));
     a = m0 * m1;
     check_vectors(a, DataVector(10, 27.0));
     check_vectors(b, DataVector(10, 12.0));
   }
 
+  // Test math after a move constructor
   {
     DataVector a(10, 2.0);
     DataVector b{std::move(a)};
-    a = m0 + m1;
+    // clang-tidy: use after move (intentional here)
+    CHECK(a.size() == 0);  // NOLINT
+    CHECK(a.is_owning());
+    CHECK(b.size() == 10);
+    CHECK(b.is_owning());
     check_vectors(b, DataVector(10, 2.0));
-    check_vectors(a, DataVector(10, 12.0));
+    b = m0 + m1;
+    CHECK(a.size() == 0);  // NOLINT
+    check_vectors(b, DataVector(10, 12.0));
+    a = m0 * m1;
+    check_vectors(a, DataVector(10, 27.0));
+    check_vectors(b, DataVector(10, 12.0));
   }
-}
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
                   "[Unit][DataStructures]") {
