@@ -48,25 +48,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   CHECK(t_move_constructor.is_owning());
 }
 
-SPECTRE_TEST_CASE("Unit.Serialization.DataVector",
-                  "[DataStructures][Unit][Serialization]") {
-  const size_t npts = 10;
-  DataVector t(npts), tgood(npts);
-  std::iota(t.begin(), t.end(), 1.2);
-  std::iota(tgood.begin(), tgood.end(), 1.2);
-  CHECK(tgood == serialize_and_deserialize(t));
-}
-
-SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
-                  "[DataStructures][Unit][Serialization]") {
-  const size_t npts = 10;
-  DataVector t(npts);
-  std::iota(t.begin(), t.end(), 4.3);
-  DataVector t2;
-  t2.set_data_ref(&t);
-  CHECK(t == serialize_and_deserialize(t2));
-}
-
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
                   "[DataStructures][Unit]") {
   DataVector data{1.43, 2.83, 3.94, 7.85};
@@ -486,4 +467,23 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math_array<DataVector>",
   one_ref = (one_b * one_b);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+SPECTRE_TEST_CASE("Unit.Serialization.DataVector",
+                  "[DataStructures][Unit][Serialization]") {
+  const size_t npts = 10;
+  DataVector t(npts), tgood(npts);
+  std::iota(t.begin(), t.end(), 1.2);
+  std::iota(tgood.begin(), tgood.end(), 1.2);
+  CHECK(tgood == serialize_and_deserialize(t));
+}
+
+SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
+                  "[DataStructures][Unit][Serialization]") {
+  const size_t npts = 10;
+  DataVector t(npts);
+  std::iota(t.begin(), t.end(), 4.3);
+  DataVector t2;
+  t2.set_data_ref(&t);
+  CHECK(t == serialize_and_deserialize(t2));
 }
