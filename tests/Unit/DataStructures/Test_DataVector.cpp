@@ -61,57 +61,74 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
                   "[DataStructures][Unit]") {
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector t;
-  t.set_data_ref(&data);
-  CHECK(not t.is_owning());
-  CHECK(data.is_owning());
-  CHECK(t.data() == data.data());
-  CHECK(t.size() == 4);
-  CHECK(t[0] == 1.43);
-  CHECK(t[1] == 2.83);
-  CHECK(t[2] == 3.94);
-  CHECK(t[3] == 7.85);
-  test_copy_semantics(t);
-  DataVector t_copy;
-  t_copy.set_data_ref(&t);
-  test_move_semantics(std::move(t), t_copy);
-  DataVector t_move_assignment = std::move(t_copy);
-  CHECK(not t_move_assignment.is_owning());
-  DataVector t_move_constructor = std::move(t_move_assignment);
-  CHECK(not t_move_constructor.is_owning());
   {
-    DataVector data_2{1.43, 2.83, 3.94, 7.85};
-    DataVector data_2_ref;
-    data_2_ref.set_data_ref(&data_2);
-    DataVector data_3{2.43, 3.83, 4.94, 8.85};
-    data_2_ref = std::move(data_3);
-    CHECK(data_2[0] == 2.43);
-    CHECK(data_2[1] == 3.83);
-    CHECK(data_2[2] == 4.94);
-    CHECK(data_2[3] == 8.85);
-// Intentionally testing self-move
+    DataVector data{1.43, 2.83, 3.94, 7.85};
+    DataVector t;
+    t.set_data_ref(&data);
+    CHECK(not t.is_owning());
+    CHECK(data.is_owning());
+    CHECK(t.data() == data.data());
+    CHECK(t.size() == 4);
+    CHECK(t[0] == 1.43);
+    CHECK(t[1] == 2.83);
+    CHECK(t[2] == 3.94);
+    CHECK(t[3] == 7.85);
+    test_copy_semantics(t);
+    DataVector t_copy;
+    t_copy.set_data_ref(&t);
+    test_move_semantics(std::move(t), t_copy);
+    DataVector t_move_assignment = std::move(t_copy);
+    CHECK(not t_move_assignment.is_owning());
+    DataVector t_move_constructor = std::move(t_move_assignment);
+    CHECK(not t_move_constructor.is_owning());
+  }
+  {
+    DataVector data1{1.43, 2.83, 3.94, 7.85};
+    DataVector data2{2.43, 3.83, 4.94, 8.85};
+    DataVector data_ref;
+    data_ref.set_data_ref(&data1);
+    // Move from owning to reference
+    data_ref = std::move(data2);
+    CHECK_FALSE(data_ref.is_owning());
+    CHECK(data1.is_owning());
+    CHECK(data1[0] == 2.43);
+    CHECK(data1[1] == 3.83);
+    CHECK(data1[2] == 4.94);
+    CHECK(data1[3] == 8.85);
+    CHECK(data2.is_owning());
+    CHECK(data2.size() == 0);
+    // Intentionally testing self-move
 #ifdef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-move"
 #endif  // defined(__clang__)
-    data_2_ref = std::move(data_2_ref);
+    data_ref = std::move(data_ref);
 #ifdef __clang__
 #pragma GCC diagnostic pop
 #endif  // defined(__clang__)
-    CHECK(data_2[0] == 2.43);
-    CHECK(data_2[1] == 3.83);
-    CHECK(data_2[2] == 4.94);
-    CHECK(data_2[3] == 8.85);
-    DataVector owned_data;
+    CHECK(data1[0] == 2.43);
+    CHECK(data1[1] == 3.83);
+    CHECK(data1[2] == 4.94);
+    CHECK(data1[3] == 8.85);
+    DataVector data_copy;
     // clang-tidy: false positive, used after it was moved
-    owned_data = data_2_ref;  // NOLINT
-    CHECK(owned_data[0] == 2.43);
-    CHECK(owned_data[1] == 3.83);
-    CHECK(owned_data[2] == 4.94);
-    CHECK(owned_data[3] == 8.85);
+    // (OK because move was intentional self-move)
+    data_copy = data_ref;  // NOLINT
+    CHECK(data_copy.is_owning());
+    CHECK(data_copy[0] == 2.43);
+    CHECK(data_copy[1] == 3.83);
+    CHECK(data_copy[2] == 4.94);
+    CHECK(data_copy[3] == 8.85);
     // Test operator!=
-    CHECK_FALSE(owned_data != data_2_ref);
+    CHECK_FALSE(data_copy != data_ref);
+    // Move from reference to owning
+    DataVector data3{1.43, 2.83, 3.94, 7.85};
+    data3 = std::move(data_ref);
+    CHECK_FALSE(data3.is_owning());
+    CHECK(data3[0] == 2.43);
+    CHECK(data3[1] == 3.83);
+    CHECK(data3[2] == 4.94);
+    CHECK(data3[3] == 8.85);
   }
 }
 
