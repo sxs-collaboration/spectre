@@ -10,42 +10,53 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
-  DataVector a{2};
-  CHECK(a.size() == 2);
-  DataVector b{2, 10.0};
-  CHECK(b.size() == 2);
-  for (size_t i = 0; i < b.size(); ++i) {
-    INFO(i);
-    CHECK(b[i] == 10.0);
+  {
+    const DataVector a{2};
+    CHECK(a.size() == 2);
+    CHECK(a.is_owning());
   }
-
-  DataVector t(5, 10.0);
-  CHECK(t.size() == 5);
-  for (size_t i = 0; i < t.size(); ++i) {
-    INFO(i);
-    CHECK(t[i] == 10.0);
+  {
+    const DataVector b{2, 10.0};
+    CHECK(b.size() == 2);
+    CHECK(b.is_owning());
+    for (size_t i = 0; i < b.size(); ++i) {
+      INFO(i);
+      CHECK(b[i] == 10.0);
+    }
+    const DataVector t(5, 10.0);
+    CHECK(t.size() == 5);
+    CHECK(t.is_owning());
+    for (size_t i = 0; i < t.size(); ++i) {
+      INFO(i);
+      CHECK(t[i] == 10.0);
+    }
+    for (const auto& p : t) {
+      CHECK(p == 10.0);
+    }
+    for (auto& p : t) {
+      CHECK(p == 10.0);
+    }
   }
-  for (const auto& p : t) {
-    CHECK(p == 10.0);
+  {
+    const DataVector t{1.43, 2.83, 3.94, 7.85};
+    CHECK(t.size() == 4);
+    CHECK(t.is_owning());
+    CHECK(t[0] == 1.43);
+    CHECK(t[1] == 2.83);
+    CHECK(t[2] == 3.94);
+    CHECK(t[3] == 7.85);
   }
-  for (auto& p : t) {
-    CHECK(p == 10.0);
+  {
+    DataVector t{1.43, 2.83, 3.94, 7.85};
+    test_copy_semantics(t);
+    auto t_copy = t;
+    CHECK(t_copy.is_owning());
+    test_move_semantics(std::move(t), t_copy);
+    DataVector t_move_assignment = std::move(t_copy);
+    CHECK(t_move_assignment.is_owning());
+    DataVector t_move_constructor = std::move(t_move_assignment);
+    CHECK(t_move_constructor.is_owning());
   }
-  DataVector t2{1.43, 2.83, 3.94, 7.85};
-  CHECK(t2.size() == 4);
-  CHECK(t2.is_owning());
-  CHECK(t2[0] == 1.43);
-  CHECK(t2[1] == 2.83);
-  CHECK(t2[2] == 3.94);
-  CHECK(t2[3] == 7.85);
-  test_copy_semantics(t);
-  auto t_copy = t;
-  CHECK(t_copy.is_owning());
-  test_move_semantics(std::move(t), t_copy);
-  DataVector t_move_assignment = std::move(t_copy);
-  CHECK(t_move_assignment.is_owning());
-  DataVector t_move_constructor = std::move(t_move_assignment);
-  CHECK(t_move_constructor.is_owning());
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
