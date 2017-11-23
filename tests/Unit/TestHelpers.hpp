@@ -208,14 +208,6 @@ struct check_iterable_approx<
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Serializes and deserializes an object `t` of type `T`
- *
- * \example
- * To test serialization of copyable types use:
- *
- * snippet Test_PupStlCpp11.cpp example_serialize_copyable
- *
- * and for non-copyable types use:
- * snippet Test_PupStlCpp11.cpp example_serialize_non_copyable
  */
 template <typename T>
 T serialize_and_deserialize(const T& t) {
@@ -224,6 +216,16 @@ T serialize_and_deserialize(const T& t) {
       "Cannot use serialize_and_deserialize if a class is not default "
       "constructible.");
   return deserialize<T>(serialize<T>(t).data());
+}
+
+/// \ingroup TestingFrameworkGroup
+/// \brief Tests the serialization of comparable types
+/// \example
+/// \snippet Test_PupStlCpp11.cpp example_serialize_comparable
+template <typename T>
+void test_serialization(const T& t) {
+  static_assert(tt::has_equivalence_v<T>, "No operator== for T");
+  CHECK(t == serialize_and_deserialize(t));
 }
 
 /// Test for copy semantics assuming operator== is implement correctly

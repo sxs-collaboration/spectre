@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeId", "[Unit][Time]") {
     CHECK(hash != Hash{}(id2));
   }
 
-  CHECK(id == serialize_and_deserialize(id));
+  test_serialization(id);
 
   CHECK(get_output(id) == "4:" + get_output(id.time) + ":2");
 }

@@ -32,7 +32,7 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   CHECK(custom_neighbor == custom_neighbor);
 
   // Test serialization:
-  CHECK(custom_neighbor == (serialize_and_deserialize(custom_neighbor)));
+  test_serialization(custom_neighbor);
 
   // Test semantics:
   const auto custom_copy = custom_neighbor;

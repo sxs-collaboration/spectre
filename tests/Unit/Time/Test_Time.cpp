@@ -192,7 +192,7 @@ SPECTRE_TEST_CASE("Unit.Time.Time.serialization",
                   "[Unit][Time][Serialization]") {
   const Slab slab(1.7, 2.4);
   const Time time = slab.start() + slab.duration() * 3 / 5;
-  CHECK(time == serialize_and_deserialize(time));
+  test_serialization(time);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
@@ -281,7 +281,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
                   "[Unit][Time][Serialization]") {
   const Slab slab(1.7, 2.4);
   const TimeDelta dt = slab.duration() * 3 / 5;
-  CHECK(dt == serialize_and_deserialize(dt));
+  test_serialization(dt);
 }
 
 // Failure tests

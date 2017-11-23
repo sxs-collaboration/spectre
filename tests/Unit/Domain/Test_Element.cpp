@@ -54,7 +54,7 @@ void check_element() {
         "  External boundaries: " + get_output(element.external_boundaries()) +
         "\n");
 
-  CHECK(element == serialize_and_deserialize(element));
+  test_serialization(element);
 }
 }  // namespace
 

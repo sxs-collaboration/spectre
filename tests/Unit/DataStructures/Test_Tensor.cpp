@@ -669,7 +669,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
       }
     }
   }
-  CHECK(tensor == serialize_and_deserialize(tensor));
+  test_serialization(tensor);
 }
 
 // [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]

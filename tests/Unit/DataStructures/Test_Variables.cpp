@@ -250,7 +250,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Math",
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
                   "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> v(1, -3.0);
-  CHECK(v == serialize_and_deserialize(v));
+  test_serialization(v);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",

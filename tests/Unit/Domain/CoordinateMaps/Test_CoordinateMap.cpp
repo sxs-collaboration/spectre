@@ -406,7 +406,7 @@ void test_coordinate_map_with_rotation_map() {
 
   // Check inequivalence operator
   CHECK_FALSE(double_rotated3d != double_rotated3d);
-  CHECK(double_rotated3d == serialize_and_deserialize(double_rotated3d));
+  test_serialization(double_rotated3d);
 }
 
 void test_coordinate_map_with_rotation_map_datavector() {
@@ -484,8 +484,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     // Check inequivalence operator
     CHECK_FALSE(double_rotated3d_full != double_rotated3d_full);
-    CHECK(double_rotated3d_full ==
-          serialize_and_deserialize(double_rotated3d_full));
+    test_serialization(double_rotated3d_full);
   }
 }
 

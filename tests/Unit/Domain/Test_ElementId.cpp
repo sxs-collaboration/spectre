@@ -43,7 +43,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   CHECK(element_three != block_2_3d);
 
   // Test pup operations:
-  CHECK(element_one == serialize_and_deserialize(element_one));
+  test_serialization(element_one);
 
   // Test output operator:
   CHECK(get_output(block_2_3d) == "[B2,(L2I3,L1I0,L1I1)]");

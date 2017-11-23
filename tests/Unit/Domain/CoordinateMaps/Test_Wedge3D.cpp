@@ -47,8 +47,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Sphere.Equiangular",
 
   test_coordinate_map_implementation<CoordinateMaps::Wedge3D>(map_upper_zeta);
 
-  CHECK(serialize_and_deserialize(map_upper_zeta) == map_upper_zeta);
-  CHECK_FALSE(serialize_and_deserialize(map_upper_zeta) != map_upper_zeta);
+  test_serialization(map_upper_zeta);
+  CHECK_FALSE(map_upper_zeta != map_upper_zeta);
 
   test_coordinate_map_argument_types(map_upper_zeta, test_point1);
 }
@@ -89,8 +89,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Sphere.Equidistant",
 
   test_coordinate_map_implementation<CoordinateMaps::Wedge3D>(map_upper_zeta);
 
-  CHECK(serialize_and_deserialize(map_upper_zeta) == map_upper_zeta);
-  CHECK_FALSE(serialize_and_deserialize(map_upper_zeta) != map_upper_zeta);
+  test_serialization(map_upper_zeta);
+  CHECK_FALSE(map_upper_zeta != map_upper_zeta);
 
   test_coordinate_map_argument_types(map_upper_zeta, test_point1);
 }

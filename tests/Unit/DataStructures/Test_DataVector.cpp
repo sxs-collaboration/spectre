@@ -53,7 +53,15 @@ SPECTRE_TEST_CASE("Unit.Serialization.DataVector",
   DataVector t(npts), tgood(npts);
   std::iota(t.begin(), t.end(), 1.2);
   std::iota(tgood.begin(), tgood.end(), 1.2);
-  CHECK(tgood == serialize_and_deserialize(t));
+  CHECK(tgood == t);
+  CHECK(t.is_owning());
+  CHECK(tgood.is_owning());
+  const DataVector serialized = serialize_and_deserialize(t);
+  CHECK(tgood == t);
+  CHECK(serialized == tgood);
+  CHECK(serialized.is_owning());
+  CHECK(serialized.data() != t.data());
+  CHECK(t.is_owning());
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
@@ -63,7 +71,21 @@ SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
   std::iota(t.begin(), t.end(), 4.3);
   DataVector t2;
   t2.set_data_ref(&t);
-  CHECK(t == serialize_and_deserialize(t2));
+  CHECK(t.is_owning());
+  CHECK_FALSE(t2.is_owning());
+  CHECK(t2 == t);
+  const DataVector serialized = serialize_and_deserialize(t);
+  CHECK(t2 == t);
+  CHECK(serialized == t2);
+  CHECK(serialized.is_owning());
+  CHECK(serialized.data() != t.data());
+  CHECK(t.is_owning());
+  const DataVector serialized2 = serialize_and_deserialize(t2);
+  CHECK(t2 == t);
+  CHECK(serialized2 == t2);
+  CHECK(serialized2.is_owning());
+  CHECK(serialized2.data() != t2.data());
+  CHECK_FALSE(t2.is_owning());
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",

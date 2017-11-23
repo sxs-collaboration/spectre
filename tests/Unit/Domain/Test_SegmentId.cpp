@@ -24,7 +24,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
   CHECK(segment_two != segment_four);
 
   // Test pup operations:
-  CHECK(segment_one == serialize_and_deserialize(segment_one));
+  test_serialization(segment_one);
 
   // Test parent and child operations:
   for (size_t level = 1; level < 5; ++level) {

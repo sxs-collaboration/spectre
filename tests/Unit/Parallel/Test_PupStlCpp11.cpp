@@ -52,15 +52,15 @@ SPECTRE_TEST_CASE("Unit.Serialization.unordered_map", "[Serialization][Unit]") {
   std::unordered_map<std::string, double> um;
   um["aaa"] = 1.589;
   um["bbb"] = -10.7392;
-  CHECK(um == serialize_and_deserialize(um));
+  test_serialization(um);
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.enum", "[Serialization][Unit]") {
-  eDummyEnum test1 = eDummyEnum::test2;
-  CHECK(test1 == serialize_and_deserialize(test1));
+  eDummyEnum e = eDummyEnum::test2;
+  test_serialization(e);
 }
 
-/// [example_serialize_copyable]
+/// [example_serialize_comparable]
 SPECTRE_TEST_CASE("Unit.Serialization.tuple", "[Serialization][Unit]") {
   std::unordered_map<std::string, double> um;
   um["aaa"] = 1.589;
@@ -68,28 +68,28 @@ SPECTRE_TEST_CASE("Unit.Serialization.tuple", "[Serialization][Unit]") {
   auto test_tuple = std::make_tuple<int, double, std::string,
                                     std::unordered_map<std::string, double>>(
       2, 0.57, "blah", std::move(um));
-  CHECK(test_tuple == serialize_and_deserialize(test_tuple));
+  test_serialization(test_tuple);
 }
-/// [example_serialize_copyable]
+/// [example_serialize_comparable]
 
 SPECTRE_TEST_CASE("Unit.Serialization.array", "[Serialization][Unit]") {
   auto t = make_array(1.0, 3.64, 9.23);
-  CHECK(t == serialize_and_deserialize(t));
+  test_serialization(t);
 
   auto t2 =
       make_array(std::vector<double>{1, 4, 8}, std::vector<double>{7, 9, 4});
-  CHECK(t2 == serialize_and_deserialize(t2));
+  test_serialization(t2);
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.unordered_set", "[Serialization][Unit]") {
   std::unordered_set<size_t> test_set = {1, 2, 5, 100};
-  CHECK(test_set == serialize_and_deserialize(test_set));
+  test_serialization(test_set);
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.unordered_set.empty",
                   "[Serialization][Unit]") {
   std::unordered_set<size_t> test_set{};
-  CHECK(test_set == serialize_and_deserialize(test_set));
+  test_serialization(test_set);
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
