@@ -17,9 +17,9 @@
 # - COVERALLS_TOKEN: Sign up to coveralls and link to GitHub. Add the
 #                    repository you want to display, and copy the repo_token.
 #                    The repo_token is what COVERALLS_TOKEN must be set to.
-# - SONAR_TOKEN: Setup your repository on SonarQUBE, then go to My Account
+# - SONAR_TOKEN: Setup your repository on SonarCloud, then go to My Account
 #                and select Security. You can now generate a new token that
-#                will be used to upload SonarQUBE reports. This is the value
+#                will be used to upload SonarCloud reports. This is the value
 #                that SONAR_TOKEN must be set to.
 # - ENCRYPTION_LABEL:
 #      The file encryption mechanism of TravisCI is used to encrypt the private
@@ -119,7 +119,7 @@ matrix:
 
 # Travis allows caching of data between builds to reduce build times or perform
 # regression testing. We use ccache (https://ccache.samba.org/) to reduce
-# compilation time. SonarQUBE, a static analysis tool (https://sonarqube.com/)
+# compilation time. SonarCloud, a static analysis tool (https://sonarcloud.io/)
 # also has a cache directory that needs to be managed.
 cache:
   ccache: true

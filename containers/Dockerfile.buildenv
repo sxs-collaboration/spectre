@@ -38,18 +38,18 @@ RUN apt-get install -y ccache
 RUN apt-get install -y doxygen python-pip
 RUN pip install coverxygen
 
-# wget and unzip are needed for retrieving SonarQUBE executables. Java is needed
-# for running SonarQUBE's sonar-scanner, which does the code analysis
-# Get the sonarqube source files and extract them. These are needed for static
-# analysis using SonarQUBE.
+# wget and unzip are needed for retrieving SonarCloud executables. Java is needed
+# for running SonarCloud's sonar-scanner, which does the code analysis
+# Get the SonarCloud source files and extract them. These are needed for static
+# analysis using SonarCloud.
 RUN apt-get update -y && apt-get install -y wget unzip openjdk-8-jdk
 RUN wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-2.8.zip \
-https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip \
-&& mkdir /work && mkdir /work/sonarqube/ \
-&& unzip sonar-scanner-2.8.zip -d /work/sonarqube/ \
-&& unzip build-wrapper-linux-x86.zip -d /work/sonarqube/ \
-&& echo "export PATH=\$PATH:/work/sonarqube/sonar-scanner-2.8/bin" >> root/.bashrc \
-&& echo "export PATH=\$PATH:/work/sonarqube/build-wrapper-linux-x86" >> root/.bashrc
+https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip \
+&& mkdir /work && mkdir /work/sonarcloud/ \
+&& unzip sonar-scanner-2.8.zip -d /work/sonarcloud/ \
+&& unzip build-wrapper-linux-x86.zip -d /work/sonarcloud/ \
+&& echo "export PATH=\$PATH:/work/sonarcloud/sonar-scanner-2.8/bin" >> root/.bashrc \
+&& echo "export PATH=\$PATH:/work/sonarcloud/build-wrapper-linux-x86" >> root/.bashrc
 
 # Add ruby gems and install coveralls using gem
 RUN apt-get update -y && apt-get install -y rubygems && gem install coveralls-lcov
