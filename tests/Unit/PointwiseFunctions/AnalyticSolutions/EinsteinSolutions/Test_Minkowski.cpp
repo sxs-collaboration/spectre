@@ -47,7 +47,9 @@ void test_minkowski(const T& value) {
       }
     }
   }
-  serialize_and_deserialize(minkowski);
+  test_serialization(minkowski);
+  // test operator !=
+  CHECK_FALSE(minkowski != minkowski);
 }
 
 SPECTRE_TEST_CASE(
