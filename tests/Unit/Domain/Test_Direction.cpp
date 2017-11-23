@@ -12,11 +12,13 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
   CHECK(upper_xi_1.opposite() == Direction<1>::lower_xi());
   CHECK(upper_xi_1.opposite().sign() == -1.0);
   CHECK(upper_xi_1.axis() == Direction<1>::Axis::Xi);
+  test_serialization(upper_xi_1);
 
   auto lower_xi_1 = Direction<1>(0, Side::Lower);
   CHECK(lower_xi_1 == Direction<1>::lower_xi());
   CHECK(lower_xi_1.axis() == Direction<1>::Axis::Xi);
   CHECK(lower_xi_1.side() == Side::Lower);
+  test_serialization(lower_xi_1);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
@@ -24,21 +26,25 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
   CHECK(upper_xi_2 == Direction<2>::upper_xi());
   CHECK(upper_xi_2.axis() == Direction<2>::Axis::Xi);
   CHECK(upper_xi_2.side() == Side::Upper);
+  test_serialization(upper_xi_2);
 
   auto upper_eta_2 = Direction<2>(1, Side::Upper);
   CHECK(upper_eta_2 == Direction<2>::upper_eta());
   CHECK(upper_eta_2.axis() == Direction<2>::Axis::Eta);
   CHECK(upper_eta_2.side() == Side::Upper);
+  test_serialization(upper_eta_2);
 
   auto lower_xi_2 = Direction<2>(0, Side::Lower);
   CHECK(lower_xi_2 == Direction<2>::lower_xi());
   CHECK(lower_xi_2.axis() == Direction<2>::Axis::Xi);
   CHECK(lower_xi_2.side() == Side::Lower);
+  test_serialization(lower_xi_2);
 
   auto lower_eta_2 = Direction<2>(1, Side::Lower);
   CHECK(lower_eta_2 == Direction<2>::lower_eta());
   CHECK(lower_eta_2.axis() == Direction<2>::Axis::Eta);
   CHECK(lower_eta_2.side() == Side::Lower);
+  test_serialization(lower_eta_2);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
@@ -46,31 +52,37 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
   CHECK(upper_xi == Direction<3>::upper_xi());
   CHECK(upper_xi.axis() == Direction<3>::Axis::Xi);
   CHECK(upper_xi.side() == Side::Upper);
+  test_serialization(upper_xi);
 
   auto upper_eta = Direction<3>(1, Side::Upper);
   CHECK(upper_eta == Direction<3>::upper_eta());
   CHECK(upper_eta.axis() == Direction<3>::Axis::Eta);
   CHECK(upper_eta.side() == Side::Upper);
+  test_serialization(upper_eta);
 
   auto lower_xi = Direction<3>(0, Side::Lower);
   CHECK(lower_xi == Direction<3>::lower_xi());
   CHECK(lower_xi.axis() == Direction<3>::Axis::Xi);
   CHECK(lower_xi.side() == Side::Lower);
+  test_serialization(lower_xi);
 
   auto lower_eta = Direction<3>(1, Side::Lower);
   CHECK(lower_eta == Direction<3>::lower_eta());
   CHECK(lower_eta.axis() == Direction<3>::Axis::Eta);
   CHECK(lower_eta.side() == Side::Lower);
+  test_serialization(lower_eta);
 
   auto upper_zeta = Direction<3>(2, Side::Upper);
   CHECK(upper_zeta == Direction<3>::upper_zeta());
   CHECK(upper_zeta.axis() == Direction<3>::Axis::Zeta);
   CHECK(upper_zeta.side() == Side::Upper);
+  test_serialization(upper_zeta);
 
   auto lower_zeta = Direction<3>(2, Side::Lower);
   CHECK(lower_zeta == Direction<3>::lower_zeta());
   CHECK(lower_zeta.axis() == Direction<3>::Axis::Zeta);
   CHECK(lower_zeta.side() == Side::Lower);
+  test_serialization(lower_zeta);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Direction.HelperFunctions", "[Domain][Unit]") {
