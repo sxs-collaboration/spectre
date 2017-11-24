@@ -80,6 +80,16 @@ class CoordinateMapBase : public PUP::able {
                             SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
   jacobian(const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
   // @}
+ private:
+  virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
+  friend bool operator==(const CoordinateMapBase& lhs,
+                         const CoordinateMapBase& rhs) noexcept {
+    return typeid(lhs) == typeid(rhs) and lhs.is_equal_to(rhs);
+  }
+  friend bool operator!=(const CoordinateMapBase& lhs,
+                         const CoordinateMapBase& rhs) noexcept {
+    return not(lhs == rhs);
+  }
 };
 
 /*!
@@ -212,6 +222,12 @@ class CoordinateMap
   friend bool operator==(const CoordinateMap& lhs,
                          const CoordinateMap& rhs) noexcept {
     return lhs.maps_ == rhs.maps_;
+  }
+
+  bool is_equal_to(const CoordinateMapBase<SourceFrame, TargetFrame, dim>&
+                       other) const override {
+    const auto& cast_of_other = dynamic_cast<const CoordinateMap&>(other);
+    return *this == cast_of_other;
   }
 
   template <typename T>
