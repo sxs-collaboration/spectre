@@ -5,6 +5,7 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>::Domain(
@@ -33,6 +34,18 @@ Domain<VolumeDim, TargetFrame>::Domain(
 }
 
 template <size_t VolumeDim, typename TargetFrame>
+bool operator==(const Domain<VolumeDim, TargetFrame>& lhs,
+                const Domain<VolumeDim, TargetFrame>& rhs) noexcept {
+  return lhs.blocks() == rhs.blocks();
+}
+
+template <size_t VolumeDim, typename TargetFrame>
+bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
+                const Domain<VolumeDim, TargetFrame>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
                          const Domain<VolumeDim, TargetFrame>& d) {
   const auto& blocks = d.blocks();
@@ -48,27 +61,27 @@ void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) {
   p | blocks_;
 }
 
-// Explicit Instantiations
-template class Domain<1, Frame::Grid>;
-template class Domain<2, Frame::Grid>;
-template class Domain<3, Frame::Grid>;
-template class Domain<1, Frame::Inertial>;
-template class Domain<2, Frame::Inertial>;
-template class Domain<3, Frame::Inertial>;
+/// \cond HIDDEN_SYMBOLS
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define INSTANTIATE(_, data)                               \
+  template class Domain<DIM(data), FRAME(data)>;           \
+  template bool operator==(                                \
+      const Domain<DIM(data), FRAME(data)>& lhs,           \
+      const Domain<DIM(data), FRAME(data)>& rhs) noexcept; \
+  template bool operator!=(                                \
+      const Domain<DIM(data), FRAME(data)>& lhs,           \
+      const Domain<DIM(data), FRAME(data)>& rhs) noexcept; \
+  template std::ostream& operator<<(std::ostream& os,      \
+                                    const Domain<DIM(data), FRAME(data)>& d);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+
+#undef DIM
+#undef FRAME
+#undef INSTANTIATE
+/// \endcond
 
 // Some compilers (clang 3.9.1) don't instantiate the default argument
 // to the second Domain constructor.
 template class std::vector<PairOfFaces>;
-
-template std::ostream& operator<<(std::ostream& os,
-                                  const Domain<1, Frame::Grid>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Domain<2, Frame::Grid>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Domain<3, Frame::Grid>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Domain<1, Frame::Inertial>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Domain<2, Frame::Inertial>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Domain<3, Frame::Inertial>& block);

@@ -74,5 +74,13 @@ class Domain {
 };
 
 template <size_t VolumeDim, typename TargetFrame>
+bool operator==(const Domain<VolumeDim, TargetFrame>& lhs,
+                const Domain<VolumeDim, TargetFrame>& rhs) noexcept;
+
+template <size_t VolumeDim, typename TargetFrame>
+bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
+                const Domain<VolumeDim, TargetFrame>& rhs) noexcept;
+
+template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
                          const Domain<VolumeDim, TargetFrame>& d);
