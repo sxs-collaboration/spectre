@@ -16,6 +16,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/Abort.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -226,6 +227,27 @@ template <typename T>
 void test_serialization(const T& t) {
   static_assert(tt::has_equivalence_v<T>, "No operator== for T");
   CHECK(t == serialize_and_deserialize(t));
+}
+
+/// \ingroup TestingFrameworkGroup
+/// \brief Test the serialization of a derived class via a base class pointer
+/// \example
+/// \snippet Test_PupStlCpp11.cpp example_serialize_derived
+/// \tparam B the base class
+/// \tparam D the derived class
+/// \tparam Args deduced from `args`
+/// \param args arguments passed to a constructor of the derived class
+template <typename B, typename D, typename... Args>
+void test_serialization_via_base(Args&&... args) {
+  static_assert(cpp17::is_base_of_v<B, D>,
+                "passed input type is not derived from specified base");
+  static_assert(tt::has_equivalence_v<D>, "No operator== for derived class");
+  Parallel::register_derived_classes_with_charm<B>();
+  std::unique_ptr<B> base = std::make_unique<D>(args...);
+  std::unique_ptr<B> pupped_base = serialize_and_deserialize(base);
+  CHECK_FALSE(nullptr == dynamic_cast<const D*>(pupped_base.get()));
+  const D derived(args...);
+  CHECK(derived == dynamic_cast<const D&>(*pupped_base));
 }
 
 /// Test for copy semantics assuming operator== is implement correctly

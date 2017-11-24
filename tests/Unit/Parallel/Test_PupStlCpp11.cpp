@@ -10,10 +10,11 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace Test_Classes {
-
+struct DerivedInPupStlCpp11;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 struct Base : public PUP::able {
+  using creatable_classes = typelist<Test_Classes::DerivedInPupStlCpp11>;
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_abstract(Base);  // NOLINT
 };
@@ -101,17 +102,9 @@ SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
                   "[Serialization][Unit]") {
-  PUPable_reg(Test_Classes::DerivedInPupStlCpp11);
-  Test_Classes::DerivedInPupStlCpp11 derived({-1, 12.3, -7, 8});
-  std::unique_ptr<Test_Classes::Base> derived_ptr =
-      std::make_unique<Test_Classes::DerivedInPupStlCpp11>(
-          std::vector<double>{-1, 12.3, -7, 8});
-  std::unique_ptr<Test_Classes::Base> serialized_ptr =
-      serialize_and_deserialize(derived_ptr);
-  CHECK(nullptr != dynamic_cast<Test_Classes::DerivedInPupStlCpp11*>(
-                       serialized_ptr.get()));
-  CHECK(derived == dynamic_cast<const Test_Classes::DerivedInPupStlCpp11&>(
-                       *serialized_ptr));
+  test_serialization_via_base<Test_Classes::Base,
+                              Test_Classes::DerivedInPupStlCpp11>(
+      std::vector<double>{-1, 12.3, -7, 8});
 }
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
