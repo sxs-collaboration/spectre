@@ -44,8 +44,9 @@ std::ostream& operator<<(std::ostream& os,
 template <size_t VolumeDim, typename TargetFrame>
 bool operator==(const Block<VolumeDim, TargetFrame>& lhs,
                 const Block<VolumeDim, TargetFrame>& rhs) noexcept {
-  return (lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
-          lhs.external_boundaries() == rhs.external_boundaries());
+  return lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
+         lhs.external_boundaries() == rhs.external_boundaries() and
+         lhs.coordinate_map() == rhs.coordinate_map();
 }
 
 template <size_t VolumeDim, typename TargetFrame>
