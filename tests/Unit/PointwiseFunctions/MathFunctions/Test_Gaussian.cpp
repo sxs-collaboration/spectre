@@ -5,7 +5,6 @@
 
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
-#include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -47,12 +46,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
   CHECK_ITERABLE_APPROX(gauss(one), mapped_point);
   CHECK_ITERABLE_APPROX(gauss.first_deriv(one), first_deriv);
   CHECK_ITERABLE_APPROX(gauss.second_deriv(one), second_deriv);
-  test_math_helpers::test_pup_function(gauss);
 
-  // Test base class serialization
-  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
-  test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
-      std::make_unique<MathFunctions::Gaussian>(amplitude, width, center)});
+  test_serialization(gauss);
+  test_serialization_via_base<MathFunction<1>, MathFunctions::Gaussian>(
+      amplitude, width, center);
+  // test operator !=
+  const MathFunctions::Gaussian gauss2{amplitude, width, center - 1.0};
+  CHECK(gauss != gauss2);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",

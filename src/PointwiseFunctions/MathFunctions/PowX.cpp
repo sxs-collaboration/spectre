@@ -56,6 +56,14 @@ void PowX::pup(PUP::er& p) {
   MathFunction<1>::pup(p);
   p | power_;
 }
+
+bool operator==(const PowX& lhs, const PowX& rhs) noexcept {
+  return lhs.power_ == rhs.power_;
+}
+
+bool operator!=(const PowX& lhs, const PowX& rhs) noexcept {
+  return not(lhs == rhs);
+}
 }  // namespace MathFunctions
 
 /// \cond

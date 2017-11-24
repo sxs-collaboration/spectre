@@ -96,6 +96,16 @@ class RungeKutta3 : public TimeStepper::Inherit {
                  const DerivVars& dt_vars) const noexcept;
 };
 
+inline bool constexpr operator==(const RungeKutta3& /*lhs*/,
+                                 const RungeKutta3& /*rhs*/) noexcept {
+  return true;
+}
+
+inline bool constexpr operator!=(const RungeKutta3& /*lhs*/,
+                                 const RungeKutta3& /*rhs*/) noexcept {
+  return false;
+}
+
 template <typename Vars, typename DerivVars>
 void RungeKutta3::update_u(
     const gsl::not_null<Vars*> u,

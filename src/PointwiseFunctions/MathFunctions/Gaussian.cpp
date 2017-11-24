@@ -58,6 +58,17 @@ void Gaussian::pup(PUP::er& p) {
   p | inverse_width_;
   p | center_;
 }
+
+bool operator==(const Gaussian& lhs, const Gaussian& rhs) noexcept {
+  return lhs.amplitude_ == rhs.amplitude_ and
+         lhs.inverse_width_ == rhs.inverse_width_ and
+         lhs.center_ == rhs.center_;
+}
+
+bool operator!=(const Gaussian& lhs, const Gaussian& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 }  // namespace MathFunctions
 
 /// \cond

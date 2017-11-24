@@ -203,6 +203,9 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   void pup(PUP::er& p) noexcept override;  // NOLINT
 
  private:
+  friend bool operator==(const AdamsBashforthN& lhs,
+                         const AdamsBashforthN& rhs) noexcept;
+
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
   template <typename Iterator>
@@ -260,6 +263,9 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   size_t target_order_ = 3;
   bool is_self_starting_ = true;
 };
+
+bool operator!=(const AdamsBashforthN& lhs,
+                const AdamsBashforthN& rhs) noexcept;
 
 template <typename Vars, typename DerivVars>
 void AdamsBashforthN::update_u(

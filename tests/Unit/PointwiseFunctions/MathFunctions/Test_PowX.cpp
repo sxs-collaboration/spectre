@@ -6,7 +6,6 @@
 
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
-#include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -65,12 +64,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
   CHECK(power.first_deriv(test_dv) == 3 * pow(test_dv, 2));
   CHECK(power.second_deriv(test_dv) == 6 * test_dv);
 
-  test_math_helpers::test_pup_function(power);
-
-  // Test base class serialization
-  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
-  test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
-      std::make_unique<MathFunctions::PowX>(3)});
+  test_serialization(power);
+  test_serialization_via_base<MathFunction<1>, MathFunctions::PowX>(3);
+  // test operator !=
+  const MathFunctions::PowX power2{-3};
+  CHECK(power != power2);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX.Factory",

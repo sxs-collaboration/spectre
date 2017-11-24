@@ -6,7 +6,6 @@
 
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
-#include "tests/Unit/PointwiseFunctions/MathFunctions/TestMathHelpers.hpp"
 #include "tests/Unit/TestFactoryCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -43,12 +42,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
   CHECK_ITERABLE_APPROX(sinusoid.first_deriv(one), mapped_first_deriv);
   CHECK_ITERABLE_APPROX(sinusoid.second_deriv(one), mapped_second_deriv);
 
-  test_math_helpers::test_pup_function(sinusoid);
-
-  // Test base class serialization
-  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
-  test_math_helpers::test_pup_function(std::unique_ptr<MathFunction<1>>{
-      std::make_unique<MathFunctions::Sinusoid>(amplitude, wavenumber, phase)});
+  test_serialization(sinusoid);
+  test_serialization_via_base<MathFunction<1>, MathFunctions::Sinusoid>(
+      amplitude, wavenumber, phase);
+  // test operator !=
+  const MathFunctions::Sinusoid sinusoid2{amplitude + 1.0, wavenumber, phase};
+  CHECK(sinusoid != sinusoid2);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",

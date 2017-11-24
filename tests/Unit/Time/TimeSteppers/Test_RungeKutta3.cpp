@@ -50,12 +50,9 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal.Backwards",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Serialization",
                   "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
-  std::unique_ptr<TimeStepper> stepper =
-      std::make_unique<TimeSteppers::RungeKutta3>();
-  std::unique_ptr<TimeStepper> stepper_puped =
-      serialize_and_deserialize(stepper);
-  auto stepper_cast =
-      dynamic_cast<TimeSteppers::RungeKutta3* const>(stepper_puped.get());
-  CHECK_FALSE(stepper_cast == nullptr);
+  TimeSteppers::RungeKutta3 rk3{};
+  test_serialization(rk3);
+  test_serialization_via_base<TimeStepper, TimeSteppers::RungeKutta3>();
+  // test operator !=
+  CHECK_FALSE(rk3 != rk3);
 }

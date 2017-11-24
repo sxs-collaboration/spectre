@@ -53,6 +53,7 @@ class PowX : public MathFunction<1> {
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
+  friend bool operator==(const PowX& lhs, const PowX& rhs) noexcept;
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
   template <typename T>
@@ -62,4 +63,7 @@ class PowX : public MathFunction<1> {
 
   double power_{};
 };
+
+bool operator!=(const PowX& lhs, const PowX& rhs) noexcept;
+
 }  // namespace MathFunctions

@@ -173,6 +173,17 @@ void AdamsBashforthN::pup(PUP::er& p) noexcept {
   p | target_order_;
   p | is_self_starting_;
 }
+
+bool operator==(const AdamsBashforthN& lhs,
+                const AdamsBashforthN& rhs) noexcept {
+  return lhs.target_order_ == rhs.target_order_ and
+         lhs.is_self_starting_ == rhs.is_self_starting_;
+}
+
+bool operator!=(const AdamsBashforthN& lhs,
+                const AdamsBashforthN& rhs) noexcept {
+  return not(lhs == rhs);
+}
 }  // namespace TimeSteppers
 
 /// \cond

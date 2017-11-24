@@ -65,6 +65,7 @@ class Sinusoid : public MathFunction<1> {
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
+  friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) noexcept;
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
   template <typename T>
@@ -76,4 +77,7 @@ class Sinusoid : public MathFunction<1> {
   double wavenumber_{};
   double phase_{};
 };
+
+bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept;
+
 }  // namespace MathFunctions
