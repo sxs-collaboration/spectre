@@ -323,9 +323,9 @@ using iAA = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using Iaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
-           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
-           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+                   index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
+                              SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                              SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 
 // Rank 4 - Mixed
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
@@ -335,20 +335,10 @@ using ijaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
                                SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
                                SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 
-namespace detail {
-template <size_t Dim, typename Frame1, typename Frame2>
-struct inverse_jacobian_impl {
-  static_assert(tmpl::index_of<Frame::ordered_frame_list, Frame1>::value <
-                    tmpl::index_of<Frame::ordered_frame_list, Frame2>::value,
-                "Inverse Jacobian must go other direction.");
-  using type = Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                      typelist<SpatialIndex<Dim, UpLo::Up, Frame1>,
-                               SpatialIndex<Dim, UpLo::Lo, Frame2>>>;
-};
-}  // namespace detail
-
 }  // namespace tnsr
 
 template <size_t Dim, typename Frame1, typename Frame2>
 using InverseJacobian =
-    typename tnsr::detail::inverse_jacobian_impl<Dim, Frame1, Frame2>::type;
+    Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+           typelist<SpatialIndex<Dim, UpLo::Up, Frame1>,
+                    SpatialIndex<Dim, UpLo::Lo, Frame2>>>;

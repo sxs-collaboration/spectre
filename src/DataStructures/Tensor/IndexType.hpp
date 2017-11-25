@@ -45,10 +45,6 @@ struct Distorted {};
 /// intermediate frame that is irrelevant to the interface.
 struct NoFrame {};
 
-/// This ordered list is needed to determine the ordering of frames
-/// for jacobians.
-using ordered_frame_list = typelist<Logical, Grid, Inertial, Distorted>;
-
 /// \ingroup TensorGroup
 /// Returns std::true_type if the frame is "physical" in the sense that it is
 /// meaningful to evaluate an analytic solution in that frame.
