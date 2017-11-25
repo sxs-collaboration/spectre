@@ -154,10 +154,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
 namespace {
 template <typename T1, typename T2>
 void check_vectors(const T1& t1, const T2& t2) {
-  CHECK(t1.size() == t2.size());
-  for (size_t i = 0; i < t1.size(); ++i) {
-    CHECK(t1[i] == approx(t2[i]));
-  }
+  CHECK_ITERABLE_APPROX(t1, t2);
 }
 }  // namespace
 
@@ -429,40 +426,29 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   points -= point;
   CHECK(points == expected2);
 
-  for (size_t i = 0; i < 3; i++) {
-    check_vectors(gsl::at((dvectors1 + dvectors2), i), gsl::at(expected3, i));
-    check_vectors(gsl::at((dvectors1 - dvectors2), i), gsl::at(expected4, i));
-  }
+  CHECK_ITERABLE_APPROX(dvectors1 + dvectors2, expected3);
+  CHECK_ITERABLE_APPROX(dvectors1 - dvectors2, expected4);
+
   dvectors1 += dvectors2;
-  for (size_t i = 0; i < 3; i++) {
-    check_vectors(gsl::at(dvectors1, i), gsl::at(expected3, i));
-  }
+  CHECK_ITERABLE_APPROX(dvectors1, expected3);
   dvectors1 -= dvectors2;
   dvectors1 -= dvectors2;
-  for (size_t i = 0; i < 3; i++) {
-    check_vectors(gsl::at(dvectors1, i), gsl::at(expected4, i));
-  }
+  CHECK_ITERABLE_APPROX(dvectors1, expected4);
 
   // Test calculation of magnitude of DataVector
   const std::array<DataVector, 1> d1{{DataVector{-2.5, 3.4}}};
   const DataVector expected_d1{2.5, 3.4};
   const auto magnitude_d1 = magnitude(d1);
-  for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_d1[i] == approx(magnitude_d1[i]));
-  }
+  CHECK_ITERABLE_APPROX(expected_d1, magnitude_d1);
   const std::array<DataVector, 2> d2{{DataVector(2, 3.), DataVector(2, 4.)}};
   const DataVector expected_d2(2, 5.);
   const auto magnitude_d2 = magnitude(d2);
-  for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_d2[i] == approx(magnitude_d2[i]));
-  }
+  CHECK_ITERABLE_APPROX(expected_d2, magnitude_d2);
   const std::array<DataVector, 3> d3{
       {DataVector(2, 3.), DataVector(2, -4.), DataVector(2, 12.)}};
   const DataVector expected_d3(2, 13.);
   const auto magnitude_d3 = magnitude(d3);
-  for (size_t i = 0; i < 2; ++i) {
-    CHECK(expected_d3[i] == approx(magnitude_d3[i]));
-  }
+  CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
 }
 
 // [[OutputRegex, Must copy into same size]]

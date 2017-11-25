@@ -39,13 +39,13 @@ void check_solution_x(const double kx, const double omega, const DataVector& u,
   const DataVector d2psi_dt2 = 6.0 * square(omega) * u;
   const DataVector d2psi_dtdx = -6.0 * omega * kx * u;
   const DataVector d2psi_dxdx = 6.0 * square(kx) * u;
+  CHECK_ITERABLE_APPROX(psi, pw.psi(x, t).get());
+  CHECK_ITERABLE_APPROX(dpsi_dt, pw.dpsi_dt(x, t).get());
+  CHECK_ITERABLE_APPROX(d2psi_dt2, pw.d2psi_dt2(x, t).get());
+  CHECK_ITERABLE_APPROX(dpsi_dx, pw.dpsi_dx(x, t).get(0));
+  CHECK_ITERABLE_APPROX(d2psi_dtdx, pw.d2psi_dtdx(x, t).get(0));
+  CHECK_ITERABLE_APPROX(d2psi_dxdx, pw.d2psi_dxdx(x, t).get(0, 0));
   for (size_t s = 0; s < u.size(); ++s) {
-    CHECK(approx(psi[s]) == pw.psi(x, t).get()[s]);
-    CHECK(approx(dpsi_dt[s]) == pw.dpsi_dt(x, t).get()[s]);
-    CHECK(approx(d2psi_dt2[s]) == pw.d2psi_dt2(x, t).get()[s]);
-    CHECK(approx(dpsi_dx[s]) == pw.dpsi_dx(x, t).get(0)[s]);
-    CHECK(approx(d2psi_dtdx[s]) == pw.d2psi_dtdx(x, t).get(0)[s]);
-    CHECK(approx(d2psi_dxdx[s]) == pw.d2psi_dxdx(x, t).get(0, 0)[s]);
     const auto p = extract_point_from_coords(s, x);
     CHECK(approx(psi[s]) == pw.psi(p, t).get());
     CHECK(approx(dpsi_dt[s]) == pw.dpsi_dt(p, t).get());
@@ -65,12 +65,12 @@ void check_solution_y(const double kx, const double ky, const double omega,
   const DataVector d2psi_dtdy = -6.0 * omega * ky * u;
   const DataVector d2psi_dxdy = 6.0 * kx * ky * u;
   const DataVector d2psi_dydy = 6.0 * square(ky) * u;
+  CHECK_ITERABLE_APPROX(dpsi_dy, pw.dpsi_dx(x, t).get(1));
+  CHECK_ITERABLE_APPROX(d2psi_dtdy, pw.d2psi_dtdx(x, t).get(1));
+  CHECK_ITERABLE_APPROX(d2psi_dxdy, pw.d2psi_dxdx(x, t).get(0, 1));
+  CHECK_ITERABLE_APPROX(d2psi_dxdy, pw.d2psi_dxdx(x, t).get(1, 0));
+  CHECK_ITERABLE_APPROX(d2psi_dydy, pw.d2psi_dxdx(x, t).get(1, 1));
   for (size_t s = 0; s < u.size(); ++s) {
-    CHECK(approx(dpsi_dy[s]) == pw.dpsi_dx(x, t).get(1)[s]);
-    CHECK(approx(d2psi_dtdy[s]) == pw.d2psi_dtdx(x, t).get(1)[s]);
-    CHECK(approx(d2psi_dxdy[s]) == pw.d2psi_dxdx(x, t).get(0, 1)[s]);
-    CHECK(approx(d2psi_dxdy[s]) == pw.d2psi_dxdx(x, t).get(1, 0)[s]);
-    CHECK(approx(d2psi_dydy[s]) == pw.d2psi_dxdx(x, t).get(1, 1)[s]);
     const auto p = extract_point_from_coords(s, x);
     CHECK(approx(dpsi_dy[s]) == pw.dpsi_dx(p, t).get(1));
     CHECK(approx(d2psi_dtdy[s]) == pw.d2psi_dtdx(p, t).get(1));
@@ -89,14 +89,14 @@ void check_solution_z(const double kx, const double ky, const double kz,
   const DataVector d2psi_dxdz = 6.0 * kx * kz * u;
   const DataVector d2psi_dydz = 6.0 * ky * kz * u;
   const DataVector d2psi_dzdz = 6.0 * square(kz) * u;
+  CHECK_ITERABLE_APPROX(dpsi_dz, pw.dpsi_dx(x, t).get(2));
+  CHECK_ITERABLE_APPROX(d2psi_dtdz, pw.d2psi_dtdx(x, t).get(2));
+  CHECK_ITERABLE_APPROX(d2psi_dxdz, pw.d2psi_dxdx(x, t).get(0, 2));
+  CHECK_ITERABLE_APPROX(d2psi_dxdz, pw.d2psi_dxdx(x, t).get(2, 0));
+  CHECK_ITERABLE_APPROX(d2psi_dydz, pw.d2psi_dxdx(x, t).get(2, 1));
+  CHECK_ITERABLE_APPROX(d2psi_dydz, pw.d2psi_dxdx(x, t).get(1, 2));
+  CHECK_ITERABLE_APPROX(d2psi_dzdz, pw.d2psi_dxdx(x, t).get(2, 2));
   for (size_t s = 0; s < u.size(); ++s) {
-    CHECK(approx(dpsi_dz[s]) == pw.dpsi_dx(x, t).get(2)[s]);
-    CHECK(approx(d2psi_dtdz[s]) == pw.d2psi_dtdx(x, t).get(2)[s]);
-    CHECK(approx(d2psi_dxdz[s]) == pw.d2psi_dxdx(x, t).get(0, 2)[s]);
-    CHECK(approx(d2psi_dxdz[s]) == pw.d2psi_dxdx(x, t).get(2, 0)[s]);
-    CHECK(approx(d2psi_dydz[s]) == pw.d2psi_dxdx(x, t).get(2, 1)[s]);
-    CHECK(approx(d2psi_dydz[s]) == pw.d2psi_dxdx(x, t).get(1, 2)[s]);
-    CHECK(approx(d2psi_dzdz[s]) == pw.d2psi_dxdx(x, t).get(2, 2)[s]);
     const auto p = extract_point_from_coords(s, x);
     CHECK(approx(dpsi_dz[s]) == pw.dpsi_dx(p, t).get(2));
     CHECK(approx(d2psi_dtdz[s]) == pw.d2psi_dtdx(p, t).get(2));

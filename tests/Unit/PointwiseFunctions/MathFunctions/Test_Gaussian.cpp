@@ -39,16 +39,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
   }
 
   const DataVector one{1., 1.};
-  for (size_t s = 0; s < one.size(); ++s) {
-    const auto mapped_point = amplitude * exp(-square((one - center) / width));
-    CHECK(gauss(one)[s] == approx(mapped_point[s]));
-    CHECK(gauss.first_deriv(one)[s] ==
-          approx(-2. * (one[s] - center) / square(width) * mapped_point[s]));
-    CHECK(gauss.second_deriv(one)[s] ==
-          approx((4 * square(one[s] - center) / pow<4>(width) -
-                  2 / square(width)) *
-                 mapped_point[s]));
-  }
+  const auto mapped_point = amplitude * exp(-square((one - center) / width));
+  const auto first_deriv = -2. * (one - center) / square(width) * mapped_point;
+  const auto second_deriv =
+      (4 * square(one - center) / pow<4>(width) - 2 / square(width)) *
+      mapped_point;
+  CHECK_ITERABLE_APPROX(gauss(one), mapped_point);
+  CHECK_ITERABLE_APPROX(gauss.first_deriv(one), first_deriv);
+  CHECK_ITERABLE_APPROX(gauss.second_deriv(one), second_deriv);
   test_math_helpers::test_pup_function(gauss);
 
   // Test base class serialization

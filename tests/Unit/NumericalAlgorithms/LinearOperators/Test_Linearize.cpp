@@ -62,9 +62,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
           u[i.offset()] = 3*x[i()[0]]+5*y[i()[1]]+z[i()[2]];
         }
         const DataVector u_lin = linearize(u, extents);
-        for(size_t i=0; i<u.size(); i++){
-          CHECK(u[i] == approx(u_lin[i]));
-        }
+        CHECK_ITERABLE_APPROX(u, u_lin);
       }
     }
   }
