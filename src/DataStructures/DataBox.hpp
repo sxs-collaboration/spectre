@@ -811,18 +811,19 @@ SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
     typelist<Ts...> /*meta*/) {}
 
-template <typename VariablesTag, typename... Ts, typename... Tags,
+template <typename VariablesTag, typename... VarsTags, typename... Tags,
           Requires<tt::is_a_v<Variables, item_type<VariablesTag>>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void add_variables_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
-    typelist<Ts...> /*meta*/) {
+    typelist<VarsTags...> /*meta*/) {
   const auto helper = [lazy_function = ::db::databox_detail::get<VariablesTag>(
                            data)](auto tag) {
     return get<decltype(tag)>(lazy_function.get());
   };
   static_cast<void>(std::initializer_list<char>{
-      (static_cast<void>(::db::databox_detail::get<Ts>(data) =
-                             make_deferred(helper, Ts{})),
+      (static_cast<void>(
+           ::db::databox_detail::get<VarsTags>(data) =
+               make_deferred<db::item_type<VarsTags>>(helper, VarsTags{})),
        '0')...});
 }
 
@@ -887,9 +888,11 @@ SPECTRE_ALWAYS_INLINE constexpr void
 add_compute_item_to_box_impl(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept(
-        noexcept(::db::databox_detail::get<ComputeItem>(data) = make_deferred(
-            ComputeItem::function,
-            ::db::databox_detail::get<ComputeItemArgumentsTags>(data)...))) {
+        noexcept(::db::databox_detail::get<ComputeItem>(data) =
+                 make_deferred<db::item_type<ComputeItem>>(
+                     ComputeItem::function,
+                     ::db::databox_detail::get<ComputeItemArgumentsTags>
+                     (data)...))) {
   // clang-format on
   static_assert(
       tmpl2::flat_all_v<
@@ -909,9 +912,10 @@ add_compute_item_to_box_impl(
       "ComputeItem itself. This is done to ensure no cyclic "
       "dependencies arise.");
 
-  ::db::databox_detail::get<ComputeItem>(data) = make_deferred(
-      ComputeItem::function,
-      ::db::databox_detail::get<ComputeItemArgumentsTags>(data)...);
+  ::db::databox_detail::get<ComputeItem>(data) =
+      make_deferred<db::item_type<ComputeItem>>(
+          ComputeItem::function,
+          ::db::databox_detail::get<ComputeItemArgumentsTags>(data)...);
 }
 
 template <typename Tag, typename FullTagList, typename... Tags>
@@ -977,8 +981,9 @@ SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemTags...> /*meta*/) {
   ::db::databox_detail::get<ComputeItem>(data) =
-      make_deferred(ComputeItem::function,
-                    ::db::databox_detail::get<ComputeItemTags>(data)...);
+      make_deferred<db::item_type<ComputeItem>>(
+          ComputeItem::function,
+          ::db::databox_detail::get<ComputeItemTags>(data)...);
   // If `tag` holds a Variables then add the contained Tensor's
   add_variables_compute_item_tags_to_box<ComputeItem>(
       data, typename select_if_variables<ComputeItem>::type{});
