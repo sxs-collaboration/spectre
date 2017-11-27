@@ -43,6 +43,7 @@ void test_rectangle_construction(
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           AffineMap2D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
                       AffineMap{-1., 1., lower_bound[1], upper_bound[1]}})));
+  test_initial_domain(domain, rectangle.initial_refinement_levels());
 }
 }  // namespace
 
@@ -121,11 +122,21 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Factory",
                   "[Domain][Unit]") {
-  test_factory_creation<DomainCreator<2, Frame::Inertial>>(
-      "  Rectangle:\n"
-      "    LowerBound: [0,0]\n"
-      "    UpperBound: [1,2]\n"
-      "    IsPeriodicIn: [True,False]\n"
-      "    InitialGridPoints: [3,4]\n"
-      "    InitialRefinement: [2,3]\n");
+  const auto domain_creator =
+      test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+          "  Rectangle:\n"
+          "    LowerBound: [0,0]\n"
+          "    UpperBound: [1,2]\n"
+          "    IsPeriodicIn: [True,False]\n"
+          "    InitialGridPoints: [3,4]\n"
+          "    InitialRefinement: [2,3]\n");
+  const auto* rectangle_creator =
+      dynamic_cast<const DomainCreators::Rectangle*>(domain_creator.get());
+  test_rectangle_construction(
+      *rectangle_creator, {{0., 0.}}, {{1., 2.}}, {{{3, 4}}}, {{{2, 3}}},
+      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
+          {{Direction<2>::lower_xi(), {0, {}}},
+           {Direction<2>::upper_xi(), {0, {}}}}},
+      std::vector<std::unordered_set<Direction<2>>>{
+          {{Direction<2>::lower_eta()}, {Direction<2>::upper_eta()}}});
 }

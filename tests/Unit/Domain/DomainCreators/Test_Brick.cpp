@@ -45,6 +45,8 @@ void test_brick_construction(
           AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
                       AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
                       AffineMap{-1., 1., lower_bound[2], upper_bound[2]}})));
+
+  test_initial_domain(domain, brick.initial_refinement_levels());
 }
 }  // namespace
 
@@ -189,11 +191,24 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",
                   "[Domain][Unit]") {
-  test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-      "  Brick:\n"
-      "    LowerBound: [0,0,0]\n"
-      "    UpperBound: [1,2,3]\n"
-      "    IsPeriodicIn: [True,False,True]\n"
-      "    InitialGridPoints: [3,4,3]\n"
-      "    InitialRefinement: [2,3,2]\n");
+  const auto domain_creator =
+      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+          "  Brick:\n"
+          "    LowerBound: [0,0,0]\n"
+          "    UpperBound: [1,2,3]\n"
+          "    IsPeriodicIn: [True,False,True]\n"
+          "    InitialGridPoints: [3,4,3]\n"
+          "    InitialRefinement: [2,3,2]\n");
+  const auto* brick_creator =
+      dynamic_cast<const DomainCreators::Brick*>(domain_creator.get());
+  test_brick_construction(
+      *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
+      {{{2, 3, 2}}},
+      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+          {{Direction<3>::lower_xi(), {0, {}}},
+           {Direction<3>::upper_xi(), {0, {}}},
+           {Direction<3>::lower_zeta(), {0, {}}},
+           {Direction<3>::upper_zeta(), {0, {}}}}},
+      std::vector<std::unordered_set<Direction<3>>>{
+          {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
 }
