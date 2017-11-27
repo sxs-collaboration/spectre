@@ -18,6 +18,9 @@ static constexpr int number_of_1d_array_elements_per_core = 10;
 struct TestMetavariables;
 
 template <class Metavariables>
+struct ArrayParallelComponent;
+
+template <class Metavariables>
 struct NodegroupParallelComponent;
 
 namespace Tags {
@@ -34,12 +37,17 @@ struct total_receives_on_node : db::DataBoxTag {
 
 struct nodegroup_initialize {
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList>
+            typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         NodegroupParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(db::create<typelist<Tags::vector_of_array_indexs,
                                                Tags::total_receives_on_node>>(
         std::vector<int>(
@@ -52,18 +60,25 @@ struct nodegroup_initialize {
 struct nodegroup_receive {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/, const int& id_of_array) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    const int& id_of_array) {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         NodegroupParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
         box, [&id_of_array](std::vector<int>& array_indexs,
                             int& total_receives_on_node) {
           if (static_cast<int>(array_indexs.size()) !=
               number_of_1d_array_elements_per_core *
-              Parallel::procs_on_node(Parallel::my_node())) {
+                  Parallel::procs_on_node(Parallel::my_node())) {
             array_indexs[static_cast<size_t>(id_of_array)]++;
           }
           std::for_each(array_indexs.begin(), array_indexs.end(),
@@ -77,24 +92,29 @@ struct nodegroup_receive {
 struct nodegroup_check_first_result {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         NodegroupParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::total_receives_on_node>(box) ==
                              number_of_1d_array_elements_per_core *
                                  Parallel::procs_on_node(Parallel::my_node()));
     decltype(auto) v = db::get<Tags::vector_of_array_indexs>(box);
     SPECTRE_PARALLEL_REQUIRE(static_cast<int>(v.size()) ==
                              number_of_1d_array_elements_per_core *
-                             Parallel::procs_on_node(Parallel::my_node()));
+                                 Parallel::procs_on_node(Parallel::my_node()));
     std::for_each(v.begin(), v.end(), [](const int& value) {
       SPECTRE_PARALLEL_REQUIRE(
-          value ==
-          number_of_1d_array_elements_per_core *
-              Parallel::procs_on_node(Parallel::my_node()));
+          value == number_of_1d_array_elements_per_core *
+                       Parallel::procs_on_node(Parallel::my_node()));
     });
     return std::forward_as_tuple(std::move(box));
   }
@@ -115,7 +135,7 @@ struct nodegroup_threaded_receive {
                             int& total_receives_on_node) {
           if (static_cast<int>(array_indexs.size()) !=
               number_of_1d_array_elements_per_core *
-              Parallel::procs_on_node(Parallel::my_node())) {
+                  Parallel::procs_on_node(Parallel::my_node())) {
             array_indexs[static_cast<size_t>(id_of_array)]++;
           }
           std::for_each(array_indexs.begin(), array_indexs.end(),
@@ -129,24 +149,29 @@ struct nodegroup_threaded_receive {
 struct nodegroup_check_threaded_result {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         NodegroupParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::total_receives_on_node>(box) ==
                              2 * number_of_1d_array_elements_per_core *
                                  Parallel::procs_on_node(Parallel::my_node()));
     decltype(auto) v = db::get<Tags::vector_of_array_indexs>(box);
     SPECTRE_PARALLEL_REQUIRE(static_cast<int>(v.size()) ==
                              number_of_1d_array_elements_per_core *
-                             Parallel::procs_on_node(Parallel::my_node()));
+                                 Parallel::procs_on_node(Parallel::my_node()));
     std::for_each(v.begin(), v.end(), [](const int& value) {
       SPECTRE_PARALLEL_REQUIRE(
-          value ==
-          2 * number_of_1d_array_elements_per_core *
-              Parallel::procs_on_node(Parallel::my_node()));
+          value == 2 * number_of_1d_array_elements_per_core *
+                       Parallel::procs_on_node(Parallel::my_node()));
     });
     return std::forward_as_tuple(std::move(box));
   }
@@ -154,11 +179,16 @@ struct nodegroup_check_threaded_result {
 
 struct reduce_to_nodegroup {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/) {
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     auto& local_nodegroup =
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
@@ -171,11 +201,16 @@ struct reduce_to_nodegroup {
 
 struct reduce_threaded_method {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/) {
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     auto& local_nodegroup =
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)

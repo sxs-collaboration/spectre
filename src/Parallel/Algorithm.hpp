@@ -337,7 +337,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       InitialDataBox,
       tmpl::list<tuples::TaggedTuple<InboxTagsPack...>,
                  Parallel::ConstGlobalCache<metavariables>, array_index,
-                 actions_list>,
+                 actions_list, std::add_pointer_t<ParallelComponent>>,
       ActionsPack...>;
   /// \endcond
 
@@ -446,6 +446,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     Algorithm_detail::apply_visitor<Action>(
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
+        std::add_pointer_t<ParallelComponent>{},
         std::forward<Args>(std::get<Is>(args))...);
   }
 
@@ -582,7 +583,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   Algorithm_detail::apply_visitor<Action>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), actions_list{},
-      std::forward<Arg>(arg));
+      std::add_pointer_t<ParallelComponent>{}, std::forward<Arg>(arg));
   performing_action_ = false;
   unlock(&node_lock_);
 }
@@ -656,7 +657,8 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   performing_action_ = true;
   Algorithm_detail::apply_visitor<Action>(
       box_, inboxes_, *const_global_cache_,
-      static_cast<const array_index&>(array_index_), actions_list{});
+      static_cast<const array_index&>(array_index_), actions_list{},
+      std::add_pointer_t<ParallelComponent>{});
   performing_action_ = false;
   unlock(&node_lock_);
 }
@@ -797,27 +799,27 @@ constexpr bool AlgorithmImpl<
             SPECTRE_JUST_ALWAYS_INLINE noexcept {
               std::tie(box_) = this_action::apply(
                   my_box, inboxes_, *const_global_cache_,
-                  static_cast<const array_index&>(array_index_),
-                  actions_list{});
+                  static_cast<const array_index&>(array_index_), actions_list{},
+                  std::add_pointer_t<ParallelComponent>{});
             },
         [this](auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
             SPECTRE_JUST_ALWAYS_INLINE noexcept {
               std::tie(box_, terminate_) = this_action::apply(
                   my_box, inboxes_, *const_global_cache_,
-                  static_cast<const array_index&>(array_index_),
-                  actions_list{});
+                  static_cast<const array_index&>(array_index_), actions_list{},
+                  std::add_pointer_t<ParallelComponent>{});
             },
         [this](auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
             SPECTRE_JUST_ALWAYS_INLINE noexcept {
               std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
                   my_box, inboxes_, *const_global_cache_,
-                  static_cast<const array_index&>(array_index_),
-                  actions_list{});
-            })(box,
-               typename std::tuple_size<decltype(this_action::apply(
-                   box, inboxes_, *const_global_cache_,
-                   static_cast<const array_index&>(array_index_),
-                   actions_list{}))>::type{});
+                  static_cast<const array_index&>(array_index_), actions_list{},
+                  std::add_pointer_t<ParallelComponent>{});
+            })(
+        box, typename std::tuple_size<decltype(this_action::apply(
+                 box, inboxes_, *const_global_cache_,
+                 static_cast<const array_index&>(array_index_), actions_list{},
+                 std::add_pointer_t<ParallelComponent>{}))>::type{});
 
     performing_action_ = false;
 #ifdef SPECTRE_CHARM_PROJECTIONS
