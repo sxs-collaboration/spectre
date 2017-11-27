@@ -86,7 +86,7 @@ struct TuplePrinter {
   template <typename... Args>
   static std::ostream& print(std::ostream& os, const std::tuple<Args...>& t) {
     TuplePrinter<N - 1>::print(os, t);
-    os << ", " << std::get<N - 1>(t);
+    os << "," << std::get<N - 1>(t);
     return os;
   }
 };
