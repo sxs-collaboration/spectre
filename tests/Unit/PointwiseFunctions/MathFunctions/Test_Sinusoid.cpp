@@ -35,15 +35,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
   }
 
   const DataVector one{1., 1.};
-  for (size_t s = 0; s < one.size(); ++s) {
-    const DataVector mapped_point = amplitude * sin(wavenumber * one + phase);
-    const DataVector mapped_first_deriv =
-        amplitude * wavenumber * cos(wavenumber * one + phase);
-    const DataVector mapped_second_deriv = -square(wavenumber) * mapped_point;
-    CHECK(sinusoid(one)[s] == approx(mapped_point[s]));
-    CHECK(sinusoid.first_deriv(one)[s] == approx(mapped_first_deriv[s]));
-    CHECK(sinusoid.second_deriv(one)[s] == approx(mapped_second_deriv[s]));
-  }
+  const DataVector mapped_point = amplitude * sin(wavenumber * one + phase);
+  const DataVector mapped_first_deriv =
+      amplitude * wavenumber * cos(wavenumber * one + phase);
+  const DataVector mapped_second_deriv = -square(wavenumber) * mapped_point;
+  CHECK_ITERABLE_APPROX(sinusoid(one), mapped_point);
+  CHECK_ITERABLE_APPROX(sinusoid.first_deriv(one), mapped_first_deriv);
+  CHECK_ITERABLE_APPROX(sinusoid.second_deriv(one), mapped_second_deriv);
+
   test_math_helpers::test_pup_function(sinusoid);
 
   // Test base class serialization
