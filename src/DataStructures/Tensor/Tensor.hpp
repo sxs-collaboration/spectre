@@ -495,19 +495,12 @@ std::ostream& operator<<(std::ostream& os,
   static_assert(tt::is_streamable_v<decltype(os), X>,
                 "operator<< is not defined for the type you are trying to "
                 "stream in Tensor");
-  os << "--Symmetry:  " << x.symmetries() << "\n";
-  os << "--Types:     " << x.index_types() << "\n";
-  os << "--Dims:      " << x.index_dims() << "\n";
-  os << "--Locations: " << x.index_valences() << "\n";
-  os << "--Frames:    " << x.index_frames() << "\n";
   for (size_t i = 0; i < x.size() - 1; ++i) {
-    os << " T" << x.get_tensor_index(i) << "=" << x[i]
-       << "\n     Multiplicity: " << x.multiplicity(i) << " Index: " << i
+    os << "T" << x.get_tensor_index(i) << "=" << x[i]
        << "\n";
   }
   size_t i = x.size() - 1;
-  os << " T" << x.get_tensor_index(i) << "=" << x[i]
-     << "\n     Multiplicity: " << x.multiplicity(i) << " Index: " << i;
+  os << "T" << x.get_tensor_index(i) << "=" << x[i];
   return os;
 }
 

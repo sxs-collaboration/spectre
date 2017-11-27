@@ -609,33 +609,73 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Multiplicity",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Stream",
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamData",
                   "[DataStructures][Unit]") {
   std::string compare_out =
-      "--Symmetry:  (1)\n"
-      "--Types:     (Spatial)\n"
-      "--Dims:      (3)\n"
-      "--Locations: (Lo)\n"
-      "--Frames:    (Grid)\n"
-      " T(0)=(2,2,2,2,2,2,2,2,2,2)\n"
-      "     Multiplicity: 1 Index: 0\n"
-      " T(1)=(2,2,2,2,2,2,2,2,2,2)\n"
-      "     Multiplicity: 1 Index: 1\n"
-      " T(2)=(2,2,2,2,2,2,2,2,2,2)\n"
-      "     Multiplicity: 1 Index: 2";
+      "T(0)=(2,2,2,2,2,2,2,2,2,2)\n"
+      "T(1)=(2,2,2,2,2,2,2,2,2,2)\n"
+      "T(2)=(2,2,2,2,2,2,2,2,2,2)";
+
   CHECK(get_output(Tensor<std::vector<double>, Symmetry<1>,
                           index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>(
             10_st, 2.0)) == compare_out);
 
   compare_out =
-      "--Symmetry:  ()\n"
-      "--Types:     ()\n"
-      "--Dims:      ()\n"
-      "--Locations: ()\n"
-      "--Frames:    ()\n"
-      " T()=(2,2,2,2,2,2,2,2,2,2)\n"
-      "     Multiplicity: 1 Index: 0";
+      "T()=(2,2,2,2,2,2,2,2,2,2)";
   CHECK(get_output(Scalar<std::vector<double>>(10_st, 2.0)) == compare_out);
+
+  compare_out =
+      "T(0,0,0)=0\n"
+      "T(1,0,0)=1\n"
+      "T(2,0,0)=2\n"
+      "T(0,1,0)=3\n"
+      "T(1,1,0)=4\n"
+      "T(2,1,0)=5\n"
+      "T(0,2,0)=6\n"
+      "T(1,2,0)=7\n"
+      "T(2,2,0)=8\n"
+      "T(0,1,1)=9\n"
+      "T(1,1,1)=10\n"
+      "T(2,1,1)=11\n"
+      "T(0,2,1)=12\n"
+      "T(1,2,1)=13\n"
+      "T(2,2,1)=14\n"
+      "T(0,2,2)=15\n"
+      "T(1,2,2)=16\n"
+      "T(2,2,2)=17";
+
+  CHECK(get_output([]() {
+          tnsr::abb<double, 2, Frame::Inertial> tensor{};
+          std::iota(tensor.begin(), tensor.end(), 0);
+          return tensor;
+        }()) == compare_out);
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
+                  "[DataStructures][Unit]") {
+  {
+    const Scalar<double> tensor{};
+    CHECK(get_output(tensor.symmetries()) == "()");
+    CHECK(get_output(tensor.index_types()) == "()");
+    CHECK(get_output(tensor.index_dims()) == "()");
+    CHECK(get_output(tensor.index_valences()) == "()");
+    CHECK(get_output(tensor.index_frames()) == "()");
+  }
+  {
+    using structure = Tensor_detail::Structure<Symmetry<1, 1, 3, 2>,
+                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>,
+                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>,
+                             SpacetimeIndex<3, UpLo::Lo, Frame::Logical>,
+                             SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
+
+    CHECK(get_output(structure::symmetries()) == "(3,3,2,1)");
+    CHECK(get_output(structure::index_types()) ==
+          "(Spatial,Spatial,Spacetime,Spacetime)");
+    CHECK(get_output(structure::dims()) == "(2,2,4,3)");
+    CHECK(get_output(structure::index_valences()) == "(Lo,Lo,Lo,Up)");
+    CHECK(get_output(structure::index_frames()) ==
+          "(Inertial,Inertial,Logical,Distorted)");
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
