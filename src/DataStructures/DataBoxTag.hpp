@@ -107,18 +107,35 @@ struct DataBoxPrefix : DataBoxTag {};
  * \brief Marks a DataBoxTag as being a compute item that executes a function
  *
  * \details
+ * Compute items come in two forms: mutating and non-mutating. Mutating
+ * compute items modify a stored value in order to reduce the number of memory
+ * allocations done. For example, if a function would return a `Variables` or
+ * `Tensor<DataVector...>` and is called every time step, then it would be
+ * preferable to use a mutating compute item so that the values in the already
+ * allocated memory can just be changed.
+ * In contrast, non-mutating compute items simply return the new value after a
+ * call (if the value is out-of-date), which is fine for infrequently called
+ * compute items or ones that do not allocate data on the heap.
+ *
  * A compute item tag contains a member named `function` that is either a
  * function pointer, or a static constexpr function. The compute item tag
  * must also have a `label`, same as the DataBox tags, and a type alias
  * `argument_tags` that is a typelist of the tags that will
  * be retrieved from the DataBox and whose data will be passed to the function
- * (pointer).
+ * (pointer). Mutating compute item tags must also contain a type alias named
+ * `return_type` that is the type the function is mutating. The type must be
+ * default constructible.
  *
  * \example
- * Most compute item tags will look similar to:
+ * Most non-mutating compute item tags will look similar to:
  * \snippet Test_DataBox.cpp databox_compute_item_tag_example
  * Note that the arguments can be empty:
  * \snippet Test_DataBox.cpp compute_item_tag_no_tags
+ *
+ * Mutating compute item tags are of the form:
+ * \snippet Test_DataBox.cpp databox_mutating_compute_item_tag
+ * where the function is:
+ * \snippet Test_DataBox.cpp databox_mutating_compute_item_function
  *
  * You can also have `function` be a function instead of a function pointer,
  * which offers a lot of simplicity for very simple compute items.
@@ -311,6 +328,12 @@ template <typename T>
 constexpr bool is_compute_item_v = is_compute_item<T>::value;
 
 namespace detail {
+template <class T, class = void>
+constexpr bool has_return_type_member_v = false;
+template <class T>
+constexpr bool
+    has_return_type_member_v<T, cpp17::void_t<typename T::return_type>> = true;
+
 template <typename Tag, typename = std::nullptr_t>
 struct compute_item_result_impl;
 
@@ -334,15 +357,22 @@ struct compute_item_result_helper<Tag, ArgumentsList<Args...>> {
 };
 
 template <typename Tag>
-struct compute_item_result_impl<Tag, Requires<is_compute_item<Tag>::value>> {
+struct compute_item_result_impl<
+    Tag,
+    Requires<is_compute_item_v<Tag> and not has_return_type_member_v<Tag>>> {
   using type =
       typename compute_item_result_helper<Tag,
                                           typename Tag::argument_tags>::type;
 };
 
 template <typename Tag>
-struct compute_item_result_impl<Tag,
-                                Requires<not is_compute_item<Tag>::value>> {
+struct compute_item_result_impl<
+    Tag, Requires<is_compute_item_v<Tag> and has_return_type_member_v<Tag>>> {
+  using type = typename Tag::return_type;
+};
+
+template <typename Tag>
+struct compute_item_result_impl<Tag, Requires<not is_compute_item_v<Tag>>> {
   using type = typename Tag::type;
 };
 }  // namespace detail

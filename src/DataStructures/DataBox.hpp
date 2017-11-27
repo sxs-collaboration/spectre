@@ -980,10 +980,11 @@ template <typename ComputeItem, typename... Tags, typename... ComputeItemTags,
 SPECTRE_ALWAYS_INLINE static constexpr void add_reset_compute_item_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<ComputeItemTags...> /*meta*/) {
-  ::db::databox_detail::get<ComputeItem>(data) =
-      make_deferred<db::item_type<ComputeItem>>(
-          ComputeItem::function,
-          ::db::databox_detail::get<ComputeItemTags>(data)...);
+  update_deferred_args(
+      make_not_null(&::db::databox_detail::get<ComputeItem>(data)),
+      ComputeItem::function,
+      ::db::databox_detail::get<ComputeItemTags>(data)...);
+
   // If `tag` holds a Variables then add the contained Tensor's
   add_variables_compute_item_tags_to_box<ComputeItem>(
       data, typename select_if_variables<ComputeItem>::type{});
