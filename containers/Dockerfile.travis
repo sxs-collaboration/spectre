@@ -107,7 +107,7 @@ RUN if [ ${SONARQUBE} ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
     && [ ${TRAVIS_EVENT_TYPE} = cron ] \
     && [ ${CC} = gcc ]; then \
-      /work/sonarqube/build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
+      /work/sonarcloud/build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
         --out-dir sonar-output make -j2; \
     elif [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ]; then \
@@ -178,11 +178,11 @@ RUN if [ ${CC} = gcc ] \
         # code coverage. Here ${TRAVIS_REPO_SLUG}=sxs-collaboration/spectre
         # The SONAR_TOKEN variable is an env variable set in the TravisCI config
         # that is not visible in the build logs and provides secure access to
-        # the SXS collaboration SpECTRE project on SonarQUBE.
+        # the SXS collaboration SpECTRE project on SonarCloud.
         # The sonar.host.url is set to where the Sonar server is running, which
-        # we use sonarqube.com for since it is available for open-source
+        # we use sonarcloud.io for since it is available for open-source
         # projects.
-        /work/sonarqube/sonar-scanner-2.8/bin/sonar-scanner \
+        /work/sonarcloud/sonar-scanner-2.8/bin/sonar-scanner \
             -Dsonar.projectKey=spectre \
             -Dsonar.projectName=spectre \
             -Dsonar.projectVersion=${TRAVIS_COMMIT} \
@@ -194,7 +194,7 @@ RUN if [ ${CC} = gcc ] \
             -Dsonar.sources=/work/spectre \
             -Dsonar.exclusions=build/CMakeFiles/**,build/doc/**,tests/** \
             -Dsonar.cfamily.build-wrapper-output=/work/build_${BUILD_TYPE}_${CC}/sonar-output \
-            -Dsonar.host.url=https://sonarqube.com \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.cfamily.gcov.reportsPath=/work/build_${BUILD_TYPE}_${CC}/tmp \
             -Dsonar.organization=sxs-collaboration \
             -Dsonar.login=${SONAR_TOKEN}; \
