@@ -141,6 +141,64 @@ tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
   return d_spacetime_metric;
 }
 
+template <size_t SpatialDim, typename DataType>
+tnsr::Abb<DataType, SpatialDim> make_spacetime_christoffel_second_kind(
+    const DataType& used_for_size) {
+  tnsr::Abb<DataType, SpatialDim> christoffel{};
+  for (size_t i = 0; i < SpatialDim + 1; i++) {
+    for (size_t j = i; j < SpatialDim + 1; j++) {
+      for (size_t k = 0; k < SpatialDim + 1; k++) {
+        christoffel.get(k, i, j) = make_with_value<DataType>(
+            used_for_size, (i + 2.) * (j + 1.) * (k + 2.));
+      }
+    }
+  }
+  return christoffel;
+}
+
+
+template <size_t SpatialDim, typename DataType>
+tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
+    const DataType& used_for_size){
+  tnsr::Ijj<DataType, SpatialDim> christoffel{};
+  for (size_t i = 0; i < SpatialDim; i++) {
+    for (size_t j = i; j < SpatialDim; j++) {
+      for (size_t k = 0; k < SpatialDim; k++) {
+        christoffel.get(k, i, j) = make_with_value<DataType>(
+            used_for_size, 4. * (i + 1.) * (j + 1.) - k);
+      }
+    }
+  }
+  return christoffel;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::aa<DataType, SpatialDim> make_spacetime_metric(
+    const DataType& used_for_size){
+  tnsr::aa<DataType, SpatialDim> spacetime_metric{};
+  for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
+    for (size_t nu = mu; nu < SpatialDim + 1; ++nu) {
+      spacetime_metric.get(mu, nu) =
+          make_with_value<DataType>(used_for_size, -2. * (mu + 2.) * (nu + 2.));
+    }
+  }
+  return spacetime_metric;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::AA<DataType, SpatialDim> make_inverse_spacetime_metric(
+    const DataType& used_for_size) {
+  tnsr::AA<DataType, SpatialDim> inverse_spacetime_metric{};
+  for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
+    for (size_t nu = mu; nu < SpatialDim + 1; ++nu) {
+      inverse_spacetime_metric.get(mu, nu) =
+          make_with_value<DataType>(used_for_size, -2. * (mu + 2.) * (nu + 2.));
+    }
+  }
+  return inverse_spacetime_metric;
+}
+
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -164,7 +222,15 @@ tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
   template tnsr::abb<DTYPE(data), DIM(data)>                                 \
   make_spacetime_deriv_spacetime_metric(const DTYPE(data) & used_for_size);  \
   template tnsr::iaa<DTYPE(data), DIM(data)>                                 \
-  make_spatial_deriv_spacetime_metric(const DTYPE(data) & used_for_size);
+  make_spatial_deriv_spacetime_metric(const DTYPE(data) & used_for_size);    \
+  template tnsr::Abb<DTYPE(data), DIM(data)>                                 \
+  make_spacetime_christoffel_second_kind(const DTYPE(data) & used_for_size); \
+  template tnsr::Ijj<DTYPE(data), DIM(data)>                                 \
+  make_spatial_christoffel_second_kind(const DTYPE(data) & used_for_size);   \
+  template tnsr::aa<DTYPE(data), DIM(data)> make_spacetime_metric(           \
+      const DTYPE(data) & used_for_size);                                    \
+  template tnsr::AA<DTYPE(data), DIM(data)> make_inverse_spacetime_metric(   \
+      const DTYPE(data) & used_for_size);
 
 template Scalar<double> make_lapse(const double& used_for_size);
 template Scalar<DataVector> make_lapse(const DataVector& used_for_size);
