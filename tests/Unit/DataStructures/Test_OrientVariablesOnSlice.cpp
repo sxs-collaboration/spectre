@@ -71,6 +71,7 @@ void check_orient_variables_on_slice(
   const auto& expected_coords = coords_on_neighbor_slice;
   for (size_t d = 0; d < SpatialDim; ++d) {
     for (size_t s = 0; s < extents_on_my_slice.product(); ++s) {
+      INFO("d: " << d << "\t" << "s: " << s);
       CHECK(computed_coords.get(d)[s] == approx(expected_coords.get(d)[s]));
     }
   }
