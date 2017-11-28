@@ -54,17 +54,17 @@ void check_orient_variables_on_slice(
       my_block.coordinate_map()(interface_logical_coordinates(
           extents_on_my_slice, direction_to_neighbor));
 
-  const Orientation<SpatialDim>& orientation =
+  const OrientationMap<SpatialDim>& orientation =
       my_block.neighbors().at(direction_to_neighbor).orientation();
   const auto oriented_coords_on_neighbor_slice = orient_variables_on_slice(
       coords_on_my_slice, extents_on_my_slice, my_sliced_dim, orientation);
 
   const Index<SpatialDim - 1> extents_on_neighbor_slice(
-      neighbor_extents.slice_away(orientation.mapped(my_sliced_dim)));
+      neighbor_extents.slice_away(orientation(my_sliced_dim)));
   const auto coords_on_neighbor_slice =
       neighbor_block.coordinate_map()(interface_logical_coordinates(
           extents_on_neighbor_slice,
-          orientation.mapped(direction_to_neighbor).opposite()));
+          orientation(direction_to_neighbor).opposite()));
 
   const auto& computed_coords =
       get<PhysicalCoords<SpatialDim>>(oriented_coords_on_neighbor_slice);

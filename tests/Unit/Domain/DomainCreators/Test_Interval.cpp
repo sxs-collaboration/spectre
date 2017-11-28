@@ -55,8 +55,8 @@ void test_periodic_interval(
   CHECK(interval.initial_extents() == expected_extents);
   CHECK(interval.initial_refinement_levels() == expected_refinement_level);
 
-  const Orientation<1> aligned_orientation{{{Direction<1>::lower_xi()}},
-                                           {{Direction<1>::lower_xi()}}};
+  const OrientationMap<1> aligned_orientation{{{Direction<1>::lower_xi()}},
+                                              {{Direction<1>::lower_xi()}}};
 
   test_domain_construction(
       domain,

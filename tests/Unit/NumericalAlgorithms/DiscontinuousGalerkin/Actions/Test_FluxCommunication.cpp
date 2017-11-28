@@ -105,8 +105,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   const ElementId<2> east_id(1, {{{1, 1}, {1, 0}}});
   const ElementId<2> south_id(1, {{{1, 0}, {1, 1}}});
 
-  // Orientation from block 1 to block 0
-  const Orientation<2> block_orientation(
+  // OrientationMap from block 1 to block 0
+  const OrientationMap<2> block_orientation(
       {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}},
       {{Direction<2>::lower_eta(), Direction<2>::lower_xi()}});
 

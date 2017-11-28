@@ -53,8 +53,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
       refinement_level{{{3, 2, 4}}};
   const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}},
       upper_bound{{0.8, 5.0, 3.0}};
-  // Default Orientation is aligned.
-  const Orientation<3> aligned_orientation{};
+  // Default OrientationMap is aligned.
+  const OrientationMap<3> aligned_orientation{};
 
   const DomainCreators::Brick brick{lower_bound, upper_bound,
                                     std::array<bool, 3>{{false, false, false}},

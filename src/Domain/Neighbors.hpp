@@ -11,7 +11,7 @@
 #include <unordered_set>
 
 #include "Domain/ElementId.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbors of an Element in a particular direction.
@@ -23,9 +23,9 @@ class Neighbors {
   /// Construct with the ids and orientation of the neighbors.
   ///
   /// \param ids the ids of the neighbors.
-  /// \param orientation the Orientation of the neighbors.
+  /// \param orientation the OrientationMap of the neighbors.
   Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-            Orientation<VolumeDim> orientation);
+            OrientationMap<VolumeDim> orientation);
 
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
@@ -39,7 +39,7 @@ class Neighbors {
     return ids_;
   }
 
-  const Orientation<VolumeDim>& orientation() const noexcept {
+  const OrientationMap<VolumeDim>& orientation() const noexcept {
     return orientation_;
   }
 
@@ -89,7 +89,7 @@ class Neighbors {
 
  private:
   std::unordered_set<ElementId<VolumeDim>> ids_;
-  Orientation<VolumeDim> orientation_;
+  OrientationMap<VolumeDim> orientation_;
 };
 
 /// Output operator for Neighborss.

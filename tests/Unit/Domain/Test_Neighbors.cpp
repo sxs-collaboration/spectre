@@ -12,7 +12,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
   Neighbors<1> test_neighbors;
 
   // Test constructor:
-  Orientation<1> custom_orientation(
+  OrientationMap<1> custom_orientation(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
 
   const std::unordered_set<ElementId<1>> custom_ids = []() {
@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
   Neighbors<2> test_neighbors;
 
   // Test constructor:
-  Orientation<2> custom_orientation(std::array<Direction<2>, 2>{
+  OrientationMap<2> custom_orientation(std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}});
 
   const std::unordered_set<ElementId<2>> custom_ids = []() {
@@ -129,7 +129,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
   Neighbors<3> test_neighbors;
 
   // Test constructor:
-  Orientation<3> custom_orientation(std::array<Direction<3>, 3>{
+  OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
        Direction<3>::upper_xi()}});
 

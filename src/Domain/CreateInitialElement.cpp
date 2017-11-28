@@ -9,7 +9,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -28,9 +28,8 @@ Element<VolumeDim> create_initial_element(
     const auto& block_neighbor = neighbors_of_block.at(direction);
     const auto& orientation = block_neighbor.orientation();
     // TODO(): An illustration of what is happening here would be useful
-    auto segment_ids_of_neighbor = orientation.mapped(segment_ids);
-    auto& segment_to_flip =
-        gsl::at(segment_ids_of_neighbor, orientation.mapped(dim));
+    auto segment_ids_of_neighbor = orientation(segment_ids);
+    auto& segment_to_flip = gsl::at(segment_ids_of_neighbor, orientation(dim));
     segment_to_flip = segment_to_flip.id_if_flipped();
     return std::make_pair(
         direction,
@@ -52,7 +51,7 @@ Element<VolumeDim> create_initial_element(
         direction,
         Neighbors<VolumeDim>({{ElementId<VolumeDim>{element_id.block_id(),
                                                     segment_ids_of_neighbor}}},
-                             Orientation<VolumeDim>{}));
+                             OrientationMap<VolumeDim>{}));
   };
 
   typename Element<VolumeDim>::Neighbors_t neighbors_of_element;

@@ -50,12 +50,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Identity", "[Domain][Unit]") {
 SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   // Create std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
 
-  // Each BlockNeighbor is an id and an Orientation:
+  // Each BlockNeighbor is an id and an OrientationMap:
   const BlockNeighbor<2> block_neighbor1(
-      1, Orientation<2>(std::array<Direction<2>, 2>{
+      1, OrientationMap<2>(std::array<Direction<2>, 2>{
              {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}));
   const BlockNeighbor<2> block_neighbor2(
-      2, Orientation<2>(std::array<Direction<2>, 2>{
+      2, OrientationMap<2>(std::array<Direction<2>, 2>{
              {Direction<2>::lower_xi(), Direction<2>::upper_eta()}}));
   std::unordered_map<Direction<2>, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},

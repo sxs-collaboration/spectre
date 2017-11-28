@@ -21,7 +21,7 @@ set(LIBRARY_SOURCES
     InitialElementIds.cpp
     LogicalCoordinates.cpp
     Neighbors.cpp
-    Orientation.cpp
+    OrientationMap.cpp
     SegmentId.cpp
     Side.cpp
     )

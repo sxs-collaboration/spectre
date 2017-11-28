@@ -12,7 +12,7 @@
 
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-                                Orientation<VolumeDim> orientation)
+                                OrientationMap<VolumeDim> orientation)
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {}
 
 template <size_t VolumeDim>

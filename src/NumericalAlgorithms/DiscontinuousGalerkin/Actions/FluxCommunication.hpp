@@ -23,7 +23,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/Neighbors.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -285,7 +285,7 @@ struct SendDataForFluxes {
             not segment_id.overlaps(neighbor_segment_id);
         const auto direction_from_neighbor =
             neighbor_is_on_opposite_side_of_mortar
-                ? orientation.mapped(direction.opposite())
+                ? orientation(direction.opposite())
                 : direction;
         auto neighbor_variables =
             neighbor_is_on_opposite_side_of_mortar
