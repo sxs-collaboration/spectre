@@ -16,6 +16,10 @@
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+struct TestMetavariables;
+template <class Metavariables>
+struct SingletonParallelComponent;
+
 static constexpr int number_of_1d_array_elements = 14;
 
 /// [custom_reduce_function]
@@ -59,12 +63,19 @@ void register_custom_reductions() {
 
 struct singleton_reduce_sum_int {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/, int value) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    int value) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         SingletonParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
                                  (number_of_1d_array_elements - 1) / 2 ==
                              value);
@@ -74,13 +85,19 @@ struct singleton_reduce_sum_int {
 
 struct singleton_reduce_sum_double {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-
-                    const ActionList /*meta*/, double value) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    double value) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         SingletonParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(approx(13.4 * number_of_1d_array_elements) ==
                              value);
     return std::forward_as_tuple(std::move(box));
@@ -89,12 +106,19 @@ struct singleton_reduce_sum_double {
 
 struct singleton_reduce_product_double {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/, double value) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    double value) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         SingletonParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(approx(pow<number_of_1d_array_elements>(13.4)) ==
                              value);
     return std::forward_as_tuple(std::move(box));
@@ -103,14 +127,20 @@ struct singleton_reduce_product_double {
 
 struct singleton_reduce_custom_reduction {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/,
       Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                               std::vector<int>>
           value) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         SingletonParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<0>(value) == 10);
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<1>(value).at("unity") ==
                              number_of_1d_array_elements - 1);
@@ -165,12 +195,16 @@ struct ArrayParallelComponent;
 
 struct array_reduce {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index,
-                    const ActionList /*meta*/) noexcept {
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
+                    const ParallelComponent* /*meta*/) noexcept {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     int my_send_int = array_index;
     /// [contribute_to_reduction_example]
     Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,

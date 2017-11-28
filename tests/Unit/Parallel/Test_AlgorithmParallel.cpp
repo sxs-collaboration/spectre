@@ -48,27 +48,42 @@ struct ArrayParallelComponent;
 template <class Metavariables>
 struct GroupParallelComponent;
 
+template <class Metavariables>
+struct NodegroupParallelComponent;
+
 namespace SingletonActions {
 struct Initialize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         SingletonParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     return std::forward_as_tuple(box);
   }
 };
 
 struct CountReceives {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         SingletonParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 70);
     if (int_receives.size() == 70) {
@@ -98,24 +113,33 @@ struct CountReceives {
 namespace ArrayActions {
 struct Initialize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(db::create<typelist<Tags::CountActionsCalled>>(0));
   }
 };
 
 struct AddIntValue10 {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index,
-                    const ActionList /*meta*/) noexcept {
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.empty() or int_receives.size() == 1);
     if (int_receives.size() == 1) {
@@ -137,12 +161,17 @@ struct AddIntValue10 {
 
 struct IncrementInt0 {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
     db::mutate<Tags::Int0>(box, [](int& int0) { int0++; });
@@ -152,12 +181,17 @@ struct IncrementInt0 {
 
 struct RemoveInt0 {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::Int0>(box) == 11);
     db::mutate<Tags::CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
@@ -168,11 +202,16 @@ struct RemoveInt0 {
 
 struct SendToSingleton {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/) {
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   ArrayParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     auto& singleton_parallel_component = Parallel::get_parallel_component<
         SingletonParallelComponent<Metavariables>>(cache);
     // Send CountActionsCalled to the SingletonParallelComponent several times
@@ -187,24 +226,37 @@ struct SendToSingleton {
 namespace GroupActions {
 struct Initialize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   GroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(db::create<typelist<Tags::CountActionsCalled>>(0));
   }
 };
 
 struct PrintSomething {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         GroupParallelComponent<TestMetavariables>> or
+            cpp17::is_same_v<ParallelComponent,
+                             NodegroupParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     return std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool>(
         std::move(box), true);
   }
@@ -212,12 +264,17 @@ struct PrintSomething {
 
 struct ReduceInt {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   GroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool>(
         std::move(box), true);
   }
@@ -228,12 +285,18 @@ struct ReduceInt {
 namespace NodegroupActions {
 struct Initialize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(
+        cpp17::is_same_v<ParallelComponent,
+                         NodegroupParallelComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(db::create<typelist<Tags::CountActionsCalled>>(0));
   }
 };
