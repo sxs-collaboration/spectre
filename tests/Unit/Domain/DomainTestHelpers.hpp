@@ -11,6 +11,8 @@
 
 #include "DataStructures/Tensor/IndexType.hpp"
 
+template <size_t VolumeDim, typename TargetFrame>
+class Block;
 template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
@@ -34,6 +36,11 @@ void test_domain_construction(
     const std::vector<std::unique_ptr<
         CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
         expected_maps) noexcept;
+
+// Test that two neighboring Blocks abut each other.
+template <size_t VolumeDim, typename TargetFrame>
+void test_physical_separation(
+    const std::vector<Block<VolumeDim, TargetFrame>>& blocks) noexcept;
 
 // Fraction of the logical volume of a block covered by an element
 // The sum of this over all the elements of a block should be one
