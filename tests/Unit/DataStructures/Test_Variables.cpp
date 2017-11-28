@@ -88,32 +88,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   CHECK(v2 == v3);
 
   const std::string expected_output =
-      "--Symmetry:  (1)\n"
-      "--Types:     (Spatial)\n"
-      "--Dims:      (3)\n"
-      "--Locations: (Up)\n"
-      "--Frames:    (Grid)\n"
-      " T(0)=(-4)\n"
-      "     Multiplicity: 1 Index: 0\n"
-      " T(1)=(-4)\n"
-      "     Multiplicity: 1 Index: 1\n"
-      " T(2)=(-4)\n"
-      "     Multiplicity: 1 Index: 2\n"
-      "--Symmetry:  ()\n"
-      "--Types:     ()\n"
-      "--Dims:      ()\n"
-      "--Locations: ()\n"
-      "--Frames:    ()\n"
-      " T()=(-3)\n"
-      "     Multiplicity: 1 Index: 0\n"
-      "--Symmetry:  ()\n"
-      "--Types:     ()\n"
-      "--Dims:      ()\n"
-      "--Locations: ()\n"
-      "--Frames:    ()\n"
-      " T()=(-3)\n"
-      "     Multiplicity: 1 Index: 0";
+      "vector:\n"
+      "T(0)=(-4)\n"
+      "T(1)=(-4)\n"
+      "T(2)=(-4)\n\n"
+      "scalar:\n"
+      "T()=(-3)\n\n"
+      "scalar2:\n"
+      "T()=(-3)";
   CHECK(get_output(v) == expected_output);
+
+  Variables<tmpl::list<>> empty_vars;
+  CHECK(get_output(empty_vars) == "Variables is empty!");
 
   // Check self-assignment
   v = v;

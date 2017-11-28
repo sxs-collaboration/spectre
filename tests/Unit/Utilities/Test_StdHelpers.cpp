@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   CHECK(get_output(a5) == "(1,2,3,4,5)");
 
   auto tuple1 = std::make_tuple<int, double, std::string>(1, 1.87, "test");
-  CHECK(get_output(tuple1) == "(1, 1.87, test)");
+  CHECK(get_output(tuple1) == "(1,1.87,test)");
   std::tuple<> tuple0{};
   CHECK(get_output(tuple0) == "()");
 

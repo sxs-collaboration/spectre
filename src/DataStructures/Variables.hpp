@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -381,7 +382,7 @@ Variables<tmpl::list<Tags...>>& operator*=(Variables<tmpl::list<Tags...>>& lhs,
                                            const DataVector& rhs) noexcept {
   ASSERT(lhs.number_of_grid_points() == rhs.size(),
          "Size mismatch in multiplication: " << lhs.number_of_grid_points()
-         << " and " << rhs.size());
+                                             << " and " << rhs.size());
   double* const lhs_data = lhs.data();
   const double* const rhs_data = rhs.data();
   for (size_t c = 0; c < lhs.number_of_independent_components; ++c) {
@@ -414,7 +415,7 @@ Variables<tmpl::list<Tags...>>& operator/=(Variables<tmpl::list<Tags...>>& lhs,
                                            const DataVector& rhs) noexcept {
   ASSERT(lhs.number_of_grid_points() == rhs.size(),
          "Size mismatch in multiplication: " << lhs.number_of_grid_points()
-         << " and " << rhs.size());
+                                             << " and " << rhs.size());
   double* const lhs_data = lhs.data();
   const double* const rhs_data = rhs.data();
   for (size_t c = 0; c < lhs.number_of_independent_components; ++c) {
@@ -444,14 +445,16 @@ std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
 template <typename Tag, typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
                            typelist<Tag> /*meta*/) {
-  return os << get<Tag>(d);
+  return os << pretty_type::short_name<Tag>() << ":\n" << get<Tag>(d);
 }
+
 template <typename Tag, typename SecondTag, typename... RemainingTags,
           typename TagsList>
 std::ostream& print_helper(
     std::ostream& os, const Variables<TagsList>& d,
     typelist<Tag, SecondTag, RemainingTags...> /*meta*/) {
-  os << get<Tag>(d) << '\n';
+  os << pretty_type::short_name<Tag>() << ":\n";
+  os << get<Tag>(d) << "\n\n";
   print_helper(os, d, typelist<SecondTag, RemainingTags...>{});
   return os;
 }
