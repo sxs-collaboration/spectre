@@ -904,7 +904,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
   }
 }
 
-
 namespace {
 /// [mutate_apply_apply_struct_example]
 struct test_databox_mutate_apply {
@@ -1023,32 +1022,196 @@ static_assert(
         db::get_compute_items<
             tmpl::list<test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
                        test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
-                        test_databox_tags::MultiplyScalarByTwo>>>,
-                "Failed testing db::get_compute_items");
-  static_assert(
-      cpp17::is_same_v<
-          tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
-          db::get_items<tmpl::list<
-              test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
-              test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
-              test_databox_tags::MultiplyScalarByTwo>>>,
-      "Failed testing db::get_items");
+                       test_databox_tags::MultiplyScalarByTwo>>>,
+    "Failed testing db::get_compute_items");
+static_assert(
+    cpp17::is_same_v<
+        tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
+        db::get_items<
+            tmpl::list<test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
+                       test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
+                       test_databox_tags::MultiplyScalarByTwo>>>,
+    "Failed testing db::get_items");
 
-  static_assert(
-      cpp17::is_same_v<
-          db::compute_databox_type<tmpl::list<
-              test_databox_tags::Tag0,
-              Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                         test_databox_tags::VectorTag>>,
-              test_databox_tags::ComputeTag0, test_databox_tags::Tag1,
-              test_databox_tags::MultiplyScalarByTwo>>,
-          db::DataBox<db::get_databox_list<tmpl::list<
-              test_databox_tags::Tag0, test_databox_tags::Tag1,
-              test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
-              Tags::Variables<brigand::list<test_databox_tags::ScalarTag,
-                                            test_databox_tags::VectorTag>>,
-              test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2,
-              test_databox_tags::MultiplyScalarByTwo,
-              test_databox_tags::ComputeTag0>>>>,
-      "Failed testing db::compute_databox_type");
+static_assert(
+    cpp17::is_same_v<
+        db::compute_databox_type<tmpl::list<
+            test_databox_tags::Tag0,
+            Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                       test_databox_tags::VectorTag>>,
+            test_databox_tags::ComputeTag0, test_databox_tags::Tag1,
+            test_databox_tags::MultiplyScalarByTwo>>,
+        db::DataBox<db::get_databox_list<tmpl::list<
+            test_databox_tags::Tag0, test_databox_tags::Tag1,
+            test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
+            Tags::Variables<brigand::list<test_databox_tags::ScalarTag,
+                                          test_databox_tags::VectorTag>>,
+            test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2,
+            test_databox_tags::MultiplyScalarByTwo,
+            test_databox_tags::ComputeTag0>>>>,
+    "Failed testing db::compute_databox_type");
 }  // namespace
+
+namespace {
+void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
+                            const double value) {
+  if (t->empty()) {
+    t->resize(10);
+  }
+  for (auto& p : *t) {
+    p = 2.0 * value;
+  }
+}
+std::vector<double> multiply_by_two_non_mutate(const double value) {
+  return std::vector<double>(10, 2.0 * value);
+}
+
+/// [databox_mutating_compute_item_function]
+void mutate_variables(
+    const gsl::not_null<Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                             test_databox_tags::VectorTag>>*>
+        t,
+    const double value) {
+  if (t->number_of_grid_points() != 10) {
+    *t = Variables<
+        tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>(
+        10, 0.0);
+  }
+  for (auto& p : get<test_databox_tags::ScalarTag>(*t)) {
+    p = 2.0 * value;
+  }
+  for (auto& p : get<test_databox_tags::VectorTag>(*t)) {
+    p = 3.0 * value;
+  }
+}
+/// [databox_mutating_compute_item_function]
+}  // namespace
+
+namespace test_databox_tags {
+struct MutateComputeTag0 : db::ComputeItemTag {
+  using return_type = std::vector<double>;
+  static constexpr db::DataBoxString label = "MutateComputeTag0";
+  static constexpr auto function = multiply_by_two_mutate;
+  using argument_tags = typelist<Tag0>;
+};
+struct NonMutateComputeTag0 : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "NonMutateComputeTag0";
+  static constexpr auto function = multiply_by_two_non_mutate;
+  using argument_tags = typelist<Tag0>;
+};
+/// [databox_mutating_compute_item_tag]
+struct MutateVariablesCompute : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "MutateVariablesCompute";
+  static constexpr auto function = mutate_variables;
+  using return_type = Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
+  using argument_tags = typelist<Tag0>;
+};
+/// [databox_mutating_compute_item_tag]
+}  // namespace test_databox_tags
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
+                  "[Unit][DataStructures]") {
+  auto original_box = db::create<
+      db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                  test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::MutateComputeTag0,
+                              test_databox_tags::NonMutateComputeTag0,
+                              test_databox_tags::MutateVariablesCompute,
+                              test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  const double* const initial_data_location_mutating =
+      db::get<test_databox_tags::MutateComputeTag0>(original_box).data();
+  const double* const initial_data_location_non_mutating =
+      db::get<test_databox_tags::NonMutateComputeTag0>(original_box).data();
+  const std::array<const double* const, 4>
+      initial_variables_data_location_mutate{
+          {get<test_databox_tags::ScalarTag>(
+               db::get<test_databox_tags::MutateVariablesCompute>(original_box))
+               .get()
+               .data(),
+           get<0>(get<test_databox_tags::VectorTag>(
+                      db::get<test_databox_tags::MutateVariablesCompute>(
+                          original_box)))
+               .data(),
+           get<1>(get<test_databox_tags::VectorTag>(
+                      db::get<test_databox_tags::MutateVariablesCompute>(
+                          original_box)))
+               .data(),
+           get<2>(get<test_databox_tags::VectorTag>(
+                      db::get<test_databox_tags::MutateVariablesCompute>(
+                          original_box)))
+               .data()}};
+
+  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
+        3.14 * 2.0);
+  CHECK_ITERABLE_APPROX(
+      db::get<test_databox_tags::MutateComputeTag0>(original_box),
+      std::vector<double>(10, 2.0 * 3.14));
+  CHECK_ITERABLE_APPROX(
+      db::get<test_databox_tags::NonMutateComputeTag0>(original_box),
+      std::vector<double>(10, 2.0 * 3.14));
+  CHECK_ITERABLE_APPROX(
+      get<test_databox_tags::ScalarTag>(
+          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+      Scalar<DataVector>(DataVector(10, 2.0 * 3.14)));
+  CHECK_ITERABLE_APPROX(
+      get<test_databox_tags::VectorTag>(
+          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+      db::item_type<test_databox_tags::VectorTag>(DataVector(10, 3.0 * 3.14)));
+
+  db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
+      original_box,
+      [](double& tag0, std::vector<double>& tag1, const double& compute_tag0) {
+        CHECK(6.28 == compute_tag0);
+        tag0 = 10.32;
+        tag1[0] = 837.2;
+      },
+      db::get<test_databox_tags::ComputeTag0>(original_box));
+
+  CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
+  CHECK(837.2 == db::get<test_databox_tags::Tag1>(original_box)[0]);
+  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
+        10.32 * 2.0);
+  CHECK_ITERABLE_APPROX(
+      db::get<test_databox_tags::MutateComputeTag0>(original_box),
+      std::vector<double>(10, 2.0 * 10.32));
+  CHECK(initial_data_location_mutating ==
+        db::get<test_databox_tags::MutateComputeTag0>(original_box).data());
+  CHECK_ITERABLE_APPROX(
+      db::get<test_databox_tags::NonMutateComputeTag0>(original_box),
+      std::vector<double>(10, 2.0 * 10.32));
+  CHECK(initial_data_location_non_mutating !=
+        db::get<test_databox_tags::MutateComputeTag0>(original_box).data());
+  CHECK_ITERABLE_APPROX(
+      get<test_databox_tags::ScalarTag>(
+          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+      Scalar<DataVector>(DataVector(10, 2.0 * 10.32)));
+  CHECK_ITERABLE_APPROX(
+      get<test_databox_tags::VectorTag>(
+          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+      db::item_type<test_databox_tags::VectorTag>(DataVector(10, 3.0 * 10.32)));
+
+  // Check that the memory allocated by std::vector has not changed, which is
+  // the key feature of mutating compute items.
+  CHECK(
+      initial_variables_data_location_mutate ==
+      (std::array<const double* const, 4>{
+          {get<test_databox_tags::ScalarTag>(
+               db::get<test_databox_tags::MutateVariablesCompute>(original_box))
+               .get()
+               .data(),
+           get<0>(get<test_databox_tags::VectorTag>(
+                      db::get<test_databox_tags::MutateVariablesCompute>(
+                          original_box)))
+               .data(),
+           get<1>(get<test_databox_tags::VectorTag>(
+                      db::get<test_databox_tags::MutateVariablesCompute>(
+                          original_box)))
+               .data(),
+           get<2>(get<test_databox_tags::VectorTag>(
+                      db::get<test_databox_tags::MutateVariablesCompute>(
+                          original_box)))
+               .data()}}));
+}
