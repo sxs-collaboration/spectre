@@ -63,3 +63,7 @@ tnsr::ijj<DataType, SpatialDim> make_deriv_spatial_metric(
 template <size_t SpatialDim, typename DataType>
 tnsr::abb<DataType, SpatialDim> make_spacetime_deriv_spacetime_metric(
     const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
+tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
+    const DataType& used_for_size);

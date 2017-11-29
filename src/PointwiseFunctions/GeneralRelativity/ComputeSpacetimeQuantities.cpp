@@ -162,6 +162,48 @@ tnsr::iaa<DataType, SpatialDim, Frame> compute_phi(
   }
   return phi;
 }
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+  tnsr::aa<DataType, SpatialDim, Frame> pi{
+      make_with_value<DataType>(*lapse.begin(), 0.)};
+
+  pi.get(0, 0) = -2.0 * lapse.get() * dt_lapse.get();
+
+  for (size_t m = 0; m < SpatialDim; ++m) {
+    for (size_t n = 0; n < SpatialDim; ++n) {
+      pi.get(0, 0) +=
+          dt_spatial_metric.get(m, n) * shift.get(m) * shift.get(n) +
+          2.0 * spatial_metric.get(m, n) * shift.get(m) * dt_shift.get(n);
+    }
+  }
+
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t m = 0; m < SpatialDim; ++m) {
+      pi.get(0, i + 1) += dt_spatial_metric.get(m, i) * shift.get(m) +
+                          spatial_metric.get(m, i) * dt_shift.get(m);
+    }
+    for (size_t j = i; j < SpatialDim; ++j) {
+      pi.get(i + 1, j + 1) = dt_spatial_metric.get(i, j);
+    }
+  }
+  for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
+    for (size_t nu = mu; nu < SpatialDim + 1; ++nu) {
+      for (size_t i = 0; i < SpatialDim; ++i) {
+        pi.get(mu, nu) -= shift.get(i) * phi.get(i, mu, nu);
+      }
+      pi.get(mu, nu) /= -lapse.get();
+    }
+  }
+  return pi;
+}
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -199,6 +241,13 @@ tnsr::iaa<DataType, SpatialDim, Frame> compute_phi(
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
           deriv_spatial_metric) noexcept;                                     \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)> compute_pi(          \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))

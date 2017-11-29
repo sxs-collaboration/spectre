@@ -355,6 +355,82 @@ void test_compute_3d_phi(const DataVector& used_for_size) {
       phi);
 }
 
+void test_compute_1d_pi(const DataVector& used_for_size) {
+  const size_t dim = 1;
+  const auto pi =
+      compute_pi(make_lapse(0.), make_dt_lapse(0.), make_shift<dim>(0.),
+                 make_dt_shift<dim>(0.), make_spatial_metric<dim>(0.),
+                 make_dt_spatial_metric<dim>(0.),
+                 make_spatial_deriv_spacetime_metric<dim>(0.));
+
+  CHECK(pi.get(0, 0) == approx(31. / 3.));
+  CHECK(pi.get(0, 1) == approx(5. / 3.));
+  CHECK(pi.get(1, 1) == approx(4.0));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_pi(make_lapse(used_for_size), make_dt_lapse(used_for_size),
+                 make_shift<dim>(used_for_size),
+                 make_dt_shift<dim>(used_for_size),
+                 make_spatial_metric<dim>(used_for_size),
+                 make_dt_spatial_metric<dim>(used_for_size),
+                 make_spatial_deriv_spacetime_metric<dim>(used_for_size)),
+      pi);
+}
+
+void test_compute_2d_pi(const DataVector& used_for_size) {
+  const size_t dim = 2;
+  const auto pi =
+      compute_pi(make_lapse(0.), make_dt_lapse(0.), make_shift<dim>(0.),
+                 make_dt_shift<dim>(0.), make_spatial_metric<dim>(0.),
+                 make_dt_spatial_metric<dim>(0.),
+                 make_spatial_deriv_spacetime_metric<dim>(0.));
+
+  CHECK(pi.get(0, 0) == approx(-71. / 3.));
+  CHECK(pi.get(0, 1) == approx(10. / 3.));
+  CHECK(pi.get(0, 2) == approx(8. / 3.));
+  CHECK(pi.get(1, 1) == approx(44. / 3.));
+  CHECK(pi.get(1, 2) == approx(65. / 3.));
+  CHECK(pi.get(2, 2) == approx(97. / 3.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_pi(make_lapse(used_for_size), make_dt_lapse(used_for_size),
+                 make_shift<dim>(used_for_size),
+                 make_dt_shift<dim>(used_for_size),
+                 make_spatial_metric<dim>(used_for_size),
+                 make_dt_spatial_metric<dim>(used_for_size),
+                 make_spatial_deriv_spacetime_metric<dim>(used_for_size)),
+      pi);
+}
+
+void test_compute_3d_pi(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const auto pi =
+      compute_pi(make_lapse(0.), make_dt_lapse(0.), make_shift<dim>(0.),
+                 make_dt_shift<dim>(0.), make_spatial_metric<dim>(0.),
+                 make_dt_spatial_metric<dim>(0.),
+                 make_spatial_deriv_spacetime_metric<dim>(0.));
+
+  CHECK(pi.get(0, 0) == approx(-1216./3.));
+  CHECK(pi.get(0, 1) == approx(2. / 3.));
+  CHECK(pi.get(0, 2) == approx(-20. / 3.));
+  CHECK(pi.get(0, 3) == approx(-14.0));
+  CHECK(pi.get(1, 1) == approx(104. / 3.));
+  CHECK(pi.get(1, 2) == approx(155. / 3.));
+  CHECK(pi.get(1, 3) == approx(206. / 3.));
+  CHECK(pi.get(2, 2) == approx(232. / 3.));
+  CHECK(pi.get(2, 3) == approx(103.0));
+  CHECK(pi.get(3, 3) == approx(412. / 3.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_pi(make_lapse(used_for_size), make_dt_lapse(used_for_size),
+                 make_shift<dim>(used_for_size),
+                 make_dt_shift<dim>(used_for_size),
+                 make_spatial_metric<dim>(used_for_size),
+                 make_dt_spatial_metric<dim>(used_for_size),
+                 make_spatial_deriv_spacetime_metric<dim>(used_for_size)),
+      pi);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -372,4 +448,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   test_compute_1d_phi(dv);
   test_compute_2d_phi(dv);
   test_compute_3d_phi(dv);
+  test_compute_1d_pi(dv);
+  test_compute_2d_pi(dv);
+  test_compute_3d_pi(dv);
 }
