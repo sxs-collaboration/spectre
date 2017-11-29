@@ -16,7 +16,7 @@ template <size_t SpatialDim, typename DataType>
 tnsr::I<DataType, SpatialDim> make_shift(const DataType& used_for_size) {
   tnsr::I<DataType, SpatialDim> shift{};
   for (size_t i = 0; i < SpatialDim; ++i) {
-    shift.get(i) = make_with_value<DataType>(used_for_size, i);
+    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1);
   }
   return shift;
 }
@@ -56,7 +56,8 @@ template <size_t SpatialDim, typename DataType>
 tnsr::I<DataType, SpatialDim> make_dt_shift(const DataType& used_for_size) {
   tnsr::I<DataType, SpatialDim> dt_shift{};
   for (size_t i = 0; i < SpatialDim; ++i) {
-    dt_shift.get(i) = make_with_value<DataType>(used_for_size, SpatialDim * i);
+    dt_shift.get(i) =
+        make_with_value<DataType>(used_for_size, SpatialDim * (i + 1.));
   }
   return dt_shift;
 }
@@ -77,7 +78,8 @@ template <size_t SpatialDim, typename DataType>
 tnsr::i<DataType, SpatialDim> make_deriv_lapse(const DataType& used_for_size) {
   tnsr::i<DataType, SpatialDim> deriv_lapse{};
   for (size_t i = 0; i < SpatialDim; ++i) {
-    deriv_lapse.get(i) = make_with_value<DataType>(used_for_size, 2.5 * i);
+    deriv_lapse.get(i) =
+        make_with_value<DataType>(used_for_size, 2.5 * (i + 1.));
   }
   return deriv_lapse;
 }
@@ -88,7 +90,7 @@ tnsr::iJ<DataType, SpatialDim> make_deriv_shift(const DataType& used_for_size) {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       deriv_shift.get(i, j) =
-          make_with_value<DataType>(used_for_size, 3. * (j + 1.) - i);
+          make_with_value<DataType>(used_for_size, 3. * (j + 1.) - i + 4.);
     }
   }
   return deriv_shift;
