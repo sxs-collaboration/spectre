@@ -20,31 +20,31 @@ constexpr size_t block_id_bits = 7;
 constexpr size_t refinement_bits = 5;
 constexpr size_t max_refinement_level = 20;
 static_assert(block_id_bits + refinement_bits + max_refinement_level ==
-              8 * sizeof(int),
+                  8 * sizeof(int),
               "Bit representation requires padding or is too large");
 static_assert(two_to_the(refinement_bits) >= max_refinement_level,
               "Not enough bits to represent all refinement levels");
+}  // namespace ElementIndex_detail
 
 class SegmentIndex {
  public:
   SegmentIndex() = default;
   SegmentIndex(size_t block_id, const SegmentId& segment_id) noexcept;
- private:
-  unsigned block_id_ : block_id_bits;
-  unsigned refinement_level_ : refinement_bits;
-  unsigned index_ : max_refinement_level;
+  size_t block_id() const noexcept { return block_id_; }
+  size_t index() const noexcept { return index_; }
+  size_t refinement_level() const noexcept { return refinement_level_; }
 
-  friend std::ostream& operator<<(std::ostream& s,
-                                  const SegmentIndex& index) noexcept;
+ private:
+  unsigned block_id_ : ElementIndex_detail::block_id_bits;
+  unsigned refinement_level_ : ElementIndex_detail::refinement_bits;
+  unsigned index_ : ElementIndex_detail::max_refinement_level;
 };
-}  // namespace ElementIndex_detail
+
+template <size_t VolumeDim>
+std::ostream& operator<<(std::ostream& s, const SegmentIndex& index) noexcept;
 
 template <size_t>
 class ElementIndex;
-
-template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& s,
-                         const ElementIndex<VolumeDim>& index) noexcept;
 
 /// \ingroup ParallelGroup
 /// A class for indexing a Charm array by Element.
@@ -53,11 +53,13 @@ class ElementIndex {
  public:
   ElementIndex() = default;
   explicit ElementIndex(const ElementId<VolumeDim>& id) noexcept;
- private:
-  std::array<ElementIndex_detail::SegmentIndex, VolumeDim> segments_;
+  size_t block_id() const noexcept { return segments_[0].block_id(); }
+  const std::array<SegmentIndex, VolumeDim>& segments() const noexcept {
+    return segments_;
+  }
 
-  friend std::ostream& operator<<<VolumeDim>(
-      std::ostream& s, const ElementIndex<VolumeDim>& index) noexcept;
+ private:
+  std::array<SegmentIndex, VolumeDim> segments_;
 };
 
 template <size_t VolumeDim>
@@ -76,3 +78,7 @@ struct hash<ElementIndex<VolumeDim>> {
   size_t operator()(const ElementIndex<VolumeDim>& x) const noexcept;
 };
 }  // namespace std
+
+template <size_t VolumeDim>
+std::ostream& operator<<(std::ostream& s,
+                         const ElementIndex<VolumeDim>& index) noexcept;

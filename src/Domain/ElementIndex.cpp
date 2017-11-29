@@ -13,14 +13,15 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace ElementIndex_detail {
 SegmentIndex::SegmentIndex(size_t block_id,
                            const SegmentId& segment_id) noexcept
-  : block_id_(block_id), refinement_level_(segment_id.refinement_level()),
-    index_(segment_id.index()) {
-  ASSERT(block_id < two_to_the(block_id_bits),
+    : block_id_(block_id),
+      refinement_level_(segment_id.refinement_level()),
+      index_(segment_id.index()) {
+  ASSERT(block_id < two_to_the(ElementIndex_detail::block_id_bits),
          "Block id out of bounds: " << block_id);
-  ASSERT(segment_id.refinement_level() <= max_refinement_level,
+  ASSERT(segment_id.refinement_level() <=
+             ElementIndex_detail::max_refinement_level,
          "Refinement level out of bounds: " << segment_id.refinement_level());
 }
 
@@ -28,18 +29,16 @@ static_assert(std::is_pod<SegmentIndex>::value, "SegmentIndex is not POD");
 static_assert(sizeof(SegmentIndex) == sizeof(int),
               "SegmentIndex does not fit in an int");
 
-std::ostream& operator<<(std::ostream& s,
-                         const SegmentIndex& index) noexcept {
-  return s << '[' << index.block_id_ << ':' << index.refinement_level_ << ':'
-           << index.index_ << ']';
+std::ostream& operator<<(std::ostream& s, const SegmentIndex& index) noexcept {
+  return s << '[' << index.block_id() << ':' << index.refinement_level() << ':'
+           << index.index() << ']';
 }
-}  // namespace ElementIndex_detail
 
 template <size_t VolumeDim>
 ElementIndex<VolumeDim>::ElementIndex(const ElementId<VolumeDim>& id) noexcept {
   for (size_t d = 0; d < VolumeDim; ++d) {
-    gsl::at(segments_, d) = ElementIndex_detail::SegmentIndex(
-        id.block_id(), gsl::at(id.segment_ids(), d));
+    gsl::at(segments_, d) =
+        SegmentIndex(id.block_id(), gsl::at(id.segment_ids(), d));
   }
 }
 
@@ -65,7 +64,7 @@ bool operator==(const ElementIndex<VolumeDim>& a,
 template <size_t VolumeDim>
 bool operator!=(const ElementIndex<VolumeDim>& a,
                 const ElementIndex<VolumeDim>& b) noexcept {
-  return not (a == b);
+  return not(a == b);
 }
 
 template <size_t VolumeDim>
@@ -87,7 +86,7 @@ size_t std::hash<ElementIndex<VolumeDim>>::operator()(
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& s,
                          const ElementIndex<VolumeDim>& index) noexcept {
-  for (const auto si : index.segments_) {
+  for (const auto si : index.segments()) {
     s << si;
   }
   return s;
