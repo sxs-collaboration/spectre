@@ -32,10 +32,11 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   CHECK(custom_neighbor == custom_neighbor);
 
   // Test serialization:
-  CHECK(custom_neighbor == (serialize_and_deserialize(custom_neighbor)));
+  test_serialization(custom_neighbor);
 
   // Test semantics:
   const auto custom_copy = custom_neighbor;
   test_copy_semantics(custom_neighbor);
-  test_move_semantics(std::move(custom_neighbor), custom_copy);
+  // clang-tidy: std::move does nothing
+  test_move_semantics(std::move(custom_neighbor), custom_copy); // NOLINT
 }

@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
   CHECK(custom_neighbors.size() == 3);
 
   // Test serialization:
-  CHECK(custom_neighbors == (serialize_and_deserialize(custom_neighbors)));
+  test_serialization(custom_neighbors);
 
   // Test comparison:
   CHECK(test_neighbors == test_neighbors);
@@ -107,7 +107,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
   CHECK(custom_neighbors.size() == 3);
 
   // Test serialization:
-  CHECK(custom_neighbors == (serialize_and_deserialize(custom_neighbors)));
+  test_serialization(custom_neighbors);
 
   // Test comparison:
   CHECK(test_neighbors == test_neighbors);
@@ -191,7 +191,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
         "orientation = (+1, +2, +0)");
 
   // Test serialization:
-  CHECK(custom_neighbors == (serialize_and_deserialize(custom_neighbors)));
+  test_serialization(custom_neighbors);
 
   // Test comparison:
   CHECK(test_neighbors == test_neighbors);

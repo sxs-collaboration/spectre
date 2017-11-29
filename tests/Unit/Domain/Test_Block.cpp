@@ -35,7 +35,7 @@ void test_block() {
   CHECK(map.inverse(x) == xi);
 
   // Test PUP
-  CHECK(block == serialize_and_deserialize(block));
+  test_serialization(block);
 
   // Test move semantics:
   const Block<Dim, Frame::Grid> block_copy(identity_map.get_clone(), 7, {});

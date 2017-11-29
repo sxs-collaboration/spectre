@@ -4,7 +4,6 @@
 #include "DataStructures/SliceIterator.hpp"
 
 #include <numeric>
-#include <pup.h>
 
 #include "DataStructures/Index.hpp"
 #include "Utilities/Literals.hpp"

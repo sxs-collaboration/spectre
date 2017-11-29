@@ -52,8 +52,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
 
   // Check inequivalence operator
   CHECK_FALSE(half_pi_rotation_map != half_pi_rotation_map);
-  CHECK(half_pi_rotation_map ==
-        serialize_and_deserialize(half_pi_rotation_map));
+  test_serialization(half_pi_rotation_map);
 
   test_coordinate_map_argument_types(half_pi_rotation_map, xi1);
 }
@@ -96,8 +95,7 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
   }
   // Check inequivalence operator
   CHECK_FALSE(three_dim_rotation_map != three_dim_rotation_map);
-  CHECK(three_dim_rotation_map ==
-        serialize_and_deserialize(three_dim_rotation_map));
+  test_serialization(three_dim_rotation_map);
 
   test_coordinate_map_argument_types(three_dim_rotation_map, xi);
 }

@@ -8,9 +8,6 @@
 
 template <size_t>
 class Index;
-namespace PUP {
-class er;
-}  // namespace PUP
 
 /*!
  * \ingroup DataStructuresGroup
@@ -23,9 +20,6 @@ class StripeIterator {
   /// stripes are in.
   template <size_t Dim>
   StripeIterator(const Index<Dim>& extents, size_t stripe_dim);
-
-  /// Needed for Charm++ serialization
-  StripeIterator() = delete;
 
   /// Returns `true` if the iterator is valid
   explicit operator bool() const noexcept { return offset_ < size_; }

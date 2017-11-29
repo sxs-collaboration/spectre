@@ -9,10 +9,6 @@
 template <size_t>
 class Index;
 
-namespace PUP {
-class er;
-}  // namespace PUP
-
 /*!
  * \ingroup DataStructuresGroup
  * \brief Iterate over a (dim-1)-dimensional slice
@@ -27,9 +23,6 @@ class SliceIterator {
   template <size_t Dim>
   SliceIterator(const Index<Dim>& extents, size_t fixed_dim,
                 size_t fixed_index);
-
-  /// Default constructor for serialization
-  SliceIterator() = delete;
 
   /// Returns `true` if the iterator is valid
   explicit operator bool() const noexcept { return volume_offset_ < size_; }

@@ -4,7 +4,6 @@
 #include "DataStructures/StripeIterator.hpp"
 
 #include <numeric>
-#include <pup.h>
 
 #include "DataStructures/Index.hpp"
 #include "Utilities/Gsl.hpp"

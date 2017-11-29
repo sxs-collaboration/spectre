@@ -35,5 +35,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
 SPECTRE_TEST_CASE("Unit.Serialization.Matrix",
                   "[DataStructures][Unit][Serialization]") {
   Matrix matrix(3, 7, 1.0);
-  CHECK(matrix == serialize_and_deserialize(matrix));
+  test_serialization(matrix);
 }

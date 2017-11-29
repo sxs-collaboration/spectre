@@ -28,6 +28,8 @@ void test_interval(
   CHECK(interval.initial_extents() == expected_extents);
   CHECK(interval.initial_refinement_levels() == expected_refinement_level);
 
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
+                         CoordinateMaps::AffineMap>));
   test_domain_construction(
       domain,
       std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>{{}},

@@ -68,6 +68,9 @@ void test_single_coordinate_map() {
           affine_map1d{-1.0, 1.0, 2.0, 8.0});
   const auto first_affine1d = affine_map1d{-1.0, 1.0, 2.0, 8.0};
 
+  CHECK(affine1d == *affine1d_base);
+  CHECK(*affine1d_base == affine1d);
+
   std::array<std::array<double, 1>, 4> coords1d{
       {{{0.1}}, {{-8.2}}, {{5.7}}, {{2.9}}}};
 
@@ -109,6 +112,9 @@ void test_single_coordinate_map() {
       make_coordinate_map<Frame::Logical, Frame::Grid>(first_rotated2d);
   const auto rotated2d_base =
       make_coordinate_map_base<Frame::Logical, Frame::Grid>(first_rotated2d);
+
+  CHECK(rotated2d == *rotated2d_base);
+  CHECK(*rotated2d_base == rotated2d);
 
   std::array<std::array<double, 2>, 4> coords2d{
       {{{0.1, 2.8}}, {{-8.2, 2.8}}, {{5.7, -4.9}}, {{2.9, 3.4}}}};
@@ -159,6 +165,9 @@ void test_single_coordinate_map() {
       make_coordinate_map<Frame::Logical, Frame::Grid>(first_rotated3d);
   const auto rotated3d_base =
       make_coordinate_map_base<Frame::Logical, Frame::Grid>(first_rotated3d);
+
+  CHECK(rotated3d == *rotated3d_base);
+  CHECK(*rotated3d_base == rotated3d);
 
   std::array<std::array<double, 3>, 4> coords3d{{{{0.1, 2.8, 9.3}},
                                                  {{-8.2, 2.8, -9.7}},
@@ -406,7 +415,7 @@ void test_coordinate_map_with_rotation_map() {
 
   // Check inequivalence operator
   CHECK_FALSE(double_rotated3d != double_rotated3d);
-  CHECK(double_rotated3d == serialize_and_deserialize(double_rotated3d));
+  test_serialization(double_rotated3d);
 }
 
 void test_coordinate_map_with_rotation_map_datavector() {
@@ -458,6 +467,14 @@ void test_coordinate_map_with_rotation_map_datavector() {
                                                               second_rotated3d);
     const auto& double_rotated3d = *double_rotated3d_base;
 
+    CHECK(double_rotated3d_full == double_rotated3d);
+
+    const auto different_rotated3d_base =
+        make_coordinate_map_base<Frame::Logical, Frame::Grid>(second_rotated3d,
+                                                              first_rotated3d);
+    CHECK(*different_rotated3d_base == *different_rotated3d_base);
+    CHECK(*different_rotated3d_base != double_rotated3d);
+
     const tnsr::I<DataVector, 3, Frame::Logical> coords3d{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4},
           DataVector{9.3, -9.7, 8.1, -7.8}}}};
@@ -484,8 +501,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     // Check inequivalence operator
     CHECK_FALSE(double_rotated3d_full != double_rotated3d_full);
-    CHECK(double_rotated3d_full ==
-          serialize_and_deserialize(double_rotated3d_full));
+    test_serialization(double_rotated3d_full);
   }
 }
 

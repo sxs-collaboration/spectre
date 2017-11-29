@@ -50,7 +50,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   CHECK(6 == std::accumulate(index_3d.begin(), index_3d.end(), 0_st));
 
   // Check serialization
-  CHECK(index_3d == serialize_and_deserialize(index_3d));
+  test_serialization(index_0d);
+  test_serialization(index_1d);
+  test_serialization(index_2d);
+  test_serialization(index_3d);
 
   // Test inequivalence operator
   CHECK(index_3d != Index<3>(2, 4, 9));

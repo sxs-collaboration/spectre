@@ -46,7 +46,7 @@ void test_1d() {
   test_move_semantics(std::move(custom1), custom_copy);  // NOLINT
 
   // Test serialization:
-  serialize_and_deserialize(custom2);
+  test_serialization(custom2);
 }
 
 void test_2d() {
@@ -155,7 +155,7 @@ void test_2d() {
                       rotated_copy);
 
   // Test serialization:
-  serialize_and_deserialize(rotated_copy);
+  test_serialization(rotated_copy);
 }
 
 void test_3d() {
@@ -215,7 +215,7 @@ void test_3d() {
   test_move_semantics(std::move(custom_orientation), custom_copy);  // NOLINT
 
   // Test serialzation:
-  serialize_and_deserialize(custom2);
+  test_serialization(custom2);
 }
 
 }  // namespace

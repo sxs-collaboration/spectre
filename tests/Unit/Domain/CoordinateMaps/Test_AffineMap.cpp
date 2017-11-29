@@ -47,7 +47,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
 
   // Check inequivalence operator
   CHECK_FALSE(affine_map != affine_map);
-  CHECK(affine_map == serialize_and_deserialize(affine_map));
+  test_serialization(affine_map);
 
   test_coordinate_map_argument_types(affine_map, point_xi);
 }

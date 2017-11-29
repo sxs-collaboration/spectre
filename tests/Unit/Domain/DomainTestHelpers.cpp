@@ -38,6 +38,9 @@ void test_domain_construction(
     CHECK(typeid(*expected_maps[i]) == typeid(block.coordinate_map()));
     check_if_maps_are_equal(*expected_maps[i], block.coordinate_map());
   }
+  test_serialization(domain);
+  // test operator !=
+  CHECK_FALSE(domain != domain);
 }
 
 template <size_t VolumeDim>

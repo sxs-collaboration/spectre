@@ -25,7 +25,7 @@ void test_identity() {
   }
   // Checks the inequivalence operator
   CHECK_FALSE(identity_map != identity_map);
-  CHECK(identity_map == serialize_and_deserialize(identity_map));
+  test_serialization(identity_map);
 
   test_coordinate_map_argument_types(identity_map, xi);
 }

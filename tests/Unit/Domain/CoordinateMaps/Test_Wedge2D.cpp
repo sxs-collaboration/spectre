@@ -109,7 +109,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D", "[Domain][Unit]") {
     test_jacobian(map, test_point);
     test_inv_jacobian(map, test_point);
 
-    CHECK(serialize_and_deserialize(map) == map);
+    test_serialization(map);
 
     test_coordinate_map_implementation(map);
 

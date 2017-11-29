@@ -78,4 +78,16 @@ class Minkowski {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
+
+template <size_t Dim>
+inline constexpr bool operator==(const Minkowski<Dim>& /*lhs*/,
+                                 const Minkowski<Dim>& /*rhs*/) noexcept {
+  return true;
+}
+
+template <size_t Dim>
+inline constexpr bool operator!=(const Minkowski<Dim>& /*lhs*/,
+                                 const Minkowski<Dim>& /*rhs*/) noexcept {
+  return false;
+}
 }  // namespace EinsteinSolutions

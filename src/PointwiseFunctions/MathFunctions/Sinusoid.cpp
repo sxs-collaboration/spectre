@@ -55,6 +55,17 @@ void Sinusoid::pup(PUP::er& p) {
   p | wavenumber_;
   p | phase_;
 }
+
+bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
+  return lhs.amplitude_ == rhs.amplitude_ and
+         lhs.wavenumber_ == rhs.wavenumber_ and
+         lhs.phase_ == rhs.phase_;
+}
+
+bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 }  // namespace MathFunctions
 
 /// \cond

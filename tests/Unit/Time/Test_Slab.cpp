@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
 SPECTRE_TEST_CASE("Unit.Time.Slab.serialization",
                   "[Unit][Time][Serialization]") {
   const Slab slab(1.7, 2.4);
-  CHECK(slab == serialize_and_deserialize(slab));
+  test_serialization(slab);
 }
 
 // Failure tests

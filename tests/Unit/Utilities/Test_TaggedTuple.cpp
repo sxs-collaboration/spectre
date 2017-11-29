@@ -72,9 +72,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
     CHECK(ss.str() == "()");
   }
 
-  auto t = serialize_and_deserialize(test2);
-
-  CHECK(test2 == t);
+  test_serialization(test2);
 }
 
 namespace {

@@ -384,14 +384,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
                   "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
-  std::unique_ptr<TimeStepper> stepper =
-      std::make_unique<TimeSteppers::AdamsBashforthN>(4, false);
-  std::unique_ptr<TimeStepper> stepper_puped =
-      serialize_and_deserialize(stepper);
-  auto stepper_cast =
-      dynamic_cast<TimeSteppers::AdamsBashforthN* const>(stepper_puped.get());
-  CHECK_FALSE(stepper_cast == nullptr);
-  CHECK_FALSE(stepper_cast->is_self_starting());
-  CHECK(stepper_cast->number_of_past_steps() + 1 == 4);
+  TimeSteppers::AdamsBashforthN ab(4, false);
+  test_serialization(ab);
+  test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforthN>(
+      4_st, false);
+  // test operator !=
+  TimeSteppers::AdamsBashforthN ab2(4, true);
+  CHECK(ab != ab2);
 }

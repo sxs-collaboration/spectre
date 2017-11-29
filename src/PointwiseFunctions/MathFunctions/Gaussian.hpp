@@ -65,6 +65,7 @@ class Gaussian : public MathFunction<1> {
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
+  friend bool operator==(const Gaussian& lhs, const Gaussian& rhs) noexcept;
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
   template <typename T>
@@ -76,4 +77,7 @@ class Gaussian : public MathFunction<1> {
   double inverse_width_{};
   double center_{};
 };
+
+bool operator!=(const Gaussian& lhs, const Gaussian& rhs) noexcept;
+
 }  // namespace MathFunctions
