@@ -405,7 +405,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     Tensor<double, Symmetry<3>,
            index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
         spatial_vector3{std::array<double, 3>{{1, 8, 3}}};
-    CHECK(spatial_vector3.index_dim<0>() == 3);
+    CHECK(index_dim<0>(spatial_vector3) == 3);
     CHECK(1 == spatial_vector3.rank());
     CHECK(3 == spatial_vector3.size());
     CHECK(spatial_vector3.get(0) == 1);
@@ -422,7 +422,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
                  index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
         spatial_vector3{std::array<double, 3>{{1, 8, 3}}};
     CHECK(Scalar<double>{}.multiplicity(0_st) == 1);  // 0 can be a pointer
-    CHECK(spatial_vector3.index_dim<0>() == 3);
+    CHECK(index_dim<0>(spatial_vector3) == 3);
     CHECK(1 == spatial_vector3.rank());
     CHECK(3 == spatial_vector3.size());
     CHECK(spatial_vector3.get(0) == 1);

@@ -343,10 +343,6 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                   "retrieve the dimensionality.");
     return gsl::at(structure::dims(), i);
   }
-  template <int I>
-  SPECTRE_ALWAYS_INLINE static constexpr size_t index_dim() noexcept {
-    return structure::template dim<I>();
-  }
   // @}
 
   //@{
@@ -415,6 +411,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \endcond
 
  private:
+  // clang-tidy: redundant declaration
+  template <int I, class... Ts>
+  friend SPECTRE_ALWAYS_INLINE constexpr size_t index_dim(  // NOLINT
+      const Tensor<Ts...>& /*t*/) noexcept;
+
   storage_type data_;
 };
 
@@ -484,6 +485,14 @@ template <typename X, typename Symm, template <typename...> class IndexList,
 bool operator!=(const Tensor<X, Symm, IndexList<Indices...>>& lhs,
                 const Tensor<X, Symm, IndexList<Indices...>>& rhs) {
   return not(lhs == rhs);
+}
+
+/// \ingroup TensorGroup
+/// Get dimensionality of i'th tensor index
+template <int I, class... Ts>
+SPECTRE_ALWAYS_INLINE constexpr size_t index_dim(
+    const Tensor<Ts...>& /*t*/) noexcept {
+  return Tensor<Ts...>::structure::template dim<I>();
 }
 
 // We place the stream operators in the header file so they do not need to be
