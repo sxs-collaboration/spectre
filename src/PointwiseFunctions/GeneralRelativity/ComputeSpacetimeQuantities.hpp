@@ -76,3 +76,30 @@ tnsr::abb<DataType, SpatialDim, Frame> compute_derivatives_of_spacetime_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes the auxiliary variable \f$\phi_{iab}\f$ used by the
+ * generalized harmonic formulation of Einstein's equations.
+ *
+ * \details If \f$ N, N^i\f$ and \f$ g_{ij} \f$ are the lapse, shift and spatial
+ * metric respectively, then \f$\phi_{iab} \f$ is computed as
+ *
+ * \f{align}
+ *     \phi_{ktt} &=& - 2 N \partial_k N
+ *                 + 2 g_{mn} N^m \partial_k N^n
+ *                 + N^m N^n \partial_k g_{mn} \\
+ *     \phi_{kti} &=& g_{mi} \partial_k N^m
+ *                 + N^m \partial_k g_{mi} \\
+ *     \phi_{kij} &=& \partial_k g_{ij}
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::iaa<DataType, SpatialDim, Frame> compute_phi(
+    const Scalar<DataType>& lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>&
+        deriv_spatial_metric) noexcept;
