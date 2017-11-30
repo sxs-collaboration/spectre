@@ -126,6 +126,21 @@ tnsr::abb<DataType, SpatialDim> make_spacetime_deriv_spacetime_metric(
   return d_spacetime_metric;
 }
 
+template <size_t SpatialDim, typename DataType>
+tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
+    const DataType& used_for_size) {
+  tnsr::iaa<DataType, SpatialDim> d_spacetime_metric{};
+  for (size_t i = 0; i < SpatialDim + 1; i++) {
+    for (size_t j = i; j < SpatialDim + 1; j++) {
+      for (size_t k = 0; k < SpatialDim; k++) {
+        d_spacetime_metric.get(k, i, j) = make_with_value<DataType>(
+            used_for_size, (i + 1.) * (j + 1.) * (k + 3.));
+      }
+    }
+  }
+  return d_spacetime_metric;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -147,7 +162,9 @@ tnsr::abb<DataType, SpatialDim> make_spacetime_deriv_spacetime_metric(
   template tnsr::ijj<DTYPE(data), DIM(data)> make_deriv_spatial_metric(      \
       const DTYPE(data) & used_for_size);                                    \
   template tnsr::abb<DTYPE(data), DIM(data)>                                 \
-  make_spacetime_deriv_spacetime_metric(const DTYPE(data) & used_for_size);
+  make_spacetime_deriv_spacetime_metric(const DTYPE(data) & used_for_size);  \
+  template tnsr::iaa<DTYPE(data), DIM(data)>                                 \
+  make_spatial_deriv_spacetime_metric(const DTYPE(data) & used_for_size);
 
 template Scalar<double> make_lapse(const double& used_for_size);
 template Scalar<DataVector> make_lapse(const DataVector& used_for_size);
