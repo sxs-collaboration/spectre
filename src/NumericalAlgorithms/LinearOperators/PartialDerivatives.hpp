@@ -21,7 +21,7 @@ template <class TagList>
 struct Variables;
 
 namespace Tags_detail {
-template <typename Tag, typename VolumeDim, typename Frame,
+template <typename T, typename S, typename U,
           typename = std::nullptr_t>
 struct deriv_impl;
 }  // namespace Tags_detail
@@ -30,15 +30,14 @@ struct deriv_impl;
  * \ingroup DataBoxTagsGroup
  * \brief Prefix for a spatial derivative
  *
- * There are four variants of this tag that change how the derivatives are
- * computed depending on which is chosen. The two simplest are the non-compute
- * item versions for Tensor and Variables tags. These take three template
- * parameters:
+ * There are three variants of this tag that change how the derivatives are
+ * computed depending on which is chosen. The simplest is the non-compute
+ * item version for a Tensor tag. This takes three template parameters:
  * 1. The tag to wrap
  * 2. The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
- * 3. The frame of the derivative index in `Tensor`s
+ * 3. The frame of the derivative index
  *
- * The third variant of the derivative tag is a compute item that computes
+ * The second variant of the derivative tag is a compute item that computes
  * the partial derivatives in a Frame that is not the logical frame. This
  * compute item is used by specifying the list of tags in the
  * `Tags::Variables<tmpl::list<Tags...>>`, the list of tags to be
@@ -46,18 +45,26 @@ struct deriv_impl;
  * and the frame in which the derivative is taken. Note that the derivative Tags
  * must be a contiguous subset from the head of the `Tags...` pack.
  *
- * The fourth variant of the derivative tag is a compute item that computes the
+ * The third variant of the derivative tag is a compute item that computes the
  * partial derivatives in the logical frame. In that case the template
  * parameters must be the list of Variables tags and derivative tags, with the
  * last parameter being a `std::integral_constant` of the dimension of the mesh.
  */
-template <typename Tag, typename VolumeDim, typename Frame>
-struct deriv : Tags_detail::deriv_impl<Tag, VolumeDim, Frame> {};
+template <typename T, typename S = void, typename U = void>
+struct deriv : Tags_detail::deriv_impl<T, S, U> {};
 }  // namespace Tags
 
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the logical coordinate.
+///
+/// \requires `DerivativeTags` to be the head of `VariableTags`
+///
+/// \return a `Variables` with a spatial tensor index appended to the front
+/// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.
+///
+/// \tparam DerivativeTags the subset of `VariableTags` for which derivatives
+/// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
 std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
     const Variables<VariableTags>& u, const Index<Dim>& extents) noexcept;
@@ -65,6 +72,14 @@ std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
+///
+/// \requires `DerivativeTags` to be the head of `VariableTags`
+///
+/// \return a `Variables` with a spatial tensor index appended to the front
+/// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.
+///
+/// \tparam DerivativeTags the subset of `VariableTags` for which derivatives
+/// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
@@ -84,15 +99,6 @@ struct deriv_impl<Tag, VolumeDim, Frame,
     : db::DataBoxPrefix {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
-  using tag = Tag;
-  static constexpr db::DataBoxString label = "deriv";
-};
-
-template <typename Tag, typename VolumeDim, typename Frame>
-struct deriv_impl<Tag, VolumeDim, Frame,
-                  Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
-    : db::DataBoxPrefix {
-  using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "deriv";
 };
