@@ -27,3 +27,17 @@ raise_or_lower_first_index(
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes trace of a rank 3 tensor, which is symmetric in its last two
+ * indices with all indices lower.
+ *
+ * \details If \f$ T_{abc} \f$ is a tensor such that \f$T_{abc} = T_{acb} \f$
+ * then \f$ T_a = g^{bc}T_{abc} \f$ is computed, where \f$ g^{bc} \f$ is the
+ * inverse metric. The indices \f$ a,b,c...\f$ can be spatial or spacetime.
+ */
+template <size_t Dim, typename Frame, IndexType TypeOfIndex, typename DataType>
+tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
+    const tnsr::abb<DataType, Dim, Frame, TypeOfIndex>& tensor,
+    const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric);
