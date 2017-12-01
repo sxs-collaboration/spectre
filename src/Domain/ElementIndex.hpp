@@ -52,7 +52,8 @@ template <size_t VolumeDim>
 class ElementIndex {
  public:
   ElementIndex() = default;
-  explicit ElementIndex(const ElementId<VolumeDim>& id) noexcept;
+  // clang-tidy: mark explicit: we want to allow conversion
+  ElementIndex(const ElementId<VolumeDim>& id) noexcept;  // NOLINT
   size_t block_id() const noexcept { return segments_[0].block_id(); }
   const std::array<SegmentIndex, VolumeDim>& segments() const noexcept {
     return segments_;
