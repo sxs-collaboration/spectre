@@ -108,6 +108,12 @@ static_assert(min_by_magnitude({1, -1}) == 1,
 static_assert(min_by_magnitude({-1, 1}) == -1,
               "Failed testing min_by_magnitude");
 
+struct TwoN {
+  template <typename T>
+  constexpr size_t operator()(T n) noexcept { return 2 * n; }
+};
+static_assert(constexpr_sum<5>(TwoN{}) == 20, "Failed testing constexpr_sum");
+
 // Test string manipulation
 constexpr const char *const dummy_string1 = "test 1";
 constexpr const char *const dummy_string2 = "test 1";

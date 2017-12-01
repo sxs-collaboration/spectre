@@ -14,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "DataStructures/GeneralIndexIterator.hpp"
@@ -25,7 +26,9 @@
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/CachedFunction.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 
 struct TimeId;
 
@@ -283,58 +286,38 @@ void AdamsBashforthN::update_u(
                                               time_iter(history.cend()),
                                               time_step);
 
+  const auto do_update =
+      [u, &time_step, &coefficients, &history](auto order) noexcept {
+    *u += time_step.value() * constexpr_sum<order>(
+        [order, &coefficients, &history](auto i) noexcept {
+          return coefficients[order - 1 - i] * std::get<2>(history[i]);
+        });
+  };
+
   switch (history.size()) {
     case 1:
-      *u += time_step.value() * std::get<2>(history[0]);
+      do_update(std::integral_constant<size_t, 1>{});
       return;
     case 2:
-      *u += time_step.value() * (coefficients[1] * std::get<2>(history[0]) +
-                                 coefficients[0] * std::get<2>(history[1]));
+      do_update(std::integral_constant<size_t, 2>{});
       return;
     case 3:
-      *u += time_step.value() * (coefficients[2] * std::get<2>(history[0]) +
-                                 coefficients[1] * std::get<2>(history[1]) +
-                                 coefficients[0] * std::get<2>(history[2]));
+      do_update(std::integral_constant<size_t, 3>{});
       return;
     case 4:
-      *u += time_step.value() * (coefficients[3] * std::get<2>(history[0]) +
-                                 coefficients[2] * std::get<2>(history[1]) +
-                                 coefficients[1] * std::get<2>(history[2]) +
-                                 coefficients[0] * std::get<2>(history[3]));
+      do_update(std::integral_constant<size_t, 4>{});
       return;
     case 5:
-      *u += time_step.value() * (coefficients[4] * std::get<2>(history[0]) +
-                                 coefficients[3] * std::get<2>(history[1]) +
-                                 coefficients[2] * std::get<2>(history[2]) +
-                                 coefficients[1] * std::get<2>(history[3]) +
-                                 coefficients[0] * std::get<2>(history[4]));
+      do_update(std::integral_constant<size_t, 5>{});
       return;
     case 6:
-      *u += time_step.value() * (coefficients[5] * std::get<2>(history[0]) +
-                                 coefficients[4] * std::get<2>(history[1]) +
-                                 coefficients[3] * std::get<2>(history[2]) +
-                                 coefficients[2] * std::get<2>(history[3]) +
-                                 coefficients[1] * std::get<2>(history[4]) +
-                                 coefficients[0] * std::get<2>(history[5]));
+      do_update(std::integral_constant<size_t, 6>{});
       return;
     case 7:
-      *u += time_step.value() * (coefficients[6] * std::get<2>(history[0]) +
-                                 coefficients[5] * std::get<2>(history[1]) +
-                                 coefficients[4] * std::get<2>(history[2]) +
-                                 coefficients[3] * std::get<2>(history[3]) +
-                                 coefficients[2] * std::get<2>(history[4]) +
-                                 coefficients[1] * std::get<2>(history[5]) +
-                                 coefficients[0] * std::get<2>(history[6]));
+      do_update(std::integral_constant<size_t, 7>{});
       return;
     case 8:
-      *u += time_step.value() * (coefficients[7] * std::get<2>(history[0]) +
-                                 coefficients[6] * std::get<2>(history[1]) +
-                                 coefficients[5] * std::get<2>(history[2]) +
-                                 coefficients[4] * std::get<2>(history[3]) +
-                                 coefficients[3] * std::get<2>(history[4]) +
-                                 coefficients[2] * std::get<2>(history[5]) +
-                                 coefficients[1] * std::get<2>(history[6]) +
-                                 coefficients[0] * std::get<2>(history[7]));
+      do_update(std::integral_constant<size_t, 8>{});
       return;
     default:
       ERROR("Bad amount of history data: " << history.size());
