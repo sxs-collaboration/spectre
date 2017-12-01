@@ -17,8 +17,8 @@ Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
 
 template <size_t VolumeDim>
 void Neighbors<VolumeDim>::add_ids(
-    const std::unordered_set<ElementId<VolumeDim>>& additional_Ids) {
-  for (const auto& id : additional_Ids) {
+    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) {
+  for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
 }
