@@ -124,12 +124,15 @@ class Variables<tmpl::list<Tags...>> {
   ~Variables() noexcept = default;
   /// \endcond
 
-  constexpr size_t number_of_grid_points() const noexcept {
+  constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
+      noexcept {
     return number_of_grid_points_;
   }
 
   /// Number of grid points * number of independent components
-  constexpr size_type size() const noexcept { return size_; }
+  constexpr SPECTRE_ALWAYS_INLINE size_type size() const noexcept {
+    return size_;
+  }
 
   //{@
   /// Access pointer to underlying data
@@ -170,12 +173,14 @@ class Variables<tmpl::list<Tags...>> {
             Requires<tmpl2::flat_all_v<
                 cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
                                  db::remove_all_prefixes<Tags>>...>> = nullptr>
-  Variables& operator+=(const Variables<tmpl::list<WrappedTags...>>& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator+=(
+      const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
     variable_data_ += rhs.variable_data_;
     return *this;
   }
   template <typename VT, bool VF>
-  Variables& operator+=(const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator+=(
+      const blaze::Vector<VT, VF>& rhs) noexcept {
     variable_data_ += rhs;
     return *this;
   }
@@ -184,22 +189,24 @@ class Variables<tmpl::list<Tags...>> {
             Requires<tmpl2::flat_all_v<
                 cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
                                  db::remove_all_prefixes<Tags>>...>> = nullptr>
-  Variables& operator-=(const Variables<tmpl::list<WrappedTags...>>& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator-=(
+      const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
     variable_data_ -= rhs.variable_data_;
     return *this;
   }
   template <typename VT, bool VF>
-  Variables& operator-=(const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator-=(
+      const blaze::Vector<VT, VF>& rhs) noexcept {
     variable_data_ -= rhs;
     return *this;
   }
 
-  Variables& operator*=(const double& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator*=(const double& rhs) noexcept {
     variable_data_ *= rhs;
     return *this;
   }
 
-  Variables& operator/=(const double& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator/=(const double& rhs) noexcept {
     variable_data_ /= rhs;
     return *this;
   }
@@ -208,19 +215,19 @@ class Variables<tmpl::list<Tags...>> {
             Requires<tmpl2::flat_all_v<
                 cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
                                  db::remove_all_prefixes<Tags>>...>> = nullptr>
-  friend decltype(auto) operator+(
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {
     return lhs.get_variable_data() + rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator+(const blaze::Vector<VT, VF>& lhs,
-                                  const Variables& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
+      const blaze::Vector<VT, VF>& lhs, const Variables& rhs) noexcept {
     return ~lhs + rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator+(const Variables& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
+      const Variables& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.variable_data_ + ~rhs;
   }
 
@@ -228,31 +235,33 @@ class Variables<tmpl::list<Tags...>> {
             Requires<tmpl2::flat_all_v<
                 cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
                                  db::remove_all_prefixes<Tags>>...>> = nullptr>
-
-  friend decltype(auto) operator-(
-      const Variables<tmpl::list<WrappedTags...>>& lhs, const Variables& rhs) {
-    return lhs.variable_data_ - rhs.variable_data_;
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const Variables<tmpl::list<WrappedTags...>>& lhs,
+      const Variables& rhs) noexcept {
     return lhs.get_variable_data() - rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator-(const blaze::Vector<VT, VF>& lhs,
-                                  const Variables& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const blaze::Vector<VT, VF>& lhs, const Variables& rhs) noexcept {
     return ~lhs - rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator-(const Variables& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const Variables& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.variable_data_ - ~rhs;
   }
 
-  friend decltype(auto) operator*(const Variables& lhs, const double& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
+      const Variables& lhs, const double& rhs) noexcept {
     return lhs.variable_data_ * rhs;
   }
-  friend decltype(auto) operator*(const double& lhs, const Variables& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
+      const double& lhs, const Variables& rhs) noexcept {
     return lhs * rhs.variable_data_;
   }
 
-  friend decltype(auto) operator/(const Variables& lhs, const double& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator/(
+      const Variables& lhs, const double& rhs) noexcept {
     return lhs.variable_data_ / rhs;
   }
 
@@ -269,8 +278,11 @@ class Variables<tmpl::list<Tags...>> {
    *
    *  \requires `i >= 0 and i < size()`
    */
-  double& operator[](const size_type i) noexcept { return variable_data_[i]; }
-  const double& operator[](const size_type i) const noexcept {
+  SPECTRE_ALWAYS_INLINE double& operator[](const size_type i) noexcept {
+    return variable_data_[i];
+  }
+  SPECTRE_ALWAYS_INLINE const double& operator[](const size_type i) const
+      noexcept {
     return variable_data_[i];
   }
   //@}
