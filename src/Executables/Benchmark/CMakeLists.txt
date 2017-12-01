@@ -3,9 +3,9 @@
 
 # Since benchmarking is only interesting in Release mode the executable isn't
 # added in any other build. Charm++'s main function is overridden with the main
-# from the Benchmark library. The executable is not added to the `all` make
+# from the Google Benchmark library. The executable is not added to the `all` make
 # target since it is only interesting in specific circumstances.
-if(${benchmark_FOUND} AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+if("${GOOGLE_BENCHMARK_FOUND}" AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
   set(executable Benchmark)
 
   add_executable(
