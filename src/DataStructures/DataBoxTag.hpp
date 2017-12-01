@@ -329,10 +329,16 @@ constexpr bool is_compute_item_v = is_compute_item<T>::value;
 
 namespace detail {
 template <class T, class = void>
-constexpr bool has_return_type_member_v = false;
+struct has_return_type_member : std::false_type {};
 template <class T>
-constexpr bool
-    has_return_type_member_v<T, cpp17::void_t<typename T::return_type>> = true;
+struct has_return_type_member<T, cpp17::void_t<typename T::return_type>>
+    : std::true_type {};
+
+/*!
+ * \brief `true` if `T` has nested type alias named `return_type`
+ */
+template <class T>
+constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
 template <typename Tag, typename = std::nullptr_t>
 struct compute_item_result_impl;
