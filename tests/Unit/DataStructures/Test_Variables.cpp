@@ -22,6 +22,34 @@ struct scalar : db::DataBoxTag {
 struct scalar2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
 };
+
+template <class Tag>
+struct PrefixTag0 : db::DataBoxPrefix {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static constexpr db::DataBoxString label = "PrefixTag0";
+};
+
+template <class Tag>
+struct PrefixTag1 : db::DataBoxPrefix {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static constexpr db::DataBoxString label = "PrefixTag1";
+};
+
+template <class Tag>
+struct PrefixTag2 : db::DataBoxPrefix {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static constexpr db::DataBoxString label = "PrefixTag2";
+};
+
+template <class Tag>
+struct PrefixTag3 : db::DataBoxPrefix {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static constexpr db::DataBoxString label = "PrefixTag3";
+};
 }  // namespace VariablesTestTags_detail
 
 static_assert(
@@ -210,8 +238,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Math",
   test_assignment2 = test_assignment * 1.0;
   CHECK(test_assignment2 == test_assignment);
 
-  const auto check_components =
-      [](const auto& variables, const DataVector& datavector) {
+  const auto check_components = [](const auto& variables,
+                                   const DataVector& datavector) {
     tmpl::for_each<typename std::decay_t<decltype(variables)>::tags_list>(
         [&variables, &datavector](auto tag) {
           using Tag = tmpl::type_from<decltype(tag)>;
@@ -231,6 +259,108 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Math",
   check_components(test_datavector_math / dv, {2., 4., 6., 8.});
   test_datavector_math /= dv;
   check_components(test_datavector_math, {2., 4., 6., 8.});
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.PrefixSemantics",
+                  "[DataStructures][Unit]") {
+  using variable_type =
+      Variables<tmpl::list<VariablesTestTags_detail::vector,
+                           VariablesTestTags_detail::scalar,
+                           VariablesTestTags_detail::scalar2>>;
+  using prefix_variable_type = Variables<tmpl::list<
+      VariablesTestTags_detail::PrefixTag0<VariablesTestTags_detail::vector>,
+      VariablesTestTags_detail::PrefixTag0<VariablesTestTags_detail::scalar>,
+      VariablesTestTags_detail::PrefixTag0<VariablesTestTags_detail::scalar2>>>;
+  prefix_variable_type prefix_vars_0(4, 8.);
+  prefix_variable_type prefix_vars_1(4, 6.);
+  variable_type vars_0(prefix_vars_0);
+  variable_type vars_1(std::move(prefix_vars_1));
+
+  const auto check_variables = [](const auto& lvars_0, const auto& lvars_1) {
+    tmpl::for_each<typename std::decay_t<decltype(lvars_0)>::tags_list>(
+        [&lvars_0, &lvars_1](auto tag) {
+          using Tag = tmpl::type_from<decltype(tag)>;
+          for (const auto& component :
+               boost::combine(get<Tag>(lvars_0), get<Tag>(lvars_1))) {
+            CHECK(boost::get<0>(component) == boost::get<1>(component));
+          }
+        });
+  };
+
+  check_variables(vars_0, variable_type(4, 8.0));
+  check_variables(vars_1, variable_type(4, 6.0));
+
+  prefix_variable_type prefix_vars_2(4, 4.);
+  prefix_variable_type prefix_vars_3(4, 2.);
+  vars_0 = prefix_vars_2;
+  check_variables(vars_0, variable_type(4, 4.0));
+  vars_0 = std::move(prefix_vars_3);
+  check_variables(vars_0, variable_type(4, 2.0));
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Variables.PrefixMath",
+                  "[DataStructures][Unit]") {
+  using prefix0_variable_type = Variables<tmpl::list<
+      VariablesTestTags_detail::PrefixTag0<VariablesTestTags_detail::vector>,
+      VariablesTestTags_detail::PrefixTag0<VariablesTestTags_detail::scalar>,
+      VariablesTestTags_detail::PrefixTag0<VariablesTestTags_detail::scalar2>>>;
+  using prefix1_variable_type = Variables<tmpl::list<
+      VariablesTestTags_detail::PrefixTag1<VariablesTestTags_detail::vector>,
+      VariablesTestTags_detail::PrefixTag1<VariablesTestTags_detail::scalar>,
+      VariablesTestTags_detail::PrefixTag1<VariablesTestTags_detail::scalar2>>>;
+  using prefix2_variable_type = Variables<tmpl::list<
+      VariablesTestTags_detail::PrefixTag2<VariablesTestTags_detail::vector>,
+      VariablesTestTags_detail::PrefixTag2<VariablesTestTags_detail::scalar>,
+      VariablesTestTags_detail::PrefixTag2<VariablesTestTags_detail::scalar2>>>;
+  using prefix3_variable_type = Variables<tmpl::list<
+      VariablesTestTags_detail::PrefixTag3<VariablesTestTags_detail::PrefixTag2<
+          VariablesTestTags_detail::vector>>,
+      VariablesTestTags_detail::PrefixTag3<VariablesTestTags_detail::PrefixTag2<
+          VariablesTestTags_detail::scalar>>,
+      VariablesTestTags_detail::PrefixTag3<VariablesTestTags_detail::PrefixTag2<
+          VariablesTestTags_detail::scalar2>>>>;
+
+  prefix0_variable_type three_0(1, 3.0);
+  prefix1_variable_type three_1(1, 3.0);
+  prefix2_variable_type three_2(1, 3.0);
+  prefix3_variable_type three_3(1, 3.0);
+
+  check_vectors(prefix3_variable_type{1, 6.0}, 2.0 * three_0);
+  check_vectors(prefix3_variable_type{1, 6.0}, three_0 * 2.0);
+  check_vectors(prefix3_variable_type{1, 1.5}, three_0 / 2.0);
+  check_vectors(prefix3_variable_type{1, 12.0},
+                three_0 + three_1 + three_2 + three_3);
+  check_vectors(prefix3_variable_type{1, 12.0},
+                (three_0 + three_1) + (three_2 + three_3));
+  check_vectors(prefix3_variable_type{1, 9.0}, three_0 + (three_1 + three_2));
+
+  // clang-tidy: point sides of overloaded operator are equivalent
+  check_vectors(prefix3_variable_type{1, -6.0},
+                three_0 - three_1 - three_2 - three_3);  // NOLINT
+  check_vectors(prefix3_variable_type{1, 6.0},
+                three_0 - (three_1 - three_2 - three_3));  // NOLINT
+  check_vectors(prefix3_variable_type{1, 0.0},
+                (three_0 - three_1) - (three_2 - three_3));  // NOLINT
+  check_vectors(prefix3_variable_type{1, 3.0},
+                three_0 - (three_1 - three_2));  // NOLINT
+  check_vectors(prefix3_variable_type{1, 3.0},
+                three_0 - three_1 + three_2);  // NOLINT
+  check_vectors(prefix3_variable_type{1, 3.0}, three_0 + three_1 - three_2);
+
+  prefix0_variable_type test_assignment(three_0 * 1.0);
+  test_assignment += prefix1_variable_type{1, 3};
+  check_vectors(prefix0_variable_type{1, 6}, test_assignment);
+  test_assignment -= prefix1_variable_type{1, 2};
+  check_vectors(prefix0_variable_type{1, 4}, test_assignment);
+  test_assignment *= 0.25;
+  check_vectors(prefix0_variable_type{1, 1.0}, test_assignment);
+  test_assignment /= 0.1;
+  check_vectors(prefix0_variable_type{1, 10.0}, test_assignment);
+
+  test_assignment += prefix1_variable_type{1, 3} * 3.0;
+  check_vectors(prefix0_variable_type{1, 19.0}, test_assignment);
+  test_assignment -= prefix1_variable_type{1, 3} * 2.0;
+  check_vectors(prefix0_variable_type{1, 13.0}, test_assignment);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
@@ -290,38 +420,35 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",
   const Index<2> extents{{{4, 2}}};
   Variables<typelist<VariablesTestTags_detail::vector>> vars(extents.product());
   get<VariablesTestTags_detail::vector>(vars) =
-      Vector{{{{1110000., 1120000., 1130000., 1140000.,
-                1210000., 1220000., 1230000., 1240000.},
-               {2110000., 2120000., 2130000., 2140000.,
-                2210000., 2220000., 2230000., 2240000.},
-               {3110000., 3120000., 3130000., 3140000.,
-                3210000., 3220000., 3230000., 3240000.}}}};
+      Vector{{{{1110000., 1120000., 1130000., 1140000., 1210000., 1220000.,
+                1230000., 1240000.},
+               {2110000., 2120000., 2130000., 2140000., 2210000., 2220000.,
+                2230000., 2240000.},
+               {3110000., 3120000., 3130000., 3140000., 3210000., 3220000.,
+                3230000., 3240000.}}}};
 
   {
     const auto slice_extents = extents.slice_away(0);
     Variables<typelist<VariablesTestTags_detail::vector>> slice(
         slice_extents.product(), 0.);
-    get<VariablesTestTags_detail::vector>(slice) = Vector{{{{1100., 1200.},
-                                                            {2100., 2200.},
-                                                            {3100., 3200.}}}};
+    get<VariablesTestTags_detail::vector>(slice) =
+        Vector{{{{1100., 1200.}, {2100., 2200.}, {3100., 3200.}}}};
     add_slice_to_data(make_not_null(&vars), slice, extents, 0, 2);
   }
   {
     const auto slice_extents = extents.slice_away(1);
     Variables<typelist<VariablesTestTags_detail::vector>> slice(
         slice_extents.product(), 0.);
-    get<VariablesTestTags_detail::vector>(slice) =
-        Vector{{{{11., 12., 13., 14.},
-                 {21., 22., 23., 24.},
-                 {31., 32., 33., 34.}}}};
+    get<VariablesTestTags_detail::vector>(slice) = Vector{
+        {{{11., 12., 13., 14.}, {21., 22., 23., 24.}, {31., 32., 33., 34.}}}};
     add_slice_to_data(make_not_null(&vars), slice, extents, 1, 1);
   }
 
-  CHECK((Vector{{{{1110000., 1120000., 1131100., 1140000.,
-                   1210011., 1220012., 1231213., 1240014.},
-                  {2110000., 2120000., 2132100., 2140000.,
-                   2210021., 2220022., 2232223., 2240024.},
-                  {3110000., 3120000., 3133100., 3140000.,
-                   3210031., 3220032., 3233233., 3240034.}}}}) ==
-    get<VariablesTestTags_detail::vector>(vars));
+  CHECK((Vector{{{{1110000., 1120000., 1131100., 1140000., 1210011., 1220012.,
+                   1231213., 1240014.},
+                  {2110000., 2120000., 2132100., 2140000., 2210021., 2220022.,
+                   2232223., 2240024.},
+                  {3110000., 3120000., 3133100., 3140000., 3210031., 3220032.,
+                   3233233., 3240034.}}}}) ==
+        get<VariablesTestTags_detail::vector>(vars));
 }
