@@ -466,4 +466,23 @@ using add_tag_prefix = typename detail::add_tag_prefix_impl<
 /// tags if the unwrapped tag is a `Tags::Variables`.
 template <typename Tag>
 using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
+
+namespace databox_detail {
+template <class Tag, bool IsPrefix = false>
+struct remove_all_prefixes {
+  using type = Tag;
+};
+
+template <template <class...> class F, class Tag, class... Args>
+struct remove_all_prefixes<F<Tag, Args...>, true> {
+  using type = typename remove_all_prefixes<
+      Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+};
+}  // namespace databox_detail
+
+/// \ingroup DataBoxGroup
+/// Completely remove all prefix tags from a Tag
+template <typename Tag>
+using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
+    Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
 }  // namespace db

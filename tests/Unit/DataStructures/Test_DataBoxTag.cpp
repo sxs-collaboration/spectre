@@ -66,3 +66,9 @@ static_assert(
             double>>,
         Tags::Variables<tmpl::list<Var>>>,
     "Failed testing remove_tag_prefix");
+
+static_assert(
+    cpp17::is_same_v<db::remove_all_prefixes<PrefixWithArgs<
+                         PrefixWithArgs<Var, int, double>, char, bool>>,
+                     Var>,
+    "Failed testing remove_tag_prefix");
