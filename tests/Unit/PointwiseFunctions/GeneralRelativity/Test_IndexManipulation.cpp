@@ -247,6 +247,65 @@ void test_3d_spacetime_lower(const DataVector& used_for_size) {
           make_spacetime_metric<dim>(used_for_size)),
       lowered_tensor);
 }
+void test_1d_spatial_trace(const DataVector& used_for_size) {
+  const size_t dim = 1;
+  const tnsr::i<double, dim> covector = trace_last_indices(
+      make_deriv_spatial_metric<dim>(0.), make_inverse_spatial_metric<dim>(0.));
+
+  CHECK(covector.get(0) == approx(3.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace_last_indices(make_deriv_spatial_metric<dim>(used_for_size),
+                         make_inverse_spatial_metric<dim>(used_for_size)),
+      covector);
+}
+
+void test_2d_spatial_trace(const DataVector& used_for_size) {
+  const size_t dim = 2;
+  const tnsr::i<double, dim> covector = trace_last_indices(
+      make_deriv_spatial_metric<dim>(0.), make_inverse_spatial_metric<dim>(0.));
+
+  CHECK(covector.get(0) == approx(75));
+  CHECK(covector.get(1) == approx(84));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace_last_indices(make_deriv_spatial_metric<dim>(used_for_size),
+                         make_inverse_spatial_metric<dim>(used_for_size)),
+      covector);
+}
+
+void test_3d_spatial_trace(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const tnsr::i<double, dim> covector = trace_last_indices(
+      make_deriv_spatial_metric<dim>(0.), make_inverse_spatial_metric<dim>(0.));
+
+  CHECK(covector.get(0) == approx(588));
+  CHECK(covector.get(1) == approx(624));
+  CHECK(covector.get(2) == approx(660));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace_last_indices(make_deriv_spatial_metric<dim>(used_for_size),
+                         make_inverse_spatial_metric<dim>(used_for_size)),
+      covector);
+}
+
+void test_3d_spacetime_trace(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const tnsr::a<double, dim> vector =
+      trace_last_indices(make_spacetime_deriv_spacetime_metric<dim>(0.),
+                         make_inverse_spacetime_metric<dim>(0.));
+
+  CHECK(vector.get(0) == approx(-9600));
+  CHECK(vector.get(1) == approx(-12800));
+  CHECK(vector.get(2) == approx(-16000));
+  CHECK(vector.get(3) == approx(-19200));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace_last_indices(
+          make_spacetime_deriv_spacetime_metric<dim>(used_for_size),
+          make_inverse_spacetime_metric<dim>(used_for_size)),
+      vector);
+}
 
 }  // namespace
 
@@ -263,4 +322,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
   test_3d_spatial_lower(dv);
   test_3d_spacetime_raise(dv);
   test_3d_spacetime_lower(dv);
+  test_1d_spatial_trace(dv);
+  test_2d_spatial_trace(dv);
+  test_3d_spatial_trace(dv);
+  test_3d_spacetime_trace(dv);
 }
