@@ -1,14 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(benchmark QUIET)
+find_package(GoogleBenchmark QUIET)
 
-if (${benchmark_FOUND})
-  message(STATUS "Google Benchmark version: ${benchmark_VERSION}")
+if (${GOOGLE_BENCHMARK_FOUND})
+  include_directories(SYSTEM ${GOOGLE_BENCHMARK_INCLUDE_DIRS})
+  set(SPECTRE_LIBRARIES "${SPECTRE_LIBRARIES};${GOOGLE_BENCHMARK_LIBRARIES}")
+
+  message(STATUS "Google Benchmark libs: " ${GOOGLE_BENCHMARK_LIBRARIES})
+  message(STATUS "Google Benchmark incl: " ${GOOGLE_BENCHMARK_INCLUDE_DIRS})
 
   file(APPEND
     "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
-    "Google Benchmark Version:  ${benchmark_VERSION}\n"
+    "Google Benchmark Found\n"
     )
-
 endif()
