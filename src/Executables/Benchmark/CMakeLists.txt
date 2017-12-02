@@ -18,6 +18,7 @@ if(${benchmark_FOUND} AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
   target_link_libraries(
     ${executable}
     benchmark
+    Domain
     CoordinateMaps
     Spectral
     ${SPECTRE_LIBRARIES}
