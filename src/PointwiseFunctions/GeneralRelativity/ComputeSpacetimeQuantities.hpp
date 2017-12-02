@@ -132,3 +132,15 @@ tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+/*!
+ * \brief Computes spacetime normal one-form from lapse.
+ *
+ * \details If \f$N\f$ is the lapse, then
+ * \f{align} n_t &=& - N \\
+ * n_i &=& 0 \f}
+ * is computed.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
+    const Scalar<DataType>& lapse) noexcept;

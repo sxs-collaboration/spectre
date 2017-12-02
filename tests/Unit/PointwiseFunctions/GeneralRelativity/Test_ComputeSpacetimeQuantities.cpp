@@ -431,6 +431,20 @@ void test_compute_3d_pi(const DataVector& used_for_size) {
       pi);
 }
 
+template<size_t Dim>
+void test_compute_spacetime_normal_one_form(const DataVector& used_for_size) {
+  const auto spacetime_normal_one_form =
+      compute_spacetime_normal_one_form<Dim, Frame::Inertial>(make_lapse(0.));
+
+  CHECK(spacetime_normal_one_form.get(0) == approx(-3.0));
+  for (size_t i = 0; i < Dim; ++i) {
+    CHECK(spacetime_normal_one_form.get(i + 1) == 0.);
+  }
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_spacetime_normal_one_form<Dim, Frame::Inertial>(
+          make_lapse(used_for_size)),
+      spacetime_normal_one_form);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -451,4 +465,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   test_compute_1d_pi(dv);
   test_compute_2d_pi(dv);
   test_compute_3d_pi(dv);
+  test_compute_spacetime_normal_one_form<1>(dv);
+  test_compute_spacetime_normal_one_form<2>(dv);
+  test_compute_spacetime_normal_one_form<3>(dv);
 }

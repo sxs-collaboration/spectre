@@ -204,6 +204,15 @@ tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
   return pi;
 }
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
+    const Scalar<DataType>& lapse) noexcept {
+  auto normal_one_form =
+      make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(get<>(lapse), 0.);
+  get<0>(normal_one_form) = -get<>(lapse);
+  return normal_one_form;
+}
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -247,7 +256,10 @@ tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
+  compute_spacetime_normal_one_form(                                          \
+      const Scalar<DTYPE(data)>& lapse) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))
