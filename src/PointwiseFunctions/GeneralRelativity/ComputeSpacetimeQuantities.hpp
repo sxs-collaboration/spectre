@@ -144,3 +144,16 @@ tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief  Computes spacetime normal vector from lapse and shift.
+ * \details If $N, N^i$ are the lapse and shift respectively, then
+ * \f{align} n^t &=& 1/N \\
+ * n^i &=& -\frac{N^i}{N} \f}
+ * is computed.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::A<DataType, SpatialDim, Frame> compute_spacetime_normal_vector(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept;

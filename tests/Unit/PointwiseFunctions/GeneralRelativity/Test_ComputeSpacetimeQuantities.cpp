@@ -445,6 +445,49 @@ void test_compute_spacetime_normal_one_form(const DataVector& used_for_size) {
           make_lapse(used_for_size)),
       spacetime_normal_one_form);
 }
+
+void test_compute_1d_spacetime_normal_vector(const DataVector& used_for_size) {
+  const size_t dim = 1;
+  const auto spacetime_normal_vector =
+      compute_spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
+
+  CHECK(spacetime_normal_vector.get(0) == approx(1. / 3.));
+  CHECK(spacetime_normal_vector.get(1) == approx(-1. / 3.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_spacetime_normal_vector(make_lapse(used_for_size),
+                                      make_shift<dim>(used_for_size)),
+      spacetime_normal_vector);
+}
+void test_compute_2d_spacetime_normal_vector(const DataVector& used_for_size) {
+  const size_t dim = 2;
+  const auto spacetime_normal_vector =
+      compute_spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
+
+  CHECK(spacetime_normal_vector.get(0) == approx(1. / 3.));
+  CHECK(spacetime_normal_vector.get(1) == approx(-1. / 3.));
+  CHECK(spacetime_normal_vector.get(2) == approx(-2. / 3.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_spacetime_normal_vector(make_lapse(used_for_size),
+                                      make_shift<dim>(used_for_size)),
+      spacetime_normal_vector);
+}
+void test_compute_3d_spacetime_normal_vector(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const auto spacetime_normal_vector =
+      compute_spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
+
+  CHECK(spacetime_normal_vector.get(0) == approx(1. / 3.));
+  CHECK(spacetime_normal_vector.get(1) == approx(-1. / 3.));
+  CHECK(spacetime_normal_vector.get(2) == approx(-2. / 3.));
+  CHECK(spacetime_normal_vector.get(3) == approx(-1.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      compute_spacetime_normal_vector(make_lapse(used_for_size),
+                                      make_shift<dim>(used_for_size)),
+      spacetime_normal_vector);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -468,4 +511,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   test_compute_spacetime_normal_one_form<1>(dv);
   test_compute_spacetime_normal_one_form<2>(dv);
   test_compute_spacetime_normal_one_form<3>(dv);
+  test_compute_1d_spacetime_normal_vector(dv);
+  test_compute_2d_spacetime_normal_vector(dv);
+  test_compute_3d_spacetime_normal_vector(dv);
 }

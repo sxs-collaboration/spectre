@@ -213,6 +213,20 @@ tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
   return normal_one_form;
 }
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::A<DataType, SpatialDim, Frame> compute_spacetime_normal_vector(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
+  auto spacetime_normal_vector{
+      make_with_value<tnsr::A<DataType, SpatialDim, Frame>>(get<>(lapse), 0.)};
+  get<0>(spacetime_normal_vector) = 1. / get<>(lapse);
+  for (size_t i = 0; i < SpatialDim; i++) {
+    spacetime_normal_vector.get(i + 1) =
+        -shift.get(i) * get<0>(spacetime_normal_vector);
+  }
+  return spacetime_normal_vector;
+}
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -259,7 +273,11 @@ tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
   compute_spacetime_normal_one_form(                                          \
-      const Scalar<DTYPE(data)>& lapse) noexcept;
+      const Scalar<DTYPE(data)>& lapse) noexcept;                             \
+  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                       \
+  compute_spacetime_normal_vector(                                            \
+      const Scalar<DTYPE(data)>& lapse,                                       \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))
