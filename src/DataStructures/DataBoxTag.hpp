@@ -429,7 +429,7 @@ struct is_variables_compute_item<
 template <template <typename...> class Wrapper, typename TagList,
           typename... Args>
 using wrap_tags_in =
-    tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, Args...>>;
+    tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, tmpl::pin<Args>...>>;
 
 namespace detail {
 template <bool IsVariables>
