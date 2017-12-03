@@ -80,12 +80,14 @@ struct ComputeBoundaryFlux {
   }
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     static_assert(cpp17::is_same_v<System, typename Metavariables::system>,
                   "Inconsistent systems");
     constexpr const size_t volume_dim = System::volume_dim;
@@ -244,12 +246,14 @@ struct ComputeBoundaryFlux {
 template <typename Receiver>
 struct SendDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
     constexpr const size_t volume_dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;

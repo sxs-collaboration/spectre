@@ -31,12 +31,14 @@ namespace Actions {
 /// - Modifies: Tags::TimeId, Tags::TimeStep
 struct AdvanceTime {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<Tags::TimeId, Tags::TimeStep>(
         box, [&cache](auto& time_id, auto& time_step) noexcept {
           const auto& time_stepper =

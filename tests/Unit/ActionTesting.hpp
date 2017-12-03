@@ -120,7 +120,8 @@ class ActionRunner {
   decltype(auto) apply(db::DataBox<DbTags>& box,
                        const typename Component::index& array_index) noexcept {
     return Action::apply(box, inboxes<Component>()[array_index], cache_,
-                         array_index, typename Component::action_list{});
+                         array_index, typename Component::action_list{},
+                         std::add_pointer_t<Component>{nullptr});
   }
 
   /// Call Action::is_ready as if on the portion of Component labeled

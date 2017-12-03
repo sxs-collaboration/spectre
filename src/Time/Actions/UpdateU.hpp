@@ -37,12 +37,14 @@ namespace Actions {
 ///                                 system::dt_variables_tag>
 struct UpdateU {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     using variables_tag = typename Metavariables::system::variables_tag;
     using dt_variables_tag = typename Metavariables::system::dt_variables_tag;
 
