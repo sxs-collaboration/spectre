@@ -27,7 +27,7 @@ std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
-Variables<db::wrap_tags_in<Tags::d, DerivativeTags, tmpl::size_t<Dim>,
+Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                            DerivativeFrame>>
 partial_derivatives(
     const Variables<VariableTags>& u, const Index<Dim>& extents,
@@ -38,7 +38,7 @@ partial_derivatives(
   const auto logical_partial_derivatives_of_u =
       logical_partial_derivatives<DerivativeTags>(u, extents);
 
-  Variables<db::wrap_tags_in<Tags::d, DerivativeTags, tmpl::size_t<Dim>,
+  Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                              DerivativeFrame>>
       partial_derivatives_of_u(u.number_of_grid_points(), 0.0);
 
@@ -47,7 +47,7 @@ partial_derivatives(
     &logical_partial_derivatives_of_u
   ](auto tag) noexcept {
     using Tag = tmpl::type_from<decltype(tag)>;
-    using DerivativeTag = Tags::d<Tag, tmpl::size_t<Dim>, DerivativeFrame>;
+    using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, DerivativeFrame>;
     auto& partial_derivatives_of_variable =
         get<DerivativeTag>(partial_derivatives_of_u);
     for (auto it = partial_derivatives_of_variable.begin();

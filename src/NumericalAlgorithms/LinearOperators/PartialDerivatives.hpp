@@ -52,7 +52,7 @@ struct deriv_impl;
  * last parameter being a `std::integral_constant` of the dimension of the mesh.
  */
 template <typename Tag, typename VolumeDim, typename Frame>
-struct d : Tags_detail::deriv_impl<Tag, VolumeDim, Frame> {};
+struct deriv : Tags_detail::deriv_impl<Tag, VolumeDim, Frame> {};
 }  // namespace Tags
 
 /// \ingroup NumericalAlgorithmsGroup
@@ -67,7 +67,7 @@ std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
 /// the coordinates of `DerivativeFrame`.
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
-Variables<db::wrap_tags_in<Tags::d, DerivativeTags, tmpl::size_t<Dim>,
+Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                            DerivativeFrame>>
 partial_derivatives(
     const Variables<VariableTags>& u, const Index<Dim>& extents,
@@ -85,7 +85,7 @@ struct deriv_impl<Tag, VolumeDim, Frame,
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "d";
+  static constexpr db::DataBoxString label = "deriv";
 };
 
 template <typename Tag, typename VolumeDim, typename Frame>
@@ -94,7 +94,7 @@ struct deriv_impl<Tag, VolumeDim, Frame,
     : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "d";
+  static constexpr db::DataBoxString label = "deriv";
 };
 
 // Partial derivatives with derivative index in the frame related to the logical
@@ -112,7 +112,7 @@ struct deriv_impl<
   using variables_tags = tmpl::list<VariablesTags...>;
 
  public:
-  static constexpr db::DataBoxString label = "d";
+  static constexpr db::DataBoxString label = "deriv";
   static constexpr auto function =
       partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                           derivative_frame_index::dim,
@@ -129,7 +129,7 @@ struct deriv_impl<tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
                   std::integral_constant<T, Dim>,
                   Requires<(0 < Dim and 4 > Dim)>> : db::ComputeItemTag {
   using variables_tags = tmpl::list<VariablesTags...>;
-  static constexpr db::DataBoxString label = "d";
+  static constexpr db::DataBoxString label = "deriv";
   static constexpr auto function =
       logical_partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                                   Dim>;

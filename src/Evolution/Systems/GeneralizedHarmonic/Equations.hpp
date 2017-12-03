@@ -17,7 +17,7 @@ template <typename>
 class dt;
 
 template <typename, typename, typename>
-class d;
+class deriv;
 }  // namespace Tags
 
 namespace gsl {
@@ -33,10 +33,10 @@ struct ComputeDuDt {
                                Tags::dt<Pi<Dim>>, Tags::dt<Phi<Dim>>>;
   using argument_tags = typelist<
       SpacetimeMetric<Dim>, Pi<Dim>, Phi<Dim>,
-      Tags::d<SpacetimeMetric<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::d<Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::d<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>, ConstraintGamma0,
-      ConstraintGamma1, ConstraintGamma2, GaugeH<Dim>,
+      Tags::deriv<SpacetimeMetric<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::deriv<Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      ConstraintGamma0, ConstraintGamma1, ConstraintGamma2, GaugeH<Dim>,
       SpacetimeDerivGaugeH<Dim>, Lapse<Dim>, Shift<Dim>,
       InverseSpatialMetric<Dim>, InverseSpacetimeMetric<Dim>,
       TraceSpacetimeChristoffelFirstKind<Dim>,
