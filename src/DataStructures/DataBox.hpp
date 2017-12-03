@@ -25,10 +25,17 @@
 /// \cond
 template <typename TagList>
 class Variables;
+// clang-tidy: redundant declaration: DataBox doesn't need to include
+// Variables.hpp, but just these forward declarations. However, clang-tidy
+// sometimes complains about this.
 template <typename Tag, typename TagList>
-constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;
+constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;  // NOLINT
+// clang-tidy: redundant declaration: DataBox doesn't need to include
+// Variables.hpp, but just these forward declarations. However, clang-tidy
+// sometimes complains about this.
 template <typename Tag, typename TagList>
-constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept;
+constexpr const typename Tag::type& get(  // NOLINT
+    const Variables<TagList>& v) noexcept;
 /// \endcond
 
 /*!
