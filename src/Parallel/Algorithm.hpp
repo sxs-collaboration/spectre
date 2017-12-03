@@ -851,6 +851,15 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    ArrayIndex, InitialDataBox>::
     receive_data_impl(typename ReceiveTag::temporal_id& instance,
                       ReceiveDataType&& t) {
+  static_assert(
+      cpp17::is_same_v<
+          cpp20::remove_cvref_t<typename ReceiveDataType::first_type>,
+          typename ReceiveTag::type::mapped_type::key_type> and
+          cpp17::is_same_v<
+              cpp20::remove_cvref_t<typename ReceiveDataType::second_type>,
+              typename ReceiveTag::type::mapped_type::mapped_type>,
+      "The type of the data passed to receive_data for a tag that holds a map "
+      "must be a std::pair.");
 #ifdef SPECTRE_CHARM_RECEIVE_MAP_DATA_EVENT_ID
   double start_time = Parallel::wall_time();
 #endif
