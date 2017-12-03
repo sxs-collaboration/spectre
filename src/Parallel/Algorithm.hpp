@@ -400,9 +400,9 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// When an algorithm has terminated it can be restarted by passing
   /// `enable_if_disabled = true`. This allows long-term disabling and
   /// re-enabling of algorithms
-  template <typename ReceiveTag, typename ReceiveData_t>
+  template <typename ReceiveTag, typename ReceiveDataType>
   void receive_data(typename ReceiveTag::temporal_id instance,
-                    ReceiveData_t&& t,
+                    ReceiveDataType&& t,
                     bool enable_if_disabled = false) noexcept;
 
   /// Start evaluating the algorithm until the is_ready function of an Action
@@ -454,18 +454,18 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// Since it's not clear how or if it's possible at all to do SFINAE with
   /// Charm's ci files, we use a forward to implementation, where the
   /// implementation is a simple function call that we can use SFINAE with
-  template <typename ReceiveTag, typename ReceiveData_t,
+  template <typename ReceiveTag, typename ReceiveDataType,
             Requires<tt::is_maplike_v<typename ReceiveTag::type::mapped_type>> =
                 nullptr>
   void receive_data_impl(typename ReceiveTag::temporal_id& instance,
-                         ReceiveData_t&& t);
+                         ReceiveDataType&& t);
 
   template <
-      typename ReceiveTag, typename ReceiveData_t,
+      typename ReceiveTag, typename ReceiveDataType,
       Requires<tt::is_a_v<std::unordered_multiset,
                           typename ReceiveTag::type::mapped_type>> = nullptr>
   constexpr void receive_data_impl(typename ReceiveTag::temporal_id& instance,
-                                   ReceiveData_t&& t);
+                                   ReceiveDataType&& t);
   // @}
 
   // Member variables
@@ -686,19 +686,19 @@ template <typename ParallelComponent, typename ChareType,
           typename Metavariables, typename... ActionsPack,
           typename... InboxTagsPack, typename ArrayIndex,
           typename InitialDataBox>
-template <typename ReceiveTag, typename ReceiveData_t>
+template <typename ReceiveTag, typename ReceiveDataType>
 void AlgorithmImpl<
     ParallelComponent, ChareType, Metavariables, tmpl::list<ActionsPack...>,
     tmpl::list<InboxTagsPack...>, ArrayIndex,
     InitialDataBox>::receive_data(typename ReceiveTag::temporal_id instance,
-                                  ReceiveData_t&& t,
+                                  ReceiveDataType&& t,
                                   const bool enable_if_disabled) noexcept {
   try {
     lock(&node_lock_);
     if (enable_if_disabled) {
       set_terminate(false);
     }
-    receive_data_impl<ReceiveTag>(instance, std::forward<ReceiveData_t>(t));
+    receive_data_impl<ReceiveTag>(instance, std::forward<ReceiveDataType>(t));
     unlock(&node_lock_);
   } catch (std::exception& e) {
     ERROR("Fatal error: Unexpected exception caught in receive_data: "
@@ -844,13 +844,13 @@ template <typename ParallelComponent, typename ChareType,
           typename Metavariables, typename... ActionsPack,
           typename... InboxTagsPack, typename ArrayIndex,
           typename InitialDataBox>
-template <typename ReceiveTag, typename ReceiveData_t,
+template <typename ReceiveTag, typename ReceiveDataType,
           Requires<tt::is_maplike_v<typename ReceiveTag::type::mapped_type>>>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, tmpl::list<InboxTagsPack...>,
                    ArrayIndex, InitialDataBox>::
     receive_data_impl(typename ReceiveTag::temporal_id& instance,
-                      ReceiveData_t&& t) {
+                      ReceiveDataType&& t) {
 #ifdef SPECTRE_CHARM_RECEIVE_MAP_DATA_EVENT_ID
   double start_time = Parallel::wall_time();
 #endif
@@ -858,7 +858,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   ASSERT(0 == inbox.count(t.first),
          "Receiving data from the 'same' source twice. The message id is: "
              << t.first);
-  if (not inbox.insert(std::forward<ReceiveData_t>(t)).second) {
+  if (not inbox.insert(std::forward<ReceiveDataType>(t)).second) {
     ERROR("Failed to insert data to receive at instance '"
           << instance << "' with tag '" << pretty_type::get_name<ReceiveTag>()
           << "'.\n");
@@ -873,7 +873,7 @@ template <typename ParallelComponent, typename ChareType,
           typename Metavariables, typename... ActionsPack,
           typename... InboxTagsPack, typename ArrayIndex,
           typename InitialDataBox>
-template <typename ReceiveTag, typename ReceiveData_t,
+template <typename ReceiveTag, typename ReceiveDataType,
           Requires<tt::is_a_v<std::unordered_multiset,
                               typename ReceiveTag::type::mapped_type>>>
 constexpr void AlgorithmImpl<
@@ -881,8 +881,8 @@ constexpr void AlgorithmImpl<
     tmpl::list<InboxTagsPack...>, ArrayIndex,
     InitialDataBox>::receive_data_impl(typename ReceiveTag::temporal_id&
                                            instance,
-                                       ReceiveData_t&& t) {
+                                       ReceiveDataType&& t) {
   tuples::get<ReceiveTag>(inboxes_)[instance].insert(
-      std::forward<ReceiveData_t>(t));
+      std::forward<ReceiveDataType>(t));
 }
 }  // namespace Parallel
