@@ -343,6 +343,10 @@ constexpr bool is_base_of_v = std::is_base_of<Base, Derived>::value;
 template <class T>
 constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
 
+/// \ingroup TypeTraitsGroup
+template <class T>
+constexpr bool is_floating_point_v = std::is_floating_point<T>::value;
+
 }  // namespace cpp17
 
 /// \ingroup TypeTraitsGroup
