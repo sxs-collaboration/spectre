@@ -15,7 +15,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/Abort.hpp"
+#include "Parallel/Exit.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -151,7 +151,7 @@ struct check_iterable_approx<
 
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
-  Parallel::abort("");
+  Parallel::exit();
 }
 /// \endcond
 
