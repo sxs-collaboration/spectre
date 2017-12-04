@@ -79,7 +79,6 @@ using proxy_from_parallel_component =
     typename ParallelComponent::chare_type::template cproxy<
         ParallelComponent, typename ParallelComponent::metavariables,
         typename ParallelComponent::action_list,
-        Parallel::get_inbox_tags<typename ParallelComponent::action_list>,
         typename get_array_index<typename ParallelComponent::chare_type>::
             template f<ParallelComponent>,
         typename ParallelComponent::initial_databox>;
@@ -89,7 +88,6 @@ using index_from_parallel_component =
     typename ParallelComponent::chare_type::template ckindex<
         ParallelComponent, typename ParallelComponent::metavariables,
         typename ParallelComponent::action_list,
-        Parallel::get_inbox_tags<typename ParallelComponent::action_list>,
         typename get_array_index<typename ParallelComponent::chare_type>::
             template f<ParallelComponent>,
         typename ParallelComponent::initial_databox>;

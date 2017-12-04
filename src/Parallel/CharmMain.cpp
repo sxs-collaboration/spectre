@@ -80,7 +80,6 @@ struct CharmRegisterFunctions {
       tmpl::list<
           typename ParallelComponent::metavariables,
           typename ParallelComponent::action_list,
-          Parallel::get_inbox_tags<typename ParallelComponent::action_list>,
           typename get_array_index<chare_type>::template f<ParallelComponent>,
           typename ParallelComponent::initial_databox>,
       ParallelComponent>;

@@ -24,17 +24,17 @@ struct GroupParallelComponent {};
 struct NodegroupParallelComponent {};
 
 using singleton_proxy =
-    CProxy_AlgorithmSingleton<SingletonParallelComponent, MV, tmpl::list<>,
-                              tmpl::list<>, int, db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmSingleton<SingletonParallelComponent, MV, tmpl::list<>, int,
+                              db::DataBox<tmpl::list<>>>;
 using array_proxy =
-    CProxy_AlgorithmArray<ArrayParallelComponent, MV, tmpl::list<>,
-                          tmpl::list<>, int, db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmArray<ArrayParallelComponent, MV, tmpl::list<>, int,
+                          db::DataBox<tmpl::list<>>>;
 using group_proxy =
-    CProxy_AlgorithmGroup<ArrayParallelComponent, MV, tmpl::list<>,
-                          tmpl::list<>, int, db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmGroup<ArrayParallelComponent, MV, tmpl::list<>, int,
+                          db::DataBox<tmpl::list<>>>;
 using nodegroup_proxy =
-    CProxy_AlgorithmNodegroup<ArrayParallelComponent, MV, tmpl::list<>,
-                              tmpl::list<>, int, db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmNodegroup<ArrayParallelComponent, MV, tmpl::list<>, int,
+                              db::DataBox<tmpl::list<>>>;
 }  // namespace
 
 static_assert(Parallel::is_array_proxy<array_proxy>::value,

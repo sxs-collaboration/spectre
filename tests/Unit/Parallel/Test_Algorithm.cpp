@@ -164,7 +164,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_no_ops", "[Unit][Parallel]") {
       SingletonParallelComponent<TestMetavariables>,
       Parallel::Algorithms::Singleton, TestMetavariables,
       typelist<no_op_test::increment_count_actions_called, no_op_test::no_op>,
-      typelist<>, ElementId,
+      ElementId,
       db::DataBox<
           db::get_databox_list<typelist<CountActionsCalled, Int0, Int1>>>>
       al_gore{};
@@ -316,7 +316,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_mutate", "[Unit][Parallel]") {
       Parallel::Algorithms::Singleton, TestMetavariables,
       typelist<add_remove_test::add_int_value_10,
                add_remove_test::increment_int0, add_remove_test::remove_int0>,
-      typelist<>, ElementId,
+      ElementId,
       db::DataBox<
           db::get_databox_list<typelist<CountActionsCalled, TemporalId>>>>
       al_gore{};
@@ -335,6 +335,8 @@ struct IntReceiveTag {
 };
 
 struct add_int0_from_receive {
+  using inbox_tags = tmpl::list<IntReceiveTag>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -417,6 +419,8 @@ struct initialize {
 };
 
 struct finalize {
+  using inbox_tags = tmpl::list<IntReceiveTag>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -450,7 +454,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_receive", "[Unit][Parallel]") {
       typelist<receive_data_test::add_int0_from_receive,
                add_remove_test::increment_int0, add_remove_test::remove_int0,
                receive_data_test::update_instance>,
-      typelist<receive_data_test::IntReceiveTag>, ElementId,
+      ElementId,
       db::DataBox<
           db::get_databox_list<typelist<CountActionsCalled, Int1, TemporalId>>>>
       al_gore{};
@@ -535,7 +539,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_order", "[Unit][Parallel]") {
                add_remove_test::increment_int0,
                any_order::iterate_increment_int0, add_remove_test::remove_int0,
                receive_data_test::update_instance>,
-      typelist<>, ElementId,
+      ElementId,
       db::DataBox<
           db::get_databox_list<typelist<CountActionsCalled, TemporalId>>>>
       al_gore{};
@@ -570,7 +574,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.bad_box_apply", "[Unit][Parallel]") {
   ERROR_TEST();
   Parallel::AlgorithmImpl<SingletonParallelComponent<TestMetavariables>,
                           Parallel::Algorithms::Singleton, TestMetavariables,
-                          typelist<>, typelist<>, ElementId,
+                          typelist<>, ElementId,
                           db::DataBox<db::get_databox_list<typelist<>>>>
       al_gore{};
   al_gore.template explicit_single_action<error_size_zero>();
@@ -600,7 +604,7 @@ struct error_call_single_action_from_action {
             std::tuple<Parallel::AlgorithmImpl<
                            SingletonParallelComponent<TestMetavariables>,
                            Parallel::Algorithms::Singleton, TestMetavariables,
-                           typelist<>, typelist<>, ElementId,
+                           typelist<>, ElementId,
                            db::DataBox<db::get_databox_list<typelist<>>>>&,
                        int>(al_gore, 0));
   }
@@ -616,16 +620,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.action_from_action_1",
   ERROR_TEST();
   Parallel::AlgorithmImpl<SingletonParallelComponent<TestMetavariables>,
                           Parallel::Algorithms::Singleton, TestMetavariables,
-                          typelist<>, typelist<>, ElementId,
+                          typelist<>, ElementId,
                           db::DataBox<db::get_databox_list<typelist<>>>>
       al_gore{};
   al_gore.template explicit_single_action<error_call_single_action_from_action>(
-      std::tuple<Parallel::AlgorithmImpl<
-                     SingletonParallelComponent<TestMetavariables>,
-                     Parallel::Algorithms::Singleton, TestMetavariables,
-                     typelist<>, typelist<>, ElementId,
-                     db::DataBox<db::get_databox_list<typelist<>>>>&,
-                 int>(al_gore, 0));
+      std::tuple<
+          Parallel::AlgorithmImpl<
+              SingletonParallelComponent<TestMetavariables>,
+              Parallel::Algorithms::Singleton, TestMetavariables, typelist<>,
+              ElementId, db::DataBox<db::get_databox_list<typelist<>>>>&,
+          int>(al_gore, 0));
 }
 
 // [[OutputRegex, Already performing an Action and cannot execute additional
@@ -637,16 +641,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.action_from_action_2",
   ERROR_TEST();
   Parallel::AlgorithmImpl<SingletonParallelComponent<TestMetavariables>,
                           Parallel::Algorithms::Singleton, TestMetavariables,
-                          typelist<>, typelist<>, ElementId,
+                          typelist<>, ElementId,
                           db::DataBox<db::get_databox_list<typelist<>>>>
       al_gore{};
   al_gore.template explicit_single_action<error_call_single_action_from_action>(
-      std::tuple<Parallel::AlgorithmImpl<
-                     SingletonParallelComponent<TestMetavariables>,
-                     Parallel::Algorithms::Singleton, TestMetavariables,
-                     typelist<>, typelist<>, ElementId,
-                     db::DataBox<db::get_databox_list<typelist<>>>>&,
-                 int>(al_gore, 1));
+      std::tuple<
+          Parallel::AlgorithmImpl<
+              SingletonParallelComponent<TestMetavariables>,
+              Parallel::Algorithms::Singleton, TestMetavariables, typelist<>,
+              ElementId, db::DataBox<db::get_databox_list<typelist<>>>>&,
+          int>(al_gore, 1));
 }
 
 namespace {
@@ -666,13 +670,13 @@ struct SingletonParallelComponent {
       tmpl::list<receive_data_test::initialize>,
       tmpl::list<receive_data_test::finalize>, tmpl::list<any_order::finalize>,
       tmpl::list<error_size_zero>,
-      tmpl::list<error_call_single_action_from_action,
-                 Parallel::AlgorithmImpl<
-                     SingletonParallelComponent<TestMetavariables>,
-                     Parallel::Algorithms::Singleton, TestMetavariables,
-                     typelist<>, typelist<>, ElementId,
-                     db::DataBox<db::get_databox_list<typelist<>>>>&,
-                 int>>;
+      tmpl::list<
+          error_call_single_action_from_action,
+          Parallel::AlgorithmImpl<
+              SingletonParallelComponent<TestMetavariables>,
+              Parallel::Algorithms::Singleton, TestMetavariables, typelist<>,
+              ElementId, db::DataBox<db::get_databox_list<typelist<>>>>&,
+          int>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}

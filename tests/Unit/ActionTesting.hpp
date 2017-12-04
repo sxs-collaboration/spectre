@@ -51,7 +51,7 @@ class MockProxy {
 
 struct MockArrayChare {
   template <typename Component, typename Metavariables, typename ActionList,
-            typename InboxTagList, typename Index, typename InitialDataBox>
+            typename Index, typename InitialDataBox>
   using cproxy = MockProxy<Index, Parallel::get_inbox_tags<ActionList>>;
 };
 }  // namespace ActionTesting_detail
