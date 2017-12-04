@@ -56,9 +56,13 @@ static_assert(pow<0>(2.0) == 1.0, "Failed testing pow");
 static_assert(pow<-4>(2.0) == 1.0 / 16.0, "Failed testing pow");
 
 // Test abs
-static_assert(constexpr_abs(0) == 0, "Failed testing abs");
-static_assert(constexpr_abs(1.4) == 1.4, "Failed testing abs");
-static_assert(constexpr_abs(-1.4) == 1.4, "Failed testing abs");
+static_assert(ce_abs(0) == 0, "Failed testing abs");
+static_assert(ce_abs(1.4) == 1.4, "Failed testing abs");
+static_assert(ce_abs(-1.4) == 1.4, "Failed testing abs");
+
+// Test fabs
+static_assert(ce_fabs(-1.4) == 1.4, "Failed testing fabs");
+static_assert(ce_fabs(-1.4f) == 1.4f, "Failed testing fabs");
 
 // Test max_by_magnitude
 static_assert(max_by_magnitude(1, 2) == 2, "Failed testing max_by_magnitude");

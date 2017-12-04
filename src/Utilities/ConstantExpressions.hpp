@@ -99,17 +99,41 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute the absolute value of of its argument
 ///
-/// The argument must be comparable to an int and muste be negatable.
-template <typename T>
-constexpr T constexpr_abs(const T& x) noexcept(noexcept(x < 0 ? -x : x)) {
+/// The argument must be comparable to an int and must be negatable.
+template <typename T, Requires<tt::is_integer_v<T> or
+                               cpp17::is_floating_point_v<T>> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr T ce_abs(const T& x) noexcept(
+    noexcept(x < 0 ? -x : x)) {
   return x < 0 ? -x : x;
+}
+
+/// \cond
+template <>
+SPECTRE_ALWAYS_INLINE constexpr double ce_abs(const double& x) noexcept {
+  return __builtin_fabs(x);
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE constexpr float ce_abs(const float& x) noexcept {
+  return __builtin_fabsf(x);
+}
+/// \endcond
+
+/// \ingroup ConstantExpressionsGroup
+/// \brief Compute the absolute value of its argument
+constexpr SPECTRE_ALWAYS_INLINE double ce_fabs(const double x) noexcept {
+  return __builtin_fabs(x);
+}
+
+constexpr SPECTRE_ALWAYS_INLINE float ce_fabs(const float x) noexcept {
+  return __builtin_fabsf(x);
 }
 
 namespace ConstantExpressions_detail {
 struct CompareByMagnitude {
   template <typename T>
   constexpr bool operator()(const T& a, const T& b) {
-    return constexpr_abs(a) < constexpr_abs(b);
+    return ce_abs(a) < ce_abs(b);
   }
 };
 }  // namespace ConstantExpressions_detail
