@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 
+#include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"
 
 /// \ingroup ControlSystemGroup
@@ -14,34 +15,50 @@ namespace FunctionsOfTime {
 /// \ingroup ControlSystemGroup
 /// A function that has a piecewise-constant `MaxDeriv`th derivative.
 template <size_t MaxDeriv>
-class PiecewisePolynomial {
+class PiecewisePolynomial : public FunctionOfTime {
  public:
   PiecewisePolynomial(
       double t,
       std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs) noexcept;
 
-  ~PiecewisePolynomial() = default;
+  ~PiecewisePolynomial() override = default;
   PiecewisePolynomial(PiecewisePolynomial&&) noexcept = default;
   PiecewisePolynomial& operator=(PiecewisePolynomial&&) noexcept = default;
   PiecewisePolynomial(const PiecewisePolynomial&) = delete;
   PiecewisePolynomial& operator=(const PiecewisePolynomial&) = delete;
 
-  /// Returns the function and `MaxDerivReturned` derivatives at
-  /// an arbitrary time `t`.
-  /// The function has multiple components.
-  template <size_t MaxDerivReturned = MaxDeriv>
-  std::array<DataVector, MaxDerivReturned + 1> operator()(double t) const
-      noexcept;
+  /// Returns the function at an arbitrary time `t`.
+  std::array<DataVector, 1> func(double t) const noexcept override {
+    return func_and_derivs<0>(t);
+  }
+  /// Returns the function and its first derivative at an arbitrary time `t`.
+  std::array<DataVector, 2> func_and_deriv(double t) const noexcept override {
+    return func_and_derivs<1>(t);
+  }
+  /// Returns the function and the first two derivatives at an arbitrary time
+  /// `t`.
+  std::array<DataVector, 3> func_and_2_derivs(double t) const
+      noexcept override {
+    return func_and_derivs<2>(t);
+  }
+
   /// Updates the `MaxDeriv`th derivative of the function at the given time.
   /// `updated_max_deriv` is a vector of the `MaxDeriv`ths for each component
   void update(double time_of_update, DataVector updated_max_deriv) noexcept;
   /// Returns the domain of validity of the function.
-  std::array<double, 2> time_bounds() const noexcept {
+  std::array<double, 2> time_bounds() const noexcept override {
     return {{deriv_info_at_update_times_.front().time,
              deriv_info_at_update_times_.back().time}};
   }
 
  private:
+  /// Returns the function and `MaxDerivReturned` derivatives at
+  /// an arbitrary time `t`.
+  /// The function has multiple components.
+  template <size_t MaxDerivReturned = MaxDeriv>
+  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const
+      noexcept;
+
   // There exists a DataVector for each deriv order that contains
   // the values of that deriv order for all components.
   using value_type = std::array<DataVector, MaxDeriv + 1>;

@@ -19,8 +19,8 @@ FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
 template <size_t MaxDeriv>
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1>
-FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::operator()(const double t) const
-    noexcept {
+FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::func_and_derivs(
+    const double t) const noexcept {
   const auto& deriv_info_at_t = deriv_info_from_upper_bound(t);
   const double dt = t - deriv_info_at_t.time;
   const value_type& coefs = deriv_info_at_t.derivs_coefs;
@@ -59,7 +59,7 @@ void FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::update(
   }
 
   // get the current values, before updating the `MaxDeriv'th deriv
-  value_type func = this->operator()(time_of_update);
+  value_type func = func_and_derivs(time_of_update);
 
   if (updated_max_deriv.size() != func.back().size()) {
     ERROR("the number of components trying to be updated ("
@@ -126,8 +126,8 @@ template class FunctionsOfTime::PiecewisePolynomial<4_st>;
 
 #define INSTANTIATE(_, data)                             \
   template std::array<DataVector, DIMRETURNED(data) + 1> \
-  FunctionsOfTime::PiecewisePolynomial<DIM(data)>::      \
-  operator()<DIMRETURNED(data)>(const double) const noexcept;
+  FunctionsOfTime::PiecewisePolynomial<DIM(              \
+      data)>::func_and_derivs<DIMRETURNED(data)>(const double) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2), (0, 1, 2))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (3), (0, 1, 2, 3))
