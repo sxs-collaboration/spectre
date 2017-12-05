@@ -351,7 +351,8 @@ namespace cpp20 {
 /// \ingroup TypeTraits
 template <class T>
 struct remove_cvref {
-  typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+  // clang-tidy use using instead of typedef
+  typedef std::remove_cv_t<std::remove_reference_t<T>> type;  // NOLINT
 };
 
 /// \ingroup TypeTraits
