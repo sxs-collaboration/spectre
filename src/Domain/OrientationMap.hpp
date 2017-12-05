@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines class template Orientation.
+/// Defines class template OrientationMap.
 
 #pragma once
 
@@ -15,55 +15,58 @@
 
 /*!
  * \ingroup DomainCreators
- * \brief Allows one to construct a custom Orientation between two Blocks.
- *
- * \usage The user provides `2*VolumeDim` Directions, encoding
- * the correspondence between the directions in each block.
+ * \brief A mapping of the logical coordinate axes of a host to the logical
+ * coordinate axes of a neighbor of the host.
+ * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
+ * host, an `OrientationMap` will give the corresponding value in the neighbor.
  * \tparam VolumeDim the dimension of the blocks.
  */
 template <size_t VolumeDim>
-class Orientation {
+class OrientationMap {
  public:
   /// The default orientation is the identity map on directions.
   /// The bool `is_aligned_` is correspondingly set to `true`.
-  Orientation();
-  explicit Orientation(
+  OrientationMap();
+  explicit OrientationMap(
       std::array<Direction<VolumeDim>, VolumeDim> mapped_directions);
-  Orientation(
+  OrientationMap(
       const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
       const std::array<Direction<VolumeDim>, VolumeDim>&
           directions_in_neighbor);
-  ~Orientation() = default;
-  Orientation(const Orientation&) = default;
-  Orientation& operator=(const Orientation&) = default;
-  Orientation(Orientation&& /*rhs*/) noexcept = default;
-  Orientation& operator=(Orientation&& /*rhs*/) noexcept = default;
+  ~OrientationMap() = default;
+  OrientationMap(const OrientationMap&) = default;
+  OrientationMap& operator=(const OrientationMap&) = default;
+  OrientationMap(OrientationMap&& /*rhs*/) noexcept = default;
+  OrientationMap& operator=(OrientationMap&& /*rhs*/) noexcept = default;
 
   /// True when mapped(Direction) == Direction
   bool is_aligned() const noexcept { return is_aligned_; }
 
   /// The corresponding dimension in the neighbor.
-  size_t mapped(const size_t dim) const noexcept {
+  size_t operator()(const size_t dim) const noexcept {
     return gsl::at(mapped_directions_, dim).dimension();
   }
 
   /// The corresponding direction in the neighbor.
-  Direction<VolumeDim> mapped(const Direction<VolumeDim>& direction) const {
+  Direction<VolumeDim> operator()(const Direction<VolumeDim>& direction) const {
     return direction.side() == Side::Upper
                ? gsl::at(mapped_directions_, direction.dimension())
                : gsl::at(mapped_directions_, direction.dimension()).opposite();
   }
 
   /// The corresponding SegmentIds in the neighbor.
-  std::array<SegmentId, VolumeDim> mapped(
+  std::array<SegmentId, VolumeDim> operator()(
       const std::array<SegmentId, VolumeDim>& segmentIds) const;
+
+  /// The corresponding Orientation of the host in the frame of the neighbor.
+  OrientationMap<VolumeDim> inverse_map() const noexcept;
 
   /// Serialization for Charm++
   void pup(PUP::er& p);  // NOLINT
 
  private:
-  friend bool operator==(const Orientation& lhs,
-                         const Orientation& rhs) noexcept {
+  friend bool operator==(const OrientationMap& lhs,
+                         const OrientationMap& rhs) noexcept {
     return (lhs.mapped_directions_ == rhs.mapped_directions_ and
             lhs.is_aligned_ == rhs.is_aligned_);
   }
@@ -72,13 +75,13 @@ class Orientation {
   bool is_aligned_ = true;
 };
 
-/// Output operator for Orientation.
+/// Output operator for OrientationMap.
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const Orientation<VolumeDim>& orientation);
+                         const OrientationMap<VolumeDim>& orientation);
 
 template <size_t VolumeDim>
-bool operator!=(const Orientation<VolumeDim>& lhs,
-                const Orientation<VolumeDim>& rhs) noexcept {
+bool operator!=(const OrientationMap<VolumeDim>& lhs,
+                const OrientationMap<VolumeDim>& rhs) noexcept {
   return not(lhs == rhs);
 }

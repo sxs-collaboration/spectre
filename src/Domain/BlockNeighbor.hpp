@@ -10,7 +10,7 @@
 #include <pup.h>
 
 #include "Domain/Direction.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbor of a Block in a particular direction.
@@ -24,8 +24,8 @@ class BlockNeighbor {
   /// Construct with the Id and orientation of the neighbor.
   ///
   /// \param id the Id of the neighbor.
-  /// \param orientation the Orientation of the neighbor.
-  BlockNeighbor(size_t id, Orientation<VolumeDim> orientation);
+  /// \param orientation the OrientationMap of the neighbor.
+  BlockNeighbor(size_t id, OrientationMap<VolumeDim> orientation);
   ~BlockNeighbor() = default;
   BlockNeighbor(const BlockNeighbor<VolumeDim>& neighbor) = default;
   BlockNeighbor(BlockNeighbor<VolumeDim>&&) noexcept = default;
@@ -36,7 +36,7 @@ class BlockNeighbor {
 
   size_t id() const noexcept { return id_; }
 
-  const Orientation<VolumeDim>& orientation() const noexcept {
+  const OrientationMap<VolumeDim>& orientation() const noexcept {
     return orientation_;
   }
 
@@ -45,7 +45,7 @@ class BlockNeighbor {
 
  private:
   size_t id_{0};
-  Orientation<VolumeDim> orientation_;
+  OrientationMap<VolumeDim> orientation_;
 };
 
 /// Output operator for BlockNeighbor.

@@ -14,7 +14,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -30,11 +30,11 @@ void test_create_initial_element(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
-  Orientation<2> aligned(
+  OrientationMap<2> aligned(
       make_array(Direction<2>::upper_xi(), Direction<2>::upper_eta()));
-  Orientation<2> unaligned(
+  OrientationMap<2> unaligned(
       make_array(Direction<2>::lower_eta(), Direction<2>::upper_xi()));
-  Orientation<2> inverse_of_unaligned(
+  OrientationMap<2> inverse_of_unaligned(
       {{Direction<2>::lower_eta(), Direction<2>::upper_xi()}},
       {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
   Block<2, Frame::Inertial> test_block(

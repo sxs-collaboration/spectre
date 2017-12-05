@@ -4,7 +4,7 @@
 #include "Domain/DomainHelpers.hpp"
 
 #include "Domain/Direction.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 
 namespace {
 
@@ -254,7 +254,7 @@ void set_internal_boundaries(
                 block1_index, block2_index, corners_of_all_blocks);
         neighbor.emplace(std::move((orientation_helper.first)[0]),
                          BlockNeighbor<VolumeDim>(
-                             block2_index, Orientation<VolumeDim>(
+                             block2_index, OrientationMap<VolumeDim>(
                                                orientation_helper.first,
                                                orientation_helper.second)));
       }
@@ -297,10 +297,10 @@ void set_periodic_boundaries(
         create_correspondence_between_blocks<VolumeDim>(
             face2_normal_dir, face1_normal_dir, face2_align_dirs,
             face1_align_dirs);
-    const Orientation<VolumeDim> connect1(
+    const OrientationMap<VolumeDim> connect1(
         obtain_correspondence_between_blocks1.first,
         obtain_correspondence_between_blocks1.second);
-    const Orientation<VolumeDim> connect2(
+    const OrientationMap<VolumeDim> connect2(
         obtain_correspondence_between_blocks2.first,
         obtain_correspondence_between_blocks2.second);
     (*neighbors_of_all_blocks)[id].emplace(

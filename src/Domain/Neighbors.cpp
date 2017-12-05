@@ -12,13 +12,13 @@
 
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-                                Orientation<VolumeDim> orientation)
+                                OrientationMap<VolumeDim> orientation)
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {}
 
 template <size_t VolumeDim>
 void Neighbors<VolumeDim>::add_ids(
-    const std::unordered_set<ElementId<VolumeDim>>& additional_Ids) {
-  for (const auto& id : additional_Ids) {
+    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) {
+  for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
 }

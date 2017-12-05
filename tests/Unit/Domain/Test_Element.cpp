@@ -9,7 +9,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -18,9 +18,9 @@ void check_element() {
   const ElementId<VolumeDim> id{5};
 
   const Neighbors<VolumeDim> neighbors(
-      std::unordered_set<ElementId<VolumeDim>>{
-        ElementId<VolumeDim>(7), ElementId<VolumeDim>(4)},
-      Orientation<VolumeDim>{});
+      std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(7),
+                                               ElementId<VolumeDim>(4)},
+      OrientationMap<VolumeDim>{});
   const typename Element<VolumeDim>::Neighbors_t two_neighbors{
     {Direction<VolumeDim>::lower_xi(), neighbors},
     {Direction<VolumeDim>::upper_xi(), neighbors}};

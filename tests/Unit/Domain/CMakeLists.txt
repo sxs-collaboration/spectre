@@ -28,7 +28,7 @@ set(DOMAIN_TESTS
     Domain/Test_InitialElementIds.cpp
     Domain/Test_LogicalCoordinates.cpp
     Domain/Test_Neighbors.cpp
-    Domain/Test_Orientations.cpp
+    Domain/Test_OrientationMap.cpp
     Domain/Test_SegmentId.cpp
     Domain/Test_Side.cpp
     )

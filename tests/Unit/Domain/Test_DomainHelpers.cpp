@@ -18,7 +18,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Boundaries", "[Domain][Unit]") {
   std::array<Direction<3>, 3> mapped_directions{{Direction<3>::upper_xi(),
                                                  Direction<3>::upper_eta(),
                                                  Direction<3>::upper_zeta()}};
-  Orientation<3> expected_orientation(mapped_directions);
+  OrientationMap<3> expected_orientation(mapped_directions);
   CHECK(
       (neighbors_of_all_blocks)[0][Direction<3>::lower_zeta()].orientation() ==
       expected_orientation);
@@ -28,7 +28,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Boundaries", "[Domain][Unit]") {
   std::vector<PairOfFaces> identifications{x_faces};
   set_periodic_boundaries<3>(identifications, corners_of_all_blocks,
                              &neighbors_of_all_blocks);
-  Orientation<3> expected_identification(mapped_directions);
+  OrientationMap<3> expected_identification(mapped_directions);
   CHECK((neighbors_of_all_blocks)[0][Direction<3>::upper_xi()].orientation() ==
         expected_identification);
 }

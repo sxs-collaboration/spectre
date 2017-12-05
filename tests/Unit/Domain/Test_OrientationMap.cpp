@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "Domain/Direction.hpp"
-#include "Domain/Orientation.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -12,25 +12,26 @@ namespace {
 
 void test_1d() {
   // Test constructors:
-  Orientation<1> default_orientation{};
+  OrientationMap<1> default_orientation{};
   CHECK(default_orientation.is_aligned());
   CHECK(get_output(default_orientation) == "(+0)");
-  Orientation<1> custom1(
+  OrientationMap<1> custom1(
       std::array<Direction<1>, 1>{{Direction<1>::upper_xi()}});
   CHECK(custom1.is_aligned());
-  Orientation<1> custom2(
+  OrientationMap<1> custom2(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
   CHECK_FALSE(custom2.is_aligned());
 
-  // Test if Orientation can encode a 1D parallel/ antiparallel.
+  // Test if OrientationMap can encode a 1D parallel/ antiparallel.
   std::array<Direction<1>, 1> block1_directions{{Direction<1>::upper_xi()}};
   std::array<Direction<1>, 1> block2_directions{{Direction<1>::lower_xi()}};
-  Orientation<1> parallel_orientation(block1_directions, block1_directions);
-  Orientation<1> antiparallel_orientation(block1_directions, block2_directions);
+  OrientationMap<1> parallel_orientation(block1_directions, block1_directions);
+  OrientationMap<1> antiparallel_orientation(block1_directions,
+                                             block2_directions);
   std::array<SegmentId, 1> segment_ids{{SegmentId(2, 1)}};
   std::array<SegmentId, 1> expected_antiparallel_segment_ids{{SegmentId(2, 2)}};
-  CHECK(parallel_orientation.mapped(segment_ids) == segment_ids);
-  CHECK(antiparallel_orientation.mapped(segment_ids) ==
+  CHECK(parallel_orientation(segment_ids) == segment_ids);
+  CHECK(antiparallel_orientation(segment_ids) ==
         expected_antiparallel_segment_ids);
   CHECK(get_output(parallel_orientation) == "(+0)");
   CHECK(get_output(antiparallel_orientation) == "(-0)");
@@ -47,21 +48,25 @@ void test_1d() {
 
   // Test serialization:
   test_serialization(custom2);
+
+  // Test inverse:
+  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(custom2.inverse_map() == custom2);
 }
 
 void test_2d() {
   // Test constructors:
-  Orientation<2> default_orientation{};
+  OrientationMap<2> default_orientation{};
   CHECK(default_orientation.is_aligned());
   CHECK(get_output(default_orientation) == "(+0, +1)");
-  Orientation<2> custom1(std::array<Direction<2>, 2>{
+  OrientationMap<2> custom1(std::array<Direction<2>, 2>{
       {Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
   CHECK(custom1.is_aligned());
-  Orientation<2> custom2(std::array<Direction<2>, 2>{
+  OrientationMap<2> custom2(std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}});
   CHECK_FALSE(custom2.is_aligned());
 
-  // Test if Orientation can encode a 2D rotated.
+  // Test if OrientationMap can encode a 2D rotated.
   const auto& upper_xi = Direction<2>::upper_xi();
   const auto& upper_eta = Direction<2>::upper_eta();
   const auto& lower_xi = Direction<2>::lower_xi();
@@ -76,19 +81,23 @@ void test_2d() {
   // pos_eta direction in the neighbor block.
   std::array<Direction<2>, 2> block_directions1{{upper_xi, upper_eta}};
   std::array<Direction<2>, 2> block_directions2{{lower_xi, lower_eta}};
-  Orientation<2> rotated2d_neg_xi_neg_eta(block_directions2, block_directions1);
+  OrientationMap<2> rotated2d_neg_xi_neg_eta(block_directions2,
+                                             block_directions1);
 
   std::array<Direction<2>, 2> block_directions3{{upper_xi, upper_eta}};
   std::array<Direction<2>, 2> block_directions4{{lower_eta, upper_xi}};
-  Orientation<2> rotated2d_neg_eta_pos_xi(block_directions4, block_directions3);
+  OrientationMap<2> rotated2d_neg_eta_pos_xi(block_directions4,
+                                             block_directions3);
 
   std::array<Direction<2>, 2> block_directions5{{upper_xi, upper_eta}};
   std::array<Direction<2>, 2> block_directions6{{upper_eta, lower_xi}};
-  Orientation<2> rotated2d_pos_eta_neg_xi(block_directions6, block_directions5);
+  OrientationMap<2> rotated2d_pos_eta_neg_xi(block_directions6,
+                                             block_directions5);
 
   std::array<Direction<2>, 2> block_directions7{{upper_xi, upper_eta}};
   std::array<Direction<2>, 2> block_directions8{{upper_xi, upper_eta}};
-  Orientation<2> rotated2d_pos_xi_pos_eta(block_directions7, block_directions8);
+  OrientationMap<2> rotated2d_pos_xi_pos_eta(block_directions7,
+                                             block_directions8);
 
   std::array<SegmentId, 2> segment_ids{{SegmentId(2, 1), SegmentId(3, 5)}};
 
@@ -100,34 +109,34 @@ void test_2d() {
       {SegmentId(3, 5), SegmentId(2, 2)}};
 
   // Check mapped(size_t dimension) function
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(0) == 0);
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(1) == 1);
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(0) == 1);
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(1) == 0);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(0) == 1);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(1) == 0);
+  CHECK(rotated2d_neg_xi_neg_eta(0) == 0);
+  CHECK(rotated2d_neg_xi_neg_eta(1) == 1);
+  CHECK(rotated2d_neg_eta_pos_xi(0) == 1);
+  CHECK(rotated2d_neg_eta_pos_xi(1) == 0);
+  CHECK(rotated2d_pos_eta_neg_xi(0) == 1);
+  CHECK(rotated2d_pos_eta_neg_xi(1) == 0);
 
   // Check mapped(Direction<2> direction function)
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(upper_xi) == lower_xi);
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(upper_eta) == lower_eta);
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(lower_xi) == upper_xi);
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(lower_eta) == upper_eta);
+  CHECK(rotated2d_neg_xi_neg_eta(upper_xi) == lower_xi);
+  CHECK(rotated2d_neg_xi_neg_eta(upper_eta) == lower_eta);
+  CHECK(rotated2d_neg_xi_neg_eta(lower_xi) == upper_xi);
+  CHECK(rotated2d_neg_xi_neg_eta(lower_eta) == upper_eta);
 
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(upper_xi) == upper_eta);
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(upper_eta) == lower_xi);
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(lower_xi) == lower_eta);
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(lower_eta) == upper_xi);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(upper_xi) == lower_eta);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(upper_eta) == upper_xi);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(lower_xi) == upper_eta);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(lower_eta) == lower_xi);
+  CHECK(rotated2d_neg_eta_pos_xi(upper_xi) == upper_eta);
+  CHECK(rotated2d_neg_eta_pos_xi(upper_eta) == lower_xi);
+  CHECK(rotated2d_neg_eta_pos_xi(lower_xi) == lower_eta);
+  CHECK(rotated2d_neg_eta_pos_xi(lower_eta) == upper_xi);
+  CHECK(rotated2d_pos_eta_neg_xi(upper_xi) == lower_eta);
+  CHECK(rotated2d_pos_eta_neg_xi(upper_eta) == upper_xi);
+  CHECK(rotated2d_pos_eta_neg_xi(lower_xi) == upper_eta);
+  CHECK(rotated2d_pos_eta_neg_xi(lower_eta) == lower_xi);
 
   // Check mapped(std::array<SegmentIds, VolumeDim> segment_ids)
-  CHECK(rotated2d_neg_eta_pos_xi.mapped(segment_ids) ==
+  CHECK(rotated2d_neg_eta_pos_xi(segment_ids) ==
         expected_neg_eta_pos_xi_segment_ids);
-  CHECK(rotated2d_neg_xi_neg_eta.mapped(segment_ids) ==
+  CHECK(rotated2d_neg_xi_neg_eta(segment_ids) ==
         expected_neg_xi_neg_eta_segment_ids);
-  CHECK(rotated2d_pos_eta_neg_xi.mapped(segment_ids) ==
+  CHECK(rotated2d_pos_eta_neg_xi(segment_ids) ==
         expected_pos_eta_neg_xi_segment_ids);
   CHECK_FALSE(rotated2d_neg_eta_pos_xi.is_aligned());
   CHECK_FALSE(rotated2d_neg_xi_neg_eta.is_aligned());
@@ -156,23 +165,34 @@ void test_2d() {
 
   // Test serialization:
   test_serialization(rotated_copy);
+
+  // Test inverse:
+  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(
+      OrientationMap<2>(std::array<Direction<2>, 2>{{Direction<2>::lower_eta(),
+                                                     Direction<2>::upper_xi()}})
+          .inverse_map() ==
+      OrientationMap<2>(std::array<Direction<2>, 2>{
+          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}));
+  CHECK(custom1.inverse_map().inverse_map() == custom1);
+  CHECK(custom2.inverse_map().inverse_map() == custom2);
 }
 
 void test_3d() {
   // Test constructors:
-  Orientation<3> default_orientation{};
+  OrientationMap<3> default_orientation{};
   CHECK(default_orientation.is_aligned());
   CHECK(get_output(default_orientation) == "(+0, +1, +2)");
-  Orientation<3> custom1(std::array<Direction<3>, 3>{
+  OrientationMap<3> custom1(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
        Direction<3>::upper_zeta()}});
   CHECK(custom1.is_aligned());
-  Orientation<3> custom2(std::array<Direction<3>, 3>{
+  OrientationMap<3> custom2(std::array<Direction<3>, 3>{
       {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
        Direction<3>::lower_zeta()}});
   CHECK_FALSE(custom2.is_aligned());
 
-  // Test if Orientation can encode a 3D Flipped.
+  // Test if OrientationMap can encode a 3D Flipped.
   const auto& upper_xi = Direction<3>::upper_xi();
   const auto& upper_eta = Direction<3>::upper_eta();
   const auto& upper_zeta = Direction<3>::upper_zeta();
@@ -184,10 +204,10 @@ void test_3d() {
       {upper_xi, upper_eta, upper_zeta}};
   std::array<Direction<3>, 3> block_directions2{
       {lower_xi, lower_eta, lower_zeta}};
-  Orientation<3> custom_orientation(block_directions1, block_directions2);
-  CHECK(custom_orientation.mapped(upper_xi) == lower_xi);
-  CHECK(custom_orientation.mapped(upper_eta) == lower_eta);
-  CHECK(custom_orientation.mapped(upper_zeta) == lower_zeta);
+  OrientationMap<3> custom_orientation(block_directions1, block_directions2);
+  CHECK(custom_orientation(upper_xi) == lower_xi);
+  CHECK(custom_orientation(upper_eta) == lower_eta);
+  CHECK(custom_orientation(upper_zeta) == lower_zeta);
 
   Direction<3> direction(Direction<3>::Axis::Zeta, Side::Upper);
   std::array<SegmentId, 3> segment_ids{
@@ -195,11 +215,11 @@ void test_3d() {
 
   std::array<SegmentId, 3> flipped_ids{
       {SegmentId(2, 2), SegmentId(3, 6), SegmentId(3, 4)}};
-  CHECK(custom_orientation.mapped(2) == 2);
-  CHECK(custom_orientation.mapped(direction) == direction.opposite());
-  CHECK(custom_orientation.mapped(segment_ids) == flipped_ids);
+  CHECK(custom_orientation(2) == 2);
+  CHECK(custom_orientation(direction) == direction.opposite());
+  CHECK(custom_orientation(segment_ids) == flipped_ids);
   CHECK_FALSE(custom_orientation.is_aligned());
-  Orientation<3> aligned_orientation(block_directions1, block_directions1);
+  OrientationMap<3> aligned_orientation(block_directions1, block_directions1);
   CHECK(aligned_orientation.is_aligned());
   CHECK(get_output(custom_orientation) == "(-0, -1, -2)");
   CHECK(get_output(aligned_orientation) == "(+0, +1, +2)");
@@ -216,11 +236,24 @@ void test_3d() {
 
   // Test serialzation:
   test_serialization(custom2);
+
+  // Test inverse:
+  CHECK(default_orientation.inverse_map() == default_orientation);
+  CHECK(
+      OrientationMap<3>(std::array<Direction<3>, 3>{{Direction<3>::lower_eta(),
+                                                     Direction<3>::lower_zeta(),
+                                                     Direction<3>::upper_xi()}})
+          .inverse_map() ==
+      OrientationMap<3>(std::array<Direction<3>, 3>{
+          {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
+           Direction<3>::lower_eta()}}));
+  CHECK(custom1.inverse_map().inverse_map() == custom1);
+  CHECK(custom2.inverse_map().inverse_map() == custom2);
 }
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Orientations", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
   test_1d();
   test_2d();
   test_3d();

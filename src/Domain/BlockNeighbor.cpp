@@ -7,7 +7,7 @@
 
 template <size_t VolumeDim>
 BlockNeighbor<VolumeDim>::BlockNeighbor(size_t id,
-                                        Orientation<VolumeDim> orientation)
+                                        OrientationMap<VolumeDim> orientation)
     : id_(id), orientation_(std::move(orientation)) {}
 
 template <size_t VolumeDim>

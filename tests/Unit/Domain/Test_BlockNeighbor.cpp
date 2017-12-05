@@ -12,16 +12,16 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   BlockNeighbor<3> test_block_neighbor;
 
   // Test constructor:
-  Orientation<3> custom_orientation(std::array<Direction<3>, 3>{
+  OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
        Direction<3>::upper_xi()}});
   BlockNeighbor<3> custom_neighbor(0, custom_orientation);
   CHECK(custom_neighbor.id() == 0);
-  CHECK(custom_neighbor.orientation().mapped(Direction<3>::upper_xi()) ==
+  CHECK(custom_neighbor.orientation()(Direction<3>::upper_xi()) ==
         Direction<3>::upper_eta());
-  CHECK(custom_neighbor.orientation().mapped(Direction<3>::upper_eta()) ==
+  CHECK(custom_neighbor.orientation()(Direction<3>::upper_eta()) ==
         Direction<3>::upper_zeta());
-  CHECK(custom_neighbor.orientation().mapped(Direction<3>::upper_zeta()) ==
+  CHECK(custom_neighbor.orientation()(Direction<3>::upper_zeta()) ==
         Direction<3>::upper_xi());
 
   // Test output operator:

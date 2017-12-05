@@ -31,8 +31,8 @@ void test_1d_domains() {
                     CoordinateMaps::AffineMap{-1., 1., 0., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}});
 
-    const Orientation<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
-                                               {{Direction<1>::upper_xi()}}};
+    const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
+                                                  {{Direction<1>::upper_xi()}}};
 
     const std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
         expected_neighbors{{{Direction<1>::upper_xi(),
@@ -106,8 +106,8 @@ void test_1d_domains() {
         std::vector<PairOfFaces>{{{1}, {2}}}};
 
     const auto expected_neighbors = []() {
-      Orientation<1> orientation{{{Direction<1>::lower_xi()}},
-                                 {{Direction<1>::lower_xi()}}};
+      OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
+                                    {{Direction<1>::lower_xi()}}};
       return std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>{
           {{Direction<1>::lower_xi(), BlockNeighbor<1>{0, orientation}},
            {Direction<1>::upper_xi(), BlockNeighbor<1>{0, orientation}}}};

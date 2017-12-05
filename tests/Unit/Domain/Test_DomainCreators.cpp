@@ -98,9 +98,9 @@ bool blocks_are_neighbors(
   return false;
 }
 
-// Finds the Orientation of a neighboring Block relative to a host Block.
+// Finds the OrientationMap of a neighboring Block relative to a host Block.
 template <size_t VolumeDim, typename TargetFrame>
-Orientation<VolumeDim> find_neighbor_orientation(
+OrientationMap<VolumeDim> find_neighbor_orientation(
     const Block<VolumeDim, TargetFrame>& host_block,
     const Block<VolumeDim, TargetFrame>& neighbor_block) noexcept {
   for (const auto& neighbor : host_block.neighbors()) {
@@ -124,7 +124,7 @@ Direction<VolumeDim> find_direction_to_neighbor(
   ERROR("The Block `neighbor_block` is not a neighbor of `host_block`.");
 }
 
-// Convert Point to Directions, for use with Orientation
+// Convert Point to Directions, for use with OrientationMap
 template <size_t VolumeDim>
 std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
     const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
@@ -148,17 +148,16 @@ tnsr::I<double, VolumeDim, Frame::Logical> get_corner_of_orthant(
   return result;
 }
 
-// The relative Orientation between Blocks induces a map that takes
+// The relative OrientationMap between Blocks induces a map that takes
 // Points in the host Block to Points in the neighbor Block.
 template <size_t VolumeDim>
 tnsr::I<double, VolumeDim, Frame::Logical> point_in_neighbor_frame(
-    const Orientation<VolumeDim>& orientation,
+    const OrientationMap<VolumeDim>& orientation,
     const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
   auto point_get_orthant = get_orthant(point);
-  std::for_each(point_get_orthant.begin(), point_get_orthant.end(),
-                [&orientation](auto& direction) {
-                  direction = orientation.mapped(direction);
-                });
+  std::for_each(
+      point_get_orthant.begin(), point_get_orthant.end(),
+      [&orientation](auto& direction) { direction = orientation(direction); });
   return get_corner_of_orthant(point_get_orthant);
 }
 
@@ -169,7 +168,7 @@ double physical_separation(
   double max_separation = 0;
   // Find Direction to block2:
   const auto direction = find_direction_to_neighbor(block1, block2);
-  // Find Orientation relative to block2:
+  // Find OrientationMap relative to block2:
   const auto orientation = find_neighbor_orientation(block1, block2);
   // Construct shared Points, in frame of block1:
   std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
@@ -215,7 +214,7 @@ void test_physical_separation(
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.TestHelperFunctions",
                   "[Domain][Unit]") {
-  Orientation<3> custom_orientation(std::array<Direction<3>, 3>{
+  OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_zeta(),
        Direction<3>::lower_xi()}});
   BlockNeighbor<3> custom_neighbor(1, custom_orientation);
