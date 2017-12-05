@@ -95,22 +95,59 @@ class Variables<tmpl::list<Tags...>> {
   Variables(const Variables& rhs);
   Variables& operator=(const Variables& rhs);
 
+  // @{
+  /// Copy and move semantics for wrapped variables
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  explicit Variables(Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept;
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  Variables& operator=(Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept;
+
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  explicit Variables(const Variables<tmpl::list<WrappedTags...>>& rhs);
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  Variables& operator=(const Variables<tmpl::list<WrappedTags...>>& rhs);
+  // @}
+
   /// \cond HIDDEN_SYMBOLS
   ~Variables() noexcept = default;
   /// \endcond
 
-  constexpr size_t number_of_grid_points() const noexcept {
+  constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
+      noexcept {
     return number_of_grid_points_;
   }
 
   /// Number of grid points * number of independent components
-  constexpr size_type size() const noexcept { return size_; }
+  constexpr SPECTRE_ALWAYS_INLINE size_type size() const noexcept {
+    return size_;
+  }
 
   //{@
   /// Access pointer to underlying data
   double* data() noexcept { return variable_data_.data(); }
   const double* data() const noexcept { return variable_data_.data(); }
   //@}
+
+  /// \cond HIDDEN_SYMBOLS
+  /// Needed because of limitations and inconsistency between compiler
+  /// implementations of friend function templates with auto return type of
+  /// class templates
+  const PointerVector<double>& get_variable_data() const noexcept {
+    return variable_data_;
+  }
+  /// \endcond
 
   // clang-tidy: redundant-declaration
   template <typename Tag, typename TagList>
@@ -132,72 +169,99 @@ class Variables<tmpl::list<Tags...>> {
   template <typename VT, bool VF>
   Variables& operator=(const blaze::Vector<VT, VF>& expression);
 
-  Variables& operator+=(const Variables& rhs) {
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  SPECTRE_ALWAYS_INLINE Variables& operator+=(
+      const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
     variable_data_ += rhs.variable_data_;
     return *this;
   }
   template <typename VT, bool VF>
-  Variables& operator+=(const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator+=(
+      const blaze::Vector<VT, VF>& rhs) noexcept {
     variable_data_ += rhs;
     return *this;
   }
 
-  Variables& operator-=(const Variables& rhs) {
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  SPECTRE_ALWAYS_INLINE Variables& operator-=(
+      const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
     variable_data_ -= rhs.variable_data_;
     return *this;
   }
   template <typename VT, bool VF>
-  Variables& operator-=(const blaze::Vector<VT, VF>& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator-=(
+      const blaze::Vector<VT, VF>& rhs) noexcept {
     variable_data_ -= rhs;
     return *this;
   }
 
-  Variables& operator*=(const double& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator*=(const double& rhs) noexcept {
     variable_data_ *= rhs;
     return *this;
   }
 
-  Variables& operator/=(const double& rhs) {
+  SPECTRE_ALWAYS_INLINE Variables& operator/=(const double& rhs) noexcept {
     variable_data_ /= rhs;
     return *this;
   }
 
-  friend decltype(auto) operator+(const Variables& lhs, const Variables& rhs) {
-    return lhs.variable_data_ + rhs.variable_data_;
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
+      const Variables<tmpl::list<WrappedTags...>>& lhs,
+      const Variables& rhs) noexcept {
+    return lhs.get_variable_data() + rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator+(const blaze::Vector<VT, VF>& lhs,
-                                  const Variables& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
+      const blaze::Vector<VT, VF>& lhs, const Variables& rhs) noexcept {
     return ~lhs + rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator+(const Variables& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
+      const Variables& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.variable_data_ + ~rhs;
   }
 
-  friend decltype(auto) operator-(const Variables& lhs, const Variables& rhs) {
-    return lhs.variable_data_ - rhs.variable_data_;
+  template <typename... WrappedTags,
+            Requires<tmpl2::flat_all_v<
+                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const Variables<tmpl::list<WrappedTags...>>& lhs,
+      const Variables& rhs) noexcept {
+    return lhs.get_variable_data() - rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator-(const blaze::Vector<VT, VF>& lhs,
-                                  const Variables& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const blaze::Vector<VT, VF>& lhs, const Variables& rhs) noexcept {
     return ~lhs - rhs.variable_data_;
   }
   template <typename VT, bool VF>
-  friend decltype(auto) operator-(const Variables& lhs,
-                                  const blaze::Vector<VT, VF>& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const Variables& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.variable_data_ - ~rhs;
   }
 
-  friend decltype(auto) operator*(const Variables& lhs, const double& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
+      const Variables& lhs, const double& rhs) noexcept {
     return lhs.variable_data_ * rhs;
   }
-  friend decltype(auto) operator*(const double& lhs, const Variables& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
+      const double& lhs, const Variables& rhs) noexcept {
     return lhs * rhs.variable_data_;
   }
 
-  friend decltype(auto) operator/(const Variables& lhs, const double& rhs) {
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator/(
+      const Variables& lhs, const double& rhs) noexcept {
     return lhs.variable_data_ / rhs;
   }
 
@@ -214,8 +278,11 @@ class Variables<tmpl::list<Tags...>> {
    *
    *  \requires `i >= 0 and i < size()`
    */
-  double& operator[](const size_type i) noexcept { return variable_data_[i]; }
-  const double& operator[](const size_type i) const noexcept {
+  SPECTRE_ALWAYS_INLINE double& operator[](const size_type i) noexcept {
+    return variable_data_[i];
+  }
+  SPECTRE_ALWAYS_INLINE const double& operator[](const size_type i) const
+      noexcept {
     return variable_data_[i];
   }
   //@}
@@ -237,6 +304,9 @@ class Variables<tmpl::list<Tags...>> {
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
     return lhs.variable_data_ == rhs.variable_data_;
   }
+
+  template <class FriendTags>
+  friend class Variables;
 
   std::vector<double, allocator_type> variable_data_impl_;
   // variable_data_ is only used to plug into the Blaze expression templates
@@ -296,6 +366,72 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   return *this;
 }
 
+template <typename... Tags>
+template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
+                                       db::remove_all_prefixes<WrappedTags>,
+                                       db::remove_all_prefixes<Tags>>...>>>
+Variables<tmpl::list<Tags...>>::Variables(
+    const Variables<tmpl::list<WrappedTags...>>& rhs)
+    : variable_data_impl_(rhs.variable_data_impl_),
+      variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
+      size_(rhs.size_),
+      number_of_grid_points_(rhs.number_of_grid_points()) {
+  add_reference_variable_data(typelist<Tags...>{});
+}
+
+template <typename... Tags>
+template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
+                                       db::remove_all_prefixes<WrappedTags>,
+                                       db::remove_all_prefixes<Tags>>...>>>
+Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
+    const Variables<tmpl::list<WrappedTags...>>& rhs) {
+  variable_data_impl_ = rhs.variable_data_impl_;
+  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
+  size_ = rhs.size_;
+  number_of_grid_points_ = rhs.number_of_grid_points();
+  add_reference_variable_data(typelist<Tags...>{});
+  return *this;
+}
+
+template <typename... Tags>
+template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
+                                       db::remove_all_prefixes<WrappedTags>,
+                                       db::remove_all_prefixes<Tags>>...>>>
+Variables<tmpl::list<Tags...>>::Variables(
+    Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept
+    : variable_data_impl_(std::move(rhs.variable_data_impl_)),
+      variable_data_(std::move(rhs.variable_data_)),
+      size_(rhs.size()),
+      number_of_grid_points_(rhs.number_of_grid_points()),
+      reference_variable_data_(std::move(rhs.reference_variable_data_)) {}
+
+template <typename... Tags>
+template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
+                                       db::remove_all_prefixes<WrappedTags>,
+                                       db::remove_all_prefixes<Tags>>...>>>
+Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
+    Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept {
+  variable_data_impl_ = std::move(rhs.variable_data_impl_);
+  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
+  size_ = rhs.size_;
+  number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  add_reference_variable_data(typelist<Tags...>{});
+  return *this;
+}
+
+template <typename... Tags>
+void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
+  p | variable_data_impl_;
+  p | size_;
+  p | number_of_grid_points_;
+  if (p.isUnpacking()) {
+    variable_data_.reset(variable_data_impl_.data(),
+                         variable_data_impl_.size());
+    add_reference_variable_data(typelist<Tags...>{});
+  }
+}
+/// \endcond
+
 // {@
 /*!
  * \ingroup DataStructuresGroup
@@ -312,19 +448,6 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
   return tuples::get<Tag>(v.reference_variable_data_);
 }
 // @}
-
-template <typename... Tags>
-void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
-  p | variable_data_impl_;
-  p | size_;
-  p | number_of_grid_points_;
-  if (p.isUnpacking()) {
-    variable_data_.reset(variable_data_impl_.data(),
-                         variable_data_impl_.size());
-    add_reference_variable_data(typelist<Tags...>{});
-  }
-}
-/// \endcond
 
 template <typename... Tags>
 template <typename VT, bool VF>

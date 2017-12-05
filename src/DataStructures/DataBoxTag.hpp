@@ -329,10 +329,16 @@ constexpr bool is_compute_item_v = is_compute_item<T>::value;
 
 namespace detail {
 template <class T, class = void>
-constexpr bool has_return_type_member_v = false;
+struct has_return_type_member : std::false_type {};
 template <class T>
-constexpr bool
-    has_return_type_member_v<T, cpp17::void_t<typename T::return_type>> = true;
+struct has_return_type_member<T, cpp17::void_t<typename T::return_type>>
+    : std::true_type {};
+
+/*!
+ * \brief `true` if `T` has nested type alias named `return_type`
+ */
+template <class T>
+constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
 template <typename Tag, typename = std::nullptr_t>
 struct compute_item_result_impl;
@@ -466,4 +472,23 @@ using add_tag_prefix = typename detail::add_tag_prefix_impl<
 /// tags if the unwrapped tag is a `Tags::Variables`.
 template <typename Tag>
 using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
+
+namespace databox_detail {
+template <class Tag, bool IsPrefix = false>
+struct remove_all_prefixes {
+  using type = Tag;
+};
+
+template <template <class...> class F, class Tag, class... Args>
+struct remove_all_prefixes<F<Tag, Args...>, true> {
+  using type = typename remove_all_prefixes<
+      Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+};
+}  // namespace databox_detail
+
+/// \ingroup DataBoxGroup
+/// Completely remove all prefix tags from a Tag
+template <typename Tag>
+using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
+    Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
 }  // namespace db
