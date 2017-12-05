@@ -157,16 +157,11 @@ Each %Parallel Component must have the following type aliases:
 3. `using action_list` is set to a `typelist` of the Actions that the Algorithm
    running on the %Parallel Component executes. The Actions are executed in
    the order that they are listed in in the typelist.
-4. `using inbox_tag_list` is set to a typelist of the Tags that can be sent to
-   the %Parallel Component by calling the `receive_data` method. If the Inbox
-   %Tag needs to have some temporal locality, then an optional type alias
-   `temporal_id` must be specified in the Inbox %Tag and sent along with the
-   data.
-5. `using initial_databox` is set to the type of the DataBox that will be passed
+4. `using initial_databox` is set to the type of the DataBox that will be passed
    to the first Action of the `action_list`. Typically it is the output of some
    `explicit_single_action` call made during the `initialize` function. More
    on this below.
-6. `using options` is set to a (possibly empty) typelist of the option structs
+5. `using options` is set to a (possibly empty) typelist of the option structs
    which are read in from the input file specified in the main `Metavariables`
    struct and passed to the `initialize` function described below.
 

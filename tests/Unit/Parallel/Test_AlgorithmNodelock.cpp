@@ -228,7 +228,6 @@ struct ArrayParallelComponent {
   using options = typelist<>;
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using array_index = int;
   using initial_databox = db::DataBox<typelist<>>;
 
@@ -275,7 +274,6 @@ struct NodegroupParallelComponent {
   using options = typelist<>;
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using initial_databox = db::DataBox<db::get_databox_list<
       typelist<Tags::total_receives_on_node, Tags::vector_of_array_indexs>>>;
 

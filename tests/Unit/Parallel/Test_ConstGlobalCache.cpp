@@ -84,7 +84,6 @@ struct SingletonParallelComponent {
   using options = typelist<>;
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
@@ -97,7 +96,6 @@ struct ArrayParallelComponent {
   using options = typelist<>;
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
@@ -109,7 +107,6 @@ struct GroupParallelComponent {
   using options = typelist<>;
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
@@ -121,7 +118,6 @@ struct NodegroupParallelComponent {
   using options = typelist<>;
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };

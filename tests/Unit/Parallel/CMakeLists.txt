@@ -116,6 +116,7 @@ set_tests_properties(
 set(PARALLEL_TESTS
   Parallel/Test_Algorithm.cpp
   Parallel/Test_Parallel.cpp
+  Parallel/Test_ParallelComponentHelpers.cpp
   Parallel/Test_PupStlCpp11.cpp
   Parallel/Test_TypeTraits.cpp
   )

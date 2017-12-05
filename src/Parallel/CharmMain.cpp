@@ -80,7 +80,7 @@ struct CharmRegisterFunctions {
       tmpl::list<
           typename ParallelComponent::metavariables,
           typename ParallelComponent::action_list,
-          typename ParallelComponent::inbox_tag_list,
+          Parallel::get_inbox_tags<typename ParallelComponent::action_list>,
           typename get_array_index<chare_type>::template f<ParallelComponent>,
           typename ParallelComponent::initial_databox>,
       ParallelComponent>;
@@ -189,10 +189,10 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
   swallow(
       ((void)CharmRegisterFunctions<ParallelComponents>::register_algorithm(),
        0)...);
-  swallow(
-      ((void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
-           typename ParallelComponents::inbox_tag_list{}),
-       0)...);
+  swallow((
+      (void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
+          Parallel::get_inbox_tags<typename ParallelComponents::action_list>{}),
+      0)...);
   swallow(((void)register_explicit_single_actions<ParallelComponents>(
                typename has_single_actions<ParallelComponents>::type{}),
            0)...);

@@ -71,10 +71,9 @@ using history_tag =
 using Index_t = ElementIndex<2>;
 
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, Index_t,
-                                      tmpl::list<NumericalFluxTag>,
-                                      tmpl::list<fluxes_tag>>;
+using component = ActionTesting::MockArrayComponent<
+    Metavariables, Index_t, tmpl::list<NumericalFluxTag>,
+    tmpl::list<Actions::ComputeBoundaryFlux<System>>>;
 
 struct Metavariables {
   using system = System;

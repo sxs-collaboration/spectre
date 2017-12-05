@@ -656,7 +656,6 @@ struct SingletonParallelComponent {
 
   using metavariables = Metavariables;
   using action_list = typelist<>;
-  using inbox_tag_list = typelist<>;
   using array_index = int;
   using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
   using explicit_single_actions_list = tmpl::list<

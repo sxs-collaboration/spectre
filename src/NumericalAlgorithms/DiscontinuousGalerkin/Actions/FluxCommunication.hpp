@@ -70,6 +70,8 @@ struct ComputeBoundaryFlux {
                                       ElementId<System::volume_dim>>>>>;
   };
 
+  using inbox_tags = tmpl::list<FluxesTag>;
+
   template <typename Flux, typename... Tags, typename... ArgumentTags>
   static auto apply_flux(const Flux& flux,
                          const tuples::TaggedTuple<Tags...>& self_data,

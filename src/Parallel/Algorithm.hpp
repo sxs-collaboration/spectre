@@ -313,7 +313,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// List of Actions in the order they will be executed
   using actions_list = typelist<ActionsPack...>;
   /// List off all the Tags that can be received into the Inbox
-  using inbox_tags_list = typelist<InboxTagsPack...>;
+  using inbox_tags_list = Parallel::get_inbox_tags<actions_list>;
   /// The type of the object used to identify the element of the array, group
   /// or nodegroup spatially. The default should be an `int`.
   using array_index = ArrayIndex;
