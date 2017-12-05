@@ -241,9 +241,6 @@ struct ComputeBoundaryFlux {
 ///       system::variables_tag>
 /// - Removes: nothing
 /// - Modifies: nothing
-///
-/// \tparam Receiver the parallel_component to send data to
-template <typename Receiver>
 struct SendDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -258,7 +255,8 @@ struct SendDataForFluxes {
     constexpr const size_t volume_dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
 
-    auto& receiver_proxy = Parallel::get_parallel_component<Receiver>(cache);
+    auto& receiver_proxy =
+        Parallel::get_parallel_component<ParallelComponent>(cache);
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
     const auto& extents = db::get<Tags::Extents<volume_dim>>(box);
