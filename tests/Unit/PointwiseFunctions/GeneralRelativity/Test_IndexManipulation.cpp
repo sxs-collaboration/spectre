@@ -306,7 +306,56 @@ void test_3d_spacetime_trace(const DataVector& used_for_size) {
           make_inverse_spacetime_metric<dim>(used_for_size)),
       vector);
 }
+void test_1d_spatial_trace_tensor_type_aa(const DataVector& used_for_size) {
+  const size_t dim = 1;
+  const Scalar<double> scalar = trace(make_dt_spatial_metric<dim>(0.),
+                                      make_inverse_spatial_metric<dim>(0.));
 
+  CHECK(scalar.get() == approx(0.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace(make_dt_spatial_metric<dim>(used_for_size),
+            make_inverse_spatial_metric<dim>(used_for_size)),
+      scalar);
+}
+
+void test_2d_spatial_trace_tensor_type_aa(const DataVector& used_for_size) {
+  const size_t dim = 2;
+  const Scalar<double> scalar = trace(make_dt_spatial_metric<dim>(0.),
+                                      make_inverse_spatial_metric<dim>(0.));
+
+  CHECK(scalar.get() == approx(12.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace(make_dt_spatial_metric<dim>(used_for_size),
+            make_inverse_spatial_metric<dim>(used_for_size)),
+      scalar);
+}
+
+void test_3d_spatial_trace_tensor_type_aa(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const Scalar<double> scalar = trace(make_dt_spatial_metric<dim>(0.),
+                                      make_inverse_spatial_metric<dim>(0.));
+
+  CHECK(scalar.get() == approx(96.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace(make_dt_spatial_metric<dim>(used_for_size),
+            make_inverse_spatial_metric<dim>(used_for_size)),
+      scalar);
+}
+void test_3d_spacetime_trace_tensor_type_aa(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const Scalar<double> scalar = trace(make_dt_spacetime_metric<dim>(0.),
+                                      make_inverse_spacetime_metric<dim>(0.));
+
+  CHECK(scalar.get() == approx(-1548.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      trace(make_dt_spacetime_metric<dim>(used_for_size),
+            make_inverse_spacetime_metric<dim>(used_for_size)),
+      scalar);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
@@ -326,4 +375,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
   test_2d_spatial_trace(dv);
   test_3d_spatial_trace(dv);
   test_3d_spacetime_trace(dv);
+  test_1d_spatial_trace_tensor_type_aa(dv);
+  test_2d_spatial_trace_tensor_type_aa(dv);
+  test_3d_spatial_trace_tensor_type_aa(dv);
+  test_3d_spacetime_trace_tensor_type_aa(dv);
 }
