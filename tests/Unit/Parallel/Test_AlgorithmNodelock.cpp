@@ -36,6 +36,8 @@ struct total_receives_on_node : db::DataBoxTag {
 }  // namespace Tags
 
 struct nodegroup_initialize {
+  using apply_args = tmpl::list<>;
+
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -58,6 +60,8 @@ struct nodegroup_initialize {
 };
 
 struct nodegroup_receive {
+  using apply_args = tmpl::list<int>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -90,6 +94,8 @@ struct nodegroup_receive {
 };
 
 struct nodegroup_check_first_result {
+  using apply_args = tmpl::list<>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -121,6 +127,8 @@ struct nodegroup_check_first_result {
 };
 
 struct nodegroup_threaded_receive {
+  using apply_args = tmpl::list<>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename NodeLock,
             Requires<sizeof...(DbTags) == 2> = nullptr>
@@ -147,6 +155,8 @@ struct nodegroup_threaded_receive {
 };
 
 struct nodegroup_check_threaded_result {
+  using apply_args = tmpl::list<>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -178,6 +188,8 @@ struct nodegroup_check_threaded_result {
 };
 
 struct reduce_to_nodegroup {
+  using apply_args = tmpl::list<>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -200,6 +212,8 @@ struct reduce_to_nodegroup {
 };
 
 struct reduce_threaded_method {
+  using apply_args = tmpl::list<>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -232,8 +246,7 @@ struct ArrayParallelComponent {
   using initial_databox = db::DataBox<typelist<>>;
 
   using explicit_single_actions_list =
-      tmpl::list<tmpl::list<reduce_to_nodegroup>,
-                 tmpl::list<reduce_threaded_method>>;
+      tmpl::list<reduce_to_nodegroup, reduce_threaded_method>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -278,10 +291,8 @@ struct NodegroupParallelComponent {
       typelist<Tags::total_receives_on_node, Tags::vector_of_array_indexs>>>;
 
   using explicit_single_actions_list =
-      tmpl::list<tmpl::list<nodegroup_initialize>,
-                 tmpl::list<nodegroup_receive, int>,
-                 tmpl::list<nodegroup_check_first_result>,
-                 tmpl::list<nodegroup_check_threaded_result>>;
+      tmpl::list<nodegroup_initialize, nodegroup_receive,
+                 nodegroup_check_first_result, nodegroup_check_threaded_result>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {

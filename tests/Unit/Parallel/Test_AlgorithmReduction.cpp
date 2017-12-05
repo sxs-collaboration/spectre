@@ -193,6 +193,8 @@ template <class Metavariables>
 struct ArrayParallelComponent;
 
 struct array_reduce {
+  using apply_args = tmpl::list<>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -251,7 +253,7 @@ struct ArrayParallelComponent {
   using array_index = int;
   using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
 
-  using explicit_single_actions_list = tmpl::list<tmpl::list<array_reduce>>;
+  using explicit_single_actions_list = tmpl::list<array_reduce>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {

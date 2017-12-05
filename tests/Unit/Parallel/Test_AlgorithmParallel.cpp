@@ -53,6 +53,8 @@ struct NodegroupParallelComponent;
 
 namespace SingletonActions {
 struct Initialize {
+  using apply_args = tmpl::list<>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -114,6 +116,8 @@ struct CountReceives {
 
 namespace ArrayActions {
 struct Initialize {
+  using apply_args = tmpl::list<>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -231,6 +235,8 @@ struct SendToSingleton {
 
 namespace GroupActions {
 struct Initialize {
+  using apply_args = tmpl::list<>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -292,6 +298,8 @@ struct ReduceInt {
 
 namespace NodegroupActions {
 struct Initialize {
+  using apply_args = tmpl::list<>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -319,8 +327,7 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using action_list = typelist<SingletonActions::CountReceives>;
   using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
-  using explicit_single_actions_list =
-      tmpl::list<tmpl::list<SingletonActions::Initialize>>;
+  using explicit_single_actions_list = tmpl::list<SingletonActions::Initialize>;
   using options = typelist<>;
 
   static void initialize(
@@ -356,8 +363,7 @@ struct ArrayParallelComponent {
   using initial_databox =
       db::DataBox<db::get_databox_list<typelist<Tags::CountActionsCalled>>>;
 
-  using explicit_single_actions_list =
-      tmpl::list<tmpl::list<ArrayActions::Initialize>>;
+  using explicit_single_actions_list = tmpl::list<ArrayActions::Initialize>;
   using options = typelist<>;
 
   static void initialize(
@@ -398,8 +404,7 @@ struct GroupParallelComponent {
   using initial_databox =
       db::DataBox<db::get_databox_list<typelist<Tags::CountActionsCalled>>>;
 
-  using explicit_single_actions_list =
-      tmpl::list<tmpl::list<GroupActions::Initialize>>;
+  using explicit_single_actions_list = tmpl::list<GroupActions::Initialize>;
   using options = typelist<>;
 
   static void initialize(
@@ -424,7 +429,7 @@ struct NodegroupParallelComponent {
       db::DataBox<db::get_databox_list<typelist<Tags::CountActionsCalled>>>;
 
   using explicit_single_actions_list =
-      tmpl::list<tmpl::list<NodegroupActions::Initialize>>;
+      tmpl::list<NodegroupActions::Initialize>;
   using options = typelist<>;
 
   static void initialize(

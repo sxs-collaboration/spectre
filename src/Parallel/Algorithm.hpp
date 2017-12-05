@@ -590,17 +590,13 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   lock(&node_lock_);
   static_assert(
       tmpl::found<typename ParallelComponent::explicit_single_actions_list,
-                  std::is_same<tmpl::_1,
-                               tmpl::pin<tmpl::list<Action, Args...>>>>::value,
+                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value and
+          cpp17::is_same_v<typename Action::apply_args, tmpl::list<Args...>>,
       "Could not find explicit instantiation of the correct explicit "
       "single action, which is undefined behavior. See the first template "
       "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
-      "missing "
-      "the explicit instantiation, and the template parameters to "
-      "'::explicit_single_action' for what to input into the nested typelist "
-      "of the explicit_single_actions_list. An example of an "
-      "explicit_single_actions_list is: typelist<typelist<initialize, "
-      "input_option0, input_option1>>");
+      "missing the explicit instantiation. An example of an "
+      "explicit_single_actions_list is: typelist<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -625,16 +621,12 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   lock(&node_lock_);
   static_assert(
       tmpl::found<typename ParallelComponent::explicit_single_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<tmpl::list<Action>>>>::value,
+                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value,
       "Could not find explicit instantiation of the correct explicit "
       "single action, which is undefined behavior. See the first template "
       "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
-      "missing "
-      "the explicit instantiation, and the template parameters to "
-      "'::explicit_single_action' for what to input into the nested typelist "
-      "of the explicit_single_actions_list. An example of an "
-      "explicit_single_actions_list is: typelist<typelist<initialize, "
-      "input_option0, input_option1>>");
+      "missing the explicit instantiation. An example of an "
+      "explicit_single_actions_list is: typelist<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "

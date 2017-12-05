@@ -176,12 +176,11 @@ circumstances:
    written a general implementation that provides this functionality; all that
    you need to provide is a plain-old-data struct of the size of at most 3
    integers.
-2. `using explicit_single_actions` is set to a typelist of typelists for Actions
+2. `using explicit_single_actions` is set to a typelist of Actions
    that are not part of the algorithm but can be called remotely at any time,
-   similar in spirit to a member function. For each Action, a typelist is
-   specified with the Action as their first element, and the remaining elements
-   are types of the data that is sent to the %Parallel Component and passed into
-   the Action.
+   similar in spirit to a member function. Each Action must specify a member
+   type alias called `apply_args` whose elements are the types of the data that
+   is sent to the %Parallel Component and passed into the Action.
 3. `using reduction_actions_list` is set to a typelist of typelists. The nested
    typelists must have exactly two elements. The first element is the Action to
    call, and the second is the type being reduced. For example, the reduced type

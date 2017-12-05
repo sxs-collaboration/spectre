@@ -138,14 +138,14 @@ struct CharmRegisterFunctions {
   }
 
   template <class Action>
-  static void register_explicit_single_action(tmpl::list<Action> /*meta*/) {
+  static void register_explicit_single_action(tmpl::list<> /*meta*/) {
     ckindex::template idx_explicit_single_action<Action>(
         static_cast<void (algorithm::*)()>(nullptr));
   }
 
   template <class Action, class Arg0, class... Args>
   static void register_explicit_single_action(
-      tmpl::list<Action, Arg0, Args...> /*meta*/) {
+      tmpl::list<Arg0, Args...> /*meta*/) {
     ckindex::template idx_explicit_single_action<Action>(
         static_cast<void (algorithm::*)(const std::tuple<Arg0, Args...>&)>(
             nullptr));
@@ -154,7 +154,8 @@ struct CharmRegisterFunctions {
   template <class... ExplicitActionsParameters>
   static void register_explicit_single_actions(
       tmpl::list<ExplicitActionsParameters...> /*meta*/) {
-    swallow(((void)register_explicit_single_action(ExplicitActionsParameters{}),
+    swallow(((void)register_explicit_single_action<ExplicitActionsParameters>(
+                 typename ExplicitActionsParameters::apply_args{}),
              0)...);
   }
 };
