@@ -124,17 +124,15 @@ struct CharmRegisterFunctions {
         0)...);
   }
 
-  template <class Action, class Arg>
-  static void register_reduction_action(tmpl::list<Action, Arg> /*meta*/) {
-    // Register both the entry method and the reduction method
-    ckindex::template idx_reduction_action<Action, Arg>(
-        static_cast<void (algorithm::*)(const Arg&)>(nullptr));
-    ckindex::template redn_wrapper_reduction_action<Action, Arg>(nullptr);
-  }
-
-  template <class... Args>
-  static void register_reduction_actions(tmpl::list<Args...> /*meta*/) {
-    swallow(((void)register_reduction_action(Args{}), 0)...);
+  template <class... Actions>
+  static void register_reduction_actions(tmpl::list<Actions...> /*meta*/) {
+    swallow(((void)ckindex::template idx_reduction_action<
+                 Actions, typename Actions::reduction_type>(
+                 static_cast<void (algorithm::*)(
+                     const typename Actions::reduction_type&)>(nullptr)),
+             (void)ckindex::template redn_wrapper_reduction_action<
+                 Actions, typename Actions::reduction_type>(nullptr),
+             0)...);
   }
 
   template <class Action>

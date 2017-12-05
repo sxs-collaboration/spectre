@@ -62,6 +62,8 @@ void register_custom_reductions() {
 /// [custom_reduce_register_function]
 
 struct singleton_reduce_sum_int {
+  using reduction_type = int;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -84,6 +86,8 @@ struct singleton_reduce_sum_int {
 };
 
 struct singleton_reduce_sum_double {
+  using reduction_type = double;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -105,6 +109,8 @@ struct singleton_reduce_sum_double {
 };
 
 struct singleton_reduce_product_double {
+  using reduction_type = double;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -126,6 +132,10 @@ struct singleton_reduce_product_double {
 };
 
 struct singleton_reduce_custom_reduction {
+  using reduction_type =
+      Parallel::ReductionData<int, std::unordered_map<std::string, int>,
+                              std::vector<int>>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -166,13 +176,9 @@ struct SingletonParallelComponent {
   using action_list = typelist<>;
   using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
   using reduction_actions_list =
-      tmpl::list<tmpl::list<singleton_reduce_sum_int, int>,
-                 tmpl::list<singleton_reduce_sum_double, double>,
-                 tmpl::list<singleton_reduce_product_double, double>,
-                 tmpl::list<singleton_reduce_custom_reduction,
-                            Parallel::ReductionData<
-                                int, std::unordered_map<std::string, int>,
-                                std::vector<int>>>>;
+      tmpl::list<singleton_reduce_sum_int, singleton_reduce_sum_double,
+                 singleton_reduce_product_double,
+                 singleton_reduce_custom_reduction>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {

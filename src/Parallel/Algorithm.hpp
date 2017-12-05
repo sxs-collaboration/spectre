@@ -549,20 +549,17 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
                    InitialDataBox>::reduction_action(Arg arg) noexcept {
   lock(&node_lock_);
-  using reduction_actions_list =
-      typename ParallelComponent::reduction_actions_list;
-  using args_list = tmpl::list<Action, std::decay_t<Arg>>;
   static_assert(
-      tmpl::found<reduction_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<args_list>>>::value,
+      tmpl::found<typename ParallelComponent::reduction_actions_list,
+                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value and
+          cpp17::is_same_v<typename Action::reduction_type, std::decay_t<Arg>>,
       "Could not find explicit instantiation of the correct "
       "reduction_action function, which is undefined behavior. See the first "
       "template parameter of 'Parallel::AlgorithmImpl' for which "
-      "ParallelComponent is "
-      "missing the explicit instantiation, and the template parameters to "
-      "'::reduction_action' for what to input into the nested typelist of "
-      "reduction_actions_list. An example of reduction_actions_list is: "
-      "typelist<typelist<singleton_reduce, double>>");
+      "ParallelComponent is missing the explicit instantiation. The two "
+      "reasons this error occurs is missing the Action in the "
+      "'reduction_actions_list' of the ParallelComponent, or the Action's "
+      "reduction_type member type alias being of the incorrect type.");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "

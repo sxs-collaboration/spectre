@@ -181,11 +181,11 @@ circumstances:
    similar in spirit to a member function. Each Action must specify a member
    type alias called `apply_args` whose elements are the types of the data that
    is sent to the %Parallel Component and passed into the Action.
-3. `using reduction_actions_list` is set to a typelist of typelists. The nested
-   typelists must have exactly two elements. The first element is the Action to
-   call, and the second is the type being reduced. For example, the reduced type
-   could be an `int`, a `double`, or a specialization of
-   `Parallel::ReductionData`.
+3. `using reduction_actions_list` is set to a typelist of the Actions that may
+   be called for reductions. Each Action that is to be used in a reduction must
+   contain a member type alias named `reduction_type` whose value is the type
+   being reduced over. For example, the reduced type could be an `int`, a
+   `double`, or a specialization of `Parallel::ReductionData`.
 
 %Parallel Components must also have two static member functions with the
 following signatures:
