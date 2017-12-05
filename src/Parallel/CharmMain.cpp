@@ -19,6 +19,27 @@ namespace charmxx {
 template <class...>
 using void_t = void;
 
+template <class T>
+struct get_value_type;
+
+template <class Key, class Mapped, class Hash, class KeyEqual, class Allocator>
+struct get_value_type<
+    std::unordered_map<Key, Mapped, Hash, KeyEqual, Allocator>> {
+  // When sending data it is typical to use `std:make_pair(a, b)` which results
+  // in a non-const Key type, which is different from what
+  // `unordered_map::value_type` is. This difference leads to issues with
+  // function registration with Charm++.
+  using type = std::pair<Key, Mapped>;
+};
+
+template <class Key, class Hash, class KeyEqual, class Allocator>
+struct get_value_type<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>> {
+  using type = Key;
+};
+
+template <class T>
+using get_value_type_t = typename get_value_type<T>::type;
+
 template <class T, class = void>
 struct has_single_actions : std::false_type {};
 template <class T>
@@ -79,14 +100,13 @@ struct CharmRegisterFunctions {
                      not Parallel::is_node_group_proxy<cproxy>::value)>::type* =
                 nullptr>
   static void register_receive_data(tmpl::list<ReceiveTags...> /*meta*/) {
-    swallow((
-        (void)ckindex::template idx_receive_data<ReceiveTags>(
-            static_cast<void (algorithm::*)(
-                const typename ReceiveTags::temporal_id&,
-                const typename std::decay<
-                    typename ReceiveTags::type::mapped_type::value_type>::type&,
-                bool)>(nullptr)),
-        0)...);
+    swallow(((void)ckindex::template idx_receive_data<ReceiveTags>(
+                 static_cast<void (algorithm::*)(
+                     const typename ReceiveTags::temporal_id&,
+                     const get_value_type_t<
+                         typename ReceiveTags::type::mapped_type>&,
+                     bool)>(nullptr)),
+             0)...);
   }
 
   template <class... ReceiveTags,

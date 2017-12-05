@@ -346,6 +346,20 @@ constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
 }  // namespace cpp17
 
 /// \ingroup TypeTraitsGroup
+/// C++ STL code present in C++20
+namespace cpp20 {
+/// \ingroup TypeTraits
+template <class T>
+struct remove_cvref {
+  typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+};
+
+/// \ingroup TypeTraits
+template <class T>
+using remove_cvref_t = typename remove_cvref<T>::type;
+}  // namespace cpp20
+
+/// \ingroup TypeTraitsGroup
 /// A collection of useful type traits
 namespace tt {
 // @{
