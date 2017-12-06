@@ -29,12 +29,14 @@ namespace Actions {
 /// - Modifies: nothing
 struct FinalTime {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     const double final_time = Parallel::get<CacheTags::FinalTime>(cache);
     const Time& time = db::get<Tags::Time>(box);
     const TimeDelta& time_step = db::get<Tags::TimeStep>(box);

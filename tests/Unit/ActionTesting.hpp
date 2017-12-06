@@ -51,8 +51,8 @@ class MockProxy {
 
 struct MockArrayChare {
   template <typename Component, typename Metavariables, typename ActionList,
-            typename InboxTagList, typename Index, typename InitialDataBox>
-  using cproxy = MockProxy<Index, InboxTagList>;
+            typename Index, typename InitialDataBox>
+  using cproxy = MockProxy<Index, Parallel::get_inbox_tags<ActionList>>;
 };
 }  // namespace ActionTesting_detail
 
@@ -72,14 +72,12 @@ namespace ActionTesting {
 /// chare_type Parallel::Algorithms::Array.
 template <typename Metavariables, typename Index,
           typename ConstGlobalCacheTagList,
-          typename InboxTagList = tmpl::list<>,
           typename ActionList = tmpl::list<>>
 struct MockArrayComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting_detail::MockArrayChare;
   using index = Index;
   using const_global_cache_tag_list = ConstGlobalCacheTagList;
-  using inbox_tag_list = InboxTagList;
   using action_list = ActionList;
   using initial_databox = NoSuchType;
 };
@@ -120,7 +118,8 @@ class ActionRunner {
   decltype(auto) apply(db::DataBox<DbTags>& box,
                        const typename Component::index& array_index) noexcept {
     return Action::apply(box, inboxes<Component>()[array_index], cache_,
-                         array_index, typename Component::action_list{});
+                         array_index, typename Component::action_list{},
+                         std::add_pointer_t<Component>{nullptr});
   }
 
   /// Call Action::is_ready as if on the portion of Component labeled
@@ -134,9 +133,9 @@ class ActionRunner {
 
   /// Access the inboxes for a given component.
   template <typename Component>
-  std::unordered_map<
-      typename Component::index,
-      tuples::TaggedTupleTypelist<typename Component::inbox_tag_list>>&
+  std::unordered_map<typename Component::index,
+                     tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
+                         typename Component::action_list>>>&
   inboxes() noexcept {
     return tuples::get<Inboxes<Component>>(inboxes_);
   }
@@ -158,15 +157,15 @@ class ActionRunner {
  private:
   template <typename Component>
   struct Inboxes {
-    using type = std::unordered_map<
-      typename Component::index,
-      tuples::TaggedTupleTypelist<typename Component::inbox_tag_list>>;
+    using type =
+        std::unordered_map<typename Component::index,
+                           tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
+                               typename Component::action_list>>>;
   };
 
   ConstGlobalCache_t cache_;
-  tuples::TaggedTupleTypelist<
-    tmpl::transform<typename Metavariables::component_list,
-                    tmpl::bind<Inboxes, tmpl::_1>>>
+  tuples::TaggedTupleTypelist<tmpl::transform<
+      typename Metavariables::component_list, tmpl::bind<Inboxes, tmpl::_1>>>
       inboxes_;
 };
 }  // namespace ActionTesting

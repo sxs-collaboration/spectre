@@ -157,16 +157,11 @@ Each %Parallel Component must have the following type aliases:
 3. `using action_list` is set to a `typelist` of the Actions that the Algorithm
    running on the %Parallel Component executes. The Actions are executed in
    the order that they are listed in in the typelist.
-4. `using inbox_tag_list` is set to a typelist of the Tags that can be sent to
-   the %Parallel Component by calling the `receive_data` method. If the Inbox
-   %Tag needs to have some temporal locality, then an optional type alias
-   `temporal_id` must be specified in the Inbox %Tag and sent along with the
-   data.
-5. `using initial_databox` is set to the type of the DataBox that will be passed
+4. `using initial_databox` is set to the type of the DataBox that will be passed
    to the first Action of the `action_list`. Typically it is the output of some
    `explicit_single_action` call made during the `initialize` function. More
    on this below.
-6. `using options` is set to a (possibly empty) typelist of the option structs
+5. `using options` is set to a (possibly empty) typelist of the option structs
    which are read in from the input file specified in the main `Metavariables`
    struct and passed to the `initialize` function described below.
 
@@ -181,17 +176,16 @@ circumstances:
    written a general implementation that provides this functionality; all that
    you need to provide is a plain-old-data struct of the size of at most 3
    integers.
-2. `using explicit_single_actions` is set to a typelist of typelists for Actions
+2. `using explicit_single_actions` is set to a typelist of Actions
    that are not part of the algorithm but can be called remotely at any time,
-   similar in spirit to a member function. For each Action, a typelist is
-   specified with the Action as their first element, and the remaining elements
-   are types of the data that is sent to the %Parallel Component and passed into
-   the Action.
-3. `using reduction_actions_list` is set to a typelist of typelists. The nested
-   typelists must have exactly two elements. The first element is the Action to
-   call, and the second is the type being reduced. For example, the reduced type
-   could be an `int`, a `double`, or a specialization of
-   `Parallel::ReductionData`.
+   similar in spirit to a member function. Each Action must specify a member
+   type alias called `apply_args` whose elements are the types of the data that
+   is sent to the %Parallel Component and passed into the Action.
+3. `using reduction_actions_list` is set to a typelist of the Actions that may
+   be called for reductions. Each Action that is to be used in a reduction must
+   contain a member type alias named `reduction_type` whose value is the type
+   being reduced over. For example, the reduced type could be an `int`, a
+   `double`, or a specialization of `Parallel::ReductionData`.
 
 %Parallel Components must also have two static member functions with the
 following signatures:

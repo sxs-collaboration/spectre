@@ -70,6 +70,8 @@ struct ComputeBoundaryFlux {
                                       ElementId<System::volume_dim>>>>>;
   };
 
+  using inbox_tags = tmpl::list<FluxesTag>;
+
   template <typename Flux, typename... Tags, typename... ArgumentTags>
   static auto apply_flux(const Flux& flux,
                          const tuples::TaggedTuple<Tags...>& self_data,
@@ -80,12 +82,14 @@ struct ComputeBoundaryFlux {
   }
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     static_assert(cpp17::is_same_v<System, typename Metavariables::system>,
                   "Inconsistent systems");
     constexpr const size_t volume_dim = System::volume_dim;
@@ -239,22 +243,22 @@ struct ComputeBoundaryFlux {
 ///       system::variables_tag>
 /// - Removes: nothing
 /// - Modifies: nothing
-///
-/// \tparam Receiver the parallel_component to send data to
-template <typename Receiver>
 struct SendDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList>
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/) noexcept {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
     constexpr const size_t volume_dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
 
-    auto& receiver_proxy = Parallel::get_parallel_component<Receiver>(cache);
+    auto& receiver_proxy =
+        Parallel::get_parallel_component<ParallelComponent>(cache);
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
     const auto& extents = db::get<Tags::Extents<volume_dim>>(box);

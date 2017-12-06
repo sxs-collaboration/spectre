@@ -71,10 +71,9 @@ using history_tag =
 using Index_t = ElementIndex<2>;
 
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, Index_t,
-                                      tmpl::list<NumericalFluxTag>,
-                                      tmpl::list<fluxes_tag>>;
+using component = ActionTesting::MockArrayComponent<
+    Metavariables, Index_t, tmpl::list<NumericalFluxTag>,
+    tmpl::list<Actions::ComputeBoundaryFlux<System>>>;
 
 struct Metavariables {
   using system = System;
@@ -137,8 +136,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         time_id, extents, element, std::move(map), std::move(variables));
   }();
 
-  auto sent_box = std::get<0>(
-      runner.apply<component, Actions::SendDataForFluxes<component>>(
+  auto sent_box =
+      std::get<0>(runner.apply<component, Actions::SendDataForFluxes>(
           start_box, Index_t(self_id)));
 
   // Check local state
@@ -200,8 +199,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     auto box = db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
                                       Tags::Element<2>, System::variables_tag>>(
         time_id, extents, element, std::move(variables));
-    runner.apply<component, Actions::SendDataForFluxes<component>>(
-        box, Index_t(south_id));
+    runner.apply<component, Actions::SendDataForFluxes>(box, Index_t(south_id));
   }
   CHECK_FALSE((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
       sent_box, Index_t(self_id))));
@@ -218,8 +216,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     auto box = db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
                                       Tags::Element<2>, System::variables_tag>>(
         time_id, extents, element, std::move(variables));
-    runner.apply<component, Actions::SendDataForFluxes<component>>(
-        box, Index_t(east_id));
+    runner.apply<component, Actions::SendDataForFluxes>(box, Index_t(east_id));
   }
   CHECK((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
       sent_box, Index_t(self_id))));
@@ -276,8 +273,8 @@ SPECTRE_TEST_CASE(
                  db::AddComputeItemsTags<Tags::UnnormalizedGridNormal<2>>>(
       time_id, extents, element, std::move(map), std::move(variables));
 
-  auto sent_box = std::get<0>(
-      runner.apply<component, Actions::SendDataForFluxes<component>>(
+  auto sent_box =
+      std::get<0>(runner.apply<component, Actions::SendDataForFluxes>(
           start_box, Index_t(self_id)));
 
   CHECK(db::get<history_tag>(sent_box).empty());

@@ -80,7 +80,6 @@ struct CharmRegisterFunctions {
       tmpl::list<
           typename ParallelComponent::metavariables,
           typename ParallelComponent::action_list,
-          typename ParallelComponent::inbox_tag_list,
           typename get_array_index<chare_type>::template f<ParallelComponent>,
           typename ParallelComponent::initial_databox>,
       ParallelComponent>;
@@ -125,28 +124,26 @@ struct CharmRegisterFunctions {
         0)...);
   }
 
-  template <class Action, class Arg>
-  static void register_reduction_action(tmpl::list<Action, Arg> /*meta*/) {
-    // Register both the entry method and the reduction method
-    ckindex::template idx_reduction_action<Action, Arg>(
-        static_cast<void (algorithm::*)(const Arg&)>(nullptr));
-    ckindex::template redn_wrapper_reduction_action<Action, Arg>(nullptr);
-  }
-
-  template <class... Args>
-  static void register_reduction_actions(tmpl::list<Args...> /*meta*/) {
-    swallow(((void)register_reduction_action(Args{}), 0)...);
+  template <class... Actions>
+  static void register_reduction_actions(tmpl::list<Actions...> /*meta*/) {
+    swallow(((void)ckindex::template idx_reduction_action<
+                 Actions, typename Actions::reduction_type>(
+                 static_cast<void (algorithm::*)(
+                     const typename Actions::reduction_type&)>(nullptr)),
+             (void)ckindex::template redn_wrapper_reduction_action<
+                 Actions, typename Actions::reduction_type>(nullptr),
+             0)...);
   }
 
   template <class Action>
-  static void register_explicit_single_action(tmpl::list<Action> /*meta*/) {
+  static void register_explicit_single_action(tmpl::list<> /*meta*/) {
     ckindex::template idx_explicit_single_action<Action>(
         static_cast<void (algorithm::*)()>(nullptr));
   }
 
   template <class Action, class Arg0, class... Args>
   static void register_explicit_single_action(
-      tmpl::list<Action, Arg0, Args...> /*meta*/) {
+      tmpl::list<Arg0, Args...> /*meta*/) {
     ckindex::template idx_explicit_single_action<Action>(
         static_cast<void (algorithm::*)(const std::tuple<Arg0, Args...>&)>(
             nullptr));
@@ -155,7 +152,8 @@ struct CharmRegisterFunctions {
   template <class... ExplicitActionsParameters>
   static void register_explicit_single_actions(
       tmpl::list<ExplicitActionsParameters...> /*meta*/) {
-    swallow(((void)register_explicit_single_action(ExplicitActionsParameters{}),
+    swallow(((void)register_explicit_single_action<ExplicitActionsParameters>(
+                 typename ExplicitActionsParameters::apply_args{}),
              0)...);
   }
 };
@@ -189,10 +187,10 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
   swallow(
       ((void)CharmRegisterFunctions<ParallelComponents>::register_algorithm(),
        0)...);
-  swallow(
-      ((void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
-           typename ParallelComponents::inbox_tag_list{}),
-       0)...);
+  swallow((
+      (void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
+          Parallel::get_inbox_tags<typename ParallelComponents::action_list>{}),
+      0)...);
   swallow(((void)register_explicit_single_actions<ParallelComponents>(
                typename has_single_actions<ParallelComponents>::type{}),
            0)...);
