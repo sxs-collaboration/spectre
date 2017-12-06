@@ -66,6 +66,7 @@ void test_jacobian(const Map& map,
   for (size_t i = 0; i < Map::dim; ++i) {
     const auto numerical_deriv_i = numerical_derivative(map, test_point, i, dx);
     for (size_t j = 0; j < Map::dim; ++j) {
+      INFO("i: " << i << " j: " << j);
       CHECK(jacobian.get(j, i) == local_approx(gsl::at(numerical_deriv_i, j)));
     }
   }

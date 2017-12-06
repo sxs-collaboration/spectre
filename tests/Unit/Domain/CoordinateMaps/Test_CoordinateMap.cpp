@@ -510,7 +510,7 @@ void test_coordinate_map_with_rotation_wedge() {
   using Wedge2D = CoordinateMaps::Wedge2D;
 
   const auto first_map = Rotate(2.);
-  const auto second_map = Wedge2D(3., 7., Direction<2>::lower_eta());
+  const auto second_map = Wedge2D(3., 7., Direction<2>::lower_eta(), false);
 
   const auto composed_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(first_map, second_map);

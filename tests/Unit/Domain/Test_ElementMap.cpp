@@ -132,7 +132,7 @@ void test_element_map<2>() {
 
   // test with a rotation and a wedge
   test_element_impl(false, element_id, affine_map, first_map,
-                    Wedge2D(3., 7., Direction<2>::lower_eta()),
+                    Wedge2D(3., 7., Direction<2>::lower_eta(), false),
                     logical_point_double, logical_point_dv);
 }
 
