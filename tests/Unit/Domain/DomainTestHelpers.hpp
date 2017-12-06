@@ -22,6 +22,7 @@ class Domain;
 template <size_t VolumeDim>
 class ElementId;
 
+// Test that the Blocks in the Domain are constructed correctly.
 template <size_t VolumeDim>
 void test_domain_construction(
     const Domain<VolumeDim, Frame::Inertial>& domain,
@@ -39,3 +40,11 @@ void test_domain_construction(
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_volume(
     const ElementId<VolumeDim>& element_id) noexcept;
+
+// Test that the Elements of the initial domain are connected and cover the
+// computational domain, as well as that neighboring Elements  are at the same
+// refinement level.
+template <size_t VolumeDim>
+void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
+                         const std::vector<std::array<size_t, VolumeDim>>&
+                             initial_refinement_levels) noexcept;
