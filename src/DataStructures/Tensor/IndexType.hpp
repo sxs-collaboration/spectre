@@ -7,10 +7,14 @@
 #pragma once
 
 #include <ostream>
+#include <type_traits>
 
 #include "Utilities/Literals.hpp"
-#include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
+
+namespace brigand {
+template <class...>
+struct list;
+}  // namespace brigand
 
 /// \ingroup TensorGroup
 /// Whether a \ref SpacetimeIndex "TensorIndexType" is covariant or
@@ -53,7 +57,7 @@ struct NoFrame {};
 template <typename CheckFrame>
 using is_frame_physical =
     std::integral_constant<bool,
-                           cpp17::is_base_of_v<FrameIsPhysical, CheckFrame>>;
+                           std::is_base_of<FrameIsPhysical, CheckFrame>::value>;
 
 /// \ingroup TensorGroup
 /// Returns true if the frame is "physical" in the sense that it is
@@ -192,4 +196,4 @@ using change_index_up_lo = Tensor_detail::TensorIndexType<
     Index::index_type>;
 
 template <typename... Ts>
-using index_list = typelist<Ts...>;
+using index_list = brigand::list<Ts...>;

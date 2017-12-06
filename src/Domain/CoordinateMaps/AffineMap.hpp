@@ -11,6 +11,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace CoordinateMaps {
 
