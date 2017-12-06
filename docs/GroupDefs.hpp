@@ -106,7 +106,7 @@
  */
 
 /*!
- * \defgroup GeneralRelavitiyGroup General Relativity
+ * \defgroup GeneralRelativityGroup General Relativity
  * \brief Contains functions used in General Relativistic simulations
  */
 
