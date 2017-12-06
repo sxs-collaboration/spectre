@@ -11,6 +11,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 
 class DataVector;
 
