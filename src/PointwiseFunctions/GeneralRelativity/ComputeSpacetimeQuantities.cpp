@@ -12,10 +12,10 @@ template <size_t Dim, typename Frame, typename DataType>
 tnsr::aa<DataType, Dim, Frame> compute_spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept {
-  tnsr::aa<DataType, Dim, Frame> spacetime_metric{
-      make_with_value<DataType>(lapse.get(), 0.)};
+  auto spacetime_metric =
+      make_with_value<tnsr::aa<DataType, Dim, Frame>>(lapse, 0.);
 
-  get<0, 0>(spacetime_metric) = -lapse.get() * lapse.get();
+  get<0, 0>(spacetime_metric) = -get(lapse) * get(lapse);
 
   for (size_t m = 0; m < Dim; ++m) {
     get<0, 0>(spacetime_metric) +=
@@ -41,10 +41,11 @@ template <size_t Dim, typename Frame, typename DataType>
 tnsr::AA<DataType, Dim, Frame> compute_inverse_spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric) noexcept {
-  tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric{};
+  auto inverse_spacetime_metric =
+      make_with_value<tnsr::AA<DataType, Dim, Frame>>(lapse, 0.);
 
   get<0, 0>(inverse_spacetime_metric) =
-      -1.0 / (lapse.get() * lapse.get());
+      -1.0 / (get(lapse) * get(lapse));
 
   const auto& minus_one_over_lapse_sqrd = get<0, 0>(inverse_spacetime_metric);
 
@@ -73,11 +74,11 @@ tnsr::abb<DataType, Dim, Frame> compute_derivatives_of_spacetime_metric(
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
     const tnsr::ii<DataType, Dim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& deriv_spatial_metric) noexcept {
-  tnsr::abb<DataType, Dim, Frame> spacetime_deriv_spacetime_metric{
-      make_with_value<DataType>(lapse.get(), 0.)};
+  auto spacetime_deriv_spacetime_metric =
+      make_with_value<tnsr::abb<DataType, Dim, Frame>>(lapse, 0.);
 
   get<0, 0, 0>(spacetime_deriv_spacetime_metric) =
-      -2.0 * lapse.get() * dt_lapse.get();
+      -2.0 * get(lapse) * get(dt_lapse);
 
   for (size_t m = 0; m < Dim; ++m) {
     for (size_t n = 0; n < Dim; ++n) {
@@ -101,7 +102,7 @@ tnsr::abb<DataType, Dim, Frame> compute_derivatives_of_spacetime_metric(
 
   for (size_t k = 0; k < Dim; ++k) {
     spacetime_deriv_spacetime_metric.get(k + 1, 0, 0) =
-        -2.0 * lapse.get() * deriv_lapse.get(k);
+        -2.0 * get(lapse) * deriv_lapse.get(k);
     for (size_t m = 0; m < Dim; ++m) {
       for (size_t n = 0; n < Dim; ++n) {
         spacetime_deriv_spacetime_metric.get(k + 1, 0, 0) +=
@@ -136,8 +137,9 @@ tnsr::iaa<DataType, SpatialDim, Frame> compute_phi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept {
-  tnsr::iaa<DataType, SpatialDim, Frame> phi(
-      make_with_value<DataType>(*deriv_lapse.begin(), 0.));
+  auto phi =
+      make_with_value<tnsr::iaa<DataType, SpatialDim, Frame>>(deriv_lapse, 0.);
+
   for (size_t k = 0; k < SpatialDim; ++k) {
     phi.get(k, 0, 0) = -2.0 * lapse.get() * deriv_lapse.get(k);
     for (size_t m = 0; m < SpatialDim; ++m) {
@@ -171,14 +173,14 @@ tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
-  tnsr::aa<DataType, SpatialDim, Frame> pi{
-      make_with_value<DataType>(*lapse.begin(), 0.)};
+  auto pi =
+      make_with_value<tnsr::aa<DataType, SpatialDim, Frame>>(lapse, 0.);
 
-  pi.get(0, 0) = -2.0 * lapse.get() * dt_lapse.get();
+  get<0, 0>(pi) = -2.0 * lapse.get() * dt_lapse.get();
 
   for (size_t m = 0; m < SpatialDim; ++m) {
     for (size_t n = 0; n < SpatialDim; ++n) {
-      pi.get(0, 0) +=
+      get<0, 0>(pi) +=
           dt_spatial_metric.get(m, n) * shift.get(m) * shift.get(n) +
           2.0 * spatial_metric.get(m, n) * shift.get(m) * dt_shift.get(n);
     }
@@ -208,8 +210,8 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept {
   auto normal_one_form =
-      make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(get<>(lapse), 0.);
-  get<0>(normal_one_form) = -get<>(lapse);
+      make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(lapse, 0.);
+  get<0>(normal_one_form) = -get(lapse);
   return normal_one_form;
 }
 
@@ -217,9 +219,9 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::A<DataType, SpatialDim, Frame> compute_spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
-  auto spacetime_normal_vector{
-      make_with_value<tnsr::A<DataType, SpatialDim, Frame>>(get<>(lapse), 0.)};
-  get<0>(spacetime_normal_vector) = 1. / get<>(lapse);
+  auto spacetime_normal_vector =
+      make_with_value<tnsr::A<DataType, SpatialDim, Frame>>(lapse, 0.);
+  get<0>(spacetime_normal_vector) = 1. / get(lapse);
   for (size_t i = 0; i < SpatialDim; i++) {
     spacetime_normal_vector.get(i + 1) =
         -shift.get(i) * get<0>(spacetime_normal_vector);

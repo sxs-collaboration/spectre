@@ -10,7 +10,9 @@
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::abb<DataType, SpatialDim, Frame, Index> compute_christoffel_first_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) {
-  tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel{};
+  auto christoffel =
+      make_with_value<tnsr::abb<DataType, SpatialDim, Frame, Index>>(d_metric,
+                                                                     0.);
   constexpr auto dimensionality = index_dim<0>(christoffel);
   for (size_t k = 0; k < dimensionality; ++k) {
     for (size_t i = 0; i < dimensionality; ++i) {

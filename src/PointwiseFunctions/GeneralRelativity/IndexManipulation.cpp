@@ -15,9 +15,10 @@ raise_or_lower_first_index(
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric) noexcept {
-  Tensor<DataType, Symmetry<2, 1, 1>,
-         index_list<change_index_up_lo<Index0>, Index1, Index1>>
-      tensor_opposite_valence{make_with_value<DataType>(*tensor.begin(), 0.)};
+  auto tensor_opposite_valence = make_with_value<
+      Tensor<DataType, Symmetry<2, 1, 1>,
+             index_list<change_index_up_lo<Index0>, Index1, Index1>>>(metric,
+                                                                      0.);
 
   constexpr auto dimension = Index0::dim;
 
@@ -38,8 +39,9 @@ template <size_t Dim, typename Frame, IndexType TypeOfIndex, typename DataType>
 tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
     const tnsr::abb<DataType, Dim, Frame, TypeOfIndex>& tensor,
     const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric) noexcept {
-  tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_of_tensor{
-      make_with_value<DataType>(*tensor.begin(), 0.)};
+  auto trace_of_tensor =
+      make_with_value<tnsr::a<DataType, Dim, Frame, TypeOfIndex>>(upper_metric,
+                                                                  0.);
 
   const auto dimension = index_dim<0>(tensor);
   for (size_t i = 0; i < dimension; ++i) {
