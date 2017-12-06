@@ -3,6 +3,10 @@
 
 #pragma once
 
+#include "DataStructures/DataBoxTag.hpp"
+
+class DataVector;
+
 namespace GeneralizedHarmonic {
 template <size_t Dim, typename Frame>
 struct SpacetimeMetric : db::DataBoxTag {

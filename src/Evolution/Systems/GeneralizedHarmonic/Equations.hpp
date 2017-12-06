@@ -6,14 +6,24 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 
 class DataVector;
+
+namespace Tags {
+template <typename>
+class dt;
+
+template <typename, typename, typename>
+class d;
+}  // namespace Tags
+
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
 
 namespace GeneralizedHarmonic {
 template <size_t Dim>

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace GeneralizedHarmonic {
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeMetric;
