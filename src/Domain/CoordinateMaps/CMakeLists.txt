@@ -5,6 +5,7 @@ set(LIBRARY CoordinateMaps)
 
 set(LIBRARY_SOURCES
     AffineMap.cpp
+    Equiangular.cpp
     Identity.cpp
     Rotation.cpp
     Wedge2D.cpp
