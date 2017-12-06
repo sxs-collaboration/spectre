@@ -33,8 +33,6 @@ void test_interval_construction(
   CHECK(interval.initial_extents() == expected_extents);
   CHECK(interval.initial_refinement_levels() == expected_refinement_level);
 
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                         CoordinateMaps::AffineMap>));
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(

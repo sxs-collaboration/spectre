@@ -36,8 +36,6 @@ void test_rectangle_construction(
   CHECK(rectangle.initial_extents() == expected_extents);
   CHECK(rectangle.initial_refinement_levels() == expected_refinement_level);
 
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                         AffineMap2D>));
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
