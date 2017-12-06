@@ -2,12 +2,14 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// PUP routines for new C+11 STL containers
+/// PUP routines for new C+11 STL containers and other standard
+/// library objects Charm does not provide implementations for
 
 #pragma once
 
 #include <algorithm>
 #include <array>
+#include <deque>
 #include <memory>
 #include <pup_stl.h>
 #include <tuple>
@@ -39,6 +41,32 @@ inline void pup(PUP::er& p, std::array<T, N>& a) {  // NOLINT
 template <typename T, std::size_t N>
 inline void operator|(er& p, std::array<T, N>& a) {  // NOLINT
   pup(p, a);
+}
+
+/// \ingroup ParallelGroup
+/// Serialization of std::deque for Charm++
+template <typename T>
+inline void pup(PUP::er& p, std::deque<T>& d) {  // NOLINT
+  size_t number_elem = PUP_stl_container_size(p, d);
+
+  if (p.isUnpacking()) {
+    for (size_t i = 0; i < number_elem; ++i) {
+      T v;
+      p | v;
+      d.emplace_back(std::move(v));
+    }
+  } else {
+    for (auto& v : d) {
+      p | v;
+    }
+  }
+}
+
+/// \ingroup ParallelGroup
+/// Serialization of std::deque for Charm++
+template <typename T>
+inline void operator|(er& p, std::deque<T>& d) {  // NOLINT
+  pup(p, d);
 }
 
 /// \ingroup ParallelGroup
