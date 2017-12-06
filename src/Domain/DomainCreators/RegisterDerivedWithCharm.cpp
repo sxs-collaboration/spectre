@@ -8,7 +8,7 @@
 #include "Parallel/CharmPupable.hpp"
 
 namespace DomainCreators {
-namespace DomainCreaters_detail {
+namespace DomainCreators_detail {
 template <size_t Dim>
 void register_with_charm();
 
@@ -34,11 +34,11 @@ void register_with_charm<3>() {
                           CoordinateMaps::AffineMap, CoordinateMaps::AffineMap,
                           CoordinateMaps::AffineMap>>));
 }
-}  // namespace DomainCreaters_detail
+}  // namespace DomainCreators_detail
 
 void register_derived_with_charm() {
-  DomainCreaters_detail::register_with_charm<1>();
-  DomainCreaters_detail::register_with_charm<2>();
-  DomainCreaters_detail::register_with_charm<3>();
+  DomainCreators_detail::register_with_charm<1>();
+  DomainCreators_detail::register_with_charm<2>();
+  DomainCreators_detail::register_with_charm<3>();
 }
 }  // namespace DomainCreators
