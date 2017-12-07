@@ -25,7 +25,8 @@ struct Var {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux", "[Unit][Numerical]") {
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
+                  "[Unit][NumericalAlgorithms]") {
   const size_t perpendicular_extent = 5;
 
   const CoordinateMaps::AffineMap xi_map(-1., 1., -5., 7.);

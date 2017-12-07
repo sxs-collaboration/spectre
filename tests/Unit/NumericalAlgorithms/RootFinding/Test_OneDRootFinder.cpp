@@ -14,7 +14,7 @@ struct F {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver",
-                  "[Numerical][RootFinding][Unit]") {
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
   const double upper = 2.0;
@@ -34,7 +34,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.Bounds",
-                  "[Numerical][RootFinding][Unit]") {
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
   /// [double_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
@@ -57,7 +57,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.Bounds",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.DataVector",
-                  "[Numerical][RootFinding][Unit]") {
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
   /// [datavector_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;

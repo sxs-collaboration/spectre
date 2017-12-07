@@ -13,7 +13,7 @@
 
 namespace {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
-                  "[Numerical][Spectral][Unit]") {
+                  "[NumericalAlgorithms][Spectral][Unit]") {
   // Compare LGL points to matlab code accompanying the
   // book "Nodal Discontinuous Galerkin Methods" by Hesthaven and Warburton
   // http://www.nudg.org/
@@ -151,7 +151,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
-                  "[Numerical][Spectral][Unit]") {
+                  "[NumericalAlgorithms][Spectral][Unit]") {
   // Compare differentiation matrix values to matlab code accompanying the
   // book "Nodal Discontinuous Galerkin Methods" by Hesthaven and Warburton
   // http://www.nudg.org/
@@ -317,7 +317,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
 
 SPECTRE_TEST_CASE(
     "Unit.Numerical.Spectral.LegendreGaussLobatto.LinearFilterMatrix",
-    "[Numerical][Spectral][Unit]") {
+    "[NumericalAlgorithms][Spectral][Unit]") {
   for (size_t n = 2; n < 10; ++n) {
     const Matrix& filter_matrix = Basis::lgl::linear_filter_matrix(n);
     const Matrix& grid_points_to_spectral_matrix =
@@ -341,7 +341,7 @@ SPECTRE_TEST_CASE(
 
 SPECTRE_TEST_CASE(
     "Unit.Numerical.Spectral.LegendreGaussLobatto.InterpolationMatrix",
-    "[Numerical][Spectral][Unit]") {
+    "[NumericalAlgorithms][Spectral][Unit]") {
   auto check_interp = [](const size_t num_pts, auto func) {
     const DataVector& collocation_points =
         Basis::lgl::collocation_points(num_pts);
