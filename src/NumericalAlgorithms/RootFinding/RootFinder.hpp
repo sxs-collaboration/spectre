@@ -13,12 +13,19 @@
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
- * \brief Finds the root of the function f with the TOMS_748 method.
+ * \brief Finds the root of the function `f` with the TOMS_748 method.
  *
- * \requires Function f be callable
+ * `f` is a unary invokable that takes a `double` which is the current value at
+ * which to evaluate `f`. An example is below.
+ *
+ * \snippet Test_OneDRootFinder.cpp double_root_find
+ *
+ * See the [Boost](http://www.boost.org/) documentation for more details.
+ *
+ * \requires Function f is invokable with a `double`
  */
 template <typename Function>
-double find_root_of_function(Function f, const double lower_bound,
+double find_root_of_function(const Function& f, const double lower_bound,
                              const double upper_bound,
                              const double absolute_tolerance,
                              const double relative_tolerance,
