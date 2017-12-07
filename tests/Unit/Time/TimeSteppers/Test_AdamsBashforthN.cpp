@@ -135,8 +135,8 @@ constexpr double c22 = 0.825876851406978;
 
 // Test coupling for integrating using two drivers (multiplied together)
 NCd quartic_coupling(const std::vector<std::reference_wrapper<const NCd>>& v) {
-  CHECK(v.size() == 3);
-  return NCd(v[1]() * v[2]());
+  CHECK(v.size() == 2);
+  return NCd(v[0]() * v[1]());
 }
 
 // Test functions for integrating a quartic using the above coupling.
@@ -150,16 +150,11 @@ double quartic_answer(double x) {
                             + x * (c11 * c22 / 4))));
 }
 
-// Analytic solutions
-const std::array<double (*const)(double), 3> side_solutions{{
-    quartic_answer, quartic_side1, quartic_side2}};
-
 // Value to assign to points during a simulation
-double simulation_value(const size_t side, const Time& t, const double y) {
+double simulation_value(const size_t side, const Time& t) {
   switch (side) {
-    case 0: return y;
-    case 1: return quartic_side1(t.value());
-    case 2: return quartic_side2(t.value());
+    case 0: return quartic_side1(t.value());
+    case 1: return quartic_side2(t.value());
     default: ERROR("");
   };
 }
@@ -173,49 +168,8 @@ SPECTRE_ALWAYS_INLINE NCd MakeWithValueImpl<NCd, NCd>::apply(
 }
 }  // namespace MakeWithValueImpls
 
-SPECTRE_TEST_CASE(
-    "Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.MultipleSides",
-    "[Unit][Time]") {
-  constexpr double unused = 4444.;
-
-  const Slab slab(0., 1.);
-
-  Time t = slab.start();
-  const TimeDelta dt = slab.duration() / 4;
-
-  TimeSteppers::AdamsBashforthN ab4(4, false);
-
-  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(3);
-
-  {
-    const Slab init_slab = slab.retreat();
-    const TimeDelta init_dt = dt.with_slab(init_slab);
-
-    for (ssize_t step = 1; step <= 3; ++step) {
-      const Time now = t - step * init_dt;
-      for (size_t side = 0; side < 3; ++side) {
-        history[side].emplace_front(
-            now, NCd(unused), NCd(gsl::at(side_solutions, side)(now.value())));
-      }
-    }
-  }
-
-  double y = 0.;
-  while (t < slab.end()) {
-    for (size_t side = 0; side < 3; ++side) {
-      history[side].emplace_back(t, NCd(unused),
-                                 NCd(simulation_value(side, t, y)));
-    }
-
-    t += dt;
-    y += ab4.compute_boundary_delta(
-        quartic_coupling, make_not_null(&history), dt)();
-    CHECK(y == approx(quartic_answer(t.value())));
-  }
-}
-
 namespace {
-void do_lts_test(const std::array<TimeDelta, 3>& dt) noexcept {
+void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
   constexpr double unused = 4444.;
 
   const bool forward_in_time = dt[0].is_positive();
@@ -229,29 +183,33 @@ void do_lts_test(const std::array<TimeDelta, 3>& dt) noexcept {
 
   TimeSteppers::AdamsBashforthN ab4(4, false);
 
-  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(3);
+  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(2);
   {
     const Slab init_slab = slab.advance_towards(-dt[0]);
 
     for (ssize_t step = 1; step <= 3; ++step) {
-      for (size_t side = 0; side < 3; ++side) {
-        const Time now = t - step * gsl::at(dt, side).with_slab(init_slab);
-        history[side].emplace_front(
-            now, NCd(unused), NCd(gsl::at(side_solutions, side)(now.value())));
+      {
+        const Time now = t - step * dt[0].with_slab(init_slab);
+        history[0].emplace_front(
+            now, NCd(unused), NCd(quartic_side1(now.value())));
+      }
+      {
+        const Time now = t - step * dt[1].with_slab(init_slab);
+        history[1].emplace_front(
+            now, NCd(unused), NCd(quartic_side2(now.value())));
       }
     }
   }
 
   double y = quartic_answer(t.value());
   Time next_check = t + dt[0];
-  std::array<Time, 3> next{{t, t, t}};
+  std::array<Time, 2> next{{t, t}};
   for (;;) {
     const auto side = static_cast<size_t>(
         std::min_element(next.cbegin(), next.cend(), simulation_less)
         - next.cbegin());
 
-    history[side].emplace_back(t, NCd(unused),
-                               NCd(simulation_value(side, t, y)));
+    history[side].emplace_back(t, NCd(unused), NCd(simulation_value(side, t)));
 
     gsl::at(next, side) += gsl::at(dt, side);
 
@@ -276,22 +234,19 @@ SPECTRE_TEST_CASE(
     "[Unit][Time]") {
   const Slab slab(0., 1.);
   const TimeDelta full = slab.duration();
-  do_lts_test({{full / 4, full / 4, full / 4}});
-  do_lts_test({{full / 4, full / 8, full / 8}});
-  do_lts_test({{full / 4, full / 8, full / 4}});
-  do_lts_test({{full / 8, full / 4, full / 4}});
-  do_lts_test({{full / 8, full / 4, full / 8}});
-  do_lts_test({{full / 4, full / 8, full / 16}});
-  do_lts_test({{full / 16, full / 4, full / 8}});
-  do_lts_test({{full / 8, full / 16, full / 4}});
+  do_lts_test({{full / 4, full / 4}});
+  do_lts_test({{full / 4, full / 8}});
+  do_lts_test({{full / 8, full / 4}});
+  do_lts_test({{full / 16, full / 4}});
+  do_lts_test({{full / 4, full / 16}});
 
   // Non-nesting cases
-  do_lts_test({{full / 4, full / 6, full / 8}});
-  do_lts_test({{full / 6, full / 8, full / 4}});
-  do_lts_test({{full / 8, full / 4, full / 6}});
-  do_lts_test({{full / 5, full / 7, full / 13}});
-  do_lts_test({{full / 7, full / 13, full / 5}});
-  do_lts_test({{full / 13, full / 5, full / 7}});
+  do_lts_test({{full / 4, full / 6}});
+  do_lts_test({{full / 6, full / 4}});
+  do_lts_test({{full / 5, full / 7}});
+  do_lts_test({{full / 7, full / 5}});
+  do_lts_test({{full / 5, full / 13}});
+  do_lts_test({{full / 13, full / 5}});
 }
 
 SPECTRE_TEST_CASE(
@@ -299,22 +254,19 @@ SPECTRE_TEST_CASE(
     "[Unit][Time]") {
   const Slab slab(0., 1.);
   const TimeDelta full = -slab.duration();
-  do_lts_test({{full / 4, full / 4, full / 4}});
-  do_lts_test({{full / 4, full / 8, full / 8}});
-  do_lts_test({{full / 4, full / 8, full / 4}});
-  do_lts_test({{full / 8, full / 4, full / 4}});
-  do_lts_test({{full / 8, full / 4, full / 8}});
-  do_lts_test({{full / 4, full / 8, full / 16}});
-  do_lts_test({{full / 16, full / 4, full / 8}});
-  do_lts_test({{full / 8, full / 16, full / 4}});
+  do_lts_test({{full / 4, full / 4}});
+  do_lts_test({{full / 4, full / 8}});
+  do_lts_test({{full / 8, full / 4}});
+  do_lts_test({{full / 16, full / 4}});
+  do_lts_test({{full / 4, full / 16}});
 
   // Non-nesting cases
-  do_lts_test({{full / 4, full / 6, full / 8}});
-  do_lts_test({{full / 6, full / 8, full / 4}});
-  do_lts_test({{full / 8, full / 4, full / 6}});
-  do_lts_test({{full / 5, full / 7, full / 13}});
-  do_lts_test({{full / 7, full / 13, full / 5}});
-  do_lts_test({{full / 13, full / 5, full / 7}});
+  do_lts_test({{full / 4, full / 6}});
+  do_lts_test({{full / 6, full / 4}});
+  do_lts_test({{full / 5, full / 7}});
+  do_lts_test({{full / 7, full / 5}});
+  do_lts_test({{full / 5, full / 13}});
+  do_lts_test({{full / 13, full / 5}});
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
@@ -327,7 +279,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
 
   TimeSteppers::AdamsBashforthN ab4(4, false);
 
-  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(3);
+  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(2);
   {
     const Slab init_slab = slab.retreat();
     const TimeDelta init_dt = init_slab.duration() / 4;
@@ -336,29 +288,28 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     for (ssize_t step = 1; step <= 3; ++step) {  // NOLINT
       // clang-tidy misfeature: warns about boost internals here
       const Time now = t - step * init_dt;  // NOLINT
-      for (size_t side = 0; side < 3; ++side) {
-        history[side].emplace_front(
-            now, NCd(unused), NCd(gsl::at(side_solutions, side)(now.value())));
-      }
+      history[0].emplace_front(
+          now, NCd(unused), NCd(quartic_side1(now.value())));
+      history[1].emplace_front(
+          now, NCd(unused), NCd(quartic_side2(now.value())));
     }
   }
 
-  std::array<std::deque<TimeDelta>, 3> dt{{
-      {slab.duration() / 4, slab.duration() / 2, slab.duration() / 4},
-      {slab.duration() / 3, slab.duration() / 3, slab.duration() / 3},
+  std::array<std::deque<TimeDelta>, 2> dt{{
+      {slab.duration() / 2, slab.duration() / 4, slab.duration() / 4},
       {slab.duration() / 6, slab.duration() / 6, slab.duration() * 2 / 9,
             slab.duration() * 4 / 9}}};
 
   double y = quartic_answer(t.value());
   Time next_check = t + dt[0][0];
-  std::array<Time, 3> next{{t, t, t}};
+  std::array<Time, 2> next{{t, t}};
   for (;;) {
     const auto side = static_cast<size_t>(
         std::min_element(next.cbegin(), next.cend()) - next.cbegin());
 
-    history[side].emplace_back(gsl::at(next, side), NCd(unused),
-                               NCd(simulation_value(side, gsl::at(next, side),
-                                                    y)));
+    history[side].emplace_back(
+        gsl::at(next, side), NCd(unused),
+        NCd(simulation_value(side, gsl::at(next, side))));
 
     const TimeDelta this_dt = gsl::at(dt, side).front();
     gsl::at(dt, side).pop_front();
