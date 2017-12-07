@@ -11,6 +11,7 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/InitialElementIds.hpp"
@@ -179,6 +180,7 @@ void test_domain_construction(
     CHECK(typeid(*expected_maps[i]) == typeid(block.coordinate_map()));
     check_if_maps_are_equal(*expected_maps[i], block.coordinate_map());
   }
+  DomainCreators::register_derived_with_charm();
   test_serialization(domain);
   // test operator !=
   CHECK_FALSE(domain != domain);
