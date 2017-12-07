@@ -18,15 +18,20 @@
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+#include "DataStructures/DataBox.hpp"
+#include "Domain/Tags.hpp"
+
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+
 namespace {
 
-template <size_t Dim>
+template <size_t Dim, class Frame = ::Frame::Grid>
 struct Var1 : db::DataBoxTag {
-  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString label = "Vector_t";
+  using type = tnsr::i<DataVector, Dim, Frame>;
+  static constexpr db::DataBoxString label = "Var1";
   static auto f(const std::array<size_t, Dim>& coeffs,
-                const tnsr::I<DataVector, Dim, Frame::Grid>& x) {
-    tnsr::i<DataVector, Dim, Frame::Grid> result(x.begin()->size(), 0.);
+                const tnsr::I<DataVector, Dim, Frame>& x) {
+    tnsr::i<DataVector, Dim, Frame> result(x.begin()->size(), 0.);
     for (size_t i = 0; i < Dim; ++i) {
       result.get(i) = (i + 2);
       for (size_t d = 0; d < Dim; ++d) {
@@ -36,8 +41,8 @@ struct Var1 : db::DataBoxTag {
     return result;
   }
   static auto df(const std::array<size_t, Dim>& coeffs,
-                 const tnsr::I<DataVector, Dim, Frame::Grid>& x) {
-    tnsr::ij<DataVector, Dim, Frame::Grid> result(x.begin()->size(), 0.);
+                 const tnsr::I<DataVector, Dim, Frame>& x) {
+    tnsr::ij<DataVector, Dim, Frame> result(x.begin()->size(), 0.);
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t j = 0; j < Dim; ++j) {
         result.get(i, j) = (j + 2);
@@ -61,20 +66,20 @@ struct Var1 : db::DataBoxTag {
 
 struct Var2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "Scalar_t";
-  template <size_t Dim>
+  static constexpr db::DataBoxString label = "Var2";
+  template <size_t Dim, class Frame>
   static auto f(const std::array<size_t, Dim>& coeffs,
-                const tnsr::I<DataVector, Dim, Frame::Grid>& x) {
+                const tnsr::I<DataVector, Dim, Frame>& x) {
     Scalar<DataVector> result(x.begin()->size(), 1.);
     for (size_t d = 0; d < Dim; ++d) {
       result.get() *= pow(x.get(d), gsl::at(coeffs, d));
     }
     return result;
   }
-  template <size_t Dim>
+  template <size_t Dim, class Frame>
   static auto df(const std::array<size_t, Dim>& coeffs,
-                 const tnsr::I<DataVector, Dim, Frame::Grid>& x) {
-    tnsr::i<DataVector, Dim, Frame::Grid> result(x.begin()->size(), 1.);
+                 const tnsr::I<DataVector, Dim, Frame>& x) {
+    tnsr::i<DataVector, Dim, Frame> result(x.begin()->size(), 1.);
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t d = 0; d < Dim; ++d) {
         if (d == i) {
@@ -218,7 +223,7 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<
-      db::wrap_tags_in<Tags::d, GradientTags, tmpl::size_t<1>, Frame::Grid>>
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>, Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < extents[0]; ++a) {
     tmpl::for_each<VariableTags>([&a, &x, &u ](auto tag) noexcept {
@@ -227,7 +232,7 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
     });
     tmpl::for_each<GradientTags>([&a, &x, &expected_du ](auto tag) noexcept {
       using Tag = typename decltype(tag)::type;
-      using DerivativeTag = Tags::d<Tag, tmpl::size_t<1>, Frame::Grid>;
+      using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<1>, Frame::Grid>;
       get<DerivativeTag>(expected_du) = Tag::df({{a}}, x);
     });
 
@@ -257,7 +262,7 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<
-      db::wrap_tags_in<Tags::d, GradientTags, tmpl::size_t<2>, Frame::Grid>>
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>, Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < extents[0]; ++a) {
     for (size_t b = 0; b < extents[1]; ++b) {
@@ -265,12 +270,12 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
         using Tag = typename decltype(tag)::type;
         get<Tag>(u) = Tag::f({{a, b}}, x);
       });
-      tmpl::for_each<GradientTags>(
-          [&a, &b, &x, &expected_du ](auto tag) noexcept {
-            using Tag = typename decltype(tag)::type;
-            using DerivativeTag = Tags::d<Tag, tmpl::size_t<2>, Frame::Grid>;
-            get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
-          });
+      tmpl::for_each<GradientTags>([&a, &b, &x,
+                                    &expected_du ](auto tag) noexcept {
+        using Tag = typename decltype(tag)::type;
+        using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<2>, Frame::Grid>;
+        get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
+      });
 
       const auto du =
           partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
@@ -303,7 +308,7 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<
-      db::wrap_tags_in<Tags::d, GradientTags, tmpl::size_t<3>, Frame::Grid>>
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < extents[0] / 2; ++a) {
     for (size_t b = 0; b < extents[1] / 2; ++b) {
@@ -312,12 +317,12 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
           using Tag = typename decltype(tag)::type;
           get<Tag>(u) = Tag::f({{a, b, c}}, x);
         });
-        tmpl::for_each<GradientTags>(
-            [&a, &b, &c, &x, &expected_du ](auto tag) noexcept {
-              using Tag = typename decltype(tag)::type;
-              using DerivativeTag = Tags::d<Tag, tmpl::size_t<3>, Frame::Grid>;
-              get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
-            });
+        tmpl::for_each<GradientTags>([&a, &b, &c, &x,
+                                      &expected_du ](auto tag) noexcept {
+          using Tag = typename decltype(tag)::type;
+          using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
+          get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
+        });
 
         const auto du =
             partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
@@ -367,4 +372,163 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   const Index<3> extents_3d(n0, n1, n2);
   test_partial_derivatives_3d<two_vars<3>>(extents_3d);
   test_partial_derivatives_3d<two_vars<3>, one_var<3>>(extents_3d);
+}
+
+namespace {
+template <size_t Dim>
+void test_logical_derivatives_compute_item(
+    const std::array<size_t, Dim> extents_array) noexcept {
+  using vars_tags = tmpl::list<Var1<Dim, Frame::Logical>, Var2>;
+  using deriv_tag =
+      Tags::deriv<vars_tags, vars_tags, std::integral_constant<size_t, Dim>>;
+
+  const std::array<size_t, Dim> array_to_functions{extents_array -
+                                                   make_array<Dim>(size_t{1})};
+  const Index<Dim> extents{extents_array};
+  Variables<vars_tags> u(extents.product());
+  Variables<db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>,
+                             Frame::Logical>>
+      expected_du(extents.product());
+  const auto x = logical_coordinates(extents);
+
+  tmpl::for_each<vars_tags>([&array_to_functions, &x, &u ](auto tag) noexcept {
+    using Tag = tmpl::type_from<decltype(tag)>;
+    get<Tag>(u) = Tag::f(array_to_functions, x);
+  });
+  tmpl::for_each<vars_tags>([&array_to_functions, &x,
+                             &expected_du ](auto tag) noexcept {
+    using Tag = typename decltype(tag)::type;
+    using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Logical>;
+    get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
+  });
+
+  auto box = db::create<
+      db::AddTags<Tags::Extents<Dim>, Tags::Variables<vars_tags>>,
+      db::AddComputeItemsTags<Tags::LogicalCoordinates<Dim>, deriv_tag>>(
+      extents, u);
+
+  const auto& du = db::get<deriv_tag>(box);
+
+  tmpl::for_each<vars_tags>([&du, &expected_du, &extents ](auto tag) noexcept {
+    using Tag = tmpl::type_from<decltype(tag)>;
+    using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Logical>;
+    auto& expected_dvariable = get<DerivativeTag>(expected_du);
+    for (auto it = expected_dvariable.begin(); it != expected_dvariable.end();
+         ++it) {
+      const auto deriv_indices = expected_dvariable.get_tensor_index(it);
+      const size_t deriv_index = deriv_indices[0];
+      const auto tensor_indices =
+          all_but_specified_element_of<0>(deriv_indices);
+      for (size_t n = 0; n < extents.product(); ++n) {
+        CAPTURE_PRECISE(get<Tag>(du[deriv_index]).get(tensor_indices)[n] -
+                        (*it)[n]);
+        CHECK(get<Tag>(du[deriv_index]).get(tensor_indices)[n] ==
+              approx((*it)[n]));
+      }
+    }
+  });
+}
+
+template <class MapType>
+struct MapTag : db::DataBoxTag {
+  using type = MapType;
+  static constexpr db::DataBoxString label = "MapTag";
+};
+
+template <size_t Dim, typename T>
+void test_partial_derivatives_compute_item(
+    const std::array<size_t, Dim> extents_array, const T& map) noexcept {
+  using vars_tags = tmpl::list<Var1<Dim>, Var2>;
+  using map_tag = MapTag<std::decay_t<decltype(map)>>;
+  using inv_jac_tag =
+      Tags::InverseJacobian<map_tag, Tags::LogicalCoordinates<Dim>>;
+  using deriv_tag = Tags::deriv<vars_tags, vars_tags, inv_jac_tag>;
+
+  const std::array<size_t, Dim> array_to_functions{extents_array -
+                                                   make_array<Dim>(size_t{1})};
+  const Index<Dim> extents{extents_array};
+  Variables<vars_tags> u(extents.product());
+  Variables<
+      db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>, Frame::Grid>>
+      expected_du(extents.product());
+  const auto x_logical = logical_coordinates(extents);
+  const auto x = map(logical_coordinates(extents));
+
+  tmpl::for_each<vars_tags>([&array_to_functions, &x, &u ](auto tag) noexcept {
+    using Tag = tmpl::type_from<decltype(tag)>;
+    get<Tag>(u) = Tag::f(array_to_functions, x);
+  });
+  tmpl::for_each<vars_tags>(
+      [&array_to_functions, &x, &expected_du ](auto tag) noexcept {
+        using Tag = typename decltype(tag)::type;
+        using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Grid>;
+        get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
+      });
+
+  auto box = db::create<
+      db::AddTags<Tags::Extents<Dim>, Tags::Variables<vars_tags>, map_tag>,
+      db::AddComputeItemsTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                              deriv_tag>>(extents, u, map);
+
+  const auto& du = db::get<deriv_tag>(box);
+
+  for (size_t n = 0; n < du.size(); ++n) {
+    // clang-tidy: pointer arithmetic
+    CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
+    CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
+  }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs.ComputeItems",
+                  "[Numerical][LinearOperators][Unit]") {
+  Index<3> max_extents{10, 10, 5};
+
+  for (size_t a = 1; a < max_extents[0]; ++a) {
+    test_logical_derivatives_compute_item(std::array<size_t, 1>{{a + 1}});
+    for (size_t b = 1; b < max_extents[1]; ++b) {
+      test_logical_derivatives_compute_item(
+          std::array<size_t, 2>{{a + 1, b + 1}});
+      for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
+                         c < max_extents[2];
+           ++c) {
+        test_logical_derivatives_compute_item(
+            std::array<size_t, 3>{{a + 1, b + 1, c + 1}});
+      }
+    }
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
+                  "[Numerical][LinearOperators][Unit]") {
+  using AffineMap = CoordinateMaps::AffineMap;
+  using AffineMap2d = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
+  using AffineMap3d =
+      CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+
+  Index<3> max_extents{10, 10, 5};
+
+  for (size_t a = 1; a < max_extents[0]; ++a) {
+    test_partial_derivatives_compute_item(
+        std::array<size_t, 1>{{a + 1}},
+        make_coordinate_map<Frame::Logical, Frame::Grid>(
+            CoordinateMaps::AffineMap{-1.0, 1.0, -0.3, 0.7}));
+    for (size_t b = 1; b < max_extents[1]; ++b) {
+      test_partial_derivatives_compute_item(
+          std::array<size_t, 2>{{a + 1, b + 1}},
+          make_coordinate_map<Frame::Logical, Frame::Grid>(
+              AffineMap2d{AffineMap{-1.0, 1.0, -0.3, 0.7},
+                          AffineMap{-1.0, 1.0, 0.3, 0.55}}));
+      for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
+                         c < max_extents[2];
+           ++c) {
+        test_partial_derivatives_compute_item(
+            std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
+            make_coordinate_map<Frame::Logical, Frame::Grid>(
+                AffineMap3d{AffineMap{-1.0, 1.0, -0.3, 0.7},
+                            AffineMap{-1.0, 1.0, 0.3, 0.55},
+                            AffineMap{-1.0, 1.0, 2.3, 2.8}}));
+      }
+    }
+  }
 }

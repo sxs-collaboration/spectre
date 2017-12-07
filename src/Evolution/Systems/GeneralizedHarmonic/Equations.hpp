@@ -6,13 +6,24 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 
 class DataVector;
+
+namespace Tags {
+template <typename>
+class dt;
+
+template <typename, typename, typename>
+class deriv;
+}  // namespace Tags
+
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
 
 namespace GeneralizedHarmonic {
 template <size_t Dim>
@@ -22,10 +33,10 @@ struct ComputeDuDt {
                                Tags::dt<Pi<Dim>>, Tags::dt<Phi<Dim>>>;
   using argument_tags = typelist<
       SpacetimeMetric<Dim>, Pi<Dim>, Phi<Dim>,
-      Tags::d<SpacetimeMetric<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::d<Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::d<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>, ConstraintGamma0,
-      ConstraintGamma1, ConstraintGamma2, GaugeH<Dim>,
+      Tags::deriv<SpacetimeMetric<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::deriv<Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      ConstraintGamma0, ConstraintGamma1, ConstraintGamma2, GaugeH<Dim>,
       SpacetimeDerivGaugeH<Dim>, Lapse<Dim>, Shift<Dim>,
       InverseSpatialMetric<Dim>, InverseSpacetimeMetric<Dim>,
       TraceSpacetimeChristoffelFirstKind<Dim>,

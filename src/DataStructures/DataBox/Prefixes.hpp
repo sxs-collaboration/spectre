@@ -16,31 +16,6 @@
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
-/// \brief prefix for a `VolumeDim` spatial derivatives with respect to the `Fr`
-/// coordinate frame.
-template <typename Tag, typename VolumeDim, typename Fr,
-          typename = std::nullptr_t>
-struct d;
-
-template <typename Tag, typename VolumeDim, typename Fr>
-struct d<Tag, VolumeDim, Fr, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
-    : db::DataBoxPrefix {
-  using type = TensorMetafunctions::prepend_spatial_index<
-      db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Fr>;
-  using tag = Tag;
-  static constexpr db::DataBoxString label = "d";
-};
-
-template <typename Tag, typename VolumeDim, typename Fr>
-struct d<Tag, VolumeDim, Fr,
-         Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
-    : db::DataBoxPrefix {
-  using type = db::item_type<Tag>;
-  using tag = Tag;
-  static constexpr db::DataBoxString label = "d";
-};
-
-/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
 struct dt : db::DataBoxPrefix {

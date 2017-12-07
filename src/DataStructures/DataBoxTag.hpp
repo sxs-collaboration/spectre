@@ -13,6 +13,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -378,8 +379,16 @@ struct compute_item_result_impl<
 };
 
 template <typename Tag>
-struct compute_item_result_impl<Tag, Requires<not is_compute_item_v<Tag>>> {
+struct compute_item_result_impl<
+    Tag, Requires<not is_compute_item_v<Tag> and
+                  std::is_base_of<db::DataBoxTag, Tag>::value>> {
   using type = typename Tag::type;
+};
+
+template <typename Tag>
+struct compute_item_result_impl<
+    Tag, Requires<not std::is_base_of<db::DataBoxTag, Tag>::value>> {
+  using type = NoSuchType;
 };
 }  // namespace detail
 
@@ -420,7 +429,7 @@ struct is_variables_compute_item<
 template <template <typename...> class Wrapper, typename TagList,
           typename... Args>
 using wrap_tags_in =
-    tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, Args...>>;
+    tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, tmpl::pin<Args>...>>;
 
 namespace detail {
 template <bool IsVariables>

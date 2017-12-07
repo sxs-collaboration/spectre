@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "DataStructures/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBoxHelpers.hpp"
 #include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -529,35 +528,45 @@ struct Var2 : db::DataBoxTag {
   static constexpr db::DataBoxString label = "Var2";
 };
 
+template <class Tag, class VolumeDim, class Frame>
+struct PrefixTag0 : db::DataBoxPrefix {
+  using type = TensorMetafunctions::prepend_spatial_index<
+      db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
+  using tag = Tag;
+  static constexpr db::DataBoxString label = "PrefixTag0";
+};
+
 using two_vars = typelist<Var1, Var2>;
 using vector_only = typelist<Var1>;
 using scalar_only = typelist<Var2>;
 
 static_assert(
     cpp17::is_same_v<
-        tmpl::back<db::wrap_tags_in<Tags::d, scalar_only, tmpl::size_t<2>,
+        tmpl::back<db::wrap_tags_in<PrefixTag0, scalar_only, tmpl::size_t<2>,
                                     Frame::Grid>>::type,
         tnsr::i<DataVector, 2, Frame::Grid>>,
     "Failed db::wrap_tags_in scalar_only");
 
 static_assert(
     cpp17::is_same_v<
-        tmpl::back<db::wrap_tags_in<Tags::d, vector_only, tmpl::size_t<3>,
+        tmpl::back<db::wrap_tags_in<PrefixTag0, vector_only, tmpl::size_t<3>,
                                     Frame::Grid>>::type,
         tnsr::iJ<DataVector, 3, Frame::Grid>>,
     "Failed db::wrap_tags_in vector_only");
 
-static_assert(cpp17::is_same_v<
-                  tmpl::back<db::wrap_tags_in<
-                      Tags::d, two_vars, tmpl::size_t<2>, Frame::Grid>>::type,
-                  tnsr::i<DataVector, 2, Frame::Grid>>,
-              "Failed db::wrap_tags_in two_vars scalar");
+static_assert(
+    cpp17::is_same_v<
+        tmpl::back<db::wrap_tags_in<PrefixTag0, two_vars, tmpl::size_t<2>,
+                                    Frame::Grid>>::type,
+        tnsr::i<DataVector, 2, Frame::Grid>>,
+    "Failed db::wrap_tags_in two_vars scalar");
 
-static_assert(cpp17::is_same_v<
-                  tmpl::front<db::wrap_tags_in<
-                      Tags::d, two_vars, tmpl::size_t<3>, Frame::Grid>>::type,
-                  tnsr::iJ<DataVector, 3, Frame::Grid>>,
-              "Failed db::wrap_tags_in two_vars vector");
+static_assert(
+    cpp17::is_same_v<
+        tmpl::front<db::wrap_tags_in<PrefixTag0, two_vars, tmpl::size_t<3>,
+                                     Frame::Grid>>::type,
+        tnsr::iJ<DataVector, 3, Frame::Grid>>,
+    "Failed db::wrap_tags_in two_vars vector");
 }  // namespace
 
 namespace test_databox_tags {
