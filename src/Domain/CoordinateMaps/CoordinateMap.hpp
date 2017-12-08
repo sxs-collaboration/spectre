@@ -404,7 +404,7 @@ bool operator!=(
 }
 
 /// \ingroup ComputationalDomainGroup
-/// \brief Creates a CoordinateMap of `maps...`
+/// \brief Creates a `CoordinateMap` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 constexpr CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>
 make_coordinate_map(Maps&&... maps) {
@@ -413,7 +413,7 @@ make_coordinate_map(Maps&&... maps) {
 }
 
 /// \ingroup ComputationalDomainGroup
-/// \brief Creates a std::unique_ptr<CoordinateMapBase> of `maps...`
+/// \brief Creates a `std::unique_ptr<CoordinateMapBase>` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 std::unique_ptr<CoordinateMapBase<
     SourceFrame, TargetFrame,
@@ -422,6 +422,30 @@ make_coordinate_map_base(Maps&&... maps) noexcept {
   return std::make_unique<
       CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>>(
       std::forward<Maps>(maps)...);
+}
+
+/// \ingroup ComputationalDomainGroup
+/// \brief Creates a `std::vector<std::unique_ptr<CoordinateMapBase>>`
+/// containing the result of `make_coordinate_map_base` applied to each
+/// argument passed in.
+template <typename SourceFrame, typename TargetFrame, typename Arg0,
+          typename... Args>
+std::vector<std::unique_ptr<
+    CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>>
+make_vector_coordinate_map_base(Arg0&& arg_0,
+                                Args&&... remaining_args) noexcept {
+  std::vector<std::unique_ptr<
+      CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>>
+      return_vector;
+  return_vector.reserve(sizeof...(Args) + 1);
+  return_vector.emplace_back(make_coordinate_map_base<SourceFrame, TargetFrame>(
+      std::forward<Arg0>(arg_0)));
+  (void)std::initializer_list<int>{
+      (((void)return_vector.emplace_back(
+           make_coordinate_map_base<SourceFrame, TargetFrame>(
+               std::forward<Args>(remaining_args)))),
+       0)...};
+  return return_vector;
 }
 
 /// \cond

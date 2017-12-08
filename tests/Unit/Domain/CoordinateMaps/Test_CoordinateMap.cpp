@@ -532,6 +532,48 @@ void test_coordinate_map_with_rotation_wedge() {
       compose_inv_jacobians(first_map, second_map, test_point_array);
   CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
 }
+
+void test_make_vector_coordinate_map_base() {
+  using AffineMap = CoordinateMaps::AffineMap;
+
+  const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      AffineMap{-1.0, 1.0, 2.0, 8.0});
+  const auto affine1d_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          AffineMap{-1.0, 1.0, 2.0, 8.0});
+  const auto vector_of_affine1d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          AffineMap{-1.0, 1.0, 2.0, 8.0});
+
+  CHECK(affine1d == *affine1d_base);
+  CHECK(*affine1d_base == affine1d);
+  CHECK(affine1d == *(vector_of_affine1d[0]));
+  CHECK(*(vector_of_affine1d[0]) == affine1d);
+
+  using Wedge2DMap = CoordinateMaps::Wedge2D;
+  const auto vector_of_wedges =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{1.0, 2.0, Direction<2>::upper_xi(), true},
+          Wedge2DMap{1.0, 2.0, Direction<2>::upper_eta(), true},
+          Wedge2DMap{1.0, 2.0, Direction<2>::lower_xi(), true},
+          Wedge2DMap{1.0, 2.0, Direction<2>::lower_eta(), true});
+  const auto upper_xi_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{1.0, 2.0, Direction<2>::upper_xi(), true});
+  const auto upper_eta_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{1.0, 2.0, Direction<2>::upper_eta(), true});
+  const auto lower_xi_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{1.0, 2.0, Direction<2>::lower_xi(), true});
+  const auto lower_eta_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{1.0, 2.0, Direction<2>::lower_eta(), true});
+  CHECK(upper_xi_wedge == *(vector_of_wedges[0]));
+  CHECK(upper_eta_wedge == *(vector_of_wedges[1]));
+  CHECK(lower_xi_wedge == *(vector_of_wedges[2]));
+  CHECK(lower_eta_wedge == *(vector_of_wedges[3]));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
@@ -540,4 +582,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_coordinate_map_with_rotation_map();
   test_coordinate_map_with_rotation_map_datavector();
   test_coordinate_map_with_rotation_wedge();
+  test_make_vector_coordinate_map_base();
 }
