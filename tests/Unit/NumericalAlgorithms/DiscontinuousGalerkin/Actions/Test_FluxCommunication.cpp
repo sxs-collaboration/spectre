@@ -83,7 +83,7 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
-                  "[Unit][Numerical][Actions]") {
+                  "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
 
   const Slab slab(1., 3.);
@@ -247,7 +247,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
 SPECTRE_TEST_CASE(
     "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.NoNeighbors",
-    "[Unit][Numerical][Actions]") {
+    "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
 
   const Slab slab(1., 3.);

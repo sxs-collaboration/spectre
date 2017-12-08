@@ -17,7 +17,7 @@ allowed_tags = [
                 "H5",
                 "IO",
                 "LinearOperators",
-                "Numerical",
+                "NumericalAlgorithms",
                 "Options",
                 "Parallel",
                 "PointwiseFunctions",

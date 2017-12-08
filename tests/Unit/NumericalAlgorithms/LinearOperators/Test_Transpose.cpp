@@ -27,7 +27,7 @@ using one_var = typelist<Var1<Dim>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   /// [return_transpose_example]
   const size_t chunk_size = 8;
   const size_t number_of_chunks = 2;

@@ -14,7 +14,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   // The start and end are chosen to give fast tests
   const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
@@ -48,7 +48,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
-                  "[Numerical][LinearOperators][Unit]"){
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
     const DataVector& x = Basis::lgl::collocation_points(nx);
@@ -69,7 +69,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   // The start and end are chosen to give fast tests
   const size_t n_start = 3, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {

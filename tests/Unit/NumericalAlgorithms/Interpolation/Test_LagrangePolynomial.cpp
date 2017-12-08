@@ -8,7 +8,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.LagrangePolynomial",
-                  "[Unit][Numerical]") {
+                  "[Unit][NumericalAlgorithms]") {
   std::array<double, 4> control{{-1., 0., 1.5, 6.}};
 
   for (size_t i = 0; i < control.size(); ++i) {

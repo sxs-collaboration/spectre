@@ -339,7 +339,7 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   for (size_t n0 = 2; n0 <= Basis::lgl::maximum_number_of_pts / 2; ++n0) {
     const Index<1> extents_1d(n0);
     test_logical_partial_derivatives_1d<two_vars<1>>(extents_1d);
@@ -359,7 +359,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   const size_t n0 = Basis::lgl::maximum_number_of_pts / 2;
   const size_t n1 = Basis::lgl::maximum_number_of_pts / 2 + 1;
   const size_t n2 = Basis::lgl::maximum_number_of_pts / 2 - 1;
@@ -481,7 +481,7 @@ void test_partial_derivatives_compute_item(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs.ComputeItems",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   Index<3> max_extents{10, 10, 5};
 
   for (size_t a = 1; a < max_extents[0]; ++a) {
@@ -500,7 +500,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs.ComputeItems",
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
-                  "[Numerical][LinearOperators][Unit]") {
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   using AffineMap = CoordinateMaps::AffineMap;
   using AffineMap2d = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
   using AffineMap3d =
