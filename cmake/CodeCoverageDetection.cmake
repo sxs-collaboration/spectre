@@ -25,7 +25,7 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
       HINTS ${COMPILER_PATH}
   )
   configure_file(
-      "${CMAKE_SOURCE_DIR}/support/bin/llvm-gcov.sh"
+      "${CMAKE_SOURCE_DIR}/tools/llvm-gcov.sh"
       "${CMAKE_BINARY_DIR}/llvm-gcov.sh"
   )
   set(GCOV "${CMAKE_BINARY_DIR}/llvm-gcov.sh")
