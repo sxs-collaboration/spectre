@@ -40,4 +40,17 @@ raise_or_lower_first_index(
 template <size_t Dim, typename Frame, IndexType TypeOfIndex, typename DataType>
 tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
     const tnsr::abb<DataType, Dim, Frame, TypeOfIndex>& tensor,
-    const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric);
+    const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes trace of a rank-2 symmetric lower-index tensor.
+ * \details Computes \f$g^{ab}T_{ab}\f$ where \f$(a,b)\f$ can be spatial or
+ * spacetime indices.
+ */
+template <size_t SpatialDim, typename Frame, IndexType TypeOfIndex,
+          typename DataType>
+Scalar<DataType> trace(
+    const tnsr::aa<DataType, SpatialDim, Frame, TypeOfIndex>& tensor,
+    const tnsr::AA<DataType, SpatialDim, Frame, TypeOfIndex>&
+        upper_metric) noexcept;

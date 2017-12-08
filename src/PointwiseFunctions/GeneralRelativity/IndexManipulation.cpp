@@ -37,7 +37,7 @@ raise_or_lower_first_index(
 template <size_t Dim, typename Frame, IndexType TypeOfIndex, typename DataType>
 tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
     const tnsr::abb<DataType, Dim, Frame, TypeOfIndex>& tensor,
-    const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric) {
+    const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric) noexcept {
   tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_of_tensor{
       make_with_value<DataType>(*tensor.begin(), 0.)};
 
@@ -52,6 +52,23 @@ tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
     }
   }
   return trace_of_tensor;
+}
+
+template <size_t SpatialDim, typename Frame, IndexType TypeOfIndex,
+          typename DataType>
+Scalar<DataType> trace(
+    const tnsr::aa<DataType, SpatialDim, Frame, TypeOfIndex>& tensor,
+    const tnsr::AA<DataType, SpatialDim, Frame, TypeOfIndex>&
+        upper_metric) noexcept {
+  auto trace = make_with_value<Scalar<DataType>>(tensor, 0.0);
+  const auto dimension = index_dim<0>(tensor);
+  for (size_t i = 0; i < dimension; ++i) {
+    for (size_t j = i + 1; j < dimension; ++j) {  // symmetry
+      get(trace) += 2.0 * tensor.get(i, j) * upper_metric.get(i, j);
+    }
+    get(trace) += tensor.get(i, i) * upper_metric.get(i, i);
+  }
+  return trace;
 }
 
 /// \cond
@@ -81,13 +98,17 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
 
-#define INSTANTIATE2(_, data)                                                \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>     \
-  trace_last_indices(                                                        \
-      const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
-          tensor,                                                            \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
-          upper_metric);
+#define INSTANTIATE2(_, data)                                                 \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>      \
+  trace_last_indices(const tnsr::abb<DTYPE(data), DIM(data), FRAME(data),     \
+                                     INDEXTYPE(data)>& tensor,                \
+                     const tnsr::AA<DTYPE(data), DIM(data), FRAME(data),      \
+                                    INDEXTYPE(data)>& upper_metric) noexcept; \
+  template Scalar<DTYPE(data)> trace(                                         \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+          tensor,                                                             \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+          upper_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial),
