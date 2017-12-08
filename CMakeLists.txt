@@ -54,6 +54,9 @@ include(SetupLIBXSMM)
 include(SetupPapi)
 include(SetupYamlCpp)
 
+# The precompiled header must be setup after all libraries have been found
+include(SetupPch)
+
 # Generate Charm++ files
 generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)
 

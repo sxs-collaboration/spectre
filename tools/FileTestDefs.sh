@@ -285,7 +285,10 @@ standard_checks+=(ls_list)
 
 # Check for pragma once in all header files
 pragma_once() {
-    is_hpp "$1" && ! grep -q -x '#pragma once' "$1"
+    is_hpp "$1" && \
+        whitelist "$1" \
+                  'tools/SpectrePch.hpp$' && \
+        ! grep -q -x '#pragma once' "$1"
 }
 pragma_once_report() {
     echo "Did not find '#pragma once' in these header files:"
