@@ -295,6 +295,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   check_vectors(DataVector(num_pts, log10(9.0)), log10(nine));
 
   DataVector point_nine(num_pts, 0.9);
+  check_vectors(DataVector(num_pts, hypot(0.9, 9.0)), hypot(point_nine, nine));
+  check_vectors(DataVector(num_pts, hypot(0.9, 9.0)),
+                hypot(point_nine, one * nine));
+  check_vectors(DataVector(num_pts, hypot(0.9, 9.0)),
+                hypot(one * point_nine, nine));
+  check_vectors(DataVector(num_pts, hypot(0.9, 9.0)),
+                hypot(one * point_nine, one * nine));
+
   check_vectors(DataVector(num_pts, sin(9.0)), sin(nine));
   check_vectors(DataVector(num_pts, cos(9.0)), cos(nine));
   check_vectors(DataVector(num_pts, tan(9.0)), tan(nine));

@@ -158,6 +158,88 @@ BLAZE_ALWAYS_INLINE decltype(auto) atan2(
 }
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
 
+// hypot function support
+// Blaze 3.3 and newer already has hypot implemented
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
+namespace blaze {
+template <typename T0, typename T1>
+BLAZE_ALWAYS_INLINE const SIMDfloat hypot(const SIMDf32<T0>& a,
+                                          const SIMDf32<T1>& b) noexcept
+#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
+{
+  return _mm512_hypot_ps((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
+{
+  return _mm256_hypot_ps((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
+{
+  return _mm_hypot_ps((~a).eval().value, (~b).eval().value);
+}
+#else
+    = delete;
+#endif
+
+template <typename T0, typename T1>
+BLAZE_ALWAYS_INLINE const SIMDdouble hypot(const SIMDf64<T0>& a,
+                                           const SIMDf64<T1>& b) noexcept
+#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
+{
+  return _mm512_hypot_pd((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
+{
+  return _mm256_hypot_pd((~a).eval().value, (~b).eval().value);
+}
+#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
+{
+  return _mm_hypot_pd((~a).eval().value, (~b).eval().value);
+}
+#else
+    = delete;
+#endif
+
+template <typename T0, typename T1>
+using HasSIMDHypot = std::integral_constant<
+    bool, std::is_same<std::decay_t<T0>, std::decay_t<T1>>::value and
+              std::is_arithmetic<std::decay_t<T0>>::value and bool(  // NOLINT
+                  BLAZE_SVML_MODE) and                               // NOLINT
+              (bool(BLAZE_SSE_MODE) || bool(BLAZE_AVX_MODE) ||       // NOLINT
+               bool(BLAZE_MIC_MODE) || bool(BLAZE_AVX512F_MODE))>;   // NOLINT
+
+struct Hypot {
+  template <typename T1, typename T2>
+  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T1& a, const T2& b) const
+      noexcept {
+    using std::hypot;
+    return hypot(a, b);
+  }
+
+  template <typename T1, typename T2>
+  static constexpr bool simdEnabled() noexcept {
+    return HasSIMDHypot<T1, T2>::value;
+  }
+
+  template <typename T1, typename T2>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T1& a, const T2& b) const
+      noexcept {
+    using std::hypot;
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T1);
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T2);
+    return hypot(a, b);
+  }
+};
+}  // namespace blaze
+
+template <typename VT0, typename VT1, bool TF>
+BLAZE_ALWAYS_INLINE decltype(auto) hypot(
+    const blaze::DenseVector<VT0, TF>& x,
+    const blaze::DenseVector<VT1, TF>& y) noexcept {
+  return map(~x, ~y, blaze::Hypot{});
+}
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
+
 namespace blaze {
 template <typename ST>
 struct DivideScalarByVector {

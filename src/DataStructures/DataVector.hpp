@@ -62,6 +62,7 @@ using std::abs;  // NOLINT
  * - exp2
  * - exp10
  * - fabs
+ * - hypot
  * - invsqrt
  * - log
  * - log2
@@ -425,6 +426,11 @@ class DataVector {
   SPECTRE_ALWAYS_INLINE friend decltype(auto) log10(
       const DataVector& t) noexcept {
     return log10(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) hypot(
+      const DataVector& x, const DataVector& y) noexcept {
+    return hypot(x.data_, y.data_);
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) sin(
