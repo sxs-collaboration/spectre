@@ -2,13 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Utilities/BoostHelpers.hpp"
-
-/// \cond
-namespace {
-template <typename...>
-struct typelist {};
-}  // namespace
-/// \endcond
+#include "Utilities/TMPL.hpp"
 
 static_assert(
     cpp17::is_same_v<boost::variant<double, int, char>,
