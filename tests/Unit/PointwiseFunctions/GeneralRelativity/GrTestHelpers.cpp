@@ -14,7 +14,8 @@ Scalar<DataType> make_lapse(const DataType& used_for_size) {
 
 template <size_t SpatialDim, typename DataType>
 tnsr::I<DataType, SpatialDim> make_shift(const DataType& used_for_size) {
-  tnsr::I<DataType, SpatialDim> shift{};
+  auto shift =
+      make_with_value<tnsr::I<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     shift.get(i) = make_with_value<DataType>(used_for_size, i + 1);
   }
@@ -24,7 +25,8 @@ tnsr::I<DataType, SpatialDim> make_shift(const DataType& used_for_size) {
 template <size_t SpatialDim, typename DataType>
 tnsr::ii<DataType, SpatialDim> make_spatial_metric(
     const DataType& used_for_size) {
-  tnsr::ii<DataType, SpatialDim> metric{};
+  auto metric =
+      make_with_value<tnsr::ii<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       metric.get(i, j) =
@@ -37,7 +39,8 @@ tnsr::ii<DataType, SpatialDim> make_spatial_metric(
 template <size_t SpatialDim, typename DataType>
 tnsr::II<DataType, SpatialDim> make_inverse_spatial_metric(
     const DataType& used_for_size) {
-  tnsr::II<DataType, SpatialDim> metric{};
+  auto metric =
+      make_with_value<tnsr::II<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       metric.get(i, j) =
@@ -54,7 +57,8 @@ Scalar<DataType> make_dt_lapse(const DataType& used_for_size) {
 
 template <size_t SpatialDim, typename DataType>
 tnsr::I<DataType, SpatialDim> make_dt_shift(const DataType& used_for_size) {
-  tnsr::I<DataType, SpatialDim> dt_shift{};
+  auto dt_shift =
+      make_with_value<tnsr::I<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     dt_shift.get(i) =
         make_with_value<DataType>(used_for_size, SpatialDim * (i + 1.));
@@ -65,18 +69,20 @@ tnsr::I<DataType, SpatialDim> make_dt_shift(const DataType& used_for_size) {
 template <size_t SpatialDim, typename DataType>
 tnsr::ii<DataType, SpatialDim> make_dt_spatial_metric(
     const DataType& used_for_size) {
-  tnsr::ii<DataType, SpatialDim> metric{};
+  auto dt_metric =
+      make_with_value<tnsr::ii<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
-      metric.get(i, j) = make_with_value<DataType>(used_for_size, i + j);
+      dt_metric.get(i, j) = make_with_value<DataType>(used_for_size, i + j);
     }
   }
-  return metric;
+  return dt_metric;
 }
 
 template <size_t SpatialDim, typename DataType>
 tnsr::i<DataType, SpatialDim> make_deriv_lapse(const DataType& used_for_size) {
-  tnsr::i<DataType, SpatialDim> deriv_lapse{};
+  auto deriv_lapse =
+      make_with_value<tnsr::i<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     deriv_lapse.get(i) =
         make_with_value<DataType>(used_for_size, 2.5 * (i + 1.));
@@ -86,7 +92,8 @@ tnsr::i<DataType, SpatialDim> make_deriv_lapse(const DataType& used_for_size) {
 
 template <size_t SpatialDim, typename DataType>
 tnsr::iJ<DataType, SpatialDim> make_deriv_shift(const DataType& used_for_size) {
-  tnsr::iJ<DataType, SpatialDim> deriv_shift{};
+  auto deriv_shift =
+      make_with_value<tnsr::iJ<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       deriv_shift.get(i, j) =
@@ -99,7 +106,8 @@ tnsr::iJ<DataType, SpatialDim> make_deriv_shift(const DataType& used_for_size) {
 template <size_t SpatialDim, typename DataType>
 tnsr::ijj<DataType, SpatialDim> make_deriv_spatial_metric(
     const DataType& used_for_size) {
-  tnsr::ijj<DataType, SpatialDim> deriv_spatial_metric{};
+  auto deriv_spatial_metric =
+      make_with_value<tnsr::ijj<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       for (size_t k = 0; k < SpatialDim; ++k) {
@@ -114,7 +122,8 @@ tnsr::ijj<DataType, SpatialDim> make_deriv_spatial_metric(
 template <size_t SpatialDim, typename DataType>
 tnsr::abb<DataType, SpatialDim> make_spacetime_deriv_spacetime_metric(
     const DataType& used_for_size) {
-  tnsr::abb<DataType, SpatialDim> d_spacetime_metric{};
+  auto d_spacetime_metric =
+      make_with_value<tnsr::abb<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim + 1; i++) {
     for (size_t j = i; j < SpatialDim + 1; j++) {
       for (size_t k = 0; k < SpatialDim + 1; k++) {
@@ -129,7 +138,8 @@ tnsr::abb<DataType, SpatialDim> make_spacetime_deriv_spacetime_metric(
 template <size_t SpatialDim, typename DataType>
 tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
     const DataType& used_for_size) {
-  tnsr::iaa<DataType, SpatialDim> d_spacetime_metric{};
+  auto d_spacetime_metric =
+      make_with_value<tnsr::iaa<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim + 1; i++) {
     for (size_t j = i; j < SpatialDim + 1; j++) {
       for (size_t k = 0; k < SpatialDim; k++) {
@@ -158,7 +168,8 @@ tnsr::aa<DataType, SpatialDim> make_dt_spacetime_metric(
 template <size_t SpatialDim, typename DataType>
 tnsr::Abb<DataType, SpatialDim> make_spacetime_christoffel_second_kind(
     const DataType& used_for_size) {
-  tnsr::Abb<DataType, SpatialDim> christoffel{};
+  auto christoffel =
+      make_with_value<tnsr::Abb<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim + 1; i++) {
     for (size_t j = i; j < SpatialDim + 1; j++) {
       for (size_t k = 0; k < SpatialDim + 1; k++) {
@@ -174,7 +185,8 @@ tnsr::Abb<DataType, SpatialDim> make_spacetime_christoffel_second_kind(
 template <size_t SpatialDim, typename DataType>
 tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
     const DataType& used_for_size){
-  tnsr::Ijj<DataType, SpatialDim> christoffel{};
+  auto christoffel =
+      make_with_value<tnsr::Ijj<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; i++) {
     for (size_t j = i; j < SpatialDim; j++) {
       for (size_t k = 0; k < SpatialDim; k++) {
@@ -189,7 +201,8 @@ tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
 template <size_t SpatialDim, typename DataType>
 tnsr::aa<DataType, SpatialDim> make_spacetime_metric(
     const DataType& used_for_size){
-  tnsr::aa<DataType, SpatialDim> spacetime_metric{};
+  auto spacetime_metric =
+      make_with_value<tnsr::aa<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
     for (size_t nu = mu; nu < SpatialDim + 1; ++nu) {
       spacetime_metric.get(mu, nu) =
@@ -202,7 +215,8 @@ tnsr::aa<DataType, SpatialDim> make_spacetime_metric(
 template <size_t SpatialDim, typename DataType>
 tnsr::AA<DataType, SpatialDim> make_inverse_spacetime_metric(
     const DataType& used_for_size) {
-  tnsr::AA<DataType, SpatialDim> inverse_spacetime_metric{};
+  auto inverse_spacetime_metric =
+      make_with_value<tnsr::AA<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
     for (size_t nu = mu; nu < SpatialDim + 1; ++nu) {
       inverse_spacetime_metric.get(mu, nu) =
