@@ -8,6 +8,7 @@ set(UTILITIES_TESTS
     Utilities/Test_ConstantExpressions.cpp
     Utilities/Test_Deferred.cpp
     Utilities/Test_DereferenceWrapper.cpp
+    Utilities/Test_EqualWithinRoundoff.cpp
     Utilities/Test_FakeVirtual.cpp
     Utilities/Test_FileSystem.cpp
     Utilities/Test_FractionUtilities.cpp
