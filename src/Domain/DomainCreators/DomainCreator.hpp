@@ -24,8 +24,11 @@ class Domain;
 
 /// Defines classes that create Domains.
 namespace DomainCreators {
+template <typename TargetFrame>
 class Brick;
+template <typename TargetFrame>
 class Interval;
+template <typename TargetFrame>
 class Rectangle;
 }  // namespace DomainCreators
 
@@ -35,15 +38,18 @@ struct domain_creators;
 
 template <>
 struct domain_creators<1> {
-  using type = typelist<DomainCreators::Interval>;
+  template <typename Frame>
+  using creators = typelist<DomainCreators::Interval<Frame>>;
 };
 template <>
 struct domain_creators<2> {
-  using type = typelist<DomainCreators::Rectangle>;
+  template <typename Frame>
+  using creators = typelist<DomainCreators::Rectangle<Frame>>;
 };
 template <>
 struct domain_creators<3> {
-  using type = typelist<DomainCreators::Brick>;
+  template <typename Frame>
+  using creators = typelist<DomainCreators::Brick<Frame>>;
 };
 }  // namespace DomainCreators_detail
 
@@ -51,8 +57,8 @@ struct domain_creators<3> {
 template <size_t VolumeDim, typename TargetFrame>
 class DomainCreator {
  public:
-  using creatable_classes =
-      typename DomainCreators_detail::domain_creators<VolumeDim>::type;
+  using creatable_classes = typename DomainCreators_detail::domain_creators<
+      VolumeDim>::template creators<TargetFrame>;
 
   DomainCreator() = default;
   DomainCreator(const DomainCreator<VolumeDim, TargetFrame>&) = delete;

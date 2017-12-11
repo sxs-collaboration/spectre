@@ -13,7 +13,8 @@ namespace DomainCreators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain consisting of a single Block.
-class Brick : public DomainCreator<3, Frame::Inertial> {
+template <typename TargetFrame>
+class Brick : public DomainCreator<3, TargetFrame> {
  public:
   struct LowerBound {
     using type = std::array<double, 3>;
@@ -63,7 +64,7 @@ class Brick : public DomainCreator<3, Frame::Inertial> {
   Brick& operator=(Brick&&) noexcept = default;
   ~Brick() noexcept override = default;
 
-  Domain<3, Frame::Inertial> create_domain() const noexcept override;
+  Domain<3, TargetFrame> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 

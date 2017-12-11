@@ -13,7 +13,8 @@ namespace DomainCreators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 2D Domain consisting of a single Block.
-class Rectangle : public DomainCreator<2, Frame::Inertial> {
+template <typename TargetFrame>
+class Rectangle : public DomainCreator<2, TargetFrame> {
  public:
   struct LowerBound {
     using type = std::array<double, 2>;
@@ -63,7 +64,7 @@ class Rectangle : public DomainCreator<2, Frame::Inertial> {
   Rectangle& operator=(Rectangle&&) noexcept = default;
   ~Rectangle() noexcept override = default;
 
-  Domain<2, Frame::Inertial> create_domain() const noexcept override;
+  Domain<2, TargetFrame> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 2>> initial_extents() const noexcept override;
 
