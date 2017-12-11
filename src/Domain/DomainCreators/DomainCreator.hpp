@@ -27,6 +27,8 @@ namespace DomainCreators {
 template <typename TargetFrame>
 class Brick;
 template <typename TargetFrame>
+class Disk;
+template <typename TargetFrame>
 class Interval;
 template <typename TargetFrame>
 class Rectangle;
@@ -44,7 +46,8 @@ struct domain_creators<1> {
 template <>
 struct domain_creators<2> {
   template <typename Frame>
-  using creators = typelist<DomainCreators::Rectangle<Frame>>;
+  using creators =
+      typelist<DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>>;
 };
 template <>
 struct domain_creators<3> {
@@ -81,5 +84,6 @@ class DomainCreator {
 };
 
 #include "Domain/DomainCreators/Brick.hpp"
+#include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"

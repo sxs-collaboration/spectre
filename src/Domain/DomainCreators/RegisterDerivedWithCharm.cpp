@@ -3,8 +3,9 @@
 
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/DomainCreators/Interval.hpp"
+#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace DomainCreators {
@@ -25,6 +26,13 @@ void register_with_charm<2>() {
                  Frame::Logical, Frame::Inertial,
                  CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
                                                 CoordinateMaps::AffineMap>>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<
+                 Frame::Logical, Frame::Inertial,
+                 CoordinateMaps::ProductOf2Maps<CoordinateMaps::Equiangular,
+                                                CoordinateMaps::Equiangular>>));
+  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                         CoordinateMaps::Wedge2D>));
 }
 template <>
 void register_with_charm<3>() {
