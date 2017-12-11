@@ -8,6 +8,10 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \ingroup GeneralRelativityGroup
+/// Holds functions related to general relativity.
+namespace gr {
+
 /*!
 * \ingroup GeneralRelativityGroup
 * \brief Computes the spacetime metric from the spatial metric, lapse, and
@@ -22,7 +26,7 @@
 * respectively
 */
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::aa<DataType, SpatialDim, Frame> compute_spacetime_metric(
+tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept;
@@ -42,7 +46,7 @@ tnsr::aa<DataType, SpatialDim, Frame> compute_spacetime_metric(
  * spatial metric respectively
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::AA<DataType, SpatialDim, Frame> compute_inverse_spacetime_metric(
+tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>&
@@ -66,7 +70,7 @@ tnsr::AA<DataType, SpatialDim, Frame> compute_inverse_spacetime_metric(
  * respectively.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::abb<DataType, SpatialDim, Frame> compute_derivatives_of_spacetime_metric(
+tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -86,7 +90,7 @@ tnsr::abb<DataType, SpatialDim, Frame> compute_derivatives_of_spacetime_metric(
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
+tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept;
 
 /*!
@@ -98,6 +102,7 @@ tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::A<DataType, SpatialDim, Frame> compute_spacetime_normal_vector(
+tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept;
+}  // namespace gr

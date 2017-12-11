@@ -12,24 +12,24 @@
 namespace {
 void test_compute_1d_spacetime_metric(const DataVector& used_for_size) {
   const size_t dim = 1;
-  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
-                                            make_spatial_metric<dim>(0.));
+  const auto psi = gr::spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                        make_spatial_metric<dim>(0.));
 
   CHECK(psi.get(0, 0) == approx(-8.0));
   CHECK(psi.get(0, 1) == approx(1.0));
   CHECK(psi.get(1, 1) == approx(1.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_metric(make_lapse(used_for_size),
-                               make_shift<dim>(used_for_size),
-                               make_spatial_metric<dim>(used_for_size)),
+      gr::spacetime_metric(make_lapse(used_for_size),
+                           make_shift<dim>(used_for_size),
+                           make_spatial_metric<dim>(used_for_size)),
       psi);
 }
 
 void test_compute_2d_spacetime_metric(const DataVector& used_for_size) {
   const size_t dim = 2;
-  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
-                                            make_spatial_metric<dim>(0.));
+  const auto psi = gr::spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                        make_spatial_metric<dim>(0.));
 
   CHECK(psi.get(0, 0) == approx(16.0));
   CHECK(psi.get(0, 1) == approx(5.0));
@@ -39,16 +39,16 @@ void test_compute_2d_spacetime_metric(const DataVector& used_for_size) {
   CHECK(psi.get(2, 2) == approx(4.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_metric(make_lapse(used_for_size),
-                               make_shift<dim>(used_for_size),
-                               make_spatial_metric<dim>(used_for_size)),
+      gr::spacetime_metric(make_lapse(used_for_size),
+                           make_shift<dim>(used_for_size),
+                           make_spatial_metric<dim>(used_for_size)),
       psi);
 }
 
 void test_compute_3d_spacetime_metric(const DataVector& used_for_size) {
   const size_t dim = 3;
-  const auto psi = compute_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
-                                            make_spatial_metric<dim>(0.));
+  const auto psi = gr::spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                        make_spatial_metric<dim>(0.));
 
   CHECK(psi.get(0, 0) == approx(187.0));
   CHECK(psi.get(0, 1) == approx(14.0));
@@ -62,24 +62,24 @@ void test_compute_3d_spacetime_metric(const DataVector& used_for_size) {
   CHECK(psi.get(3, 3) == approx(9.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_metric(make_lapse(used_for_size),
-                               make_shift<dim>(used_for_size),
-                               make_spatial_metric<dim>(used_for_size)),
+      gr::spacetime_metric(make_lapse(used_for_size),
+                           make_shift<dim>(used_for_size),
+                           make_spatial_metric<dim>(used_for_size)),
       psi);
 }
 
 void test_compute_1d_inverse_spacetime_metric(const DataVector& used_for_size) {
   const size_t dim = 1;
   const auto inverse_spacetime_metric =
-      compute_inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
-                                       make_inverse_spatial_metric<dim>(0.));
+      gr::inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                   make_inverse_spatial_metric<dim>(0.));
 
   CHECK(inverse_spacetime_metric.get(0, 0) == approx(-1. / 9.));
   CHECK(inverse_spacetime_metric.get(0, 1) == approx(1. / 9.));
   CHECK(inverse_spacetime_metric.get(1, 1) == approx(8. / 9.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_inverse_spacetime_metric(
+      gr::inverse_spacetime_metric(
           make_lapse(used_for_size), make_shift<dim>(used_for_size),
           make_inverse_spatial_metric<dim>(used_for_size)),
       inverse_spacetime_metric);
@@ -88,8 +88,8 @@ void test_compute_1d_inverse_spacetime_metric(const DataVector& used_for_size) {
 void test_compute_2d_inverse_spacetime_metric(const DataVector& used_for_size) {
   const size_t dim = 2;
   const auto inverse_spacetime_metric =
-      compute_inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
-                                       make_inverse_spatial_metric<dim>(0.));
+      gr::inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                   make_inverse_spatial_metric<dim>(0.));
 
   CHECK(inverse_spacetime_metric.get(0, 0) == approx(-1. / 9.));
   CHECK(inverse_spacetime_metric.get(0, 1) == approx(1. / 9.));
@@ -99,7 +99,7 @@ void test_compute_2d_inverse_spacetime_metric(const DataVector& used_for_size) {
   CHECK(inverse_spacetime_metric.get(2, 2) == approx(32. / 9.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_inverse_spacetime_metric(
+      gr::inverse_spacetime_metric(
           make_lapse(used_for_size), make_shift<dim>(used_for_size),
           make_inverse_spatial_metric<dim>(used_for_size)),
       inverse_spacetime_metric);
@@ -108,8 +108,8 @@ void test_compute_2d_inverse_spacetime_metric(const DataVector& used_for_size) {
 void test_compute_3d_inverse_spacetime_metric(const DataVector& used_for_size) {
   const size_t dim = 3;
   const auto inverse_spacetime_metric =
-      compute_inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
-                                       make_inverse_spatial_metric<dim>(0.));
+      gr::inverse_spacetime_metric(make_lapse(0.), make_shift<dim>(0.),
+                                   make_inverse_spatial_metric<dim>(0.));
 
   CHECK(inverse_spacetime_metric.get(0, 0) == approx(-1. / 9.));
   CHECK(inverse_spacetime_metric.get(0, 1) == approx(1. / 9.));
@@ -123,7 +123,7 @@ void test_compute_3d_inverse_spacetime_metric(const DataVector& used_for_size) {
   CHECK(inverse_spacetime_metric.get(3, 3) == approx(8.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_inverse_spacetime_metric(
+      gr::inverse_spacetime_metric(
           make_lapse(used_for_size), make_shift<dim>(used_for_size),
           make_inverse_spatial_metric<dim>(used_for_size)),
       inverse_spacetime_metric);
@@ -132,7 +132,7 @@ void test_compute_3d_inverse_spacetime_metric(const DataVector& used_for_size) {
 void test_compute_1d_derivatives_spacetime_metric(
     const DataVector& used_for_size) {
   const size_t dim = 1;
-  const auto d_spacetime_metric = compute_derivatives_of_spacetime_metric(
+  const auto d_spacetime_metric = gr::derivatives_of_spacetime_metric(
       make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
       make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
       make_spatial_metric<dim>(0.), make_dt_spatial_metric<dim>(0.),
@@ -146,7 +146,7 @@ void test_compute_1d_derivatives_spacetime_metric(
   CHECK(d_spacetime_metric.get(1, 1, 1) == approx(3.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_derivatives_of_spacetime_metric(
+      gr::derivatives_of_spacetime_metric(
           make_lapse(used_for_size), make_dt_lapse(used_for_size),
           make_deriv_lapse<dim>(used_for_size), make_shift<dim>(used_for_size),
           make_dt_shift<dim>(used_for_size),
@@ -160,7 +160,7 @@ void test_compute_1d_derivatives_spacetime_metric(
 void test_compute_2d_derivatives_spacetime_metric(
     const DataVector& used_for_size) {
   const size_t dim = 2;
-  const auto d_spacetime_metric = compute_derivatives_of_spacetime_metric(
+  const auto d_spacetime_metric = gr::derivatives_of_spacetime_metric(
       make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
       make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
       make_spatial_metric<dim>(0.), make_dt_spatial_metric<dim>(0.),
@@ -186,7 +186,7 @@ void test_compute_2d_derivatives_spacetime_metric(
   CHECK(d_spacetime_metric.get(2, 2, 2) == approx(13.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_derivatives_of_spacetime_metric(
+      gr::derivatives_of_spacetime_metric(
           make_lapse(used_for_size), make_dt_lapse(used_for_size),
           make_deriv_lapse<dim>(used_for_size), make_shift<dim>(used_for_size),
           make_dt_shift<dim>(used_for_size),
@@ -200,7 +200,7 @@ void test_compute_2d_derivatives_spacetime_metric(
 void test_compute_3d_derivatives_spacetime_metric(
     const DataVector& used_for_size) {
   const size_t dim = 3;
-  const auto d_spacetime_metric = compute_derivatives_of_spacetime_metric(
+  const auto d_spacetime_metric = gr::derivatives_of_spacetime_metric(
       make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
       make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
       make_spatial_metric<dim>(0.), make_dt_spatial_metric<dim>(0.),
@@ -248,7 +248,7 @@ void test_compute_3d_derivatives_spacetime_metric(
   CHECK(d_spacetime_metric.get(3, 3, 3) == approx(29.0));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_derivatives_of_spacetime_metric(
+      gr::derivatives_of_spacetime_metric(
           make_lapse(used_for_size), make_dt_lapse(used_for_size),
           make_deriv_lapse<dim>(used_for_size), make_shift<dim>(used_for_size),
           make_dt_shift<dim>(used_for_size),
@@ -262,14 +262,14 @@ void test_compute_3d_derivatives_spacetime_metric(
 template <size_t Dim>
 void test_compute_spacetime_normal_one_form(const DataVector& used_for_size) {
   const auto spacetime_normal_one_form =
-      compute_spacetime_normal_one_form<Dim, Frame::Inertial>(make_lapse(0.));
+      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(make_lapse(0.));
 
   CHECK(spacetime_normal_one_form.get(0) == approx(-3.0));
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(spacetime_normal_one_form.get(i + 1) == 0.);
   }
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_normal_one_form<Dim, Frame::Inertial>(
+      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(
           make_lapse(used_for_size)),
       spacetime_normal_one_form);
 }
@@ -277,34 +277,34 @@ void test_compute_spacetime_normal_one_form(const DataVector& used_for_size) {
 void test_compute_1d_spacetime_normal_vector(const DataVector& used_for_size) {
   const size_t dim = 1;
   const auto spacetime_normal_vector =
-      compute_spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
+      gr::spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
 
   CHECK(spacetime_normal_vector.get(0) == approx(1. / 3.));
   CHECK(spacetime_normal_vector.get(1) == approx(-1. / 3.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_normal_vector(make_lapse(used_for_size),
-                                      make_shift<dim>(used_for_size)),
+      gr::spacetime_normal_vector(make_lapse(used_for_size),
+                                  make_shift<dim>(used_for_size)),
       spacetime_normal_vector);
 }
 void test_compute_2d_spacetime_normal_vector(const DataVector& used_for_size) {
   const size_t dim = 2;
   const auto spacetime_normal_vector =
-      compute_spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
+      gr::spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
 
   CHECK(spacetime_normal_vector.get(0) == approx(1. / 3.));
   CHECK(spacetime_normal_vector.get(1) == approx(-1. / 3.));
   CHECK(spacetime_normal_vector.get(2) == approx(-2. / 3.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_normal_vector(make_lapse(used_for_size),
-                                      make_shift<dim>(used_for_size)),
+      gr::spacetime_normal_vector(make_lapse(used_for_size),
+                                  make_shift<dim>(used_for_size)),
       spacetime_normal_vector);
 }
 void test_compute_3d_spacetime_normal_vector(const DataVector& used_for_size) {
   const size_t dim = 3;
   const auto spacetime_normal_vector =
-      compute_spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
+      gr::spacetime_normal_vector(make_lapse(0.), make_shift<dim>(0.));
 
   CHECK(spacetime_normal_vector.get(0) == approx(1. / 3.));
   CHECK(spacetime_normal_vector.get(1) == approx(-1. / 3.));
@@ -312,8 +312,8 @@ void test_compute_3d_spacetime_normal_vector(const DataVector& used_for_size) {
   CHECK(spacetime_normal_vector.get(3) == approx(-1.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_spacetime_normal_vector(make_lapse(used_for_size),
-                                      make_shift<dim>(used_for_size)),
+      gr::spacetime_normal_vector(make_lapse(used_for_size),
+                                  make_shift<dim>(used_for_size)),
       spacetime_normal_vector);
 }
 }  // namespace
