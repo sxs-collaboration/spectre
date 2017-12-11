@@ -25,16 +25,8 @@ class Domain;
 /// Defines classes that create Domains.
 namespace DomainCreators {
 class Brick;
-// class Disk;
 class Interval;
 class Rectangle;
-// class RotatedBricks;
-// class RotatedIntervals;
-// class RotatedRectangles;
-// class RubiksCubeWithHole;
-// class Shell;
-// class Sphere;
-// class UnevenBricks;
 }  // namespace DomainCreators
 
 namespace DomainCreators_detail {
@@ -43,26 +35,15 @@ struct domain_creators;
 
 template <>
 struct domain_creators<1> {
-  using type = typelist<DomainCreators::Interval
-                        //, DomainCreators::RotatedIntervals
-                        >;
+  using type = typelist<DomainCreators::Interval>;
 };
 template <>
 struct domain_creators<2> {
-  using type =
-      typelist<DomainCreators::Rectangle  //, DomainCreators::Disk,
-                                          // DomainCreators::RotatedRectangles
-               >;
+  using type = typelist<DomainCreators::Rectangle>;
 };
 template <>
 struct domain_creators<3> {
-  using type = typelist<
-      DomainCreators::Brick  //, DomainCreators::RubiksCubeWithHole,
-                             //                DomainCreators::Shell,
-                             //                DomainCreators::Sphere,
-                             //                DomainCreators::RotatedBricks,
-                             //                DomainCreators::UnevenBricks
-      >;
+  using type = typelist<DomainCreators::Brick>;
 };
 }  // namespace DomainCreators_detail
 
@@ -94,13 +75,5 @@ class DomainCreator {
 };
 
 #include "Domain/DomainCreators/Brick.hpp"
-// #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
-// #include "Domain/DomainCreators/RotatedBricks.hpp"
-// #include "Domain/DomainCreators/RotatedIntervals.hpp"
-// #include "Domain/DomainCreators/RotatedRectangles.hpp"
-// #include "Domain/DomainCreators/RubiksCubeWithHole.hpp"
-// #include "Domain/DomainCreators/Shell.hpp"
-// #include "Domain/DomainCreators/Sphere.hpp"
-// #include "Domain/DomainCreators/UnevenBricks.hpp"
