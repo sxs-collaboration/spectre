@@ -9,6 +9,7 @@
 #include <cmath>
 
 // The Utilities/Blaze.hpp configures Blaze
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Blaze.hpp"
 
 #include <blaze/math/CustomVector.h>

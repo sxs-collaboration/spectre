@@ -61,6 +61,7 @@ done
 
 if [ -f "${CLANG_TIDY_OUTPUT}" ]; then
     sed -i'.bak' "s^warning: /usr/bin/clang++: 'linker' input unused.*^^g" ${CLANG_TIDY_OUTPUT}
+    sed -i'.bak' "s^warning: ccache: 'linker' input unused.*^^g" ${CLANG_TIDY_OUTPUT}
 fi
 
 if [ -f "${CLANG_TIDY_OUTPUT}" ] \

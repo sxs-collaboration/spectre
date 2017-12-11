@@ -38,6 +38,7 @@ if (CLANG_TIDY_BIN)
     module_ConstGlobalCache
     module_Main
     module_Test_ConstGlobalCache
+    pch
     )
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/ClangTidyAll.sh
