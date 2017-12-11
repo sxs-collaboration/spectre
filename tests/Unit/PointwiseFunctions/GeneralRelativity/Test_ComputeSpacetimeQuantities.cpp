@@ -316,6 +316,69 @@ void test_compute_3d_spacetime_normal_vector(const DataVector& used_for_size) {
                                   make_shift<dim>(used_for_size)),
       spacetime_normal_vector);
 }
+
+void test_compute_1d_extrinsic_curvature(const DataVector& used_for_size) {
+  const size_t dim = 1;
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
+      make_lapse(0.), make_shift<dim>(0.), make_deriv_shift<dim>(0.),
+      make_spatial_metric<dim>(0.), make_dt_spatial_metric<dim>(0.),
+      make_deriv_spatial_metric<dim>(0.));
+
+  CHECK(extrinsic_curvature.get(0, 0) == approx(17. / 6.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      gr::extrinsic_curvature(make_lapse(used_for_size),
+                              make_shift<dim>(used_for_size),
+                              make_deriv_shift<dim>(used_for_size),
+                              make_spatial_metric<dim>(used_for_size),
+                              make_dt_spatial_metric<dim>(used_for_size),
+                              make_deriv_spatial_metric<dim>(used_for_size)),
+      extrinsic_curvature);
+}
+void test_compute_2d_extrinsic_curvature(const DataVector& used_for_size) {
+  const size_t dim = 2;
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
+      make_lapse(0.), make_shift<dim>(0.), make_deriv_shift<dim>(0.),
+      make_spatial_metric<dim>(0.), make_dt_spatial_metric<dim>(0.),
+      make_deriv_spatial_metric<dim>(0.));
+
+  CHECK(extrinsic_curvature.get(0, 0) == approx(65. / 6.));
+  CHECK(extrinsic_curvature.get(0, 1) == approx(97. / 6.));
+  CHECK(extrinsic_curvature.get(1, 1) == approx(22.0));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      gr::extrinsic_curvature(make_lapse(used_for_size),
+                              make_shift<dim>(used_for_size),
+                              make_deriv_shift<dim>(used_for_size),
+                              make_spatial_metric<dim>(used_for_size),
+                              make_dt_spatial_metric<dim>(used_for_size),
+                              make_deriv_spatial_metric<dim>(used_for_size)),
+      extrinsic_curvature);
+}
+void test_compute_3d_extrinsic_curvature(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
+      make_lapse(0.), make_shift<dim>(0.), make_deriv_shift<dim>(0.),
+      make_spatial_metric<dim>(0.), make_dt_spatial_metric<dim>(0.),
+      make_deriv_spatial_metric<dim>(0.));
+
+  CHECK(extrinsic_curvature.get(0, 0) == approx(79. / 3.));
+  CHECK(extrinsic_curvature.get(0, 1) == approx(235. / 6.));
+  CHECK(extrinsic_curvature.get(0, 2) == approx(52.0));
+  CHECK(extrinsic_curvature.get(1, 1) == approx(53.0));
+  CHECK(extrinsic_curvature.get(1, 2) == approx(2005. / 30.));
+  CHECK(extrinsic_curvature.get(2, 2) == approx(245. / 3.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      gr::extrinsic_curvature(make_lapse(used_for_size),
+                              make_shift<dim>(used_for_size),
+                              make_deriv_shift<dim>(used_for_size),
+                              make_spatial_metric<dim>(used_for_size),
+                              make_dt_spatial_metric<dim>(used_for_size),
+                              make_deriv_spatial_metric<dim>(used_for_size)),
+      extrinsic_curvature);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -336,4 +399,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   test_compute_1d_spacetime_normal_vector(dv);
   test_compute_2d_spacetime_normal_vector(dv);
   test_compute_3d_spacetime_normal_vector(dv);
+  test_compute_1d_extrinsic_curvature(dv);
+  test_compute_2d_extrinsic_curvature(dv);
+  test_compute_3d_extrinsic_curvature(dv);
 }
