@@ -5,6 +5,7 @@ set(LIBRARY GeneralRelativity)
 
 set(LIBRARY_SOURCES
     Christoffel.cpp
+    ComputeGhQuantities.cpp
     ComputeSpacetimeQuantities.cpp
     IndexManipulation.cpp
     )
