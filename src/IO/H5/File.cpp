@@ -74,13 +74,9 @@ H5File<Access_t>& H5File<Access_t>::operator=(H5File&& rhs) noexcept {
 
 template <AccessType Access_t>
 H5File<Access_t>::~H5File() {
-  current_object_ = nullptr;
   if (file_id_ != -1) {
     CHECK_H5(H5Fclose(file_id_),
              "Failed to close file: '" << file_name_ << "'");
-    // Allows destructor to be run manually in tests without relying on HDF5
-    // implementation
-    file_id_ = -1;
   }
 }
 /// \endcond

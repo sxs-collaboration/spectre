@@ -55,16 +55,16 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name2, true);
   }
 
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  auto my_file =
+      std::make_unique<h5::H5File<h5::AccessType::ReadWrite>>(h5_file_name);
 
-  h5::H5File<h5::AccessType::ReadWrite> my_file2(std::move(my_file));
-  // clang-tidy: use after move
-  my_file.~H5File<h5::AccessType::ReadWrite>();  // NOLINT
+  auto my_file2 = std::make_unique<h5::H5File<h5::AccessType::ReadWrite>>(
+      std::move(*my_file));
+  my_file.reset();
 
   h5::H5File<h5::AccessType::ReadWrite> my_file3(h5_file_name2);
-  my_file3 = std::move(my_file2);
-  // clang-tidy: use after move
-  my_file2.~H5File<h5::AccessType::ReadWrite>();  // NOLINT
+  my_file3 = std::move(*my_file2);
+  my_file2.reset();
 }
 
 // [[OutputRegex, Cannot open the object '/Dummy.hdr' because it does not
@@ -496,11 +496,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
     const hid_t file_id =
         H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
     CHECK_H5(file_id, "Failed to open file: " << file_name);
-    h5::detail::OpenGroup group(file_id, "/group/group2/group3",
-                                h5::AccessType::ReadWrite);
-    h5::detail::OpenGroup group2(std::move(group));
-    // clang-tidy: use after move
-    group.~OpenGroup();  // NOLINT
+    auto group = std::make_unique<h5::detail::OpenGroup>(
+        file_id, "/group/group2/group3", h5::AccessType::ReadWrite);
+    h5::detail::OpenGroup group2(std::move(*group));
+    group.reset();
     CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
   }
 
