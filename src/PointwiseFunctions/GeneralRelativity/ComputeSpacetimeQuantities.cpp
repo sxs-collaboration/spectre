@@ -45,14 +45,13 @@ tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
   auto inverse_spacetime_metric =
       make_with_value<tnsr::AA<DataType, Dim, Frame>>(lapse, 0.);
 
-  get<0, 0>(inverse_spacetime_metric) =
-      -1.0 / (get(lapse) * get(lapse));
+  get<0, 0>(inverse_spacetime_metric) = -1.0 / (get(lapse) * get(lapse));
 
   const auto& minus_one_over_lapse_sqrd = get<0, 0>(inverse_spacetime_metric);
 
   for (size_t i = 0; i < Dim; ++i) {
-    inverse_spacetime_metric.get(0, i + 1) = -
-        shift.get(i) * minus_one_over_lapse_sqrd;
+    inverse_spacetime_metric.get(0, i + 1) =
+        -shift.get(i) * minus_one_over_lapse_sqrd;
   }
 
   for (size_t i = 0; i < Dim; ++i) {
