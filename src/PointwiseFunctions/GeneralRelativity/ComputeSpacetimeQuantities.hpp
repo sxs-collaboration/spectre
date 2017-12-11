@@ -18,9 +18,9 @@ namespace gr {
 * shift.
 * \details The spacetime metric \f$ \psi_{ab} \f$ is calculated as
 * \f{align}{
-*   \psi_{tt} &=& - N^2 + N^m N^n g_{mn} \\
-*   \psi_{ti} &=& g_{mi} N^m  \\
-*   \psi_{ij} &=& g_{ij}
+*   \psi_{tt} &= - N^2 + N^m N^n g_{mn} \\
+*   \psi_{ti} &= g_{mi} N^m  \\
+*   \psi_{ij} &= g_{ij}
 * \f}
 * where \f$ N, N^i\f$ and \f$ g_{ij}\f$ are the lapse, shift and spatial metric
 * respectively
@@ -38,9 +38,9 @@ tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
  *
  * \details The inverse spacetime metric \f$ \psi^{ab} \f$ is calculated as
  * \f{align}
- *    \psi^{tt} &=& -  1/N^2 \\
- *    \psi^{ti} &=& N^i / N^2 \\
- *    \psi^{ij} &=& g^{ij} - N^i N^j / N^2
+ *    \psi^{tt} &= -  1/N^2 \\
+ *    \psi^{ti} &= N^i / N^2 \\
+ *    \psi^{ij} &= g^{ij} - N^i N^j / N^2
  * \f}
  * where \f$ N, N^i\f$ and \f$ g^{ij}\f$ are the lapse, shift and inverse
  * spatial metric respectively
@@ -59,12 +59,12 @@ tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
  *
  * \details Computes the derivatives as:
  * \f{align}
- *     \partial_\mu \psi_{tt} &=& - 2 N \partial_\mu N
+ *     \partial_\mu \psi_{tt} &= - 2 N \partial_\mu N
  *                 + 2 g_{mn} N^m \partial_\mu N^n
  *                 + N^m N^n \partial_\mu g_{mn} \\
- *     \partial_\mu \psi_{ti} &=& g_{mi} \partial_\mu N^m
+ *     \partial_\mu \psi_{ti} &= g_{mi} \partial_\mu N^m
  *                 + N^m \partial_\mu g_{mi} \\
- *     \partial_\mu \psi_{ij} &=& \partial_\mu g_{ij}
+ *     \partial_\mu \psi_{ij} &= \partial_\mu g_{ij}
  * \f}
  * where \f$ N, N^i, g \f$ are the lapse, shift, and spatial metric
  * respectively.
@@ -85,8 +85,8 @@ tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
  * \brief Computes spacetime normal one-form from lapse.
  *
  * \details If \f$N\f$ is the lapse, then
- * \f{align} n_t &=& - N \\
- * n_i &=& 0 \f}
+ * \f{align} n_t &= - N \\
+ * n_i &= 0 \f}
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -96,9 +96,9 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes spacetime normal vector from lapse and shift.
- * \details If $N, N^i$ are the lapse and shift respectively, then
- * \f{align} n^t &=& 1/N \\
- * n^i &=& -\frac{N^i}{N} \f}
+ * \details If \f$N, N^i\f$ are the lapse and shift respectively, then
+ * \f{align} n^t &= 1/N \\
+ * n^i &= -\frac{N^i}{N} \f}
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
