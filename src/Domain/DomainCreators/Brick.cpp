@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
@@ -18,7 +19,8 @@
 
 namespace DomainCreators {
 
-Brick::Brick(
+template <typename TargetFrame>
+Brick<TargetFrame>::Brick(
     typename LowerBound::type lower_xyz, typename UpperBound::type upper_xyz,
     typename IsPeriodicIn::type is_periodic_in_xyz,
     typename InitialRefinement::type initial_refinement_level_xyz,
@@ -33,7 +35,8 @@ Brick::Brick(
       initial_number_of_grid_points_in_xyz_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)) {}  // NOLINT
 
-Domain<3, Frame::Inertial> Brick::create_domain() const noexcept {
+template <typename TargetFrame>
+Domain<3, TargetFrame> Brick<TargetFrame>::create_domain() const noexcept {
   using AffineMap = CoordinateMaps::AffineMap;
   using AffineMap3D =
       CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -48,24 +51,27 @@ Domain<3, Frame::Inertial> Brick::create_domain() const noexcept {
     identifications.push_back({{0, 1, 2, 3}, {4, 5, 6, 7}});
   }
 
-  return Domain<3, Frame::Inertial>{
-      make_vector<std::unique_ptr<
-          CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>(
-          std::make_unique<
-              CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>>(
-              AffineMap3D{AffineMap{-1., 1., lower_xyz_[0], upper_xyz_[0]},
-                          AffineMap{-1., 1., lower_xyz_[1], upper_xyz_[1]},
-                          AffineMap{-1., 1., lower_xyz_[2], upper_xyz_[2]}})),
+  return Domain<3, TargetFrame>{
+      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+          AffineMap3D{AffineMap{-1., 1., lower_xyz_[0], upper_xyz_[0]},
+                      AffineMap{-1., 1., lower_xyz_[1], upper_xyz_[1]},
+                      AffineMap{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),
       std::vector<std::array<size_t, 8>>{{{0, 1, 2, 3, 4, 5, 6, 7}}},
       identifications};
 }
 
-std::vector<std::array<size_t, 3>> Brick::initial_extents() const noexcept {
+template <typename TargetFrame>
+std::vector<std::array<size_t, 3>> Brick<TargetFrame>::initial_extents() const
+    noexcept {
   return {initial_number_of_grid_points_in_xyz_};
 }
 
-std::vector<std::array<size_t, 3>> Brick::initial_refinement_levels() const
-    noexcept {
+template <typename TargetFrame>
+std::vector<std::array<size_t, 3>>
+Brick<TargetFrame>::initial_refinement_levels() const noexcept {
   return {initial_refinement_level_xyz_};
 }
 }  // namespace DomainCreators
+
+template class DomainCreators::Brick<Frame::Inertial>;
+template class DomainCreators::Brick<Frame::Grid>;

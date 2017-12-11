@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
@@ -18,7 +19,8 @@
 
 namespace DomainCreators {
 
-Rectangle::Rectangle(
+template <typename TargetFrame>
+Rectangle<TargetFrame>::Rectangle(
     typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
     typename IsPeriodicIn::type is_periodic_in_xy,
     typename InitialRefinement::type initial_refinement_level_xy,
@@ -33,7 +35,8 @@ Rectangle::Rectangle(
       initial_number_of_grid_points_in_xy_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_xy)) {}  // NOLINT
 
-Domain<2, Frame::Inertial> Rectangle::create_domain() const noexcept {
+template <typename TargetFrame>
+Domain<2, TargetFrame> Rectangle<TargetFrame>::create_domain() const noexcept {
   using AffineMap = CoordinateMaps::AffineMap;
   using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
   std::vector<PairOfFaces> identifications{};
@@ -44,22 +47,25 @@ Domain<2, Frame::Inertial> Rectangle::create_domain() const noexcept {
     identifications.push_back({{0, 1}, {2, 3}});
   }
 
-  return Domain<2, Frame::Inertial>{
-      make_vector<std::unique_ptr<
-          CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>(
-          std::make_unique<
-              CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>>(
-              AffineMap2D{AffineMap{-1., 1., lower_xy_[0], upper_xy_[0]},
-                          AffineMap{-1., 1., lower_xy_[1], upper_xy_[1]}})),
+  return Domain<2, TargetFrame>{
+      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+          AffineMap2D{AffineMap{-1., 1., lower_xy_[0], upper_xy_[0]},
+                      AffineMap{-1., 1., lower_xy_[1], upper_xy_[1]}}),
       std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};
 }
 
-std::vector<std::array<size_t, 2>> Rectangle::initial_extents() const noexcept {
+template <typename TargetFrame>
+std::vector<std::array<size_t, 2>> Rectangle<TargetFrame>::initial_extents()
+    const noexcept {
   return {initial_number_of_grid_points_in_xy_};
 }
 
-std::vector<std::array<size_t, 2>> Rectangle::initial_refinement_levels() const
-    noexcept {
+template <typename TargetFrame>
+std::vector<std::array<size_t, 2>>
+Rectangle<TargetFrame>::initial_refinement_levels() const noexcept {
   return {initial_refinement_level_xy_};
 }
 }  // namespace DomainCreators
+
+template class DomainCreators::Rectangle<Frame::Inertial>;
+template class DomainCreators::Rectangle<Frame::Grid>;

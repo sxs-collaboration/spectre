@@ -18,7 +18,7 @@ namespace {
 using AffineMap = CoordinateMaps::AffineMap;
 using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
 void test_rectangle_construction(
-    const DomainCreators::Rectangle& rectangle,
+    const DomainCreators::Rectangle<Frame::Inertial>& rectangle,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
   // default OrientationMap is aligned
   const OrientationMap<2> aligned_orientation{};
 
-  const DomainCreators::Rectangle rectangle{
+  const DomainCreators::Rectangle<Frame::Inertial> rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, false}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -64,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
            {Direction<2>::lower_eta()},
            {Direction<2>::upper_eta()}}});
 
-  const DomainCreators::Rectangle periodic_x_rectangle{
+  const DomainCreators::Rectangle<Frame::Inertial> periodic_x_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, false}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -76,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_eta()}, {Direction<2>::upper_eta()}}});
 
-  const DomainCreators::Rectangle periodic_y_rectangle{
+  const DomainCreators::Rectangle<Frame::Inertial> periodic_y_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, true}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -88,7 +88,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_xi()}, {Direction<2>::upper_xi()}}});
 
-  const DomainCreators::Rectangle periodic_xy_rectangle{
+  const DomainCreators::Rectangle<Frame::Inertial> periodic_xy_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, true}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -129,7 +129,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Factory",
           "    InitialGridPoints: [3,4]\n"
           "    InitialRefinement: [2,3]\n");
   const auto* rectangle_creator =
-      dynamic_cast<const DomainCreators::Rectangle*>(domain_creator.get());
+      dynamic_cast<const DomainCreators::Rectangle<Frame::Inertial>*>(
+          domain_creator.get());
   test_rectangle_construction(
       *rectangle_creator, {{0., 0.}}, {{1., 2.}}, {{{3, 4}}}, {{{2, 3}}},
       std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{

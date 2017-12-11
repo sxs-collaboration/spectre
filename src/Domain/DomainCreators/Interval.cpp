@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
@@ -16,7 +17,8 @@
 
 namespace DomainCreators {
 
-Interval::Interval(
+template <typename TargetFrame>
+Interval<TargetFrame>::Interval(
     typename LowerBound::type lower_x, typename UpperBound::type upper_x,
     typename IsPeriodicIn::type is_periodic_in_x,
     typename InitialRefinement::type initial_refinement_level_x,
@@ -31,24 +33,28 @@ Interval::Interval(
       initial_number_of_grid_points_in_x_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_x)) {}  // NOLINT
 
-Domain<1, Frame::Inertial> Interval::create_domain() const noexcept {
-  return Domain<1, Frame::Inertial>{
-      make_vector<std::unique_ptr<
-          CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::AffineMap>>(
-              CoordinateMaps::AffineMap{-1., 1., lower_x_[0], upper_x_[0]})),
+template <typename TargetFrame>
+Domain<1, TargetFrame> Interval<TargetFrame>::create_domain() const noexcept {
+  return Domain<1, TargetFrame>{
+      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+          CoordinateMaps::AffineMap{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}
                            : std::vector<PairOfFaces>{}};
 }
 
-std::vector<std::array<size_t, 1>> Interval::initial_extents() const noexcept {
+template <typename TargetFrame>
+std::vector<std::array<size_t, 1>> Interval<TargetFrame>::initial_extents()
+    const noexcept {
   return {{{initial_number_of_grid_points_in_x_}}};
 }
 
-std::vector<std::array<size_t, 1>> Interval::initial_refinement_levels() const
-    noexcept {
+template <typename TargetFrame>
+std::vector<std::array<size_t, 1>>
+Interval<TargetFrame>::initial_refinement_levels() const noexcept {
   return {{{initial_refinement_level_x_}}};
 }
 }  // namespace DomainCreators
+
+template class DomainCreators::Interval<Frame::Inertial>;
+template class DomainCreators::Interval<Frame::Grid>;

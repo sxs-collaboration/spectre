@@ -24,17 +24,12 @@ class Domain;
 
 /// Defines classes that create Domains.
 namespace DomainCreators {
+template <typename TargetFrame>
 class Brick;
-// class Disk;
+template <typename TargetFrame>
 class Interval;
+template <typename TargetFrame>
 class Rectangle;
-// class RotatedBricks;
-// class RotatedIntervals;
-// class RotatedRectangles;
-// class RubiksCubeWithHole;
-// class Shell;
-// class Sphere;
-// class UnevenBricks;
 }  // namespace DomainCreators
 
 namespace DomainCreators_detail {
@@ -43,26 +38,18 @@ struct domain_creators;
 
 template <>
 struct domain_creators<1> {
-  using type = typelist<DomainCreators::Interval
-                        //, DomainCreators::RotatedIntervals
-                        >;
+  template <typename Frame>
+  using creators = typelist<DomainCreators::Interval<Frame>>;
 };
 template <>
 struct domain_creators<2> {
-  using type =
-      typelist<DomainCreators::Rectangle  //, DomainCreators::Disk,
-                                          // DomainCreators::RotatedRectangles
-               >;
+  template <typename Frame>
+  using creators = typelist<DomainCreators::Rectangle<Frame>>;
 };
 template <>
 struct domain_creators<3> {
-  using type = typelist<
-      DomainCreators::Brick  //, DomainCreators::RubiksCubeWithHole,
-                             //                DomainCreators::Shell,
-                             //                DomainCreators::Sphere,
-                             //                DomainCreators::RotatedBricks,
-                             //                DomainCreators::UnevenBricks
-      >;
+  template <typename Frame>
+  using creators = typelist<DomainCreators::Brick<Frame>>;
 };
 }  // namespace DomainCreators_detail
 
@@ -70,8 +57,8 @@ struct domain_creators<3> {
 template <size_t VolumeDim, typename TargetFrame>
 class DomainCreator {
  public:
-  using creatable_classes =
-      typename DomainCreators_detail::domain_creators<VolumeDim>::type;
+  using creatable_classes = typename DomainCreators_detail::domain_creators<
+      VolumeDim>::template creators<TargetFrame>;
 
   DomainCreator() = default;
   DomainCreator(const DomainCreator<VolumeDim, TargetFrame>&) = delete;
@@ -94,13 +81,5 @@ class DomainCreator {
 };
 
 #include "Domain/DomainCreators/Brick.hpp"
-// #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
-// #include "Domain/DomainCreators/RotatedBricks.hpp"
-// #include "Domain/DomainCreators/RotatedIntervals.hpp"
-// #include "Domain/DomainCreators/RotatedRectangles.hpp"
-// #include "Domain/DomainCreators/RubiksCubeWithHole.hpp"
-// #include "Domain/DomainCreators/Shell.hpp"
-// #include "Domain/DomainCreators/Sphere.hpp"
-// #include "Domain/DomainCreators/UnevenBricks.hpp"

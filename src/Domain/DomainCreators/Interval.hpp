@@ -13,7 +13,8 @@ namespace DomainCreators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 1D Domain consisting of a single Block.
-class Interval : public DomainCreator<1, Frame::Inertial> {
+template <typename TargetFrame>
+class Interval : public DomainCreator<1, TargetFrame> {
  public:
   struct LowerBound {
     using type = std::array<double, 1>;
@@ -59,7 +60,7 @@ class Interval : public DomainCreator<1, Frame::Inertial> {
   Interval& operator=(Interval&&) noexcept = default;
   ~Interval() override = default;
 
-  Domain<1, Frame::Inertial> create_domain() const noexcept override;
+  Domain<1, TargetFrame> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 1>> initial_extents() const noexcept override;
 
