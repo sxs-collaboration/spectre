@@ -181,6 +181,78 @@ void test_compute_3d_pi(const DataVector& used_for_size) {
           make_spatial_deriv_spacetime_metric<dim>(used_for_size)),
       pi);
 }
+
+void test_compute_1d_gauge_source(const DataVector& used_for_size) {
+  const size_t dim = 1;
+  const auto gauge_source = GeneralizedHarmonic::gauge_source(
+      make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
+      make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
+      make_spatial_metric<dim>(0.), make_trace_extrinsic_curvature(0.),
+      make_trace_spatial_christoffel<dim>(0.));
+
+  CHECK(gauge_source.get(0) == approx(-41. / 3.));
+  CHECK(gauge_source.get(1) == approx(13. / 6.));
+
+  check_tensor_doubles_approx_equals_tensor_datavectors(
+      GeneralizedHarmonic::gauge_source(
+          make_lapse(used_for_size), make_dt_lapse(used_for_size),
+          make_deriv_lapse<dim>(used_for_size), make_shift<dim>(used_for_size),
+          make_dt_shift<dim>(used_for_size),
+          make_deriv_shift<dim>(used_for_size),
+          make_spatial_metric<dim>(used_for_size),
+          make_trace_extrinsic_curvature(used_for_size),
+          make_trace_spatial_christoffel<dim>(used_for_size)),
+      gauge_source);
+}
+
+void test_compute_2d_gauge_source(const DataVector& used_for_size) {
+  const size_t dim = 2;
+  const auto gauge_source = GeneralizedHarmonic::gauge_source(
+      make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
+      make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
+      make_spatial_metric<dim>(0.), make_trace_extrinsic_curvature(0.),
+      make_trace_spatial_christoffel<dim>(0.));
+
+  CHECK(gauge_source.get(0) == approx(-400. / 9.));
+  CHECK(gauge_source.get(1) == approx(-395. / 90.));
+  CHECK(gauge_source.get(2) == approx(-124. / 9.));
+
+  check_tensor_doubles_approx_equals_tensor_datavectors(
+      GeneralizedHarmonic::gauge_source(
+          make_lapse(used_for_size), make_dt_lapse(used_for_size),
+          make_deriv_lapse<dim>(used_for_size), make_shift<dim>(used_for_size),
+          make_dt_shift<dim>(used_for_size),
+          make_deriv_shift<dim>(used_for_size),
+          make_spatial_metric<dim>(used_for_size),
+          make_trace_extrinsic_curvature(used_for_size),
+          make_trace_spatial_christoffel<dim>(used_for_size)),
+      gauge_source);
+}
+
+void test_compute_3d_gauge_source(const DataVector& used_for_size) {
+  const size_t dim = 3;
+  const auto gauge_source = GeneralizedHarmonic::gauge_source(
+      make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
+      make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
+      make_spatial_metric<dim>(0.), make_trace_extrinsic_curvature(0.),
+      make_trace_spatial_christoffel<dim>(0.));
+
+  CHECK(gauge_source.get(0) == approx(-1444. / 3.));
+  CHECK(gauge_source.get(1) == approx(-187. / 6.));
+  CHECK(gauge_source.get(2) == approx(-202. / 3.));
+  CHECK(gauge_source.get(3) == approx(-207. / 2.));
+
+  check_tensor_doubles_approx_equals_tensor_datavectors(
+      GeneralizedHarmonic::gauge_source(
+          make_lapse(used_for_size), make_dt_lapse(used_for_size),
+          make_deriv_lapse<dim>(used_for_size), make_shift<dim>(used_for_size),
+          make_dt_shift<dim>(used_for_size),
+          make_deriv_shift<dim>(used_for_size),
+          make_spatial_metric<dim>(used_for_size),
+          make_trace_extrinsic_curvature(used_for_size),
+          make_trace_spatial_christoffel<dim>(used_for_size)),
+      gauge_source);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
@@ -192,4 +264,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   test_compute_1d_pi(dv);
   test_compute_2d_pi(dv);
   test_compute_3d_pi(dv);
+  test_compute_1d_gauge_source(dv);
+  test_compute_2d_gauge_source(dv);
+  test_compute_3d_gauge_source(dv);
 }

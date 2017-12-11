@@ -26,6 +26,20 @@ void check_tensor_doubles_equals_tensor_datavectors(
   }
 }
 
+template <typename Symmetry, typename IndexList>
+void check_tensor_doubles_approx_equals_tensor_datavectors(
+    const Tensor<DataVector, Symmetry, IndexList>& tensor_dv,
+    const Tensor<double, Symmetry, IndexList>& tensor_double) {
+  const size_t n_pts = tensor_dv.begin()->size();
+  for (decltype(auto) datavector_and_double_components :
+       boost::combine(tensor_dv, tensor_double)) {
+    for (size_t s = 0; s < n_pts; ++s) {
+      CHECK(boost::get<0>(datavector_and_double_components)[s] ==
+            approx(boost::get<1>(datavector_and_double_components)));
+    }
+  }
+}
+
 template <typename DataType>
 Scalar<DataType> make_lapse(const DataType& used_for_size);
 
@@ -86,4 +100,11 @@ tnsr::aa<DataType, SpatialDim> make_spacetime_metric(
 
 template <size_t SpatialDim, typename DataType>
 tnsr::AA<DataType, SpatialDim> make_inverse_spacetime_metric(
+    const DataType& used_for_size);
+
+template <typename DataType>
+Scalar<DataType> make_trace_extrinsic_curvature(const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
+tnsr::i<DataType, SpatialDim> make_trace_spatial_christoffel(
     const DataType& used_for_size);
