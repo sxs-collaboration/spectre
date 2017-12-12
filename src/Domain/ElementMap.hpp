@@ -26,6 +26,8 @@
 template <size_t Dim, typename TargetFrame>
 class ElementMap {
  public:
+  static constexpr size_t dim = Dim;
+
   /// \cond HIDDEN_SYMBOLS
   ElementMap() = default;
   /// \endcond
