@@ -11,7 +11,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 
 template <size_t VolumeDim>
-tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_grid_normal(
+tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_face_normal(
     const Index<VolumeDim - 1>& interface_extents,
     const CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept {
@@ -22,27 +22,27 @@ tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_grid_normal(
   const auto sliced_away_dim = direction.dimension();
   const double sign = direction.sign();
 
-  tnsr::i<DataVector, VolumeDim, Frame::Grid> grid_normal(
+  tnsr::i<DataVector, VolumeDim, Frame::Grid> face_normal(
       interface_extents.product());
 
   for (size_t d = 0; d < VolumeDim; ++d) {
-    grid_normal.get(d) =
+    face_normal.get(d) =
         sign * inv_jacobian_on_interface.get(sliced_away_dim, d);
   }
-  return grid_normal;
+  return face_normal;
 }
 
-template tnsr::i<DataVector, 1, Frame::Grid> unnormalized_grid_normal(
+template tnsr::i<DataVector, 1, Frame::Grid> unnormalized_face_normal(
     const Index<0>& interface_extents,
     const CoordinateMapBase<Frame::Logical, Frame::Grid, 1>& map,
     const Direction<1>& direction) noexcept;
 
-template tnsr::i<DataVector, 2, Frame::Grid> unnormalized_grid_normal(
+template tnsr::i<DataVector, 2, Frame::Grid> unnormalized_face_normal(
     const Index<1>& interface_extents,
     const CoordinateMapBase<Frame::Logical, Frame::Grid, 2>& map,
     const Direction<2>& direction) noexcept;
 
-template tnsr::i<DataVector, 3, Frame::Grid> unnormalized_grid_normal(
+template tnsr::i<DataVector, 3, Frame::Grid> unnormalized_face_normal(
     const Index<2>& interface_extents,
     const CoordinateMapBase<Frame::Logical, Frame::Grid, 3>& map,
     const Direction<3>& direction) noexcept;

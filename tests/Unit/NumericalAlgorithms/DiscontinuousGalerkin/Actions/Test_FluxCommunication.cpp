@@ -132,7 +132,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     return db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
                                   Tags::Element<2>, Tags::ElementMap<2>,
                                   System::variables_tag>,
-                      db::AddComputeItemsTags<Tags::UnnormalizedGridNormal<2>>>(
+                      db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
         time_id, extents, element, std::move(map), std::move(variables));
   }();
 
@@ -270,7 +270,7 @@ SPECTRE_TEST_CASE(
       db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
                              Tags::Element<2>, Tags::ElementMap<2>,
                              System::variables_tag>,
-                 db::AddComputeItemsTags<Tags::UnnormalizedGridNormal<2>>>(
+                 db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
       time_id, extents, element, std::move(map), std::move(variables));
 
   auto sent_box =

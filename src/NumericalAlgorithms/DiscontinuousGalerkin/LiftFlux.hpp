@@ -35,8 +35,8 @@ template <typename Tags>
 Variables<Tags> lift_flux(const Variables<Tags>& local_flux,
                           Variables<Tags> numerical_flux,
                           const size_t extent_perpendicular_to_boundary,
-                          DataVector magnitude_of_grid_normal) noexcept {
-  auto& lift_factor = magnitude_of_grid_normal;
+                          DataVector magnitude_of_face_normal) noexcept {
+  auto& lift_factor = magnitude_of_face_normal;
   lift_factor *= -0.5 * (extent_perpendicular_to_boundary *
                          (extent_perpendicular_to_boundary - 1));
 

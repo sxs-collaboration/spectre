@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Declares function unnormalized_grid_normal
+/// Declares function unnormalized_face_normal
 
 #pragma once
 
@@ -28,10 +28,10 @@ class Index;
  * with the given map.
  *
  * \example
- * \snippet Test_FaceNormal.cpp grid_normal_example
+ * \snippet Test_FaceNormal.cpp face_normal_example
  */
 template <size_t VolumeDim>
-tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_grid_normal(
+tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_face_normal(
     const Index<VolumeDim - 1>& interface_extents,
     const CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept;

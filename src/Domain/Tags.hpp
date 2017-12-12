@@ -88,7 +88,7 @@ struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
 
 namespace detail {
 template <size_t VolumeDim>
-auto make_unnormalized_grid_normals(
+auto make_unnormalized_face_normals(
     const Index<VolumeDim>& extents,
     const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid,
                                             VolumeDim>>& map) noexcept {
@@ -96,7 +96,7 @@ auto make_unnormalized_grid_normals(
                      tnsr::i<DataVector, VolumeDim, Frame::Grid>>
       result;
   for (const auto& d : Direction<VolumeDim>::all_directions()) {
-    result.emplace(d, unnormalized_grid_normal(
+    result.emplace(d, unnormalized_face_normal(
                           extents.slice_away(d.dimension()), *map, d));
   }
   return result;
@@ -107,10 +107,10 @@ auto make_unnormalized_grid_normals(
 /// \ingroup ComputationalDomainGroup
 /// The unnormalized grid normal one form on each side
 template <size_t VolumeDim>
-struct UnnormalizedGridNormal : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "UnnormalizedGridNormal";
+struct UnnormalizedFaceNormal : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "UnnormalizedFaceNormal";
   static constexpr auto function =
-      detail::make_unnormalized_grid_normals<VolumeDim>;
+      detail::make_unnormalized_face_normals<VolumeDim>;
   using argument_tags = tmpl::list<Extents<VolumeDim>, ElementMap<VolumeDim>>;
 };
 
