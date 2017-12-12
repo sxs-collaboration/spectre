@@ -4,7 +4,6 @@
 set(LIBRARY LinearOperators)
 
 set(LIBRARY_SOURCES
-    DefiniteIntegral.cpp
     Linearize.cpp
     MeanValue.cpp
     )

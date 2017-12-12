@@ -8,6 +8,8 @@
 
 #include <cstddef>
 
+#include "DataStructures/Index.hpp"
+
 class DataVector;
 class Matrix;
 
@@ -43,6 +45,10 @@ const Matrix& spectral_to_grid_points_matrix(size_t number_of_pts);
 /// Filters out all except the lowest two modes.
 /// \param number_of_pts number of collocation points
 const Matrix& linear_filter_matrix(size_t number_of_pts);
+
+template <size_t Dim>
+double definite_integral(const DataVector& integrand,
+                         const Index<Dim>& extents) noexcept;
 
 /// Matrix to interpolate to a set of target points
 ///
