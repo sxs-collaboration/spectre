@@ -48,7 +48,7 @@ namespace Actions {
 /// - DataBox: Tags::Element<volume_dim>,
 ///   Tags::HistoryBoundaryVariables<Direction<volume_dim>,
 ///       system::variables_tag>, Tags::Extents<volume_dim>, Tags::TimeId,
-///   Tags::UnnormalizedGridNormal<volume_dim>
+///   Tags::UnnormalizedFaceNormal<volume_dim>
 ///
 /// DataBox changes:
 /// - Adds: system::dt_variables_tag
@@ -132,8 +132,8 @@ struct ComputeBoundaryFlux {
       // This needs to be fixed for hp-adaptivity to handle
       // projections correctly
 
-      const auto& grid_normal =
-          db::get<Tags::UnnormalizedGridNormal<volume_dim>>(box).at(direction);
+      const auto& face_normal =
+          db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(direction);
       // Using this instead of auto prevents incomprehensible errors
       // if the return type of compute_flux is wrong.
       using FluxType = db::item_type<db::add_tag_prefix<
@@ -150,7 +150,7 @@ struct ComputeBoundaryFlux {
           local_boundary_flux.number_of_grid_points(), 0.);
       tmpl::for_each<typename variables_tag::tags_list>([
         &local_normal_flux, &neighbor_normal_flux, &local_boundary_flux,
-        &neighbor_boundary_flux, &grid_normal
+        &neighbor_boundary_flux, &face_normal
       ](auto tag) noexcept {
         using Tag = tmpl::type_from<decltype(tag)>;
         using flux_tag = Tags::Flux<Tag, tmpl::size_t<2>, Frame::Grid>;
@@ -167,9 +167,9 @@ struct ComputeBoundaryFlux {
           const auto other_indices =
               all_but_specified_element_of<0>(flux_index);
           local_nf.get(other_indices) +=
-              grid_normal.get(contract_index) * local_bf.get(flux_index);
+              face_normal.get(contract_index) * local_bf.get(flux_index);
           neighbor_nf.get(other_indices) +=
-              grid_normal.get(contract_index) * neighbor_bf.get(flux_index);
+              face_normal.get(contract_index) * neighbor_bf.get(flux_index);
         }
       });
 
@@ -183,12 +183,12 @@ struct ComputeBoundaryFlux {
           typename std::decay_t<decltype(flux_computer)>::argument_tags{});
 
       // Needs fixing for GH/curved
-      DataVector magnitude_of_grid_normal = magnitude(grid_normal);
+      DataVector magnitude_of_face_normal = magnitude(face_normal);
       const auto lifted_data = dg::lift_flux(
           tuples::get<normal_flux_tag>(self_data),
           std::move(numerical_flux),
           extents[dimension],
-          std::move(magnitude_of_grid_normal));
+          std::move(magnitude_of_face_normal));
 
       // Convert tags.  This will be replaced by expanded Variables
       // functionality.  See #319.

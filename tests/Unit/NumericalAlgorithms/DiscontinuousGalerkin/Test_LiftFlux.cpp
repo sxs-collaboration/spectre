@@ -13,7 +13,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/GridNormal.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,8 +41,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const double weight = Basis::lgl::quadrature_weights(perpendicular_extent)[0];
 
   const Index<1> boundary_extents{{{3}}};
-  const DataVector magnitude_of_grid_normal =
-      magnitude(unnormalized_grid_normal(boundary_extents, coordinate_map,
+  const DataVector magnitude_of_face_normal =
+      magnitude(unnormalized_face_normal(boundary_extents, coordinate_map,
                                          Direction<2>::lower_eta()));
 
   Variables<tmpl::list<Var>> local_flux(boundary_extents.product());
@@ -54,6 +54,6 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
       -2. / (element_length * weight) * (numerical_flux - local_flux);
 
   CHECK(dg::lift_flux(local_flux, numerical_flux, perpendicular_extent,
-                      magnitude_of_grid_normal) ==
+                      magnitude_of_face_normal) ==
         expected);
 }
