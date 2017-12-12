@@ -11,6 +11,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -110,6 +111,7 @@ namespace {
 // internal copies.
 class NCd {
  public:
+  NCd() = default;
   explicit NCd(double x) : x_(x) {}
   NCd(const NCd&) = delete;
   NCd(NCd&&) = default;
@@ -123,7 +125,7 @@ class NCd {
   double x_;
 };
 
-NCd operator*(double a, NCd&& b) { return NCd(a * b()); }
+NCd operator*(double a, const NCd& b) { return NCd(a * b()); }
 NCd& operator+=(NCd& a, NCd&& b) { return a = NCd(a() + b()); }
 
 // Random numbers
@@ -134,9 +136,8 @@ constexpr double c21 = 0.805454101952822;
 constexpr double c22 = 0.825876851406978;
 
 // Test coupling for integrating using two drivers (multiplied together)
-NCd quartic_coupling(const std::vector<std::reference_wrapper<const NCd>>& v) {
-  CHECK(v.size() == 2);
-  return NCd(v[0]() * v[1]());
+NCd quartic_coupling(const NCd& local, const NCd& remote) {
+  return NCd(local() * remote());
 }
 
 // Test functions for integrating a quartic using the above coupling.
@@ -148,15 +149,6 @@ double quartic_answer(double x) {
               + x * ((c10 * c21 + c11 * c20) / 2
                      + x * ((c10 * c22 + c11 * c21) / 3
                             + x * (c11 * c22 / 4))));
-}
-
-// Value to assign to points during a simulation
-double simulation_value(const size_t side, const Time& t) {
-  switch (side) {
-    case 0: return quartic_side1(t.value());
-    case 1: return quartic_side2(t.value());
-    default: ERROR("");
-  };
 }
 }  // namespace
 
@@ -170,7 +162,11 @@ SPECTRE_ALWAYS_INLINE NCd MakeWithValueImpl<NCd, NCd>::apply(
 
 namespace {
 void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
-  constexpr double unused = 4444.;
+  // For general time steppers the boundary stepper cannot be run
+  // without simultaneously running the volume stepper.  For
+  // Adams-Bashforth methods, however, the volume contribution is zero
+  // if all the derivative contributions are from the boundary, so we
+  // can leave it out.
 
   const bool forward_in_time = dt[0].is_positive();
   const auto simulation_less =
@@ -183,20 +179,18 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
 
   TimeSteppers::AdamsBashforthN ab4(4, false);
 
-  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(2);
+  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history;
   {
     const Slab init_slab = slab.advance_towards(-dt[0]);
 
     for (ssize_t step = 1; step <= 3; ++step) {
       {
         const Time now = t - step * dt[0].with_slab(init_slab);
-        history[0].emplace_front(
-            now, NCd(unused), NCd(quartic_side1(now.value())));
+        history.local_insert_initial(now, NCd(quartic_side1(now.value())));
       }
       {
         const Time now = t - step * dt[1].with_slab(init_slab);
-        history[1].emplace_front(
-            now, NCd(unused), NCd(quartic_side2(now.value())));
+        history.remote_insert_initial(now, NCd(quartic_side2(now.value())));
       }
     }
   }
@@ -209,7 +203,11 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
         std::min_element(next.cbegin(), next.cend(), simulation_less)
         - next.cbegin());
 
-    history[side].emplace_back(t, NCd(unused), NCd(simulation_value(side, t)));
+    if (side == 0) {
+      history.local_insert(t, NCd(quartic_side1(t.value())));
+    } else {
+      history.remote_insert(t, NCd(quartic_side2(t.value())));
+    }
 
     gsl::at(next, side) += gsl::at(dt, side);
 
@@ -271,15 +269,13 @@ SPECTRE_TEST_CASE(
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
                   "[Unit][Time]") {
-  constexpr double unused = 4444.;
-
   const Slab slab(0., 1.);
 
   Time t = slab.start();
 
   TimeSteppers::AdamsBashforthN ab4(4, false);
 
-  std::vector<std::deque<std::tuple<Time, NCd, NCd>>> history(2);
+  TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history;
   {
     const Slab init_slab = slab.retreat();
     const TimeDelta init_dt = init_slab.duration() / 4;
@@ -288,10 +284,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     for (ssize_t step = 1; step <= 3; ++step) {  // NOLINT
       // clang-tidy misfeature: warns about boost internals here
       const Time now = t - step * init_dt;  // NOLINT
-      history[0].emplace_front(
-          now, NCd(unused), NCd(quartic_side1(now.value())));
-      history[1].emplace_front(
-          now, NCd(unused), NCd(quartic_side2(now.value())));
+      history.local_insert_initial(now, NCd(quartic_side1(now.value())));
+      history.remote_insert_initial(now, NCd(quartic_side2(now.value())));
     }
   }
 
@@ -307,9 +301,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     const auto side = static_cast<size_t>(
         std::min_element(next.cbegin(), next.cend()) - next.cbegin());
 
-    history[side].emplace_back(
-        gsl::at(next, side), NCd(unused),
-        NCd(simulation_value(side, gsl::at(next, side))));
+    if (side == 0) {
+      history.local_insert(next[0], NCd(quartic_side1(next[0].value())));
+    } else {
+      history.remote_insert(next[1], NCd(quartic_side2(next[1].value())));
+    }
 
     const TimeDelta this_dt = gsl::at(dt, side).front();
     gsl::at(dt, side).pop_front();

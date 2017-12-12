@@ -9,8 +9,10 @@
 #include <deque>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 #include "Parallel/CharmPupable.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
@@ -67,30 +69,20 @@ class TimeStepper : public PUP::able {
   /// \brief Compute the change in a boundary quantity due to the
   /// coupling on the interface.
   ///
-  /// The `history` is a vector representing the different sides of
-  /// the interface, with the local side first.  Each entry in that
-  /// vector is the time history of a side, similar to the argument to
-  /// `update_u`.
-  ///
-  /// The coupling function `coupling` should compute the derivative
-  /// of the boundary quantity from the side data, supplied as a
-  /// `std::vector<std::reference_wrapper<const FluxVars>>`.  These
-  /// values may be used to form a linear combination internally, so
-  /// `BoundaryVars` should have appropriate mathematical operators
-  /// defined to allow that.
-  template <typename BoundaryVars, typename FluxVars, typename Coupling>
-  BoundaryVars compute_boundary_delta(
+  /// The coupling function `coupling` should take the local and
+  /// remote flux data and compute the derivative of the boundary
+  /// quantity.  These values may be used to form a linear combination
+  /// internally, so the result should have appropriate mathematical
+  /// operators defined to allow that.
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
+  compute_boundary_delta(
       const Coupling& coupling,
-      const gsl::not_null<std::vector<std::deque<std::tuple<
-          Time, BoundaryVars, FluxVars>>>*>
+      const gsl::not_null<TimeSteppers::BoundaryHistory<
+          LocalVars, RemoteVars,
+          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
           history,
       const TimeDelta& time_step) const noexcept {
-    static_assert(
-        std::is_convertible<
-            std::decay_t<std::result_of_t<const Coupling&(
-                const std::vector<std::reference_wrapper<const FluxVars>>&)>>,
-            BoundaryVars>::value,
-        "Coupling function returns wrong type");
     return TimeStepper_detail::fake_virtual_compute_boundary_delta<
         creatable_classes>(this, coupling, history, time_step);
   }

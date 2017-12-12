@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -193,17 +194,15 @@ void stability_test(const Stepper& stepper) noexcept {
 template <typename Stepper>
 void equal_rate_boundary(const Stepper& stepper, const double epsilon,
                          const bool forward) {
-  // This operates the stepper as an integrator.
+  // This does an integral putting the entire derivative into the
+  // boundary term.
   const double unused_local_deriv = 4444.;
-  // TODO(wthrowe): Should the interface be redesigned to stop passing these?
-  const double unused_remote_value = 1234.;
 
   auto analytic = [](double t) { return sin(t); };
   auto driver = [](double t) { return cos(t); };
-  auto coupling =
-      [=](const std::vector<std::reference_wrapper<const double>>& values) {
-    CHECK(values[0] == unused_local_deriv);
-    return values[1];
+  auto coupling = [=](const double& local, const double& remote) {
+    CHECK(local == unused_local_deriv);
+    return remote;
   };
 
   Approx approx = Approx::custom().epsilon(epsilon);
@@ -214,7 +213,8 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
 
   TimeId time_id{0, forward ? slab.start() : slab.end(), 0};
   double y = analytic(time_id.time.value());
-  std::vector<std::deque<std::tuple<Time, double, double>>> history(2);
+  TimeSteppers::History<double, double> volume_history;
+  TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
 
   if (not stepper.is_self_starting()) {
     Time history_time = time_id.time;
@@ -231,10 +231,11 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
         history_step_size = history_step_size.with_slab(new_slab);
       }
       history_time -= history_step_size;
-      history[0].emplace_front(history_time, analytic(history_time.value()),
-                               unused_local_deriv);
-      history[1].emplace_front(history_time, unused_remote_value,
-                               driver(history_time.value()));
+      volume_history.insert_initial(history_time,
+                                    analytic(history_time.value()), 0.);
+      boundary_history.local_insert_initial(history_time, unused_local_deriv);
+      boundary_history.remote_insert_initial(history_time,
+                                             driver(history_time.value()));
     }
   }
 
@@ -242,12 +243,15 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
     for (size_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
-      history[0].emplace_back(time_id.time, y, unused_local_deriv);
-      history[1].emplace_back(time_id.time, unused_remote_value,
-                              driver(time_id.time.value()));
+      volume_history.insert(time_id.time, y, 0.);
+      boundary_history.local_insert(time_id.time, unused_local_deriv);
+      boundary_history.remote_insert(time_id.time,
+                                     driver(time_id.time.value()));
 
+      stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
+                       step_size);
       y += stepper.compute_boundary_delta(
-          coupling, make_not_null(&history), step_size);
+          coupling, make_not_null(&boundary_history), step_size);
       time_id = stepper.next_time_id(time_id, step_size);
     }
     CHECK(y == approx(analytic(time_id.time.value())));
@@ -256,9 +260,8 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
   // arbitrary, but much larger than the order of any integrators we
   // care about and much smaller than the number of time steps in the
   // test.
-  for (const auto& side_hist : history) {
-    CHECK(side_hist.size() < 20);
-  }
+  CHECK(boundary_history.local_size() < 20);
+  CHECK(boundary_history.remote_size() < 20);
 }
 
 }  // namespace TimeStepperTestUtils
