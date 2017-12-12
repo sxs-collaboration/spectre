@@ -28,7 +28,7 @@ class Index;
  * with the given map.
  *
  * \example
- * \snippet Test_GridNormal.cpp grid_normal_example
+ * \snippet Test_FaceNormal.cpp grid_normal_example
  */
 template <size_t VolumeDim>
 tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_grid_normal(

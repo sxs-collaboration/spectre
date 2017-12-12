@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/GridNormal.hpp"
+#include "Domain/FaceNormal.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"

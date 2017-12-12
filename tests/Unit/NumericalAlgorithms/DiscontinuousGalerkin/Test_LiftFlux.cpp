@@ -13,7 +13,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/GridNormal.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/TMPL.hpp"

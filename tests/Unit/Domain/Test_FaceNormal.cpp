@@ -11,7 +11,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/GridNormal.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

@@ -14,7 +14,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
-#include "Domain/GridNormal.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 
 class DataVector;
