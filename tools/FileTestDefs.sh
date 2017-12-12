@@ -131,11 +131,11 @@ standard_checks=()
 
 # Check for lines longer than 80 characters
 long_lines() {
-    is_c++ "$1" && grep -q '.\{81,\}' "$1"
+    is_c++ "$1" && grep -q '^[^#].\{80,\}' "$1"
 }
 long_lines_report() {
     echo "Found lines over 80 characters:"
-    pretty_grep '.\{81,\}' "$@"
+    pretty_grep '^[^#].\{80,\}' "$@"
 }
 long_lines_test() {
     local ten=xxxxxxxxxx
@@ -143,6 +143,7 @@ long_lines_test() {
     test_check pass foo.cpp "${eighty}"$'\n'
     test_check fail foo.cpp "${eighty}x"$'\n'
     test_check pass foo.yaml "${eighty}x"$'\n'
+    test_check pass foo.cpp "#include ${eighty}x"$'\n'
 }
 standard_checks+=(long_lines)
 
