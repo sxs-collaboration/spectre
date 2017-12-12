@@ -11,6 +11,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/ElementId.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -37,7 +39,7 @@ void check(const Map& map,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.FaceNormal", "[Unit][Domain]") {
+SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
   /// [face_normal_example]
   const Index<0> extents_0d;
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
@@ -62,4 +64,43 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal", "[Unit][Domain]") {
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
         {{{{0.4, 0., 0.}}, {{0., 0.6, 0.8}}, {{0., -0.8, 0.6}}}});
+}
+
+namespace {
+template <typename TargetFrame>
+void test_face_normal_element_map() {
+  const Index<0> extents_0d;
+  const auto map_1d = ElementMap<1, TargetFrame>(
+      ElementId<1>{0}, make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           CoordinateMaps::AffineMap(-1.0, 1.0, -3.0, 7.0)));
+  const auto normal_1d_lower =
+      unnormalized_face_normal(extents_0d, map_1d, Direction<1>::lower_xi());
+
+  CHECK(normal_1d_lower.get(0) == DataVector(1, -0.2));
+
+  const auto normal_1d_upper =
+      unnormalized_face_normal(extents_0d, map_1d, Direction<1>::upper_xi());
+
+  CHECK(normal_1d_upper.get(0) == DataVector(1, 0.2));
+
+  check(ElementMap<2, TargetFrame>(
+            ElementId<2>(0),
+            make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
+        {{{{0.6, 0.8}}, {{-0.8, 0.6}}}});
+
+  check(ElementMap<3, TargetFrame>(
+            ElementId<3>(0),
+            make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                                               CoordinateMaps::Rotation<2>>(
+                    {-1., 1., 2., 7.},
+                    CoordinateMaps::Rotation<2>(atan2(4., 3.))))),
+        {{{{0.4, 0., 0.}}, {{0., 0.6, 0.8}}, {{0., -0.8, 0.6}}}});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ElementMap", "[Unit][Domain]") {
+  test_face_normal_element_map<Frame::Inertial>();
+  test_face_normal_element_map<Frame::Grid>();
 }

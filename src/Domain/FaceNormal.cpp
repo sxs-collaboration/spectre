@@ -8,12 +8,14 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 
-template <size_t VolumeDim>
-tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_face_normal(
-    const Index<VolumeDim - 1>& interface_extents,
-    const CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>& map,
+namespace {
+template <typename TargetFrame, size_t VolumeDim, typename Map>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal_impl(
+    const Index<VolumeDim - 1>& interface_extents, const Map& map,
     const Direction<VolumeDim>& direction) noexcept {
   const auto interface_coords =
       interface_logical_coordinates(interface_extents, direction);
@@ -22,7 +24,7 @@ tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_face_normal(
   const auto sliced_away_dim = direction.dimension();
   const double sign = direction.sign();
 
-  tnsr::i<DataVector, VolumeDim, Frame::Grid> face_normal(
+  tnsr::i<DataVector, VolumeDim, TargetFrame> face_normal(
       interface_extents.product());
 
   for (size_t d = 0; d < VolumeDim; ++d) {
@@ -31,18 +33,45 @@ tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_face_normal(
   }
   return face_normal;
 }
+}  // namespace
 
-template tnsr::i<DataVector, 1, Frame::Grid> unnormalized_face_normal(
-    const Index<0>& interface_extents,
-    const CoordinateMapBase<Frame::Logical, Frame::Grid, 1>& map,
-    const Direction<1>& direction) noexcept;
+template <size_t VolumeDim, typename TargetFrame>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
+    const Index<VolumeDim - 1>& interface_extents,
+    const ElementMap<VolumeDim, TargetFrame>& map,
+    const Direction<VolumeDim>& direction) noexcept {
+  return unnormalized_face_normal_impl<TargetFrame>(interface_extents, map,
+                                                    direction);
+}
 
-template tnsr::i<DataVector, 2, Frame::Grid> unnormalized_face_normal(
-    const Index<1>& interface_extents,
-    const CoordinateMapBase<Frame::Logical, Frame::Grid, 2>& map,
-    const Direction<2>& direction) noexcept;
+template <size_t VolumeDim, typename TargetFrame>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
+    const Index<VolumeDim - 1>& interface_extents,
+    const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>& map,
+    const Direction<VolumeDim>& direction) noexcept {
+  return unnormalized_face_normal_impl<TargetFrame>(interface_extents, map,
+                                                    direction);
+}
 
-template tnsr::i<DataVector, 3, Frame::Grid> unnormalized_face_normal(
-    const Index<2>& interface_extents,
-    const CoordinateMapBase<Frame::Logical, Frame::Grid, 3>& map,
-    const Direction<3>& direction) noexcept;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define GET_FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATION(_, data)                                                 \
+  template tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>                 \
+  unnormalized_face_normal(                                                    \
+      const Index<GET_DIM(data) - 1>& interface_extents,                       \
+      const ElementMap<GET_DIM(data), GET_FRAME(data)>& map,                   \
+      const Direction<GET_DIM(data)>& direction) noexcept;                     \
+  template tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>                 \
+  unnormalized_face_normal(                                                    \
+      const Index<GET_DIM(data) - 1>& interface_extents,                       \
+      const CoordinateMapBase<Frame::Logical, GET_FRAME(data), GET_DIM(data)>& \
+          map,                                                                 \
+      const Direction<GET_DIM(data)>& direction) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
+                        (Frame::Inertial, Frame::Grid))
+
+#undef GET_DIM
+#undef GET_FRAME
+#undef INSTANTIATION

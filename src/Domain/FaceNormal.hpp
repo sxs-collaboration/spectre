@@ -13,9 +13,12 @@ class CoordinateMapBase;
 class DataVector;
 template <size_t>
 class Direction;
+template <size_t Dim, typename Frame>
+class ElementMap;
 template <size_t>
 class Index;
 
+// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the outward grid normal on a face of an Element
@@ -30,8 +33,15 @@ class Index;
  * \example
  * \snippet Test_FaceNormal.cpp face_normal_example
  */
-template <size_t VolumeDim>
-tnsr::i<DataVector, VolumeDim, Frame::Grid> unnormalized_face_normal(
+template <size_t VolumeDim, typename TargetFrame>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Index<VolumeDim - 1>& interface_extents,
-    const CoordinateMapBase<Frame::Logical, Frame::Grid, VolumeDim>& map,
+    const ElementMap<VolumeDim, TargetFrame>& map,
     const Direction<VolumeDim>& direction) noexcept;
+
+template <size_t VolumeDim, typename TargetFrame>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
+    const Index<VolumeDim - 1>& interface_extents,
+    const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>& map,
+    const Direction<VolumeDim>& direction) noexcept;
+// @}
