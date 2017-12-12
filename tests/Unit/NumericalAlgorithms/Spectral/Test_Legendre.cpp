@@ -6,7 +6,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Blas.hpp"
 #include "tests/Unit/TestHelpers.hpp"

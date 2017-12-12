@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 set(SPECTRE_UNIT_SPECTRAL
-  NumericalAlgorithms/Spectral/Test_LegendreGaussLobatto.cpp
+  NumericalAlgorithms/Spectral/Test_Legendre.cpp
   )
 
 set(SPECTRE_UNIT_NUMERICAL_ALGORITHMS

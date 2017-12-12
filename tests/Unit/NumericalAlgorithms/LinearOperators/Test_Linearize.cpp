@@ -9,7 +9,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "Utilities/Blas.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

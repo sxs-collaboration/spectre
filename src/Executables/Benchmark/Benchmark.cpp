@@ -15,7 +15,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 
 // Charm looks for this function but since we build without a main function or
