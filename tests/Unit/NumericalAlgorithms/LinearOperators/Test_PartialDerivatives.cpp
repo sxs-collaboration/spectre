@@ -14,7 +14,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

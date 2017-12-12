@@ -9,7 +9,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

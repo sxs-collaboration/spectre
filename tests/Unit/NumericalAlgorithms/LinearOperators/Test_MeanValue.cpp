@@ -10,7 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",

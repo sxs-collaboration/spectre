@@ -9,7 +9,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Legendre.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/MakeArray.hpp"
 
