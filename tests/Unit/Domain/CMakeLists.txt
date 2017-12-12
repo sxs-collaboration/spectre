@@ -11,6 +11,7 @@ set(DOMAIN_TESTS
     Domain/CoordinateMaps/Test_Wedge2D.cpp
     Domain/CoordinateMaps/Test_Wedge3D.cpp
     Domain/DomainCreators/Test_Brick.cpp
+    Domain/DomainCreators/Test_Disk.cpp
     Domain/DomainCreators/Test_Interval.cpp
     Domain/DomainCreators/Test_Rectangle.cpp
     Domain/DomainTestHelpers.cpp
@@ -19,7 +20,6 @@ set(DOMAIN_TESTS
     Domain/Test_CreateInitialElement.cpp
     Domain/Test_Direction.cpp
     Domain/Test_Domain.cpp
-    Domain/Test_DomainCreators.cpp
     Domain/Test_DomainHelpers.cpp
     Domain/Test_Element.cpp
     Domain/Test_ElementId.cpp

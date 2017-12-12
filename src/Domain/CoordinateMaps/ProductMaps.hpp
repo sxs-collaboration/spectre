@@ -117,9 +117,8 @@ class ProductOf2Maps {
   void pup(PUP::er& p);  // NOLINT
 
  private:
-  template <typename Map1Op, typename Map2Op>
-  friend bool operator==(const ProductOf2Maps<Map1Op, Map2Op>& lhs,
-                         const ProductOf2Maps<Map1Op, Map2Op>& rhs) noexcept {
+  friend bool operator==(const ProductOf2Maps& lhs,
+                         const ProductOf2Maps& rhs) noexcept {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_;
   }
 
@@ -240,10 +239,8 @@ class ProductOf3Maps {
   void pup(PUP::er& p);  // NOLINT
 
  private:
-  template <typename Map1Op, typename Map2Op, typename Map3Op>
-  friend bool operator==(
-      const ProductOf3Maps<Map1Op, Map2Op, Map3Op>& lhs,
-      const ProductOf3Maps<Map1Op, Map2Op, Map3Op>& rhs) noexcept {
+  friend bool operator==(const ProductOf3Maps& lhs,
+                         const ProductOf3Maps& rhs) noexcept {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
            lhs.map3_ == rhs.map3_;
   }

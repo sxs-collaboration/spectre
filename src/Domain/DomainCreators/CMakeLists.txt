@@ -5,6 +5,7 @@ set(LIBRARY DomainCreators)
 
 set(LIBRARY_SOURCES
   Brick.cpp
+  Disk.cpp
   Interval.cpp
   Rectangle.cpp
   RegisterDerivedWithCharm.cpp
