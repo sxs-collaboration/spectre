@@ -8,8 +8,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
+namespace gr {
 template <size_t Dim, typename Frame, typename DataType>
-tnsr::aa<DataType, Dim, Frame> compute_spacetime_metric(
+tnsr::aa<DataType, Dim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept {
   auto spacetime_metric =
@@ -38,20 +39,19 @@ tnsr::aa<DataType, Dim, Frame> compute_spacetime_metric(
 }
 
 template <size_t Dim, typename Frame, typename DataType>
-tnsr::AA<DataType, Dim, Frame> compute_inverse_spacetime_metric(
+tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric) noexcept {
   auto inverse_spacetime_metric =
       make_with_value<tnsr::AA<DataType, Dim, Frame>>(lapse, 0.);
 
-  get<0, 0>(inverse_spacetime_metric) =
-      -1.0 / (get(lapse) * get(lapse));
+  get<0, 0>(inverse_spacetime_metric) = -1.0 / (get(lapse) * get(lapse));
 
   const auto& minus_one_over_lapse_sqrd = get<0, 0>(inverse_spacetime_metric);
 
   for (size_t i = 0; i < Dim; ++i) {
-    inverse_spacetime_metric.get(0, i + 1) = -
-        shift.get(i) * minus_one_over_lapse_sqrd;
+    inverse_spacetime_metric.get(0, i + 1) =
+        -shift.get(i) * minus_one_over_lapse_sqrd;
   }
 
   for (size_t i = 0; i < Dim; ++i) {
@@ -65,7 +65,7 @@ tnsr::AA<DataType, Dim, Frame> compute_inverse_spacetime_metric(
 }
 
 template <size_t Dim, typename Frame, typename DataType>
-tnsr::abb<DataType, Dim, Frame> compute_derivatives_of_spacetime_metric(
+tnsr::abb<DataType, Dim, Frame> derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, Dim, Frame>& deriv_lapse,
     const tnsr::I<DataType, Dim, Frame>& shift,
@@ -129,85 +129,7 @@ tnsr::abb<DataType, Dim, Frame> compute_derivatives_of_spacetime_metric(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::iaa<DataType, SpatialDim, Frame> compute_phi(
-    const Scalar<DataType>& lapse,
-    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
-    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ijj<DataType, SpatialDim, Frame>&
-        deriv_spatial_metric) noexcept {
-  auto phi =
-      make_with_value<tnsr::iaa<DataType, SpatialDim, Frame>>(deriv_lapse, 0.);
-
-  for (size_t k = 0; k < SpatialDim; ++k) {
-    phi.get(k, 0, 0) = -2.0 * lapse.get() * deriv_lapse.get(k);
-    for (size_t m = 0; m < SpatialDim; ++m) {
-      for (size_t n = 0; n < SpatialDim; ++n) {
-        phi.get(k, 0, 0) +=
-            deriv_spatial_metric.get(k, m, n) * shift.get(m) * shift.get(n) +
-            2.0 * spatial_metric.get(m, n) * shift.get(m) *
-                deriv_shift.get(k, n);
-      }
-    }
-
-    for (size_t i = 0; i < SpatialDim; ++i) {
-      for (size_t m = 0; m < SpatialDim; ++m) {
-        phi.get(k, 0, i + 1) +=
-            deriv_spatial_metric.get(k, m, i) * shift.get(m) +
-            spatial_metric.get(m, i) * deriv_shift.get(k, m);
-      }
-      for (size_t j = i; j < SpatialDim; ++j) {
-        phi.get(k, i + 1, j + 1) = deriv_spatial_metric.get(k, i, j);
-      }
-    }
-  }
-  return phi;
-}
-
-template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::aa<DataType, SpatialDim, Frame> compute_pi(
-    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
-    const tnsr::I<DataType, SpatialDim, Frame>& shift,
-    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
-    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
-    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
-    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
-  auto pi =
-      make_with_value<tnsr::aa<DataType, SpatialDim, Frame>>(lapse, 0.);
-
-  get<0, 0>(pi) = -2.0 * lapse.get() * dt_lapse.get();
-
-  for (size_t m = 0; m < SpatialDim; ++m) {
-    for (size_t n = 0; n < SpatialDim; ++n) {
-      get<0, 0>(pi) +=
-          dt_spatial_metric.get(m, n) * shift.get(m) * shift.get(n) +
-          2.0 * spatial_metric.get(m, n) * shift.get(m) * dt_shift.get(n);
-    }
-  }
-
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    for (size_t m = 0; m < SpatialDim; ++m) {
-      pi.get(0, i + 1) += dt_spatial_metric.get(m, i) * shift.get(m) +
-                          spatial_metric.get(m, i) * dt_shift.get(m);
-    }
-    for (size_t j = i; j < SpatialDim; ++j) {
-      pi.get(i + 1, j + 1) = dt_spatial_metric.get(i, j);
-    }
-  }
-  for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
-    for (size_t nu = mu; nu < SpatialDim + 1; ++nu) {
-      for (size_t i = 0; i < SpatialDim; ++i) {
-        pi.get(mu, nu) -= shift.get(i) * phi.get(i, mu, nu);
-      }
-      pi.get(mu, nu) /= -lapse.get();
-    }
-  }
-  return pi;
-}
-
-template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
+tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept {
   auto normal_one_form =
       make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(lapse, 0.);
@@ -216,7 +138,7 @@ tnsr::a<DataType, SpatialDim, Frame> compute_spacetime_normal_one_form(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::A<DataType, SpatialDim, Frame> compute_spacetime_normal_vector(
+tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
   auto spacetime_normal_vector =
@@ -229,57 +151,79 @@ tnsr::A<DataType, SpatialDim, Frame> compute_spacetime_normal_vector(
   return spacetime_normal_vector;
 }
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>&
+        deriv_spatial_metric) noexcept {
+  const DataType half_over_lapse = 0.5 / get(lapse);
+
+  auto ex_curvature =
+      make_with_value<tnsr::ii<DataType, SpatialDim, Frame>>(lapse, 0.0);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = i; j < SpatialDim; ++j) {  // Symmetry
+      for (size_t k = 0; k < SpatialDim; ++k) {
+        ex_curvature.get(i, j) +=
+            shift.get(k) * deriv_spatial_metric.get(k, i, j) +
+            spatial_metric.get(k, i) * deriv_shift.get(j, k) +
+            spatial_metric.get(k, j) * deriv_shift.get(i, k);
+      }
+      ex_curvature.get(i, j) -= dt_spatial_metric.get(i, j);
+      ex_curvature.get(i, j) *= half_over_lapse;
+    }
+  }
+
+  return ex_curvature;
+}
+}  // namespace gr
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                      \
-  compute_spacetime_metric(                                                   \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          spatial_metric) noexcept;                                           \
-  template tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>                      \
-  compute_inverse_spacetime_metric(                                           \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric) noexcept;                                   \
-  template tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>                     \
-  compute_derivatives_of_spacetime_metric(                                    \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
-      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;                                     \
-  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)> compute_phi(        \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;                                     \
-  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)> compute_pi(          \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
-  compute_spacetime_normal_one_form(                                          \
-      const Scalar<DTYPE(data)>& lapse) noexcept;                             \
-  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                       \
-  compute_spacetime_normal_vector(                                            \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept;
+#define INSTANTIATE(_, data)                                                   \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)> gr::spacetime_metric( \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spatial_metric) noexcept;                                            \
+  template tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>                       \
+  gr::inverse_spacetime_metric(                                                \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric) noexcept;                                    \
+  template tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>                      \
+  gr::derivatives_of_spacetime_metric(                                         \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,         \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric,  \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          deriv_spatial_metric) noexcept;                                      \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                        \
+  gr::spacetime_normal_one_form(const Scalar<DTYPE(data)>& lapse) noexcept;    \
+  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                        \
+  gr::spacetime_normal_vector(                                                 \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept;     \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                       \
+  gr::extrinsic_curvature(                                                     \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric,  \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          deriv_spatial_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))
