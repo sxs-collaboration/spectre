@@ -107,7 +107,7 @@ using one_var = typelist<Var1<Dim>>;
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_logical_partial_derivatives_1d(const Index<1>& extents) {
   const size_t number_of_grid_points = extents.product();
-  const DataVector& xi = Basis::lgl::collocation_points(extents[0]);
+  const DataVector& xi = Basis::Legendre::collocation_points(extents[0]);
   Variables<VariableTags> u(number_of_grid_points);
   for (size_t a = 0; a < extents[0]; ++a) {
     for (size_t n = 0; n < u.number_of_independent_components; ++n) {
@@ -134,8 +134,8 @@ void test_logical_partial_derivatives_1d(const Index<1>& extents) {
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_logical_partial_derivatives_2d(const Index<2>& extents) {
   const size_t number_of_grid_points = extents.product();
-  const DataVector& xi = Basis::lgl::collocation_points(extents[0]);
-  const DataVector& eta = Basis::lgl::collocation_points(extents[1]);
+  const DataVector& xi = Basis::Legendre::collocation_points(extents[0]);
+  const DataVector& eta = Basis::Legendre::collocation_points(extents[1]);
   Variables<VariableTags> u(number_of_grid_points);
   const size_t a = extents[0] - 1;
   const size_t b = extents[1] - 1;
@@ -152,12 +152,11 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
     for (IndexIterator<2> ii(extents); ii; ++ii) {
       const double expected_dxi =
-          (0 == a
-               ? 0.0
-               : a * (n + 1) * pow(xi[ii()[0]], a - 1) * pow(eta[ii()[1]], b));
-      const double expected_deta = (0 == b ? 0.0
-                                           : b * (n + 1) * pow(xi[ii()[0]], a) *
-                                                 pow(eta[ii()[1]], b - 1));
+          (0 == a ? 0.0 : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
+                              pow(eta[ii()[1]], b));
+      const double expected_deta =
+          (0 == b ? 0.0 : b * (n + 1) * pow(xi[ii()[0]], a) *
+                              pow(eta[ii()[1]], b - 1));
       CHECK(du[0].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
       CHECK(du[1].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
@@ -169,9 +168,9 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_logical_partial_derivatives_3d(const Index<3>& extents) {
   const size_t number_of_grid_points = extents.product();
-  const DataVector& xi = Basis::lgl::collocation_points(extents[0]);
-  const DataVector& eta = Basis::lgl::collocation_points(extents[1]);
-  const DataVector& zeta = Basis::lgl::collocation_points(extents[2]);
+  const DataVector& xi = Basis::Legendre::collocation_points(extents[0]);
+  const DataVector& eta = Basis::Legendre::collocation_points(extents[1]);
+  const DataVector& zeta = Basis::Legendre::collocation_points(extents[2]);
   Variables<VariableTags> u(number_of_grid_points);
   const size_t a = extents[0] - 1;
   const size_t b = extents[1] - 1;
@@ -190,17 +189,14 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
     for (IndexIterator<3> ii(extents); ii; ++ii) {
       const double expected_dxi =
-          (0 == a ? 0.0
-                  : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
-                        pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
+          (0 == a ? 0.0 : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
+                              pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
       const double expected_deta =
-          (0 == b ? 0.0
-                  : b * (n + 1) * pow(xi[ii()[0]], a) *
-                        pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
+          (0 == b ? 0.0 : b * (n + 1) * pow(xi[ii()[0]], a) *
+                              pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
       const double expected_dzeta =
-          (0 == c ? 0.0
-                  : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
-                        pow(zeta[ii()[2]], c - 1));
+          (0 == c ? 0.0 : c * (n + 1) * pow(xi[ii()[0]], a) *
+                              pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c - 1));
       CHECK(du[0].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
       CHECK(du[1].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
@@ -340,15 +336,17 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  for (size_t n0 = 2; n0 <= Basis::lgl::maximum_number_of_pts / 2; ++n0) {
+  for (size_t n0 = 2; n0 <= Basis::Legendre::maximum_number_of_pts / 2; ++n0) {
     const Index<1> extents_1d(n0);
     test_logical_partial_derivatives_1d<two_vars<1>>(extents_1d);
     test_logical_partial_derivatives_1d<two_vars<1>, one_var<1>>(extents_1d);
-    for (size_t n1 = 2; n1 <= Basis::lgl::maximum_number_of_pts / 2; ++n1) {
+    for (size_t n1 = 2; n1 <= Basis::Legendre::maximum_number_of_pts / 2;
+         ++n1) {
       const Index<2> extents_2d(n0, n1);
       test_logical_partial_derivatives_2d<two_vars<2>>(extents_2d);
       test_logical_partial_derivatives_2d<two_vars<2>, one_var<2>>(extents_2d);
-      for (size_t n2 = 2; n2 <= Basis::lgl::maximum_number_of_pts / 2; ++n2) {
+      for (size_t n2 = 2; n2 <= Basis::Legendre::maximum_number_of_pts / 2;
+           ++n2) {
         const Index<3> extents_3d(n0, n1, n2);
         test_logical_partial_derivatives_3d<two_vars<3>>(extents_3d);
         test_logical_partial_derivatives_3d<two_vars<3>, one_var<3>>(
@@ -360,9 +358,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  const size_t n0 = Basis::lgl::maximum_number_of_pts / 2;
-  const size_t n1 = Basis::lgl::maximum_number_of_pts / 2 + 1;
-  const size_t n2 = Basis::lgl::maximum_number_of_pts / 2 - 1;
+  const size_t n0 = Basis::Legendre::maximum_number_of_pts / 2;
+  const size_t n1 = Basis::Legendre::maximum_number_of_pts / 2 + 1;
+  const size_t n2 = Basis::Legendre::maximum_number_of_pts / 2 - 1;
   const Index<1> extents_1d(n0);
   test_partial_derivatives_1d<two_vars<1>>(extents_1d);
   test_partial_derivatives_1d<two_vars<1>, one_var<1>>(extents_1d);

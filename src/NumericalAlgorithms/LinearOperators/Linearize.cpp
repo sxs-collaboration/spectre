@@ -18,7 +18,7 @@ DataVector linearize(const DataVector& u, const Index<Dim>& extents) {
   auto u_linearized = make_array<Dim>(DataVector(extents.product(), 0.0));
 
   for (size_t d = 0; d < Dim; ++d) {
-    const Matrix& F = Basis::lgl::linear_filter_matrix(extents[d]);
+    const Matrix& F = Basis::Legendre::linear_filter_matrix(extents[d]);
     for (StripeIterator s(extents, d); s; ++s) {
       dgemv_('N', extents[d], extents[d], 1., F.data(), extents[d],
              0 == d ? &u[s.offset()]                              // NOLINT
@@ -40,7 +40,7 @@ DataVector linearize(const DataVector& u, const Index<Dim>& extents,
                      const size_t d) {
   DataVector u_linearized(extents.product());
 
-  const Matrix& F = Basis::lgl::linear_filter_matrix(extents[d]);
+  const Matrix& F = Basis::Legendre::linear_filter_matrix(extents[d]);
   for (StripeIterator s(extents, d); s; ++s) {
     dgemv_('N', extents[d], extents[d], 1., F.data(), extents[d],
            &u.data()[s.offset()],                              // NOLINT

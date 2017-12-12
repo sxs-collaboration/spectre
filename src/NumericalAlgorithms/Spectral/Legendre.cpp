@@ -13,7 +13,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Basis {
-namespace lgl {
+namespace Legendre {
 namespace detail {
 class LglQp {
  public:
@@ -141,12 +141,12 @@ CollocationPointsAndWeights::CollocationPointsAndWeights(
 const CollocationPointsAndWeights& collocation_points_and_weights(
     const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= ::Basis::Legendre::maximum_number_of_pts,
          "Exceeded maximum number of collocation points.");
   static const auto collo_pts_and_weights = []() {
     std::vector<CollocationPointsAndWeights> local_collo_pts;
-    local_collo_pts.reserve(::Basis::lgl::maximum_number_of_pts - 1);
-    for (size_t n = 2; n <= Basis::lgl::maximum_number_of_pts; ++n) {
+    local_collo_pts.reserve(::Basis::Legendre::maximum_number_of_pts - 1);
+    for (size_t n = 2; n <= Basis::Legendre::maximum_number_of_pts; ++n) {
       local_collo_pts.emplace_back(n);
     }
     return local_collo_pts;
@@ -244,12 +244,12 @@ const DataVector& quadrature_weights(const size_t number_of_pts) {
 
 const Matrix& differentiation_matrix(const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= ::Basis::Legendre::maximum_number_of_pts,
          "Exceeded maximum number of collocation points.");
   static const auto differentiation_matrices = []() {
     std::vector<Matrix> local_diff_matrices;
-    local_diff_matrices.reserve(::Basis::lgl::maximum_number_of_pts - 1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_diff_matrices.reserve(::Basis::Legendre::maximum_number_of_pts - 1);
+    for (size_t n = 2; n <= ::Basis::Legendre::maximum_number_of_pts; ++n) {
       local_diff_matrices.emplace_back(detail::differentiation_matrix(n));
     }
     return local_diff_matrices;
@@ -259,13 +259,13 @@ const Matrix& differentiation_matrix(const size_t number_of_pts) {
 
 const Matrix& grid_points_to_spectral_matrix(const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= ::Basis::Legendre::maximum_number_of_pts,
          "Exceeded maximum number of collocation points.");
   static const auto grid_points_to_spectral_matrices = []() {
     std::vector<Matrix> local_grid_to_spec_matrices;
-    local_grid_to_spec_matrices.reserve(::Basis::lgl::maximum_number_of_pts -
-                                        1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_grid_to_spec_matrices.reserve(
+        ::Basis::Legendre::maximum_number_of_pts - 1);
+    for (size_t n = 2; n <= ::Basis::Legendre::maximum_number_of_pts; ++n) {
       local_grid_to_spec_matrices.emplace_back(
           detail::grid_points_to_spectral_matrix(n));
     }
@@ -276,13 +276,13 @@ const Matrix& grid_points_to_spectral_matrix(const size_t number_of_pts) {
 
 const Matrix& spectral_to_grid_points_matrix(const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= ::Basis::Legendre::maximum_number_of_pts,
          "Exceeded maximum number of collocation points.");
   static const auto spectral_to_grid_matrices = []() {
     std::vector<Matrix> local_spec_to_grid_matrices;
-    local_spec_to_grid_matrices.reserve(::Basis::lgl::maximum_number_of_pts -
-                                        1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_spec_to_grid_matrices.reserve(
+        ::Basis::Legendre::maximum_number_of_pts - 1);
+    for (size_t n = 2; n <= ::Basis::Legendre::maximum_number_of_pts; ++n) {
       local_spec_to_grid_matrices.emplace_back(
           detail::spectral_to_grid_points_matrix(n));
     }
@@ -293,13 +293,13 @@ const Matrix& spectral_to_grid_points_matrix(const size_t number_of_pts) {
 
 const Matrix& linear_filter_matrix(const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= ::Basis::Legendre::maximum_number_of_pts,
          "Exceeded maximum number of collocation points.");
   static const auto linear_filter_matrices = []() {
     std::vector<Matrix> local_linear_filter_matrices;
-    local_linear_filter_matrices.reserve(::Basis::lgl::maximum_number_of_pts -
-                                         1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_linear_filter_matrices.reserve(
+        ::Basis::Legendre::maximum_number_of_pts - 1);
+    for (size_t n = 2; n <= ::Basis::Legendre::maximum_number_of_pts; ++n) {
       Matrix filter_matrix(n, n);
       // Linear filter is
       // grid_to_spectral_matrix * diag(1,1,0,0,....) * spectral_to_grid_matrix,
@@ -319,7 +319,7 @@ template <typename T>
 Matrix interpolation_matrix(const size_t number_of_pts,
                             const T& target_points) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= ::Basis::Legendre::maximum_number_of_pts,
          "Exceeded maximum number of collocation points.");
   const DataVector& collocation_pts =
       detail::collocation_points_and_weights(number_of_pts).collocation_pts();
@@ -360,13 +360,13 @@ Matrix interpolation_matrix(const size_t number_of_pts,
   return interp_matrix;
 }
 
-}  // namespace lgl
+}  // namespace Legendre
 }  // namespace Basis
 
 /// \cond
-template Matrix Basis::lgl::interpolation_matrix(
+template Matrix Basis::Legendre::interpolation_matrix(
     const size_t num_collocation_points, const DataVector& target_points);
-template Matrix Basis::lgl::interpolation_matrix(
+template Matrix Basis::Legendre::interpolation_matrix(
     const size_t num_collocation_points,
     const std::vector<double>& target_points);
 /// \endcond

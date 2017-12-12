@@ -33,12 +33,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const CoordinateMaps::AffineMap eta_map(-1., 1., 2., 5.);
   const auto coordinate_map = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                     CoordinateMaps::AffineMap>(
-      xi_map, eta_map));
+                                     CoordinateMaps::AffineMap>(xi_map,
+                                                                eta_map));
   const double element_length = (eta_map(std::array<double, 1>{{1.}}) -
                                  eta_map(std::array<double, 1>{{-1.}}))[0];
 
-  const double weight = Basis::lgl::quadrature_weights(perpendicular_extent)[0];
+  const double weight =
+      Basis::Legendre::quadrature_weights(perpendicular_extent)[0];
 
   const Index<1> boundary_extents{{{3}}};
   const DataVector magnitude_of_grid_normal =
@@ -54,6 +55,5 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
       -2. / (element_length * weight) * (numerical_flux - local_flux);
 
   CHECK(dg::lift_flux(local_flux, numerical_flux, perpendicular_extent,
-                      magnitude_of_grid_normal) ==
-        expected);
+                      magnitude_of_grid_normal) == expected);
 }

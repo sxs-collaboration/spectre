@@ -16,11 +16,11 @@
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   for (size_t nx = 2; nx < 7; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
+    const DataVector& x = Basis::Legendre::collocation_points(nx);
     for (size_t ny = 2; ny < 7; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
+      const DataVector& y = Basis::Legendre::collocation_points(ny);
       for (size_t nz = 2; nz < 7; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
+        const DataVector& z = Basis::Legendre::collocation_points(nz);
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
@@ -38,11 +38,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   for (size_t nx = 2; nx < 7; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
+    const DataVector& x = Basis::Legendre::collocation_points(nx);
     for (size_t ny = 2; ny < 7; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
+      const DataVector& y = Basis::Legendre::collocation_points(ny);
       for (size_t nz = 2; nz < 7; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
+        const DataVector& z = Basis::Legendre::collocation_points(nz);
         const Index<3> extents(nx, ny, nz);
         const DataVector u_lin = [&extents, &x, &y, &z]() {
           DataVector temp(extents.product());
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   for (size_t nx = 2; nx < 7; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
+    const DataVector& x = Basis::Legendre::collocation_points(nx);
     const Index<1> extents(nx);
     const DataVector u_lin = [&extents, &x]() {
       DataVector temp(extents.product());

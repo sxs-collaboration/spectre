@@ -26,7 +26,7 @@
  */
 template <size_t Dim>
 double mean_value(const DataVector& f, const Index<Dim>& extents) {
-  return Basis::lgl::definite_integral(f, extents) / two_to_the(Dim);
+  return Basis::Legendre::definite_integral(f, extents) / two_to_the(Dim);
 }
 
 /*!

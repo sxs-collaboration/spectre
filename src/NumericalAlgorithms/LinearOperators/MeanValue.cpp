@@ -26,7 +26,8 @@ double mean_value_on_boundary(const DataVector& f, const Index<Dim>& extents,
        ++si) {
     f_on_boundary[si.slice_offset()] = f[si.volume_offset()];
   }
-  return Basis::lgl::definite_integral(f_on_boundary, extents_on_boundary) /
+  return Basis::Legendre::definite_integral(f_on_boundary,
+                                            extents_on_boundary) /
          two_to_the(Dim - 1);
 }
 

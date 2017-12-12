@@ -37,25 +37,25 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
 
   // cppcheck-suppress preprocessorErrorDirective
   SECTION("Check 2 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(2);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(2);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == 1.0);
   }
   SECTION("Check 3 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(3);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(3);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(0));
     CHECK(collocation_pts[2] == 1.0);
   }
   SECTION("Check 4 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(4);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(4);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_4[0]));
     CHECK(collocation_pts[2] == approx(collocation_pts_4[0]));
     CHECK(collocation_pts[3] == 1.0);
   }
   SECTION("Check 5 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(5);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(5);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_5[0]));
     CHECK(collocation_pts[2] == approx(0.0));
@@ -63,7 +63,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
     CHECK(collocation_pts[4] == 1.0);
   }
   SECTION("Check 6 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(6);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(6);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_6[1]));
     CHECK(collocation_pts[2] == approx(-collocation_pts_6[0]));
@@ -72,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
     CHECK(collocation_pts[5] == 1.0);
   }
   SECTION("Check 7 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(7);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(7);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_7[1]));
     CHECK(collocation_pts[2] == approx(-collocation_pts_7[0]));
@@ -81,14 +81,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
     CHECK(collocation_pts[5] == approx(collocation_pts_7[1]));
     CHECK(collocation_pts[6] == 1.0);
 
-    const DataVector& quadrature_weights = Basis::lgl::quadrature_weights(7);
+    const DataVector& quadrature_weights =
+        Basis::Legendre::quadrature_weights(7);
     CHECK(quadrature_weights[0] == approx(4.761904761904762e-2));
     CHECK(quadrature_weights[1] == approx(0.276826047361566));
     CHECK(quadrature_weights[2] == approx(0.431745381209863));
     CHECK(quadrature_weights[3] == approx(0.487619047619048));
   }
   SECTION("Check 8 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(8);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(8);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_8[2]));
     CHECK(collocation_pts[2] == approx(-collocation_pts_8[1]));
@@ -99,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
     CHECK(collocation_pts[7] == 1.0);
   }
   SECTION("Check 9 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(9);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(9);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_9[2]));
     CHECK(collocation_pts[2] == approx(-collocation_pts_9[1]));
@@ -111,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
     CHECK(collocation_pts[8] == 1.0);
   }
   SECTION("Check 10 points") {
-    const DataVector& collocation_pts = Basis::lgl::collocation_points(10);
+    const DataVector& collocation_pts = Basis::Legendre::collocation_points(10);
     CHECK(collocation_pts[0] == -1.0);
     CHECK(collocation_pts[1] == approx(-collocation_pts_10[3]));
     CHECK(collocation_pts[2] == approx(-collocation_pts_10[2]));
@@ -123,9 +124,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",
     CHECK(collocation_pts[8] == approx(collocation_pts_10[3]));
     CHECK(collocation_pts[9] == 1.0);
   }
-  if (Basis::lgl::maximum_number_of_pts > 19) {
+  if (Basis::Legendre::maximum_number_of_pts > 19) {
     SECTION("Check 20 points") {
-      const DataVector& collocation_pts = Basis::lgl::collocation_points(20);
+      const DataVector& collocation_pts =
+          Basis::Legendre::collocation_points(20);
       CHECK(collocation_pts[0] == -1.0);
       CHECK(collocation_pts[1] == approx(-collocation_pts_20[8]));
       CHECK(collocation_pts[2] == approx(-collocation_pts_20[7]));
@@ -168,7 +170,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(1, 1) = .5;
       return diff_matrix;
     }();
-    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(2);
+    const Matrix& diff_matrix = Basis::Legendre::differentiation_matrix(2);
     for (size_t i = 0; i < 2; ++i) {
       for (size_t j = 0; j < 2; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -190,7 +192,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(2, 2) = 1.5;
       return diff_matrix;
     }();
-    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(3);
+    const Matrix& diff_matrix = Basis::Legendre::differentiation_matrix(3);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -219,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(3, 3) = 3.0;
       return diff_matrix;
     }();
-    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(4);
+    const Matrix& diff_matrix = Basis::Legendre::differentiation_matrix(4);
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -257,7 +259,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(4, 4) = 5;
       return diff_matrix;
     }();
-    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(5);
+    const Matrix& diff_matrix = Basis::Legendre::differentiation_matrix(5);
     for (size_t i = 0; i < 5; ++i) {
       for (size_t j = 0; j < 5; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -306,7 +308,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
       diff_matrix(5, 5) = 7.5;
       return diff_matrix;
     }();
-    const Matrix& diff_matrix = Basis::lgl::differentiation_matrix(6);
+    const Matrix& diff_matrix = Basis::Legendre::differentiation_matrix(6);
     for (size_t i = 0; i < 6; ++i) {
       for (size_t j = 0; j < 6; ++j) {
         CHECK(diff_matrix(i, j) == approx(diff_matrix_expected(i, j)));
@@ -319,10 +321,11 @@ SPECTRE_TEST_CASE(
     "Unit.Numerical.Spectral.LegendreGaussLobatto.LinearFilterMatrix",
     "[NumericalAlgorithms][Spectral][Unit]") {
   for (size_t n = 2; n < 10; ++n) {
-    const Matrix& filter_matrix = Basis::lgl::linear_filter_matrix(n);
+    const Matrix& filter_matrix = Basis::Legendre::linear_filter_matrix(n);
     const Matrix& grid_points_to_spectral_matrix =
-        Basis::lgl::grid_points_to_spectral_matrix(n);
-    const DataVector& collocation_points = Basis::lgl::collocation_points(n);
+        Basis::Legendre::grid_points_to_spectral_matrix(n);
+    const DataVector& collocation_points =
+        Basis::Legendre::collocation_points(n);
     DataVector u(n);
     for (size_t s = 0; s < n; ++s) {
       u[s] = exp(collocation_points[s]);
@@ -344,7 +347,7 @@ SPECTRE_TEST_CASE(
     "[NumericalAlgorithms][Spectral][Unit]") {
   auto check_interp = [](const size_t num_pts, auto func) {
     const DataVector& collocation_points =
-        Basis::lgl::collocation_points(num_pts);
+        Basis::Legendre::collocation_points(num_pts);
     DataVector u(num_pts);
     for (size_t i = 0; i < num_pts; ++i) {
       u[i] = func(collocation_points[i]);
@@ -353,7 +356,7 @@ SPECTRE_TEST_CASE(
     DataVector interpolated_u(new_points.size(), 0.0);
 
     const Matrix interp_matrix =
-        Basis::lgl::interpolation_matrix(num_pts, new_points);
+        Basis::Legendre::interpolation_matrix(num_pts, new_points);
     dgemv_('n', new_points.size(), num_pts, 1.0, interp_matrix.data(),
            new_points.size(), u.data(), 1, 0.0, interpolated_u.data(), 1);
 

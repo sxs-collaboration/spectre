@@ -16,7 +16,7 @@ class Matrix;
 namespace Basis {
 /// \ingroup NumericalAlgorithmsGroup
 /// Functions for using Legendre-Gauss-Lobatto basis
-namespace lgl {
+namespace Legendre {
 /// Collocation points.
 /// \param number_of_pts number of collocation points
 const DataVector& collocation_points(size_t number_of_pts);
@@ -55,5 +55,5 @@ Matrix interpolation_matrix(size_t number_of_pts, const T& target_points);
 
 /// Maximum number of allowed collocation points for LGL basis
 static const size_t maximum_number_of_pts = 12;
-}  // namespace lgl
+}  // namespace Legendre
 }  // namespace Basis

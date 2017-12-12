@@ -18,11 +18,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
   // The start and end are chosen to give fast tests
   const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
+    const DataVector& x = Basis::Legendre::collocation_points(nx);
     for (size_t ny = n_start; ny < n_end; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
+      const DataVector& y = Basis::Legendre::collocation_points(ny);
       for (size_t nz = n_start; nz < n_end; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
+        const DataVector& z = Basis::Legendre::collocation_points(nz);
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
@@ -32,7 +32,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
         for (size_t d = 0; d < 3; ++d) {
           for (StripeIterator s(extents, d); s; ++s) {
             const Matrix& inv_v =
-                Basis::lgl::grid_points_to_spectral_matrix(extents[d]);
+                Basis::Legendre::grid_points_to_spectral_matrix(extents[d]);
             DataVector u_s(extents[d]);
             dgemv_('N', extents[d], extents[d], 1., inv_v.data(), extents[d],
                    u_lin.data() + s.offset(), s.stride(), 0.0,  // NOLINT
@@ -51,11 +51,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   const size_t n_start = 2, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
+    const DataVector& x = Basis::Legendre::collocation_points(nx);
     for (size_t ny = n_start; ny < n_end; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
+      const DataVector& y = Basis::Legendre::collocation_points(ny);
       for (size_t nz = n_start; nz < n_end; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
+        const DataVector& z = Basis::Legendre::collocation_points(nz);
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
@@ -73,11 +73,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
   // The start and end are chosen to give fast tests
   const size_t n_start = 3, n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
+    const DataVector& x = Basis::Legendre::collocation_points(nx);
     for (size_t ny = n_start; ny < n_end; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
+      const DataVector& y = Basis::Legendre::collocation_points(ny);
       for (size_t nz = n_start; nz < n_end; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
+        const DataVector& z = Basis::Legendre::collocation_points(nz);
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
           DataVector u_lin = linearize(u, extents, d);
           for (StripeIterator s(extents, d); s; ++s) {
             const Matrix& inv_v =
-                Basis::lgl::grid_points_to_spectral_matrix(extents[d]);
+                Basis::Legendre::grid_points_to_spectral_matrix(extents[d]);
             DataVector u_s(extents[d]);
             dgemv_('N', extents[d], extents[d], 1., inv_v.data(), extents[d],
                    u_lin.data() + s.offset(), s.stride(),  // NOLINT

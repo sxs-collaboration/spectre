@@ -20,7 +20,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
   for (size_t d = 0; d < VolumeDim; ++d) {
     const auto& collocation_points_in_this_dim =
-        Basis::lgl::collocation_points(extents[d]);
+        Basis::Legendre::collocation_points(extents[d]);
     for (IndexIterator<VolumeDim> index(extents); index; ++index) {
       logical_x.get(d)[index.offset()] =
           collocation_points_in_this_dim[index()[d]];
@@ -39,7 +39,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
   std::array<DataVector, VolumeDim - 1> collocation_points_in_each_dim{};
   for (size_t d = 0; d < VolumeDim - 1; ++d) {
     gsl::at(collocation_points_in_each_dim, d) =
-        Basis::lgl::collocation_points(extents[d]);
+        Basis::Legendre::collocation_points(extents[d]);
   }
 
   for (IndexIterator<VolumeDim - 1> index(extents); index; ++index) {

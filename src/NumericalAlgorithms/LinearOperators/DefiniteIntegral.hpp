@@ -13,14 +13,14 @@ template <size_t>
 class Index;
 
 namespace Basis {
-namespace lgl {
+namespace Legendre {
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the definite integral of a grid-function over a manifold.
  *
  * The integral is computed on the reference element by multiplying the
- * DataVector with the Basis::lgl integration weights in that
+ * DataVector with the Basis::Legendre integration weights in that
  * dimension.
  * \requires number of points in `integrand` and `extents` are equal.
  * \param integrand the grid function to integrate.
@@ -31,5 +31,5 @@ template <size_t Dim>
 double definite_integral(const DataVector& integrand,
                          const Index<Dim>& extents) noexcept;
 
-}  // namespace lgl
+}  // namespace Legendre
 }  // namespace Basis
