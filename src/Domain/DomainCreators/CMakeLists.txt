@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Interval.cpp
   Rectangle.cpp
   RegisterDerivedWithCharm.cpp
+  Shell.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
