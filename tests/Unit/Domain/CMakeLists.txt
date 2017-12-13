@@ -26,7 +26,7 @@ set(DOMAIN_TESTS
     Domain/Test_ElementId.cpp
     Domain/Test_ElementIndex.cpp
     Domain/Test_ElementMap.cpp
-    Domain/Test_GridNormal.cpp
+    Domain/Test_FaceNormal.cpp
     Domain/Test_InitialElementIds.cpp
     Domain/Test_LogicalCoordinates.cpp
     Domain/Test_Neighbors.cpp

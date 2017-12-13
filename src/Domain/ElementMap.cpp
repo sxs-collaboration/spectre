@@ -62,4 +62,8 @@ void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) noexcept {
 template class ElementMap<1, Frame::Inertial>;
 template class ElementMap<2, Frame::Inertial>;
 template class ElementMap<3, Frame::Inertial>;
+// For dual frame evolutions the ElementMap only goes to the grid frame
+template class ElementMap<1, Frame::Grid>;
+template class ElementMap<2, Frame::Grid>;
+template class ElementMap<3, Frame::Grid>;
 /// \endcond
