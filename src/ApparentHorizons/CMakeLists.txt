@@ -5,6 +5,7 @@ set(LIBRARY ApparentHorizons)
 
 set(LIBRARY_SOURCES
     SpherepackIterator.cpp
+    Strahlkorper.cpp
     YlmSpherepack.cpp
     YlmSpherepackHelper.cpp
     )
