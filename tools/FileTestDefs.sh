@@ -131,10 +131,13 @@ standard_checks=()
 
 # Check for lines longer than 80 characters
 long_lines() {
-    is_c++ "$1" && grep -q '^[^#].\{80,\}' "$1"
+    is_c++ "$1" && grep '^[^#].\{80,\}' "$1" | grep -Evq 'https?://'
 }
 long_lines_report() {
     echo "Found lines over 80 characters:"
+    # This doesn't filter out URLs, but I can't think of a way to do
+    # that without breaking the highlighting.  They only get printed
+    # if there's another problem in the file.
     pretty_grep '^[^#].\{80,\}' "$@"
 }
 long_lines_test() {
@@ -144,6 +147,8 @@ long_lines_test() {
     test_check fail foo.cpp "${eighty}x"$'\n'
     test_check pass foo.yaml "${eighty}x"$'\n'
     test_check pass foo.cpp "#include ${eighty}x"$'\n'
+    test_check pass foo.cpp "xxx http://${eighty}x"$'\n'
+    test_check pass foo.cpp "xxx https://${eighty}x"$'\n'
 }
 standard_checks+=(long_lines)
 
