@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Spherepack.hpp"
