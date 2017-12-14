@@ -15,12 +15,23 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace ActionTesting_detail {
-template <typename InboxTagList>
+template <typename Component>
+class MockLocalAlgorithm {
+ public:
+  void set_terminate(bool t) { terminate_ = t; }
+  bool get_terminate() { return terminate_; }
+ private:
+  bool terminate_{false};
+};
+
+template <typename Component, typename InboxTagList>
 class MockArrayElementProxy {
  public:
   using Inbox = tuples::TaggedTupleTypelist<InboxTagList>;
 
-  explicit MockArrayElementProxy(Inbox& inbox) : inbox_(inbox) {}
+  MockArrayElementProxy(MockLocalAlgorithm<Component>& local_algorithm,
+                        Inbox& inbox)
+      : local_algorithm_(local_algorithm), inbox_(inbox) {}
 
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id,
@@ -28,31 +39,44 @@ class MockArrayElementProxy {
     tuples::get<InboxTag>(inbox_)[id].emplace(data);
   }
 
+  MockLocalAlgorithm<Component>* ckLocal() { return &local_algorithm_; }
+
  private:
+  MockLocalAlgorithm<Component>& local_algorithm_;
   Inbox& inbox_;
 };
 
-template <typename Index, typename InboxTagList>
+template <typename Component, typename Index, typename InboxTagList>
 class MockProxy {
  public:
   using Inboxes =
       std::unordered_map<Index, tuples::TaggedTupleTypelist<InboxTagList>>;
+  using LocalAlgorithms =
+      std::unordered_map<Index, MockLocalAlgorithm<Component>>;
 
   MockProxy() : inboxes_(nullptr) {}
-  void set_inboxes(Inboxes* inboxes) { inboxes_ = inboxes; }
+  void set_data(LocalAlgorithms* local_algorithms,
+                Inboxes* inboxes) {
+    local_algorithms_ = local_algorithms;
+    inboxes_ = inboxes;
+  }
 
-  MockArrayElementProxy<InboxTagList> operator[](const Index& index) {
-    return MockArrayElementProxy<InboxTagList>((*inboxes_)[index]);
+  MockArrayElementProxy<Component, InboxTagList> operator[](
+      const Index& index) {
+    return MockArrayElementProxy<Component, InboxTagList>(
+        (*local_algorithms_)[index], (*inboxes_)[index]);
   }
 
  private:
+  LocalAlgorithms* local_algorithms_;
   Inboxes* inboxes_;
 };
 
 struct MockArrayChare {
   template <typename Component, typename Metavariables, typename ActionList,
             typename Index, typename InitialDataBox>
-  using cproxy = MockProxy<Index, Parallel::get_inbox_tags<ActionList>>;
+  using cproxy =
+      MockProxy<Component, Index, Parallel::get_inbox_tags<ActionList>>;
 };
 }  // namespace ActionTesting_detail
 
@@ -108,7 +132,9 @@ class ActionRunner {
         [this](auto component) {
           using Component = tmpl::type_from<decltype(component)>;
           Parallel::get_parallel_component<Component>(cache_)
-              .set_inboxes(&tuples::get<Inboxes<Component>>(inboxes_));
+              .set_data(
+                  &tuples::get<LocalAlgorithms<Component>>(local_algorithms_),
+                  &tuples::get<Inboxes<Component>>(inboxes_));
         });
   }
 
@@ -158,6 +184,12 @@ class ActionRunner {
     return result;
   }
 
+  /// Access the mocked algorithms for a component, indexed by array index.
+  template <typename Component>
+  auto& algorithms() noexcept {
+    return tuples::get<LocalAlgorithms<Component>>(local_algorithms_);
+  }
+
  private:
   template <typename Component>
   struct Inboxes {
@@ -167,9 +199,20 @@ class ActionRunner {
                                typename Component::action_list>>>;
   };
 
+  template <typename Component>
+  struct LocalAlgorithms {
+    using type = std::unordered_map<
+      typename Component::index,
+      ActionTesting_detail::MockLocalAlgorithm<Component>>;
+  };
+
   ConstGlobalCache_t cache_;
   tuples::TaggedTupleTypelist<tmpl::transform<
       typename Metavariables::component_list, tmpl::bind<Inboxes, tmpl::_1>>>
       inboxes_;
+  tuples::TaggedTupleTypelist<
+    tmpl::transform<typename Metavariables::component_list,
+                    tmpl::bind<LocalAlgorithms, tmpl::_1>>>
+      local_algorithms_;
 };
 }  // namespace ActionTesting
