@@ -42,6 +42,13 @@ void register_with_charm<3>() {
                       CoordinateMaps::ProductOf3Maps<
                           CoordinateMaps::AffineMap, CoordinateMaps::AffineMap,
                           CoordinateMaps::AffineMap>>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<
+                 Frame::Logical, Frame::Inertial,
+                 CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
+                                                CoordinateMaps::Equiangular,
+                                                CoordinateMaps::Equiangular>>));
+
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Wedge3D>));
 }

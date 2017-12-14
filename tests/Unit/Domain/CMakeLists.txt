@@ -15,6 +15,7 @@ set(DOMAIN_TESTS
     Domain/DomainCreators/Test_Interval.cpp
     Domain/DomainCreators/Test_Rectangle.cpp
     Domain/DomainCreators/Test_Shell.cpp
+    Domain/DomainCreators/Test_Sphere.cpp
     Domain/DomainTestHelpers.cpp
     Domain/Test_Block.cpp
     Domain/Test_BlockNeighbor.cpp

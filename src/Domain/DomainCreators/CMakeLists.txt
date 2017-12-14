@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Rectangle.cpp
   RegisterDerivedWithCharm.cpp
   Shell.cpp
+  Sphere.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
