@@ -232,12 +232,38 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   const double eta_lift = -6./(eta_map(std::array<double, 1>{{1.}}) -
                                eta_map(std::array<double, 1>{{-1.}}))[0];
 
-  const DataVector xi_boundaries{0., 0., 105150.,
-                                 0., 0., 120300.,
-                                 0., 0., 135450.};
-  const DataVector eta_boundaries{0., 0., 0.,
-                                  0., 0., 0.,
-                                  221400./3., 241600./3., 261800./3.};
+  const DataVector xi_boundaries{
+      0.,
+      0.,
+      105150. /
+          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::lower_xi()))[0],
+      0.,
+      0.,
+      120300. /
+          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::lower_xi()))[1],
+      0.,
+      0.,
+      135450. /
+          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::lower_xi()))[2]};
+  const DataVector eta_boundaries{
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      221400. / 3. /
+          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::upper_eta()))[0],
+      241600. / 3. /
+          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::upper_eta()))[1],
+      261800. / 3. /
+          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::upper_eta()))[2]};
 
   CHECK_ITERABLE_APPROX(
       get<Tags::dt<Var>>(db::get<System::dt_variables_tag>(received_box)).get(),
