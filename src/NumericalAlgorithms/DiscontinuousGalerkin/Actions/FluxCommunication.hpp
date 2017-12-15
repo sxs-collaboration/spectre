@@ -280,28 +280,18 @@ struct SendDataForFluxes {
       const size_t dimension = direction.dimension();
       const auto& segment_id = gsl::at(element.id().segment_ids(), dimension);
       const auto& orientation = neighbors_in_direction.orientation();
+      const auto direction_from_neighbor = orientation(direction.opposite());
       const auto boundary_extents = extents.slice_away(dimension);
       auto boundary_variables = data_on_slice(
           evolved_vars, extents, dimension,
           direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
 
+      const auto neighbor_variables = orient_variables_on_slice(
+          boundary_variables, boundary_extents, dimension, orientation);
+
       for (const auto& neighbor : neighbors_in_direction) {
         const auto& neighbor_segment_id =
             gsl::at(neighbor.segment_ids(), dimension);
-
-        const bool neighbor_is_on_opposite_side_of_mortar =
-            element.id().block_id() != neighbor.block_id() or
-            not segment_id.overlaps(neighbor_segment_id);
-        const auto direction_from_neighbor =
-            neighbor_is_on_opposite_side_of_mortar
-                ? orientation(direction.opposite())
-                : direction;
-        auto neighbor_variables =
-            neighbor_is_on_opposite_side_of_mortar
-                ? orient_variables_on_slice(boundary_variables,
-                                            boundary_extents, dimension,
-                                            orientation)
-                : boundary_variables;
 
         receiver_proxy[neighbor]
             .template receive_data<
@@ -309,7 +299,7 @@ struct SendDataForFluxes {
                 time_id,
                 std::make_pair(
                     std::make_pair(direction_from_neighbor, element.id()),
-                    std::move(neighbor_variables)));
+                    neighbor_variables));
       }
 
       mortars.emplace(direction, std::move(boundary_variables));

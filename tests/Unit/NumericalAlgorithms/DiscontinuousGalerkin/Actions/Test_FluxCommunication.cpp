@@ -117,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
        &block_orientation, &xi_map, &eta_map]() {
     const Element<2> element(
         self_id,
-       {{Direction<2>::lower_xi(), {{west_id, south_id}, block_orientation}},
+       {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
         {Direction<2>::upper_xi(), {{east_id}, {}}},
         {Direction<2>::upper_eta(), {{south_id}, {}}}});
 
@@ -170,13 +170,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   CHECK(flux_inbox(east_id).size() == 1);
   CHECK(get<Var>(flux_inbox(east_id)[{Direction<2>::lower_xi(), self_id}]).get()
         == (DataVector{3., 6., 9.}));
-  CHECK(flux_inbox(south_id).size() == 2);
+  CHECK(flux_inbox(south_id).size() == 1);
   CHECK(get<Var>(flux_inbox(south_id)[{Direction<2>::lower_eta(), self_id}])
         .get()
         == (DataVector{7., 8., 9.}));
-  CHECK(get<Var>(flux_inbox(south_id)[{Direction<2>::lower_xi(), self_id}])
-        .get()
-        == (DataVector{1., 4., 7.}));
 
   // Now check ComputeBoundaryFlux
   // We can't handle the complex boundary yet, so remove it
