@@ -418,39 +418,6 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
    * \example
    * \snippet Test_TaggedTuple.cpp construction_example
    */
-  template <
-      bool Dummy = true,
-      typename std::enable_if<args_constructor<Dummy>::template enable_explicit<
-          tag_type<Tags> const&...>()>::type* = nullptr>
-  constexpr explicit TaggedTuple(tag_type<Tags> const&... ts) noexcept(
-      tuples_detail::all<std::is_nothrow_copy_constructible<
-          tuples_detail::TaggedTupleLeaf<Tags>>::value...>::value)
-      : tuples_detail::TaggedTupleLeaf<Tags>(ts)... {}
-
-  /*!
-   * \brief Construct a TaggedTuple with Args
-   * \requires `std::is_convertible_v<Us, typename Tags::type>...` is `true`
-   *
-   * \example
-   * \snippet Test_TaggedTuple.cpp construction_example
-   */
-  template <
-      bool Dummy = true,
-      typename std::enable_if<args_constructor<Dummy>::template enable_implicit<
-          tag_type<Tags> const&...>()>::type* = nullptr>
-  // clang-tidy: mark explicit
-  constexpr TaggedTuple(tag_type<Tags> const&... ts) noexcept(  // NOLINT
-      tuples_detail::all<std::is_nothrow_copy_constructible<
-          tuples_detail::TaggedTupleLeaf<Tags>>::value...>::value)
-      : tuples_detail::TaggedTupleLeaf<Tags>(ts)... {}
-
-  /*!
-   * \brief Construct a TaggedTuple with Args
-   * \requires `std::is_convertible_v<Us, typename Tags::type>...` is `true`
-   *
-   * \example
-   * \snippet Test_TaggedTuple.cpp construction_example
-   */
   template <class... Us,
             typename std::enable_if<
                 args_constructor<not pack_is_TaggedTuple<Us...>::value and
@@ -857,4 +824,3 @@ std::ostream& operator<<(std::ostream& os, const TaggedTuple<Tags...>& t) {
 }
 
 }  // namespace tuples
-

@@ -1,7 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <memory>
 #include <sstream>
+#include <vector>
 
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -895,6 +897,27 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.swap", "[Unit][Utilities]") {
     static_assert(not noexcept(tuples::swap(t0, t1)),
                   "Failed testing Unit.Utilities.TaggedTuple.swap");
   }
+}
+
+namespace tags {
+struct NonCopyable0 {
+  using type = std::vector<std::unique_ptr<int>>;
+};
+struct NonCopyable1 {
+  using type = std::vector<std::unique_ptr<int>>;
+};
+}  // namespace tags
+
+SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.NonCopyable",
+                  "[Unit][Utilities]") {
+  std::vector<std::unique_ptr<int>> a{};
+  a.reserve(2);
+  a.emplace_back(std::make_unique<int>(1));
+  a.emplace_back(std::make_unique<int>(3));
+  tuples::TaggedTuple<tags::NonCopyable0, tags::NonCopyable1> t(
+      std::move(a), tags::NonCopyable1::type{});
+  CHECK(*tuples::get<tags::NonCopyable0>(t)[0] == 1);
+  CHECK(*tuples::get<tags::NonCopyable0>(t)[1] == 3);
 }
 
 }  // namespace
