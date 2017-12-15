@@ -303,7 +303,7 @@ struct SendDataForFluxes {
                                             orientation)
                 : boundary_variables;
 
-        receiver_proxy[ElementIndex<volume_dim>(neighbor)]
+        receiver_proxy[neighbor]
             .template receive_data<
                 typename ComputeBoundaryFlux<system>::FluxesTag>(
                 time_id,

@@ -142,9 +142,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         std::move(dt_variables));
   }();
 
-  auto sent_box =
-      std::get<0>(runner.apply<component, Actions::SendDataForFluxes>(
-          start_box, Index_t(self_id)));
+  auto sent_box = std::get<0>(
+      runner.apply<component, Actions::SendDataForFluxes>(start_box, self_id));
 
   // Check local state
   auto local_boundaries = db::get<history_tag>(sent_box);
@@ -158,12 +157,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
   // Check sent data
   CHECK((runner.nonempty_inboxes<component, fluxes_tag>()) ==
-        (std::unordered_set<Index_t>{
-          Index_t(west_id), Index_t(east_id), Index_t(south_id)}));
+        (std::unordered_set<Index_t>{west_id, east_id, south_id}));
   auto& inboxes = runner.inboxes<component>();
   const auto flux_inbox =
       [&inboxes, &time_id](const ElementId<2>& id) noexcept {
-    return tuples::get<fluxes_tag>(inboxes[Index_t(id)])[time_id];
+    return tuples::get<fluxes_tag>(inboxes[id])[time_id];
   };
   CHECK(flux_inbox(west_id).size() == 1);
   CHECK(get<Var>(flux_inbox(west_id)[{Direction<2>::lower_eta(), self_id}])
@@ -191,7 +189,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       });
 
   CHECK_FALSE((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
-      sent_box, Index_t(self_id))));
+      sent_box, self_id)));
 
   // Send from south neighbor
   {
@@ -205,10 +203,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     auto box = db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
                                       Tags::Element<2>, System::variables_tag>>(
         time_id, extents, element, std::move(variables));
-    runner.apply<component, Actions::SendDataForFluxes>(box, Index_t(south_id));
+    runner.apply<component, Actions::SendDataForFluxes>(box, south_id);
   }
   CHECK_FALSE((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
-      sent_box, Index_t(self_id))));
+      sent_box, self_id)));
 
   // Send from east neighbor
   {
@@ -222,16 +220,16 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     auto box = db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
                                       Tags::Element<2>, System::variables_tag>>(
         time_id, extents, element, std::move(variables));
-    runner.apply<component, Actions::SendDataForFluxes>(box, Index_t(east_id));
+    runner.apply<component, Actions::SendDataForFluxes>(box, east_id);
   }
   CHECK((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
-      sent_box, Index_t(self_id))));
+      sent_box, self_id)));
 
   auto received_box = std::get<0>(
       runner.apply<component, Actions::ComputeBoundaryFlux<System>>(
-          sent_box, Index_t(self_id)));
+          sent_box, self_id));
 
-  CHECK(tuples::get<fluxes_tag>(runner.inboxes<component>()[Index_t(self_id)])
+  CHECK(tuples::get<fluxes_tag>(runner.inboxes<component>()[self_id])
             .empty());
 
   const double element_length_xi = (xi_map(std::array<double, 1>{{1.}}) -
@@ -292,17 +290,17 @@ SPECTRE_TEST_CASE(
 
   auto sent_box =
       std::get<0>(runner.apply<component, Actions::SendDataForFluxes>(
-          start_box, Index_t(self_id)));
+          start_box, self_id));
 
   CHECK(db::get<history_tag>(sent_box).empty());
   CHECK((runner.nonempty_inboxes<component, fluxes_tag>().empty()));
 
   CHECK((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
-      sent_box, Index_t(self_id))));
+      sent_box, self_id)));
 
   auto received_box =
       std::get<0>(runner.apply<component, Actions::ComputeBoundaryFlux<System>>(
-          sent_box, Index_t(self_id)));
+          sent_box, self_id));
 
   CHECK(get<Tags::dt<Var>>(db::get<System::dt_variables_tag>(received_box))
             .get() == (DataVector{0., 0., 0., 0., 0., 0., 0., 0., 0.}));
