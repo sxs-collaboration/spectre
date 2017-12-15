@@ -21,19 +21,18 @@ namespace product_detail {
 template <typename T, size_t Size, typename Map1, typename Map2,
           typename Function, size_t... Is, size_t... Js>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, Size> apply_call(
-    const std::array<T, Size>& xi, const Map1& map1,
-    const Map2& map2, const Function func,
-    std::integer_sequence<size_t, Is...> /*meta*/,
+    const std::array<T, Size>& coords, const Map1& map1, const Map2& map2,
+    const Function func, std::integer_sequence<size_t, Is...> /*meta*/,
     std::integer_sequence<size_t, Js...> /*meta*/) {
   using UnwrappedT = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   return {
       {func(
            std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Is)>{
-               {xi[Is]...}},
+               {coords[Is]...}},
            map1)[Is]...,
        func(
            std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Js)>{
-               {xi[Map1::dim + Js]...}},
+               {coords[Map1::dim + Js]...}},
            map2)[Js]...}};
 }
 
@@ -43,22 +42,24 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<Size, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<Size, UpLo::Lo, Frame::NoFrame>>>
-apply_jac(const std::array<T, Size>& xi, const Map1& map1, const Map2& map2,
-          const Function func, std::integer_sequence<size_t, Is...> /*meta*/,
+apply_jac(const std::array<T, Size>& source_coords, const Map1& map1,
+          const Map2& map2, const Function func,
+          std::integer_sequence<size_t, Is...> /*meta*/,
           std::integer_sequence<size_t, Js...> /*meta*/) {
   using UnwrappedT = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   auto map1_jac = func(
       std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Is)>{
-        {xi[Is]...}},
+          {source_coords[Is]...}},
       map1);
   auto map2_jac = func(
       std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Js)>{
-          {xi[Map1::dim + Js]...}},
+          {source_coords[Map1::dim + Js]...}},
       map2);
   Tensor<UnwrappedT, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<Size, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<Size, UpLo::Lo, Frame::NoFrame>>>
-      jac{make_with_value<UnwrappedT>(dereference_wrapper(xi[0]), 0.0)};
+      jac{make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]),
+                                      0.0)};
   for (size_t i = 0; i < Map1::dim; ++i) {
     for (size_t j = 0; j < Map1::dim; ++j) {
       jac.get(i, j) = std::move(map1_jac.get(i, j));
@@ -93,25 +94,25 @@ class ProductOf2Maps {
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, dim> operator()(
-      const std::array<T, dim>& xi) const;
+      const std::array<T, dim>& source_coords) const;
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, dim> inverse(
-      const std::array<T, dim>& x) const;
+      const std::array<T, dim>& target_coords) const;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, dim>& xi) const;
+  inv_jacobian(const std::array<T, dim>& source_coords) const;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, dim>& xi) const;
+  jacobian(const std::array<T, dim>& source_coords) const;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
@@ -134,9 +135,10 @@ template <typename Map1, typename Map2>
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>,
            ProductOf2Maps<Map1, Map2>::dim>
-ProductOf2Maps<Map1, Map2>::operator()(const std::array<T, dim>& xi) const {
+ProductOf2Maps<Map1, Map2>::operator()(
+    const std::array<T, dim>& source_coords) const {
   return product_detail::apply_call(
-      xi, map1_, map2_,
+      source_coords, map1_, map2_,
       [](const auto& point, const auto& map) { return map(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
@@ -146,9 +148,10 @@ template <typename Map1, typename Map2>
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>,
            ProductOf2Maps<Map1, Map2>::dim>
-ProductOf2Maps<Map1, Map2>::inverse(const std::array<T, dim>& x) const {
+ProductOf2Maps<Map1, Map2>::inverse(
+    const std::array<T, dim>& target_coords) const {
   return product_detail::apply_call(
-      x, map1_, map2_,
+      target_coords, map1_, map2_,
       [](const auto& point, const auto& map) { return map.inverse(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
@@ -162,8 +165,9 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                                Frame::NoFrame>,
                   SpatialIndex<ProductOf2Maps<Map1, Map2>::dim, UpLo::Lo,
                                Frame::NoFrame>>>
-ProductOf2Maps<Map1, Map2>::inv_jacobian(const std::array<T, dim>& xi) const {
-  return product_detail::apply_jac(xi, map1_, map2_,
+ProductOf2Maps<Map1, Map2>::inv_jacobian(
+    const std::array<T, dim>& source_coords) const {
+  return product_detail::apply_jac(source_coords, map1_, map2_,
                                    [](const auto& point, const auto& map) {
                                      return map.inv_jacobian(point);
                                    },
@@ -179,9 +183,10 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                                Frame::NoFrame>,
                   SpatialIndex<ProductOf2Maps<Map1, Map2>::dim, UpLo::Lo,
                                Frame::NoFrame>>>
-ProductOf2Maps<Map1, Map2>::jacobian(const std::array<T, dim>& xi) const {
+ProductOf2Maps<Map1, Map2>::jacobian(
+    const std::array<T, dim>& source_coords) const {
   return product_detail::apply_jac(
-      xi, map1_, map2_,
+      source_coords, map1_, map2_,
       [](const auto& point, const auto& map) { return map.jacobian(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
@@ -215,25 +220,25 @@ class ProductOf3Maps {
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, dim> operator()(
-      const std::array<T, dim>& xi) const;
+      const std::array<T, dim>& source_coords) const;
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, dim> inverse(
-      const std::array<T, dim>& x) const;
+      const std::array<T, dim>& target_coords) const;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, dim>& xi) const;
+  inv_jacobian(const std::array<T, dim>& source_coords) const;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, dim>& xi) const;
+  jacobian(const std::array<T, dim>& source_coords) const;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
@@ -260,29 +265,30 @@ template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>,
            ProductOf3Maps<Map1, Map2, Map3>::dim>
 ProductOf3Maps<Map1, Map2, Map3>::operator()(
-    const std::array<T, dim>& xi) const {
+    const std::array<T, dim>& source_coords) const {
   using UnwrappedT = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   return {{map1_(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {xi[0]}})[0],
+               {source_coords[0]}})[0],
            map2_(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {xi[1]}})[0],
+               {source_coords[1]}})[0],
            map3_(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-               {xi[2]}})[0]}};
+               {source_coords[2]}})[0]}};
 }
 
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>,
            ProductOf3Maps<Map1, Map2, Map3>::dim>
-ProductOf3Maps<Map1, Map2, Map3>::inverse(const std::array<T, dim>& x) const {
+ProductOf3Maps<Map1, Map2, Map3>::inverse(
+    const std::array<T, dim>& target_coords) const {
   using UnwrappedT = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   return {
-      {map1_.inverse(
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{{x[0]}})[0],
-       map2_.inverse(
-           std::array<std::reference_wrapper<const UnwrappedT>, 1>{{x[1]}})[0],
+      {map1_.inverse(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+           {target_coords[0]}})[0],
+       map2_.inverse(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+           {target_coords[1]}})[0],
        map3_.inverse(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-           {x[2]}})[0]}};
+           {target_coords[2]}})[0]}};
 }
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
@@ -293,18 +299,22 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                   SpatialIndex<ProductOf3Maps<Map1, Map2, Map3>::dim, UpLo::Lo,
                                Frame::NoFrame>>>
 ProductOf3Maps<Map1, Map2, Map3>::inv_jacobian(
-    const std::array<T, dim>& xi) const {
+    const std::array<T, dim>& source_coords) const {
   using UnwrappedT = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   Tensor<UnwrappedT, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{make_with_value<UnwrappedT>(dereference_wrapper(xi[0]), 0.0)};
+      inv_jac{make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]),
+                                          0.0)};
   get<0, 0>(inv_jac) = get<0, 0>(map1_.inv_jacobian(
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[0]}}));
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+          {source_coords[0]}}));
   get<1, 1>(inv_jac) = get<0, 0>(map2_.inv_jacobian(
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[1]}}));
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+          {source_coords[1]}}));
   get<2, 2>(inv_jac) = get<0, 0>(map3_.inv_jacobian(
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[2]}}));
+      std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+          {source_coords[2]}}));
   return inv_jac;
 }
 template <typename Map1, typename Map2, typename Map3>
@@ -315,18 +325,23 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                                Frame::NoFrame>,
                   SpatialIndex<ProductOf3Maps<Map1, Map2, Map3>::dim, UpLo::Lo,
                                Frame::NoFrame>>>
-ProductOf3Maps<Map1, Map2, Map3>::jacobian(const std::array<T, dim>& xi) const {
+ProductOf3Maps<Map1, Map2, Map3>::jacobian(
+    const std::array<T, dim>& source_coords) const {
   using UnwrappedT = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   Tensor<UnwrappedT, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<dim, UpLo::Lo, Frame::NoFrame>>>
-      jac{make_with_value<UnwrappedT>(dereference_wrapper(xi[0]), 0.0)};
-  get<0, 0>(jac) = get<0, 0>(map1_.jacobian(
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[0]}}));
-  get<1, 1>(jac) = get<0, 0>(map2_.jacobian(
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[1]}}));
-  get<2, 2>(jac) = get<0, 0>(map3_.jacobian(
-      std::array<std::reference_wrapper<const UnwrappedT>, 1>{{xi[2]}}));
+      jac{make_with_value<UnwrappedT>(dereference_wrapper(source_coords[0]),
+                                      0.0)};
+  get<0, 0>(jac) = get<0, 0>(
+      map1_.jacobian(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+          {source_coords[0]}}));
+  get<1, 1>(jac) = get<0, 0>(
+      map2_.jacobian(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+          {source_coords[1]}}));
+  get<2, 2>(jac) = get<0, 0>(
+      map3_.jacobian(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
+          {source_coords[2]}}));
   return jac;
 }
 template <typename Map1, typename Map2, typename Map3>

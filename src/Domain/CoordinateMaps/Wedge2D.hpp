@@ -40,25 +40,25 @@ class Wedge2D {
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> operator()(
-      const std::array<T, 2>& x) const noexcept;
+      const std::array<T, 2>& source_coords) const noexcept;
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> inverse(
-      const std::array<T, 2>& x) const noexcept;
+      const std::array<T, 2>& target_coords) const noexcept;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 2>& x) const noexcept;
+  jacobian(const std::array<T, 2>& source_coords) const noexcept;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 2>& x) const noexcept;
+  inv_jacobian(const std::array<T, 2>& source_coords) const noexcept;
 
   // clang-tidy: google runtime references
   void pup(PUP::er& p);  // NOLINT

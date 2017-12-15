@@ -22,14 +22,16 @@ Affine::Affine(const double A, const double B, const double a, const double b)
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> Affine::
-operator()(const std::array<T, 1>& xi) const {
-  return {{(length_of_range_ * xi[0] + a_ * B_ - b_ * A_) / length_of_domain_}};
+operator()(const std::array<T, 1>& source_coords) const {
+  return {{(length_of_range_ * source_coords[0] + a_ * B_ - b_ * A_) /
+           length_of_domain_}};
 }
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> Affine::inverse(
-    const std::array<T, 1>& x) const {
-  return {{(length_of_domain_ * x[0] - a_ * B_ + b_ * A_) / length_of_range_}};
+    const std::array<T, 1>& target_coords) const {
+  return {{(length_of_domain_ * target_coords[0] - a_ * B_ + b_ * A_) /
+           length_of_range_}};
 }
 
 template <typename T>
@@ -37,13 +39,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<T, 1>& xi) const {
+Affine::jacobian(const std::array<T, 1>& source_coords) const {
   return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                 tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
       make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
-          dereference_wrapper(xi[0]), jacobian_)};
+          dereference_wrapper(source_coords[0]), jacobian_)};
 }
 
 template <typename T>
@@ -51,13 +53,13 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<T, 1>& xi) const {
+Affine::inv_jacobian(const std::array<T, 1>& source_coords) const {
   return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
                 tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
       make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
-          dereference_wrapper(xi[0]), inverse_jacobian_)};
+          dereference_wrapper(source_coords[0]), inverse_jacobian_)};
 }
 
 void Affine::pup(PUP::er& p) {
@@ -82,60 +84,62 @@ bool operator==(const CoordinateMaps::Affine& lhs,
 
 // Explicit instantiations
 template std::array<double, 1> Affine::operator()(
-    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+    const std::array<std::reference_wrapper<const double>, 1>& source_coords)
+    const;
 template std::array<double, 1> Affine::operator()(
-    const std::array<double, 1>& /*xi*/) const;
+    const std::array<double, 1>& source_coords) const;
 template std::array<DataVector, 1> Affine::operator()(
-    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
-    const;
+    const std::array<std::reference_wrapper<const DataVector>, 1>&
+        source_coords) const;
 template std::array<DataVector, 1> Affine::operator()(
-    const std::array<DataVector, 1>& /*xi*/) const;
+    const std::array<DataVector, 1>& source_coords) const;
 
 template std::array<double, 1> Affine::inverse(
-    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
-template std::array<double, 1> Affine::inverse(
-    const std::array<double, 1>& /*xi*/) const;
-template std::array<DataVector, 1> Affine::inverse(
-    const std::array<std::reference_wrapper<const DataVector>, 1>& /*xi*/)
+    const std::array<std::reference_wrapper<const double>, 1>& target_coords)
     const;
+template std::array<double, 1> Affine::inverse(
+    const std::array<double, 1>& target_coords) const;
 template std::array<DataVector, 1> Affine::inverse(
-    const std::array<DataVector, 1>& /*xi*/) const;
+    const std::array<std::reference_wrapper<const DataVector>, 1>&
+        target_coords) const;
+template std::array<DataVector, 1> Affine::inverse(
+    const std::array<DataVector, 1>& target_coords) const;
 
 template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(
-    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+Affine::jacobian(const std::array<std::reference_wrapper<const double>, 1>&
+                     source_coords) const;
 template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<double, 1>& /*xi*/) const;
+Affine::jacobian(const std::array<double, 1>& source_coords) const;
 template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<std::reference_wrapper<const DataVector>,
-                                  1>& /*xi*/) const;
+Affine::jacobian(const std::array<std::reference_wrapper<const DataVector>, 1>&
+                     source_coords) const;
 template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<DataVector, 1>& /*xi*/) const;
+Affine::jacobian(const std::array<DataVector, 1>& source_coords) const;
 
 template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(
-    const std::array<std::reference_wrapper<const double>, 1>& /*xi*/) const;
+Affine::inv_jacobian(const std::array<std::reference_wrapper<const double>, 1>&
+                         source_coords) const;
 template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<double, 1>& /*xi*/) const;
+Affine::inv_jacobian(const std::array<double, 1>& source_coords) const;
 template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
 Affine::inv_jacobian(const std::array<std::reference_wrapper<const DataVector>,
-                                      1>& /*xi*/) const;
+                                      1>& source_coords) const;
 template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                 index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                            SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<DataVector, 1>& /*xi*/) const;
+Affine::inv_jacobian(const std::array<DataVector, 1>& source_coords) const;
 }  // namespace CoordinateMaps

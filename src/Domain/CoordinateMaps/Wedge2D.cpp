@@ -27,7 +27,7 @@ Wedge2D::Wedge2D(double radius_of_other, double radius_of_circle,
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> Wedge2D::
-operator()(const std::array<T, 2>& x) const noexcept {
+operator()(const std::array<T, 2>& source_coords) const noexcept {
   using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
 
   const auto physical_coordinates = [this](const ReturnType& xi,
@@ -54,16 +54,17 @@ operator()(const std::array<T, 2>& x) const noexcept {
   };
 
   if (with_equiangular_map_) {
-    return physical_coordinates(dereference_wrapper(x[0]),
-                                tan(M_PI_4 * dereference_wrapper(x[1])));
+    return physical_coordinates(
+        dereference_wrapper(source_coords[0]),
+        tan(M_PI_4 * dereference_wrapper(source_coords[1])));
   }
-  return physical_coordinates(dereference_wrapper(x[0]),
-                              dereference_wrapper(x[1]));
+  return physical_coordinates(dereference_wrapper(source_coords[0]),
+                              dereference_wrapper(source_coords[1]));
 }
 
 template <typename T>
 std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> Wedge2D::inverse(
-    const std::array<T, 2>& x) const noexcept {
+    const std::array<T, 2>& target_coords) const noexcept {
   using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
 
   ReturnType physical_x;
@@ -74,21 +75,21 @@ std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> Wedge2D::inverse(
   switch (direction_of_wedge_.axis()) {
     case Direction<2>::Axis::Xi:
       if (direction_of_wedge_.side() == Side::Upper) {
-        physical_x = x[0];
-        physical_y = x[1];
+        physical_x = target_coords[0];
+        physical_y = target_coords[1];
       } else {
-        physical_x = -x[0];
-        physical_y = -x[1];
+        physical_x = -target_coords[0];
+        physical_y = -target_coords[1];
       }
       break;
       // Wedges on y axis:
     case Direction<2>::Axis::Eta:
       if (direction_of_wedge_.side() == Side::Upper) {
-        physical_x = x[1];
-        physical_y = -x[0];
+        physical_x = target_coords[1];
+        physical_y = -target_coords[0];
       } else {
-        physical_x = -x[1];
-        physical_y = x[0];
+        physical_x = -target_coords[1];
+        physical_y = target_coords[0];
       }
       break;
     default:
@@ -111,7 +112,7 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Wedge2D::jacobian(const std::array<T, 2>& x) const noexcept {
+Wedge2D::jacobian(const std::array<T, 2>& source_coords) const noexcept {
   using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
   const auto jacobian_lambda = [this](const ReturnType& xi,
                                       const ReturnType& cap_eta,
@@ -155,12 +156,14 @@ Wedge2D::jacobian(const std::array<T, 2>& x) const noexcept {
 
   if (with_equiangular_map_) {
     return jacobian_lambda(
-        dereference_wrapper(x[0]), tan(M_PI_4 * dereference_wrapper(x[1])),
+        dereference_wrapper(source_coords[0]),
+        tan(M_PI_4 * dereference_wrapper(source_coords[1])),
         ReturnType{M_PI_4 *
-                   (1.0 + square(tan(M_PI_4 * dereference_wrapper(x[1]))))});
+                   (1.0 + square(tan(M_PI_4 *
+                                     dereference_wrapper(source_coords[1]))))});
   }
-  return jacobian_lambda(dereference_wrapper(x[0]), dereference_wrapper(x[1]),
-                         1.0);
+  return jacobian_lambda(dereference_wrapper(source_coords[0]),
+                         dereference_wrapper(source_coords[1]), 1.0);
 }
 
 template <typename T>
@@ -168,8 +171,8 @@ Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
        tmpl::integral_list<std::int32_t, 2, 1>,
        index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
                   SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Wedge2D::inv_jacobian(const std::array<T, 2>& x) const noexcept {
-  const auto jac = jacobian(x);
+Wedge2D::inv_jacobian(const std::array<T, 2>& source_coords) const noexcept {
+  const auto jac = jacobian(source_coords);
   return determinant_and_inverse(jac).second;
 }
 
@@ -195,37 +198,38 @@ bool operator!=(const Wedge2D& lhs, const Wedge2D& rhs) noexcept {
 /// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::array<DTYPE(data), 2> Wedge2D::operator()(                    \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>& /*xi*/) \
-      const noexcept;                                                         \
-  template std::array<DTYPE(data), 2> Wedge2D::operator()(                    \
-      const std::array<DTYPE(data), 2>& /*xi*/) const noexcept;               \
-  template std::array<DTYPE(data), 2> Wedge2D::inverse(                       \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>& /*xi*/) \
-      const noexcept;                                                         \
-  template std::array<DTYPE(data), 2> Wedge2D::inverse(                       \
-      const std::array<DTYPE(data), 2>& /*xi*/) const noexcept;               \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,       \
-                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,       \
-                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>      \
-  Wedge2D::jacobian(                                                          \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>& /*xi*/) \
-      const noexcept;                                                         \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,       \
-                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,       \
-                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>      \
-  Wedge2D::jacobian(const std::array<DTYPE(data), 2>& /*xi*/) const noexcept; \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,       \
-                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,       \
-                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>      \
-  Wedge2D::inv_jacobian(                                                      \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>& /*xi*/) \
-      const noexcept;                                                         \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,       \
-                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,       \
-                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>      \
-  Wedge2D::inv_jacobian(const std::array<DTYPE(data), 2>& /*xi*/)             \
+#define INSTANTIATE(_, data)                                             \
+  template std::array<DTYPE(data), 2> Wedge2D::operator()(               \
+      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>&    \
+          source_coords) const noexcept;                                 \
+  template std::array<DTYPE(data), 2> Wedge2D::operator()(               \
+      const std::array<DTYPE(data), 2>& source_coords) const noexcept;   \
+  template std::array<DTYPE(data), 2> Wedge2D::inverse(                  \
+      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>&    \
+          target_coords) const noexcept;                                 \
+  template std::array<DTYPE(data), 2> Wedge2D::inverse(                  \
+      const std::array<DTYPE(data), 2>& target_coords) const noexcept;   \
+  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,  \
+                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,  \
+                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>> \
+  Wedge2D::jacobian(                                                     \
+      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>&    \
+          source_coords) const noexcept;                                 \
+  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,  \
+                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,  \
+                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>> \
+  Wedge2D::jacobian(const std::array<DTYPE(data), 2>& source_coords)     \
+      const noexcept;                                                    \
+  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,  \
+                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,  \
+                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>> \
+  Wedge2D::inv_jacobian(                                                 \
+      const std::array<std::reference_wrapper<const DTYPE(data)>, 2>&    \
+          source_coords) const noexcept;                                 \
+  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,  \
+                  index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,  \
+                             SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>> \
+  Wedge2D::inv_jacobian(const std::array<DTYPE(data), 2>& source_coords) \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

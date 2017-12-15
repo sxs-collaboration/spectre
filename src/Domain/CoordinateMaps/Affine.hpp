@@ -17,7 +17,7 @@ namespace CoordinateMaps {
 
 /*!
  * \ingroup CoordinateMapsGroup
- * \brief Linear map from \f$\xi \in [A, B]\rightarrow x \in [a, b]\f$.
+ * \brief Affine map from \f$\xi \in [A, B]\rightarrow x \in [a, b]\f$.
  *
  * The formula for the mapping is...
  * \f[
@@ -42,25 +42,25 @@ class Affine {
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> operator()(
-      const std::array<T, 1>& xi) const;
+      const std::array<T, 1>& source_coords) const;
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> inverse(
-      const std::array<T, 1>& x) const;
+      const std::array<T, 1>& target_coords) const;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 1>& /*xi*/) const;
+  inv_jacobian(const std::array<T, 1>& source_coords) const;
 
   template <typename T>
   Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
          tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
                     SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 1>& /*xi*/) const;
+  jacobian(const std::array<T, 1>& source_coords) const;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
