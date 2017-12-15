@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Gaussian.cpp
   PowX.cpp
   Sinusoid.cpp
+  TensorProduct.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
