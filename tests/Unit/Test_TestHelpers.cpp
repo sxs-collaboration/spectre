@@ -26,25 +26,31 @@ SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   u_set.insert(0);
   test_iterators(u_set);
 
+  Approx larger_approx =
+      Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e4);
+
   const std::vector<double> vec_a{1., 2., 3.5};
   CHECK_ITERABLE_APPROX(vec_a, vec_a);
   auto vec_b = vec_a;
   vec_b[1] += 1e-15;
   CHECK(vec_a != vec_b);
   CHECK_ITERABLE_APPROX(vec_a, vec_b);
+  vec_b[1] += 1e-12;
+  CHECK_ITERABLE_CUSTOM_APPROX(vec_a, vec_b, larger_approx);
 
   const std::vector<std::map<int, double>> vecmap_a{
-    {{1, 1.}, {2, 2.}},
-    {{1, 1.23}, {3, 4.56}, {5, 7.89}}};
+      {{1, 1.}, {2, 2.}}, {{1, 1.23}, {3, 4.56}, {5, 7.89}}};
   CHECK_ITERABLE_APPROX(vecmap_a, vecmap_a);
   auto vecmap_b = vecmap_a;
   vecmap_b[1][1] += 1e-15;
   CHECK(vecmap_a != vecmap_b);
   CHECK_ITERABLE_APPROX(vecmap_a, vecmap_b);
+  vecmap_b[1][1] += 1e-12;
+  CHECK_ITERABLE_CUSTOM_APPROX(vecmap_a, vecmap_b, larger_approx);
 }
 
 SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {
-  { // 3D Test
+  {  // 3D Test
     const std::array<double, 3> x{{1.2, -3.4, 1.3}};
     const double delta = 1.e-2;
 
@@ -60,7 +66,7 @@ SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {
             approx(gsl::at(dfunc(x), i)));
     }
   }
-  { // 2D Test
+  {  // 2D Test
     const std::array<double, 2> x{{1.2, -2.4}};
     const double delta = 1.e-2;
 

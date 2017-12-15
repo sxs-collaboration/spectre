@@ -90,24 +90,40 @@ static Approx approx = Approx::custom().epsilon(    // NOLINT
         std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
   } while (false)
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Same as `CHECK_ITERABLE_APPROX` with user-defined Approx.
+ *  The third argument should be of type `Approx`.
+ */
+#define CHECK_ITERABLE_CUSTOM_APPROX(a, b, appx)                             \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_iterable_approx<std::common_type_t<                                \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b,  \
+                                                                      appx); \
+  } while (false)
+
 /// \cond HIDDEN_SYMBOLS
 template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
-  static void apply(const T& a, const T& b) {
-    CHECK(a == approx(b));
+  // clang-tidy: non-const reference
+  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+    CHECK(a == appx(b));
   }
 };
 
 template <typename T>
 struct check_iterable_approx<
     T, Requires<not tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
-  static void apply(const T& a, const T& b) {
+  // clang-tidy: non-const reference
+  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
     auto a_it = a.begin();
     auto b_it = b.begin();
     CHECK(a_it != a.end());
     CHECK(b_it != b.end());
     while (a_it != a.end() and b_it != b.end()) {
-      check_iterable_approx<std::decay_t<decltype(*a_it)>>::apply(*a_it, *b_it);
+      check_iterable_approx<std::decay_t<decltype(*a_it)>>::apply(*a_it, *b_it,
+                                                                  appx);
       ++a_it;
       ++b_it;
     }
@@ -125,7 +141,8 @@ struct check_iterable_approx<
 template <typename T>
 struct check_iterable_approx<
     T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
-  static void apply(const T& a, const T& b) {
+  // clang-tidy: non-const reference
+  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
     auto a_it = a.begin();
     auto b_it = b.begin();
     CHECK(a_it != a.end());
@@ -133,7 +150,7 @@ struct check_iterable_approx<
     while (a_it != a.end() and b_it != b.end()) {
       CHECK(a_it->first == b_it->first);
       check_iterable_approx<std::decay_t<decltype(a_it->second)>>::apply(
-          a_it->second, b_it->second);
+          a_it->second, b_it->second, appx);
       ++a_it;
       ++b_it;
     }
@@ -273,8 +290,8 @@ void test_copy_semantics(const T& a) {
 /// If T is not default constructible, you pass additional
 /// arguments that are used to construct a T.
 template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr,
-          typename...Args>
-void test_move_semantics(T&& a, const T& comparison,Args&&...args) {
+          typename... Args>
+void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
   static_assert(std::is_rvalue_reference<decltype(a)>::value,
                 "Must move into test_move_semantics");
   static_assert(std::is_nothrow_move_assignable<T>::value,
