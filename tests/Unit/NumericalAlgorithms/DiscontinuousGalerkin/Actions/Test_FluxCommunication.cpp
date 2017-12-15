@@ -234,43 +234,24 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   CHECK(tuples::get<fluxes_tag>(runner.inboxes<component>()[Index_t(self_id)])
             .empty());
 
-  const double xi_lift = -6./(xi_map(std::array<double, 1>{{1.}}) -
-                              xi_map(std::array<double, 1>{{-1.}}))[0];
-  const double eta_lift = -6./(eta_map(std::array<double, 1>{{1.}}) -
-                               eta_map(std::array<double, 1>{{-1.}}))[0];
-
-  const DataVector xi_boundaries{
-      0.,
-      0.,
-      105150. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::lower_xi()))[0],
-      0.,
-      0.,
-      120300. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::lower_xi()))[1],
-      0.,
-      0.,
-      135450. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::lower_xi()))[2]};
-  const DataVector eta_boundaries{
-      0.,
-      0.,
-      0.,
-      0.,
-      0.,
-      0.,
-      221400. / 3. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta()))[0],
-      241600. / 3. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta()))[1],
-      261800. / 3. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta()))[2]};
+  const double element_length_xi = (xi_map(std::array<double, 1>{{1.}}) -
+                                    xi_map(std::array<double, 1>{{-1.}}))[0];
+  const double element_length_eta = (eta_map(std::array<double, 1>{{1.}}) -
+                                     eta_map(std::array<double, 1>{{-1.}}))[0];
+  // Prefactor and weight as in Kopriva 8.42.  Equal to
+  // -2/(element length)/w_0  with  w_0 = 2/(N(N-1))  where here N=3.
+  const double xi_lift = -6./element_length_xi;
+  const double eta_lift = -6./element_length_eta;
+  // n.(F* - F)
+  // For the test we set n.F* = 11 n.F + 1000 n.F_nbr, so
+  //      n.(F* - F) = 10 n.F + 1000 n.F_nbr
+  // F_xi = 10 U    F_eta = 20 U
+  const DataVector xi_boundaries{0., 0., 210300.,
+                                 0., 0., 240600.,
+                                 0., 0., 270900.};
+  const DataVector eta_boundaries{0., 0., 0.,
+                                  0., 0., 0.,
+                                  221400., 241600., 261800.};
 
   CHECK_ITERABLE_APPROX(
       get<Tags::dt<Var>>(db::get<System::dt_variables_tag>(received_box)).get(),
