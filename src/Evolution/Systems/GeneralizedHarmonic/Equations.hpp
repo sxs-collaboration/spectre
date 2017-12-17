@@ -26,6 +26,13 @@ class not_null;
 }  // namespace gsl
 
 namespace GeneralizedHarmonic {
+  /*!
+   * \brief Compute the RHS of the Generalized Harmonic formulation of
+   * Einstein's equations.
+   *
+   * \details For the full form of the equations see "A New Generalized Harmonic
+   * Evolution System" by Lindblom et. al, arxiv.org/abs/gr-qc/0512093.
+   */
 template <size_t Dim>
 struct ComputeDuDt {
  public:
@@ -43,13 +50,6 @@ struct ComputeDuDt {
       SpacetimeChristoffelFirstKind<Dim>, SpacetimeChristoffelSecondKind<Dim>,
       SpacetimeNormalVector<Dim>, SpacetimeNormalOneForm<Dim>>;
 
-  /*!
-   * /brief Compute the RHS of the Generalized Harmonic formulation of
-   * Einstein's equations.
-   *
-   * /details For the full form of the equations see "A New Generalized Harmonic
-   * Evolution System" by Lindblom et. al, arxiv.org/abs/gr-qc/0512093.
-   */
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_pi,
