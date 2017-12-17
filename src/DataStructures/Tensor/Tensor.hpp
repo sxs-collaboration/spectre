@@ -439,7 +439,7 @@ template <typename... Args,
                                         std::decay_t<Args>>...> and
                        sizeof...(Args) == 1)>>
 Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args)
-    : data_(make_array<size()>(X(std::forward<Args>(args)...))) {}
+    : data_(make_array<size(), X>(std::forward<Args>(args)...)) {}
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
