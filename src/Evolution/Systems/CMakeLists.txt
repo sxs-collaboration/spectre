@@ -2,3 +2,4 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(GeneralizedHarmonic)
+add_subdirectory(ScalarWave)
