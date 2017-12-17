@@ -19,62 +19,68 @@
 //     -a-normal-array-with-one-default-value
 // with some modifications.
 namespace MakeArray_detail {
-/// We take integer_sequence<indexes...> as a parameter to overload the
-/// function so that there is one for each type T, and one for each number of
-/// indexes. To silence compiler warnings we do a static_cast<void>.
-/// Use the comma operator to expand the parameter pack, then copy in value
-/// (size-1) times. We use std::forward to try and move the last value into
-/// place, rather than undergoing another copy.
-/// Order of evaluation is well-defined for aggregate initialization, so there
-/// is no risk of copy-after-move
-template <std::size_t size, typename T, std::size_t... indexes>
-SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size>
-    // clang-format off
-make_array_impl(
-    T&& value, std::integer_sequence<size_t, indexes...> /* unused */)
-    noexcept(noexcept(std::array<std::decay_t<T>, size>{
-    {(static_cast<void>(indexes), value)..., std::forward<T>(value)}})) {
-  return std::array<std::decay_t<T>, size>{
-      {(static_cast<void>(indexes), value)..., std::forward<T>(value)}};
-}
-// clang-format on
+// We handle the zero size case separately below because both for size zero
+// and size one arrays the index_sequence is empty.
+// We use the index_sequence to be able to fill the first Size-1 (which is
+// sizeof...(Is)) via constructor calls `T(args...)`. The final element is
+// forwarded to avoid a possible copy if an rvalue reference is passed to
+// make_array. The generic implementation handles both the make_array(T&&) case
+// and the make_array(Args&&...) case below.
+// The (void)Is cast is to avoid any potential trouble with overloaded comma
+// operators.
+template <bool SizeZero>
+struct MakeArray {
+  template <typename T, typename... Args, size_t... Is>
+  static SPECTRE_ALWAYS_INLINE constexpr std::array<T, sizeof...(Is) + 1> apply(
+      std::index_sequence<Is...> /* unused */,
+      Args&&... args) noexcept(noexcept(std::array<T, sizeof...(Is) + 1>{
+      {((void)Is, T(args...))..., T(std::forward<Args>(args)...)}})) {
+    return {{((void)Is, T(args...))..., T(std::forward<Args>(args)...)}};
+  }
+};
+
+template <>
+struct MakeArray<true> {
+  template <typename T, typename... Args>
+  static SPECTRE_ALWAYS_INLINE constexpr std::array<T, 0> apply(
+      std::index_sequence<> /* unused */, Args&&... /*args*/) noexcept {
+    return std::array<T, 0>{{}};
+  }
+};
 }  // namespace MakeArray_detail
 
-/// \cond HIDDEN_SYMBOLS
-/// Construct empty array specialization
-template <typename T>
-SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, 0> make_array(
-    std::integral_constant<std::size_t, 0> /* unused */,
-    T&& /* unused */) noexcept {
-  return std::array<std::decay_t<T>, 0>{{}};
-}
-/// \endcond
-
-/// The std::integral_constant is used to overload the function so that we call
-/// the one for the correct size of the array that we want. This is done as a
-/// helper function to make make_array<size_t> a simple call for users.
-template <std::size_t size, typename T>
-SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size> make_array(
-    // clang-format off
-    std::integral_constant<std::size_t, size> /* unused */, T&& value)
-    noexcept(noexcept(MakeArray_detail::make_array_impl<size>(
-    std::forward<T>(value), std::make_index_sequence<size - 1>{}))) {
-  return MakeArray_detail::make_array_impl<size>(
-      std::forward<T>(value), std::make_index_sequence<size - 1>{});
-}
-// clang-format on
 /*!
  * \ingroup UtilitiesGroup
- * \brief Helper class to initialize a std::array.
- *
- * \tparam size the length of the array
+ * \brief Create a `std::array<T, Size>{{T(args...), T(args...), ...}}`
+ * \tparam Size the size of the array
+ * \tparam T the type of the element in the array
  */
-template <std::size_t size, typename T>
-SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, size>
-make_array(T&& value) noexcept(noexcept(make_array(
-    std::integral_constant<std::size_t, size>{}, std::forward<T>(value)))) {
-  return make_array(std::integral_constant<std::size_t, size>{},
-                    std::forward<T>(value));
+template <size_t Size, typename T, typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr std::array<T, Size>
+make_array(Args&&... args) noexcept(
+    noexcept(MakeArray_detail::MakeArray<Size == 0>::template apply<T>(
+        std::make_index_sequence<(Size == 0 ? Size : Size - 1)>{},
+        std::forward<Args>(args)...))) {
+  return MakeArray_detail::MakeArray<Size == 0>::template apply<T>(
+      std::make_index_sequence<(Size == 0 ? Size : Size - 1)>{},
+      std::forward<Args>(args)...);
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Create a `std::array<std::decay_t<T>, Size>{{t, t, ...}}`
+ * \tparam Size the size of the array
+ */
+template <size_t Size, typename T>
+SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, Size>
+make_array(T&& t) noexcept(noexcept(
+    MakeArray_detail::MakeArray<Size == 0>::template apply<std::decay_t<T>>(
+        std::make_index_sequence<(Size == 0 ? Size : Size - 1)>{},
+        std::forward<T>(t)))) {
+  return MakeArray_detail::MakeArray<Size == 0>::template apply<
+      std::decay_t<T>>(
+      std::make_index_sequence<(Size == 0 ? Size : Size - 1)>{},
+      std::forward<T>(t));
 }
 
 /*!
