@@ -308,11 +308,6 @@ into two classes:
  */
 
 /*!
- * \defgroup ParallelComponentsGroup ParallelComponents
- * Information about which ParallelComponents are available and how to use them
- */
-
-/*!
  * \defgroup TestingFrameworkGroup Testing Framework
  * \brief Classes, functions, macros, and instructions for developing tests
  *
