@@ -6,7 +6,7 @@
 
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
-#include "tests/Unit/TestFactoryCreation.hpp"
+#include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
