@@ -103,8 +103,6 @@ struct ComputeBoundaryFlux {
         db::get<Tags::HistoryBoundaryVariables<
                   Direction<volume_dim>, variables_tag>>(box);
 
-    auto dt_vars = db::item_type<dt_variables_tag>(extents.product(), 0.);
-
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
 
     auto& inbox = tuples::get<FluxesTag>(inboxes);
@@ -188,25 +186,28 @@ struct ComputeBoundaryFlux {
       const tuples::TaggedTuple<variables_tag, normal_flux_tag> neighbor_data(
           neighbor_value, std::move(neighbor_normal_flux));
 
-      auto numerical_flux = apply_flux(
+      auto normal_dot_numerical_flux = apply_flux(
           flux_computer, self_data, neighbor_data,
           typename std::decay_t<decltype(flux_computer)>::argument_tags{});
 
       // Needs fixing for GH/curved
-      auto lifted_data(dg::lift_flux(
-          tuples::get<normal_flux_tag>(self_data), std::move(numerical_flux),
-          extents[dimension], std::move(magnitude_of_face_normal)));
+      auto lifted_data(dg::lift_flux(tuples::get<normal_flux_tag>(self_data),
+                                     std::move(normal_dot_numerical_flux),
+                                     extents[dimension],
+                                     std::move(magnitude_of_face_normal)));
 
-      add_slice_to_data(
-          make_not_null(&dt_vars), lifted_data, extents, dimension,
-          direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+      db::mutate<dt_variables_tag>(box, [
+        &lifted_data, &extents, &dimension, &direction
+      ](db::item_type<dt_variables_tag> & dt_vars) noexcept {
+        add_slice_to_data(
+            make_not_null(&dt_vars), lifted_data, extents, dimension,
+            direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+      });
     }
 
-    return std::make_tuple(db::create_from<
-        db::RemoveTags<Tags::HistoryBoundaryVariables<
-            Direction<volume_dim>, variables_tag>>,
-        db::AddTags<dt_variables_tag>>(
-            box, std::move(dt_vars)));
+    return std::make_tuple(
+        db::create_from<db::RemoveTags<Tags::HistoryBoundaryVariables<
+            Direction<volume_dim>, variables_tag>>>(box));
   }
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,

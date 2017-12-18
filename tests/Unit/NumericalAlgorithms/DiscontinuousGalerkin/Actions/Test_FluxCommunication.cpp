@@ -130,12 +130,16 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
     Variables<tmpl::list<Var>> variables(extents.product());
     get<Var>(variables).get() = DataVector{1., 2., 3., 4., 5., 6., 7., 8., 9.};
+    db::item_type<db::add_tag_prefix<Tags::dt, System::variables_tag>>
+        dt_variables(extents.product(), 0.0);
 
-    return db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
-                                  Tags::Element<2>, Tags::ElementMap<2>,
-                                  System::variables_tag>,
-                      db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
-        time_id, extents, element, std::move(map), std::move(variables));
+    return db::create<
+        db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+                    Tags::ElementMap<2>, System::variables_tag,
+                    db::add_tag_prefix<Tags::dt, System::variables_tag>>,
+        db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+        time_id, extents, element, std::move(map), std::move(variables),
+        std::move(dt_variables));
   }();
 
   auto sent_box =
@@ -288,20 +292,22 @@ SPECTRE_TEST_CASE(
   const Element<2> element(self_id, {});
 
   auto map = ElementMap<2, Frame::Grid>(
-      self_id,
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                         CoordinateMaps::AffineMap>(
-              {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
+      self_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                                                  CoordinateMaps::AffineMap>(
+                       {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   Variables<tmpl::list<Var>> variables(extents.product());
   get<Var>(variables).get() = DataVector{1., 2., 3., 4., 5., 6., 7., 8., 9.};
-  auto start_box =
-      db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>,
-                             Tags::Element<2>, Tags::ElementMap<2>,
-                             System::variables_tag>,
-                 db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
-      time_id, extents, element, std::move(map), std::move(variables));
+  db::item_type<db::add_tag_prefix<Tags::dt, System::variables_tag>>
+      dt_variables(extents.product(), 0.0);
+  auto start_box = db::create<
+      db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+                  Tags::ElementMap<2>, System::variables_tag,
+                  db::add_tag_prefix<Tags::dt, System::variables_tag>>,
+      db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+      time_id, extents, element, std::move(map), std::move(variables),
+      std::move(dt_variables));
 
   auto sent_box =
       std::get<0>(runner.apply<component, Actions::SendDataForFluxes>(
@@ -313,11 +319,10 @@ SPECTRE_TEST_CASE(
   CHECK((runner.is_ready<component, Actions::ComputeBoundaryFlux<System>>(
       sent_box, Index_t(self_id))));
 
-  auto received_box = std::get<0>(
-      runner.apply<component, Actions::ComputeBoundaryFlux<System>>(
+  auto received_box =
+      std::get<0>(runner.apply<component, Actions::ComputeBoundaryFlux<System>>(
           sent_box, Index_t(self_id)));
 
   CHECK(get<Tags::dt<Var>>(db::get<System::dt_variables_tag>(received_box))
-        .get() ==
-        (DataVector{0., 0., 0., 0., 0., 0., 0., 0., 0.}));
+            .get() == (DataVector{0., 0., 0., 0., 0., 0., 0., 0., 0.}));
 }
