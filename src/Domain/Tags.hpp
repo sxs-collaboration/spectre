@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
@@ -66,6 +67,22 @@ template <size_t VolumeDim>
 struct ElementMap : db::DataBoxTag {
   static constexpr db::DataBoxString label = "ElementMap";
   using type = ::ElementMap<VolumeDim, Frame::Grid>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
+/// frame must be the source frame of `MapTag`
+template <class MapTag, class SourceCoordsTag>
+struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
+  using tag = MapTag;
+  static constexpr db::DataBoxString label = "Coordinates";
+  static constexpr auto function(
+      const db::item_type<MapTag>& element_map,
+      const db::item_type<SourceCoordsTag>& source_coords) noexcept {
+    return element_map(source_coords);
+  }
+  using argument_tags = typelist<MapTag, SourceCoordsTag>;
 };
 
 /// \ingroup DataBoxTagsGroup
