@@ -14,10 +14,12 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Options/Options.hpp"
 
 class DataVector;
 template <size_t Dim>
@@ -30,6 +32,17 @@ namespace Frame {
 struct Logical;
 struct Inertial;
 }  // namespace Frame
+
+namespace OptionTags {
+/// \ingroup OptionTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The input file tag for the DomainCreator to use
+template <size_t Dim, typename TargetFrame>
+struct DomainCreator {
+  using type = std::unique_ptr<::DomainCreator<Dim, TargetFrame>>;
+  static constexpr OptionString help = {"The domain to create initially"};
+};
+}  // namespace OptionTags
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
