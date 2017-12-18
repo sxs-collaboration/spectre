@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 
@@ -64,8 +65,7 @@ struct LogicalCoordinates : db::ComputeItemTag {
 template <size_t VolumeDim>
 struct ElementMap : db::DataBoxTag {
   static constexpr db::DataBoxString label = "ElementMap";
-  using type = std::unique_ptr<::CoordinateMapBase<Frame::Logical, Frame::Grid,
-                                                   VolumeDim>>;
+  using type = ::ElementMap<VolumeDim, Frame::Grid>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -85,19 +85,17 @@ struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
   using argument_tags = typelist<MapTag, SourceCoordsTag>;
 };
 
-
 namespace detail {
 template <size_t VolumeDim>
 auto make_unnormalized_face_normals(
     const Index<VolumeDim>& extents,
-    const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid,
-                                            VolumeDim>>& map) noexcept {
+    const ::ElementMap<VolumeDim, Frame::Grid>& map) noexcept {
   std::unordered_map<Direction<VolumeDim>,
                      tnsr::i<DataVector, VolumeDim, Frame::Grid>>
       result;
   for (const auto& d : Direction<VolumeDim>::all_directions()) {
-    result.emplace(d, unnormalized_face_normal(
-                          extents.slice_away(d.dimension()), *map, d));
+    result.emplace(
+        d, unnormalized_face_normal(extents.slice_away(d.dimension()), map, d));
   }
   return result;
 }

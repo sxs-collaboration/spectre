@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "Time/Slab.hpp"
@@ -120,10 +121,12 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         {Direction<2>::upper_xi(), {{east_id}, {}}},
         {Direction<2>::upper_eta(), {{south_id}, {}}}});
 
-    auto map = make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-        CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                       CoordinateMaps::AffineMap>(
-            xi_map, eta_map));
+    auto map = ElementMap<2, Frame::Grid>(
+        ElementId<2>{0},
+        make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+            CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                                           CoordinateMaps::AffineMap>(
+                xi_map, eta_map)));
 
     Variables<tmpl::list<Var>> variables(extents.product());
     get<Var>(variables).get() = DataVector{1., 2., 3., 4., 5., 6., 7., 8., 9.};
@@ -284,10 +287,12 @@ SPECTRE_TEST_CASE(
 
   const Element<2> element(self_id, {});
 
-  auto map = make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                     CoordinateMaps::AffineMap>(
-          {-1., 1., 3., 7.}, {-1., 1., -2., 4.}));
+  auto map = ElementMap<2, Frame::Grid>(
+      self_id,
+      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                                         CoordinateMaps::AffineMap>(
+              {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   Variables<tmpl::list<Var>> variables(extents.product());
   get<Var>(variables).get() = DataVector{1., 2., 3., 4., 5., 6., 7., 8., 9.};
