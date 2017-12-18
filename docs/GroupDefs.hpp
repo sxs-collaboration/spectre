@@ -91,6 +91,11 @@
  */
 
 /*!
+ * \defgroup EvolutionSystemsGroup Evolution Systems
+ * \brief Contains the namespaces of all the available evolution systems.
+ */
+
+/*!
  * \defgroup ExecutablesGroup Executables
  * \brief A list of executables and how to use them
  *
@@ -300,11 +305,6 @@ into two classes:
  * Indices::_a));
  * \endcode
  * possible.
- */
-
-/*!
- * \defgroup ParallelComponentsGroup ParallelComponents
- * Information about which ParallelComponents are available and how to use them
  */
 
 /*!

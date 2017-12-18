@@ -117,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
 
   {
     // Check for doubles
-    const tnsr::i<double, 1, Frame::Grid> one_d_covector{2};
+    const tnsr::i<double, 1, Frame::Grid> one_d_covector{2.0};
     const tnsr::II<double, 1, Frame::Grid> inv_h = []() {
       tnsr::II<double, 1, Frame::Grid> tensor{};
       get<0, 0>(tensor) = 4.;
@@ -126,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
 
     CHECK(magnitude(one_d_covector, inv_h) == 4.0);
 
-    const tnsr::i<double, 3, Frame::Grid> three_d_covector{{{-3, 12, 4}}};
+    const tnsr::i<double, 3, Frame::Grid> three_d_covector{{{-3.0, 12.0, 4.0}}};
     const tnsr::II<double, 3, Frame::Grid> inv_g = []() {
       tnsr::II<double, 3, Frame::Grid> tensor{};
       get<0, 0>(tensor) = 2;

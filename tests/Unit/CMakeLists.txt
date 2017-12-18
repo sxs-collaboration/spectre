@@ -46,6 +46,7 @@ target_link_libraries(
   IO
   LinearOperators
   RootFinding
+  ScalarWave
   Time
   WaveEquation
   ${SPECTRE_LIBRARIES}

@@ -13,6 +13,10 @@ struct list;
 template <class>
 class Variables;
 
+/*!
+ * \ingroup EvolutionSystemsGroup
+ * \brief Items related to evolving the first-order generalized harmonic system.
+ */
 namespace GeneralizedHarmonic {
 template <size_t Dim>
 struct System {

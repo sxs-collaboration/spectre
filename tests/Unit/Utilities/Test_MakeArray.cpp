@@ -2,9 +2,30 @@
 // See LICENSE.txt for details.
 
 #include <catch.hpp>
+#include <memory>
+#include <vector>
 
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+namespace {
+template <typename T>
+struct MyNonCopyable {
+  MyNonCopyable() = default;
+  ~MyNonCopyable() = default;
+  explicit MyNonCopyable(T t) : t_(std::move(t)) {}
+  MyNonCopyable(const MyNonCopyable&) = delete;
+  MyNonCopyable& operator=(const MyNonCopyable&) = delete;
+  MyNonCopyable(MyNonCopyable&&) = default;
+  MyNonCopyable& operator=(MyNonCopyable&&) = default;
+
+  const T& get() const noexcept { return t_; }
+
+ private:
+  T t_;
+};
+}  // namespace
 
 static_assert(noexcept(make_array<2>(0)),
               "Failed Unit.Utilities.MakeArray testing noexcept calculation of "
@@ -59,4 +80,25 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   constexpr const auto array_from_truncated_sequence =
       make_array<int, 3>(std::initializer_list<int>{2, 8, 6, 9, 7});
   CHECK((std::array<int, 3>{{2, 8, 6}}) == array_from_truncated_sequence);
+
+  // Check make_array with a non-copyable type
+  const auto noncopyable_vectors =
+      make_array<3, MyNonCopyable<std::vector<double>>>(
+          std::vector<double>{2.3, 8.6, 9.7});
+  for (size_t i = 0; i < 3; i++) {
+    CHECK(gsl::at(noncopyable_vectors, i).get() ==
+          (std::vector<double>{2.3, 8.6, 9.7}));
+  }
+
+  // Check make_array with a multi-arg constructor
+  const auto vector_array1 = make_array<3, std::vector<int>>(3_st, 9);
+  for (size_t i = 0; i < 3; i++) {
+    CHECK(gsl::at(vector_array1, i) == (std::vector<int>(3, 9)));
+  }
+
+  // Check make_array with an initializer list constructor
+  const auto vector_array2 = make_array<3, std::vector<int>>({3, 9, 12, -10});
+  for (size_t i = 0; i < 3; i++) {
+    CHECK(gsl::at(vector_array2, i) == (std::vector<int>{3, 9, 12, -10}));
+  }
 }
