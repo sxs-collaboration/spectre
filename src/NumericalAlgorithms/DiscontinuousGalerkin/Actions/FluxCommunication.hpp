@@ -193,18 +193,12 @@ struct ComputeBoundaryFlux {
           typename std::decay_t<decltype(flux_computer)>::argument_tags{});
 
       // Needs fixing for GH/curved
-      const auto lifted_data = dg::lift_flux(
-          tuples::get<normal_flux_tag>(self_data),
-          std::move(numerical_flux),
-          extents[dimension],
-          std::move(magnitude_of_face_normal));
-
-      // Convert tags.  This will be replaced by expanded Variables
-      // functionality.  See #319.
-      std::decay_t<decltype(dt_vars)> retagged_lifted_data = 1. * lifted_data;
+      auto lifted_data(dg::lift_flux(
+          tuples::get<normal_flux_tag>(self_data), std::move(numerical_flux),
+          extents[dimension], std::move(magnitude_of_face_normal)));
 
       add_slice_to_data(
-          make_not_null(&dt_vars), retagged_lifted_data, extents, dimension,
+          make_not_null(&dt_vars), lifted_data, extents, dimension,
           direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
     }
 
