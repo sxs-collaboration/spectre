@@ -7,6 +7,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -121,6 +122,13 @@ void test_1d() {
   const ScalarWave::Solutions::PlaneWave<1> pw(
       {{k}}, {{center_x}}, std::make_unique<MathFunctions::PowX>(3));
   check_solution_x(k, omega, u, pw, x, t);
+
+  test_creation<ScalarWave::Solutions::PlaneWave<1>>(
+      "  WaveVector: [3.5]\n"
+      "  Center: [3.5]\n"
+      "  Profile:\n"
+      "    PowX:\n"
+      "      Power: 4");
 }
 
 void test_2d() {
@@ -143,6 +151,13 @@ void test_2d() {
       std::make_unique<MathFunctions::PowX>(3));
   check_solution_x(kx, omega, u, pw, x, t);
   check_solution_y(kx, ky, omega, u, pw, x, t);
+
+  test_creation<ScalarWave::Solutions::PlaneWave<2>>(
+      "  WaveVector: [-2, 3.5]\n"
+      "  Center: [-2, 3.5]\n"
+      "  Profile:\n"
+      "    PowX:\n"
+      "      Power: 4");
 }
 
 void test_3d() {
@@ -172,6 +187,13 @@ void test_3d() {
   check_solution_x(kx, omega, u, pw, x, t);
   check_solution_y(kx, ky, omega, u, pw, x, t);
   check_solution_z(kx, ky, kz, omega, u, pw, x, t);
+
+  test_creation<ScalarWave::Solutions::PlaneWave<3>>(
+      "  WaveVector: [-1, -2, 3.5]\n"
+      "  Center: [-1, -2, 3.5]\n"
+      "  Profile:\n"
+      "    PowX:\n"
+      "      Power: 4");
 }
 }  // namespace
 

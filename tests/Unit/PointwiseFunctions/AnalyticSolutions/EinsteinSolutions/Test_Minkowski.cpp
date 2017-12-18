@@ -2,8 +2,10 @@
 // See LICENSE.txt for details.
 
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
+#include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace {
 template <size_t Dim, typename T>
 void test_minkowski(const T& value) {
   EinsteinSolutions::Minkowski<Dim> minkowski{};
@@ -52,6 +54,12 @@ void test_minkowski(const T& value) {
   CHECK_FALSE(minkowski != minkowski);
 }
 
+template <size_t Dim>
+void test_option_creation() {
+  test_creation<EinsteinSolutions::Minkowski<Dim>>("");
+}
+}  // namespace
+
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.Minkowski",
     "[PointwiseFunctions][Unit]") {
@@ -64,4 +72,8 @@ SPECTRE_TEST_CASE(
   test_minkowski<2>(x_dv);
   test_minkowski<3>(x);
   test_minkowski<3>(x_dv);
+
+  test_option_creation<1>();
+  test_option_creation<2>();
+  test_option_creation<3>();
 }

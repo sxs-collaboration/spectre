@@ -56,6 +56,7 @@ class PlaneWave {
 
   PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
             std::unique_ptr<MathFunction<1>>&& profile) noexcept;
+  PlaneWave() = default;
   PlaneWave(const PlaneWave&) noexcept = delete;
   PlaneWave& operator=(const PlaneWave&) noexcept = delete;
   PlaneWave(PlaneWave&&) noexcept = default;
@@ -91,10 +92,10 @@ class PlaneWave {
   template <typename T>
   T u(const tnsr::I<T, Dim>& x, double t) const noexcept;
 
-  std::array<double, Dim> wave_vector_;
-  std::array<double, Dim> center_;
+  std::array<double, Dim> wave_vector_{};
+  std::array<double, Dim> center_{};
   std::unique_ptr<MathFunction<1>> profile_;
-  double omega_;
+  double omega_{};
 };
 }  // namespace Solutions
 }  // namespace ScalarWave
