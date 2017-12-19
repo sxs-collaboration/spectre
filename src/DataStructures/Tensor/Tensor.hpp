@@ -154,7 +154,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
             Requires<not(cpp17::disjunction_v<std::is_same<
                              Tensor<X, Symm, IndexList<Indices...>>,
                              std::decay_t<Args>>...> and
-                         sizeof...(Args) == 1)> = nullptr>
+                         sizeof...(Args) == 1) and
+                     cpp17::is_constructible_v<X, Args...>> = nullptr>
   explicit Tensor(Args&&... args);
 
   using value_type = typename storage_type::value_type;
@@ -437,7 +438,8 @@ template <typename... Args,
           Requires<not(cpp17::disjunction_v<
                            std::is_same<Tensor<X, Symm, IndexList<Indices...>>,
                                         std::decay_t<Args>>...> and
-                       sizeof...(Args) == 1)>>
+                       sizeof...(Args) == 1) and
+                   cpp17::is_constructible_v<X, Args...>>>
 Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args)
     : data_(make_array<size(), X>(std::forward<Args>(args)...)) {}
 

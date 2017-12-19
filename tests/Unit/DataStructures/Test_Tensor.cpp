@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 /// [change_up_lo]
@@ -149,6 +150,13 @@ static_assert(not TensorMetafunctions::check_index_symmetry_v<
                            SpatialIndex<3, UpLo::Up, Frame::Inertial>,
                            SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
               "Failed testing check_index_symmetry");
+
+static_assert(not cpp17::is_constructible_v<
+                  Tensor<double, Symmetry<>, typelist<>>, typelist<>>,
+              "Tensor construction failed to be SFINAE friendly");
+static_assert(
+    cpp17::is_constructible_v<Tensor<double, Symmetry<>, typelist<>>, double>,
+    "Tensor construction failed to be SFINAE friendly");
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
                   "[DataStructures][Unit]") {
