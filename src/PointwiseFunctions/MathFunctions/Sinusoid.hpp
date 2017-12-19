@@ -12,7 +12,7 @@
 namespace MathFunctions {
 
 /*!
- *  \ingroup MathFunctions
+ *  \ingroup MathFunctionsGroup
  *  \brief Sinusoid \f$f = A \sin\left(k x + \delta \right)\f$.
  *
  *  \details Input file options are: Amplitude, Phase, and Wavenumber

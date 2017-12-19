@@ -130,6 +130,9 @@
  * \brief Functions and classes for manipulating HDF5 files
  */
 
+/// \defgroup MathFunctionsGroup Math Functions
+/// \brief Useful analytic functions
+
 /*!
  * \defgroup NumericalAlgorithmsGroup Numerical Algorithms
  * \brief Generic numerical algorithms
