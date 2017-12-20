@@ -12,7 +12,7 @@
 namespace MathFunctions {
 
 /*!
- *  \ingroup MathFunctions
+ *  \ingroup MathFunctionsGroup
  *  \brief Gaussian \f$f = A \exp\left(-\frac{(x-x_0)^2}{w^2}\right)\f$.
  *
  *  \details Input file options are: Amplitude, Width, and Center

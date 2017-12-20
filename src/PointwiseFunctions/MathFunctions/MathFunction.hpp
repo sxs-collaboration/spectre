@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
 
+/// \ingroup MathFunctionsGroup
 /// Holds classes implementing MathFunction (functions \f$R^n \to R\f$).
 namespace MathFunctions {
 class Gaussian;
@@ -19,14 +20,14 @@ class Sinusoid;
 }  // namespace MathFunctions
 
 /*!
- *  \ingroup MathFunctions
+ *  \ingroup MathFunctionsGroup
  *  Encodes a function \f$R^n \to R\f$ where n is `VolumeDim`.
  */
 template <size_t VolumeDim>
 class MathFunction;
 
 /*!
- * \ingroup MathFunctions
+ * \ingroup MathFunctionsGroup
  * Partial template specialization of MathFunction which encodes a
  * function \f$R \to R\f$.
  */

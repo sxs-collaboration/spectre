@@ -12,7 +12,7 @@
 namespace MathFunctions {
 
 /*!
- * \ingroup MathFunctions
+ * \ingroup MathFunctionsGroup
  * \brief Power of X \f$f(x)=x^X\f$
  */
 class PowX : public MathFunction<1> {
