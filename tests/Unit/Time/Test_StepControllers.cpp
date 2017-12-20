@@ -10,7 +10,7 @@
 #include "Time/StepControllers/SimpleTimes.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/Time.hpp"
-#include "tests/Unit/TestFactoryCreation.hpp"
+#include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {

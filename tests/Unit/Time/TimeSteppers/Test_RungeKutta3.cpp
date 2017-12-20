@@ -4,7 +4,7 @@
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
-#include "tests/Unit/TestFactoryCreation.hpp"
+#include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 

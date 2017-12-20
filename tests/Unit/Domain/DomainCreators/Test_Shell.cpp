@@ -11,7 +11,7 @@
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
-#include "tests/Unit/TestFactoryCreation.hpp"
+#include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
