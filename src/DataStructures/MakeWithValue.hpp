@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// \ingroup DataStructuresGroup
 /// Implementations of make_with_value.
@@ -28,7 +29,7 @@ struct MakeWithValueImpl {
 ///
 /// \see MakeWithValueImpls
 template <typename R, typename T>
-SPECTRE_ALWAYS_INLINE R make_with_value(const T& input, const double value) {
+SPECTRE_ALWAYS_INLINE R make_with_value(const T& input, double value) {
   return MakeWithValueImpls::MakeWithValueImpl<R, T>::apply(input, value);
 }
 
@@ -39,4 +40,16 @@ SPECTRE_ALWAYS_INLINE double MakeWithValueImpl<double, double>::apply(
     const double& /* input */, const double value) {
   return value;
 }
+
+/// \brief Makes a `TaggedTuple`; each element of the `TaggedTuple`
+/// must be `make_with_value`-creatable from a `T`.
+template <typename... Tags, typename T>
+struct MakeWithValueImpl<tuples::TaggedTuple<Tags...>, T> {
+  static SPECTRE_ALWAYS_INLINE tuples::TaggedTuple<Tags...> apply(
+      const T& input, const double value) {
+    return tuples::TaggedTuple<Tags...>(
+        make_with_value<typename Tags::type>(input, value)...);
+  }
+};
+
 }  // namespace MakeWithValueImpls
