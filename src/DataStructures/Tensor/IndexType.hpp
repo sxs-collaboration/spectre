@@ -49,6 +49,12 @@ struct Distorted {};
 /// intermediate frame that is irrelevant to the interface.
 struct NoFrame {};
 
+/// Represents a spherical-coordinate frame that is associated with a
+/// Cartesian frame, e.g. \f$(r,\theta,\phi)\f$ associated with the Inertial
+/// frame, as used on an apparent horizon or a wave-extraction surface.
+template <typename CartesianFrame>
+struct Spherical {};
+
 /// \ingroup TensorGroup
 /// Returns std::true_type if the frame is "physical" in the sense that it is
 /// meaningful to evaluate an analytic solution in that frame.

@@ -8,7 +8,7 @@
 
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Blas.hpp"
 
 /// \ingroup SpectralGroup

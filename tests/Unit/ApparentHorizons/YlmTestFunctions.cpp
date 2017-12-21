@@ -3,6 +3,8 @@
 
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
 
+#include "DataStructures/Tensor/Tensor.hpp"
+
 namespace YlmTestFunctions {
 
 void Y00::func(const gsl::not_null<DataVector*> u, const size_t stride,

@@ -3,6 +3,8 @@
 
 set(APPARENT_HORIZONS_TESTS
     ApparentHorizons/Test_SpherepackIterator.cpp
+    ApparentHorizons/Test_Strahlkorper.cpp
+    ApparentHorizons/Test_StrahlkorperDataBox.cpp
     ApparentHorizons/Test_YlmSpherepack.cpp
     ApparentHorizons/YlmTestFunctions.cpp
     )

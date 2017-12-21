@@ -292,6 +292,11 @@ into two classes:
  */
 
 /*!
+ * \defgroup SurfacesGroup Surfaces
+ * Things related to surfaces.
+ */
+
+/*!
  * \defgroup TensorGroup Tensor
  * Tensor use documentation.
  */
