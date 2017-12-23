@@ -920,4 +920,38 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.NonCopyable",
   CHECK(*tuples::get<tags::NonCopyable0>(t)[1] == 3);
 }
 
+namespace tags {
+struct Copyable0 {
+  using type = std::vector<double>;
+};
+struct Copyable1 {
+  using type = std::vector<double>;
+};
+}  // namespace tags
+
+SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.SingleTagConstructor",
+                  "[Unit][Utilities]") {
+  {
+    std::vector<std::unique_ptr<int>> a{};
+    a.reserve(2);
+    a.emplace_back(std::make_unique<int>(1));
+    a.emplace_back(std::make_unique<int>(3));
+    tuples::TaggedTuple<tags::NonCopyable0> t0(std::move(a));
+    tuples::TaggedTuple<tags::NonCopyable1> t1(std::move(t0));
+    CHECK(*tuples::get<tags::NonCopyable1>(t1)[0] == 1);
+    CHECK(*tuples::get<tags::NonCopyable1>(t1)[1] == 3);
+  }
+  {
+    std::vector<double> a{1.0, 3.0};
+    tuples::TaggedTuple<tags::Copyable0> t0(a);
+    tuples::TaggedTuple<tags::Copyable1> t1(t0);
+    CHECK(tuples::get<tags::Copyable1>(t1) == a);
+  }
+  {
+    std::vector<double> a{1.0, 3.0};
+    tuples::TaggedTuple<tags::Copyable0> t0 = a;
+    tuples::TaggedTuple<tags::Copyable1> t1(t0);
+    CHECK(tuples::get<tags::Copyable1>(t1) == a);
+  }
+}
 }  // namespace
