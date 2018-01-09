@@ -568,41 +568,50 @@ constexpr bool check_index_symmetry_v =
 
 /*!
  * \ingroup TensorGroup
- * \brief Add a spatial index to the from of a Tensor
+ * \brief Add a spatial index to the front of a Tensor
  *
- * \tparam Tensor_t the tensor type to prepend
+ * \tparam Tensor the tensor type to which the new index is prepended
  * \tparam VolumeDim the volume dimension of the tensor index to prepend
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
-template <typename Tensor_t, std::size_t VolumeDim, UpLo Ul,
+template <typename Tensor, std::size_t VolumeDim, UpLo Ul,
           typename Fr = Frame::Grid>
-using prepend_spatial_index = Tensor<
-    typename Tensor_t::type,
+using prepend_spatial_index = ::Tensor<
+    typename Tensor::type,
     tmpl::push_front<
-        typename Tensor_t::symmetry,
+        typename Tensor::symmetry,
         tmpl::int32_t<
-            1 + tmpl::fold<typename Tensor_t::symmetry, tmpl::int32_t<0>,
+            1 + tmpl::fold<typename Tensor::symmetry, tmpl::int32_t<0>,
                            tmpl::max<tmpl::_state, tmpl::_element>>::value>>,
-    tmpl::push_front<typename Tensor_t::index_list,
+    tmpl::push_front<typename Tensor::index_list,
                      SpatialIndex<VolumeDim, Ul, Fr>>>;
 
 /*!
  * \ingroup TensorGroup
- * \brief Add a spacetime index to the from of a Tensor
+ * \brief Add a spacetime index to the front of a Tensor
  *
- * \tparam Tensor_t the tensor type to prepend
+ * \tparam Tensor the tensor type to which the new index is prepended
  * \tparam VolumeDim the volume dimension of the tensor index to prepend
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
-template <typename Tensor_t, std::size_t VolumeDim, UpLo Ul,
+template <typename Tensor, std::size_t VolumeDim, UpLo Ul,
           typename Fr = Frame::Grid>
-using prepend_spacetime_index = Tensor<
-    typename Tensor_t::type,
+using prepend_spacetime_index = ::Tensor<
+    typename Tensor::type,
     tmpl::push_front<
-        typename Tensor_t::symmetry,
+        typename Tensor::symmetry,
         tmpl::int32_t<
-            1 + tmpl::fold<typename Tensor_t::symmetry, tmpl::int32_t<0>,
+            1 + tmpl::fold<typename Tensor::symmetry, tmpl::int32_t<0>,
                            tmpl::max<tmpl::_state, tmpl::_element>>::value>>,
-    tmpl::push_front<typename Tensor_t::index_list,
+    tmpl::push_front<typename Tensor::index_list,
                      SpacetimeIndex<VolumeDim, Ul, Fr>>>;
+
+/// \ingroup TensorGroup
+/// \brief remove the first index of a tensor
+/// \tparam Tensor the tensor type whose first index is removed
+template <typename Tensor>
+using remove_first_index =
+    ::Tensor<typename Tensor::type,
+           tmpl::pop_front<typename Tensor::symmetry>,
+           tmpl::pop_front<typename Tensor::index_list>>;
 }  // namespace TensorMetafunctions
