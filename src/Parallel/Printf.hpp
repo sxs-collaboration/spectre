@@ -42,7 +42,8 @@ inline std::string stream_object_to_string(T&& t) {
                 "Cannot stream type and therefore it cannot be printed. Please "
                 "define a stream operator for the type.");
   std::stringstream ss;
-  ss << t;
+  ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1)
+     << std::scientific << t;
   return ss.str();
 }
 
