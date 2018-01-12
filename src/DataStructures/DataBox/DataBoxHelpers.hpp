@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Utilities/BoostHelpers.hpp"
 
 /// \cond

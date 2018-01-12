@@ -7,7 +7,7 @@
 #include <boost/range/combine.hpp>
 #include <cstddef>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Variables.hpp"

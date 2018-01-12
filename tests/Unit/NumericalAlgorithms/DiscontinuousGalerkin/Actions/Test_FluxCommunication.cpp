@@ -5,9 +5,9 @@
 #include <memory>
 #include <unordered_set>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/AffineMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"

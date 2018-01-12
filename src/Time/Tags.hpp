@@ -10,7 +10,7 @@
 #include <memory>
 #include <tuple>
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"

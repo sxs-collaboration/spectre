@@ -4,7 +4,7 @@
 #include <catch.hpp>
 #include <memory>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

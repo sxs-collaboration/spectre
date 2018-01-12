@@ -4,9 +4,9 @@
 #include <catch.hpp>
 #include <memory>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBoxTag.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

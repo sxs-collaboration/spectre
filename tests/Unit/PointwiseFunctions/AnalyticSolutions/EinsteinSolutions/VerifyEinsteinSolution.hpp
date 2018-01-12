@@ -6,7 +6,7 @@
 #include <array>
 #include <cstddef>
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"

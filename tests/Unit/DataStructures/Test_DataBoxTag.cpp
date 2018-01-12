@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/TMPL.hpp"

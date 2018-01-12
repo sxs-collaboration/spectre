@@ -8,7 +8,7 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 class DataVector;

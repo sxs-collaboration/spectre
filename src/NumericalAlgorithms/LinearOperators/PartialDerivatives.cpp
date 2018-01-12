@@ -3,8 +3,8 @@
 
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"

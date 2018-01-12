@@ -5,7 +5,7 @@
 #include <catch.hpp>
 #include <tuple>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/Actions/FinalTime.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

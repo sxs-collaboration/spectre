@@ -5,7 +5,7 @@
 
 #include <functional>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
