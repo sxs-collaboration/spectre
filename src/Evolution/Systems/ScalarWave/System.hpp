@@ -33,5 +33,6 @@ struct System {
   using gradients_tags = tmpl::list<Pi, Phi<Dim>>;
 
   using du_dt = ComputeDuDt<Dim>;
+  using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 };
 }  // namespace ScalarWave

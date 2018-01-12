@@ -83,3 +83,64 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.DuDt",
   check_du_dt<2>(3, time);
   check_du_dt<3>(3, time);
 }
+
+namespace {
+template <size_t Dim>
+void check_normal_dot_fluxes(const size_t npts, const double t) {
+  const ScalarWave::Solutions::PlaneWave<Dim> solution(
+      make_array<Dim>(0.1), make_array<Dim>(0.0),
+      std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
+
+  const tnsr::I<DataVector, Dim> x = [npts]() {
+    auto logical_coords = logical_coordinates(Index<Dim>(3));
+    tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
+    for (size_t i = 0; i < Dim; ++i) {
+      coords.get(i) = std::move(logical_coords.get(i));
+    }
+    return coords;
+  }();
+
+  const auto psi = solution.psi(x, t);
+  const auto pi = Scalar<DataVector>{-get(solution.dpsi_dt(x, t))};
+  const auto phi = solution.dpsi_dx(x, t);
+
+  // Any numbers are fine, doesn't have anything to do with unit normal
+  auto unit_normal =
+      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
+  for (size_t d = 0; d < Dim; ++d) {
+    unit_normal.get(d) = x.get(d);
+  }
+
+  auto normal_dot_flux_pi = make_with_value<Scalar<DataVector>>(pi, 0.0);
+  auto normal_dot_flux_psi = make_with_value<Scalar<DataVector>>(pi, 0.0);
+  auto normal_dot_flux_phi =
+      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
+
+  ScalarWave::ComputeNormalDotFluxes<Dim>::apply(
+      make_not_null(&normal_dot_flux_pi), make_not_null(&normal_dot_flux_phi),
+      make_not_null(&normal_dot_flux_psi), pi, phi, unit_normal);
+
+  CHECK(get(normal_dot_flux_psi) == DataVector(pow<Dim>(npts), 0.0));
+
+  DataVector normal_dot_flux_pi_expected(pow<Dim>(npts), 0.0);
+  for (size_t d = 0; d < Dim; ++d) {
+    normal_dot_flux_pi_expected += unit_normal.get(d) * phi.get(d);
+  }
+  CHECK(get(normal_dot_flux_pi) == normal_dot_flux_pi_expected);
+
+  auto normal_dot_flux_phi_expected =
+      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
+  for (size_t d = 0; d < Dim; ++d) {
+    normal_dot_flux_phi_expected.get(d) = unit_normal.get(d) * get(pi);
+  }
+  CHECK(normal_dot_flux_phi == normal_dot_flux_phi_expected);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.NormalDotFluxes",
+                  "[Unit][Evolution]") {
+  constexpr double time = 0.7;
+  check_normal_dot_fluxes<1>(3, time);
+  check_normal_dot_fluxes<2>(3, time);
+  check_normal_dot_fluxes<3>(3, time);
+}

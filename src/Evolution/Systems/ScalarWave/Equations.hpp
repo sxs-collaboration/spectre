@@ -68,4 +68,29 @@ struct ComputeDuDt {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
       const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) noexcept;
 };
+
+/*!
+ * \brief Compute normal component of flux on a boundary.
+ *
+ * \f{align}
+ * F(\Psi) =& 0 \\
+ * F(\Pi) =& n^i \Phi_i \\
+ * F(\Phi_i) =& n_i \Pi
+ * \f}
+ */
+template <size_t Dim>
+struct ComputeNormalDotFluxes {
+  using return_tags =
+      tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>,
+                 Tags::NormalDotFlux<Psi>>;
+  using argument_tags = tmpl::list<Pi, Phi<Dim>>;
+  static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
+                    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+                        phi_normal_dot_flux,
+                    gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
+                    const Scalar<DataVector>& pi,
+                    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                        interface_unit_normal) noexcept;
+};
 }  // namespace ScalarWave

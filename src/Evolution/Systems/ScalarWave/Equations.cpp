@@ -27,6 +27,33 @@ void ComputeDuDt<Dim>::apply(
     dt_phi->get(d) = -d_pi.get(d);
   }
 }
+
+template <size_t Dim>
+void ComputeNormalDotFluxes<Dim>::apply(
+    const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+        phi_normal_dot_flux,
+    const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        interface_unit_normal) noexcept {
+  // We assume that all values of psi_normal_dot_flux are the same. The reason
+  // is that std::fill is actually surprisingly/disappointingly slow.
+  if (psi_normal_dot_flux->get()[0] != 0.0) {
+    std::fill(psi_normal_dot_flux->get().begin(),
+              psi_normal_dot_flux->get().end(), 0.0);
+  }
+
+  get(*pi_normal_dot_flux) = get<0>(interface_unit_normal) * get<0>(phi);
+  for (size_t i = 1; i < Dim; ++i) {
+    get(*pi_normal_dot_flux) += interface_unit_normal.get(i) * phi.get(i);
+  }
+
+  for (size_t i = 0; i < Dim; ++i) {
+    phi_normal_dot_flux->get(i) = interface_unit_normal.get(i) * get(pi);
+  }
+}
 }  // namespace ScalarWave
 
 // Generate explicit instantiations of partial_derivatives function as well as
@@ -47,6 +74,7 @@ using derivative_frame = Frame::Inertial;
 
 #define INSTANTIATION(_, data)                                               \
   template class ScalarWave::ComputeDuDt<DIM(data)>;                         \
+  template class ScalarWave::ComputeNormalDotFluxes<DIM(data)>;              \
   template Variables<                                                        \
       db::wrap_tags_in<Tags::deriv, derivative_tags<DIM(data)>,              \
                        tmpl::size_t<DIM(data)>, derivative_frame>>           \
