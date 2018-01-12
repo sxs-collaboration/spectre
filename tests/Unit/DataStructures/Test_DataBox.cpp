@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBoxHelpers.hpp"
 #include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -1223,4 +1224,191 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
                       db::get<test_databox_tags::MutateVariablesCompute>(
                           original_box)))
                .data()}}));
+}
+
+namespace DataBoxTest_detail {
+struct vector : db::DataBoxTag {
+  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+  static constexpr db::DataBoxString label = "vector";
+};
+
+struct scalar : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString label = "scalar";
+};
+
+struct vector2 : db::DataBoxTag {
+  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+  static constexpr db::DataBoxString label = "vector2";
+};
+}  // namespace DataBoxTest_detail
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
+                  "[Unit][DataStructures]") {
+  const size_t x_extents = 2, y_extents = 3, z_extents = 4,
+               vec_size = DataBoxTest_detail::vector::type::size();
+  Index<3> extents(x_extents, y_extents, z_extents);
+  auto box = db::create<db::AddTags<DataBoxTest_detail::vector>>([]() {
+    Variables<typelist<DataBoxTest_detail::vector>> vars(24, 0.);
+    for (size_t s = 0; s < vars.size(); ++s) {
+      // clang-tidy: do not use pointer arithmetic
+      vars.data()[s] = s;  // NOLINT
+    }
+    return get<DataBoxTest_detail::vector>(vars);
+  }());
+
+  Variables<typelist<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
+      y_extents * z_extents, 0.),
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+      expected_vars_sliced_in_z(x_extents * y_extents, 0.);
+  const size_t x_offset = 1, y_offset = 2, z_offset = 1;
+
+  for (size_t s = 0; s < expected_vars_sliced_in_x.size(); ++s) {
+    // clang-tidy: do not use pointer arithmetic
+    expected_vars_sliced_in_x.data()[s] = x_offset + s * x_extents;  // NOLINT
+  }
+  for (size_t i = 0; i < vec_size; ++i) {
+    for (size_t x = 0; x < x_extents; ++x) {
+      for (size_t z = 0; z < z_extents; ++z) {
+        // clang-tidy: do not use pointer arithmetic
+        expected_vars_sliced_in_y
+            .data()[x + x_extents * (z + z_extents * i)] =  // NOLINT
+            i * extents.product() + x + x_extents * (y_offset + z * y_extents);
+      }
+    }
+  }
+  for (size_t i = 0; i < vec_size; ++i) {
+    for (size_t x = 0; x < x_extents; ++x) {
+      for (size_t y = 0; y < y_extents; ++y) {
+        // clang-tidy: do not use pointer arithmetic
+        expected_vars_sliced_in_z
+            .data()[x + x_extents * (y + y_extents * i)] =  // NOLINT
+            i * extents.product() + x + x_extents * (y + y_extents * z_offset);
+      }
+    }
+  }
+  CHECK(
+      /// [data_on_slice]
+      db::data_on_slice(box, extents, 0, x_offset,
+                        tmpl::list<DataBoxTest_detail::vector>{})
+      /// [data_on_slice]
+      == expected_vars_sliced_in_x);
+  CHECK(db::data_on_slice(box, extents, 1, y_offset,
+                          tmpl::list<DataBoxTest_detail::vector>{}) ==
+        expected_vars_sliced_in_y);
+  CHECK(db::data_on_slice(box, extents, 2, z_offset,
+                          tmpl::list<DataBoxTest_detail::vector>{}) ==
+        expected_vars_sliced_in_z);
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
+                  "[Unit][DataStructures]") {
+  const size_t x_extents = 2, y_extents = 3, z_extents = 4,
+               vec_size = DataBoxTest_detail::vector::type::size();
+  Index<3> extents(x_extents, y_extents, z_extents);
+  auto box = db::create<
+      db::AddTags<DataBoxTest_detail::vector, DataBoxTest_detail::scalar,
+                  DataBoxTest_detail::vector2>>(
+      []() {
+        Variables<typelist<DataBoxTest_detail::vector>> vars(24, 0.);
+        for (size_t s = 0; s < vars.size(); ++s) {
+          // clang-tidy: do not use pointer arithmetic
+          vars.data()[s] = s;  // NOLINT
+        }
+        return get<DataBoxTest_detail::vector>(vars);
+      }(),
+      Scalar<DataVector>(DataVector{8.9, 0.7, 6.7}),
+      []() {
+        Variables<typelist<DataBoxTest_detail::vector>> vars(24, 0.);
+        for (size_t s = 0; s < vars.size(); ++s) {
+          // clang-tidy: do not use pointer arithmetic
+          vars.data()[s] = s * 10.0;  // NOLINT
+        }
+        return get<DataBoxTest_detail::vector>(vars);
+      }());
+
+  Variables<typelist<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
+      y_extents * z_extents, 0.),
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+      expected_vars_sliced_in_z(x_extents * y_extents, 0.);
+  const size_t x_offset = 1, y_offset = 2, z_offset = 1;
+
+  for (size_t s = 0; s < expected_vars_sliced_in_x.size(); ++s) {
+    // clang-tidy: do not use pointer arithmetic
+    expected_vars_sliced_in_x.data()[s] = x_offset + s * x_extents;  // NOLINT
+  }
+  for (size_t i = 0; i < vec_size; ++i) {
+    for (size_t x = 0; x < x_extents; ++x) {
+      for (size_t z = 0; z < z_extents; ++z) {
+        // clang-tidy: do not use pointer arithmetic
+        expected_vars_sliced_in_y
+            .data()[x + x_extents * (z + z_extents * i)] =  // NOLINT
+            i * extents.product() + x + x_extents * (y_offset + z * y_extents);
+      }
+    }
+  }
+  for (size_t i = 0; i < vec_size; ++i) {
+    for (size_t x = 0; x < x_extents; ++x) {
+      for (size_t y = 0; y < y_extents; ++y) {
+        // clang-tidy: do not use pointer arithmetic
+        expected_vars_sliced_in_z
+            .data()[x + x_extents * (y + y_extents * i)] =  // NOLINT
+            i * extents.product() + x + x_extents * (y + y_extents * z_offset);
+      }
+    }
+  }
+  // x slice
+  {
+    const auto sliced0 = data_on_slice(
+        box, extents, 0, x_offset,
+        tmpl::list<DataBoxTest_detail::vector, DataBoxTest_detail::vector2>{});
+    CHECK(get<DataBoxTest_detail::vector>(sliced0) ==
+          get<DataBoxTest_detail::vector>(expected_vars_sliced_in_x));
+    CHECK(get<DataBoxTest_detail::vector2>(sliced0) ==
+          get<DataBoxTest_detail::vector>(
+              Variables<typelist<DataBoxTest_detail::vector>>(
+                  expected_vars_sliced_in_x * 10.0)));
+    const auto sliced1 = data_on_slice(
+        box, extents, 0, x_offset, tmpl::list<DataBoxTest_detail::vector2>{});
+    CHECK(get<DataBoxTest_detail::vector2>(sliced1) ==
+          get<DataBoxTest_detail::vector>(
+              Variables<typelist<DataBoxTest_detail::vector>>(
+                  expected_vars_sliced_in_x * 10.0)));
+  }
+  // y slice
+  {
+    const auto sliced0 = data_on_slice(
+        box, extents, 1, y_offset,
+        tmpl::list<DataBoxTest_detail::vector, DataBoxTest_detail::vector2>{});
+    CHECK(get<DataBoxTest_detail::vector>(sliced0) ==
+          get<DataBoxTest_detail::vector>(expected_vars_sliced_in_y));
+    CHECK(get<DataBoxTest_detail::vector2>(sliced0) ==
+          get<DataBoxTest_detail::vector>(
+              Variables<typelist<DataBoxTest_detail::vector>>(
+                  expected_vars_sliced_in_y * 10.0)));
+    const auto sliced1 = data_on_slice(
+        box, extents, 1, y_offset, tmpl::list<DataBoxTest_detail::vector2>{});
+    CHECK(get<DataBoxTest_detail::vector2>(sliced1) ==
+          get<DataBoxTest_detail::vector>(
+              Variables<typelist<DataBoxTest_detail::vector>>(
+                  expected_vars_sliced_in_y * 10.0)));
+  }
+  // z slice
+  {
+    const auto sliced0 = data_on_slice(
+        box, extents, 2, z_offset,
+        tmpl::list<DataBoxTest_detail::vector, DataBoxTest_detail::vector2>{});
+    CHECK(get<DataBoxTest_detail::vector>(sliced0) ==
+          get<DataBoxTest_detail::vector>(expected_vars_sliced_in_z));
+    CHECK(get<DataBoxTest_detail::vector2>(sliced0) ==
+          get<DataBoxTest_detail::vector>(
+              Variables<typelist<DataBoxTest_detail::vector>>(
+                  expected_vars_sliced_in_z * 10.0)));
+    const auto sliced1 = data_on_slice(
+        box, extents, 2, z_offset, tmpl::list<DataBoxTest_detail::vector2>{});
+    CHECK(get<DataBoxTest_detail::vector2>(sliced1) ==
+          get<DataBoxTest_detail::vector>(
+              Variables<typelist<DataBoxTest_detail::vector>>(
+                  expected_vars_sliced_in_z * 10.0)));
+  }
 }
