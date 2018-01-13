@@ -54,6 +54,71 @@ void ComputeNormalDotFluxes<Dim>::apply(
     phi_normal_dot_flux->get(i) = interface_unit_normal.get(i) * get(pi);
   }
 }
+
+template <size_t Dim>
+void UpwindFlux<Dim>::package_data(
+    const gsl::not_null<Variables<package_tags>*> packaged_data,
+    const Scalar<DataVector>& normal_dot_flux_pi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
+    const Scalar<DataVector>& /*normal_dot_flux_psi*/,
+    const Scalar<DataVector>& pi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+    const noexcept {
+  // Computes the contribution to the numerical flux from one side of the
+  // interface.
+  //
+  // The packaged_data stores:
+  // <Pi> = pi
+  // <NormalDotFlux<Pi>> = normal_dot_flux_pi
+  // <NormalTimesFluxPi_i> = normal_dot_flux_pi * n_i
+  // <NormalDotFlux<Phi>_i> = normal_dot_flux_phi_i
+  //
+  // Note: when Upwind::operator() is called, an Element passes in its own
+  // packaged data to fill the interior fields, and its neighbors packaged data
+  // to fill the exterior fields. This introduces a sign flip for each normal
+  // used in computing the exterior fields.
+  get<Pi>(*packaged_data) = pi;
+  get<Tags::NormalDotFlux<Pi>>(*packaged_data) = normal_dot_flux_pi;
+  get<Tags::NormalDotFlux<Phi<Dim>>>(*packaged_data) = normal_dot_flux_phi;
+  auto& normal_times_flux_pi = get<NormalTimesFluxPi>(*packaged_data);
+  for (size_t d = 0; d < Dim; ++d) {
+    normal_times_flux_pi.get(d) =
+        interface_unit_normal.get(d) * get(normal_dot_flux_pi);
+  }
+}
+
+template <size_t Dim>
+void UpwindFlux<Dim>::operator()(
+    const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_numerical_flux,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+        phi_normal_dot_numerical_flux,
+    const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_numerical_flux,
+    const Scalar<DataVector>& normal_dot_flux_pi_interior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        normal_dot_flux_phi_interior,
+    const Scalar<DataVector>& pi_interior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        normal_times_flux_pi_interior,
+    const Scalar<DataVector>& minus_normal_dot_flux_pi_exterior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        minus_normal_dot_flux_phi_exterior,
+    const Scalar<DataVector>& pi_exterior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        normal_times_flux_pi_exterior) const noexcept {
+  std::fill(psi_normal_dot_numerical_flux->get().begin(),
+            psi_normal_dot_numerical_flux->get().end(), 0.);
+  get(*pi_normal_dot_numerical_flux) =
+      0.5 *
+      (get(pi_interior) - get(pi_exterior) + get(normal_dot_flux_pi_interior) -
+       get(minus_normal_dot_flux_pi_exterior));
+  for (size_t d = 0; d < Dim; ++d) {
+    phi_normal_dot_numerical_flux->get(d) =
+        0.5 * (normal_dot_flux_phi_interior.get(d) -
+               minus_normal_dot_flux_phi_exterior.get(d) +
+               normal_times_flux_pi_interior.get(d) -
+               normal_times_flux_pi_exterior.get(d));
+  }
+}
 }  // namespace ScalarWave
 
 // Generate explicit instantiations of partial_derivatives function as well as
@@ -75,6 +140,7 @@ using derivative_frame = Frame::Inertial;
 #define INSTANTIATION(_, data)                                               \
   template class ScalarWave::ComputeDuDt<DIM(data)>;                         \
   template class ScalarWave::ComputeNormalDotFluxes<DIM(data)>;              \
+  template class ScalarWave::UpwindFlux<DIM(data)>;                          \
   template Variables<                                                        \
       db::wrap_tags_in<Tags::deriv, derivative_tags<DIM(data)>,              \
                        tmpl::size_t<DIM(data)>, derivative_frame>>           \
