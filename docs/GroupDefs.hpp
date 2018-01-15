@@ -368,7 +368,7 @@ into two classes:
  * specified as follows:
  * \code
  * // [[TimeOut, 10]]
- * // [[ErrorRegex, The error message expected from the test]]
+ * // [[OutputRegex, The error message expected from the test]]
  * SPECTRE_TEST_CASE("Unit.Blah", "[Unit]") {
  * \endcode
  *
@@ -398,7 +398,7 @@ into two classes:
  * </table>
  *
  * \example
- * snippet Test_H5.cpp willfail_example_for_dev_doc
+ * \snippet Test_H5.cpp willfail_example_for_dev_doc
  *
  * ### Testing static assert
  *
