@@ -907,9 +907,12 @@ add_compute_item_to_box_impl(
                     cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
                 "A ComputeItem cannot take its own Tag as an argument.");
   static_assert(
-      tmpl2::flat_all_v<
-          tmpl::less<tmpl::index_of<FullTagList, ComputeItemArgumentsTags>,
-                     index>::value...>,
+      tmpl2::flat_all_v<tmpl::less<
+          tmpl::index_if<
+              FullTagList,
+              std::is_same<tmpl::pin<ComputeItemArgumentsTags>, tmpl::_1>,
+              index>,
+          index>::value...>,
       "The dependencies of a ComputeItem must be added before the "
       "ComputeItem itself. This is done to ensure no cyclic "
       "dependencies arise.");
