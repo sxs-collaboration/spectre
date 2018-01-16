@@ -75,9 +75,10 @@ To build with the docker image:
    Within the container, the directory $SPECTRE_ROOT is available and
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
-1. `export SPECTRE_ROOT=/path/to/your/spectre`
-1. `cd` into /work/charm, and apply the Charm++ patch by
-   running `git apply $SPECTRE_ROOT/support/Charm/v6.8.patch`.
+1. Apply the Charm++ patch with
+   ```
+   cd $CHARM_DIR; git apply $SPECTRE_ROOT/support/Charm/v6.8.patch
+   ```
 1. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
 1. Build SpECTRE with
