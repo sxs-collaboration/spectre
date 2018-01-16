@@ -69,7 +69,7 @@ To build with the docker image:
    ```
    (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a
    name of your choice. If you don't name your container, docker will
-   generate an arbitrary name.
+   generate an arbitrary name.)
    You will end up in a shell in a docker container,
    as root (you need to be root).
    Within the container, the directory $SPECTRE_ROOT is available and
