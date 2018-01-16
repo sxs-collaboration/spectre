@@ -55,16 +55,14 @@ struct UpdateU {
           const auto& time_stepper =
               Parallel::get<CacheTags::TimeStepper>(cache);
 
-          history.emplace_back(time, vars, std::move(dt_vars));
+          history.emplace_back(time, vars, dt_vars);
           time_stepper.update_u(make_not_null(&vars), history, time_step);
           history.erase(history.begin(), time_stepper.needed_history(history));
         },
         db::get<Tags::Time>(box),
         db::get<Tags::TimeStep>(box));
 
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<dt_variables_tag>, db::AddTags<>>(
-            std::move(box)));
+    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace Actions
