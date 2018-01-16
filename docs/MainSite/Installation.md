@@ -55,7 +55,10 @@ as outlined below is a supported alternative to Docker images.)
 To build with the docker image:
 
 1. Clone SpECTRE into a directory of your choice.
-1. `export SPECTRE_ROOT=/path/to/your/spectre`
+1. cd into cloned_spectre and then
+   ```
+   export SPECTRE_ROOT=`pwd` && cd ..
+   ```
 1. Retrieve the docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
