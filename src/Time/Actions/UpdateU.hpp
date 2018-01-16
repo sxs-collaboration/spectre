@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -46,7 +47,7 @@ struct UpdateU {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using variables_tag = typename Metavariables::system::variables_tag;
-    using dt_variables_tag = typename Metavariables::system::dt_variables_tag;
+    using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
     db::mutate<variables_tag, dt_variables_tag,
                Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>(
