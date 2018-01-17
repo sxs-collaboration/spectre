@@ -161,6 +161,19 @@ class Variables<tmpl::list<Tags...>> {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
+  /// \brief Assign a subset of the `Tensor`s from another Variables
+  ///
+  /// \note There is no need for an rvalue overload because we need to copy into
+  /// the contiguous array anyway
+  template <typename... SubsetOfTags,
+            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
+                tmpl::list<Tags...>, SubsetOfTags>...>> = nullptr>
+  void assign_subset(
+      const Variables<tmpl::list<SubsetOfTags...>>& vars) noexcept {
+    (void)std::initializer_list<char>{
+        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars), '0')...};
+  }
+
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
   template <typename VT, bool VF>
