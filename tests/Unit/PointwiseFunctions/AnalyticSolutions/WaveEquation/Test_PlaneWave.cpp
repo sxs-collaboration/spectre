@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -123,6 +124,10 @@ void test_1d() {
       {{k}}, {{center_x}}, std::make_unique<MathFunctions::PowX>(3));
   check_solution_x(k, omega, u, pw, x, t);
 
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  const auto deserialized_pw = serialize_and_deserialize(pw);
+  check_solution_x(k, omega, u, deserialized_pw, x, t);
+
   test_creation<ScalarWave::Solutions::PlaneWave<1>>(
       "  WaveVector: [3.5]\n"
       "  Center: [3.5]\n"
@@ -151,6 +156,11 @@ void test_2d() {
       std::make_unique<MathFunctions::PowX>(3));
   check_solution_x(kx, omega, u, pw, x, t);
   check_solution_y(kx, ky, omega, u, pw, x, t);
+
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  const auto deserialized_pw = serialize_and_deserialize(pw);
+  check_solution_x(kx, omega, u, deserialized_pw, x, t);
+  check_solution_y(kx, ky, omega, u, deserialized_pw, x, t);
 
   test_creation<ScalarWave::Solutions::PlaneWave<2>>(
       "  WaveVector: [-2, 3.5]\n"
@@ -187,6 +197,12 @@ void test_3d() {
   check_solution_x(kx, omega, u, pw, x, t);
   check_solution_y(kx, ky, omega, u, pw, x, t);
   check_solution_z(kx, ky, kz, omega, u, pw, x, t);
+
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  const auto deserialized_pw = serialize_and_deserialize(pw);
+  check_solution_x(kx, omega, u, deserialized_pw, x, t);
+  check_solution_y(kx, ky, omega, u, deserialized_pw, x, t);
+  check_solution_z(kx, ky, kz, omega, u, deserialized_pw, x, t);
 
   test_creation<ScalarWave::Solutions::PlaneWave<3>>(
       "  WaveVector: [-1, -2, 3.5]\n"

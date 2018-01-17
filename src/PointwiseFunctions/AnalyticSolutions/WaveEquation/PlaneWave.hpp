@@ -15,6 +15,10 @@
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace PUP {
+class er;
+}  // namespace PUP
+
 namespace ScalarWave {
 namespace Solutions {
 /*!
@@ -87,6 +91,9 @@ class PlaneWave {
   template <typename T>
   tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const
       noexcept;
+
+  // clang-tidy: no pass by reference
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   template <typename T>

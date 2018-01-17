@@ -3,6 +3,7 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 
+#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -76,6 +77,14 @@ tnsr::ii<T, Dim> PlaneWave<Dim>::d2psi_dxdx(const tnsr::I<T, Dim>& x,
     }
   }
   return result;
+}
+
+template <size_t Dim>
+void PlaneWave<Dim>::pup(PUP::er& p) noexcept {
+  p | wave_vector_;
+  p | center_;
+  p | profile_;
+  p | omega_;
 }
 
 template <size_t Dim>
