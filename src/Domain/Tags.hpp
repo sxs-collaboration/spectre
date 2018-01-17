@@ -76,10 +76,10 @@ struct LogicalCoordinates : db::ComputeItemTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::DataBoxTag {
   static constexpr db::DataBoxString label = "ElementMap";
-  using type = ::ElementMap<VolumeDim, Frame::Grid>;
+  using type = ::ElementMap<VolumeDim, Frame>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -119,9 +119,9 @@ namespace detail {
 template <size_t VolumeDim>
 auto make_unnormalized_face_normals(
     const Index<VolumeDim>& extents,
-    const ::ElementMap<VolumeDim, Frame::Grid>& map) noexcept {
+    const ::ElementMap<VolumeDim, Frame::Inertial>& map) noexcept {
   std::unordered_map<Direction<VolumeDim>,
-                     tnsr::i<DataVector, VolumeDim, Frame::Grid>>
+                     tnsr::i<DataVector, VolumeDim, Frame::Inertial>>
       result;
   for (const auto& d : Direction<VolumeDim>::all_directions()) {
     result.emplace(

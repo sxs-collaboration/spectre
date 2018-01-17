@@ -143,8 +143,9 @@ struct ComputeBoundaryFlux {
 
       // Using this instead of auto prevents incomprehensible errors
       // if the return type of compute_flux is wrong.
-      using FluxType = db::item_type<db::add_tag_prefix<
-          Tags::Flux, variables_tag, tmpl::size_t<volume_dim>, Frame::Grid>>;
+      using FluxType = db::item_type<
+          db::add_tag_prefix<Tags::Flux, variables_tag,
+                             tmpl::size_t<volume_dim>, Frame::Inertial>>;
       const FluxType local_boundary_flux =
           System::compute_flux::apply(local_value);
       const FluxType neighbor_boundary_flux =
@@ -160,7 +161,7 @@ struct ComputeBoundaryFlux {
         &neighbor_boundary_flux, &unit_face_normal
       ](auto tag) noexcept {
         using Tag = tmpl::type_from<decltype(tag)>;
-        using flux_tag = Tags::Flux<Tag, tmpl::size_t<2>, Frame::Grid>;
+        using flux_tag = Tags::Flux<Tag, tmpl::size_t<2>, Frame::Inertial>;
 
         const auto& local_bf = get<flux_tag>(local_boundary_flux);
         auto& local_nf = get<Tags::NormalDotFlux<Tag>>(local_normal_flux);
