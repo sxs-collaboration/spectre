@@ -9,7 +9,7 @@
 
 namespace {
 struct TestStream {
-  double a{3.4};
+  double a{1.0};
   std::vector<int> b{0, 4, 8, -7};
 };
 
@@ -23,7 +23,8 @@ std::ostream& operator<<(std::ostream& os, const TestStream& t) {
 }
 }  // namespace
 
-// [[OutputRegex, -100 3000000000 3.4 \(0,4,8,-7\) test 1 2 3 abf a o e u]]
+// [[OutputRegex, -100 3000000000 1.0000000000000000000e\+00 \(0,4,8,-7\) test 1
+// 2 3 abf a o e u]]
 SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   const char c_string0[40] = {"test 1 2 3"};
   auto* c_string1 = new char[80];
