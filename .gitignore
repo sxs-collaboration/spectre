@@ -45,3 +45,10 @@ coverage.info
 
 # ClangFormat git hook file
 .clang_format_diff.patch
+
+# CTags, ETags and GNU Global Tags files
+GPATH
+GRTAGS
+GTAGS
+TAGS
+tags
