@@ -80,6 +80,34 @@ tnsr::ii<T, Dim> PlaneWave<Dim>::d2psi_dxdx(const tnsr::I<T, Dim>& x,
 }
 
 template <size_t Dim>
+Variables<tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>>
+PlaneWave<Dim>::evolution_variables(const tnsr::I<DataVector, Dim>& x,
+                                    double t) const noexcept {
+  Variables<tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>>
+      variables{x.begin()->size()};
+  get<ScalarWave::Psi>(variables) = psi(x, t);
+  get<ScalarWave::Pi>(variables) = dpsi_dt(x, t);
+  get<ScalarWave::Pi>(variables).get() *= -1.0;
+  get<ScalarWave::Phi<Dim>>(variables) = dpsi_dx(x, t);
+  return variables;
+}
+
+template <size_t Dim>
+Variables<tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                     Tags::dt<ScalarWave::Psi>>>
+PlaneWave<Dim>::dt_evolution_variables(const tnsr::I<DataVector, Dim>& x,
+                                       double t) const noexcept {
+  Variables<tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                       Tags::dt<ScalarWave::Psi>>>
+      dt_variables{x.begin()->size()};
+  get<Tags::dt<ScalarWave::Psi>>(dt_variables) = dpsi_dt(x, t);
+  get<Tags::dt<ScalarWave::Pi>>(dt_variables) = d2psi_dt2(x, t);
+  get<Tags::dt<ScalarWave::Pi>>(dt_variables).get() *= -1.0;
+  get<Tags::dt<ScalarWave::Phi<Dim>>>(dt_variables) = d2psi_dtdx(x, t);
+  return dt_variables;
+}
+
+template <size_t Dim>
 void PlaneWave<Dim>::pup(PUP::er& p) noexcept {
   p | wave_vector_;
   p | center_;
