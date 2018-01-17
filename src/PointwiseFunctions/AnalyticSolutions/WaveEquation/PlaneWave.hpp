@@ -54,9 +54,9 @@ class PlaneWave {
   static constexpr OptionString help = {
       "A plane wave solution of the Euclidean wave equation"};
 
-  PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
-            std::unique_ptr<MathFunction<1>>&& profile) noexcept;
   PlaneWave() = default;
+  PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
+            std::unique_ptr<MathFunction<1>> profile) noexcept;
   PlaneWave(const PlaneWave&) noexcept = delete;
   PlaneWave& operator=(const PlaneWave&) noexcept = delete;
   PlaneWave(PlaneWave&&) noexcept = default;
