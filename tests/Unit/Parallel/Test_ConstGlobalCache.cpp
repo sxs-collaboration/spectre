@@ -73,7 +73,9 @@ class Square : public Shape {
 };
 #pragma GCC diagnostic pop
 
-struct shape_of_nametag {
+struct shape_of_nametag_base {};
+
+struct shape_of_nametag : shape_of_nametag_base {
   using type = std::unique_ptr<Shape>;
 };
 
@@ -149,6 +151,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
     CHECK(178 == Parallel::get<age>(cache));
     CHECK(2.2 == Parallel::get<height>(cache));
     CHECK(4 == Parallel::get<shape_of_nametag>(cache).number_of_sides());
+    CHECK(4 == Parallel::get<shape_of_nametag_base>(cache).number_of_sides());
   }
 
   {
@@ -171,6 +174,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
     CHECK(178 == Parallel::get<age>(local_cache));
     CHECK(2.2 == Parallel::get<height>(local_cache));
     CHECK(4 == Parallel::get<shape_of_nametag>(local_cache).number_of_sides());
+    CHECK(4 ==
+          Parallel::get<shape_of_nametag_base>(local_cache).number_of_sides());
   }
 }
 

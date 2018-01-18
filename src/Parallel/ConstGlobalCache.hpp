@@ -19,14 +19,25 @@ namespace Parallel {
 
 namespace ConstGlobalCache_detail {
 template <typename T>
-struct type_for_get {
+struct type_for_get_helper {
   using type = T;
 };
 
 template <typename T, typename D>
-struct type_for_get<std::unique_ptr<T, D>> {
+struct type_for_get_helper<std::unique_ptr<T, D>> {
   using type = T;
 };
+
+// Note: Returned list does not need to be size 1
+template <class ConstGlobalCacheTag, class Metavariables>
+using get_list_of_matching_tags =
+    tmpl::filter<typename ConstGlobalCache<Metavariables>::tag_list,
+                 std::is_base_of<ConstGlobalCacheTag, tmpl::_1>>;
+
+template <class ConstGlobalCacheTag, class Metavariables>
+using type_for_get = typename type_for_get_helper<
+    typename tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
+        ConstGlobalCacheTag, Metavariables>>::type>::type;
 }  // namespace ConstGlobalCache_detail
 
 /// \ingroup ParallelGroup
@@ -65,9 +76,8 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename ConstGlobalCacheTag, typename MV>
-  friend const typename ConstGlobalCache_detail::type_for_get<
-      typename ConstGlobalCacheTag::type>::type&
-  get(const ConstGlobalCache<MV>& cache) noexcept;  // NOLINT
+  friend auto get(const ConstGlobalCache<MV>& cache) noexcept  // NOLINT
+      -> const ConstGlobalCache_detail::type_for_get<ConstGlobalCacheTag, MV>&;
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
@@ -129,26 +139,28 @@ get_parallel_component(const ConstGlobalCache<Metavariables>& cache) noexcept {
 ///
 /// \returns a constant reference to an object in the cache
 template <typename ConstGlobalCacheTag, typename Metavariables>
-const typename ConstGlobalCache_detail::type_for_get<
-    typename ConstGlobalCacheTag::type>::type&
-get(const ConstGlobalCache<Metavariables>& cache) noexcept {
+auto get(const ConstGlobalCache<Metavariables>& cache) noexcept -> const
+    ConstGlobalCache_detail::type_for_get<ConstGlobalCacheTag, Metavariables>& {
+  // We check if the tag is to be retrieved directly or via a base class
+  using tag = tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
+      ConstGlobalCacheTag, Metavariables>>;
+  static_assert(tmpl::size<ConstGlobalCache_detail::get_list_of_matching_tags<
+                        ConstGlobalCacheTag, Metavariables>>::value == 1,
+                "Found more than one tag matching the ConstGlobalCacheTag "
+                "requesting to be retrieved.");
   return make_overloader(
       [](std::true_type /*is_unique_ptr*/, auto&& local_cache)
-          -> decltype(*(
-              tuples::get<ConstGlobalCacheTag>(local_cache.const_global_cache_)
-                  .get())) {
+          -> decltype(
+              *(tuples::get<tag>(local_cache.const_global_cache_).get())) {
         return *(
-            tuples::get<ConstGlobalCacheTag>(local_cache.const_global_cache_)
+            tuples::get<tag>(local_cache.const_global_cache_)
                 .get());
       },
       [](std::false_type /*is_unique_ptr*/, auto&& local_cache)
-          -> decltype(tuples::get<ConstGlobalCacheTag>(
-              local_cache.const_global_cache_)) {
-        return tuples::get<ConstGlobalCacheTag>(
+          -> decltype(tuples::get<tag>(local_cache.const_global_cache_)) {
+        return tuples::get<tag>(
             local_cache.const_global_cache_);
-      })(typename tt::is_a<std::unique_ptr,
-                           typename ConstGlobalCacheTag::type>::type{},
-         cache);
+      })(typename tt::is_a<std::unique_ptr, typename tag::type>::type{}, cache);
 }
 }  // namespace Parallel
 
