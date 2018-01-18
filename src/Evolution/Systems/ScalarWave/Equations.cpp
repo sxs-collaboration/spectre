@@ -11,11 +11,14 @@
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarWave {
+// Doxygen is not good at templates and so we have to hide the definition.
+/// \cond
 template <size_t Dim>
 void ComputeDuDt<Dim>::apply(
-    gsl::not_null<Scalar<DataVector>*> dt_pi,
-    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
-    gsl::not_null<Scalar<DataVector>*> dt_psi, const Scalar<DataVector>& pi,
+    const gsl::not_null<Scalar<DataVector>*> dt_pi,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
+    const gsl::not_null<Scalar<DataVector>*> dt_psi,
+    const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) noexcept {
   get(*dt_psi) = -get(pi);
@@ -27,6 +30,7 @@ void ComputeDuDt<Dim>::apply(
     dt_phi->get(d) = -d_pi.get(d);
   }
 }
+/// \endcond
 
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
