@@ -25,6 +25,7 @@ include(SetupCharm)
 include(SetupCharmProjections)
 include(SetupMacOsx)
 include(EnableWarnings)
+include(SetupGoldOrLldLinker)
 
 # In order to use certain code analysis tools like clang-tidy and cppcheck the
 # compile commands need to be accessible. CMake can write these to a
