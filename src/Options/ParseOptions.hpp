@@ -590,12 +590,35 @@ struct convert<Options_detail::CreateWrapper<T>> {
 template <typename K, typename V, typename H, typename P>
 struct create_from_yaml<std::unordered_map<K, V, H, P>> {
   static std::unordered_map<K, V, H, P> create(const Option& options) {
-    std::map<K, V> ordered = options.parse_as<std::map<K, V>>();
+    // This shared_ptr stuff is a hack to work around the inability to
+    // extract keys from maps before C++17.  Once we require C++17
+    // this function and the conversion code for maps in
+    // OptionsDetails.hpp can be updated to use the map `extract`
+    // method and the shared_ptr conversion below can be removed.
+    std::map<std::shared_ptr<K>, V> ordered =
+        options.parse_as<std::map<std::shared_ptr<K>, V>>();
     std::unordered_map<K, V, H, P> result;
-    result.insert(std::make_move_iterator(ordered.begin()),
-                  std::make_move_iterator(ordered.end()));
+    for (auto& kv : ordered) {
+      result.emplace(std::move(*kv.first), std::move(kv.second));
+    }
     return result;
   }
 };
+
+// This is more of the hack for pre-C++17 unordered_maps
+template <typename T>
+struct create_from_yaml<std::shared_ptr<T>> {
+  static std::shared_ptr<T> create(const Option& options) {
+    return std::make_shared<T>(options.parse_as<T>());
+  }
+};
+
+// This is more of the hack for pre-C++17 unordered_maps
+namespace Options_detail {
+template <typename T>
+struct yaml_type<std::shared_ptr<T>> {
+  static std::string value() noexcept { return yaml_type<T>::value(); }
+};
+}  // namespace Options_detail
 
 #include "Options/Factory.hpp"

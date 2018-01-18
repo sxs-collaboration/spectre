@@ -564,8 +564,13 @@ struct FormatPair {
   static constexpr OptionString help = {"halp"};
   static constexpr const char* const expected = "[[int x0], [double x0]]";
 };
+struct ArrayHash {
+  size_t operator()(const std::array<int, 0>& /*unused*/) const noexcept {
+    return 0;
+  }
+};
 struct FormatUnorderedMap {
-  using type = std::unordered_map<In<int>, In<double>>;
+  using type = std::unordered_map<In<int>, In<double>, ArrayHash>;
   static constexpr OptionString help = {"halp"};
   static constexpr const char* const expected = "{[int x0]: [double x0]}";
 };
@@ -585,4 +590,13 @@ SPECTRE_TEST_CASE("Unit.Options.Format", "[Unit][Options]") {
   check(FormatArray{});
   check(FormatPair{});
   check(FormatUnorderedMap{});
+}
+
+// [[OutputRegex, Failed to convert value to type
+// {\[int x0\]: \[double x0\]}:]]
+SPECTRE_TEST_CASE("Unit.Options.Format.UnorderedMap.Error", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<FormatUnorderedMap>> opts("");
+  opts.parse("FormatUnorderedMap: X");
+  opts.get<FormatUnorderedMap>();
 }
