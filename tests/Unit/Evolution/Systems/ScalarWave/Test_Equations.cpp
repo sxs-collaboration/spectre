@@ -230,3 +230,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.UpwindFlux",
   check_upwind_flux<2>(3, time);
   check_upwind_flux<3>(3, time);
 }
+
+static_assert(1.0 == ScalarWave::ComputeLargestCharacteristicSpeed::apply(),
+              "Failed testing ScalarWave::ComputeLargestCharacteristicSpeed.");

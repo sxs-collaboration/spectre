@@ -171,4 +171,10 @@ struct UpwindFlux {
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           normal_times_flux_pi_exterior) const noexcept;
 };
+
+/// Compute the maximum magnitude of the characteristic speeds.
+struct ComputeLargestCharacteristicSpeed {
+  using argument_tags = tmpl::list<>;
+  SPECTRE_ALWAYS_INLINE static constexpr double apply() noexcept { return 1.0; }
+};
 }  // namespace ScalarWave
