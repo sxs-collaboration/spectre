@@ -71,9 +71,20 @@ STRIP_CODE_COMMENTS    = NO
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT                  = @SPECTRE_DOXYGEN_GROUPS@ \
-                         @PROJECT_SOURCE_DIR@/docs/MainSite/Main.md \
-                         @PROJECT_SOURCE_DIR@
+INPUT = @SPECTRE_DOXYGEN_GROUPS@ \
+        @PROJECT_SOURCE_DIR@/docs/MainSite/Main.md \
+        @PROJECT_SOURCE_DIR@/src
+
+# Add tutorials directory
+INPUT += @PROJECT_SOURCE_DIR@/docs
+
+# Add files to scan that explain testing framework
+INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/TestCreation.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/TestHelpers.hpp
+
+
 
 FILE_PATTERNS          = *.cpp \
                          *.hpp \
@@ -85,11 +96,7 @@ EXCLUDE                =
 
 EXCLUDE_SYMLINKS       = NO
 
-EXCLUDE_PATTERNS       = @PROJECT_SOURCE_DIR@/build*                  \
-                         @PROJECT_SOURCE_DIR@/cmake/*                 \
-                         @PROJECT_SOURCE_DIR@/README.md               \
-                         @PROJECT_SOURCE_DIR@/support/*               \
-                         @PROJECT_SOURCE_DIR@/tests/*
+EXCLUDE_PATTERNS       =
 
 EXCLUDE_SYMBOLS        = *brigand*                                    \
                          charm*                                       \

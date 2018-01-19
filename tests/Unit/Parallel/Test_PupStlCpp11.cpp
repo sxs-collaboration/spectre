@@ -100,12 +100,14 @@ SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
   CHECK(3.8273 == *serialize_and_deserialize(test_unique_ptr));  // NOLINT
 }
 
+/// [example_serialize_derived]
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
                   "[Serialization][Unit]") {
   test_serialization_via_base<Test_Classes::Base,
                               Test_Classes::DerivedInPupStlCpp11>(
       std::vector<double>{-1, 12.3, -7, 8});
 }
+/// [example_serialize_derived]
 
 SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
                   "[Serialization][Unit]") {
