@@ -176,3 +176,13 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
              "  TestWithArg:");
   CHECK(opts.get<OptionType>()->name() == "TestWithArg(stuff)");
 }
+
+SPECTRE_TEST_CASE("Unit.Options.Factory.Format", "[Unit][Options]") {
+  Options<tmpl::list<OptionType>> opts("");
+  INFO(opts.help());
+  // The compiler puts "(anonymous namespace)::" before the type, but
+  // I don't want to rely on that, so just check that the type is at
+  // the end of the line, which should ensure it is not in a template
+  // parameter or something.
+  CHECK(opts.help().find("OptionTest\n") != std::string::npos);
+}
