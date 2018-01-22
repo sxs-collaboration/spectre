@@ -101,4 +101,26 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   for (size_t i = 0; i < 3; i++) {
     CHECK(gsl::at(vector_array2, i) == (std::vector<int>{3, 9, 12, -10}));
   }
+
+  // Check make_array with an rvalue sequence
+  {
+    std::vector<MyNonCopyable<int>> vector;
+    for (int i = 0; i < 3; ++i) {
+      vector.emplace_back(i);
+    }
+    const auto array = make_array<MyNonCopyable<int>, 3>(std::move(vector));
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(gsl::at(array, i).get() == i);
+    }
+  }
+
+  // Check that make_array does not move from an lvalue sequence
+  {
+    std::vector<std::vector<int>> vector(3, std::vector<int>{1, 2, 3});
+    make_array<std::vector<int>, 3>(vector);
+    CHECK(vector.size() == 3);
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(vector[i] == (std::vector<int>{1, 2, 3}));
+    }
+  }
 }
