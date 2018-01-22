@@ -297,7 +297,9 @@ inline constexpr bool array_equal(const std::array<T, size>& lhs,
                   : true;
 }
 
+namespace cpp17 {
 /// \ingroup ConstantExpressionsGroup
 /// \brief Returns a const reference to its argument.
 template <typename T>
 constexpr const T& as_const(const T& t) noexcept { return t; }
+}  // namespace cpp17
