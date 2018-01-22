@@ -42,17 +42,17 @@ class CoordinateMapBase : public PUP::able {
   // @{
   /// Apply the `Maps` to the point(s) `source_point`
   virtual tnsr::I<double, Dim, TargetFrame> operator()(
-      const tnsr::I<double, Dim, SourceFrame>& source_point) const = 0;
+      tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
   virtual tnsr::I<DataVector, Dim, TargetFrame> operator()(
-      const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
+      tnsr::I<DataVector, Dim, SourceFrame> source_point) const = 0;
   // @}
 
   // @{
   /// Apply the inverse `Maps` to the point(s) `target_point`
   virtual tnsr::I<double, Dim, SourceFrame> inverse(
-      const tnsr::I<double, Dim, TargetFrame>& target_point) const = 0;
+      tnsr::I<double, Dim, TargetFrame> target_point) const = 0;
   virtual tnsr::I<DataVector, Dim, SourceFrame> inverse(
-      const tnsr::I<DataVector, Dim, TargetFrame>& target_point) const = 0;
+      tnsr::I<DataVector, Dim, TargetFrame> target_point) const = 0;
   // @}
 
   // @{
@@ -61,12 +61,11 @@ class CoordinateMapBase : public PUP::able {
   virtual Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                  index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
                             SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(const tnsr::I<double, Dim, SourceFrame>& source_point) const = 0;
+  inv_jacobian(tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
   virtual Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                  index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
                             SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(
-      const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
+  inv_jacobian(tnsr::I<DataVector, Dim, SourceFrame> source_point) const = 0;
   // @}
 
   // @{
@@ -74,11 +73,11 @@ class CoordinateMapBase : public PUP::able {
   virtual Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                  index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
                             SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
-  jacobian(const tnsr::I<double, Dim, SourceFrame>& source_point) const = 0;
+  jacobian(tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
   virtual Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                  index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
                             SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
-  jacobian(const tnsr::I<DataVector, Dim, SourceFrame>& source_point) const = 0;
+  jacobian(tnsr::I<DataVector, Dim, SourceFrame> source_point) const = 0;
   // @}
  private:
   virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
@@ -146,26 +145,24 @@ class CoordinateMap
   // @{
   /// Apply the `Maps...` to the point(s) `source_point`
   constexpr tnsr::I<double, dim, TargetFrame> operator()(
-      const tnsr::I<double, dim, SourceFrame>& source_point) const override {
-    return call_impl(source_point);
+      tnsr::I<double, dim, SourceFrame> source_point) const override {
+    return call_impl(std::move(source_point));
   }
   constexpr tnsr::I<DataVector, dim, TargetFrame> operator()(
-      const tnsr::I<DataVector, dim, SourceFrame>& source_point)
-      const override {
-    return call_impl(source_point);
+      tnsr::I<DataVector, dim, SourceFrame> source_point) const override {
+    return call_impl(std::move(source_point));
   }
   // @}
 
   // @{
   /// Apply the inverse `Maps...` to the point(s) `target_point`
   constexpr tnsr::I<double, dim, SourceFrame> inverse(
-      const tnsr::I<double, dim, TargetFrame>& target_point) const override {
-    return inverse_impl(target_point);
+      tnsr::I<double, dim, TargetFrame> target_point) const override {
+    return inverse_impl(std::move(target_point));
   }
   constexpr tnsr::I<DataVector, dim, SourceFrame> inverse(
-      const tnsr::I<DataVector, dim, TargetFrame>& target_point)
-      const override {
-    return inverse_impl(target_point);
+      tnsr::I<DataVector, dim, TargetFrame> target_point) const override {
+    return inverse_impl(std::move(target_point));
   }
   // @}
 
@@ -175,16 +172,15 @@ class CoordinateMap
   constexpr Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                    index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
                               SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(
-      const tnsr::I<double, dim, SourceFrame>& source_point) const override {
-    return inv_jacobian_impl(source_point);
+  inv_jacobian(tnsr::I<double, dim, SourceFrame> source_point) const override {
+    return inv_jacobian_impl(std::move(source_point));
   }
   constexpr Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                    index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
                               SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(const tnsr::I<DataVector, dim, SourceFrame>& source_point)
+  inv_jacobian(tnsr::I<DataVector, dim, SourceFrame> source_point)
       const override {
-    return inv_jacobian_impl(source_point);
+    return inv_jacobian_impl(std::move(source_point));
   }
   // @}
 
@@ -193,16 +189,14 @@ class CoordinateMap
   constexpr Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
                    index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                               SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-  jacobian(
-      const tnsr::I<double, dim, SourceFrame>& source_point) const override {
-    return jacobian_impl(source_point);
+  jacobian(tnsr::I<double, dim, SourceFrame> source_point) const override {
+    return jacobian_impl(std::move(source_point));
   }
   constexpr Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
                    index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                               SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-  jacobian(const tnsr::I<DataVector, dim, SourceFrame>& source_point)
-      const override {
-    return jacobian_impl(source_point);
+  jacobian(tnsr::I<DataVector, dim, SourceFrame> source_point) const override {
+    return jacobian_impl(std::move(source_point));
   }
   // @}
 
@@ -232,25 +226,25 @@ class CoordinateMap
 
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE tnsr::I<T, dim, TargetFrame> call_impl(
-      const tnsr::I<T, dim, SourceFrame>& source_point) const;
+      tnsr::I<T, dim, SourceFrame>&& source_point) const;
 
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE tnsr::I<T, dim, SourceFrame> inverse_impl(
-      const tnsr::I<T, dim, TargetFrame>& target_point) const;
+      tnsr::I<T, dim, TargetFrame>&& target_point) const;
 
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE
       Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
              index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
                         SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-      inv_jacobian_impl(const tnsr::I<T, dim, SourceFrame>& source_point) const;
+      inv_jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const;
 
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE
       Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
              index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                         SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-      jacobian_impl(const tnsr::I<T, dim, SourceFrame>& source_point) const;
+      jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const;
 
   std::tuple<Maps...> maps_;
 };
@@ -269,8 +263,8 @@ template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE tnsr::I<
     T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, TargetFrame>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
-    const tnsr::I<T, dim, SourceFrame>& source_point) const {
-  std::array<T, dim> mapped_point = make_array<T, dim>(source_point);
+    tnsr::I<T, dim, SourceFrame>&& source_point) const {
+  std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   tuple_fold(maps_, [](const auto& map,
                        std::array<T, dim>& point) { point = map(point); },
              mapped_point);
@@ -282,8 +276,8 @@ template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE tnsr::I<
     T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, SourceFrame>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
-    const tnsr::I<T, dim, TargetFrame>& target_point) const {
-  std::array<T, dim> mapped_point = make_array<T, dim>(target_point);
+    tnsr::I<T, dim, TargetFrame>&& target_point) const {
+  std::array<T, dim> mapped_point = make_array<T, dim>(std::move(target_point));
   tuple_fold<true>(maps_,
                    [](const auto& map, std::array<T, dim>& point) {
                      point = map.inverse(point);
@@ -296,11 +290,11 @@ template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE auto
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
-    const tnsr::I<T, dim, SourceFrame>& source_point) const
+    tnsr::I<T, dim, SourceFrame>&& source_point) const
     -> Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
               index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
                          SpatialIndex<dim, UpLo::Lo, TargetFrame>>> {
-  std::array<T, dim> mapped_point = make_array<T, dim>(source_point);
+  std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
   Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
@@ -349,11 +343,11 @@ template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE auto
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
-    const tnsr::I<T, dim, SourceFrame>& source_point) const
+    tnsr::I<T, dim, SourceFrame>&& source_point) const
     -> Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
               index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                          SpatialIndex<dim, UpLo::Lo, SourceFrame>>> {
-  std::array<T, dim> mapped_point = make_array<T, dim>(source_point);
+  std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
          index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
                     SpatialIndex<dim, UpLo::Lo, SourceFrame>>>

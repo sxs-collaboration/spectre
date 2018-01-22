@@ -17,9 +17,10 @@ template <typename TargetFrame, size_t VolumeDim, typename Map>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal_impl(
     const Index<VolumeDim - 1>& interface_extents, const Map& map,
     const Direction<VolumeDim>& direction) noexcept {
-  const auto interface_coords =
+  auto interface_coords =
       interface_logical_coordinates(interface_extents, direction);
-  const auto inv_jacobian_on_interface = map.inv_jacobian(interface_coords);
+  const auto inv_jacobian_on_interface =
+      map.inv_jacobian(std::move(interface_coords));
 
   const auto sliced_away_dim = direction.dimension();
   const double sign = direction.sign();
