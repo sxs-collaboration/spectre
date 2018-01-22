@@ -4,6 +4,7 @@
 set(LIBRARY EinsteinSolutions)
 
 set(LIBRARY_SOURCES
+    KerrSchild.cpp
     Minkowski.cpp
     )
 

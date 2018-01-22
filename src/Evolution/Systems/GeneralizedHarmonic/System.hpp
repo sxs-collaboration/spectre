@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Evolution/Systems/GeneralizedHarmonic/GrTagsDeclarations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 
 namespace brigand {
@@ -23,7 +24,8 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool is_euclidean = false;
 
-  using variables_tags = brigand::list<SpacetimeMetric<Dim>, Pi<Dim>, Phi<Dim>>;
+  using variables_tags =
+      brigand::list<gr::Tags::SpacetimeMetric<Dim>, Pi<Dim>, Phi<Dim>>;
   using gradient_tags = variables_tags;
 
   using Variables = ::Variables<variables_tags>;

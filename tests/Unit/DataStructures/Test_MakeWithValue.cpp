@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -32,6 +33,29 @@ void check_make_with_value(const R& expected, const T& input,
   const auto computed = make_with_value<R>(input, value);
   CHECK(expected == computed);
 }
+
+void test_make_tagged_tuple() {
+  for (size_t n_pts = 1; n_pts < 4; ++n_pts) {
+    check_make_with_value(
+        tuples::TaggedTuple<Var2>(Scalar<DataVector>(n_pts, -5.7)),
+        DataVector(n_pts, 0.0), -5.7);
+    check_make_with_value(
+        tuples::TaggedTuple<Var2>(Scalar<DataVector>(n_pts, -5.7)),
+        tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 0.0), -5.7);
+
+    check_make_with_value(tuples::TaggedTuple<Var1<3>, Var2>(
+                              tnsr::i<DataVector, 3, Frame::Grid>(n_pts, 3.8),
+                              Scalar<DataVector>(n_pts, 3.8)),
+                          DataVector(n_pts, 0.0), 3.8);
+
+    check_make_with_value(tuples::TaggedTuple<Var1<3>, Var2>(
+                              tnsr::i<DataVector, 3, Frame::Grid>(n_pts, 3.8),
+                              Scalar<DataVector>(n_pts, 3.8)),
+                          tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 0.0),
+                          3.8);
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
@@ -79,4 +103,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
     check_make_with_value(Variables<two_vars<3>>(n_pts, -2.3),
                           Variables<one_var<3>>(n_pts, 4.5), -2.3);
   }
+  test_make_tagged_tuple();
 }
