@@ -102,15 +102,26 @@ make_array(T&& t, V&&... values) noexcept(
 }
 
 namespace MakeArray_detail {
+template <typename Seq, typename T,
+          Requires<cpp17::is_rvalue_reference_v<Seq>> = nullptr>
+constexpr T&& forward_element(T& t) noexcept {
+  return std::move(t);
+}
+template <typename Seq, typename T,
+          Requires<not cpp17::is_rvalue_reference_v<Seq>> = nullptr>
+constexpr T& forward_element(T& t) noexcept {
+  return t;
+}
+
 template <typename T, size_t size, typename Seq, size_t... indexes>
 constexpr std::array<T, size> make_array_from_iterator_impl(
     Seq&& s,
     std::integer_sequence<
         size_t, indexes...> /*meta*/) noexcept(noexcept(std::array<T, size>{
-    {static_cast<T>(*(std::begin(s) + indexes))...}})) {
+    {forward_element<decltype(s)>(*(std::begin(s) + indexes))...}})) {
   // clang-tidy: do not use pointer arithmetic
   return std::array<T, size>{
-      {static_cast<T>(*(std::begin(s) + indexes))...}};  // NOLINT
+      {forward_element<decltype(s)>(*(std::begin(s) + indexes))...}};  // NOLINT
 }
 }  // namespace MakeArray_detail
 

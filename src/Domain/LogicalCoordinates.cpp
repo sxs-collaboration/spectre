@@ -10,7 +10,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 

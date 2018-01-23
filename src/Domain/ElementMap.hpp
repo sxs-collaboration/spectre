@@ -48,13 +48,13 @@ class ElementMap {
   tnsr::I<T, Dim, TargetFrame> operator()(
       tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
-    return block_map_->operator()(source_point);
+    return block_map_->operator()(std::move(source_point));
   }
 
   template <typename T>
   tnsr::I<T, Dim, Frame::Logical> inverse(
-      const tnsr::I<T, Dim, TargetFrame>& target_point) const noexcept {
-    auto source_point{block_map_->inverse(target_point)};
+      tnsr::I<T, Dim, TargetFrame> target_point) const noexcept {
+    auto source_point{block_map_->inverse(std::move(target_point))};
     // Apply the affine map to the points
     for (size_t d = 0; d < Dim; ++d) {
       source_point.get(d) =
@@ -70,7 +70,7 @@ class ElementMap {
                     SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
   inv_jacobian(tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
-    auto inv_jac = block_map_->inv_jacobian(source_point);
+    auto inv_jac = block_map_->inv_jacobian(std::move(source_point));
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {
         inv_jac.get(d, i) *= gsl::at(inverse_jacobian_, d);
@@ -85,7 +85,7 @@ class ElementMap {
                     SpatialIndex<Dim, UpLo::Lo, Frame::Logical>>>
   jacobian(tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
-    auto jac = block_map_->jacobian(source_point);
+    auto jac = block_map_->jacobian(std::move(source_point));
     for (size_t d = 0; d < Dim; ++d) {
       for (size_t i = 0; i < Dim; ++i) {
         jac.get(i, d) *= gsl::at(jacobian_, d);
