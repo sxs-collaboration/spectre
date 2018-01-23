@@ -96,7 +96,8 @@ T Option::parse_as() const {
     error_context.line = e.mark.line;
     error_context.column = e.mark.column;
     std::ostringstream ss;
-    ss << "Failed to convert value to type " << pretty_type::get_name<T>()
+    ss << "Failed to convert value to type "
+       << Options_detail::yaml_type<T>::value()
        << ":";
 
     const std::string value_text = YAML::Dump(node());

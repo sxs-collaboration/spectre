@@ -26,6 +26,58 @@
 
 /// Holds details of the implementation of Options
 namespace Options_detail {
+// Display a type in a pseudo-YAML form, leaving out likely irrelevant
+// information.
+template <typename T>
+struct yaml_type {
+  static std::string value() noexcept { return pretty_type::get_name<T>(); }
+};
+
+template <typename T>
+struct yaml_type<std::unique_ptr<T>> {
+  static std::string value() noexcept { return yaml_type<T>::value(); }
+};
+
+template <typename T>
+struct yaml_type<std::vector<T>> {
+  static std::string value() noexcept {
+    return "[" + yaml_type<T>::value() + ", ...]";
+  }
+};
+
+template <typename T>
+struct yaml_type<std::list<T>> {
+  static std::string value() noexcept {
+    return "[" + yaml_type<T>::value() + ", ...]";
+  }
+};
+
+template <typename T, size_t N>
+struct yaml_type<std::array<T, N>> {
+  static std::string value() noexcept {
+    return "[" + yaml_type<T>::value() + " x" + std::to_string(N) + "]";
+  }
+};
+
+template <typename K, typename V, typename C>
+struct yaml_type<std::map<K, V, C>> {
+  static std::string value() noexcept {
+    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}"; }
+};
+
+template <typename K, typename V, typename H, typename E>
+struct yaml_type<std::unordered_map<K, V, H, E>> {
+  static std::string value() noexcept {
+    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}"; }
+};
+
+template <typename T, typename U>
+struct yaml_type<std::pair<T, U>> {
+  static std::string value() noexcept {
+    return "[" + yaml_type<T>::value() + ", " + yaml_type<U>::value() + "]";
+  }
+};
+
 template <typename S, typename = cpp17::void_t<>>
 struct has_default : std::false_type {};
 template <typename S>
@@ -124,7 +176,7 @@ struct print {
     std::ostringstream ss;
     ss << "  " << std::setw(max_label_size_) << std::left
        << pretty_type::short_name<T>()
-       << pretty_type::get_name<typename T::type>();
+       << yaml_type<typename T::type>::value();
     std::string limits;
     for (const auto& limit : {
         print_default<T>(),

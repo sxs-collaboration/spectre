@@ -12,6 +12,7 @@
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
@@ -227,7 +228,7 @@ struct Array {
 }  // namespace
 
 // [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
-// 8:.Failed to convert value to type std::array<int, 3>]]
+// 8:.Failed to convert value to type \[int x3\]:]]
 SPECTRE_TEST_CASE("Unit.Options.Array.too_short", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Array>> opts("");
@@ -242,7 +243,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.success", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
-// 8:.Failed to convert value to type std::array<int, 3>: .1, 2, 3, 4.]]
+// 8:.Failed to convert value to type \[int x3\]: .1, 2, 3, 4.]]
 SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Array>> opts("");
@@ -251,7 +252,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Array:.At line 2 column
-// 3:.Failed to convert value to type std::array<int, 3>:.  - 1.  - 2.  -
+// 3:.Failed to convert value to type \[int x3\]:.  - 1.  - 2.  -
 // 3.  - 4]]
 SPECTRE_TEST_CASE("Unit.Options.Array.too_long.formatting", "[Unit][Options]") {
   ERROR_TEST();
@@ -265,7 +266,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_long.formatting", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
-// 1:.Failed to convert value to type std::array<int, 3>]]
+// 1:.Failed to convert value to type \[int x3\]:]]
 SPECTRE_TEST_CASE("Unit.Options.Array.missing", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Array>> opts("");
@@ -311,7 +312,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.empty", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Map:.At line 1 column
-// 6:.Failed to convert value to type std::map<std::string, int>: string]]
+// 6:.Failed to convert value to type {std::string: int}: string]]
 SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Map>> opts("");
@@ -320,7 +321,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Map:.At line 2 column
-// 6:.Failed to convert value to type std::map<std::string, int>: A: string]]
+// 6:.Failed to convert value to type {std::string: int}: A: string]]
 SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Map>> opts("");
@@ -532,4 +533,56 @@ SPECTRE_TEST_CASE("Unit.Options.Apply", "[Unit][Options]") {
 SPECTRE_TEST_CASE("Unit.Options.OptionContext.default_stream",
                   "[Unit][Options]") {
   CHECK(get_output(OptionContext{}).empty());
+}
+
+namespace {
+// Use formatted inner types to make sure nested formatting works
+template <typename T>
+using In = std::array<T, 0>;
+struct FormatMap {
+  using type = std::map<In<int>, In<double>>;
+  static constexpr OptionString help = {"halp"};
+  static constexpr const char* const expected = "{[int x0]: [double x0]}";
+};
+struct FormatVector {
+  using type = std::vector<In<int>>;
+  static constexpr OptionString help = {"halp"};
+  static constexpr const char* const expected = "[[int x0], ...]";
+};
+struct FormatList {
+  using type = std::list<In<int>>;
+  static constexpr OptionString help = {"halp"};
+  static constexpr const char* const expected = "[[int x0], ...]";
+};
+struct FormatArray {
+  using type = std::array<In<int>, 3>;
+  static constexpr OptionString help = {"halp"};
+  static constexpr const char* const expected = "[[int x0] x3]";
+};
+struct FormatPair {
+  using type = std::pair<In<int>, In<double>>;
+  static constexpr OptionString help = {"halp"};
+  static constexpr const char* const expected = "[[int x0], [double x0]]";
+};
+struct FormatUnorderedMap {
+  using type = std::unordered_map<In<int>, In<double>>;
+  static constexpr OptionString help = {"halp"};
+  static constexpr const char* const expected = "{[int x0]: [double x0]}";
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Format", "[Unit][Options]") {
+  const auto check = [](auto opt) noexcept {
+    using Opt = decltype(opt);
+    Options<tmpl::list<Opt>> opts("");
+    INFO(opts.help());
+    // Add whitespace to check that we've got the entire type
+    CHECK(opts.help().find("  "s + Opt::expected + "\n") != std::string::npos);
+  };
+  check(FormatMap{});
+  check(FormatVector{});
+  check(FormatList{});
+  check(FormatArray{});
+  check(FormatPair{});
+  check(FormatUnorderedMap{});
 }
