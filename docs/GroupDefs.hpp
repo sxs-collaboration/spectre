@@ -130,6 +130,11 @@
  * \brief Functions and classes for manipulating HDF5 files
  */
 
+/*!
+ * \defgroup OptionTagsGroup Input File Options
+ * \brief Tags used for options parsed from the input file
+ */
+
 /// \defgroup MathFunctionsGroup Math Functions
 /// \brief Useful analytic functions
 
