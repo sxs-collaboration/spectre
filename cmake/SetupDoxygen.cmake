@@ -20,7 +20,19 @@ if (DOXYGEN_FOUND)
       DEPENDS
       ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml
       ${SPECTRE_DOXYGEN_GROUPS}
-  )
+      )
+
+  add_custom_target(
+    doc-check
+    # search for warnings and print out 6 lines after to make sure
+    # majority of warning is printed so the results are actually
+    # useful.
+    COMMAND ! ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml 2>&1
+    | grep -A 6 'warning'
+    DEPENDS
+    ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml
+    ${SPECTRE_DOXYGEN_GROUPS}
+    )
 
   set(SPECTRE_DOX_GENERATE_HTML "NO")
   set(SPECTRE_DOX_GENERATE_XML "YES")
