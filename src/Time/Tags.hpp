@@ -100,7 +100,7 @@ struct TimeStepper {
 
 namespace OptionTags {
 
-/// \ingroup OptionTags
+/// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 /// \brief The time at which to start the simulation
 struct InitialTime {
@@ -110,7 +110,7 @@ struct InitialTime {
   static type default_value() { return 0.0; }
 };
 
-/// \ingroup OptionTags
+/// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 /// \brief The initial time step taken by the time stepper. This may be
 /// overridden by an adaptive stepper
