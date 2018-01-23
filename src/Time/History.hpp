@@ -38,8 +38,12 @@ class History {
   History& operator=(History&&) = default;
   ~History() = default;
 
-  /// Add a new set of values to the end of the history.
-  void insert(Time time, Vars value, DerivVars deriv) noexcept;
+  /// Add a new set of values to the end of the history.  `deriv` is
+  /// left in an unspecified state.  The different argument types for
+  /// `value` and `deriv` reflect the common use of this class, which
+  /// wants `value` to remain unchanged but does not care about
+  /// `deriv`.
+  void insert(Time time, const Vars& value, DerivVars&& deriv) noexcept;
 
   /// Add a new set of values to the front of the history.  This is
   /// often convenient for setting initial data.
@@ -54,32 +58,41 @@ class History {
   /// The other data can be accessed through the iterators using
   /// HistoryIterator::value() and HistoryIterator::derivative().
   //@{
-  const_iterator begin() const noexcept { return data_.begin(); }
+  const_iterator begin() const noexcept {
+    return data_.begin() + static_cast<ssize_t>(first_needed_entry_);
+  }
   const_iterator end() const noexcept { return data_.end(); }
   const_iterator cbegin() const noexcept { return begin(); }
   const_iterator cend() const noexcept { return end(); }
   //@}
 
-  size_type size() const noexcept { return data_.size(); }
+  size_type size() const noexcept { return capacity() - first_needed_entry_; }
+  size_type capacity() const noexcept { return data_.size(); }
+  void shrink_to_fit() noexcept;
 
   /// These return the past times.  The other data can be accessed
   /// through HistoryIterator methods.
   //@{
   const_reference operator[](size_type n) const noexcept {
-    return std::get<0>(data_[n]);
+    return *(begin() + static_cast<ssize_t>(n));
   }
 
-  const_reference front() const noexcept { return std::get<0>(data_.front()); }
+  const_reference front() const noexcept { return *begin(); }
   const_reference back() const noexcept { return std::get<0>(data_.back()); }
   //@}
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept {  // NOLINT
+    // Don't send cached allocations.  This object is probably going
+    // to be thrown away after serialization, so we take the easy
+    // route of just throwing them away.
+    shrink_to_fit();
     p | data_;
   }
 
  private:
   std::deque<std::tuple<Time, Vars, DerivVars>> data_;
+  size_t first_needed_entry_{0};
 };
 
 /// \ingroup TimeSteppersGroup
@@ -151,11 +164,24 @@ class HistoryIterator {
 // ================================================================
 
 template <typename Vars, typename DerivVars>
-inline void History<Vars, DerivVars>::insert(Time time, Vars value,
-                                             DerivVars deriv) noexcept {
-  // clang-tidy: move of trivially-copyable type
-  data_.emplace_back(std::move(time), // NOLINT
-                     std::move(value), std::move(deriv));
+void History<Vars, DerivVars>::insert(Time time, const Vars& value,
+                                      DerivVars&& deriv) noexcept {
+  if (first_needed_entry_ == 0) {
+    // clang-tidy: move of trivially-copyable type
+    data_.emplace_back(std::move(time), value, std::move(deriv));  // NOLINT
+  } else {
+    // Move an unneeded entry into the arguments so the caller can
+    // reuse any resources the entry contained.
+    using std::swap;
+    auto& old_entry = data_.front();
+    // clang-tidy: move of trivially-copyable type
+    std::get<0>(old_entry) = std::move(time);  // NOLINT
+    std::get<1>(old_entry) = value;
+    swap(std::get<2>(old_entry), deriv);
+    data_.push_back(std::move(old_entry));
+    data_.pop_front();
+    --first_needed_entry_;
+  }
 }
 
 template <typename Vars, typename DerivVars>
@@ -169,7 +195,14 @@ inline void History<Vars, DerivVars>::insert_initial(Time time, Vars value,
 template <typename Vars, typename DerivVars>
 inline void History<Vars, DerivVars>::mark_unneeded(
     const const_iterator& first_needed) noexcept {
-  data_.erase(data_.begin(), first_needed.base_);
+  first_needed_entry_ = static_cast<size_t>(first_needed.base_ - data_.begin());
+}
+
+template <typename Vars, typename DerivVars>
+inline void History<Vars, DerivVars>::shrink_to_fit() noexcept {
+  data_.erase(data_.begin(),
+              data_.begin() + static_cast<ssize_t>(first_needed_entry_));
+  first_needed_entry_ = 0;
 }
 
 template <typename Vars, typename DerivVars>

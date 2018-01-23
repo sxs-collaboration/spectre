@@ -56,7 +56,7 @@ struct UpdateU {
           const auto& time_stepper =
               Parallel::get<CacheTags::TimeStepper>(cache);
 
-          history.insert(time, vars, dt_vars);
+          history.insert(time, vars, std::move(dt_vars));
           time_stepper.update_u(make_not_null(&vars), make_not_null(&history),
                                 time_step);
         },

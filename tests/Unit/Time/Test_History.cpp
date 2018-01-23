@@ -70,14 +70,30 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   HistoryType history;
 
   CHECK(history.size() == 0);
+  CHECK(history.capacity() == 0);
   CHECK(history.begin() == history.end());
   CHECK(history.begin() == history.cbegin());
   CHECK(history.end() == history.cend());
 
   history.insert(make_time(0.), 0., get_output(0));
-  history.insert(make_time(1.), 1., get_output(1));
   history.insert_initial(make_time(-1.), -1., get_output(-1));
-  history.insert(make_time(2.), 2., get_output(2));
+  history.insert(make_time(1.), 1., get_output(1));
+  history.insert_initial(make_time(-2.), -2., get_output(-2));
+  history.insert_initial(make_time(-3.), -3., get_output(-3));
+
+  history.mark_unneeded(history.begin());
+  CHECK(history.size() == 5);
+  CHECK(history.capacity() == 5);
+  history.mark_unneeded(history.begin() + 2);
+  CHECK(history.size() == 3);
+  CHECK(history.capacity() == 5);
+
+  auto tmp = get_output(2);
+  history.insert(make_time(2.), 2., std::move(tmp));
+  // clang-tidy: misc-use-after-move
+  CHECK(tmp == get_output(-3));  // NOLINT
+  CHECK(history.size() == 4);
+  CHECK(history.capacity() == 5);
 
   const auto check_state = [](const HistoryType& hist) noexcept {
     CHECK(hist.size() == 4);
@@ -104,10 +120,11 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   // original object.
   const auto copy = serialize_and_deserialize(history);
 
-  history.mark_unneeded(history.begin());
-  CHECK(history.size() == 4);
   history.mark_unneeded(history.begin() + 2);
   CHECK(history.size() == 2);
+  history.shrink_to_fit();
+  CHECK(history.size() == 2);
+  CHECK(history.capacity() == 2);
 
   {
     auto it = history.begin();
