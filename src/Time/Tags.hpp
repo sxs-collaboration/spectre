@@ -69,11 +69,11 @@ struct HistoryEvolvedVariables : db::DataBoxPrefix {
 ///
 /// \tparam Key type identifying a boundary
 /// \tparam Tag tag for boundary variables
-template <typename Key, typename Tag>
+template <typename Key, typename Tag, typename Hash = std::hash<Key>>
 struct HistoryBoundaryVariables : db::DataBoxPrefix {
   static constexpr db::DataBoxString label = "HistoryBoundaryVariables";
   using tag = Tag;
-  using type = std::unordered_map<Key, db::item_type<Tag>>;
+  using type = std::unordered_map<Key, db::item_type<Tag>, Hash>;
 };
 
 }  // namespace Tags
