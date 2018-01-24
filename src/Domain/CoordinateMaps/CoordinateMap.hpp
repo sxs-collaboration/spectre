@@ -27,6 +27,10 @@ constexpr size_t map_dim = FirstMap::dim;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase : public PUP::able {
  public:
+  static constexpr size_t dim = Dim;
+  using source_frame = SourceFrame;
+  using target_frame = TargetFrame;
+
   WRAPPED_PUPable_abstract(CoordinateMapBase);  // NOLINT
 
   CoordinateMapBase() = default;

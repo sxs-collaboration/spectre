@@ -4,6 +4,7 @@
 #include <array>
 #include <cmath>
 
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -55,6 +56,23 @@ void check_solution_x(const double kx, const double omega, const DataVector& u,
     CHECK(approx(d2psi_dtdx[s]) == pw.d2psi_dtdx(p, t).get(0));
     CHECK(approx(d2psi_dxdx[s]) == pw.d2psi_dxdx(p, t).get(0, 0));
   }
+
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Psi>(pw.evolution_variables(x, t)),
+                        pw.psi(x, t));
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Phi<Dim>>(pw.evolution_variables(x, t)),
+                        pw.dpsi_dx(x, t));
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Pi>(pw.evolution_variables(x, t)),
+                        Scalar<DataVector>(-1.0 * pw.dpsi_dt(x, t).get()));
+
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Psi>>(pw.dt_evolution_variables(x, t)),
+      pw.dpsi_dt(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Phi<Dim>>>(pw.dt_evolution_variables(x, t)),
+      pw.d2psi_dtdx(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Pi>>(pw.dt_evolution_variables(x, t)),
+      Scalar<DataVector>(-1.0 * pw.d2psi_dt2(x, t).get()));
 }
 
 template <size_t Dim>
@@ -79,6 +97,23 @@ void check_solution_y(const double kx, const double ky, const double omega,
     CHECK(approx(d2psi_dxdy[s]) == pw.d2psi_dxdx(p, t).get(1, 0));
     CHECK(approx(d2psi_dydy[s]) == pw.d2psi_dxdx(p, t).get(1, 1));
   }
+
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Psi>(pw.evolution_variables(x, t)),
+                        pw.psi(x, t));
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Phi<Dim>>(pw.evolution_variables(x, t)),
+                        pw.dpsi_dx(x, t));
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Pi>(pw.evolution_variables(x, t)),
+                        Scalar<DataVector>(-1.0 * pw.dpsi_dt(x, t).get()));
+
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Psi>>(pw.dt_evolution_variables(x, t)),
+      pw.dpsi_dt(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Phi<Dim>>>(pw.dt_evolution_variables(x, t)),
+      pw.d2psi_dtdx(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Pi>>(pw.dt_evolution_variables(x, t)),
+      Scalar<DataVector>(-1.0 * pw.d2psi_dt2(x, t).get()));
 }
 
 void check_solution_z(const double kx, const double ky, const double kz,
@@ -107,6 +142,23 @@ void check_solution_z(const double kx, const double ky, const double kz,
     CHECK(approx(d2psi_dydz[s]) == pw.d2psi_dxdx(p, t).get(1, 2));
     CHECK(approx(d2psi_dzdz[s]) == pw.d2psi_dxdx(p, t).get(2, 2));
   }
+
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Psi>(pw.evolution_variables(x, t)),
+                        pw.psi(x, t));
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Phi<3>>(pw.evolution_variables(x, t)),
+                        pw.dpsi_dx(x, t));
+  CHECK_ITERABLE_APPROX(get<ScalarWave::Pi>(pw.evolution_variables(x, t)),
+                        Scalar<DataVector>(-1.0 * pw.dpsi_dt(x, t).get()));
+
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Psi>>(pw.dt_evolution_variables(x, t)),
+      pw.dpsi_dt(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Phi<3>>>(pw.dt_evolution_variables(x, t)),
+      pw.d2psi_dtdx(x, t));
+  CHECK_ITERABLE_APPROX(
+      get<Tags::dt<ScalarWave::Pi>>(pw.dt_evolution_variables(x, t)),
+      Scalar<DataVector>(-1.0 * pw.d2psi_dt2(x, t).get()));
 }
 
 void test_1d() {
@@ -122,6 +174,10 @@ void test_1d() {
   const ScalarWave::Solutions::PlaneWave<1> pw(
       {{k}}, {{center_x}}, std::make_unique<MathFunctions::PowX>(3));
   check_solution_x(k, omega, u, pw, x, t);
+
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  const auto deserialized_pw = serialize_and_deserialize(pw);
+  check_solution_x(k, omega, u, deserialized_pw, x, t);
 
   test_creation<ScalarWave::Solutions::PlaneWave<1>>(
       "  WaveVector: [3.5]\n"
@@ -151,6 +207,11 @@ void test_2d() {
       std::make_unique<MathFunctions::PowX>(3));
   check_solution_x(kx, omega, u, pw, x, t);
   check_solution_y(kx, ky, omega, u, pw, x, t);
+
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  const auto deserialized_pw = serialize_and_deserialize(pw);
+  check_solution_x(kx, omega, u, deserialized_pw, x, t);
+  check_solution_y(kx, ky, omega, u, deserialized_pw, x, t);
 
   test_creation<ScalarWave::Solutions::PlaneWave<2>>(
       "  WaveVector: [-2, 3.5]\n"
@@ -187,6 +248,12 @@ void test_3d() {
   check_solution_x(kx, omega, u, pw, x, t);
   check_solution_y(kx, ky, omega, u, pw, x, t);
   check_solution_z(kx, ky, kz, omega, u, pw, x, t);
+
+  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  const auto deserialized_pw = serialize_and_deserialize(pw);
+  check_solution_x(kx, omega, u, deserialized_pw, x, t);
+  check_solution_y(kx, ky, omega, u, deserialized_pw, x, t);
+  check_solution_z(kx, ky, kz, omega, u, deserialized_pw, x, t);
 
   test_creation<ScalarWave::Solutions::PlaneWave<3>>(
       "  WaveVector: [-1, -2, 3.5]\n"

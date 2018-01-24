@@ -9,11 +9,18 @@
 #include <array>
 #include <memory>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeArray.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace ScalarWave {
 namespace Solutions {
@@ -54,9 +61,9 @@ class PlaneWave {
   static constexpr OptionString help = {
       "A plane wave solution of the Euclidean wave equation"};
 
-  PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
-            std::unique_ptr<MathFunction<1>>&& profile) noexcept;
   PlaneWave() = default;
+  PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
+            std::unique_ptr<MathFunction<1>> profile) noexcept;
   PlaneWave(const PlaneWave&) noexcept = delete;
   PlaneWave& operator=(const PlaneWave&) noexcept = delete;
   PlaneWave(PlaneWave&&) noexcept = default;
@@ -87,6 +94,24 @@ class PlaneWave {
   template <typename T>
   tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const
       noexcept;
+
+  /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
+  Variables<tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>>
+  evolution_variables(const tnsr::I<DataVector, Dim>& x, double t) const
+      noexcept;
+
+  /// Retrieve the time derivative of the evolution variables at time `t` and
+  /// spatial coordinates `x`
+  ///
+  /// \note This function's expected use case is setting the past time
+  /// derivative values for Adams-Bashforth-like steppers.
+  Variables<tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                       Tags::dt<ScalarWave::Psi>>>
+  dt_evolution_variables(const tnsr::I<DataVector, Dim>& x, double t) const
+      noexcept;
+
+  // clang-tidy: no pass by reference
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   template <typename T>
