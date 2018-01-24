@@ -11,11 +11,15 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/Element.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Options/Options.hpp"
 
 class DataVector;
 template <size_t Dim>
@@ -28,6 +32,17 @@ namespace Frame {
 struct Logical;
 struct Inertial;
 }  // namespace Frame
+
+namespace OptionTags {
+/// \ingroup OptionTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The input file tag for the DomainCreator to use
+template <size_t Dim, typename TargetFrame>
+struct DomainCreator {
+  using type = std::unique_ptr<::DomainCreator<Dim, TargetFrame>>;
+  static constexpr OptionString help = {"The domain to create initially"};
+};
+}  // namespace OptionTags
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
@@ -64,8 +79,23 @@ struct LogicalCoordinates : db::ComputeItemTag {
 template <size_t VolumeDim>
 struct ElementMap : db::DataBoxTag {
   static constexpr db::DataBoxString label = "ElementMap";
-  using type = std::unique_ptr<::CoordinateMapBase<Frame::Logical, Frame::Grid,
-                                                   VolumeDim>>;
+  using type = ::ElementMap<VolumeDim, Frame::Grid>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
+/// frame must be the source frame of `MapTag`
+template <class MapTag, class SourceCoordsTag>
+struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
+  using tag = MapTag;
+  static constexpr db::DataBoxString label = "Coordinates";
+  static constexpr auto function(
+      const db::item_type<MapTag>& element_map,
+      const db::item_type<SourceCoordsTag>& source_coords) noexcept {
+    return element_map(source_coords);
+  }
+  using argument_tags = typelist<MapTag, SourceCoordsTag>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -85,19 +115,17 @@ struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
   using argument_tags = typelist<MapTag, SourceCoordsTag>;
 };
 
-
 namespace detail {
 template <size_t VolumeDim>
 auto make_unnormalized_face_normals(
     const Index<VolumeDim>& extents,
-    const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid,
-                                            VolumeDim>>& map) noexcept {
+    const ::ElementMap<VolumeDim, Frame::Grid>& map) noexcept {
   std::unordered_map<Direction<VolumeDim>,
                      tnsr::i<DataVector, VolumeDim, Frame::Grid>>
       result;
   for (const auto& d : Direction<VolumeDim>::all_directions()) {
-    result.emplace(d, unnormalized_face_normal(
-                          extents.slice_away(d.dimension()), *map, d));
+    result.emplace(
+        d, unnormalized_face_normal(extents.slice_away(d.dimension()), map, d));
   }
   return result;
 }

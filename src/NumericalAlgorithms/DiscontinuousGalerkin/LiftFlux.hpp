@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 
@@ -31,23 +33,22 @@ namespace dg {
 ///
 /// \note The result is still provided only on the boundary grid.  The
 /// values away from the boundary are zero and are not stored.
-template <typename Tags>
-Variables<Tags> lift_flux(const Variables<Tags>& local_flux,
-                          Variables<Tags> numerical_flux,
-                          const size_t extent_perpendicular_to_boundary,
-                          DataVector magnitude_of_face_normal) noexcept {
+template <typename... NormalDotFluxTags, typename NormalDotNumericalFluxTags>
+Variables<tmpl::list<
+    db::add_tag_prefix<Tags::dt, db::remove_tag_prefix<NormalDotFluxTags>>...>>
+lift_flux(const Variables<tmpl::list<NormalDotFluxTags...>>& local_flux,
+          Variables<NormalDotNumericalFluxTags> numerical_flux,
+          const size_t extent_perpendicular_to_boundary,
+          DataVector magnitude_of_face_normal) noexcept {
   auto& lift_factor = magnitude_of_face_normal;
   lift_factor *= -0.5 * (extent_perpendicular_to_boundary *
                          (extent_perpendicular_to_boundary - 1));
 
-  // Using a reference (as for lift_factor) wouldn't gain us anything
-  // here because copy elision doesn't apply to function parameters.
-  // Returning from a reference value also triggers a copy, so we
-  // would have to explicitly move in the return statement or return
-  // numerical_flux to avoid that.
   auto lifted_data = std::move(numerical_flux);
   lifted_data -= local_flux;
   lifted_data *= lift_factor;
-  return lifted_data;
+  return Variables<tmpl::list<db::add_tag_prefix<
+      Tags::dt, db::remove_tag_prefix<NormalDotFluxTags>>...>>(
+      std::move(lifted_data));
 }
 }  // namespace dg

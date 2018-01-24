@@ -38,7 +38,8 @@ template <size_t Dim>
 using derivative_tags = typename ScalarWave::System<Dim>::gradients_tags;
 
 template <size_t Dim>
-using variables_tags = typename ScalarWave::System<Dim>::variables_tags;
+using variables_tags =
+    typename ScalarWave::System<Dim>::variables_tag::tags_list;
 
 using derivative_frame = Frame::Inertial;
 
