@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GrTagsDeclarations.hpp"
 

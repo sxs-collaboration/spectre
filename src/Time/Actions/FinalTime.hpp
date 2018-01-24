@@ -8,7 +8,7 @@
 
 #include <tuple>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"

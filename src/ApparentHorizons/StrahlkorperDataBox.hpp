@@ -6,7 +6,7 @@
 #include <cstdint>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"

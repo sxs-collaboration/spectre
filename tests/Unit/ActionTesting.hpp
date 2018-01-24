@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"

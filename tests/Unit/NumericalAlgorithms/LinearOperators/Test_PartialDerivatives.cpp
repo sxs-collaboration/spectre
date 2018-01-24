@@ -18,7 +18,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
 
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"

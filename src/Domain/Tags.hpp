@@ -9,7 +9,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"

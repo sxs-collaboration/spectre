@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

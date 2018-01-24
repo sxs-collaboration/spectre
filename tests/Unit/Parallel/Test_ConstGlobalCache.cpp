@@ -15,7 +15,7 @@ void register_pupables();
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"

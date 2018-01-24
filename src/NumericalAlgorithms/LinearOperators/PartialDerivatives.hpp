@@ -8,7 +8,7 @@
 
 #include <array>
 
-#include "DataStructures/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
 
 template <size_t Dim>

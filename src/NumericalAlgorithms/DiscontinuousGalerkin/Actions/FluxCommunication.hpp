@@ -11,9 +11,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
