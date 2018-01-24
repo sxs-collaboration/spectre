@@ -60,7 +60,7 @@ template <typename Map>
 void test_jacobian(const Map& map,
                    const std::array<double, Map::dim>& test_point) {
   // Our default approx value is too stringent for this test
-  Approx local_approx = Approx::custom().epsilon(1e-10);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dx = 1e-4;
   const auto jacobian = map.jacobian(test_point);
   for (size_t i = 0; i < Map::dim; ++i) {

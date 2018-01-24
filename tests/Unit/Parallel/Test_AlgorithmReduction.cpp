@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#define CATCH_CONFIG_RUNNER
+
 #include <unordered_map>
 
 #include "AlgorithmArray.hpp"
