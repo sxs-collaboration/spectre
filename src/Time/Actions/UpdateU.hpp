@@ -56,9 +56,9 @@ struct UpdateU {
           const auto& time_stepper =
               Parallel::get<CacheTags::TimeStepper>(cache);
 
-          history.emplace_back(time, vars, dt_vars);
-          time_stepper.update_u(make_not_null(&vars), history, time_step);
-          history.erase(history.begin(), time_stepper.needed_history(history));
+          history.insert(time, vars, dt_vars);
+          time_stepper.update_u(make_not_null(&vars), make_not_null(&history),
+                                time_step);
         },
         db::get<Tags::Time>(box),
         db::get<Tags::TimeStep>(box));

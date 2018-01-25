@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include "Parallel/CharmPupable.hpp"
+#include "Time/History.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
@@ -27,8 +28,6 @@ class RungeKutta3;
 
 namespace TimeStepper_detail {
 DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
-DEFINE_FAKE_VIRTUAL(needed_boundary_history)
-DEFINE_FAKE_VIRTUAL(needed_history)
 DEFINE_FAKE_VIRTUAL(update_u)
 }  // namespace TimeStepper_detail
 
@@ -39,10 +38,7 @@ class TimeStepper : public PUP::able {
  public:
   using Inherit =
       TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
-          TimeStepper_detail::FakeVirtualInherit_needed_boundary_history<
-              TimeStepper_detail::FakeVirtualInherit_needed_history<
-                  TimeStepper_detail::FakeVirtualInherit_update_u<
-                      TimeStepper>>>>;
+          TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>;
   using creatable_classes = typelist<
       TimeSteppers::AdamsBashforthN,
       TimeSteppers::RungeKutta3>;
@@ -58,14 +54,12 @@ class TimeStepper : public PUP::able {
   ~TimeStepper() noexcept override = default;
   /// \endcond
 
-  /// Add the change for the current substep to u.  New values should
-  /// be pushed onto the end of the history when evaluated and
-  /// obsolete values should be removed from the front, in a manner
-  /// similar to a queue.
+  /// Add the change for the current substep to u.
   template <typename Vars, typename DerivVars>
-  void update_u(const gsl::not_null<Vars*> u,
-                const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
-                const TimeDelta& time_step) const noexcept {
+  void update_u(
+      const gsl::not_null<Vars*> u,
+      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
+      const TimeDelta& time_step) const noexcept {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, history, time_step);
   }
@@ -87,7 +81,8 @@ class TimeStepper : public PUP::able {
   template <typename BoundaryVars, typename FluxVars, typename Coupling>
   BoundaryVars compute_boundary_delta(
       const Coupling& coupling,
-      const std::vector<std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>&
+      const gsl::not_null<std::vector<std::deque<std::tuple<
+          Time, BoundaryVars, FluxVars>>>*>
           history,
       const TimeDelta& time_step) const noexcept {
     static_assert(
@@ -98,32 +93,6 @@ class TimeStepper : public PUP::able {
         "Coupling function returns wrong type");
     return TimeStepper_detail::fake_virtual_compute_boundary_delta<
         creatable_classes>(this, coupling, history, time_step);
-  }
-
-  /// Return iterator to the first entry in `history` that is still
-  /// needed after the current step.  Entries up to that point must be
-  /// removed before the next call to `update_u`.
-  template <typename Vars, typename DerivVars>
-  typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
-  needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
-      const noexcept {
-    return TimeStepper_detail::fake_virtual_needed_history<creatable_classes>(
-        this, history);
-  }
-
-  /// Return iterators to the first entry for each element of
-  /// `history` that is still needed after the current step.  Entries
-  /// up to that point must be removed before the next call to
-  /// `compute_boundary_delta`.
-  template <typename BoundaryVars, typename FluxVars>
-  typename std::vector<typename std::deque<
-      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
-  needed_boundary_history(
-      const std::vector<
-          std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
-      const TimeDelta& time_step) const noexcept {
-    return TimeStepper_detail::fake_virtual_needed_boundary_history<
-        creatable_classes>(this, history, time_step);
   }
 
   /// Number of substeps in this TimeStepper

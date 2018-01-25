@@ -133,7 +133,7 @@ struct InitializeElement {
         past_dt = past_dt.with_slab(past_dt.slab().advance_towards(-past_dt));
         past_t -= past_dt;
 
-        history_dt_vars.emplace_front(
+        history_dt_vars.insert_initial(
             past_t,
             Parallel::get<solution_tag>(cache).evolution_variables(
                 inertial_coords, past_t.value()),

@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
+#include "Time/History.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
@@ -59,8 +60,7 @@ template <typename Tag, typename DtTag>
 struct HistoryEvolvedVariables : db::DataBoxPrefix {
   static constexpr db::DataBoxString label = "HistoryEvolvedVariables";
   using tag = Tag;
-  using type =
-      std::deque<std::tuple<::Time, db::item_type<Tag>, db::item_type<DtTag>>>;
+  using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
 };
 
 /// \ingroup DataBoxTagsGroup

@@ -131,30 +131,27 @@ void test_initialize_element(const ElementId<Dim>& element_id,
           }
           return var;
         }()));
-  CHECK(
-      (db::get<Tags::HistoryEvolvedVariables<
-           typename System::variables_tag,
-           db::add_tag_prefix<Tags::dt, typename System::variables_tag>>>(
-          box)) == ([&slab, &inertial_coords]() {
-        std::deque<std::tuple<::Time, Variables<tmpl::list<Var>>,
-                              Variables<tmpl::list<Tags::dt<Var>>>>>
-            history{};
-        TimeSteppers::AdamsBashforthN stepper(4, false);
-        SystemAnalyticSolution solution{};
+  {
+    const auto& history = db::get<Tags::HistoryEvolvedVariables<
+        typename System::variables_tag,
+        db::add_tag_prefix<Tags::dt, typename System::variables_tag>>>(box);
+    TimeSteppers::AdamsBashforthN stepper(4, false);
+    CHECK(history.size() == stepper.number_of_past_steps());
+    const SystemAnalyticSolution solution{};
+    Time past_t{slab.start()};
+    TimeDelta past_dt{slab.duration()};
+    for (size_t i = stepper.number_of_past_steps(); i > 0; --i) {
+      const auto entry = history.begin() + static_cast<ssize_t>(i - 1);
+      past_dt = past_dt.with_slab(past_dt.slab().advance_towards(-past_dt));
+      past_t -= past_dt;
 
-        Time past_t{slab.start()};
-        TimeDelta past_dt{slab.duration()};
-        for (size_t i = stepper.number_of_past_steps(); i > 0; --i) {
-          past_dt = past_dt.with_slab(past_dt.slab().advance_towards(-past_dt));
-          past_t -= past_dt;
-
-          history.emplace_front(
-              past_t,
-              solution.evolution_variables(inertial_coords, past_t.value()),
-              solution.dt_evolution_variables(inertial_coords, past_t.value()));
-        }
-        return history;
-      }()));
+      CHECK(*entry == past_t);
+      CHECK(entry.value() ==
+            solution.evolution_variables(inertial_coords, past_t.value()));
+      CHECK(entry.derivative() ==
+            solution.dt_evolution_variables(inertial_coords, past_t.value()));
+    }
+  }
   CHECK((db::get<Tags::Coordinates<Tags::ElementMap<Dim>,
                                    Tags::LogicalCoordinates<Dim>>>(box)) ==
         inertial_coords);

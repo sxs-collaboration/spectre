@@ -208,9 +208,8 @@ SPECTRE_TEST_CASE(
     }
 
     t += dt;
-    y += ab4.compute_boundary_delta(quartic_coupling, history, dt)();
-    TimeStepperTestUtils::erase_boundary_history(
-        ab4, make_not_null(&history), dt);
+    y += ab4.compute_boundary_delta(
+        quartic_coupling, make_not_null(&history), dt)();
     CHECK(y == approx(quartic_answer(t.value())));
   }
 }
@@ -260,9 +259,8 @@ void do_lts_test(const std::array<TimeDelta, 3>& dt) noexcept {
 
     ASSERT(not simulation_less(next_check, t), "Screwed up arithmetic");
     if (t == next_check) {
-      y += ab4.compute_boundary_delta(quartic_coupling, history, dt[0])();
-      TimeStepperTestUtils::erase_boundary_history(
-          ab4, make_not_null(&history), dt[0]);
+      y += ab4.compute_boundary_delta(
+          quartic_coupling, make_not_null(&history), dt[0])();
       CHECK(y == approx(quartic_answer(t.value())));
       if (t.is_at_slab_boundary()) {
         break;
@@ -368,10 +366,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     gsl::at(next, side) += this_dt;
 
     if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
-      y += ab4.compute_boundary_delta(quartic_coupling, history,
-                                      next_check - t)();
-      TimeStepperTestUtils::erase_boundary_history(
-          ab4, make_not_null(&history), next_check - t);
+      y += ab4.compute_boundary_delta(
+          quartic_coupling, make_not_null(&history), next_check - t)();
       CHECK(y == approx(quartic_answer(next_check.value())));
       if (next_check.is_at_slab_boundary()) {
         break;

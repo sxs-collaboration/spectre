@@ -6,15 +6,15 @@
 
 #pragma once
 
-#include <array>
+#include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
 #include <deque>
-#include <functional>
 #include <iterator>
-#include <memory>
-#include <string>
+#include <map>
+#include <set>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/GeneralIndexIterator.hpp"
@@ -23,6 +23,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
+#include "Time/History.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/CachedFunction.hpp"
@@ -72,7 +73,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
   template <typename Vars, typename DerivVars>
   void update_u(gsl::not_null<Vars*> u,
-                const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
+                gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
   /*!
@@ -170,21 +171,9 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   template <typename BoundaryVars, typename FluxVars, typename Coupling>
   BoundaryVars compute_boundary_delta(
       const Coupling& coupling,
-      const std::vector<std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>&
+      gsl::not_null<std::vector<std::deque<std::tuple<
+          Time, BoundaryVars, FluxVars>>>*>
           history,
-      const TimeDelta& time_step) const noexcept;
-
-  template <typename Vars, typename DerivVars>
-  typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
-  needed_history(const std::deque<std::tuple<Time, Vars, DerivVars>>& history)
-      const noexcept;
-
-  template <typename BoundaryVars, typename FluxVars>
-  typename std::vector<typename std::deque<
-      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
-  needed_boundary_history(
-      const std::vector<
-          std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
       const TimeDelta& time_step) const noexcept;
 
   size_t number_of_substeps() const noexcept override;
@@ -273,67 +262,74 @@ bool operator!=(const AdamsBashforthN& lhs,
 template <typename Vars, typename DerivVars>
 void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
-    const std::deque<std::tuple<Time, Vars, DerivVars>>& history,
+    const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
-  ASSERT(is_self_starting_ or target_order_ == history.size(),
+  ASSERT(is_self_starting_ or target_order_ == history->size(),
          "Length of history should be the order, so "
-         << target_order_ << ", but is: " << history.size());
-  ASSERT(history.size() <= target_order_,
-         "Length of history (" << history.size() << ") "
+         << target_order_ << ", but is: " << history->size());
+  ASSERT(history->size() <= target_order_,
+         "Length of history (" << history->size() << ") "
          << "should not exceed target order (" << target_order_ << ")");
 
-  const auto& coefficients = get_coefficients(time_iter(history.cbegin()),
-                                              time_iter(history.cend()),
-                                              time_step);
+  const auto& coefficients =
+      get_coefficients(history->begin(), history->end(), time_step);
 
   const auto do_update =
       [u, &time_step, &coefficients, &history](auto order) noexcept {
     *u += time_step.value() * constexpr_sum<order>(
         [order, &coefficients, &history](auto i) noexcept {
-          return coefficients[order - 1 - i] * std::get<2>(history[i]);
+          return coefficients[order - 1 - i] *
+              (history->begin() + static_cast<ssize_t>(i)).derivative();
         });
   };
 
-  switch (history.size()) {
+  switch (history->size()) {
     case 1:
       do_update(std::integral_constant<size_t, 1>{});
-      return;
+      break;
     case 2:
       do_update(std::integral_constant<size_t, 2>{});
-      return;
+      break;
     case 3:
       do_update(std::integral_constant<size_t, 3>{});
-      return;
+      break;
     case 4:
       do_update(std::integral_constant<size_t, 4>{});
-      return;
+      break;
     case 5:
       do_update(std::integral_constant<size_t, 5>{});
-      return;
+      break;
     case 6:
       do_update(std::integral_constant<size_t, 6>{});
-      return;
+      break;
     case 7:
       do_update(std::integral_constant<size_t, 7>{});
-      return;
+      break;
     case 8:
       do_update(std::integral_constant<size_t, 8>{});
-      return;
+      break;
     default:
-      ERROR("Bad amount of history data: " << history.size());
+      ERROR("Bad amount of history data: " << history->size());
+  }
+
+  // Clean up old history
+  if (history->size() >= target_order_) {
+    history->mark_unneeded(
+        history->end() - static_cast<ssize_t>(target_order_ - 1));
   }
 }
 
 template <typename BoundaryVars, typename FluxVars, typename Coupling>
 BoundaryVars AdamsBashforthN::compute_boundary_delta(
     const Coupling& coupling,
-    const std::vector<std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>&
+    const gsl::not_null<std::vector<std::deque<std::tuple<
+        Time, BoundaryVars, FluxVars>>>*>
         history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(not is_self_starting_, "Unimplemented");
 
-  using HistoryEntry = decltype(history[0][0]);
-  using HistoryIterator = decltype(history[0].cbegin());
+  using HistoryEntry = decltype(cpp17::as_const(*history)[0][0]);
+  using HistoryIterator = decltype((*history)[0].cbegin());
 
   // Avoid billions of casts
   const auto target_order_s = static_cast<ssize_t>(target_order_);
@@ -350,7 +346,7 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
       make_cached_function<Time, std::map, Time::StructuralCompare>(
           [](const Time& t) noexcept { return t.value(); });
 
-  const size_t num_sides = history.size();
+  const size_t num_sides = history->size();
 
   // Evaluate the cardinal function for a grid of points at a point on
   // the diagonal.
@@ -382,7 +378,7 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
     return result;
   };
 
-  for (const auto& side_hist : history) {
+  for (const auto& side_hist : *history) {
     ASSERT(not side_hist.empty(), "No data");
     ASSERT(std::is_sorted(time_iter(side_hist.begin()),
                           time_iter(side_hist.end()),
@@ -391,14 +387,14 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
   }
 
   // Start and end of the step we are trying to take
-  const Time start_time = get_time(history[0].back());
+  const Time start_time = get_time((*history)[0].back());
   const Time end_time = start_time + time_step;
 
   // Union of times of all step boundaries on any side.
   const auto union_times =
       [&end_time, &get_time, &history, &simulation_less]() noexcept {
     std::set<Time, decltype(simulation_less)> ret({end_time}, simulation_less);
-    for (const auto& side_hist : history) {
+    for (const auto& side_hist : *history) {
       ret.insert(time_iter(side_hist.cbegin()), time_iter(side_hist.cend()));
       ASSERT(simulation_less(get_time(side_hist.back()), end_time),
              "Please supply only older data: " << get_time(side_hist.back())
@@ -427,13 +423,13 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
 
   // Result variable.
   auto accumulated_change =
-      make_with_value<BoundaryVars>(std::get<1>(history[0].back()), 0.);
+      make_with_value<BoundaryVars>(std::get<1>((*history)[0].back()), 0.);
 
   // Ranges of values where we evaluate the coupling function.
   std::vector<std::pair<HistoryIterator, HistoryIterator>>
       coupling_evaluation_ranges;
   for (size_t side = 0; side < num_sides; ++side) {
-    const auto& side_hist = history[side];
+    const auto& side_hist = (*history)[side];
     const auto current_step_on_side =
         step_containing_time(side_hist, start_time, simulation_less);
     ASSERT(std::distance(side_hist.begin(), current_step_on_side) >=
@@ -468,7 +464,7 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
       if (simulation_less(coupling_start_time, get_time(*evaluation_side))) {
         coupling_start_time = get_time(*evaluation_side);
       }
-      if (history[side].end() - evaluation_side > target_order_s and
+      if ((*history)[side].end() - evaluation_side > target_order_s and
           simulation_less(get_time(*(evaluation_side + target_order_s)),
                           coupling_end_time)) {
         coupling_end_time = get_time(*(evaluation_side + target_order_s));
@@ -484,7 +480,7 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
     // Iterators to the time on each side containing the union time we are
     // currently considering.
     std::vector<HistoryIterator> side_indices;
-    for (const auto& side_hist : history) {
+    for (const auto& side_hist : *history) {
       side_indices.push_back(step_containing_time(
           side_hist, *union_times_for_coupling_begin, simulation_less));
     }
@@ -498,7 +494,7 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
       // step.
       for (size_t side = 0; side < num_sides; ++side) {
         const auto next_index = side_indices[side] + 1;
-        if (next_index != history[side].end() and
+        if (next_index != (*history)[side].end() and
             not simulation_less(*union_time, get_time(*next_index))) {
           side_indices[side] = next_index;
         }
@@ -539,45 +535,24 @@ BoundaryVars AdamsBashforthN::compute_boundary_delta(
     }
   }  // for coupling_evaluation
 
-  return accumulated_change;
-}
+  // Clean up old history
 
-template <typename Vars, typename DerivVars>
-typename std::deque<std::tuple<Time, Vars, DerivVars>>::const_iterator
-AdamsBashforthN::needed_history(
-    const std::deque<std::tuple<Time, Vars, DerivVars>>& history) const
-    noexcept {
- if (history.size() >= target_order_) {
-   return history.end() - static_cast<ssize_t>(target_order_ - 1);
- } else {
-   return history.begin();
- }
-}
-
-template <typename BoundaryVars, typename FluxVars>
-typename std::vector<typename std::deque<
-    std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator>
-AdamsBashforthN::needed_boundary_history(
-    const std::vector<
-        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>& history,
-    const TimeDelta& time_step) const noexcept {
-  const SimulationLess simulation_less(time_step.is_positive());
-  const Time next_start_time = std::get<0>(history[0].back()) + time_step;
-  std::vector<typename std::deque<
-      std::tuple<Time, BoundaryVars, FluxVars>>::const_iterator> result;
-  result.reserve(history.size());
   // We know that the local side will step at next_start_time, so the
   // step containing that time will be the next step, which is not
   // currently in the history.
-  result.push_back(history[0].end() - static_cast<ssize_t>(target_order_ - 1));
+  (*history)[0].erase(
+      (*history)[0].begin(),
+      (*history)[0].end() - static_cast<ssize_t>(target_order_ - 1));
   // We don't know whether other sides will step at next_start_time,
   // so we have to be conservative and assume they will not.
-  for (size_t side = 1; side < history.size(); ++side) {
-    result.push_back(step_containing_time(history[side], next_start_time,
-                                          simulation_less) -
-                     static_cast<ssize_t>(target_order_ - 1));
+  for (size_t side = 1; side < history->size(); ++side) {
+    (*history)[side].erase(
+        (*history)[side].begin(),
+        step_containing_time((*history)[side], end_time, simulation_less) -
+            static_cast<ssize_t>(target_order_ - 1));
   }
-  return result;
+
+  return accumulated_change;
 }
 
 template <typename Iterator>
