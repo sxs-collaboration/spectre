@@ -121,7 +121,7 @@ class Strahlkorper {
   size_t l_max_{2}, m_max_{2};
   YlmSpherepack ylm_{2, 2};
   std::array<double, 3> center_{{0.0, 0.0, 0.0}};
-  DataVector strahlkorper_coefs_ = DataVector(ylm_.physical_size(), 0.0);
+  DataVector strahlkorper_coefs_ = DataVector(ylm_.spectral_size(), 0.0);
 };
 
 template <typename Frame>
