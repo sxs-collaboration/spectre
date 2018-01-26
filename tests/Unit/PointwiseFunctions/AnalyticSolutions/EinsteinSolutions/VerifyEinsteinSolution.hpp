@@ -127,7 +127,8 @@ void verify_time_independent_einstein_solution(
   const auto& d_H =
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
-  Approx numerical_approx = Approx::custom().epsilon(error_tolerance);
+  Approx numerical_approx =
+      Approx::custom().epsilon(error_tolerance).scale(1.0);
 
   // Test 3-index constraint
   CHECK_ITERABLE_CUSTOM_APPROX(d_psi, phi, numerical_approx);

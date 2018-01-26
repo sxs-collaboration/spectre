@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#define CATCH_CONFIG_RUNNER
+
 #include "AlgorithmArray.hpp"
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"

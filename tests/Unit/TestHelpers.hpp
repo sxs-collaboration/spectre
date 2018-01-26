@@ -70,8 +70,10 @@
  * \snippet TestFramework.cpp approx_test
  */
 // clang-tidy: static object creation may throw exception
-static Approx approx = Approx::custom().epsilon(    // NOLINT
-    std::numeric_limits<double>::epsilon() * 100);  // NOLINT
+static Approx approx =                                          // NOLINT
+    Approx::custom()                                            // NOLINT
+        .epsilon(std::numeric_limits<double>::epsilon() * 100)  // NOLINT
+        .scale(1.0);                                            // NOLINT
 
 /*!
  * \ingroup TestingFrameworkGroup
