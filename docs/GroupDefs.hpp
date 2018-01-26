@@ -196,9 +196,25 @@ circumstances:
    integers.
 2. `using explicit_single_actions` is set to a typelist of Actions
    that are not part of the algorithm but can be called remotely at any time,
-   similar in spirit to a member function. Each Action must specify a member
-   type alias called `apply_args` whose elements are the types of the data that
-   is sent to the %Parallel Component and passed into the Action.
+   similar in spirit to a member function.  An Action used as an explicit
+   single action has the following restrictions:
+   1. It must specify a member type alias called `apply_args` whose
+      elements are the types of additional arguments passed into the
+      Action's `apply` function (these additional arguments are passed
+      after the ParallelComponent argument).  If there are no additional
+      arguments, use an empty typelist.
+   2. Its returned DataBox must have the same
+      type as its input DataBox (use `db::mutate` to change values
+      of things in the DataBox).  There is one exception:
+      if the input DataBox is empty, then the explicit single action
+      can return a DataBox of type `initial_databox` (this is how one
+      initializes the sequence of Actions).
+   3. It is instantiated multiple times, once for
+      an empty DataBox, once for a DataBox of type
+      `initial_databox`, and once for the returned DataBox type of each
+      Action in `action_list`.  If you want the action to be instantiated
+      only for a subset of these, use `Requires` in the Action's template
+      parameter list.
 3. `using reduction_actions_list` is set to a typelist of the Actions that may
    be called for reductions. Each Action that is to be used in a reduction must
    contain a member type alias named `reduction_type` whose value is the type
@@ -228,13 +244,16 @@ does for classes. The `initialize` function also receives arguments that
 are read from the input file and can the be used to initialize the %Parallel
 Component. For example, the value of an option could be distributed to all
 members of a %Parallel Component Array, or could be used to control the size
-of the %Parallel Component Array.
+of the %Parallel Component Array.  The `initialize` functions of different
+%Parallel Components are called in random order.
 
 The `execute_next_global_actions` function gets run at the end of each
 %Parallel Phase and determines what the %Parallel Component should do
 during the next phase. For example, it may simply call `perform_algorithm`,
 call a series of single Actions, perform a reduction over an Array, or not
-do anything at all.
+do anything at all.  Note that `perform_algorithm` performs the same
+Actions (the ones in `action_list`) no matter what Phase it is called
+in.
 
 An example of a singleton %Parallel Component is:
 
@@ -280,7 +299,7 @@ chare object. The four types of Algorithms are:
 ### Entry Methods and Remote Function Invocation
 
 Charm++ refers to functions that can be called remotely as entry methods.
-The Parallel Components provide several generic entry methods. These fall
+The %Parallel Components provide several generic entry methods. These fall
 into two classes:
 1. Entry methods that perform a single Action once
 2. Entry methods that iterate the Actions in the Algorithm's `action_list`.
