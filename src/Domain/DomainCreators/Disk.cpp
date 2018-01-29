@@ -7,7 +7,7 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
@@ -35,8 +35,8 @@ Disk<TargetFrame>::Disk(
 template <typename TargetFrame>
 Domain<2, TargetFrame> Disk<TargetFrame>::create_domain() const noexcept {
   using Wedge2DMap = CoordinateMaps::Wedge2D;
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular2D =
       CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
@@ -72,10 +72,10 @@ Domain<2, TargetFrame> Disk<TargetFrame>::create_domain() const noexcept {
   } else {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::Logical, TargetFrame>(
-            AffineMap2D{AffineMap(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                                  inner_radius_ / sqrt(2.0)),
-                        AffineMap(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                                  inner_radius_ / sqrt(2.0))}));
+            Affine2D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
+                            inner_radius_ / sqrt(2.0)),
+                     Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
+                            inner_radius_ / sqrt(2.0))}));
   }
   return Domain<2, TargetFrame>{std::move(coord_maps), corners};
 }

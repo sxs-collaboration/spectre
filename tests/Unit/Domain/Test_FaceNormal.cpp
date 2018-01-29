@@ -6,7 +6,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
@@ -43,7 +43,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
   /// [face_normal_example]
   const Index<0> extents_0d;
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::AffineMap(-1.0, 1.0, -3.0, 7.0));
+      CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0));
   const auto normal_1d_lower =
       unnormalized_face_normal(extents_0d, map_1d, Direction<1>::lower_xi());
   /// [face_normal_example]
@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
         {{{{0.6, 0.8}}, {{-0.8, 0.6}}}});
 
   check(make_coordinate_map<Frame::Logical, Frame::Grid>(
-            CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+            CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
         {{{{0.4, 0., 0.}}, {{0., 0.6, 0.8}}, {{0., -0.8, 0.6}}}});
@@ -72,7 +72,7 @@ void test_face_normal_element_map() {
   const Index<0> extents_0d;
   const auto map_1d = ElementMap<1, TargetFrame>(
       ElementId<1>{0}, make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           CoordinateMaps::AffineMap(-1.0, 1.0, -3.0, 7.0)));
+                           CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0)));
   const auto normal_1d_lower =
       unnormalized_face_normal(extents_0d, map_1d, Direction<1>::lower_xi());
 
@@ -92,7 +92,7 @@ void test_face_normal_element_map() {
   check(ElementMap<3, TargetFrame>(
             ElementId<3>(0),
             make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
+                CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                                CoordinateMaps::Rotation<2>>(
                     {-1., 1., 2., 7.},
                     CoordinateMaps::Rotation<2>(atan2(4., 3.))))),

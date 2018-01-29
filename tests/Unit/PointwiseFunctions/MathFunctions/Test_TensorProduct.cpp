@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -27,10 +27,9 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-using AffineMap = CoordinateMaps::AffineMap;
-using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-using AffineMap3D =
-    CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+using Affine = CoordinateMaps::Affine;
+using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
 auto make_affine_map() noexcept;
@@ -38,20 +37,20 @@ auto make_affine_map() noexcept;
 template <>
 auto make_affine_map<1>() noexcept {
   return make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      AffineMap{-1.0, 1.0, -0.3, 0.7});
+      Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(AffineMap2D{
-      AffineMap{-1.0, 1.0, -0.3, 0.7}, AffineMap{-1.0, 1.0, 0.3, 0.55}});
+  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(AffineMap3D{
-      AffineMap{-1.0, 1.0, -0.3, 0.7}, AffineMap{-1.0, 1.0, 0.3, 0.55},
-      AffineMap{-1.0, 1.0, 2.3, 2.8}});
+  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+               Affine{-1.0, 1.0, 2.3, 2.8}});
 }
 
 template <typename T, size_t VolumeDim>

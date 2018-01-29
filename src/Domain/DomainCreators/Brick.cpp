@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
@@ -37,9 +37,8 @@ Brick<TargetFrame>::Brick(
 
 template <typename TargetFrame>
 Domain<3, TargetFrame> Brick<TargetFrame>::create_domain() const noexcept {
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap3D =
-      CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   std::vector<PairOfFaces> identifications{};
   if (is_periodic_in_xyz_[0]) {
     identifications.push_back({{0, 4, 2, 6}, {1, 5, 3, 7}});
@@ -53,9 +52,9 @@ Domain<3, TargetFrame> Brick<TargetFrame>::create_domain() const noexcept {
 
   return Domain<3, TargetFrame>{
       make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          AffineMap3D{AffineMap{-1., 1., lower_xyz_[0], upper_xyz_[0]},
-                      AffineMap{-1., 1., lower_xyz_[1], upper_xyz_[1]},
-                      AffineMap{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),
+          Affine3D{Affine{-1., 1., lower_xyz_[0], upper_xyz_[0]},
+                   Affine{-1., 1., lower_xyz_[1], upper_xyz_[1]},
+                   Affine{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),
       std::vector<std::array<size_t, 8>>{{{0, 1, 2, 3, 4, 5, 6, 7}}},
       identifications};
 }

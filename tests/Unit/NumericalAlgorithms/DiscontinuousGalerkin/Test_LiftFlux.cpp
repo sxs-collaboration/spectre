@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
@@ -30,12 +30,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
                   "[Unit][NumericalAlgorithms]") {
   const size_t perpendicular_extent = 5;
 
-  const CoordinateMaps::AffineMap xi_map(-1., 1., -5., 7.);
-  const CoordinateMaps::AffineMap eta_map(-1., 1., 2., 5.);
+  const CoordinateMaps::Affine xi_map(-1., 1., -5., 7.);
+  const CoordinateMaps::Affine eta_map(-1., 1., 2., 5.);
   const auto coordinate_map = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                     CoordinateMaps::AffineMap>(
-      xi_map, eta_map));
+      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine>(xi_map, eta_map));
   const double element_length = (eta_map(std::array<double, 1>{{1.}}) -
                                  eta_map(std::array<double, 1>{{-1.}}))[0];
 

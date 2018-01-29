@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines the class AffineMap.
+/// Defines the class Affine.
 
 #pragma once
 
@@ -26,19 +26,19 @@ namespace CoordinateMaps {
  * \f[
  * \xi =\frac{B}{b-a} (x-a) +\frac{A}{b-a}(b-x)
  * \f]
-*/
-class AffineMap {
+ */
+class Affine {
  public:
   static constexpr size_t dim = 1;
 
-  AffineMap(double A, double B, double a, double b);
+  Affine(double A, double B, double a, double b);
 
-  AffineMap() = default;
-  ~AffineMap() = default;
-  AffineMap(const AffineMap&) = default;
-  AffineMap(AffineMap&&) noexcept = default;  // NOLINT
-  AffineMap& operator=(const AffineMap&) = default;
-  AffineMap& operator=(AffineMap&&) = default;
+  Affine() = default;
+  ~Affine() = default;
+  Affine(const Affine&) = default;
+  Affine(Affine&&) noexcept = default;  // NOLINT
+  Affine& operator=(const Affine&) = default;
+  Affine& operator=(Affine&&) = default;
 
   template <typename T>
   std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> operator()(
@@ -66,7 +66,7 @@ class AffineMap {
   void pup(PUP::er& p);  // NOLINT
 
  private:
-  friend bool operator==(const AffineMap& lhs, const AffineMap& rhs) noexcept;
+  friend bool operator==(const Affine& lhs, const Affine& rhs) noexcept;
 
   double A_{-1.0};
   double B_{1.0};
@@ -78,8 +78,8 @@ class AffineMap {
   double inverse_jacobian_{length_of_domain_ / length_of_range_};
 };
 
-inline bool operator!=(const CoordinateMaps::AffineMap& lhs,
-                       const CoordinateMaps::AffineMap& rhs) noexcept {
+inline bool operator!=(const CoordinateMaps::Affine& lhs,
+                       const CoordinateMaps::Affine& rhs) noexcept {
   return not(lhs == rhs);
 }
 

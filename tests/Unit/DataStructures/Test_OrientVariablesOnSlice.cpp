@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
@@ -19,15 +19,12 @@
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-using AffineMap = CoordinateMaps::AffineMap;
-using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-using AffineMap3D =
-    CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
-using AffineCoordMap = CoordinateMap<Frame::Logical, Frame::Grid, AffineMap>;
-using AffineCoordMap2D =
-    CoordinateMap<Frame::Logical, Frame::Grid, AffineMap2D>;
-using AffineCoordMap3D =
-    CoordinateMap<Frame::Logical, Frame::Grid, AffineMap3D>;
+using Affine = CoordinateMaps::Affine;
+using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using AffineCoordMap = CoordinateMap<Frame::Logical, Frame::Grid, Affine>;
+using AffineCoordMap2D = CoordinateMap<Frame::Logical, Frame::Grid, Affine2D>;
+using AffineCoordMap3D = CoordinateMap<Frame::Logical, Frame::Grid, Affine3D>;
 template <size_t Dim>
 using Rotation = CoordinateMaps::Rotation<Dim>;
 
@@ -82,13 +79,13 @@ void test_1d_aligned() {
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 1>>>(
       std::make_unique<AffineCoordMap>(
           make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap{-1.0, 1.0, -2.0, 2.0})),
+              Affine{-1.0, 1.0, -2.0, 2.0})),
       std::make_unique<AffineCoordMap>(
           make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap{-1.0, 1.0, 2.0, 5.0})),
+              Affine{-1.0, 1.0, 2.0, 5.0})),
       std::make_unique<AffineCoordMap>(
           make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap{-1.0, 1.0, 5.0, 6.0})));
+              Affine{-1.0, 1.0, 5.0, 6.0})));
 
   std::vector<std::array<size_t, 2>> corners{{{0, 1}}, {{1, 2}}, {{2, 3}}};
 
@@ -112,13 +109,13 @@ void test_1d_flipped() {
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 1>>>(
       std::make_unique<AffineCoordMap>(
           make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap{-1.0, 1.0, 2.0, -2.0})),
+              Affine{-1.0, 1.0, 2.0, -2.0})),
       std::make_unique<AffineCoordMap>(
           make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap{-1.0, 1.0, 2.0, 5.0})),
+              Affine{-1.0, 1.0, 2.0, 5.0})),
       std::make_unique<AffineCoordMap>(
           make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap{-1.0, 1.0, 6.0, 5.0})));
+              Affine{-1.0, 1.0, 6.0, 5.0})));
 
   std::vector<std::array<size_t, 2>> corners{{{1, 0}}, {{1, 2}}, {{3, 2}}};
 
@@ -140,25 +137,25 @@ void test_1d_flipped() {
 template <typename Map>
 void test_2d_rotated(const Map& my_map, const std::array<size_t, 4>& my_corners,
                      const Index<2>& my_extents) {
-  const AffineMap lower_x_map(-1.0, 1.0, -2.0, 2.0);
-  const AffineMap center_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap upper_x_map(-1.0, 1.0, 5.0, 6.0);
-  const AffineMap lower_y_map(-1.0, 1.0, -3.0, 0.0);
-  const AffineMap center_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap upper_y_map(-1.0, 1.0, 4.0, 9.0);
+  const Affine lower_x_map(-1.0, 1.0, -2.0, 2.0);
+  const Affine center_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine upper_x_map(-1.0, 1.0, 5.0, 6.0);
+  const Affine lower_y_map(-1.0, 1.0, -3.0, 0.0);
+  const Affine center_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine upper_y_map(-1.0, 1.0, 4.0, 9.0);
 
   const auto lower_eta_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap2D{center_x_map, lower_y_map});
+          Affine2D{center_x_map, lower_y_map});
   const auto lower_xi_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap2D{lower_x_map, center_y_map});
+          Affine2D{lower_x_map, center_y_map});
   const auto upper_xi_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap2D{upper_x_map, center_y_map});
+          Affine2D{upper_x_map, center_y_map});
   const auto upper_eta_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap2D{center_x_map, upper_y_map});
+          Affine2D{center_x_map, upper_y_map});
 
   auto maps = make_vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 2>>>(
@@ -206,10 +203,10 @@ void test_2d_rotated(const Map& my_map, const std::array<size_t, 4>& my_corners,
 }
 
 void test_2d_aligned() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
   const Rotation<2> rotation(0.0);
-  const AffineMap2D product{my_x_map, my_y_map};
+  const Affine2D product{my_x_map, my_y_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{3, 4, 7, 8}};
@@ -218,10 +215,10 @@ void test_2d_aligned() {
 }
 
 void test_2d_flipped() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
   const Rotation<2> rotation(M_PI);
-  const AffineMap2D product{my_x_map, my_y_map};
+  const Affine2D product{my_x_map, my_y_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{8, 7, 4, 3}};
@@ -230,10 +227,10 @@ void test_2d_flipped() {
 }
 
 void test_2d_rotated_by_90() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
   const Rotation<2> rotation(M_PI_2);
-  const AffineMap2D product{my_x_map, my_y_map};
+  const Affine2D product{my_x_map, my_y_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{4, 8, 3, 7}};
@@ -242,10 +239,10 @@ void test_2d_rotated_by_90() {
 }
 
 void test_2d_rotated_by_270() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
   const Rotation<2> rotation(-M_PI_2);
-  const AffineMap2D product{my_x_map, my_y_map};
+  const Affine2D product{my_x_map, my_y_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{7, 3, 8, 4}};
@@ -256,34 +253,34 @@ void test_2d_rotated_by_270() {
 template <typename Map>
 void test_3d_rotated(const Map& my_map, const std::array<size_t, 8>& my_corners,
                      const Index<3>& my_extents) {
-  const AffineMap lower_x_map(-1.0, 1.0, -2.0, 2.0);
-  const AffineMap center_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap upper_x_map(-1.0, 1.0, 5.0, 6.0);
-  const AffineMap lower_y_map(-1.0, 1.0, -3.0, 0.0);
-  const AffineMap center_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap upper_y_map(-1.0, 1.0, 4.0, 9.0);
-  const AffineMap lower_z_map(-1.0, 1.0, -5.0, 1.0);
-  const AffineMap center_z_map(-1.0, 1.0, 1.0, 7.0);
-  const AffineMap upper_z_map(-1.0, 1.0, 7.0, 12.0);
+  const Affine lower_x_map(-1.0, 1.0, -2.0, 2.0);
+  const Affine center_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine upper_x_map(-1.0, 1.0, 5.0, 6.0);
+  const Affine lower_y_map(-1.0, 1.0, -3.0, 0.0);
+  const Affine center_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine upper_y_map(-1.0, 1.0, 4.0, 9.0);
+  const Affine lower_z_map(-1.0, 1.0, -5.0, 1.0);
+  const Affine center_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine upper_z_map(-1.0, 1.0, 7.0, 12.0);
 
   const auto lower_zeta_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap3D{center_x_map, center_y_map, lower_z_map});
+          Affine3D{center_x_map, center_y_map, lower_z_map});
   const auto lower_eta_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap3D{center_x_map, lower_y_map, center_z_map});
+          Affine3D{center_x_map, lower_y_map, center_z_map});
   const auto lower_xi_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap3D{lower_x_map, center_y_map, center_z_map});
+          Affine3D{lower_x_map, center_y_map, center_z_map});
   const auto upper_xi_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap3D{upper_x_map, center_y_map, center_z_map});
+          Affine3D{upper_x_map, center_y_map, center_z_map});
   const auto upper_eta_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap3D{center_x_map, upper_y_map, center_z_map});
+          Affine3D{center_x_map, upper_y_map, center_z_map});
   const auto upper_zeta_neighbor_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(
-          AffineMap3D{center_x_map, center_y_map, upper_z_map});
+          Affine3D{center_x_map, center_y_map, upper_z_map});
 
   auto maps = make_vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>(
@@ -341,12 +338,12 @@ void test_3d_rotated(const Map& my_map, const std::array<size_t, 8>& my_corners,
 }
 
 void test_3d_aligned() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, 0.0, 0.0);
 
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
 
@@ -356,12 +353,12 @@ void test_3d_aligned() {
 }
 
 void test_3d_rotated_by_90_0_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, 0.0, 0.0);
 
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
 
@@ -371,12 +368,12 @@ void test_3d_rotated_by_90_0_0() {
 }
 
 void test_3d_rotated_by_180_0_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI, 0.0, 0.0);
 
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
 
@@ -386,11 +383,11 @@ void test_3d_rotated_by_180_0_0() {
 }
 
 void test_3d_rotated_by_270_0_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(-M_PI_2, 0.0, 0.0);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{11, 7, 12, 8, 23, 19, 24, 20}};
@@ -399,11 +396,11 @@ void test_3d_rotated_by_270_0_0() {
 }
 
 void test_3d_rotated_by_0_90_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI_2, 0.0);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{19, 7, 23, 11, 20, 8, 24, 12}};
@@ -412,11 +409,11 @@ void test_3d_rotated_by_0_90_0() {
 }
 
 void test_3d_rotated_by_0_90_90() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI_2, M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{7, 11, 19, 23, 8, 12, 20, 24}};
@@ -425,11 +422,11 @@ void test_3d_rotated_by_0_90_90() {
 }
 
 void test_3d_rotated_by_0_90_180() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI_2, M_PI);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{11, 23, 7, 19, 12, 24, 8, 20}};
@@ -438,11 +435,11 @@ void test_3d_rotated_by_0_90_180() {
 }
 
 void test_3d_rotated_by_0_90_270() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI_2, -M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{23, 19, 11, 7, 24, 20, 12, 8}};
@@ -451,11 +448,11 @@ void test_3d_rotated_by_0_90_270() {
 }
 
 void test_3d_rotated_by_0_180_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI, 0.0);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{20, 19, 24, 23, 8, 7, 12, 11}};
@@ -464,11 +461,11 @@ void test_3d_rotated_by_0_180_0() {
 }
 
 void test_3d_rotated_by_0_180_90() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI, M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{19, 23, 20, 24, 7, 11, 8, 12}};
@@ -477,11 +474,11 @@ void test_3d_rotated_by_0_180_90() {
 }
 
 void test_3d_rotated_by_0_180_180() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI, M_PI);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{23, 24, 19, 20, 11, 12, 7, 8}};
@@ -490,11 +487,11 @@ void test_3d_rotated_by_0_180_180() {
 }
 
 void test_3d_rotated_by_0_180_270() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, M_PI, -M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{24, 20, 23, 19, 12, 8, 11, 7}};
@@ -503,11 +500,11 @@ void test_3d_rotated_by_0_180_270() {
 }
 
 void test_3d_rotated_by_0_270_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, -M_PI_2, 0.0);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{8, 20, 12, 24, 7, 19, 11, 23}};
@@ -516,11 +513,11 @@ void test_3d_rotated_by_0_270_0() {
 }
 
 void test_3d_rotated_by_0_270_90() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, -M_PI_2, M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{20, 24, 8, 12, 19, 23, 7, 11}};
@@ -529,11 +526,11 @@ void test_3d_rotated_by_0_270_90() {
 }
 
 void test_3d_rotated_by_0_270_180() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, -M_PI_2, M_PI);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{24, 12, 20, 8, 23, 11, 19, 7}};
@@ -542,11 +539,11 @@ void test_3d_rotated_by_0_270_180() {
 }
 
 void test_3d_rotated_by_0_270_270() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(0.0, -M_PI_2, -M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{12, 8, 24, 20, 11, 7, 23, 19}};
@@ -555,11 +552,11 @@ void test_3d_rotated_by_0_270_270() {
 }
 
 void test_3d_rotated_by_90_90_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, M_PI_2, 0.0);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{20, 8, 19, 7, 24, 12, 23, 11}};
@@ -568,11 +565,11 @@ void test_3d_rotated_by_90_90_0() {
 }
 
 void test_3d_rotated_by_90_90_90() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, M_PI_2, M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{8, 7, 20, 19, 12, 11, 24, 23}};
@@ -581,11 +578,11 @@ void test_3d_rotated_by_90_90_90() {
 }
 
 void test_3d_rotated_by_90_90_180() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, M_PI_2, M_PI);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{7, 19, 8, 20, 11, 23, 12, 24}};
@@ -594,11 +591,11 @@ void test_3d_rotated_by_90_90_180() {
 }
 
 void test_3d_rotated_by_90_90_270() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, M_PI_2, -M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{19, 20, 7, 8, 23, 24, 11, 12}};
@@ -607,11 +604,11 @@ void test_3d_rotated_by_90_90_270() {
 }
 
 void test_3d_rotated_by_90_270_0() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, -M_PI_2, 0.0);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{12, 24, 11, 23, 8, 20, 7, 19}};
@@ -620,11 +617,11 @@ void test_3d_rotated_by_90_270_0() {
 }
 
 void test_3d_rotated_by_90_270_90() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, -M_PI_2, M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{24, 23, 12, 11, 20, 19, 8, 7}};
@@ -633,11 +630,11 @@ void test_3d_rotated_by_90_270_90() {
 }
 
 void test_3d_rotated_by_90_270_180() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, -M_PI_2, M_PI);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{23, 11, 24, 12, 19, 7, 20, 8}};
@@ -646,11 +643,11 @@ void test_3d_rotated_by_90_270_180() {
 }
 
 void test_3d_rotated_by_90_270_270() {
-  const AffineMap my_x_map(-1.0, 1.0, 2.0, 5.0);
-  const AffineMap my_y_map(-1.0, 1.0, 0.0, 4.0);
-  const AffineMap my_z_map(-1.0, 1.0, 1.0, 7.0);
+  const Affine my_x_map(-1.0, 1.0, 2.0, 5.0);
+  const Affine my_y_map(-1.0, 1.0, 0.0, 4.0);
+  const Affine my_z_map(-1.0, 1.0, 1.0, 7.0);
   const Rotation<3> rotation(M_PI_2, -M_PI_2, -M_PI_2);
-  const AffineMap3D product{my_x_map, my_y_map, my_z_map};
+  const Affine3D product{my_x_map, my_y_map, my_z_map};
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{11, 12, 23, 24, 7, 8, 19, 20}};

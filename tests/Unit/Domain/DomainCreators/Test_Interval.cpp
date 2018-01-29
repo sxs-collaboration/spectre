@@ -3,7 +3,7 @@
 
 #include <catch.hpp>
 
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
@@ -36,7 +36,7 @@ void test_interval_construction(
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]})));
+          CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]})));
   test_initial_domain(domain, interval.initial_refinement_levels());
 }
 }  // namespace
@@ -73,13 +73,13 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval", "[Domain][Unit]") {
 
   const auto base_map =
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]});
+          CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]});
   const auto base_map_deserialized = serialize_and_deserialize(base_map);
   using MapType = const CoordinateMap<Frame::Logical, Frame::Inertial,
-                                      CoordinateMaps::AffineMap>*;
+                                      CoordinateMaps::Affine>*;
   REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
   const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      CoordinateMaps::AffineMap{-1., 1., lower_bound[0], upper_bound[0]});
+      CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]});
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 

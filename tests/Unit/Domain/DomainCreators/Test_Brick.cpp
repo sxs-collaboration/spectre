@@ -3,7 +3,7 @@
 
 #include <catch.hpp>
 
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
@@ -15,9 +15,8 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-using AffineMap = CoordinateMaps::AffineMap;
-using AffineMap3D =
-    CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+using Affine = CoordinateMaps::Affine;
+using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 void test_brick_construction(
     const DomainCreators::Brick<Frame::Inertial>& brick,
     const std::array<double, 3>& lower_bound,
@@ -40,9 +39,9 @@ void test_brick_construction(
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
-                      AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
-                      AffineMap{-1., 1., lower_bound[2], upper_bound[2]}})));
+          Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
+                   Affine{-1., 1., lower_bound[1], upper_bound[1]},
+                   Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
 
   test_initial_domain(domain, brick.initial_refinement_levels());
 }
@@ -176,15 +175,14 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
 
   const auto base_map =
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
-                      AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
-                      AffineMap{-1., 1., lower_bound[2], upper_bound[2]}});
-  are_maps_equal(
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
-          AffineMap3D{AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
-                      AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
-                      AffineMap{-1., 1., lower_bound[2], upper_bound[2]}}),
-      *serialize_and_deserialize(base_map));
+          Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
+                   Affine{-1., 1., lower_bound[1], upper_bound[1]},
+                   Affine{-1., 1., lower_bound[2], upper_bound[2]}});
+  are_maps_equal(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                     Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
+                              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+                              Affine{-1., 1., lower_bound[2], upper_bound[2]}}),
+                 *serialize_and_deserialize(base_map));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",

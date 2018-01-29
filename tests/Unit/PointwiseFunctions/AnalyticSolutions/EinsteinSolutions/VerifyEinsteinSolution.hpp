@@ -11,7 +11,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -50,14 +50,13 @@ void verify_time_independent_einstein_solution(
   const size_t data_size = pow<3>(grid_size_each_dimension);
   Index<3> extents(grid_size_each_dimension);
 
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap3D =
-      CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(AffineMap3D{
-          AffineMap{-1., 1., lower_bound[0], upper_bound[0]},
-          AffineMap{-1., 1., lower_bound[1], upper_bound[1]},
-          AffineMap{-1., 1., lower_bound[2], upper_bound[2]},
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+          Affine{-1., 1., lower_bound[0], upper_bound[0]},
+          Affine{-1., 1., lower_bound[1], upper_bound[1]},
+          Affine{-1., 1., lower_bound[2], upper_bound[2]},
       });
 
   // Set up coordinates

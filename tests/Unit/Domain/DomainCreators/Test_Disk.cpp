@@ -3,7 +3,7 @@
 
 #include <catch.hpp>
 
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
@@ -67,8 +67,8 @@ void test_disk_construction(
   CHECK(disk.initial_refinement_levels() == expected_refinement_level);
   using TargetFrame = Frame::Inertial;
   using Wedge2DMap = CoordinateMaps::Wedge2D;
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular2D =
       CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
@@ -94,10 +94,10 @@ void test_disk_construction(
   } else {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::Logical, TargetFrame>(
-            AffineMap2D{AffineMap(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                                  inner_radius / sqrt(2.0)),
-                        AffineMap(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
-                                  inner_radius / sqrt(2.0))}));
+            Affine2D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                            inner_radius / sqrt(2.0)),
+                     Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                            inner_radius / sqrt(2.0))}));
   }
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps);

@@ -4,7 +4,7 @@
 #include <catch.hpp>
 #include <memory>
 
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -15,20 +15,20 @@ namespace {
 void test_1d_domains() {
   {
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::AffineMap>));
+                                         CoordinateMaps::Affine>));
 
     // Test construction of two intervals which have anti-aligned logical axes.
     const Domain<1, Frame::Inertial> domain(
         make_vector<std::unique_ptr<
             CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
             std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
-                                           CoordinateMaps::AffineMap>>(
+                                           CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::Logical, Frame::Inertial>(
-                    CoordinateMaps::AffineMap{-1., 1., -2., 0.})),
+                    CoordinateMaps::Affine{-1., 1., -2., 0.})),
             std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
-                                           CoordinateMaps::AffineMap>>(
+                                           CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::Logical, Frame::Inertial>(
-                    CoordinateMaps::AffineMap{-1., 1., 0., 2.}))),
+                    CoordinateMaps::Affine{-1., 1., 0., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}});
 
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
@@ -45,9 +45,9 @@ void test_1d_domains() {
 
     const auto expected_maps =
         make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::AffineMap{-1., 1., -2., 0.}),
+                        CoordinateMaps::Affine{-1., 1., -2., 0.}),
                     make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::AffineMap{-1., 1., 0., 2.}));
+                        CoordinateMaps::Affine{-1., 1., 0., 2.}));
 
     test_domain_construction(domain, expected_neighbors, expected_boundaries,
                              expected_maps);
@@ -60,15 +60,15 @@ void test_1d_domains() {
       std::vector<Block<1, Frame::Inertial>> vec;
       vec.emplace_back(Block<1, Frame::Inertial>{
           std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::AffineMap>>(
+                                         CoordinateMaps::Affine>>(
               make_coordinate_map<Frame::Logical, Frame::Inertial>(
-                  CoordinateMaps::AffineMap{-1., 1., -2., 0.})),
+                  CoordinateMaps::Affine{-1., 1., -2., 0.})),
           0, expected_neighbors[0]});
       vec.emplace_back(Block<1, Frame::Inertial>{
           std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::AffineMap>>(
+                                         CoordinateMaps::Affine>>(
               make_coordinate_map<Frame::Logical, Frame::Inertial>(
-                  CoordinateMaps::AffineMap{-1., 1., 0., 2.})),
+                  CoordinateMaps::Affine{-1., 1., 0., 2.})),
           1, expected_neighbors[1]});
       return vec;
     }();
@@ -93,15 +93,15 @@ void test_1d_domains() {
     // Test construction of a periodic domain
     const auto expected_maps =
         make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            CoordinateMaps::AffineMap{-1., 1., -2., 2.}));
+            CoordinateMaps::Affine{-1., 1., -2., 2.}));
 
     const Domain<1, Frame::Inertial> domain{
         make_vector<std::unique_ptr<
             CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
             std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
-                                           CoordinateMaps::AffineMap>>(
+                                           CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::Logical, Frame::Inertial>(
-                    CoordinateMaps::AffineMap{-1., 1., -2., 2.}))),
+                    CoordinateMaps::Affine{-1., 1., -2., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}},
         std::vector<PairOfFaces>{{{1}, {2}}}};
 

@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -14,7 +14,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   const double xa = -2.0;
   const double xb = 2.0;
 
-  CoordinateMaps::AffineMap affine_map(xA, xB, xa, xb);
+  CoordinateMaps::Affine affine_map(xA, xB, xa, xb);
 
   const double xi = 0.5 * (xA + xB);
   const double x = xb * (xi - xA) / (xB - xA) + xa * (xB - xi) / (xB - xA);

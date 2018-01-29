@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -214,9 +214,9 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_1d(const Index<1>& extents) {
   const size_t number_of_grid_points = extents.product();
-  const CoordinateMaps::AffineMap x_map{-1.0, 1.0, -0.3, 0.7};
+  const CoordinateMaps::Affine x_map{-1.0, 1.0, -0.3, 0.7};
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::AffineMap{x_map});
+      CoordinateMaps::Affine{x_map});
   const auto x = map_1d(logical_coordinates(extents));
   const InverseJacobian<1, Frame::Logical, Frame::Grid> inverse_jacobian(
       extents.product(), 2.0);
@@ -248,7 +248,7 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
 
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_2d(const Index<2>& extents) {
-  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
   const size_t number_of_grid_points = extents.product();
   const auto prod_map2d =
@@ -291,7 +291,7 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
 
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_3d(const Index<3>& extents) {
-  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map = CoordinateMaps::Affine;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
   const size_t number_of_grid_points = extents.product();
@@ -501,10 +501,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs.ComputeItems",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap2d = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-  using AffineMap3d =
-      CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine2d = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using Affine3d = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
   Index<3> max_extents{10, 10, 5};
 
@@ -512,22 +511,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
     test_partial_derivatives_compute_item(
         std::array<size_t, 1>{{a + 1}},
         make_coordinate_map<Frame::Logical, Frame::Grid>(
-            CoordinateMaps::AffineMap{-1.0, 1.0, -0.3, 0.7}));
+            CoordinateMaps::Affine{-1.0, 1.0, -0.3, 0.7}));
     for (size_t b = 1; b < max_extents[1]; ++b) {
       test_partial_derivatives_compute_item(
           std::array<size_t, 2>{{a + 1, b + 1}},
-          make_coordinate_map<Frame::Logical, Frame::Grid>(
-              AffineMap2d{AffineMap{-1.0, 1.0, -0.3, 0.7},
-                          AffineMap{-1.0, 1.0, 0.3, 0.55}}));
+          make_coordinate_map<Frame::Logical, Frame::Grid>(Affine2d{
+              Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}}));
       for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
                          c < max_extents[2];
            ++c) {
         test_partial_derivatives_compute_item(
             std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
-            make_coordinate_map<Frame::Logical, Frame::Grid>(
-                AffineMap3d{AffineMap{-1.0, 1.0, -0.3, 0.7},
-                            AffineMap{-1.0, 1.0, 0.3, 0.55},
-                            AffineMap{-1.0, 1.0, 2.3, 2.8}}));
+            make_coordinate_map<Frame::Logical, Frame::Grid>(Affine3d{
+                Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+                Affine{-1.0, 1.0, 2.3, 2.8}}));
       }
     }
   }
