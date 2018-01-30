@@ -38,6 +38,7 @@ target_link_libraries(
   ApparentHorizons
   ControlSystem
   CoordinateMaps
+  CurvedScalarWave
   Domain
   DomainCreators
   EinsteinSolutions
