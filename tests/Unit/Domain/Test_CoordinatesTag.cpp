@@ -16,7 +16,7 @@
 namespace {
 template <size_t Dim, typename T>
 void test_coordinates_compute_item(Index<Dim> extents, T map) noexcept {
-  using map_tag = Tags::ElementMap<Dim>;
+  using map_tag = Tags::ElementMap<Dim, Frame::Grid>;
   const auto box = db::create<
       db::AddTags<Tags::Extents<Dim>, map_tag>,
       db::AddComputeItemsTags<

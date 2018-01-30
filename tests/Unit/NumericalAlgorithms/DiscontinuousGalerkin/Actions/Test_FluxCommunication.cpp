@@ -40,7 +40,7 @@ struct System {
 
   struct compute_flux {
     static auto apply(const Variables<tmpl::list<Var>>& value) noexcept {
-      using flux_tag = Tags::Flux<Var, tmpl::size_t<2>, Frame::Grid>;
+      using flux_tag = Tags::Flux<Var, tmpl::size_t<2>, Frame::Inertial>;
       Variables<tmpl::list<flux_tag>> result(value.number_of_grid_points());
       get<0>(get<flux_tag>(result)) = 10. * value;
       get<1>(get<flux_tag>(result)) = 20. * value;
@@ -121,9 +121,9 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         {Direction<2>::upper_xi(), {{east_id}, {}}},
         {Direction<2>::upper_eta(), {{south_id}, {}}}});
 
-    auto map = ElementMap<2, Frame::Grid>(
+    auto map = ElementMap<2, Frame::Inertial>(
         ElementId<2>{0},
-        make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
                                            CoordinateMaps::AffineMap>(
                 xi_map, eta_map)));
@@ -291,8 +291,8 @@ SPECTRE_TEST_CASE(
 
   const Element<2> element(self_id, {});
 
-  auto map = ElementMap<2, Frame::Grid>(
-      self_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+  auto map = ElementMap<2, Frame::Inertial>(
+      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                    CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
                                                   CoordinateMaps::AffineMap>(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
