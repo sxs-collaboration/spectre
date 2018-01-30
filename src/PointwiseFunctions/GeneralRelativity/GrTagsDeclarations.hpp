@@ -56,5 +56,9 @@ struct SpacetimeNormalVector;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct TraceSpacetimeChristoffelFirstKind;
+template <size_t Dim, typename Frame, typename DataType>
+struct TraceSpatialChristoffelSecondKind;
+template <size_t Dim, typename Frame, typename DataType>
+struct TraceExtrinsicCurvature;
 }  // namespace Tags
 }  // namespace gr

@@ -83,5 +83,16 @@ struct TraceSpacetimeChristoffelFirstKind : db::DataBoxTag {
   static constexpr db::DataBoxString label =
       "TraceSpacetimeChristoffelFirstKind";
 };
+template <size_t Dim, typename Frame, typename DataType>
+struct TraceSpatialChristoffelSecondKind : db::DataBoxTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+  static constexpr db::DataBoxString label =
+      "TraceSpatialChristoffelSecondKind";
+};
+template <size_t Dim, typename Frame, typename DataType>
+struct TraceExtrinsicCurvature : db::DataBoxTag {
+  using type = Scalar<DataType>;
+  static constexpr db::DataBoxString label = "TraceExtrinsicCurvature";
+};
 }  // namespace Tags
 }  // namespace gr
