@@ -30,6 +30,26 @@ raise_or_lower_first_index(
 
 /*!
  * \ingroup GeneralRelativityGroup
+ * \brief Raises or lowers the index of a rank 1 tensor.
+ *
+ * \details If \f$T_{a}\f$ is a tensor and the
+ * index \f$a\f$ can represent either a spatial or spacetime index,
+ * then the tensor \f$ T^a = g^{ad} T_{d} \f$ is computed, where \f$
+ * g^{ab}\f$ is the inverse metric, which is either a spatial or spacetime
+ * metric. If a tensor \f$ S^a \f$ is passed as an argument than the
+ * corresponding tensor \f$ S_{a} \f$ is calculated with respect to the metric
+ * \f$g_{ab}\f$.
+ */
+template <typename DataType, typename Index0>
+Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
+raise_or_lower_index(
+    const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index0>,
+                            change_index_up_lo<Index0>>>& metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
  * \brief Computes trace of a rank 3 tensor, which is symmetric in its last two
  * indices with all indices lower.
  *
