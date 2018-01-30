@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
@@ -21,17 +22,16 @@ template <typename Stepper, typename F>
 void take_step(
     const gsl::not_null<Time*> time,
     const gsl::not_null<double*> y,
-    const gsl::not_null<std::deque<std::tuple<Time, double, double>>*> history,
+    const gsl::not_null<TimeSteppers::History<double, double>*> history,
     const Stepper& stepper,
     F&& rhs,
     const TimeDelta& step_size) noexcept {
   TimeId time_id{0, *time, 0};
   for (size_t substep = 0; substep < stepper.number_of_substeps(); ++substep) {
     CHECK(time_id.substep == substep);
-    history->emplace_back(time_id.time, *y, rhs(*y));
-    stepper.update_u(y, *history, step_size);
+    history->insert(time_id.time, *y, rhs(*y));
+    stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
-    history->erase(history->begin(), stepper.needed_history(*history));
   }
   CHECK(time_id.time - *time == step_size);
   *time = time_id.time;
@@ -40,7 +40,7 @@ void take_step(
 template <typename Stepper, typename F1, typename F2>
 void initialize_history(
     Time time,
-    const gsl::not_null<std::deque<std::tuple<Time, double, double>>*> history,
+    const gsl::not_null<TimeSteppers::History<double, double>*> history,
     const Stepper& stepper,
     F1&& analytic,
     F2&& rhs,
@@ -54,8 +54,8 @@ void initialize_history(
       step_size = step_size.with_slab(new_slab);
     }
     time -= step_size;
-    history->emplace_front(time, analytic(time.value()),
-                           rhs(analytic(time.value())));
+    history->insert_initial(time, analytic(time.value()),
+                            rhs(analytic(time.value())));
   }
 }
 
@@ -86,7 +86,7 @@ void integrate_test(const Stepper& stepper, const double integration_time,
 
   Time time = integration_time > 0 ? slab.start() : slab.end();
   double y = analytic(time.value());
-  std::deque<std::tuple<Time, double, double>> history;
+  TimeSteppers::History<double, double> history;
 
   if (not stepper.is_self_starting()) {
     initialize_history(time, &history, stepper, analytic, rhs, step_size);
@@ -117,7 +117,7 @@ void integrate_variable_test(const Stepper& stepper,
   Time time = slab.end();
   double y = analytic(time.value());
 
-  std::deque<std::tuple<Time, double, double>> history;
+  TimeSteppers::History<double, double> history;
   if (not stepper.is_self_starting()) {
     initialize_history(time, &history, stepper, analytic, rhs, slab.duration());
   }
@@ -148,7 +148,7 @@ void stability_test(const Stepper& stepper) noexcept {
 
     Time time = slab.start();
     double y = 1.;
-    std::deque<std::tuple<Time, double, double>> history;
+    TimeSteppers::History<double, double> history;
     if (not stepper.is_self_starting()) {
       initialize_history(time, &history, stepper,
                          [](double t) { return exp(-2. * t); },
@@ -171,7 +171,7 @@ void stability_test(const Stepper& stepper) noexcept {
 
     Time time = slab.start();
     double y = 1.;
-    std::deque<std::tuple<Time, double, double>> history;
+    TimeSteppers::History<double, double> history;
     if (not stepper.is_self_starting()) {
       initialize_history(time, &history, stepper,
                          [](double t) { return exp(-2. * t); },
@@ -187,20 +187,6 @@ void stability_test(const Stepper& stepper) noexcept {
       }
     }
     CHECK(false);
-  }
-}
-
-template <typename Stepper, typename BoundaryVars, typename FluxVars>
-void erase_boundary_history(
-    const Stepper& stepper,
-    const gsl::not_null<std::vector<
-        std::deque<std::tuple<Time, BoundaryVars, FluxVars>>>*> history,
-    const TimeDelta& step_size) {
-  const auto needed_history =
-      stepper.needed_boundary_history(*history, step_size);
-  CHECK(needed_history.size() == history->size());
-  for (size_t side = 0; side < needed_history.size(); ++side) {
-    (*history)[side].erase((*history)[side].begin(), needed_history[side]);
   }
 }
 
@@ -260,10 +246,9 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
       history[1].emplace_back(time_id.time, unused_remote_value,
                               driver(time_id.time.value()));
 
-      y += stepper.compute_boundary_delta(coupling, history, step_size);
+      y += stepper.compute_boundary_delta(
+          coupling, make_not_null(&history), step_size);
       time_id = stepper.next_time_id(time_id, step_size);
-
-      erase_boundary_history(stepper, make_not_null(&history), step_size);
     }
     CHECK(y == approx(analytic(time_id.time.value())));
   }

@@ -174,6 +174,28 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
 }
 //@}
 
+/// \ingroup ConstantExpressionsGroup
+/// \brief Returns `f(ic<0>{}) + f(ic<1>{}) + ... + f(ic<NumTerms-1>{})`
+/// where `ic<N>` stands for `std::integral_constant<size_t, N>`.
+/// This function allows the result types of each operation to be
+/// different, and so works efficiently with expression templates.
+/// \note When summing expression templates one must be careful of
+/// referring to temporaries in `f`.
+template <size_t NumTerms, typename Function,
+          Requires<NumTerms == 1> = nullptr>
+constexpr decltype(auto) constexpr_sum(Function&& f) noexcept {
+  return f(std::integral_constant<size_t, 0>{});
+}
+
+/// \cond HIDDEN_SYMBOLS
+template <size_t NumTerms, typename Function,
+          Requires<(NumTerms > 1)> = nullptr>
+constexpr decltype(auto) constexpr_sum(Function&& f) noexcept {
+  return constexpr_sum<NumTerms - 1>(f) +
+      f(std::integral_constant<size_t, NumTerms - 1>{});
+}
+/// \endcond
+
 namespace detail {
 template <typename List, size_t... indices,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
@@ -297,7 +319,9 @@ inline constexpr bool array_equal(const std::array<T, size>& lhs,
                   : true;
 }
 
+namespace cpp17 {
 /// \ingroup ConstantExpressionsGroup
 /// \brief Returns a const reference to its argument.
 template <typename T>
 constexpr const T& as_const(const T& t) noexcept { return t; }
+}  // namespace cpp17

@@ -108,6 +108,12 @@ static_assert(min_by_magnitude({1, -1}) == 1,
 static_assert(min_by_magnitude({-1, 1}) == -1,
               "Failed testing min_by_magnitude");
 
+struct TwoN {
+  template <typename T>
+  constexpr size_t operator()(T n) noexcept { return 2 * n; }
+};
+static_assert(constexpr_sum<5>(TwoN{}) == 20, "Failed testing constexpr_sum");
+
 // Test string manipulation
 constexpr const char *const dummy_string1 = "test 1";
 constexpr const char *const dummy_string2 = "test 1";
@@ -136,13 +142,13 @@ static_assert(
     "Failed testing make_array_from_list");
 
 // Test as_const
-static_assert(cpp17::is_same_v<const double&,
-                               decltype(as_const(std::declval<double>()))>,
+static_assert(cpp17::is_same_v<const double&, decltype(cpp17::as_const(
+                                                  std::declval<double>()))>,
               "Failed testing as_const");
-static_assert(cpp17::is_same_v<const double&,
-                               decltype(as_const(std::declval<double&>()))>,
+static_assert(cpp17::is_same_v<const double&, decltype(cpp17::as_const(
+                                                  std::declval<double&>()))>,
               "Failed testing as_const");
-static_assert(5 == as_const(5), "Failed testing as_const");
+static_assert(5 == cpp17::as_const(5), "Failed testing as_const");
 
 SPECTRE_TEST_CASE("Unit.Utilities.ConstantExpressions", "[Unit][Utilities]") {
   CHECK((std::array<std::array<size_t, 3>, 3>{

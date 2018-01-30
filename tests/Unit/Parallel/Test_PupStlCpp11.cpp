@@ -82,6 +82,11 @@ SPECTRE_TEST_CASE("Unit.Serialization.array", "[Serialization][Unit]") {
   test_serialization(t2);
 }
 
+SPECTRE_TEST_CASE("Unit.Serialization.deque", "[Serialization][Unit]") {
+  std::deque<double> t{1.0, 3.64, 9.23};
+  test_serialization(t);
+}
+
 SPECTRE_TEST_CASE("Unit.Serialization.unordered_set", "[Serialization][Unit]") {
   std::unordered_set<size_t> test_set = {1, 2, 5, 100};
   test_serialization(test_set);

@@ -130,7 +130,8 @@ class ActionRunner {
   template <typename Component, typename Action, typename DbTags>
   bool is_ready(const db::DataBox<DbTags>& box,
                 const typename Component::index& array_index) noexcept {
-    return Action::is_ready(box, as_const(inboxes<Component>()[array_index]),
+    return Action::is_ready(box,
+                            cpp17::as_const(inboxes<Component>()[array_index]),
                             cache_, array_index);
   }
 
