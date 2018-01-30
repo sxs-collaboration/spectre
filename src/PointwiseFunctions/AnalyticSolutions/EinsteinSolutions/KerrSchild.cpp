@@ -11,7 +11,7 @@
 #include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GrTags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace EinsteinSolutions {
