@@ -5,7 +5,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
@@ -13,7 +13,7 @@
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
                   "[Domain][Unit]") {
-  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
 
   const double xA = -1.0;
@@ -126,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
                   "[Domain][Unit]") {
-  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map = CoordinateMaps::Affine;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
 

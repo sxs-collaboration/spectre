@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
@@ -85,7 +85,7 @@ void test_element_map();
 
 template <>
 void test_element_map<1>() {
-  using AffineMap = CoordinateMaps::AffineMap;
+  using Affine = CoordinateMaps::Affine;
 
   auto segment_ids = std::array<SegmentId, 1>({{SegmentId(2, 3)}});
   ElementId<1> element_id(0, segment_ids);
@@ -93,17 +93,17 @@ void test_element_map<1>() {
   const tnsr::I<DV, 1, Frame::Logical> logical_point_dv(
       DV{-1.0, -0.5, 0.0, 0.5, 1.0});
 
-  const AffineMap affine_map{-1.0, 1.0, 0.5, 1.0};
-  const AffineMap first_map{-1.0, 1.0, 2.0, 8.0};
+  const Affine affine_map{-1.0, 1.0, 0.5, 1.0};
+  const Affine first_map{-1.0, 1.0, 2.0, 8.0};
 
   // Aligned maps
   test_element_impl(true, element_id, affine_map, first_map,
-                    AffineMap{2.0, 8.0, -2.0, -1.0}, logical_point_double,
+                    Affine{2.0, 8.0, -2.0, -1.0}, logical_point_double,
                     logical_point_dv);
 
   // Flip axis in second map
   test_element_impl(true, element_id, affine_map, first_map,
-                    AffineMap{2.0, 8.0, 2.0, -1.0}, logical_point_double,
+                    Affine{2.0, 8.0, 2.0, -1.0}, logical_point_double,
                     logical_point_dv);
 }
 
@@ -111,7 +111,7 @@ template <>
 void test_element_map<2>() {
   using Rotate = CoordinateMaps::Rotation<2>;
   using Wedge2D = CoordinateMaps::Wedge2D;
-  using AffineMap = CoordinateMaps::AffineMap;
+  using Affine = CoordinateMaps::Affine;
 
   auto segment_ids =
       std::array<SegmentId, 2>({{SegmentId(2, 3), SegmentId(1, 0)}});
@@ -122,8 +122,8 @@ void test_element_map<2>() {
   const tnsr::I<DV, 2, Frame::Logical> logical_point_dv(std::array<DV, 2>{
       {DV{-1.0, 0.5, 0.0, 0.5, 1.0}, DV{-1.0, 0.5, 0.0, 0.5, 1.0}}});
 
-  const CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap> affine_map(
-      AffineMap{-1.0, 1.0, 0.5, 1.0}, AffineMap{-1.0, 1.0, -1.0, 0.0});
+  const CoordinateMaps::ProductOf2Maps<Affine, Affine> affine_map(
+      Affine{-1.0, 1.0, 0.5, 1.0}, Affine{-1.0, 1.0, -1.0, 0.0});
   const auto first_map = Rotate(2.);
 
   // Test with two rotations
@@ -139,7 +139,7 @@ void test_element_map<2>() {
 template <>
 void test_element_map<3>() {
   using Rotate = CoordinateMaps::Rotation<3>;
-  using AffineMap = CoordinateMaps::AffineMap;
+  using Affine = CoordinateMaps::Affine;
 
   auto segment_ids = std::array<SegmentId, 3>(
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(2, 1)}});
@@ -151,10 +151,9 @@ void test_element_map<3>() {
       {{DV{-1.0, 0.5, 0.0, 0.5, 1.0}, DV{-1.0, 0.5, 0.0, 0.5, 1.0},
         DV{-1.0, 0.5, 0.0, 0.5, 1.0}}}};
 
-  const CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>
-      affine_map(AffineMap{-1.0, 1.0, 0.5, 1.0},
-                 AffineMap{-1.0, 1.0, -1.0, 0.0},
-                 AffineMap{-1.0, 1.0, -0.5, 0.0});
+  const CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine> affine_map(
+      Affine{-1.0, 1.0, 0.5, 1.0}, Affine{-1.0, 1.0, -1.0, 0.0},
+      Affine{-1.0, 1.0, -0.5, 0.0});
   const auto first_map = Rotate{M_PI_4, M_PI_4, M_PI_2};
 
   // test with 2 rotations

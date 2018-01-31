@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/ElementId.hpp"
@@ -134,8 +134,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
       {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}},
       {{Direction<2>::lower_eta(), Direction<2>::lower_xi()}});
 
-  const CoordinateMaps::AffineMap xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::AffineMap eta_map{-1., 1., -2., 4.};
+  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
+  const CoordinateMaps::Affine eta_map{-1., 1., -2., 4.};
 
   auto start_box = [&extents, &time_id, &self_id, &west_id, &east_id, &south_id,
                     &block_orientation, &xi_map, &eta_map]() {
@@ -146,8 +146,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
 
     auto map = ElementMap<2, Frame::Inertial>(
         self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                                    CoordinateMaps::AffineMap>(
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>(
                          xi_map, eta_map)));
 
     Variables<tmpl::list<Var>> variables(extents.product());
@@ -236,8 +236,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
 
     auto map = ElementMap<2, Frame::Inertial>(
         south_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                                     CoordinateMaps::AffineMap>(
+                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                     CoordinateMaps::Affine>(
                           xi_map, eta_map)));
 
     auto box =
@@ -263,8 +263,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
 
     auto map = ElementMap<2, Frame::Inertial>(
         east_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                                    CoordinateMaps::AffineMap>(
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>(
                          xi_map, eta_map)));
 
     auto box =
@@ -343,8 +343,8 @@ SPECTRE_TEST_CASE(
 
   auto map = ElementMap<2, Frame::Inertial>(
       self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::AffineMap,
-                                                  CoordinateMaps::AffineMap>(
+                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                  CoordinateMaps::Affine>(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   Variables<tmpl::list<Var>> variables(extents.product());

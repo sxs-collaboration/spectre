@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
@@ -37,8 +37,8 @@ Rectangle<TargetFrame>::Rectangle(
 
 template <typename TargetFrame>
 Domain<2, TargetFrame> Rectangle<TargetFrame>::create_domain() const noexcept {
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap2D = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   std::vector<PairOfFaces> identifications{};
   if (is_periodic_in_xy_[0]) {
     identifications.push_back({{0, 2}, {1, 3}});
@@ -49,8 +49,8 @@ Domain<2, TargetFrame> Rectangle<TargetFrame>::create_domain() const noexcept {
 
   return Domain<2, TargetFrame>{
       make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          AffineMap2D{AffineMap{-1., 1., lower_xy_[0], upper_xy_[0]},
-                      AffineMap{-1., 1., lower_xy_[1], upper_xy_[1]}}),
+          Affine2D{Affine{-1., 1., lower_xy_[0], upper_xy_[0]},
+                   Affine{-1., 1., lower_xy_[1], upper_xy_[1]}}),
       std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};
 }
 

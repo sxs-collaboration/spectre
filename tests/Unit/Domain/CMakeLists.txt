@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 set(DOMAIN_TESTS
-    Domain/CoordinateMaps/Test_AffineMap.cpp
+    Domain/CoordinateMaps/Test_Affine.cpp
     Domain/CoordinateMaps/Test_CoordinateMap.cpp
     Domain/CoordinateMaps/Test_Equiangular.cpp
     Domain/CoordinateMaps/Test_Identity.cpp

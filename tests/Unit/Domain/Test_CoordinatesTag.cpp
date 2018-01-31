@@ -5,7 +5,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/ElementId.hpp"
@@ -33,17 +33,16 @@ void test_coordinates_compute_item(Index<Dim> extents, T map) noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinatesTag", "[Unit][Domain]") {
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap2d = CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-  using AffineMap3d =
-      CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine2d = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using Affine3d = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-  test_coordinates_compute_item(Index<1>{5}, AffineMap{-1.0, 1.0, -0.3, 0.7});
-  test_coordinates_compute_item(Index<2>{5, 7},
-                                AffineMap2d{AffineMap{-1.0, 1.0, -0.3, 0.7},
-                                            AffineMap{-1.0, 1.0, 0.3, 0.55}});
-  test_coordinates_compute_item(Index<3>{5, 6, 9},
-                                AffineMap3d{AffineMap{-1.0, 1.0, -0.3, 0.7},
-                                            AffineMap{-1.0, 1.0, 0.3, 0.55},
-                                            AffineMap{-1.0, 1.0, 2.3, 2.8}});
+  test_coordinates_compute_item(Index<1>{5}, Affine{-1.0, 1.0, -0.3, 0.7});
+  test_coordinates_compute_item(
+      Index<2>{5, 7},
+      Affine2d{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
+  test_coordinates_compute_item(
+      Index<3>{5, 6, 9},
+      Affine3d{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+               Affine{-1.0, 1.0, 2.3, 2.8}});
 }

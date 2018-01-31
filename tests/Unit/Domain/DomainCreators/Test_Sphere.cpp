@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
@@ -126,9 +126,8 @@ void test_sphere_construction(
   CHECK(sphere.initial_extents() == expected_extents);
   CHECK(sphere.initial_refinement_levels() == expected_refinement_level);
   using Wedge3DMap = CoordinateMaps::Wedge3D;
-  using AffineMap = CoordinateMaps::AffineMap;
-  using AffineMap3D =
-      CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
@@ -159,12 +158,12 @@ void test_sphere_construction(
   } else {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            AffineMap3D{AffineMap(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                                  inner_radius / sqrt(3.0)),
-                        AffineMap(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                                  inner_radius / sqrt(3.0)),
-                        AffineMap(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                                  inner_radius / sqrt(3.0))}));
+            Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                            inner_radius / sqrt(3.0)),
+                     Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                            inner_radius / sqrt(3.0)),
+                     Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                            inner_radius / sqrt(3.0))}));
   }
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps);

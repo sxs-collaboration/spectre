@@ -5,7 +5,7 @@
 
 #include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
@@ -59,7 +59,7 @@ auto compose_inv_jacobians(const Map1& map1, const Map2& map2,
 }
 
 void test_single_coordinate_map() {
-  using affine_map1d = CoordinateMaps::AffineMap;
+  using affine_map1d = CoordinateMaps::Affine;
 
   const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       affine_map1d{-1.0, 1.0, 2.0, 8.0});
@@ -217,7 +217,7 @@ void test_single_coordinate_map() {
 }
 
 void test_coordinate_map_with_affine_map() {
-  using affine_map = CoordinateMaps::AffineMap;
+  using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
@@ -534,16 +534,16 @@ void test_coordinate_map_with_rotation_wedge() {
 }
 
 void test_make_vector_coordinate_map_base() {
-  using AffineMap = CoordinateMaps::AffineMap;
+  using Affine = CoordinateMaps::Affine;
 
   const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      AffineMap{-1.0, 1.0, 2.0, 8.0});
+      Affine{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base =
       make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-          AffineMap{-1.0, 1.0, 2.0, 8.0});
+          Affine{-1.0, 1.0, 2.0, 8.0});
   const auto vector_of_affine1d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Grid>(
-          AffineMap{-1.0, 1.0, 2.0, 8.0});
+          Affine{-1.0, 1.0, 2.0, 8.0});
 
   CHECK(affine1d == *affine1d_base);
   CHECK(*affine1d_base == affine1d);

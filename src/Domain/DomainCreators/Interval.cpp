@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
@@ -37,7 +37,7 @@ template <typename TargetFrame>
 Domain<1, TargetFrame> Interval<TargetFrame>::create_domain() const noexcept {
   return Domain<1, TargetFrame>{
       make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          CoordinateMaps::AffineMap{-1., 1., lower_x_[0], upper_x_[0]}),
+          CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}
                            : std::vector<PairOfFaces>{}};
