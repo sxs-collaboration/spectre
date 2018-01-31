@@ -188,7 +188,7 @@ void test_compute_1d_gauge_source(const DataVector& used_for_size) {
       make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
       make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
       make_spatial_metric<dim>(0.), make_trace_extrinsic_curvature(0.),
-      make_trace_spatial_christoffel<dim>(0.));
+      make_trace_spatial_christoffel_first_kind<dim>(0.));
 
   CHECK(gauge_source.get(0) == approx(-41. / 3.));
   CHECK(gauge_source.get(1) == approx(13. / 6.));
@@ -201,7 +201,7 @@ void test_compute_1d_gauge_source(const DataVector& used_for_size) {
           make_deriv_shift<dim>(used_for_size),
           make_spatial_metric<dim>(used_for_size),
           make_trace_extrinsic_curvature(used_for_size),
-          make_trace_spatial_christoffel<dim>(used_for_size)),
+          make_trace_spatial_christoffel_first_kind<dim>(used_for_size)),
       gauge_source);
 }
 
@@ -211,7 +211,7 @@ void test_compute_2d_gauge_source(const DataVector& used_for_size) {
       make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
       make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
       make_spatial_metric<dim>(0.), make_trace_extrinsic_curvature(0.),
-      make_trace_spatial_christoffel<dim>(0.));
+      make_trace_spatial_christoffel_first_kind<dim>(0.));
 
   CHECK(gauge_source.get(0) == approx(-400. / 9.));
   CHECK(gauge_source.get(1) == approx(-395. / 90.));
@@ -225,7 +225,7 @@ void test_compute_2d_gauge_source(const DataVector& used_for_size) {
           make_deriv_shift<dim>(used_for_size),
           make_spatial_metric<dim>(used_for_size),
           make_trace_extrinsic_curvature(used_for_size),
-          make_trace_spatial_christoffel<dim>(used_for_size)),
+          make_trace_spatial_christoffel_first_kind<dim>(used_for_size)),
       gauge_source);
 }
 
@@ -235,7 +235,7 @@ void test_compute_3d_gauge_source(const DataVector& used_for_size) {
       make_lapse(0.), make_dt_lapse(0.), make_deriv_lapse<dim>(0.),
       make_shift<dim>(0.), make_dt_shift<dim>(0.), make_deriv_shift<dim>(0.),
       make_spatial_metric<dim>(0.), make_trace_extrinsic_curvature(0.),
-      make_trace_spatial_christoffel<dim>(0.));
+      make_trace_spatial_christoffel_first_kind<dim>(0.));
 
   CHECK(gauge_source.get(0) == approx(-1444. / 3.));
   CHECK(gauge_source.get(1) == approx(-187. / 6.));
@@ -250,7 +250,7 @@ void test_compute_3d_gauge_source(const DataVector& used_for_size) {
           make_deriv_shift<dim>(used_for_size),
           make_spatial_metric<dim>(used_for_size),
           make_trace_extrinsic_curvature(used_for_size),
-          make_trace_spatial_christoffel<dim>(used_for_size)),
+          make_trace_spatial_christoffel_first_kind<dim>(used_for_size)),
       gauge_source);
 }
 }  // namespace

@@ -7,9 +7,9 @@
 #pragma once
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GrTagsDeclarations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
 
 class DataVector;
 

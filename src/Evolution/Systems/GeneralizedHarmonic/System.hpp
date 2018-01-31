@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "Evolution/Systems/GeneralizedHarmonic/GrTagsDeclarations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
 
 namespace brigand {
 template <class...>

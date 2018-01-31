@@ -115,6 +115,12 @@ tnsr::AA<DataType, SpatialDim> make_inverse_spacetime_metric(
 template <typename DataType>
 Scalar<DataType> make_trace_extrinsic_curvature(const DataType& used_for_size);
 
+// Trace is taken with respect to the last two indices
 template <size_t SpatialDim, typename DataType>
-tnsr::i<DataType, SpatialDim> make_trace_spatial_christoffel(
+tnsr::i<DataType, SpatialDim> make_trace_spatial_christoffel_first_kind(
+    const DataType& used_for_size);
+
+// Trace is taken with respect to the last two indices
+template <size_t SpatialDim, typename DataType>
+tnsr::I<DataType, SpatialDim> make_trace_spatial_christoffel_second_kind(
     const DataType& used_for_size);
