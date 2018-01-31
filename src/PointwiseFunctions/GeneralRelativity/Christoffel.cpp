@@ -7,8 +7,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
+namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-tnsr::abb<DataType, SpatialDim, Frame, Index> compute_christoffel_first_kind(
+tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) {
   auto christoffel =
       make_with_value<tnsr::abb<DataType, SpatialDim, Frame, Index>>(d_metric,
@@ -25,6 +26,7 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> compute_christoffel_first_kind(
   }
   return christoffel;
 }
+}  // namespace gr
 
 // Explicit Instantiations
 /// \cond
@@ -35,7 +37,7 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> compute_christoffel_first_kind(
 
 #define INSTANTIATE(_, data)                                                 \
   template tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>   \
-  compute_christoffel_first_kind(                                            \
+  gr::christoffel_first_kind(                                                \
       const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
           d_metric);
 

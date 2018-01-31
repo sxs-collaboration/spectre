@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+namespace gr {
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes Christoffel symbol of the first kind from derivative of
@@ -19,5 +20,6 @@
  * where \f$g_{bc}\f$ is either a spatial or spacetime metric
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
-tnsr::abb<DataType, SpatialDim, Frame, Index> compute_christoffel_first_kind(
+tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric);
+}  // namespace gr
