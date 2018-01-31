@@ -35,6 +35,27 @@ raise_or_lower_first_index(
   return tensor_opposite_valence;
 }
 
+template <typename DataType, typename Index0>
+Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
+raise_or_lower_index(
+    const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index0>,
+                            change_index_up_lo<Index0>>>& metric) noexcept {
+  auto tensor_opposite_valence = make_with_value<
+      Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>>(
+      metric, 0.);
+
+  constexpr auto dimension = Index0::dim;
+
+  for (size_t i = 0; i < dimension; ++i) {
+    for (size_t m = 0; m < dimension; ++m) {
+      tensor_opposite_valence.get(i) += tensor.get(m) * metric.get(i, m);
+    }
+  }
+  return tensor_opposite_valence;
+}
+
 template <size_t Dim, typename Frame, IndexType TypeOfIndex, typename DataType>
 tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
     const tnsr::abb<DataType, Dim, Frame, TypeOfIndex>& tensor,
@@ -94,22 +115,32 @@ Scalar<DataType> trace(
       const Tensor<DTYPE(data), Symmetry<1, 1>,                              \
                    index_list<change_index_up_lo<INDEX0(data)>,              \
                               change_index_up_lo<INDEX0(data)>>>&            \
+          metric) noexcept;                                                  \
+  template Tensor<DTYPE(data), Symmetry<1>,                                  \
+                  index_list<change_index_up_lo<INDEX0(data)>>>              \
+  raise_or_lower_index(                                                      \
+      const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>&      \
+          tensor,                                                            \
+      const Tensor<DTYPE(data), Symmetry<1, 1>,                              \
+                   index_list<change_index_up_lo<INDEX0(data)>,              \
+                              change_index_up_lo<INDEX0(data)>>>&            \
           metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
 
-#define INSTANTIATE2(_, data)                                                 \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>      \
-  trace_last_indices(const tnsr::abb<DTYPE(data), DIM(data), FRAME(data),     \
-                                     INDEXTYPE(data)>& tensor,                \
-                     const tnsr::AA<DTYPE(data), DIM(data), FRAME(data),      \
-                                    INDEXTYPE(data)>& upper_metric) noexcept; \
-  template Scalar<DTYPE(data)> trace(                                         \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
-          tensor,                                                             \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+#define INSTANTIATE2(_, data)                                                \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>     \
+  trace_last_indices(                                                        \
+      const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
+          tensor,                                                            \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
+          upper_metric) noexcept;                                            \
+  template Scalar<DTYPE(data)> trace(                                        \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
+          tensor,                                                            \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
           upper_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),

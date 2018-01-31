@@ -17,7 +17,17 @@ tnsr::I<DataType, SpatialDim> make_shift(const DataType& used_for_size) {
   auto shift =
       make_with_value<tnsr::I<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1);
+    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1.);
+  }
+  return shift;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::i<DataType, SpatialDim> make_lower_shift(const DataType& used_for_size) {
+  auto shift =
+      make_with_value<tnsr::i<DataType, SpatialDim>>(used_for_size, 0.);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    shift.get(i) = make_with_value<DataType>(used_for_size, i + 1.);
   }
   return shift;
 }
@@ -48,6 +58,27 @@ tnsr::II<DataType, SpatialDim> make_inverse_spatial_metric(
     }
   }
   return metric;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::A<DataType, SpatialDim> make_dummy_vector(const DataType& used_for_size) {
+  auto result =
+      make_with_value<tnsr::A<DataType, SpatialDim>>(used_for_size, 0.);
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    result.get(a) = make_with_value<DataType>(used_for_size, a + 1.);
+  }
+  return result;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::a<DataType, SpatialDim> make_dummy_one_form(
+    const DataType& used_for_size) {
+  auto one_form =
+      make_with_value<tnsr::a<DataType, SpatialDim>>(used_for_size, 0.);
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    one_form.get(a) = make_with_value<DataType>(used_for_size, a + 1.);
+  }
+  return one_form;
 }
 
 template <typename DataType>
@@ -153,7 +184,7 @@ tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
 
 template <size_t SpatialDim, typename DataType>
 tnsr::aa<DataType, SpatialDim> make_dt_spacetime_metric(
-    const DataType& used_for_size){
+    const DataType& used_for_size) {
   auto dt_spacetime_metric =
       make_with_value<tnsr::aa<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim + 1; i++) {
@@ -183,7 +214,7 @@ tnsr::Abb<DataType, SpatialDim> make_spacetime_christoffel_second_kind(
 
 template <size_t SpatialDim, typename DataType>
 tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
-    const DataType& used_for_size){
+    const DataType& used_for_size) {
   auto christoffel =
       make_with_value<tnsr::Ijj<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t i = 0; i < SpatialDim; i++) {
@@ -199,7 +230,7 @@ tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
 
 template <size_t SpatialDim, typename DataType>
 tnsr::aa<DataType, SpatialDim> make_spacetime_metric(
-    const DataType& used_for_size){
+    const DataType& used_for_size) {
   auto spacetime_metric =
       make_with_value<tnsr::aa<DataType, SpatialDim>>(used_for_size, 0.);
   for (size_t mu = 0; mu < SpatialDim + 1; ++mu) {
@@ -248,9 +279,15 @@ tnsr::i<DataType, SpatialDim> make_trace_spatial_christoffel(
 #define INSTANTIATE(_, data)                                                 \
   template tnsr::I<DTYPE(data), DIM(data)> make_shift(const DTYPE(data) &    \
                                                       used_for_size);        \
+  template tnsr::i<DTYPE(data), DIM(data)> make_lower_shift(                 \
+      const DTYPE(data) & used_for_size);                                    \
   template tnsr::ii<DTYPE(data), DIM(data)> make_spatial_metric(             \
       const DTYPE(data) & used_for_size);                                    \
   template tnsr::II<DTYPE(data), DIM(data)> make_inverse_spatial_metric(     \
+      const DTYPE(data) & used_for_size);                                    \
+  template tnsr::A<DTYPE(data), DIM(data)> make_dummy_vector(                \
+      const DTYPE(data) & used_for_size);                                    \
+  template tnsr::a<DTYPE(data), DIM(data)> make_dummy_one_form(              \
       const DTYPE(data) & used_for_size);                                    \
   template tnsr::I<DTYPE(data), DIM(data)> make_dt_shift(const DTYPE(data) & \
                                                          used_for_size);     \

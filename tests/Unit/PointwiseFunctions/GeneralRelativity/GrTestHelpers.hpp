@@ -47,11 +47,21 @@ template <size_t SpatialDim, typename DataType>
 tnsr::I<DataType, SpatialDim> make_shift(const DataType& used_for_size);
 
 template <size_t SpatialDim, typename DataType>
+tnsr::i<DataType, SpatialDim> make_lower_shift(const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
 tnsr::ii<DataType, SpatialDim> make_spatial_metric(
     const DataType& used_for_size);
 
 template <size_t SpatialDim, typename DataType>
 tnsr::II<DataType, SpatialDim> make_inverse_spatial_metric(
+    const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
+tnsr::A<DataType, SpatialDim> make_dummy_vector(const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
+tnsr::a<DataType, SpatialDim> make_dummy_one_form(
     const DataType& used_for_size);
 
 template <typename DataType>

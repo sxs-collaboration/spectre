@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     SpherepackIterator.cpp
     Strahlkorper.cpp
     StrahlkorperDataBox.cpp
+    StrahlkorperGr.cpp
     YlmSpherepack.cpp
     YlmSpherepackHelper.cpp
     )

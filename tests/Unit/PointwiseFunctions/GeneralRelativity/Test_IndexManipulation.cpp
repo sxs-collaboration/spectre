@@ -20,6 +20,15 @@ void test_1d_spatial_raise(const DataVector& used_for_size) {
           make_deriv_spatial_metric<dim>(used_for_size),
           make_inverse_spatial_metric<dim>(used_for_size)),
       raised_tensor);
+
+  const tnsr::I<double, dim> shift = raise_or_lower_index(
+      make_lower_shift<dim>(0.), make_inverse_spatial_metric<dim>(0.));
+  CHECK(get<0>(shift) == approx(1.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_lower_shift<dim>(used_for_size),
+                           make_inverse_spatial_metric<dim>(used_for_size)),
+      shift);
 }
 
 void test_1d_spatial_lower(const DataVector& used_for_size) {
@@ -35,6 +44,15 @@ void test_1d_spatial_lower(const DataVector& used_for_size) {
           make_spatial_christoffel_second_kind<dim>(used_for_size),
           make_spatial_metric<dim>(used_for_size)),
       lowered_tensor);
+
+  const tnsr::i<double, dim> lowered_shift =
+      raise_or_lower_index(make_shift<dim>(0.), make_spatial_metric<dim>(0.));
+  CHECK(get<0>(lowered_shift) == approx(1.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_shift<dim>(used_for_size),
+                           make_spatial_metric<dim>(used_for_size)),
+      lowered_shift);
 }
 
 void test_2d_spatial_raise(const DataVector& used_for_size) {
@@ -55,6 +73,16 @@ void test_2d_spatial_raise(const DataVector& used_for_size) {
           make_deriv_spatial_metric<dim>(used_for_size),
           make_inverse_spatial_metric<dim>(used_for_size)),
       raised_tensor);
+
+  const tnsr::I<double, dim> shift = raise_or_lower_index(
+      make_lower_shift<dim>(0.), make_inverse_spatial_metric<dim>(0.));
+  CHECK(get<0>(shift) == approx(5.));
+  CHECK(get<1>(shift) == approx(10.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_lower_shift<dim>(used_for_size),
+                           make_inverse_spatial_metric<dim>(used_for_size)),
+      shift);
 }
 
 void test_2d_spatial_lower(const DataVector& used_for_size) {
@@ -76,6 +104,16 @@ void test_2d_spatial_lower(const DataVector& used_for_size) {
           make_spatial_christoffel_second_kind<dim>(used_for_size),
           make_spatial_metric<dim>(used_for_size)),
       lowered_tensor);
+
+  const tnsr::i<double, dim> lowered_shift =
+      raise_or_lower_index(make_shift<dim>(0.), make_spatial_metric<dim>(0.));
+  CHECK(get<0>(lowered_shift) == approx(5.));
+  CHECK(get<1>(lowered_shift) == approx(10.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_shift<dim>(used_for_size),
+                           make_spatial_metric<dim>(used_for_size)),
+      lowered_shift);
 }
 
 void test_3d_spatial_raise(const DataVector& used_for_size) {
@@ -107,7 +145,19 @@ void test_3d_spatial_raise(const DataVector& used_for_size) {
           make_deriv_spatial_metric<dim>(used_for_size),
           make_inverse_spatial_metric<dim>(used_for_size)),
       raised_tensor);
+
+  const tnsr::I<double, dim> shift = raise_or_lower_index(
+      make_lower_shift<dim>(0.), make_inverse_spatial_metric<dim>(0.));
+  CHECK(get<0>(shift) == approx(14.));
+  CHECK(get<1>(shift) == approx(28.));
+  CHECK(get<2>(shift) == approx(42.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_lower_shift<dim>(used_for_size),
+                           make_inverse_spatial_metric<dim>(used_for_size)),
+      shift);
 }
+
 void test_3d_spatial_lower(const DataVector& used_for_size) {
   const size_t dim = 3;
   const tnsr::ijj<double, dim> lowered_tensor =
@@ -138,6 +188,17 @@ void test_3d_spatial_lower(const DataVector& used_for_size) {
           make_spatial_christoffel_second_kind<dim>(used_for_size),
           make_spatial_metric<dim>(used_for_size)),
       lowered_tensor);
+
+  const tnsr::i<double, dim> lowered_shift =
+      raise_or_lower_index(make_shift<dim>(0.), make_spatial_metric<dim>(0.));
+  CHECK(get<0>(lowered_shift) == approx(14.));
+  CHECK(get<1>(lowered_shift) == approx(28.));
+  CHECK(get<2>(lowered_shift) == approx(42.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_shift<dim>(used_for_size),
+                           make_spatial_metric<dim>(used_for_size)),
+      lowered_shift);
 }
 
 void test_3d_spacetime_raise(const DataVector& used_for_size) {
@@ -192,6 +253,18 @@ void test_3d_spacetime_raise(const DataVector& used_for_size) {
           make_spacetime_deriv_spacetime_metric<dim>(used_for_size),
           make_inverse_spacetime_metric<dim>(used_for_size)),
       raised_tensor);
+
+  const tnsr::A<double, dim> raised_one_form = raise_or_lower_index(
+      make_dummy_one_form<dim>(0.), make_inverse_spacetime_metric<dim>(0.));
+  CHECK(get<0>(raised_one_form) == approx(-160.));
+  CHECK(get<1>(raised_one_form) == approx(-240.));
+  CHECK(get<2>(raised_one_form) == approx(-320.));
+  CHECK(get<3>(raised_one_form) == approx(-400.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_dummy_one_form<dim>(used_for_size),
+                           make_inverse_spacetime_metric<dim>(used_for_size)),
+      raised_one_form);
 }
 
 void test_3d_spacetime_lower(const DataVector& used_for_size) {
@@ -246,6 +319,18 @@ void test_3d_spacetime_lower(const DataVector& used_for_size) {
           make_spacetime_christoffel_second_kind<dim>(used_for_size),
           make_spacetime_metric<dim>(used_for_size)),
       lowered_tensor);
+
+  const tnsr::a<double, dim> lowered_vector = raise_or_lower_index(
+      make_dummy_vector<dim>(0.), make_spacetime_metric<dim>(0.));
+  CHECK(get<0>(lowered_vector) == approx(-160.));
+  CHECK(get<1>(lowered_vector) == approx(-240.));
+  CHECK(get<2>(lowered_vector) == approx(-320.));
+  CHECK(get<3>(lowered_vector) == approx(-400.));
+
+  check_tensor_doubles_equals_tensor_datavectors(
+      raise_or_lower_index(make_dummy_vector<dim>(used_for_size),
+                           make_spacetime_metric<dim>(used_for_size)),
+      lowered_vector);
 }
 void test_1d_spatial_trace(const DataVector& used_for_size) {
   const size_t dim = 1;
