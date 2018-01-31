@@ -107,7 +107,7 @@ void verify_time_independent_einstein_solution(
       lapse, dt_lapse, d_lapse, shift, dt_shift, d_shift, g,
       trace(gr::extrinsic_curvature(lapse, shift, d_shift, g, dt_g, d_g),
             upper_spatial_metric),
-      trace_last_indices(compute_christoffel_first_kind(d_g),
+      trace_last_indices(gr::christoffel_first_kind(d_g),
                          upper_spatial_metric));
 
   // Compute numerical derivatives of psi,pi,phi,H.
@@ -158,7 +158,7 @@ void verify_time_independent_einstein_solution(
   // Compute derived spacetime quantities
   const auto upper_psi =
       gr::inverse_spacetime_metric(lapse, shift, upper_spatial_metric);
-  const auto christoffel_first_kind = compute_christoffel_first_kind(d4_psi);
+  const auto christoffel_first_kind = gr::christoffel_first_kind(d4_psi);
   const auto christoffel_second_kind =
       raise_or_lower_first_index(christoffel_first_kind, upper_psi);
   const auto trace_christoffel_first_kind =
