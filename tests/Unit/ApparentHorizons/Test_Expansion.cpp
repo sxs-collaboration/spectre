@@ -10,11 +10,11 @@
 #include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GrTags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
