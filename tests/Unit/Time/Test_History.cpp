@@ -77,7 +77,12 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
 
   history.insert(make_time(0.), 0., get_output(0));
   history.insert_initial(make_time(-1.), -1., get_output(-1));
-  history.insert(make_time(1.), 1., get_output(1));
+  {
+    auto tmp = get_output(1);
+    history.insert(make_time(1.), 1., std::move(tmp));
+    // clang-tidy: misc-use-after-move
+    CHECK(tmp == get_output(1));  // NOLINT
+  }
   history.insert_initial(make_time(-2.), -2., get_output(-2));
   history.insert_initial(make_time(-3.), -3., get_output(-3));
 
@@ -88,10 +93,12 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   CHECK(history.size() == 3);
   CHECK(history.capacity() == 5);
 
-  auto tmp = get_output(2);
-  history.insert(make_time(2.), 2., std::move(tmp));
-  // clang-tidy: misc-use-after-move
-  CHECK(tmp == get_output(-3));  // NOLINT
+  {
+    auto tmp = get_output(2);
+    history.insert(make_time(2.), 2., std::move(tmp));
+    // clang-tidy: misc-use-after-move
+    CHECK(tmp == get_output(-3));  // NOLINT
+  }
   CHECK(history.size() == 4);
   CHECK(history.capacity() == 5);
 

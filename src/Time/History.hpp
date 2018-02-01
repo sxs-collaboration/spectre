@@ -39,10 +39,10 @@ class History {
   ~History() = default;
 
   /// Add a new set of values to the end of the history.  `deriv` is
-  /// left in an unspecified state.  The different argument types for
-  /// `value` and `deriv` reflect the common use of this class, which
-  /// wants `value` to remain unchanged but does not care about
-  /// `deriv`.
+  /// either left unchanged or set to a previously inserted `deriv`
+  /// value.  The different argument types for `value` and `deriv`
+  /// reflect the common use of this class, which wants `value` to
+  /// remain unchanged but does not care about `deriv`.
   void insert(Time time, const Vars& value, DerivVars&& deriv) noexcept;
 
   /// Add a new set of values to the front of the history.  This is
@@ -168,7 +168,7 @@ void History<Vars, DerivVars>::insert(Time time, const Vars& value,
                                       DerivVars&& deriv) noexcept {
   if (first_needed_entry_ == 0) {
     // clang-tidy: move of trivially-copyable type
-    data_.emplace_back(std::move(time), value, std::move(deriv));  // NOLINT
+    data_.emplace_back(std::move(time), value, deriv);  // NOLINT
   } else {
     // Move an unneeded entry into the arguments so the caller can
     // reuse any resources the entry contained.
