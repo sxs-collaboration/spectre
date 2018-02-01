@@ -76,7 +76,7 @@ void test_schwarzschild() {
           get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataVector>>(vars),
           deriv_spatial_metric));
 
-  Approx custom_approx = Approx::custom().epsilon(1.e-12);
+  Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get(residual), DataVector(get(residual).size(), 0.0), custom_approx);
 }
