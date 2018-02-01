@@ -53,8 +53,6 @@ void test_schwarzschild() {
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
-  const auto unit_normal_vector =
-      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
   const auto grad_unit_normal_one_form =
       StrahlkorperGr::grad_unit_normal_one_form(
           db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box),
@@ -65,9 +63,12 @@ void test_schwarzschild() {
           raise_or_lower_first_index(
               gr::christoffel_first_kind(deriv_spatial_metric),
               inverse_spatial_metric));
+  const auto inverse_surface_metric = StrahlkorperGr::inverse_surface_metric(
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric),
+      inverse_spatial_metric);
 
   const auto residual = StrahlkorperGr::expansion(
-      grad_unit_normal_one_form, unit_normal_vector, inverse_spatial_metric,
+      grad_unit_normal_one_form, inverse_surface_metric,
       gr::extrinsic_curvature(
           get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
           get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
@@ -107,8 +108,6 @@ void test_minkowski() {
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
-  const auto unit_normal_vector =
-      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
   const auto grad_unit_normal_one_form =
       StrahlkorperGr::grad_unit_normal_one_form(
           db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box),
@@ -119,9 +118,12 @@ void test_minkowski() {
           raise_or_lower_first_index(
               gr::christoffel_first_kind(deriv_spatial_metric),
               inverse_spatial_metric));
+  const auto inverse_surface_metric = StrahlkorperGr::inverse_surface_metric(
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric),
+      inverse_spatial_metric);
 
   const auto residual = StrahlkorperGr::expansion(
-      grad_unit_normal_one_form, unit_normal_vector, inverse_spatial_metric,
+      grad_unit_normal_one_form, inverse_surface_metric,
       solution.extrinsic_curvature(cart_coords, t));
 
   Approx custom_approx = Approx::custom().epsilon(1.e-12);

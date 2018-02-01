@@ -50,18 +50,33 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) noexcept;
 
 /// \ingroup SurfacesGroup
+/// \brief Computes inverse 2-metric \f$g^{ij}-S^i S^j\f$ of a Strahlkorper.
+///
+/// \details See Eqs. (1--9) of https://arxiv.org/abs/gr-qc/9606010.
+/// Here \f$S^i\f$ is the (normalized) unit vector to the surface,
+/// and \f$g^{ij}\f$ is the 3-metric.  This object is expressed in the
+/// usual 3-d Cartesian basis, so it is written as a 3-dimensional tensor.
+/// But because it is orthogonal to \f$S_i\f$, it has only 3 independent
+/// degrees of freedom, and could be expressed as a 2-d tensor with an
+/// appropriate choice of basis. The input argument `unit_normal_vector` is
+/// \f$S^i = g^{ij} S_j\f$, where \f$S_j\f$ is the unit normal one form.
+template <typename Frame>
+tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
+
+/// \ingroup SurfacesGroup
 /// \brief Expansion of a `Strahlkorper`. Should be zero on apparent horizons.
 ///
 /// \details Implements Eq. (5) in
 /// https://arxiv.org/abs/gr-qc/9606010.  The input argument
 /// `grad_normal` is the quantity returned by
-/// `StrahlkorperGr::grad_unit_normal_one_form`, and `unit_normal_vector` is
-/// \f$S^i = g^{ij} S_j\f$ where \f$S_j\f$ is the unit normal one form.
+/// `StrahlkorperGr::grad_unit_normal_one_form`, and `inverse_surface_metric`
+/// is the quantity returned by `StrahlkorperGr::inverse_surface_metric`.
 template <typename Frame>
 Scalar<DataVector> expansion(
     const tnsr::ii<DataVector, 3, Frame>& grad_normal,
-    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
-    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric,
+    const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
 
 }  // namespace StrahlkorperGr

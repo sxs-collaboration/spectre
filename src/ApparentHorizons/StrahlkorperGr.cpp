@@ -44,22 +44,24 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
 }
 
 template <typename Frame>
-Scalar<DataVector> expansion(
-    const tnsr::ii<DataVector, 3, Frame>& grad_normal,
+tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
-    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept {
-  // Form inverse surface metric
-  tnsr::II<DataVector, 3, Frame> inv_surf_metric(
-      get<0>(unit_normal_vector).size(), 0.0);
+    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept {
+  auto inv_surf_metric = upper_spatial_metric;
   for (size_t i = 0; i < 3; ++i) {
-    for (size_t j = i; j < 3; ++j) {
-      inv_surf_metric.get(i, j) =
-          upper_spatial_metric.get(i, j) -
+    for (size_t j = i; j < 3; ++j) {  // Symmetry
+      inv_surf_metric.get(i, j) -=
           unit_normal_vector.get(i) * unit_normal_vector.get(j);
     }
   }
+  return inv_surf_metric;
+}
 
+template <typename Frame>
+Scalar<DataVector> expansion(
+    const tnsr::ii<DataVector, 3, Frame>& grad_normal,
+    const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept {
   // If you want the future *ingoing* null expansion,
   // the formula is the same as here except you
   // change the sign on grad_normal just before you
@@ -72,10 +74,10 @@ Scalar<DataVector> expansion(
   // and the ingoing expansion is
   // (g^ij - S^i S^j) (-GsBar_ij - K_ij)
 
-  Scalar<DataVector> expansion(get<0>(unit_normal_vector).size(), 0.0);
+  Scalar<DataVector> expansion(get<0, 0>(grad_normal).size(), 0.0);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      get(expansion) += inv_surf_metric.get(i, j) *
+      get(expansion) += inverse_surface_metric.get(i, j) *
                         (grad_normal.get(i, j) - extrinsic_curvature.get(i, j));
     }
   }
@@ -100,9 +102,14 @@ StrahlkorperGr::grad_unit_normal_one_form<Frame::Inertial>(
     const tnsr::Ijj<DataVector, 3, Frame::Inertial>&
         christoffel_2nd_kind) noexcept;
 
+template tnsr::II<DataVector, 3, Frame::Inertial>
+StrahlkorperGr::inverse_surface_metric<Frame::Inertial>(
+    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
+    const tnsr::II<DataVector, 3, Frame::Inertial>&
+        upper_spatial_metric) noexcept;
+
 template Scalar<DataVector> StrahlkorperGr::expansion<Frame::Inertial>(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& grad_normal,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& upper_spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>&
         extrinsic_curvature) noexcept;
