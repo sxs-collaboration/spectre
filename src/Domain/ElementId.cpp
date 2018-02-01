@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "Domain/ElementIndex.hpp"
+#include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -31,6 +32,14 @@ ElementId<VolumeDim>::ElementId(const ElementIndex<VolumeDim>& index) noexcept {
         SegmentId{gsl::at(index.segments(), d).refinement_level(),
                   gsl::at(index.segments(), d).index()};
   }
+}
+
+// clang-tidy: mark explicit, we want implicit conversion
+template <size_t VolumeDim>
+ElementId<VolumeDim>::
+operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>()  // NOLINT
+    const {
+  return {ElementIndex<VolumeDim>{*this}};
 }
 
 template <size_t VolumeDim>
@@ -72,7 +81,8 @@ size_t hash_value(const ElementId<VolumeDim>& c) noexcept {
   return h;
 }
 
-namespace std {
+// clang-tidy: do not modify namespace std
+namespace std {  // NOLINT
 template <size_t VolumeDim>
 size_t hash<ElementId<VolumeDim>>::operator()(
     const ElementId<VolumeDim>& c) const noexcept {
@@ -93,7 +103,8 @@ template size_t hash_value(const ElementId<1>&) noexcept;
 template size_t hash_value(const ElementId<2>&) noexcept;
 template size_t hash_value(const ElementId<3>&) noexcept;
 
-namespace std {
+// clang-tidy: do not modify namespace std
+namespace std {  // NOLINT
 template struct hash<ElementId<1>>;
 template struct hash<ElementId<2>>;
 template struct hash<ElementId<3>>;
