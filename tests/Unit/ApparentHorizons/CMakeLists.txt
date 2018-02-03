@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(APPARENT_HORIZONS_TESTS
+    ApparentHorizons/StrahlkorperGrTestHelpers.cpp
     ApparentHorizons/Test_SpherepackIterator.cpp
     ApparentHorizons/Test_Strahlkorper.cpp
     ApparentHorizons/Test_StrahlkorperDataBox.cpp

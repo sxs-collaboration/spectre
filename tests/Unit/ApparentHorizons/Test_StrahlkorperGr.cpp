@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "tests/Unit/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -79,6 +80,17 @@ void test_schwarzschild() {
   Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get(residual), DataVector(get(residual).size(), 0.0), custom_approx);
+
+  const auto ricci_scalar = StrahlkorperGr::ricci_scalar(
+      make_spatial_ricci_schwarzschild(cart_coords, mass),
+      unit_normal_vector,
+      StrahlkorperGr::extrinsic_curvature(grad_unit_normal_one_form,
+                                          unit_normal_one_form,
+                                          inverse_spatial_metric),
+      inverse_spatial_metric);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get(ricci_scalar), DataVector(get(ricci_scalar).size(), 0.5/(mass*mass)),
+      custom_approx);
 }
 
 void test_minkowski() {
@@ -127,6 +139,19 @@ void test_minkowski() {
   Approx custom_approx = Approx::custom().epsilon(1.e-12);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get(residual), DataVector(get(residual).size(), 1.0), custom_approx);
+
+  const auto ricci_scalar = StrahlkorperGr::ricci_scalar(
+      make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial,
+                      IndexType::Spatial>>(inverse_spatial_metric,
+                                           0.0),
+      unit_normal_vector,
+      StrahlkorperGr::extrinsic_curvature(grad_unit_normal_one_form,
+                                          unit_normal_one_form,
+                                          inverse_spatial_metric),
+      inverse_spatial_metric);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      get(ricci_scalar), DataVector(get(ricci_scalar).size(), 0.5),
+      custom_approx);
 }
 
 }  // namespace
