@@ -334,6 +334,41 @@ using ijaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
                                SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
                                SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
                                SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+
+// Rank 4 - generic (default spacetime)
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
+          IndexType Index = IndexType::Spacetime>
+using abcc = Tensor<
+    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+    index_list<
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
+          IndexType Index = IndexType::Spacetime>
+using aBcc = Tensor<
+    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+    index_list<
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+
+// Rank 4 - spatial
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using ijkk = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using iJkk = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Up, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Fr>>>;
+
 }  // namespace tnsr
 
 template <size_t Dim, typename SourceFrame, typename TargetFrame>
