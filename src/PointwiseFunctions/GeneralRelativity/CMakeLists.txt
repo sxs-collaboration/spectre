@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     ComputeGhQuantities.cpp
     ComputeSpacetimeQuantities.cpp
     IndexManipulation.cpp
+    Ricci.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

@@ -89,6 +89,10 @@ tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
     const DataType& used_for_size);
 
 template <size_t SpatialDim, typename DataType>
+tnsr::iJkk<DataType, SpatialDim> make_deriv_spatial_christoffel_second_kind(
+    const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
 tnsr::abb<DataType, SpatialDim> make_spacetime_deriv_spacetime_metric(
     const DataType& used_for_size);
 
@@ -102,6 +106,10 @@ tnsr::iaa<DataType, SpatialDim> make_spatial_deriv_spacetime_metric(
 
 template <size_t SpatialDim, typename DataType>
 tnsr::Abb<DataType, SpatialDim> make_spacetime_christoffel_second_kind(
+    const DataType& used_for_size);
+
+template <size_t SpatialDim, typename DataType>
+tnsr::aBcc<DataType, SpatialDim> make_deriv_spacetime_christoffel_second_kind(
     const DataType& used_for_size);
 
 template <size_t SpatialDim, typename DataType>
