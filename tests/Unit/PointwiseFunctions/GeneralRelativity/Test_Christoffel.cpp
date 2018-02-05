@@ -9,19 +9,19 @@
 namespace {
 void test_1d_spatial_christoffel_first_kind(const DataVector &used_for_size) {
   const size_t spatial_dim = 1;
-  const auto christoffel = compute_christoffel_first_kind(
+  const auto christoffel = gr::christoffel_first_kind(
       make_deriv_spatial_metric<spatial_dim>(0.));
   CHECK(christoffel.get(0, 0, 0) == approx(1.5));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_christoffel_first_kind(
+      gr::christoffel_first_kind(
           make_deriv_spatial_metric<spatial_dim>(used_for_size)),
       christoffel);
 }
 
 void test_2d_spatial_christoffel_first_kind(const DataVector &used_for_size) {
   const size_t spatial_dim = 2;
-  const auto christoffel = compute_christoffel_first_kind(
+  const auto christoffel = gr::christoffel_first_kind(
       make_deriv_spatial_metric<spatial_dim>(0.));
   CHECK(christoffel.get(0, 0, 0) == approx(1.5));
   CHECK(christoffel.get(0, 0, 1) == approx(2.0));
@@ -31,14 +31,14 @@ void test_2d_spatial_christoffel_first_kind(const DataVector &used_for_size) {
   CHECK(christoffel.get(1, 1, 1) == approx(6.5));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_christoffel_first_kind(
+      gr::christoffel_first_kind(
           make_deriv_spatial_metric<spatial_dim>(used_for_size)),
       christoffel);
 }
 
 void test_3d_spatial_christoffel_first_kind(const DataVector &used_for_size) {
   const size_t spatial_dim = 3;
-  const auto christoffel = compute_christoffel_first_kind(
+  const auto christoffel = gr::christoffel_first_kind(
       make_deriv_spatial_metric<spatial_dim>(0.));
   CHECK(christoffel.get(0, 0, 0) == approx(1.5));
   CHECK(christoffel.get(0, 0, 1) == approx(2.0));
@@ -60,14 +60,14 @@ void test_3d_spatial_christoffel_first_kind(const DataVector &used_for_size) {
   CHECK(christoffel.get(2, 2, 2) == approx(14.5));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_christoffel_first_kind(
+      gr::christoffel_first_kind(
           make_deriv_spatial_metric<spatial_dim>(used_for_size)),
       christoffel);
 }
 
 void test_1d_spacetime_christoffel_first_kind(const DataVector &used_for_size) {
   const size_t spatial_dim = 1;
-  const auto christoffel = compute_christoffel_first_kind(
+  const auto christoffel = gr::christoffel_first_kind(
       make_spacetime_deriv_spacetime_metric<spatial_dim>(0.));
   CHECK(christoffel.get(0, 0, 0) == approx(1.5));
   CHECK(christoffel.get(0, 0, 1) == approx(2.0));
@@ -78,14 +78,14 @@ void test_1d_spacetime_christoffel_first_kind(const DataVector &used_for_size) {
 
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_christoffel_first_kind(
+      gr::christoffel_first_kind(
           make_spacetime_deriv_spacetime_metric<spatial_dim>(used_for_size)),
       christoffel);
 }
 
 void test_2d_spacetime_christoffel_first_kind(const DataVector &used_for_size) {
   const size_t spatial_dim = 2;
-  const auto christoffel = compute_christoffel_first_kind(
+  const auto christoffel = gr::christoffel_first_kind(
       make_spacetime_deriv_spacetime_metric<spatial_dim>(0.));
   CHECK(christoffel.get(0, 0, 0) == approx(1.5));
   CHECK(christoffel.get(0, 0, 1) == approx(2.0));
@@ -108,14 +108,14 @@ void test_2d_spacetime_christoffel_first_kind(const DataVector &used_for_size) {
 
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_christoffel_first_kind(
+      gr::christoffel_first_kind(
           make_spacetime_deriv_spacetime_metric<spatial_dim>(used_for_size)),
       christoffel);
 }
 
 void test_3d_spacetime_christoffel_first_kind(const DataVector &used_for_size) {
   const size_t spatial_dim = 3;
-  const auto christoffel = compute_christoffel_first_kind(
+  const auto christoffel = gr::christoffel_first_kind(
       make_spacetime_deriv_spacetime_metric<spatial_dim>(0.));
   CHECK(christoffel.get(0, 0, 0) == approx(1.5));
   CHECK(christoffel.get(0, 0, 1) == approx(2.));
@@ -159,7 +159,7 @@ void test_3d_spacetime_christoffel_first_kind(const DataVector &used_for_size) {
   CHECK(christoffel.get(3, 3, 3) == approx(48.));
 
   check_tensor_doubles_equals_tensor_datavectors(
-      compute_christoffel_first_kind(
+      gr::christoffel_first_kind(
           make_spacetime_deriv_spacetime_metric<spatial_dim>(used_for_size)),
       christoffel);
 }
