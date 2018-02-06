@@ -33,6 +33,8 @@ class Interval;
 template <typename TargetFrame>
 class Rectangle;
 template <typename TargetFrame>
+class RotatedIntervals;
+template <typename TargetFrame>
 class Shell;
 template <typename TargetFrame>
 class Sphere;
@@ -45,7 +47,8 @@ struct domain_creators;
 template <>
 struct domain_creators<1> {
   template <typename Frame>
-  using creators = typelist<DomainCreators::Interval<Frame>>;
+  using creators = typelist<DomainCreators::Interval<Frame>,
+                            DomainCreators::RotatedIntervals<Frame>>;
 };
 template <>
 struct domain_creators<2> {
@@ -93,5 +96,6 @@ class DomainCreator {
 #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
+#include "Domain/DomainCreators/RotatedIntervals.hpp"
 #include "Domain/DomainCreators/Shell.hpp"
 #include "Domain/DomainCreators/Sphere.hpp"
