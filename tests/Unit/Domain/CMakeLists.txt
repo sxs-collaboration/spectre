@@ -3,6 +3,7 @@
 
 set(DOMAIN_TESTS
     Domain/CoordinateMaps/Test_Affine.cpp
+    Domain/CoordinateMaps/Test_BulgedCube.cpp
     Domain/CoordinateMaps/Test_CoordinateMap.cpp
     Domain/CoordinateMaps/Test_Equiangular.cpp
     Domain/CoordinateMaps/Test_Identity.cpp
