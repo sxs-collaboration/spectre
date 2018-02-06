@@ -82,3 +82,41 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.DataVector",
   CHECK(std::abs(root[3] + 2.0) < abs_tol);
   CHECK(std::abs(root[3] + 2.0) / 2.0 < rel_tol);
 }
+
+// [[OutputRegex, The relative tolerance is too small.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.TOMS748RootSolver.RelativeTol.DataVector",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const double abs_tol = 1e-15;
+  const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
+  const DataVector upper{2.0, 3.0, -sqrt(2.0), -sqrt(2.0)};
+  const DataVector lower{sqrt(2.), sqrt(2.0), -2.0, -3.0};
+
+  const DataVector constant{2.0, 4.0, 2.0, 4.0};
+  const auto f_lambda = [&constant](const double x, const size_t i) noexcept {
+    return constant[i] - x * x;
+  };
+
+  find_root_of_function(f_lambda, lower, upper, abs_tol, rel_tol);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The relative tolerance is too small.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.TOMS748RootSolver.RelativeTol.Double",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const double abs_tol = 1e-15;
+  const double rel_tol = 0.5 * std::numeric_limits<double>::epsilon();
+  double upper = 2.0;
+  double lower = sqrt(2.);
+  const auto f_lambda = [](double x) { return 2.0 - x * x; };
+
+  find_root_of_function(f_lambda, lower, upper, abs_tol, rel_tol);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
