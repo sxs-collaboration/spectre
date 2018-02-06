@@ -32,7 +32,7 @@ struct type_for_get_helper<std::unique_ptr<T, D>> {
 template <class ConstGlobalCacheTag, class Metavariables>
 using get_list_of_matching_tags =
     tmpl::filter<typename ConstGlobalCache<Metavariables>::tag_list,
-                 std::is_base_of<ConstGlobalCacheTag, tmpl::_1>>;
+                 std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
 
 template <class ConstGlobalCacheTag, class Metavariables>
 using type_for_get = typename type_for_get_helper<

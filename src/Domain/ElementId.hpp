@@ -18,6 +18,10 @@
 
 template <size_t>
 class ElementIndex;
+namespace Parallel {
+template <class>
+class ArrayIndex;
+}  // namespace Parallel
 
 /// \ingroup ComputationalDomainGroup
 /// An ElementId uniquely labels a Element.
@@ -36,6 +40,10 @@ class ElementId {
   /// Convert an ElementIndex to an ElementId
   // clang-tidy: mark explicit: we want to allow conversion
   ElementId(const ElementIndex<VolumeDim>& index) noexcept;  // NOLINT
+
+  /// Conversion operator needed to index `proxy`s using `ElementId`
+  // clang-tidy: mark explicit, we want implicit conversion
+  operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>() const;  // NOLINT
 
   /// Create an arbitrary ElementId.
   ElementId(size_t block_id,
@@ -81,7 +89,8 @@ bool operator!=(const ElementId<VolumeDim>& lhs,
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& c) noexcept;
 
-namespace std {
+// clang-tidy: do not modify namespace std
+namespace std {  // NOLINT
 template <size_t VolumeDim>
 struct hash<ElementId<VolumeDim>> {
   size_t operator()(const ElementId<VolumeDim>& c) const noexcept;

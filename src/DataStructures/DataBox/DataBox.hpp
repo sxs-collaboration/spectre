@@ -1106,6 +1106,11 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
                          tmpl::bind<tmpl::pin, tmpl::get_source<tmpl::_1>>,
                          tmpl::parent<tmpl::_1>>>>,
       tmpl::get_destination<tmpl::_1>>;
+  (void)std::initializer_list<char>{
+      ((void)databox_detail::add_variables_item_tags_to_box<MutateTags>(
+           box.data_,
+           typename databox_detail::select_if_variables<MutateTags>::type{}),
+       '0')...};
   databox_detail::reset_compute_items_after_mutate<
       tmpl::size<first_compute_items_to_reset>::value == 0,
       typename DataBox<TagList>::edge_list,

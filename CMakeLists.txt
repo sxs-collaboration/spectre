@@ -63,6 +63,7 @@ generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)
 
 enable_testing(true)
 include(SpectreAddCatchTests)
+include(AddInputFileTests)
 include(SetupCompilationFailureTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/external)

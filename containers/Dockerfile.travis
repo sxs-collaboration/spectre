@@ -113,6 +113,12 @@ RUN if [ ${SONARQUBE} ] \
     && [ -z "${RUN_CLANG_TIDY}" ]; then \
       make -j2; \
     fi
+# Find and build the executables used for input file tests
+RUN if [ -z "${RUN_CPPCHECK}" ] \
+    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+      /work/spectre/.travis/FindAndBuildExecutables.sh \
+      /work/spectre/tests/InputFiles; \
+    fi
 RUN ccache -s
 
 RUN if [ -z "${RUN_CPPCHECK}" ] \

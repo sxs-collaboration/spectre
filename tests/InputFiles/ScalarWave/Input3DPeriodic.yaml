@@ -1,0 +1,32 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveScalarWave3D
+# Check: execute
+
+AnalyticSolution:
+  WaveVector: [1.0, 1.0, 1.0]
+  Center: [0.0, 0.0, 0.0]
+  Profile:
+    Sinusoid:
+      Amplitude: 1.0
+      Wavenumber: 1.0
+      Phase: 0.0
+
+InitialTime: 0.0
+FinalTime: 0.05
+DeltaT: 0.01
+
+DomainCreator:
+  Brick:
+    LowerBound: [0.0, 0.0, 0.0]
+    UpperBound: [6.283185307179586, 6.283185307179586, 6.283185307179586]
+    IsPeriodicIn: [true, true, true]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [5, 5, 5]
+
+TimeStepper:
+  AdamsBashforthN:
+    TargetOrder: 3
+
+NumericalFluxParams:

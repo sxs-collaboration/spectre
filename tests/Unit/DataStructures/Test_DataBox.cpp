@@ -846,6 +846,27 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
   }
 }
 
+namespace {
+struct Tag1 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString label = "Tag1";
+};
+struct Tag2 : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString label = "Tag2";
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables2",
+                  "[Unit][DataStructures]") {
+  auto box = db::create<db::AddTags<Tags::Variables<tmpl::list<Tag1, Tag2>>>>(
+      Variables<tmpl::list<Tag1, Tag2>>(1, 1.));
+
+  db::mutate<Tags::Variables<tmpl::list<Tag1, Tag2>>>(
+      box, [](auto& vars) { vars = Variables<tmpl::list<Tag1, Tag2>>(1, 2.); });
+  CHECK(db::get<Tag1>(box) == Scalar<DataVector>(DataVector(1, 2.)));
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
                   "[Unit][DataStructures]") {
   auto box = db::create<

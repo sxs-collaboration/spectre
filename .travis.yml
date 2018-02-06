@@ -290,6 +290,7 @@ script:
              -D MACOSX_MIN=10.11
              ${TRAVIS_BUILD_DIR}
     && make -j2
+    && ${TRAVIS_BUILD_DIR}/.travis/FindAndBuildExecutables.sh ${TRAVIS_BUILD_DIR}/tests/InputFiles/
     && ctest --output-on-failure
     && ccache -s;
   else
