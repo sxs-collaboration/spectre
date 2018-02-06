@@ -63,7 +63,7 @@ void test_schwarzschild() {
           db::get<StrahlkorperTags::D2xRadius<Frame::Inertial>>(box),
           one_over_one_form_magnitude,
           raise_or_lower_first_index(
-              compute_christoffel_first_kind(deriv_spatial_metric),
+              gr::christoffel_first_kind(deriv_spatial_metric),
               inverse_spatial_metric));
 
   const auto residual = StrahlkorperGr::expansion(
@@ -117,7 +117,7 @@ void test_minkowski() {
           db::get<StrahlkorperTags::D2xRadius<Frame::Inertial>>(box),
           one_over_one_form_magnitude,
           raise_or_lower_first_index(
-              compute_christoffel_first_kind(deriv_spatial_metric),
+              gr::christoffel_first_kind(deriv_spatial_metric),
               inverse_spatial_metric));
 
   const auto residual = StrahlkorperGr::expansion(
