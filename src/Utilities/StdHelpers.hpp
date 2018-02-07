@@ -401,6 +401,19 @@ inline std::array<T, Dim - 1> all_but_specified_element_of(
   return result;
 }
 
+/// \ingroup UtilitiesGroup
+/// \brief Construct an array from an existing array prepending a value
+template <typename T, size_t Dim>
+inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,
+                                                T value) noexcept {
+  std::array<T, Dim + 1> result{};
+  gsl::at(result, 0) = std::move(value);
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(result, i + 1) = gsl::at(a, i);
+  }
+  return result;
+}
+
 //@{
 /// \ingroup UtilitiesGroup
 /// \brief Euclidean magnitude of the elements of the array.

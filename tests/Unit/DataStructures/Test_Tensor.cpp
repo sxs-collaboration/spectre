@@ -49,6 +49,36 @@ static_assert(cpp17::is_same_v<tnsr::iJ<double, 3, Frame::Grid>,
                                    Frame::Grid>>,
               "Failed testing prepend_spatial_index");
 
+// Test remove_first_index
+static_assert(
+    cpp17::is_same_v<Scalar<double>, TensorMetafunctions::remove_first_index<
+                                         tnsr::a<double, 3, Frame::Grid>>>,
+    "Failed testing remove_first_index");
+static_assert(cpp17::is_same_v<tnsr::A<double, 3, Frame::Grid>,
+                               TensorMetafunctions::remove_first_index<
+                                   tnsr::aB<double, 3, Frame::Grid>>>,
+              "Failed testing remove_first_index");
+static_assert(cpp17::is_same_v<tnsr::ab<double, 3, Frame::Grid>,
+                               TensorMetafunctions::remove_first_index<
+                                   tnsr::abc<double, 3, Frame::Grid>>>,
+              "Failed testing remove_first_index");
+static_assert(
+    cpp17::is_same_v<
+        tnsr::ab<double, 3, Frame::Grid>,
+        TensorMetafunctions::remove_first_index<Tensor<
+            double, tmpl::integral_list<std::int32_t, 2, 2, 1>,
+            index_list<Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
+                                                      IndexType::Spacetime>,
+                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
+                                                      IndexType::Spacetime>,
+                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
+                                                      IndexType::Spacetime>>>>>,
+    "Failed testing remove_first_index");
+static_assert(cpp17::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
+                               TensorMetafunctions::remove_first_index<
+                                   tnsr::abb<double, 3, Frame::Grid>>>,
+              "Failed testing remove_first_index");
+
 // Test check_index_symmetry
 static_assert(
     TensorMetafunctions::check_index_symmetry_v<typelist<>, typelist<>>,

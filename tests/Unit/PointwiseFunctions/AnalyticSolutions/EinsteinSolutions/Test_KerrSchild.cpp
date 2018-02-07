@@ -303,3 +303,5 @@ SPECTRE_TEST_CASE(
       "  Center: [1.0,3.0,2.0]");
   opts.get<KerrSchild>();
 }
+
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"

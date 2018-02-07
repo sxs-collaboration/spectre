@@ -199,3 +199,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.AllButSpecifiedElementOf",
   CHECK(b1 == c1);
   CHECK(a0 == all_but_specified_element_of<0>(b1));
 }
+
+SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.StdArrayPrepend",
+                  "[Utilities][Unit]") {
+  const std::array<size_t, 3> a3{{5, 2, 3}};
+  const std::array<size_t, 2> a2{{2, 3}};
+  const std::array<size_t, 1> a1{{3}};
+  const std::array<size_t, 0> a0{{}};
+  const auto p1 = prepend(a0, 3_st);
+  CHECK(p1 == a1);
+  const auto p2 = prepend(a1, 2_st);
+  CHECK(p2 == a2);
+  const auto p3 = prepend(a2, 5_st);
+  CHECK(p3 == a3);
+}
