@@ -31,6 +31,9 @@ double find_root_of_function(const Function& f, const double lower_bound,
                              const double absolute_tolerance,
                              const double relative_tolerance,
                              const size_t max_iterations = 100) {
+  ASSERT(relative_tolerance > std::numeric_limits<double>::epsilon(),
+         "The relative tolerance is too small.");
+
   boost::uintmax_t max_iter = max_iterations;
 
   // This solver requires tol to be passed as a termination condition. This
@@ -74,6 +77,8 @@ DataVector find_root_of_function(const Function& f,
                                  const double absolute_tolerance,
                                  const double relative_tolerance,
                                  const size_t max_iterations = 100) {
+  ASSERT(relative_tolerance > std::numeric_limits<double>::epsilon(),
+         "The relative tolerance is too small.");
   // This solver requires tol to be passed as a termination condition. This
   // termination condition is equivalent to the convergence criteria used by the
   // GSL

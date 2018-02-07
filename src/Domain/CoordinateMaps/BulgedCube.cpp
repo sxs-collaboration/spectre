@@ -71,18 +71,24 @@ template <typename DType>
 DType scaling_factor(RootFunction<DType>&& rootfunction) noexcept {
   const DType& x_sq = rootfunction.get_x_sq();
   const DType& physical_r_squared = rootfunction.get_r_sq();
-  DType rho = find_root_of_function(
-      rootfunction, make_with_value<DType>(x_sq, 0.0),
-      make_with_value<DType>(x_sq, sqrt(3.0)), 1.0e-16, 1.0e-16);
-  for (size_t i = 0; i < get_size(rho); i++) {
-    if (not(equal_within_roundoff(get_element(physical_r_squared, i), 0.0))) {
-      get_element(rho, i) /= sqrt(get_element(physical_r_squared, i));
-    } else {
-      ASSERT(equal_within_roundoff(get_element(rho, i), 0.0),
-             "r == 0 must imply rho == 0. This has failed.");
+  try {
+    DType rho =
+        find_root_of_function(rootfunction, make_with_value<DType>(x_sq, 0.0),
+                              make_with_value<DType>(x_sq, sqrt(3.0)),
+                              10.0 * std::numeric_limits<double>::epsilon(),
+                              10.0 * std::numeric_limits<double>::epsilon());
+    for (size_t i = 0; i < get_size(rho); i++) {
+      if (not(equal_within_roundoff(get_element(physical_r_squared, i), 0.0))) {
+        get_element(rho, i) /= sqrt(get_element(physical_r_squared, i));
+      } else {
+        ASSERT(equal_within_roundoff(get_element(rho, i), 0.0),
+               "r == 0 must imply rho == 0. This has failed.");
+      }
     }
+    return rho;
+  } catch (std::exception& exception) {
+    ERROR("Error in BulgedCube root find:" << exception.what());
   }
-  return rho;
 }
 }  // namespace
 
