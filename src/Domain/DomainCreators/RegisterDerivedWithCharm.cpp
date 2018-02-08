@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
@@ -38,6 +39,9 @@ void register_with_charm<2>() {
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D,
+                                 CoordinateMaps::DiscreteRotation<2>>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Wedge2D>));
 }
