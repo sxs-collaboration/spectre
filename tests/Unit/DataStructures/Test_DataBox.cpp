@@ -935,6 +935,40 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
   }
 }
 
+namespace ExtraResetTags {
+struct Var : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString label = "Var";
+};
+struct Int : db::DataBoxTag {
+  using type = int;
+  static constexpr db::DataBoxString label = "Int";
+};
+struct CheckReset : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "CheckReset";
+  static auto function(
+      const ::Variables<tmpl::list<Var>>& /*unused*/) noexcept {
+    static bool first_call = true;
+    CHECK(first_call);
+    first_call = false;
+    return 0;
+  }
+  using argument_tags = tmpl::list<Tags::Variables<tmpl::list<Var>>>;
+};
+}  // namespace ExtraResetTags
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
+                  "[Unit][DataStructures]") {
+  auto box = db::create<
+      db::AddTags<ExtraResetTags::Int,
+                  Tags::Variables<tmpl::list<ExtraResetTags::Var>>>,
+      db::AddComputeItemsTags<ExtraResetTags::CheckReset>>(
+      1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
+  CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
+  db::mutate<ExtraResetTags::Int>(box, [](int&){});
+  CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
+}
+
 namespace {
 /// [mutate_apply_apply_struct_example]
 struct test_databox_mutate_apply {

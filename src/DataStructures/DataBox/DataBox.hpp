@@ -1074,18 +1074,14 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
   // For all the variable tags in the DataBox, check if one of their Tags is
   // being mutated and if so add it to the list of tags being mutated. Then,
   // remove any Variables tags that would be passed multiple times.
-  using variables_tags = tmpl::filter<
+  using variables_tags = tmpl::list_difference<
       tmpl::filter<
           typename DataBox<TagList>::variables_item_tags,
           tmpl::bind<
               tmpl::found, databox_detail::get_tags_list<tmpl::_1>,
-              tmpl::bind<tmpl::found, tmpl::pin<tmpl::list<MutateTags...>>,
-                         tmpl::bind<std::is_same, tmpl::pin<tmpl::_1>,
-                                    tmpl::parent<tmpl::_1>>>>>,
-      tmpl::bind<tmpl::not_found, tmpl::pin<mutate_tags_list>,
-                 tmpl::bind<std::is_same, tmpl::bind<tmpl::pin, tmpl::_1>,
-                            tmpl::parent<tmpl::_1>>>>;
-
+              tmpl::pin<tmpl::bind<tmpl::list_contains,
+                                   tmpl::pin<mutate_tags_list>, tmpl::_1>>>>,
+      mutate_tags_list>;
   // Since MutateTags could contain Variables Tags we need to extract the Tags
   // inside the Variables class and reset compute items depending on those too.
   using mutated_items_including_variables =
