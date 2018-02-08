@@ -1295,10 +1295,8 @@ constexpr auto DataBox<TagsList<Tags...>>::create_from(const Box& box,
   using sorted_tags = ::db::get_databox_list<new_tags>;
   // List of tags that were both removed and added, and therefore were mutated
   using mutated_tags =
-      tmpl::filter<AddTags,
-                   tmpl::bind<tmpl::found, tmpl::pin<RemoveTags>,
-                              tmpl::bind<std::is_same, tmpl::pin<tmpl::_1>,
-                                         tmpl::parent<tmpl::_1>>>>;
+      tmpl::filter<AddTags, tmpl::bind<tmpl::list_contains,
+                                       tmpl::pin<RemoveTags>, tmpl::_1>>;
   return DataBox<sorted_tags>(box, remaining_tags{}, AddTags{},
                               AddComputeItems{}, compute_items_to_keep{},
                               mutated_tags{}, std::forward<Args>(args)...);
