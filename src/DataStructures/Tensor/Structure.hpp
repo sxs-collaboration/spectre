@@ -10,10 +10,10 @@
 #include <limits>
 
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "DataStructures/Tensor/IntelDetails.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/Array.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -21,28 +21,207 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \ingroup TensorGroup
-/// Contains details of the implementation of Tensor
 namespace Tensor_detail {
-namespace detail {
-template <typename = void>
-SPECTRE_ALWAYS_INLINE constexpr auto compute_collapsed_index_impl() noexcept {
-  return 0;
+constexpr size_t number_of_independent_components(
+    const std::array<int, 0>& /*symm*/,
+    const std::array<size_t, 0>& /*dims*/) noexcept {
+  return 1;
 }
 
-template <typename>
-SPECTRE_ALWAYS_INLINE constexpr auto compute_collapsed_index_impl(
-    std::size_t i) noexcept {
-  return i;
+constexpr size_t number_of_independent_components(
+    const std::array<int, 1>& /*symm*/,
+    const std::array<size_t, 1>& dims) noexcept {
+  return dims[0];
 }
 
-template <typename IndexList, typename... I>
-inline constexpr std::size_t compute_collapsed_index_impl(std::size_t I0,
-                                                          I... i) noexcept {
-  return I0 +
-         tmpl::at<IndexList, tmpl::size_t<tmpl::size<IndexList>::value -
-                                          sizeof...(I) - 1>>::dim *
-             compute_collapsed_index_impl<IndexList>(i...);
+template <size_t Size>
+constexpr size_t number_of_independent_components(
+    const std::array<int, Size>& symm,
+    const std::array<size_t, Size>& dims) noexcept {
+  size_t max_element = 0;
+  for (size_t i = 0; i < Size; ++i) {
+    // clang-tidy: internal STL and gls::at (don't need it in constexpr)
+    assert(symm[i] > 0);  // NOLINT
+    max_element =
+        std::max(static_cast<size_t>(ce_abs(symm[i])), max_element);  // NOLINT
+  }
+  assert(max_element > 0);  // NOLINT
+  size_t total_independent_components = 1;
+  for (size_t symm_index = 1; symm_index <= max_element; ++symm_index) {
+    size_t number_of_indices_with_symm = 0;
+    size_t dim_of_index = 0;
+    for (size_t i = 0; i < Size; ++i) {
+      if (static_cast<size_t>(symm[i]) == symm_index) {  // NOLINT
+        ++number_of_indices_with_symm;
+        dim_of_index = dims[i];  // NOLINT
+      }
+    }
+    assert(dim_of_index > 0);                 // NOLINT
+    assert(number_of_indices_with_symm > 0);  // NOLINT
+    if (dim_of_index - 1 > number_of_indices_with_symm) {
+      total_independent_components *=
+          falling_factorial(dim_of_index + number_of_indices_with_symm - 1,
+                            number_of_indices_with_symm) /
+          factorial(number_of_indices_with_symm);
+    } else {
+      total_independent_components *=
+          falling_factorial(dim_of_index + number_of_indices_with_symm - 1,
+                            dim_of_index - 1) /
+          factorial(dim_of_index - 1);
+    }
+  }
+  return total_independent_components;
+}
+
+template <size_t Size>
+constexpr size_t number_of_components(
+    const std::array<size_t, Size>& dims) noexcept {
+  size_t number = 1;
+  for (size_t i = 0; i < Size; ++i) {
+    // clang-tidy: use gsl::at
+    number *= dims[i];  // NOLINT
+  }
+  return number;
+}
+
+template <typename T, typename S, size_t Size>
+constexpr void increment_tensor_index(cpp17::array<T, Size>& tensor_index,
+                                      const cpp17::array<S, Size>& dims) {
+  for (size_t i = 0; i < Size; ++i) {
+    if (++tensor_index[i] < static_cast<T>(dims[i])) {
+      return;
+    }
+    tensor_index[i] = 0;
+  }
+}
+
+// index_to_swap_with takes the last two arguments as opposed to just one of
+// them so that when the max constexpr steps is reached on clang it is reached
+// in this function rather than in array.
+template <size_t Rank>
+constexpr size_t index_to_swap_with(
+    const cpp17::array<size_t, Rank>& tensor_index,
+    const cpp17::array<int, Rank>& sym, size_t index_to_swap_with,
+    const size_t current_index) noexcept {
+  // If you encounter infinite loop compilation errors here you are
+  // constructing very large Tensor's. If you are sure Tensor is
+  // the correct data structure you can extend the compiler limit
+  // by passing the flag -fconstexpr-steps=<SOME LARGER VALUE>
+  while (true) {  // See source code comment on line above this one for fix
+    if (Rank == index_to_swap_with) {
+      return current_index;
+    } else if (tensor_index[current_index] <
+                   tensor_index[index_to_swap_with] and
+               sym[current_index] == sym[index_to_swap_with]) {
+      return index_to_swap_with;
+    }
+    index_to_swap_with++;
+  }
+}
+
+template <size_t Size, size_t SymmSize>
+constexpr cpp17::array<size_t, Size> canonicalize_tensor_index(
+    cpp17::array<size_t, Size> tensor_index,
+    const cpp17::array<int, SymmSize>& symm) noexcept {
+  for (size_t i = 0; i < Size; ++i) {
+    const size_t temp = tensor_index[i];
+    const size_t swap = index_to_swap_with(tensor_index, symm, i, i);
+    tensor_index[i] = tensor_index[swap];
+    tensor_index[swap] = temp;
+  }
+  return tensor_index;
+}
+
+template <size_t Rank>
+constexpr size_t compute_collapsed_index(
+    const cpp17::array<size_t, Rank>& tensor_index,
+    const cpp17::array<size_t, Rank> dims) noexcept {
+  size_t collapsed_index = 0;
+  for (size_t i = Rank - 1; i < Rank; --i) {
+    collapsed_index = tensor_index[i] + dims[i] * collapsed_index;
+  }
+  return collapsed_index;
+}
+
+template <typename Symm, size_t NumberOfComponents,
+          Requires<tmpl::size<Symm>::value != 0> = nullptr>
+constexpr cpp17::array<size_t, NumberOfComponents> compute_collapsed_to_storage(
+    const cpp17::array<size_t, tmpl::size<Symm>::value>&
+        index_dimensions) noexcept {
+  cpp17::array<size_t, NumberOfComponents> collapsed_to_storage{};
+  auto tensor_index =
+      convert_to_cpp17_array(make_array<tmpl::size<Symm>::value>(size_t{0}));
+  size_t count{0};
+  for (auto& current_storage_index : collapsed_to_storage) {
+    // Compute canonical tensor_index, which, for symmetric get_tensor_index is
+    // in decreasing numerical order, e.g. (3,2) rather than (2,3).
+    const auto canonical_tensor_index = canonicalize_tensor_index(
+        tensor_index, make_cpp17_array_from_list<Symm>());
+    // If the tensor_index was already in the canonical form, then it must be a
+    // new unique entry  and we add it to collapsed_to_storage_ as a new
+    // integer, thus increasing the size_. Else, the StorageIndex has already
+    // been determined so we look it up in the existing collapsed_to_storage
+    // table.
+    if (tensor_index == canonical_tensor_index) {
+      current_storage_index = count;
+      ++count;
+    } else {
+      current_storage_index = collapsed_to_storage[compute_collapsed_index(
+          canonical_tensor_index, index_dimensions)];
+    }
+    // Move to the next tensor_index.
+    increment_tensor_index(tensor_index, index_dimensions);
+  }
+  return collapsed_to_storage;
+}
+
+template <typename Symm, size_t NumberOfComponents,
+          Requires<tmpl::size<Symm>::value == 0> = nullptr>
+constexpr cpp17::array<size_t, 1> compute_collapsed_to_storage(
+    const cpp17::array<
+        size_t, tmpl::size<Symm>::value>& /*index_dimensions*/) noexcept {
+  return cpp17::array<size_t, 1>{{0}};
+}
+
+template <typename Symm, size_t NumIndComps, size_t NumComps,
+          Requires<(tmpl::size<Symm>::value > 0)> = nullptr>
+constexpr cpp17::array<cpp17::array<size_t, tmpl::size<Symm>::value>,
+                       NumIndComps>
+compute_storage_to_tensor(
+    const cpp17::array<size_t, NumComps>& collapsed_to_storage,
+    const cpp17::array<size_t, tmpl::size<Symm>::value>&
+        index_dimensions) noexcept {
+  constexpr size_t rank = tmpl::size<Symm>::value;
+  cpp17::array<cpp17::array<size_t, rank>, NumIndComps> storage_to_tensor{};
+  cpp17::array<size_t, rank> tensor_index =
+      convert_to_cpp17_array(make_array<rank>(size_t{0}));
+  for (const auto& current_storage_index : collapsed_to_storage) {
+    storage_to_tensor[current_storage_index] = canonicalize_tensor_index(
+        tensor_index, make_cpp17_array_from_list<Symm>());
+    increment_tensor_index(tensor_index, index_dimensions);
+  }
+  return storage_to_tensor;
+}
+
+template <typename Symm, size_t NumIndComps, size_t NumComps,
+          Requires<(tmpl::size<Symm>::value == 0)> = nullptr>
+constexpr cpp17::array<cpp17::array<int, 1>, NumIndComps>
+compute_storage_to_tensor(
+    const cpp17::array<size_t, NumComps>& /*collapsed_to_storage*/,
+    const cpp17::array<size_t, tmpl::size<Symm>::value>&
+    /*index_dimensions*/) noexcept {
+  return cpp17::array<cpp17::array<int, 1>, 1>{{cpp17::array<int, 1>{{0}}}};
+}
+
+template <size_t NumIndComps, typename T, size_t NumComps>
+constexpr cpp17::array<size_t, NumIndComps> compute_multiplicity(
+    const cpp17::array<T, NumComps>& collapsed_to_storage) {
+  cpp17::array<size_t, NumIndComps> multiplicity =
+      convert_to_cpp17_array(make_array<NumIndComps>(size_t{0}));
+  for (const auto& current_storage_index : collapsed_to_storage) {
+    ++multiplicity[current_storage_index];
+  }
+  return multiplicity;
 }
 
 template <size_t NumIndices>
@@ -69,8 +248,9 @@ struct ComponentNameImpl {
               break;
             default:
               ERROR("Tensor dim["
-                    << i << "] must be 1,2,3, or 4 for default axis_labels. "
-                            "Either pass a string or extend the function.");
+                    << i
+                    << "] must be 1,2,3, or 4 for default axis_labels. "
+                       "Either pass a string or extend the function.");
           }
         } else {
           switch (gsl::at(index_dim, i)) {
@@ -85,8 +265,9 @@ struct ComponentNameImpl {
               break;
             default:
               ERROR("Tensor dim["
-                    << i << "] must be 1,2, or 3 for default axis_labels. "
-                            "Either pass a string or extend the function.");
+                    << i
+                    << "] must be 1,2, or 3 for default axis_labels. "
+                       "Either pass a string or extend the function.");
           }
         }
       } else {
@@ -117,32 +298,6 @@ struct ComponentNameImpl<0> {
     return "Scalar";
   }
 };
-}  // namespace detail
-
-template <typename T, typename S, std::size_t Rank>
-inline constexpr std::size_t compute_collapsed_index(
-    const std::array<T, Rank>& tensor_index, const std::array<S, Rank> dims,
-    const size_t i = 0) noexcept {
-  static_assert(tt::is_integer_v<T>,
-                "The tensor index array must hold integer types.");
-  static_assert(tt::is_integer_v<S>, "The dims array must hold integer types.");
-  return i < Rank ? (gsl::at(tensor_index, i) +
-                     gsl::at(dims, i) *
-                         compute_collapsed_index(tensor_index, dims, i + 1))
-                  : 0;
-}
-
-template <typename IndexList, typename... I,
-          Requires<cpp17::conjunction_v<tt::is_integer<I>...>> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr size_t compute_collapsed_index(
-    I... i) noexcept {
-  static_assert(sizeof...(I) == tmpl::size<IndexList>::value,
-                "The number of tensor indices passed to "
-                "compute_collapsed_index does not match the rank of the "
-                "tensor.");
-  return static_cast<size_t>(detail::compute_collapsed_index_impl<IndexList>(
-      static_cast<std::size_t>(i)...));
-}
 
 /// \ingroup TensorGroup
 /// A lookup table between each tensor_index and storage_index
@@ -160,81 +315,50 @@ SPECTRE_ALWAYS_INLINE constexpr size_t compute_collapsed_index(
 template <typename Symm, typename... Indices>
 struct Structure {
   static_assert(
-      TensorMetafunctions::check_index_symmetry<Symm,
-                                                tmpl::list<Indices...>>::value,
+      TensorMetafunctions::check_index_symmetry_v<Symm, Indices...>,
       "Cannot construct a Tensor with a symmetric pair that are not the same.");
   static_assert(tmpl::size<Symm>::value == sizeof...(Indices),
                 "The number of indices in Symmetry do not match the number of "
                 "indices given to the Structure.");
   static_assert(
-      cpp17::conjunction<tt::is_tensor_index_type<Indices>...>::value,
+      tmpl2::flat_all_v<tt::is_tensor_index_type<Indices>::value...>,
       "All Indices passed to Structure must be of type TensorIndexType.");
 
   using index_list = tmpl::list<Indices...>;
-  using num_of_components =
-      TensorMetafunctions::number_of_components<Symm, index_list>;
-  using NumberOfIndependentComponents =
-      TensorMetafunctions::independent_components<Symm, index_list>;
 
-#ifdef __INTEL_COMPILER
-  // The Intel compiler is embarrassingly terrible at compiling metaprograms,
-  // possibly because of a lack of memoization, but without having access to
-  // their compiler source we cannot be sure. Unfortunately ICC is also terrible
-  // at supporting constant expressions and so moving these computations to
-  // constant expressions is also not feasible (it's been attempted). As a
-  // result we do the computations of the arrays at compile time when using GCC
-  // or Clang and at runtime when using Intel. It should be possible to later
-  // make the arrays static so they are only computed at most once during
-  // evolution. However, if Tensor has the structure as a static member variable
-  // then this is irrelevant anyway.
-  //
-  // ICC chokes on the computation of the collapsed_to_storage_ array.
-  // Specifically it cannot handle the IncrementTensorIndex call. We've tested
-  // several other implementations of this metafunction but they all result in
-  // the same time with GCC and Clang but impossibly long compilation with ICC.
-  const std::array<size_t,
-                   number_of_components<Symm, tmpl::list<Indices...>>::value>
-      collapsed_to_storage_ = Tensor_detail::compute_collapsed_to_storage<
-          Symm, tmpl::list<Indices...>,
-          number_of_components<Symm, index_list>>();
-  const std::array<
-      std::array<size_t, sizeof...(Indices) == 0 ? 1 : sizeof...(Indices)>,
-      IndependentComponents<Symm, tmpl::list<Indices...>>::value>
-      storage_to_tensor_ = Tensor_detail::compute_storage_to_tensor<
-          Symm, tmpl::list<Indices...>,
-          IndependentComponents<Symm, index_list>>(collapsed_to_storage_);
-  const std::array<size_t,
-                   IndependentComponents<Symm, tmpl::list<Indices...>>::value>
-      multiplicity_ = Tensor_detail::compute_multiplicity<
-          IndependentComponents<Symm, tmpl::list<Indices...>>>(
-          collapsed_to_storage_);
-#else
-  using collapsed_to_storage_list =
-      TensorMetafunctions::compute_collapsed_to_storage<index_list, Symm,
-                                                        num_of_components>;
-  using storage_to_tensor_index_list =
-      TensorMetafunctions::compute_storage_to_tensor<
-          Symm, index_list, collapsed_to_storage_list,
-          NumberOfIndependentComponents>;
-
-  using multiplicity_list =
-      TensorMetafunctions::compute_multiplicity<collapsed_to_storage_list,
-                                                NumberOfIndependentComponents>;
-#endif
-
- public:
   SPECTRE_ALWAYS_INLINE static constexpr size_t rank() noexcept {
     return sizeof...(Indices);
   }
 
   SPECTRE_ALWAYS_INLINE static constexpr size_t size() noexcept {
-    return NumberOfIndependentComponents::value;
+    constexpr auto number_of_independent_components =
+        ::Tensor_detail::number_of_independent_components(
+            make_array_from_list<
+                tmpl::conditional_t<sizeof...(Indices) != 0, Symm, int>>(),
+            make_array_from_list<tmpl::conditional_t<sizeof...(Indices) != 0,
+                                                     index_list, size_t>>());
+    return number_of_independent_components;
   }
 
   SPECTRE_ALWAYS_INLINE static constexpr size_t
   number_of_components() noexcept {
-    return num_of_components::value;
+    constexpr auto number_of_components = ::Tensor_detail::number_of_components(
+        make_array_from_list<tmpl::conditional_t<sizeof...(Indices) != 0,
+                                                 index_list, size_t>>());
+    return number_of_components;
   }
+
+  static constexpr auto collapsed_to_storage_ =
+      compute_collapsed_to_storage<Symm, number_of_components()>(
+          make_cpp17_array_from_list<tmpl::conditional_t<
+              sizeof...(Indices) == 0, size_t, index_list>>());
+  static constexpr auto storage_to_tensor_ = compute_storage_to_tensor<Symm,
+                                                                       size()>(
+      collapsed_to_storage_,
+      make_cpp17_array_from_list<
+          tmpl::conditional_t<sizeof...(Indices) == 0, size_t, index_list>>());
+  static constexpr auto multiplicity_ =
+      compute_multiplicity<size()>(collapsed_to_storage_);
 
   // Retrieves the dimensionality of the I'th index
   template <int I>
@@ -245,9 +369,11 @@ struct Structure {
     return tmpl::at<index_list, tmpl::int32_t<I>>::value;
   }
 
-  static constexpr std::array<size_t, sizeof...(Indices)> dims() noexcept {
-    return make_array_from_list<
+  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, sizeof...(Indices)>
+  dims() noexcept {
+    constexpr auto dims = make_array_from_list<
         tmpl::conditional_t<sizeof...(Indices) != 0, index_list, size_t>>();
+    return dims;
   }
 
   SPECTRE_ALWAYS_INLINE static constexpr std::array<int, sizeof...(Indices)>
@@ -286,8 +412,8 @@ struct Structure {
             std::enable_if_t<Rank != 0>* = nullptr>
   SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, sizeof...(Indices)>
   get_canonical_tensor_index(const size_t storage_index) noexcept {
-    return gsl::at(make_array_from_list<storage_to_tensor_index_list>(),
-                   storage_index);
+    constexpr auto storage_to_tensor = storage_to_tensor_;
+    return gsl::at(storage_to_tensor, storage_index);
   }
   template <size_t Rank = sizeof...(Indices),
             std::enable_if_t<Rank == 0>* = nullptr>
@@ -303,17 +429,33 @@ struct Structure {
       const N... args) noexcept {
     static_assert(sizeof...(Indices) == sizeof...(N),
                   "the number arguments must be equal to rank_");
+    constexpr auto collapsed_to_storage = collapsed_to_storage_;
     return gsl::at(
-        make_array_from_list<collapsed_to_storage_list>(),
-        compute_collapsed_index<index_list>(static_cast<size_t>(args)...));
+        collapsed_to_storage,
+        compute_collapsed_index(
+            canonicalize_tensor_index(
+                cpp17::array<size_t, sizeof...(N)>{
+                    {static_cast<size_t>(args)...}},
+                make_cpp17_array_from_list<
+                    tmpl::conditional_t<0 != sizeof...(Indices), Symm, int>>()),
+            make_cpp17_array_from_list<tmpl::conditional_t<
+                0 != sizeof...(Indices), index_list, size_t>>()));
   }
   /// Get storage_index
   /// \param tensor_index the tensor_index of which to get the storage_index
   template <typename I>
   SPECTRE_ALWAYS_INLINE static constexpr std::size_t get_storage_index(
       const std::array<I, sizeof...(Indices)>& tensor_index) noexcept {
-    return gsl::at(make_array_from_list<collapsed_to_storage_list>(),
-                   compute_collapsed_index(tensor_index, Structure::dims()));
+    constexpr auto collapsed_to_storage = collapsed_to_storage_;
+    return gsl::at(
+        collapsed_to_storage,
+        compute_collapsed_index(
+            canonicalize_tensor_index(
+                convert_to_cpp17_array(tensor_index),
+                make_cpp17_array_from_list<
+                    tmpl::conditional_t<0 != sizeof...(Indices), Symm, int>>()),
+            make_cpp17_array_from_list<tmpl::conditional_t<
+                0 != sizeof...(Indices), index_list, size_t>>()));
   }
 
   template <int... N, Requires<(sizeof...(N) > 0)> = nullptr>
@@ -321,50 +463,53 @@ struct Structure {
   get_storage_index() noexcept {
     static_assert(sizeof...(Indices) == sizeof...(N),
                   "the number arguments must be equal to rank_");
-    return tmpl::at<
-        collapsed_to_storage_list,
-        TensorMetafunctions::compute_collapsed_index<
-            TensorMetafunctions::canonicalize_tensor_index<
-                Symm, index_list, tmpl::integral_list<std::size_t, N...>>,
-            index_list>>::value;
+    constexpr std::size_t storage_index =
+        collapsed_to_storage_[compute_collapsed_index(
+            canonicalize_tensor_index(
+                cpp17::array<size_t, sizeof...(N)>{{N...}},
+                make_cpp17_array_from_list<Symm>()),
+            make_cpp17_array_from_list<index_list>())];
+    return storage_index;
   }
 
   /// Get the multiplicity of the storage_index
   /// \param storage_index the storage_index of which to get the multiplicity
   SPECTRE_ALWAYS_INLINE static constexpr size_t multiplicity(
       const size_t storage_index) noexcept {
-    return gsl::at(make_array_from_list<multiplicity_list>(), storage_index);
+    constexpr auto multiplicity = multiplicity_;
+    return gsl::at(multiplicity, storage_index);
   }
 
   /// Get the array of collapsed index to storage_index
-  SPECTRE_ALWAYS_INLINE static constexpr std::array<int,
-                                                    number_of_components()>&
+  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t,
+                                                    number_of_components()>
   collapsed_to_storage() noexcept {
-    return make_array_from_list<collapsed_to_storage_list>();
+    constexpr auto collapsed_to_storage = collapsed_to_storage_;
+    return collapsed_to_storage;
   }
 
   /// Get the storage_index for the specified collapsed index
   SPECTRE_ALWAYS_INLINE static constexpr int collapsed_to_storage(
       const size_t i) noexcept {
-    return gsl::at(make_array_from_list<collapsed_to_storage_list>(), i);
+    constexpr auto collapsed_to_storage = collapsed_to_storage_;
+    return gsl::at(collapsed_to_storage, i);
   }
 
   /// Get the array of tensor_index's corresponding to the storage_index's.
   SPECTRE_ALWAYS_INLINE static constexpr const std::array<
       std::array<size_t, sizeof...(Indices) == 0 ? 1 : sizeof...(Indices)>,
-      TensorMetafunctions::independent_components<Symm, index_list>::value>&
+      size()>&
   storage_to_tensor_index() noexcept {
-    return make_array_from_list<tmpl::conditional_t<
-        sizeof...(Indices) == 0, tmpl::list<tmpl::list<tmpl::size_t<0>>>,
-        storage_to_tensor_index_list>>();
+    constexpr auto storage_to_tensor = storage_to_tensor_;
+    return storage_to_tensor;
   }
 
   template <typename T>
   SPECTRE_ALWAYS_INLINE static std::string component_name(
       const std::array<T, rank()>& tensor_index,
       const std::array<std::string, rank()>& axis_labels) {
-    return detail::ComponentNameImpl<sizeof...(
-        Indices)>::template apply<Structure>(tensor_index, axis_labels);
+    return ComponentNameImpl<sizeof...(Indices)>::template apply<Structure>(
+        tensor_index, axis_labels);
   }
 };
 }  // namespace Tensor_detail

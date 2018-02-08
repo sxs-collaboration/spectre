@@ -64,6 +64,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
 constexpr size_t falling_factorial(
     const size_t x, const size_t n) noexcept {
   // clang-tidy: don't warn about STL internals, I can't fix them
+  assert(n <= x);  // NOLINT
   size_t r = 1;
   for (size_t k = 0; k < n; ++k) {
     r *= (x - k);
@@ -74,9 +75,6 @@ constexpr size_t falling_factorial(
 /*!
  * \ingroup ConstantExpressionsGroup
  * \brief Compute the factorial of \f$n!\f$
- *
- * \note The largest representable factorial is 20!. For ratios it is up to the
- * user to ensure that overflow does not occur.
  */
 constexpr size_t factorial(const size_t n) noexcept {
   assert(n <= 20);  // NOLINT
