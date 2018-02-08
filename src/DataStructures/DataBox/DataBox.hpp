@@ -566,9 +566,8 @@ template <typename Caller, typename Callee, typename List,
           typename = std::nullptr_t>
 struct create_dependency_graph {
   using new_edge = tmpl::edge<Callee, Caller>;
-  using type = tmpl::conditional_t<
-      tmpl::found<List, std::is_same<tmpl::_1, tmpl::pin<new_edge>>>::value,
-      List, tmpl::push_back<List, new_edge>>;
+  using type = tmpl::conditional_t<tmpl::list_contains_v<List, new_edge>, List,
+                                   tmpl::push_back<List, new_edge>>;
 };
 
 template <typename Caller, typename Callee, typename List>
@@ -588,10 +587,9 @@ struct create_dependency_graph<
   using partial_sub_tree = tmpl::fold<
       typename Callee::argument_tags, List,
       create_dependency_graph<tmpl::pin<Callee>, tmpl::_element, tmpl::_state>>;
-  using variables_tags_dependency = tmpl::fold<
-      typename item_type<Callee>::tags_list, tmpl::list<>,
-      tmpl::bind<tmpl::push_back, tmpl::_state,
-                 tmpl::bind<tmpl::edge, tmpl::pin<Callee>, tmpl::_element>>>;
+  using variables_tags_dependency =
+      tmpl::transform<typename item_type<Callee>::tags_list,
+                      tmpl::bind<tmpl::edge, tmpl::pin<Callee>, tmpl::_1>>;
   using sub_tree = tmpl::append<partial_sub_tree, variables_tags_dependency>;
   using type = tmpl::conditional_t<
       cpp17::is_same_v<void, Caller>, sub_tree,
@@ -640,20 +638,17 @@ class DataBox<TagsList<Tags...>> {
   using tags_list = typelist<Tags...>;
 
   using compute_item_tags =
-      tmpl::filter<tags_list, std::is_base_of<db::ComputeItemTag, tmpl::_1>>;
+      tmpl::filter<tags_list, db::is_compute_item<tmpl::_1>>;
 
-  using item_tags =
-      tmpl::filter<tags_list,
-                   tmpl::not_<std::is_base_of<db::ComputeItemTag, tmpl::_1>>>;
+  using item_tags = tmpl::remove_if<tags_list, db::is_compute_item<tmpl::_1>>;
 
   using variables_item_tags =
       tmpl::filter<item_tags, tmpl::bind<databox_detail::is_variables,
                                          tmpl::bind<db::item_type, tmpl::_1>>>;
 
-  using extracted_from_variables =
-      tmpl::filter<databox_detail::extracted_items<variables_item_tags>,
-                   tmpl::not_<tmpl::bind<databox_detail::is_variables,
-                                         tmpl::bind<db::item_type, tmpl::_1>>>>;
+  using extracted_from_variables = tmpl::list_difference<
+      databox_detail::extracted_items<variables_item_tags>,
+      variables_item_tags>;
 
   using edge_list =
       tmpl::fold<compute_item_tags, typelist<>,
@@ -1093,18 +1088,14 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
 
   // Since MutateTags could contain Variables Tags we need to extract the Tags
   // inside the Variables class and reset compute items depending on those too.
-  using mutated_items_including_variables = tmpl::append<
-      typename databox_detail::closure_extract_dependent_items<tt::is_a_v<
-          Variables, item_type<MutateTags>>>::template f<MutateTags>...,
-      variables_tags>;
+  using mutated_items_including_variables =
+      tmpl::append<databox_detail::extracted_items<mutate_tags_list>,
+                   variables_tags>;
   using first_compute_items_to_reset = tmpl::transform<
-      tmpl::filter<
-          typename DataBox<TagList>::edge_list,
-          tmpl::bind<
-              tmpl::found, tmpl::pin<mutated_items_including_variables>,
-              tmpl::bind<std::is_same,
-                         tmpl::bind<tmpl::pin, tmpl::get_source<tmpl::_1>>,
-                         tmpl::parent<tmpl::_1>>>>,
+      tmpl::filter<typename DataBox<TagList>::edge_list,
+                   tmpl::bind<tmpl::list_contains,
+                              tmpl::pin<mutated_items_including_variables>,
+                              tmpl::get_source<tmpl::_1>>>,
       tmpl::get_destination<tmpl::_1>>;
   (void)std::initializer_list<char>{
       ((void)databox_detail::add_variables_item_tags_to_box<MutateTags>(
@@ -1223,25 +1214,20 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
   using mutated_tags_list = tmpl::list<MutatedTags...>;
   using variables_tags_from_single_tags = tmpl::filter<
       extracted_from_variables,
-      tmpl::bind<tmpl::found, tmpl::pin<mutated_tags_list>,
-                 tmpl::bind<std::is_same, tmpl::_1, tmpl::parent<tmpl::_1>>>>;
+      tmpl::bind<tmpl::list_contains, tmpl::pin<mutated_tags_list>, tmpl::_1>>;
   static_assert(cpp17::is_same_v<tmpl::list<>, variables_tags_from_single_tags>,
                 "You are not allowed to mutate a single component of a "
                 "Variables with db::create_from, you must mutate the entire "
                 "Variables instead.");
 
   // Reset dependent compute items
-  using mutated_items_including_variables = tmpl::append<
-      typename databox_detail::closure_extract_dependent_items<tt::is_a_v<
-          Variables, item_type<MutatedTags>>>::template f<MutatedTags>...>;
+  using mutated_items_including_variables =
+      databox_detail::extracted_items<mutated_tags_list>;
   using first_compute_items_to_reset = tmpl::transform<
-      tmpl::filter<
-          edge_list,
-          tmpl::bind<
-              tmpl::found, tmpl::pin<mutated_items_including_variables>,
-              tmpl::bind<std::is_same,
-                         tmpl::bind<tmpl::pin, tmpl::get_source<tmpl::_1>>,
-                         tmpl::parent<tmpl::_1>>>>,
+      tmpl::filter<edge_list,
+                   tmpl::bind<tmpl::list_contains,
+                              tmpl::pin<mutated_items_including_variables>,
+                              tmpl::get_source<tmpl::_1>>>,
       tmpl::get_destination<tmpl::_1>>;
 
   databox_detail::reset_compute_items_after_mutate<
@@ -1268,14 +1254,8 @@ constexpr auto DataBox<TagsList<Tags...>>::create(Args&&... args) {
   static_assert(tmpl::all<AddComputeItems, is_compute_item<tmpl::_1>>::value,
                 "Cannot add any Tags in the AddComputeItems list, must use the "
                 "AddTags list.");
-  using full_items = tmpl::fold<
-      AddTags, tmpl::list<>,
-      tmpl::bind<tmpl::append, tmpl::_state,
-                 databox_detail::extract_dependent_items<tmpl::_element>>>;
-  using full_compute_items = tmpl::fold<
-      AddComputeItems, tmpl::list<>,
-      tmpl::bind<tmpl::append, tmpl::_state,
-                 databox_detail::extract_dependent_items<tmpl::_element>>>;
+  using full_items = databox_detail::extracted_items<AddTags>;
+  using full_compute_items = databox_detail::extracted_items<AddComputeItems>;
   using sorted_tags =
       ::db::get_databox_list<tmpl::append<full_items, full_compute_items>>;
   return DataBox<sorted_tags>(AddTags{}, full_items{}, AddComputeItems{},
@@ -1302,23 +1282,15 @@ constexpr auto DataBox<TagsList<Tags...>>::create_from(const Box& box,
   using old_tags_list = typename Box::tags_list;
 
   // Build list of compute items in Box::tags_list that are not in RemoveTags
-  using compute_items_to_keep = tmpl::filter<
-      old_tags_list,
-      tmpl::and_<
-          db::is_compute_item<tmpl::_1>,
-          tmpl::not_<tmpl::bind<tmpl::found, tmpl::pin<RemoveTags>,
-                                tmpl::bind<std::is_same, tmpl::parent<tmpl::_1>,
-                                           tmpl::bind<tmpl::pin, tmpl::_1>>>>>>;
-
+  using compute_items_to_keep =
+      tmpl::list_difference<typename Box::compute_item_tags, RemoveTags>;
   // Build list of tags where we expand the tags inside Variables<Tags...>
   // objects. This is needed since we actually want those tags to be part of the
   // DataBox type as well
   using full_remove_tags = databox_detail::extracted_items<RemoveTags>;
   using full_items = databox_detail::extracted_items<AddTags>;
   using full_compute_items = databox_detail::extracted_items<AddComputeItems>;
-  using remaining_tags =
-      tmpl::fold<full_remove_tags, old_tags_list,
-                 tmpl::bind<tmpl::remove, tmpl::_state, tmpl::_element>>;
+  using remaining_tags = tmpl::list_difference<old_tags_list, full_remove_tags>;
   using new_tags = tmpl::append<remaining_tags, full_items, full_compute_items>;
   using sorted_tags = ::db::get_databox_list<new_tags>;
   // List of tags that were both removed and added, and therefore were mutated
@@ -1378,15 +1350,8 @@ using AddComputeItemsTags = tmpl::flatten<typelist<Tags...>>;
 template <typename AddTags, typename AddComputeItems = typelist<>,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
-  return DataBox<::db::get_databox_list<tmpl::append<
-      tmpl::fold<
-          AddTags, tmpl::list<>,
-          tmpl::bind<tmpl::append, tmpl::_state,
-                     databox_detail::extract_dependent_items<tmpl::_element>>>,
-      tmpl::fold<AddComputeItems, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            databox_detail::extract_dependent_items<
-                                tmpl::_element>>>>>>::
+  return DataBox<::db::get_databox_list<databox_detail::extracted_items<
+      tmpl::append<AddTags, AddComputeItems>>>>::
       template create<AddTags, AddComputeItems>(std::forward<Args>(args)...);
 }
 
@@ -1419,17 +1384,10 @@ template <typename RemoveTags, typename AddTags = typelist<>,
 SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
                                                  Args&&... args) {
   return DataBox<::db::get_databox_list<tmpl::append<
-      tmpl::fold<
-          tmpl::fold<RemoveTags, tmpl::list<>,
-                     tmpl::lazy::append<tmpl::_state,
-                                        databox_detail::extract_dependent_items<
-                                            tmpl::_element>>>,
-          typename Box::tags_list,
-          tmpl::bind<tmpl::remove, tmpl::_state, tmpl::_element>>,
-      tmpl::fold<tmpl::append<AddTags, AddComputeItems>, tmpl::list<>,
-                 tmpl::bind<tmpl::append, tmpl::_state,
-                            databox_detail::extract_dependent_items<
-                                tmpl::_element>>>>>>::
+      tmpl::list_difference<typename Box::tags_list,
+                            databox_detail::extracted_items<RemoveTags>>,
+      databox_detail::extracted_items<
+          tmpl::append<AddTags, AddComputeItems>>>>>::
       template create_from<RemoveTags, AddTags, AddComputeItems>(
           box, std::forward<Args>(args)...);
 }
@@ -1746,14 +1704,6 @@ inline constexpr auto apply_with_box(F f, const DataBox<BoxTags...>& box,
                                                  std::forward<Args>(args)...);
 }
 
-namespace detail {
-template <typename Seq, typename Element>
-struct filter_helper {
-  using type =
-      tmpl::not_<tmpl::found<Seq, std::is_same<tmpl::_1, tmpl::pin<Element>>>>;
-};
-}  // namespace detail
-
 /*!
  * \ingroup DataBoxGroup
  * \brief Get typelist of tags to remove from a DataBox so as to keep only
@@ -1767,8 +1717,7 @@ struct filter_helper {
  */
 template <typename DataBoxTagsList, typename KeepTagsList>
 using remove_tags_from_keep_tags =
-    tmpl::filter<DataBoxTagsList,
-                 detail::filter_helper<tmpl::pin<KeepTagsList>, tmpl::_1>>;
+    tmpl::list_difference<DataBoxTagsList, KeepTagsList>;
 
 /*!
  * \ingroup DataBoxGroup
