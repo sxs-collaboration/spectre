@@ -91,22 +91,6 @@ struct TagPrefix : db::DataBoxPrefix {
 }  // namespace test_databox_tags
 
 namespace {
-template <typename T>
-struct X {};
-/// [remove_tags_from_keep_tags]
-using full_list = tmpl::list<double, char, int, bool, X<int>>;
-using keep_list = tmpl::list<double, bool>;
-static_assert(
-    std::is_same<typelist<char, int, X<int>>,
-                 db::remove_tags_from_keep_tags<full_list, keep_list>>::value,
-    "Failed testing db::remove_tags_from_keep_tags");
-using keep_list2 = tmpl::list<double, bool, X<int>>;
-static_assert(
-    std::is_same<typelist<char, int>,
-                 db::remove_tags_from_keep_tags<full_list, keep_list2>>::value,
-    "Failed testing db::remove_tags_from_keep_tags");
-/// [remove_tags_from_keep_tags]
-
 using Box_t = db::DataBox<db::get_databox_list<typelist<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
     test_databox_tags::TagPrefix<test_databox_tags::Tag0>,

@@ -1700,21 +1700,6 @@ inline constexpr auto apply_with_box(F f, const DataBox<BoxTags...>& box,
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Get typelist of tags to remove from a DataBox so as to keep only
- * desired tags
- *
- * \metareturns a typelist of tags that need to be removed from the DataBox
- * with tags `DataBoxTagsList` in order to keep the tags in `KeepTagsList`
- *
- * \example
- * \snippet Test_DataBox.cpp remove_tags_from_keep_tags
- */
-template <typename DataBoxTagsList, typename KeepTagsList>
-using remove_tags_from_keep_tags =
-    tmpl::list_difference<DataBoxTagsList, KeepTagsList>;
-
-/*!
- * \ingroup DataBoxGroup
  * \brief Get all the Tags that are compute items from the `TagList`
  */
 template <class TagList>
