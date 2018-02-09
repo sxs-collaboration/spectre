@@ -30,7 +30,7 @@ void check_element() {
   CHECK(element.id() == id);
   CHECK(element.neighbors() == two_neighbors);
   CHECK(element.number_of_neighbors() == 4);
-  for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+  for (const auto& direction : Direction<VolumeDim>::all_logical_directions()) {
     // Either a xi direction or an external boundary, but not both.
     CHECK((direction.axis() == Direction<VolumeDim>::Axis::Xi) !=
           (element.external_boundaries().count(direction) == 1));

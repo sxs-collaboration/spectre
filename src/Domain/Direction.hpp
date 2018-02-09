@@ -10,6 +10,7 @@
 #include <iosfwd>
 #include <pup.h>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Side.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 
@@ -47,7 +48,7 @@ class Direction {
 
   // An array of all logical Directions for a given dimensionality.
   static const std::array<Direction<VolumeDim>, 2 * VolumeDim>&
-  all_directions() noexcept;
+  all_logical_directions() noexcept;
 
   // {@
   /// Helper functions for creating specific Directions.
@@ -59,6 +60,13 @@ class Direction {
   static Direction<VolumeDim> upper_eta() noexcept;
   static Direction<VolumeDim> lower_zeta() noexcept;
   static Direction<VolumeDim> upper_zeta() noexcept;
+  static Direction<VolumeDim> lower_x() noexcept;
+  static Direction<VolumeDim> upper_x() noexcept;
+  static Direction<VolumeDim> lower_y() noexcept;
+  static Direction<VolumeDim> upper_y() noexcept;
+  static Direction<VolumeDim> lower_z() noexcept;
+  static Direction<VolumeDim> upper_z() noexcept;
+
   // @}
 
   /// Serialization for Charm++
@@ -89,13 +97,13 @@ Direction<VolumeDim>::Direction() noexcept = default;  // NOLINT
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 template <>
-enum class Direction<1>::Axis{Xi = 0};
+enum class Direction<1>::Axis{Xi = 0, X = 3, Y = 4, Z = 5};
 
 template <>
-enum class Direction<2>::Axis{Xi = 0, Eta = 1};
+enum class Direction<2>::Axis{Xi = 0, Eta = 1, X = 3, Y = 4, Z = 5};
 
 template <>
-enum class Direction<3>::Axis{Xi = 0, Eta = 1, Zeta = 2};
+enum class Direction<3>::Axis{Xi = 0, Eta = 1, Zeta = 2, X = 3, Y = 4, Z = 5};
 #pragma GCC diagnostic pop
 
 template <size_t VolumeDim>
@@ -133,22 +141,51 @@ inline Direction<VolumeDim> Direction<VolumeDim>::upper_zeta() noexcept {
 }
 
 template <size_t VolumeDim>
+inline Direction<VolumeDim> Direction<VolumeDim>::lower_x() noexcept {
+  return Direction(Direction<VolumeDim>::Axis::X, Side::Lower);
+}
+
+template <size_t VolumeDim>
+inline Direction<VolumeDim> Direction<VolumeDim>::upper_x() noexcept {
+  return Direction(Direction<VolumeDim>::Axis::X, Side::Upper);
+}
+
+template <size_t VolumeDim>
+inline Direction<VolumeDim> Direction<VolumeDim>::lower_y() noexcept {
+  return Direction(Direction<VolumeDim>::Axis::Y, Side::Lower);
+}
+
+template <size_t VolumeDim>
+inline Direction<VolumeDim> Direction<VolumeDim>::upper_y() noexcept {
+  return Direction(Direction<VolumeDim>::Axis::Y, Side::Upper);
+}
+
+template <size_t VolumeDim>
+inline Direction<VolumeDim> Direction<VolumeDim>::lower_z() noexcept {
+  return Direction(Direction<VolumeDim>::Axis::Z, Side::Lower);
+}
+
+template <size_t VolumeDim>
+inline Direction<VolumeDim> Direction<VolumeDim>::upper_z() noexcept {
+  return Direction(Direction<VolumeDim>::Axis::Z, Side::Upper);
+}
+template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
   return Direction<VolumeDim>(axis_, ::opposite(side_));
 }
 
 /// \cond NEVER
 template <>
-inline const std::array<Direction<1>, 2>& Direction<1>::all_directions()
-    noexcept {
+inline const std::array<Direction<1>, 2>&
+Direction<1>::all_logical_directions() noexcept {
   const static auto directions = std::array<Direction<1>, 2>{
       {Direction<1>::upper_xi(), Direction<1>::lower_xi()}};
   return directions;
 }
 
 template <>
-inline const std::array<Direction<2>, 4>& Direction<2>::all_directions()
-    noexcept {
+inline const std::array<Direction<2>, 4>&
+Direction<2>::all_logical_directions() noexcept {
   const static auto directions = std::array<Direction<2>, 4>{
       {Direction<2>::upper_xi(), Direction<2>::lower_xi(),
        Direction<2>::upper_eta(), Direction<2>::lower_eta()}};
@@ -156,8 +193,8 @@ inline const std::array<Direction<2>, 4>& Direction<2>::all_directions()
 }
 
 template <>
-inline const std::array<Direction<3>, 6>& Direction<3>::all_directions()
-    noexcept {
+inline const std::array<Direction<3>, 6>&
+Direction<3>::all_logical_directions() noexcept {
   const static auto directions = std::array<Direction<3>, 6>{
       {Direction<3>::upper_xi(), Direction<3>::lower_xi(),
        Direction<3>::upper_eta(), Direction<3>::lower_eta(),
