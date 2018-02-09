@@ -54,34 +54,30 @@ create_correspondence_between_blocks(
   return std::make_pair(result1, result2);
 }
 
-// When setting up periodic-like boundary conditions, the user specifies
-// the corners of the two faces to be identified.
-// requires that the two faces correspond to the same block.
-// returns the corresponding id of the block whose faces are to
-// be identified.
+// requires that the face is an external boundary of the domain.
+// returns the id of the block with that face.
 template <size_t VolumeDim>
-size_t find_block_id(
-    const std::vector<size_t>& global_corners_face1,
-    const std::vector<size_t>& global_corners_face2,
+size_t find_block_id_of_external_face(
+    const std::vector<size_t>& global_corners_external_face,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks) {
+  size_t number_of_blocks_found = 0;
+  size_t id_of_found_block = std::numeric_limits<size_t>::max();
   for (size_t j = 0; j < corners_of_all_blocks.size(); j++) {
     const auto& corners_set = corners_of_all_blocks[j];
     auto is_in_corners_set = [&corners_set](const auto element) {
       return std::find(corners_set.begin(), corners_set.end(), element) !=
              corners_set.end();
     };
-    const bool face_matches_block_j =
-        std::all_of(global_corners_face1.begin(), global_corners_face1.end(),
-                    is_in_corners_set)
-
-        and std::all_of(global_corners_face2.begin(),
-                        global_corners_face2.end(), is_in_corners_set);
-    if (face_matches_block_j) {
-      return j;
+    if (std::all_of(global_corners_external_face.begin(),
+                    global_corners_external_face.end(), is_in_corners_set)) {
+      number_of_blocks_found++;
+      id_of_found_block = j;
     }
   }
-  ERROR("This pair of faces does not belong to a single block.");
+  ASSERT(number_of_blocks_found > 0, "This face does not belong to a block.");
+  ASSERT(number_of_blocks_found == 1, "This face is not an external boundary.");
+  return id_of_found_block;
 }
 
 template <size_t VolumeDim>
@@ -276,11 +272,14 @@ void set_periodic_boundaries(
     const auto& face2 = pair.second;
     ASSERT(face1.size() == face2.size(),
            "Each set must have the same number of corners.");
-    size_t id = ::find_block_id<VolumeDim>(face1, face2, corners_of_all_blocks);
+    size_t id1 = ::find_block_id_of_external_face<VolumeDim>(
+        face1, corners_of_all_blocks);
+    size_t id2 = ::find_block_id_of_external_face<VolumeDim>(
+        face2, corners_of_all_blocks);
     const auto face1_canon =
-        get_common_local_corners<VolumeDim>(corners_of_all_blocks[id], face1);
+        get_common_local_corners<VolumeDim>(corners_of_all_blocks[id1], face1);
     const auto face2_canon =
-        get_common_local_corners<VolumeDim>(corners_of_all_blocks[id], face2);
+        get_common_local_corners<VolumeDim>(corners_of_all_blocks[id2], face2);
     const auto face1_normal_dir = get_direction_normal_to_face(
         logical_coords_of_corners<VolumeDim>(face1_canon));
     const auto face2_normal_dir = get_direction_normal_to_face(
@@ -303,10 +302,10 @@ void set_periodic_boundaries(
     const OrientationMap<VolumeDim> connect2(
         obtain_correspondence_between_blocks2.first,
         obtain_correspondence_between_blocks2.second);
-    (*neighbors_of_all_blocks)[id].emplace(
-        face1_normal_dir, BlockNeighbor<VolumeDim>(id, connect1));
-    (*neighbors_of_all_blocks)[id].emplace(
-        face2_normal_dir, BlockNeighbor<VolumeDim>(id, connect2));
+    (*neighbors_of_all_blocks)[id1].emplace(
+        face1_normal_dir, BlockNeighbor<VolumeDim>(id2, connect1));
+    (*neighbors_of_all_blocks)[id2].emplace(
+        face2_normal_dir, BlockNeighbor<VolumeDim>(id1, connect2));
   }
 }
 
