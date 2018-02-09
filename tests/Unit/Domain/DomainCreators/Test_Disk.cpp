@@ -23,7 +23,6 @@ void test_disk_construction(
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
     const bool use_equiangular_map) {
   const auto domain = disk.create_domain();
-  const auto& blocks = domain.blocks();
   const OrientationMap<2> aligned_orientation{};
   const OrientationMap<2> quarter_turn_ccw(std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});

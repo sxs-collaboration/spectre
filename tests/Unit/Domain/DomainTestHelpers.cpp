@@ -403,6 +403,7 @@ void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
                              initial_refinement_levels) noexcept {
   const auto element_ids = initial_element_ids(initial_refinement_levels);
   const auto& blocks = domain.blocks();
+  CHECK(blocks.size() == initial_refinement_levels.size());
   std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>> elements;
   for (const auto& element_id : element_ids) {
     elements.emplace(
