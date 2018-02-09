@@ -554,4 +554,9 @@ using list_contains =
 
 template <typename Sequence, typename Item>
 constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
+
+/// Obtain the elements of `Sequence1` that are not in `Sequence2`.
+template <typename Sequence1, typename Sequence2>
+using list_difference =
+    remove_if<Sequence1, bind<list_contains, pin<Sequence2>, _1>>;
 }  // namespace brigand

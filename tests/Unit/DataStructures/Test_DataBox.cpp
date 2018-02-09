@@ -91,22 +91,6 @@ struct TagPrefix : db::DataBoxPrefix {
 }  // namespace test_databox_tags
 
 namespace {
-template <typename T>
-struct X {};
-/// [remove_tags_from_keep_tags]
-using full_list = tmpl::list<double, char, int, bool, X<int>>;
-using keep_list = tmpl::list<double, bool>;
-static_assert(
-    std::is_same<typelist<char, int, X<int>>,
-                 db::remove_tags_from_keep_tags<full_list, keep_list>>::value,
-    "Failed testing db::remove_tags_from_keep_tags");
-using keep_list2 = tmpl::list<double, bool, X<int>>;
-static_assert(
-    std::is_same<typelist<char, int>,
-                 db::remove_tags_from_keep_tags<full_list, keep_list2>>::value,
-    "Failed testing db::remove_tags_from_keep_tags");
-/// [remove_tags_from_keep_tags]
-
 using Box_t = db::DataBox<db::get_databox_list<typelist<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
     test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
@@ -933,6 +917,40 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(4, 16.))));
   }
+}
+
+namespace ExtraResetTags {
+struct Var : db::DataBoxTag {
+  using type = Scalar<DataVector>;
+  static constexpr db::DataBoxString label = "Var";
+};
+struct Int : db::DataBoxTag {
+  using type = int;
+  static constexpr db::DataBoxString label = "Int";
+};
+struct CheckReset : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "CheckReset";
+  static auto function(
+      const ::Variables<tmpl::list<Var>>& /*unused*/) noexcept {
+    static bool first_call = true;
+    CHECK(first_call);
+    first_call = false;
+    return 0;
+  }
+  using argument_tags = tmpl::list<Tags::Variables<tmpl::list<Var>>>;
+};
+}  // namespace ExtraResetTags
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
+                  "[Unit][DataStructures]") {
+  auto box = db::create<
+      db::AddTags<ExtraResetTags::Int,
+                  Tags::Variables<tmpl::list<ExtraResetTags::Var>>>,
+      db::AddComputeItemsTags<ExtraResetTags::CheckReset>>(
+      1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
+  CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
+  db::mutate<ExtraResetTags::Int>(box, [](int&){});
+  CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
 }
 
 namespace {
