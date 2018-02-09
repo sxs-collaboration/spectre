@@ -101,7 +101,11 @@ function(add_input_file_tests INPUT_FILE_DIR)
         ${TIMEOUT}
         )
     endforeach()
+    add_dependencies(test-executables ${INPUT_FILE_EXECUTABLE})
   endforeach()
 endfunction()
+
+# Dependencies will be added as the tests are processed.
+add_custom_target(test-executables)
 
 add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")
