@@ -66,10 +66,9 @@ void DgElementArray<Metavariables, ActionList>::initialize(
         domain_creator->initial_refinement_levels()[block.id()];
     const std::vector<ElementId<volume_dim>> element_ids =
         initial_element_ids(block.id(), initial_ref_levs);
-    for (size_t i = 0, which_proc = 0,
-                number_of_procs =
-                    static_cast<size_t>(Parallel::number_of_procs());
-         i < element_ids.size(); ++i) {
+    int which_proc = 0;
+    const int number_of_procs = Parallel::number_of_procs();
+    for (size_t i = 0; i < element_ids.size(); ++i) {
       dg_element_array(ElementIndex<volume_dim>(element_ids[i]))
           .insert(global_cache, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
