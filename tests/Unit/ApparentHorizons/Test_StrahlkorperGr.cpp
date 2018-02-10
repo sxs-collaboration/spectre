@@ -131,7 +131,7 @@ void test_minkowski() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.ConstantExpansion",
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr",
                   "[ApparentHorizons][Unit]") {
   test_schwarzschild();
   test_minkowski();
