@@ -85,7 +85,7 @@ void check_du_dt<3>(const DataVector& used_for_size) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedCurvedScalarWave.DuDt",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.DuDt",
                   "[Unit][Evolution]") {
   const DataVector used_for_size{2, 0.};
   check_du_dt<1>(used_for_size);
