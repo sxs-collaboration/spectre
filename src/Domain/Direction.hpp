@@ -10,7 +10,6 @@
 #include <iosfwd>
 #include <pup.h>
 
-#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Side.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 
@@ -19,20 +18,22 @@
 template <size_t VolumeDim>
 class Direction {
  public:
-  /// The logical-coordinate names of each dimension
+  /// The logical-coordinate names of each logical_dimension
   enum class Axis;
 
   /// Construct by specifying an Axis and a Side.
   Direction(Axis axis, Side side) noexcept : axis_(axis), side_(side) {}
 
-  /// Construct by specifying a dimension and a Side.
-  Direction<VolumeDim>(size_t dimension, Side side) noexcept;
+  /// Construct by specifying a logical_dimension and a Side.
+  Direction<VolumeDim>(size_t logical_dimension, Side side) noexcept;
 
   /// Default constructor for Charm++ serialization.
   Direction() noexcept;
 
-  /// The dimension of the Direction
-  size_t dimension() const noexcept { return static_cast<size_t>(axis_); }
+  /// The logical_dimension of the Direction
+  size_t logical_dimension() const noexcept {
+    return static_cast<size_t>(axis_);
+  }
 
   /// The Axis of the Direction
   Axis axis() const noexcept { return axis_; }
@@ -46,7 +47,7 @@ class Direction {
   /// The opposite Direction.
   Direction<VolumeDim> opposite() const noexcept;
 
-  // An array of all logical Directions for a given dimensionality.
+  // An array of all logical Directions for a given logical_dimensionality.
   static const std::array<Direction<VolumeDim>, 2 * VolumeDim>&
   all_logical_directions() noexcept;
 
@@ -97,10 +98,10 @@ Direction<VolumeDim>::Direction() noexcept = default;  // NOLINT
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 template <>
-enum class Direction<1>::Axis{Xi = 0, X = 3, Y = 4, Z = 5};
+enum class Direction<1>::Axis{Xi = 0, X = 3};
 
 template <>
-enum class Direction<2>::Axis{Xi = 0, Eta = 1, X = 3, Y = 4, Z = 5};
+enum class Direction<2>::Axis{Xi = 0, Eta = 1, X = 3, Y = 4};
 
 template <>
 enum class Direction<3>::Axis{Xi = 0, Eta = 1, Zeta = 2, X = 3, Y = 4, Z = 5};
@@ -152,21 +153,25 @@ inline Direction<VolumeDim> Direction<VolumeDim>::upper_x() noexcept {
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::lower_y() noexcept {
+  static_assert(VolumeDim == 2 or VolumeDim == 3, "VolumeDim must be 2 or 3.");
   return Direction(Direction<VolumeDim>::Axis::Y, Side::Lower);
 }
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::upper_y() noexcept {
+  static_assert(VolumeDim == 2 or VolumeDim == 3, "VolumeDim must be 2 or 3.");
   return Direction(Direction<VolumeDim>::Axis::Y, Side::Upper);
 }
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::lower_z() noexcept {
+  static_assert(VolumeDim == 3, "VolumeDim must be 3.");
   return Direction(Direction<VolumeDim>::Axis::Z, Side::Lower);
 }
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::upper_z() noexcept {
+  static_assert(VolumeDim == 3, "VolumeDim must be 3.");
   return Direction(Direction<VolumeDim>::Axis::Z, Side::Upper);
 }
 template <size_t VolumeDim>
@@ -212,7 +217,8 @@ void Direction<VolumeDim>::pup(PUP::er& p) {
 template <size_t VolumeDim>
 inline bool operator==(const Direction<VolumeDim>& lhs,
                        const Direction<VolumeDim>& rhs) {
-  return lhs.dimension() == rhs.dimension() and lhs.sign() == rhs.sign();
+  return lhs.logical_dimension() == rhs.logical_dimension() and
+         lhs.sign() == rhs.sign();
 }
 
 template <size_t VolumeDim>
@@ -223,7 +229,8 @@ inline bool operator!=(const Direction<VolumeDim>& lhs,
 
 template <size_t VolumeDim>
 size_t hash_value(const Direction<VolumeDim>& d) noexcept {
-  return std::hash<size_t>{}(d.dimension()) xor std::hash<double>{}(d.sign());
+  return std::hash<size_t>{}(d.logical_dimension()) xor
+         std::hash<double>{}(d.sign());
 }
 
 namespace std {

@@ -41,7 +41,7 @@ void check_orient_variables_on_slice(
     const Direction<SpatialDim>& direction_to_neighbor,
     const Index<SpatialDim>& my_extents,
     const Index<SpatialDim>& neighbor_extents) {
-  const size_t my_sliced_dim = direction_to_neighbor.dimension();
+  const size_t my_sliced_dim = direction_to_neighbor.logical_dimension();
   const Index<SpatialDim - 1> extents_on_my_slice(
       my_extents.slice_away(my_sliced_dim));
   Variables<tmpl::list<PhysicalCoords<SpatialDim>>> coords_on_my_slice(

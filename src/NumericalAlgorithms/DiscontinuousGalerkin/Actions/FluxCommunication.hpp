@@ -112,7 +112,7 @@ struct ComputeBoundaryFlux {
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
-      const size_t dimension = direction.dimension();
+      const size_t logical_dimension = direction.logical_dimension();
       const auto& neighbors_in_direction = direction_neighbors.second;
       ASSERT(neighbors_in_direction.size() == 1,
              "Complex mortars unimplemented");
@@ -194,15 +194,16 @@ struct ComputeBoundaryFlux {
       // Needs fixing for GH/curved
       auto lifted_data(dg::lift_flux(tuples::get<normal_flux_tag>(self_data),
                                      std::move(normal_dot_numerical_flux),
-                                     extents[dimension],
+                                     extents[logical_dimension],
                                      std::move(magnitude_of_face_normal)));
 
       db::mutate<dt_variables_tag>(box, [
-        &lifted_data, &extents, &dimension, &direction
+        &lifted_data, &extents, &logical_dimension, &direction
       ](db::item_type<dt_variables_tag> & dt_vars) noexcept {
         add_slice_to_data(
-            make_not_null(&dt_vars), lifted_data, extents, dimension,
-            direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+            make_not_null(&dt_vars), lifted_data, extents, logical_dimension,
+            direction.side() == Side::Lower ? 0
+                                            : extents[logical_dimension] - 1);
       });
     }
 
@@ -277,21 +278,22 @@ struct SendDataForFluxes {
       const auto& direction = direction_neighbors.first;
       const auto& neighbors_in_direction = direction_neighbors.second;
 
-      const size_t dimension = direction.dimension();
-      const auto& segment_id = gsl::at(element.id().segment_ids(), dimension);
+      const size_t logical_dimension = direction.logical_dimension();
+      const auto& segment_id =
+          gsl::at(element.id().segment_ids(), logical_dimension);
       const auto& orientation = neighbors_in_direction.orientation();
       const auto direction_from_neighbor = orientation(direction.opposite());
-      const auto boundary_extents = extents.slice_away(dimension);
+      const auto boundary_extents = extents.slice_away(logical_dimension);
       auto boundary_variables = data_on_slice(
-          evolved_vars, extents, dimension,
-          direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+          evolved_vars, extents, logical_dimension,
+          direction.side() == Side::Lower ? 0 : extents[logical_dimension] - 1);
 
       const auto neighbor_variables = orient_variables_on_slice(
-          boundary_variables, boundary_extents, dimension, orientation);
+          boundary_variables, boundary_extents, logical_dimension, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
         const auto& neighbor_segment_id =
-            gsl::at(neighbor.segment_ids(), dimension);
+            gsl::at(neighbor.segment_ids(), logical_dimension);
 
         receiver_proxy[neighbor]
             .template receive_data<

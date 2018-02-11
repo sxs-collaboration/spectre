@@ -9,65 +9,34 @@
 #include "ErrorHandling/Error.hpp"
 
 template <>
-Direction<1>::Direction(const size_t dimension, const Side side) noexcept {
-  ASSERT(0 == dimension or 3 == dimension or 4 == dimension or 5 == dimension,
-         "dim = " << dimension
-                  << ", for Direction<1> only dim = 0, 3, 4, or 5 is allowed.");
-  switch (dimension) {
-    case 0:
-      axis_ = Axis::Xi;
-      break;
-    case 3:
-      axis_ = Axis::X;
-      break;
-    case 4:
-      axis_ = Axis::Y;
-      break;
-    case 5:
-      axis_ = Axis::Z;
-      break;
-    default:
-      ERROR("For Direction<1> only dim = 0, 3, 4, or 5 are allowed.");
-  }
+Direction<1>::Direction(const size_t logical_dimension,
+                        const Side side) noexcept {
+  ASSERT(0 == logical_dimension,
+         "dim = " << logical_dimension
+                  << ", for Direction<1> only dim = 0 is allowed.");
+  axis_ = Axis::Xi;
   side_ = side;
 }
 
 /// \cond NEVER
 template <>
-Direction<2>::Direction(const size_t dimension, const Side side) noexcept {
-  ASSERT(0 == dimension or 1 == dimension or 3 == dimension or 4 == dimension or
-             5 == dimension,
-         "dim = "
-             << dimension
-             << ", for Direction<2> only dim = 0, 1, 3, 4, or 5 are allowed.");
-  switch (dimension) {
-    case 0:
-      axis_ = Axis::Xi;
-      break;
-    case 1:
-      axis_ = Axis::Eta;
-      break;
-    case 3:
-      axis_ = Axis::X;
-      break;
-    case 4:
-      axis_ = Axis::Y;
-      break;
-    case 5:
-      axis_ = Axis::Z;
-      break;
-    default:
-      ERROR("For Direction<2> only dim = 0, 1, 3, 4, or 5 are allowed.");
-  }
+Direction<2>::Direction(const size_t logical_dimension,
+                        const Side side) noexcept {
+  ASSERT(logical_dimension < 2,
+         "dim = " << logical_dimension
+                  << ", for Direction<2> only dim = 0 or dim = 1 are allowed.");
+  axis_ = 0 == logical_dimension ? Axis::Xi : Axis ::Eta;
   side_ = side;
 }
 
 template <>
-Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
-  ASSERT(dimension < 6, "dim = " << dimension
-                                 << ", for Direction<3> only dim = 0, 1, "
-                                    "2, 3, 4, or 5 are allowed.");
-  switch (dimension) {
+Direction<3>::Direction(const size_t logical_dimension,
+                        const Side side) noexcept {
+  ASSERT(logical_dimension < 3,
+         "dim = " << logical_dimension
+                  << ", for Direction<3> only dim = 0, dim = 1, "
+                     "or dim = 2 are allowed.");
+  switch (logical_dimension) {
     case 0:
       axis_ = Axis::Xi;
       break;
@@ -76,15 +45,6 @@ Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
       break;
     case 2:
       axis_ = Axis::Zeta;
-      break;
-    case 3:
-      axis_ = Axis::X;
-      break;
-    case 4:
-      axis_ = Axis::Y;
-      break;
-    case 5:
-      axis_ = Axis::Z;
       break;
     default:
       ERROR("For Direction<3> only dim = 0, 1, 2, 3, 4, or 5 are allowed.");
@@ -101,7 +61,7 @@ std::ostream& operator<<(std::ostream& os,
   } else {
     os << "+";
   }
-  os << direction.dimension();
+  os << direction.logical_dimension();
   return os;
 }
 

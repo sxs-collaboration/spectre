@@ -118,7 +118,7 @@ struct ComputeBoundaryFlux {
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
-      const size_t dimension = direction.dimension();
+      const size_t logical_dimension = direction.logical_dimension();
       const auto& neighbors_in_direction = direction_neighbors.second;
       ASSERT(neighbors_in_direction.size() == 1,
              "Complex mortars unimplemented");
@@ -150,15 +150,16 @@ struct ComputeBoundaryFlux {
       // Needs fixing for GH/curved
       db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
           local_normal_dot_flux.at(std::make_pair(direction, neighbor)),
-          std::move(normal_dot_numerical_fluxes), extents[dimension],
+          std::move(normal_dot_numerical_fluxes), extents[logical_dimension],
           magnitude(face_normal)));
 
       db::mutate<dt_variables_tag>(box, [
-        &lifted_data, &extents, &dimension, &direction
+        &lifted_data, &extents, &logical_dimension, &direction
       ](db::item_type<dt_variables_tag> & dt_vars) noexcept {
         add_slice_to_data(
-            make_not_null(&dt_vars), lifted_data, extents, dimension,
-            direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+            make_not_null(&dt_vars), lifted_data, extents, logical_dimension,
+            direction.side() == Side::Lower ? 0
+                                            : extents[logical_dimension] - 1);
       });
     }
 
@@ -256,18 +257,18 @@ struct SendDataForFluxes {
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
-      const size_t dimension = direction.dimension();
+      const size_t logical_dimension = direction.logical_dimension();
       const auto& neighbors_in_direction = direction_neighbors.second;
       ASSERT(neighbors_in_direction.size() == 1,
              "h-adaptivity is not supported yet.\nDirection: "
-                 << direction << "\nDimension: " << dimension
+                 << direction << "\nDimension: " << logical_dimension
                  << "\nNeighbors:\n"
                  << neighbors_in_direction);
       const auto& orientation = neighbors_in_direction.orientation();
-      const auto boundary_extents = extents.slice_away(dimension);
+      const auto boundary_extents = extents.slice_away(logical_dimension);
       auto boundary_variables = db::data_on_slice(
-          box, extents, dimension,
-          direction.side() == Side::Lower ? 0 : extents[dimension] - 1,
+          box, extents, logical_dimension,
+          direction.side() == Side::Lower ? 0 : extents[logical_dimension] - 1,
           tmpl::remove_duplicates<
               tmpl::append<typename Metavariables::normal_dot_numerical_flux::
                                type::slice_tags,
@@ -316,7 +317,7 @@ struct SendDataForFluxes {
         // even with AMR since the quantities are already on the mortar at this
         // point
         auto neighbor_packaged_data = orient_variables_on_slice(
-            packaged_data, boundary_extents, dimension, orientation);
+            packaged_data, boundary_extents, logical_dimension, orientation);
 
         receiver_proxy[neighbor]
             .template receive_data<

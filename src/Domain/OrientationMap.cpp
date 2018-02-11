@@ -18,7 +18,7 @@ OrientationMap<VolumeDim>::OrientationMap(
     std::array<Direction<VolumeDim>, VolumeDim> mapped_directions)
     : mapped_directions_(std::move(mapped_directions)) {
   for (size_t j = 0; j < VolumeDim; j++) {
-    if (gsl::at(mapped_directions_, j).dimension() != j or
+    if (gsl::at(mapped_directions_, j).logical_dimension() != j or
         gsl::at(mapped_directions_, j).side() != Side::Upper) {
       is_aligned_ = false;
     }
@@ -30,7 +30,8 @@ OrientationMap<VolumeDim>::OrientationMap(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
     const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_neighbor) {
   for (size_t j = 0; j < VolumeDim; j++) {
-    gsl::at(mapped_directions_, gsl::at(directions_in_host, j).dimension()) =
+    gsl::at(mapped_directions_,
+            gsl::at(directions_in_host, j).logical_dimension()) =
         (gsl::at(directions_in_host, j).side() == Side::Upper
              ? gsl::at(directions_in_neighbor, j)
              : gsl::at(directions_in_neighbor, j).opposite());
@@ -45,7 +46,7 @@ std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
     const std::array<SegmentId, VolumeDim>& segmentIds) const {
   std::array<SegmentId, VolumeDim> result = segmentIds;
   for (size_t d = 0; d < VolumeDim; d++) {
-    gsl::at(result, gsl::at(mapped_directions_, d).dimension()) =
+    gsl::at(result, gsl::at(mapped_directions_, d).logical_dimension()) =
         gsl::at(mapped_directions_, d).side() == Side::Upper
             ? gsl::at(segmentIds, d)
             : gsl::at(segmentIds, d).id_if_flipped();
@@ -58,7 +59,7 @@ OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const
     noexcept {
   std::array<Direction<VolumeDim>, VolumeDim> result;
   for (size_t i = 0; i < VolumeDim; i++) {
-    gsl::at(result, gsl::at(mapped_directions_, i).dimension()) =
+    gsl::at(result, gsl::at(mapped_directions_, i).logical_dimension()) =
         Direction<VolumeDim>(i, gsl::at(mapped_directions_, i).side());
   }
   return OrientationMap<VolumeDim>{result};

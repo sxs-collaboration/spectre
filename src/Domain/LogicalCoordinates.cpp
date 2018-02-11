@@ -32,7 +32,7 @@ template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
     const Index<VolumeDim - 1>& extents,
     const Direction<VolumeDim>& direction) {
-  const size_t sliced_away_dim = direction.dimension();
+  const size_t sliced_away_dim = direction.logical_dimension();
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
 
   std::array<DataVector, VolumeDim - 1> collocation_points_in_each_dim{};

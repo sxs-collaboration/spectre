@@ -124,8 +124,8 @@ auto make_unnormalized_face_normals(
                      tnsr::i<DataVector, VolumeDim, Frame::Inertial>>
       result;
   for (const auto& d : Direction<VolumeDim>::all_logical_directions()) {
-    result.emplace(
-        d, unnormalized_face_normal(extents.slice_away(d.dimension()), map, d));
+    result.emplace(d, unnormalized_face_normal(
+                          extents.slice_away(d.logical_dimension()), map, d));
   }
   return result;
 }
