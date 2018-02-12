@@ -93,13 +93,13 @@ tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
   // Form projector
   tnsr::Ij<DataVector, 3, Frame> projector(
       get<0>(unit_normal_one_form).size(), 0.0);
+  const auto& unit_normal_vector = raise_or_lower_index(unit_normal_one_form,
+                                                        upper_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
     projector.get(i,i) += 1.0;
     for (size_t j = 0; j < 3; ++j) {
       projector.get(i, j) -=
-          raise_or_lower_index(
-              unit_normal_one_form, upper_spatial_metric).get(i)
-          * unit_normal_one_form.get(j);
+          unit_normal_vector.get(i) * unit_normal_one_form.get(j);
     }
   }
 
@@ -130,14 +130,9 @@ Scalar<DataVector> ricci_scalar(
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept {
 
   Scalar<DataVector> ricci_scalar(get<0>(unit_normal_vector).size(), 0.0);
-  Scalar<DataVector> tr_extrinsic_curvature(get<0>(unit_normal_vector).size(),
-                                            0.0);
 
   for(size_t i = 0; i < 3; ++i) {
     for(size_t j = 0; j < 3; ++j) {
-      tr_extrinsic_curvature.get() += upper_spatial_metric.get(i,j)
-                                     * extrinsic_curvature.get(i,j);
-
       ricci_scalar.get() -= 2.0 * spatial_ricci_tensor.get(i,j)
                             * unit_normal_vector.get(i)
                             * unit_normal_vector.get(j);
@@ -154,8 +149,8 @@ Scalar<DataVector> ricci_scalar(
     }
   }
 
-  get(ricci_scalar) += tr_extrinsic_curvature.get()
-                       * tr_extrinsic_curvature.get();
+  get(ricci_scalar) += square(get(trace(extrinsic_curvature,
+                                        upper_spatial_metric)));
   get(ricci_scalar) += get(trace(spatial_ricci_tensor, upper_spatial_metric));
   return ricci_scalar;
 }
