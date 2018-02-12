@@ -289,8 +289,7 @@ script:
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D MACOSX_MIN=10.11
              ${TRAVIS_BUILD_DIR}
-    && make -j2
-    && ${TRAVIS_BUILD_DIR}/.travis/FindAndBuildExecutables.sh ${TRAVIS_BUILD_DIR}/tests/InputFiles/
+    && make test-executables -j2
     && ctest --output-on-failure
     && ccache -s;
   else

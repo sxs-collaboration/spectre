@@ -20,6 +20,8 @@ target_link_libraries(
   ${SPECTRE_LIBRARIES}
   )
 
+add_dependencies(test-executables Test_AlgorithmParallel)
+
 # Test_AlgorithmNodelock
 add_executable(
   Test_AlgorithmNodelock
@@ -39,6 +41,8 @@ target_link_libraries(
   ${SPECTRE_LIBRARIES}
   )
 
+add_dependencies(test-executables Test_AlgorithmNodelock)
+
 # Test_AlgorithmReduction
 add_executable(
   Test_AlgorithmReduction
@@ -57,6 +61,8 @@ target_link_libraries(
   Informer
   ${SPECTRE_LIBRARIES}
   )
+
+add_dependencies(test-executables Test_AlgorithmReduction)
 
 # Test ConstGlobalCache
 add_charm_module(Test_ConstGlobalCache)
@@ -81,6 +87,8 @@ target_link_libraries(
   ErrorHandling
   ${SPECTRE_LIBRARIES}
   )
+
+add_dependencies(test-executables Test_ConstGlobalCache)
 
 spectre_add_catch_tests(Test_ConstGlobalCache)
 

@@ -108,16 +108,10 @@ RUN if [ ${SONARQUBE} ] \
     && [ ${TRAVIS_EVENT_TYPE} = cron ] \
     && [ ${CC} = gcc ]; then \
       /work/sonarcloud/build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
-        --out-dir sonar-output make -j2; \
+        --out-dir sonar-output make test-executables -j2; \
     elif [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ]; then \
-      make -j2; \
-    fi
-# Find and build the executables used for input file tests
-RUN if [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ]; then \
-      /work/spectre/.travis/FindAndBuildExecutables.sh \
-      /work/spectre/tests/InputFiles; \
+      make test-executables -j2; \
     fi
 RUN ccache -s
 
