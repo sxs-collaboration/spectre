@@ -53,6 +53,36 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
   return x * x * x;
 }
 
+/*!
+ * \ingroup ConstantExpressionsGroup
+ * \brief Compute the falling factorial of \f$(x)_{n}\f$
+ *
+ * See http://mathworld.wolfram.com/FallingFactorial.html
+ * \note The largest representable factorial is 20!. It is up to the user to
+ * ensure this is satisfied
+ */
+constexpr size_t falling_factorial(
+    const size_t x, const size_t n) noexcept {
+  // clang-tidy: don't warn about STL internals, I can't fix them
+  size_t r = 1;
+  for (size_t k = 0; k < n; ++k) {
+    r *= (x - k);
+  }
+  return r;
+}
+
+/*!
+ * \ingroup ConstantExpressionsGroup
+ * \brief Compute the factorial of \f$n!\f$
+ *
+ * \note The largest representable factorial is 20!. For ratios it is up to the
+ * user to ensure that overflow does not occur.
+ */
+constexpr size_t factorial(const size_t n) noexcept {
+  assert(n <= 20);  // NOLINT
+  return falling_factorial(n, n);
+}
+
 /// \ingroup ConstantExpressionsGroup
 namespace ConstantExpressions_detail {
 template <typename T, int N, typename = std::nullptr_t>
