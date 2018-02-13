@@ -59,6 +59,8 @@ add_dependencies(
   module_Main
   )
 
+add_dependencies(test-executables ${executable})
+
 spectre_add_catch_tests(${executable})
 
 # Setup code coverage for unit tests
