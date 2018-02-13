@@ -4,6 +4,7 @@
 set(LIBRARY ApparentHorizons)
 
 set(LIBRARY_SOURCES
+    FastFlow.cpp
     SpherepackIterator.cpp
     Strahlkorper.cpp
     StrahlkorperDataBox.cpp
