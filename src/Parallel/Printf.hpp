@@ -7,6 +7,7 @@
 #pragma once
 
 #include <charm++.h>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <type_traits>

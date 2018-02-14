@@ -74,6 +74,10 @@ struct is_tensor<Tensor<X, Symm, IndexList>> : std::true_type {};
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 class Tensor<X, Symm, IndexList<Indices...>> {
+  static_assert(sizeof...(Indices) < 5,
+                "If you are sure you need rank 5 or higher Tensor's please "
+                "file an issue on GitHub or discuss with a core developer of "
+                "SpECTRE.");
   /// The number of \ref SpacetimeIndex "TensorIndexType"'s
   ///
   /// Note: Scalars need to have 1 so we can still store their data.

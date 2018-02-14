@@ -50,6 +50,26 @@ static_assert(get_nth_bit(2, 1) == 1,
 static_assert(get_nth_bit(4, 2) == 1,
               "Failed test Unit.Utilities.ConstantExpressions");
 
+// Test falling_factorial and factorial
+static_assert(falling_factorial(3, 3) == 6, "Failed testing falling factorial");
+static_assert(falling_factorial(3, 2) == 6, "Failed testing falling factorial");
+static_assert(falling_factorial(3, 1) == 3, "Failed testing falling factorial");
+static_assert(falling_factorial(3, 0) == 1, "Failed testing falling factorial");
+static_assert(falling_factorial(8, 8) == 40320,
+              "Failed testing falling factorial");
+static_assert(falling_factorial(20, 20) == 2432902008176640000,
+              "Failed testing falling factorial");
+static_assert(falling_factorial(21, 1) == 21,
+              "Failed testing falling factorial");
+static_assert(falling_factorial(55, 2) == 55 * 54,
+              "Failed testing falling factorial");
+static_assert(falling_factorial(55, 5) == 417451320,
+              "Failed testing falling factorial");
+
+static_assert(factorial(3) == 6, "Failed testing factorial");
+static_assert(factorial(8) == 40320, "Failed testing factorial");
+static_assert(factorial(20) == 2432902008176640000, "Failed testing factorial");
+
 // Test pow<>
 static_assert(pow<4>(2.0) == 16.0, "Failed testing pow");
 static_assert(pow<0>(2.0) == 1.0, "Failed testing pow");

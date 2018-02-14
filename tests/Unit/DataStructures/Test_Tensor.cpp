@@ -80,106 +80,97 @@ static_assert(cpp17::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
               "Failed testing remove_first_index");
 
 // Test check_index_symmetry
-static_assert(
-    TensorMetafunctions::check_index_symmetry_v<typelist<>, typelist<>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1>, typelist<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1>, typelist<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1>, typelist<SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 1>, typelist<SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                                 SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 1>, typelist<SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                                 SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 1>, typelist<SpatialIndex<2, UpLo::Up, Frame::Inertial>,
-                                 SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 1>, typelist<SpatialIndex<3, UpLo::Up, Frame::Grid>,
-                                 SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 1>, typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                                 SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
-    "Failed testing check_index_symmetry");
-static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<2, 1, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<2, 1, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<2, UpLo::Up, Frame::Inertial>>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<2, 1, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<2, 1, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Distorted>>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<2, 1, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>,
+static_assert(TensorMetafunctions::check_index_symmetry_v<typelist<>>,
               "Failed testing check_index_symmetry");
 static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 2, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>,
+                  Symmetry<1>, SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1>, SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+              "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 2, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpacetimeIndex<2, UpLo::Up, Frame::Inertial>>>,
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 2, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>,
+                  Symmetry<1, 1>, SpatialIndex<2, UpLo::Up, Frame::Inertial>,
+                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 2, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpacetimeIndex<3, UpLo::Up, Frame::Logical>>>,
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 2, 1>,
-                  typelist<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                           SpatialIndex<3, UpLo::Up, Frame::Inertial>>>,
+                  Symmetry<1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
               "Failed testing check_index_symmetry");
+static_assert(
+    TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<2, UpLo::Up, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Distorted>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpacetimeIndex<2, UpLo::Up, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpacetimeIndex<3, UpLo::Up, Frame::Logical>>,
+    "Failed testing check_index_symmetry");
+static_assert(
+    not TensorMetafunctions::check_index_symmetry_v<
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+    "Failed testing check_index_symmetry");
 
 static_assert(not cpp17::is_constructible_v<
                   Tensor<double, Symmetry<>, typelist<>>, typelist<>>,
@@ -187,6 +178,21 @@ static_assert(not cpp17::is_constructible_v<
 static_assert(
     cpp17::is_constructible_v<Tensor<double, Symmetry<>, typelist<>>, double>,
     "Tensor construction failed to be SFINAE friendly");
+
+namespace {
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
+          IndexType Index = IndexType::Spacetime>
+using abcd = Tensor<
+    DataType, tmpl::integral_list<std::int32_t, 4, 3, 2, 1>,
+    index_list<
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+
+// Test construction of high-rank, high-dim tensors
+constexpr abcd<double, 7> check_construction{};
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
                   "[DataStructures][Unit]") {
@@ -482,6 +488,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
       symmetric_rank2_dim4{};
   CHECK(2 == symmetric_rank2_dim4.rank());
   CHECK(10 == symmetric_rank2_dim4.size());
+  double i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : symmetric_rank2_dim4) {
+    p = i;
+    ++i;
+  }
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t k = 0; k < 3; ++k) {
+      CHECK(symmetric_rank2_dim4.get(j, k) == symmetric_rank2_dim4.get(k, j));
+    }
+  }
   Tensor<double, Symmetry<1, 2>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
@@ -495,6 +511,465 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
       symmetric_rank3_dim4{};
   CHECK(3 == symmetric_rank3_dim4.rank());
   CHECK(40 == symmetric_rank3_dim4.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : symmetric_rank3_dim4) {
+    p = i;
+    ++i;
+  }
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t k = 0; k < 3; ++k) {
+      for (size_t l = 0; l < 3; ++l) {
+        CHECK(symmetric_rank3_dim4.get(j, k, l) ==
+              symmetric_rank3_dim4.get(j, l, k));
+        if (l != j) {
+          CHECK(symmetric_rank3_dim4.get(j, k, l) !=
+                symmetric_rank3_dim4.get(l, k, j));
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<1, 1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      symmetric_all_rank3_dim4{};
+  CHECK(3 == symmetric_all_rank3_dim4.rank());
+  CHECK(20 == symmetric_all_rank3_dim4.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : symmetric_all_rank3_dim4) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        CHECK(symmetric_all_rank3_dim4.get(l, j, k) ==
+              symmetric_all_rank3_dim4.get(l, k, j));
+        CHECK(symmetric_all_rank3_dim4.get(l, j, k) ==
+              symmetric_all_rank3_dim4.get(j, k, l));
+        CHECK(symmetric_all_rank3_dim4.get(l, j, k) ==
+              symmetric_all_rank3_dim4.get(j, l, k));
+        CHECK(symmetric_all_rank3_dim4.get(l, j, k) ==
+              symmetric_all_rank3_dim4.get(k, l, j));
+        CHECK(symmetric_all_rank3_dim4.get(l, j, k) ==
+              symmetric_all_rank3_dim4.get(k, j, l));
+      }
+    }
+  }
+  Tensor<double, Symmetry<1, 1, 1>,
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+      iii{};
+  CHECK(3 == iii.rank());
+  CHECK(10 == iii.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : iii) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 2; ++l) {
+    for (size_t j = 0; j < 2; ++j) {
+      for (size_t k = 0; k < 2; ++k) {
+        CHECK(iii.get(l, j, k) == iii.get(l, k, j));
+        CHECK(iii.get(l, j, k) == iii.get(j, k, l));
+        CHECK(iii.get(l, j, k) == iii.get(j, l, k));
+        CHECK(iii.get(l, j, k) == iii.get(k, l, j));
+        CHECK(iii.get(l, j, k) == iii.get(k, j, l));
+      }
+    }
+  }
+  Tensor<double, Symmetry<3, 2, 1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abcc{};
+  CHECK(4 == abcc.rank());
+  CHECK(160 == abcc.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abcc) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abcc.get(l, j, k, m) == abcc.get(l, j, m, k));
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 3, 1, 3>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abcb{};
+  CHECK(4 == abcb.rank());
+  CHECK(160 == abcb.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abcb) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abcb.get(l, j, k, m) == abcb.get(l, m, k, j));
+          if (j != l) {
+            CHECK(abcb.get(l, j, k, m) != abcb.get(j, l, k, m));
+          }
+          if (k != l) {
+            CHECK(abcb.get(l, j, k, m) != abcb.get(k, j, l, m));
+          }
+          if (j != k) {
+            CHECK(abcb.get(l, j, k, m) != abcb.get(l, k, j, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<3, 2, 1, 3>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abca{};
+  CHECK(4 == abca.rank());
+  CHECK(160 == abca.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abca) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abca.get(l, j, k, m) == abca.get(m, j, k, l));
+          if (j != l) {
+            CHECK(abca.get(l, j, k, m) != abca.get(j, l, k, m));
+          }
+          if (k != l) {
+            CHECK(abca.get(l, j, k, m) != abca.get(k, j, l, m));
+          }
+          if (k != j) {
+            CHECK(abca.get(l, j, k, m) != abca.get(l, k, j, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<3, 2, 3, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abac{};
+  CHECK(4 == abac.rank());
+  CHECK(160 == abac.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abac) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abac.get(l, j, k, m) == abac.get(k, j, l, m));
+          if (l != j) {
+            CHECK(abac.get(l, j, k, m) != abac.get(j, l, k, m));
+          }
+          if (l != m) {
+            CHECK(abac.get(l, j, k, m) != abac.get(m, j, k, l));
+          }
+          if (j != m) {
+            CHECK(abac.get(l, j, k, m) != abac.get(l, m, k, j));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<3, 3, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      aabc{};
+  CHECK(4 == aabc.rank());
+  CHECK(160 == aabc.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : aabc) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(aabc.get(l, j, k, m) == aabc.get(j, l, k, m));
+          if (l != k) {
+            CHECK(aabc.get(l, j, k, m) != aabc.get(k, j, l, m));
+          }
+          if (l != m) {
+            CHECK(aabc.get(l, j, k, m) != aabc.get(m, j, k, l));
+          }
+          if (m != k) {
+            CHECK(aabc.get(l, j, k, m) != aabc.get(l, j, m, k));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 2, 1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      aabb{};
+  CHECK(4 == aabb.rank());
+  CHECK(100 == aabb.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : aabb) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(aabb.get(l, j, k, m) == aabb.get(j, l, k, m));
+          CHECK(aabb.get(l, j, k, m) == aabb.get(j, l, m, k));
+          CHECK(aabb.get(l, j, k, m) == aabb.get(l, j, m, k));
+          if (j != k) {
+            CHECK(aabb.get(l, j, k, m) != aabb.get(l, k, j, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 1, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abab{};
+  CHECK(4 == abab.rank());
+  CHECK(100 == abab.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abab) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abab.get(l, j, k, m) == abab.get(k, j, l, m));
+          CHECK(abab.get(l, j, k, m) == abab.get(k, m, l, j));
+          CHECK(abab.get(l, j, k, m) == abab.get(l, m, k, j));
+          if (l != j) {
+            CHECK(abab.get(l, j, k, m) != abab.get(j, l, k, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 1, 1, 2>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abba{};
+  CHECK(4 == abba.rank());
+  CHECK(100 == abba.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abba) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abba.get(l, j, k, m) == abba.get(l, k, j, m));
+          CHECK(abba.get(l, j, k, m) == abba.get(m, k, j, l));
+          CHECK(abba.get(l, j, k, m) == abba.get(m, j, k, l));
+          if (l != j) {
+            CHECK(abba.get(l, j, k, m) != abba.get(j, l, k, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 2, 2, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      aaab{};
+  CHECK(4 == aaab.rank());
+  CHECK(80 == aaab.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : aaab) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(aaab.get(l, j, k, m) == aaab.get(l, k, j, m));
+          CHECK(aaab.get(l, j, k, m) == aaab.get(j, l, k, m));
+          CHECK(aaab.get(l, j, k, m) == aaab.get(j, k, l, m));
+          CHECK(aaab.get(l, j, k, m) == aaab.get(k, l, j, m));
+          CHECK(aaab.get(l, j, k, m) == aaab.get(k, j, l, m));
+          if (l != m) {
+            CHECK(aaab.get(l, j, k, m) != aaab.get(m, j, k, l));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 2, 1, 2>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      aaba{};
+  CHECK(4 == aaba.rank());
+  CHECK(80 == aaba.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : aaba) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(aaba.get(l, j, k, m) == aaba.get(l, m, k, j));
+          CHECK(aaba.get(l, j, k, m) == aaba.get(j, l, k, m));
+          CHECK(aaba.get(l, j, k, m) == aaba.get(j, m, k, l));
+          CHECK(aaba.get(l, j, k, m) == aaba.get(m, l, k, j));
+          CHECK(aaba.get(l, j, k, m) == aaba.get(m, j, k, l));
+          if(l != k) {
+            CHECK(aaba.get(l, j, k, m) != aaba.get(k, j, l, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 1, 2, 2>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abaa{};
+  CHECK(4 == abaa.rank());
+  CHECK(80 == abaa.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abaa) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abaa.get(l, j, k, m) == abaa.get(l, j, m, k));
+          CHECK(abaa.get(l, j, k, m) == abaa.get(k, j, m, l));
+          CHECK(abaa.get(l, j, k, m) == abaa.get(k, j, l, m));
+          CHECK(abaa.get(l, j, k, m) == abaa.get(m, j, l, k));
+          CHECK(abaa.get(l, j, k, m) == abaa.get(m, j, k, l));
+          if (l != j) {
+            CHECK(abaa.get(l, j, k, m) != abaa.get(j, l, k, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<2, 1, 1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      abbb{};
+  CHECK(4 == abbb.rank());
+  CHECK(80 == abbb.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : abbb) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(abbb.get(l, j, k, m) == abbb.get(l, j, m, k));
+          CHECK(abbb.get(l, j, k, m) == abbb.get(l, k, m, j));
+          CHECK(abbb.get(l, j, k, m) == abbb.get(l, k, j, m));
+          CHECK(abbb.get(l, j, k, m) == abbb.get(l, m, k, j));
+          CHECK(abbb.get(l, j, k, m) == abbb.get(l, m, j, k));
+          if (l != j) {
+            CHECK(abbb.get(l, j, k, m) != abbb.get(j, l, k, m));
+          }
+        }
+      }
+    }
+  }
+  Tensor<double, Symmetry<1, 1, 1, 1>,
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+      aaaa{};
+  CHECK(4 == aaaa.rank());
+  CHECK(35 == aaaa.size());
+  i = 1.948;  // not a value likely to be default-constructed to
+  for (auto& p : aaaa) {
+    p = i;
+    ++i;
+  }
+  for (size_t l = 0; l < 3; ++l) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t m = 0; m < 3; ++m) {
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(l, j, m, k));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(l, k, m, j));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(l, k, j, m));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(l, m, k, j));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(l, m, j, k));
+
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(j, k, l, m));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(j, k, m, l));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(j, m, k, l));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(j, m, l, k));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(j, l, m, k));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(j, l, k, m));
+
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(k, m, j, l));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(k, m, l, j));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(k, j, m, l));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(k, j, l, m));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(k, l, j, m));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(k, l, m, j));
+
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(m, l, j, k));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(m, l, k, j));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(m, j, l, k));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(m, j, k, l));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(m, k, l, j));
+          CHECK(aaaa.get(l, j, k, m) == aaaa.get(m, k, j, l));
+        }
+      }
+    }
+  }
+
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Indices",
