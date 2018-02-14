@@ -1,13 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines functions useful for testing general relativity
+/// Defines functions useful for testing StrahlkorperGr.
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 /*!

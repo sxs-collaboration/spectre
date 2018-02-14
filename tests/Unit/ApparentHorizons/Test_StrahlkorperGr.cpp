@@ -26,7 +26,7 @@ void test_schwarzschild() {
       db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
                  db::AddComputeItemsTags<
                      StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          Strahlkorper<Frame::Inertial>(10, 10, 2.0, {{0, 0, 0}}));
+          Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0, 0, 0}}));
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -82,15 +82,14 @@ void test_schwarzschild() {
       get(residual), DataVector(get(residual).size(), 0.0), custom_approx);
 
   const auto ricci_scalar = StrahlkorperGr::ricci_scalar(
-      make_spatial_ricci_schwarzschild(cart_coords, mass),
-      unit_normal_vector,
+      make_spatial_ricci_schwarzschild(cart_coords, mass), unit_normal_vector,
       StrahlkorperGr::extrinsic_curvature(grad_unit_normal_one_form,
                                           unit_normal_one_form,
                                           inverse_spatial_metric),
       inverse_spatial_metric);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get(ricci_scalar), DataVector(get(ricci_scalar).size(), 0.5/(mass*mass)),
-      custom_approx);
+
+  CHECK_ITERABLE_APPROX(get(ricci_scalar), DataVector(get(ricci_scalar).size(),
+                                                      0.5 / (mass * mass)));
 }
 
 void test_minkowski() {
@@ -99,7 +98,7 @@ void test_minkowski() {
       db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
                  db::AddComputeItemsTags<
                      StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          Strahlkorper<Frame::Inertial>(10, 10, 2.0, {{0, 0, 0}}));
+          Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0, 0, 0}}));
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -141,17 +140,16 @@ void test_minkowski() {
       get(residual), DataVector(get(residual).size(), 1.0), custom_approx);
 
   const auto ricci_scalar = StrahlkorperGr::ricci_scalar(
-      make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial,
-                      IndexType::Spatial>>(inverse_spatial_metric,
-                                           0.0),
-      unit_normal_vector,
-      StrahlkorperGr::extrinsic_curvature(grad_unit_normal_one_form,
-                                          unit_normal_one_form,
-                                          inverse_spatial_metric),
+      make_with_value<
+          tnsr::aa<DataVector, 3, Frame::Inertial, IndexType::Spatial>>(
+          inverse_spatial_metric, 0.0),
+      unit_normal_vector, StrahlkorperGr::extrinsic_curvature(
+                              grad_unit_normal_one_form, unit_normal_one_form,
+                              inverse_spatial_metric),
       inverse_spatial_metric);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get(ricci_scalar), DataVector(get(ricci_scalar).size(), 0.5),
-      custom_approx);
+
+  CHECK_ITERABLE_APPROX(get(ricci_scalar),
+                        DataVector(get(ricci_scalar).size(), 0.5));
 }
 
 }  // namespace

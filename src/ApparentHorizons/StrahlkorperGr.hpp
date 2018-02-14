@@ -83,14 +83,14 @@ tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
 
 /// \ingroup SurfacesGroup
-/// \brief Intrinsic Ricci scalar curvature of a 2D `Strahlkorper`.
+/// \brief Intrinsic Ricci scalar of a 2D `Strahlkorper`.
 ///
 /// \details Implements Eq. (D.51) of
 /// Sean Carroll's Spacetime and Geometry textbook (except correcting
 /// sign errors: both extrinsic curvature terms are off by a minus sign
 /// in Carroll's text but correct in Carroll's errata).
 /// \f$ \hat{R}=R - 2 R_{ij} S^i S^j + K^2-K^{ij}K_{ij}.\f$
-/// Here \f$\hat{R}\f$ is the intrinsic Ricci scalar curavture of
+/// Here \f$\hat{R}\f$ is the intrinsic Ricci scalar curvature of
 /// the Strahlkorper, \f$R\f$ and \f$R_{ij}\f$ are the Ricci scalar and
 /// Ricci tensor of the 3D space that contains the Strahlkorper,
 /// \f$ K_{ij} \f$ the output of StrahlkorperGr::extrinsic_curvature,
