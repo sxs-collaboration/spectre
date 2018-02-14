@@ -33,14 +33,9 @@ include(SetupGoldOrLldLinker)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(SetupLIBCXX)
-include(SetupClangFormat)
-include(SetupClangTidy)
-include(SetupCppCheck)
 include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
-include(SetupDoxygen)
-include(CodeCoverageDetection)
 
 include(SetupBlas)
 include(SetupBlaze)
@@ -57,6 +52,15 @@ include(SetupYamlCpp)
 
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
+
+# The ClangFormat, clang-tidy, CppCheck, Doxygen, and CodeCov are intentionally
+# after the PCH setup because that way they are able to change their
+# dependencies on the PCH if necessary.
+include(SetupClangFormat)
+include(SetupClangTidy)
+include(SetupCppCheck)
+include(SetupDoxygen)
+include(CodeCoverageDetection)
 
 # Generate Charm++ files
 generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)
