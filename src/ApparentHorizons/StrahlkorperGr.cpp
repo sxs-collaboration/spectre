@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 
 namespace StrahlkorperGr {
 
@@ -85,6 +86,67 @@ Scalar<DataVector> expansion(
   return expansion;
 }
 
+template <typename Frame>
+tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
+    const tnsr::ii<DataVector, 3, Frame>& grad_normal,
+    const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector) noexcept {
+  Scalar<DataVector> nI_nJ_gradnij(get<0, 0>(grad_normal).size(), 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      get(nI_nJ_gradnij) += unit_normal_vector.get(i) *
+                            unit_normal_vector.get(j) * grad_normal.get(i, j);
+    }
+  }
+
+  auto extrinsic_curvature(grad_normal);
+
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {
+      extrinsic_curvature.get(i, j) += unit_normal_one_form.get(i) *
+                                       unit_normal_one_form.get(j) *
+                                       get(nI_nJ_gradnij);
+      for (size_t k = 0; k < 3; ++k) {
+        extrinsic_curvature.get(i, j) -=
+            unit_normal_vector.get(k) *
+            (unit_normal_one_form.get(i) * grad_normal.get(j, k) +
+             unit_normal_one_form.get(j) * grad_normal.get(i, k));
+      }
+    }
+  }
+  return extrinsic_curvature;
+}
+
+template <typename Frame>
+Scalar<DataVector> ricci_scalar(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
+    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept {
+  auto ricci_scalar = trace(spatial_ricci_tensor, upper_spatial_metric);
+
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      get(ricci_scalar) -= 2.0 * spatial_ricci_tensor.get(i, j) *
+                           unit_normal_vector.get(i) *
+                           unit_normal_vector.get(j);
+
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t l = 0; l < 3; ++l) {
+          // K^{ij} K_{ij} = g^{ik} g^{jl} K_{kl} K_{ij}
+          get(ricci_scalar) -=
+              upper_spatial_metric.get(i, k) * upper_spatial_metric.get(j, l) *
+              extrinsic_curvature.get(k, l) * extrinsic_curvature.get(i, j);
+        }
+      }
+    }
+  }
+
+  get(ricci_scalar) +=
+      square(get(trace(extrinsic_curvature, upper_spatial_metric)));
+
+  return ricci_scalar;
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
@@ -113,3 +175,16 @@ template Scalar<DataVector> StrahlkorperGr::expansion<Frame::Inertial>(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>&
         extrinsic_curvature) noexcept;
+
+template tnsr::ii<DataVector, 3, Frame::Inertial>
+StrahlkorperGr::extrinsic_curvature<Frame::Inertial>(
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& grad_normal,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& unit_normal_one_form,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector) noexcept;
+
+template Scalar<DataVector> StrahlkorperGr::ricci_scalar<Frame::Inertial>(
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_ricci_tensor,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
+    const tnsr::II<DataVector, 3, Frame::Inertial>&
+        upper_spatial_metric) noexcept;
