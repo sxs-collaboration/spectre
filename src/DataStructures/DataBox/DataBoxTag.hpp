@@ -395,30 +395,6 @@ struct compute_item_result_impl<
 template <typename T>
 using item_type = typename detail::compute_item_result_impl<T>::type;
 
-/*!
- * \ingroup DataBoxGroup
- * \brief Check if a Compute Item is "simple"
- */
-template <typename T, typename = std::nullptr_t>
-struct is_simple_compute_item : std::false_type {};
-template <typename T>
-struct is_simple_compute_item<T,
-                              Requires<is_compute_item<T>::value and
-                                       not tt::is_a_v<Variables, item_type<T>>>>
-    : std::true_type {};
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Check if a Compute Item returns a Variables class
- */
-template <typename T, typename = std::nullptr_t>
-struct is_variables_compute_item : std::false_type {};
-template <typename T>
-struct is_variables_compute_item<
-    T,
-    Requires<is_compute_item<T>::value and tt::is_a_v<Variables, item_type<T>>>>
-    : std::true_type {};
-
 /// \ingroup DataBoxTagsGroup
 /// \brief Create a new list of Tags by wrapping each tag in `TagList` using the
 /// `Wrapper`.
@@ -496,4 +472,29 @@ struct remove_all_prefixes<F<Tag, Args...>, true> {
 template <typename Tag>
 using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
     Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+
+/// \ingroup DataBoxGroup
+/// Struct that can be specialized to allow DataBox items to have
+/// subitems.  Specializations must define:
+/// * `using type = tmpl::list<...>` listing the subtags of `Tag`
+/// * A static member function to initialize a subitem of a simple
+///   item:
+///   ```
+///   template <typename Subtag>
+///   static void create_item(
+///       const gsl::not_null<item_type<Tag>*> parent_value,
+///       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept;
+///   ```
+///   Mutating the subitems must also modify the main item.
+/// * A static member function evaluating a subitem of a compute
+///   item:
+///   ```
+///   template <typename Subtag>
+///   static item_type<Subtag> create_compute_item(
+///       const item_type<Tag>& parent_value) noexcept;
+///   ```
+template <typename Tag, typename = std::nullptr_t>
+struct Subitems {
+  using type = tmpl::list<>;
+};
 }  // namespace db

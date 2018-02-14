@@ -3,6 +3,7 @@
 
 #include <catch.hpp>
 #include <memory>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxHelpers.hpp"
@@ -1471,4 +1472,114 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
               Variables<typelist<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_z * 10.0)));
   }
+}
+
+namespace test_subitems {
+// We can't use raw fundamental types as subitems because subitems
+// need to have a reference-like nature.
+template <typename T>
+class Boxed {
+ public:
+  explicit Boxed(std::shared_ptr<T> data) noexcept : data_(std::move(data)) {}
+  Boxed() = default;
+  // The multiple copy constructors (assignment operators) are needed
+  // to prevent users from modifying compute item values.
+  Boxed(const Boxed&) = delete;
+  Boxed(Boxed&) = default;
+  Boxed(Boxed&&) = default;
+  Boxed& operator=(const Boxed&) = delete;
+  Boxed& operator=(Boxed&) = default;
+  Boxed& operator=(Boxed&&) = default;
+  ~Boxed() = default;
+
+  T& operator*() noexcept { return *data_; }
+  const T& operator*() const noexcept { return *data_; }
+
+ private:
+  std::shared_ptr<T> data_;
+};
+
+template <size_t N, bool Compute = false>
+struct Parent : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Parent";
+  using type = std::pair<Boxed<int>, Boxed<double>>;
+};
+template <size_t N>
+struct Parent<N, true> : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "Parent";
+  static auto function(
+      const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
+    return std::make_pair(
+        Boxed<int>(std::make_shared<int>(*arg.first + 1)),
+        Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
+  }
+  using argument_tags = tmpl::list<Parent<N - 1>>;
+};
+
+template <size_t N>
+struct First : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "First";
+  using type = Boxed<int>;
+
+  static constexpr size_t index = 0;
+};
+template <size_t N>
+struct Second : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Second";
+  using type = Boxed<double>;
+
+  static constexpr size_t index = 1;
+};
+}  // namespace test_subitems
+
+namespace db {
+template <size_t N, bool Compute>
+struct Subitems<test_subitems::Parent<N, Compute>> {
+  using type = tmpl::list<test_subitems::First<N>, test_subitems::Second<N>>;
+  using tag = test_subitems::Parent<N, Compute>;
+
+  template <typename Subtag>
+  static void create_item(
+      const gsl::not_null<item_type<tag>*> parent_value,
+      const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
+    *sub_value = std::get<Subtag::index>(*parent_value);
+  }
+
+  template <typename Subtag>
+  static item_type<Subtag> create_compute_item(
+      const item_type<tag>& parent_value) noexcept {
+    // clang-tidy: do not use const_cast
+    // We need a non-const object to set up the aliasing since in the
+    // simple-item case the alias can be used to modify the original
+    // item.  That should not be allowed for compute items, but the
+    // DataBox will only allow access to a const version of the result
+    // and we ensure in the definition of Boxed that that will not
+    // allow modification of the original item.
+    return const_cast<item_type<Subtag>&>(  // NOLINT
+        std::get<Subtag::index>(parent_value));
+  }
+};
+}  // namespace db
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
+                  "[Unit][DataStructures]") {
+  auto box =
+      db::create<db::AddTags<test_subitems::Parent<0>>,
+                 db::AddComputeItemsTags<test_subitems::Parent<1, true>>>(
+          std::make_pair(
+              test_subitems::Boxed<int>(std::make_shared<int>(5)),
+              test_subitems::Boxed<double>(std::make_shared<double>(3.5))));
+
+  CHECK(*db::get<test_subitems::First<0>>(box) == 5);
+  CHECK(*db::get<test_subitems::First<1>>(box) == 6);
+  CHECK(*db::get<test_subitems::Second<0>>(box) == 3.5);
+  CHECK(*db::get<test_subitems::Second<1>>(box) == 7);
+
+  db::mutate<test_subitems::Second<0>>(
+      box, [](test_subitems::Boxed<double>& x) noexcept { *x = 12.; });
+
+  CHECK(*db::get<test_subitems::First<0>>(box) == 5);
+  CHECK(*db::get<test_subitems::First<1>>(box) == 6);
+  CHECK(*db::get<test_subitems::Second<0>>(box) == 12.);
+  CHECK(*db::get<test_subitems::Second<1>>(box) == 24.);
 }
