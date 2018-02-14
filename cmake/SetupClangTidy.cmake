@@ -38,8 +38,10 @@ if (CLANG_TIDY_BIN)
     module_ConstGlobalCache
     module_Main
     module_Test_ConstGlobalCache
-    pch
     )
+  if (TARGET pch)
+    list(APPEND MODULES_TO_DEPEND_ON pch)
+  endif()
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/ClangTidyAll.sh
     ${CMAKE_BINARY_DIR}/ClangTidyAll.sh
