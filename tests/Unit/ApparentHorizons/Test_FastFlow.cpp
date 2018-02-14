@@ -237,7 +237,7 @@ void test_kerr(FastFlow::Flow::type type_of_flow, const size_t max_iterations) {
       atan2(vector_normal_to_spin[1], vector_normal_to_spin[0]));
   const double r_max_val = sqrt(2.0 + 2.0 * sqrt(1.0 - square(spin_magnitude)));
 
-  Approx custom_approx = Approx::custom().epsilon(1.e-10);
+  Approx custom_approx = Approx::custom().epsilon(1.e-10).scale(1.);
   CHECK(r_min_pt == custom_approx(r_min_val));
   CHECK(r_max_pt == custom_approx(r_max_val));
 }
