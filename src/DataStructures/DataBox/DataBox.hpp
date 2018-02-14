@@ -544,19 +544,6 @@ struct extract_dependent_items<
       tmpl::append<typelist<Element>, typename item_type<Element>::tags_list>;
 };
 
-template <bool IsVariables>
-struct closure_extract_dependent_items {
-  template <typename Element>
-  using f = tmpl::list<Element>;
-};
-
-template <>
-struct closure_extract_dependent_items<true> {
-  template <typename Element>
-  using f = tmpl::append<typelist<Element>,
-                         typename ::db::item_type<Element>::tags_list>;
-};
-
 // Given a typelist List, returns a new typelist with all the Variables Tags
 template <typename List>
 using extracted_items = tmpl::flatten<
