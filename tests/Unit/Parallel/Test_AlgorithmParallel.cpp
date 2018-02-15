@@ -57,10 +57,9 @@ namespace SingletonActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -120,10 +119,9 @@ namespace ArrayActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -239,10 +237,9 @@ namespace GroupActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -302,10 +299,9 @@ namespace NodegroupActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
