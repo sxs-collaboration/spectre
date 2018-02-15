@@ -17,10 +17,6 @@
 # - COVERALLS_TOKEN: Sign up to coveralls and link to GitHub. Add the
 #                    repository you want to display, and copy the repo_token.
 #                    The repo_token is what COVERALLS_TOKEN must be set to.
-# - SONAR_TOKEN: Setup your repository on SonarCloud, then go to My Account
-#                and select Security. You can now generate a new token that
-#                will be used to upload SonarCloud reports. This is the value
-#                that SONAR_TOKEN must be set to.
 # - ENCRYPTION_LABEL:
 #      The file encryption mechanism of TravisCI is used to encrypt the private
 #      SSH key we need to push to the gh-pages branch of the repository. Follow
@@ -94,7 +90,7 @@ matrix:
   - os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON BUILD_CODE=true
+    env: BUILD_TYPE=Debug COVERAGE=ON BUILD_CODE=true
   - os: linux
     compiler: gcc
     dist: trusty
@@ -119,12 +115,9 @@ matrix:
 
 # Travis allows caching of data between builds to reduce build times or perform
 # regression testing. We use ccache (https://ccache.samba.org/) to reduce
-# compilation time. SonarCloud, a static analysis tool (https://sonarcloud.io/)
-# also has a cache directory that needs to be managed.
+# compilation time.
 cache:
   ccache: true
-  directories:
-      - $HOME/.sonar
 
 # For macOS we install all dependencies in the before_install step of Travis.
 # Unfortunately installing ccache and jemalloc from brew causes a brew update,
@@ -197,7 +190,7 @@ before_install:
 # container to build SpECTRE, and build natively on macOS.
 # The ENCRYPTED_KEY_VAR and ENCRYPTED_IV_VAR are used to retrieve the encrypted
 # variables from TravisCI without showing the encrypt ID (which could be public
-# without losing much, if any security). The SONAR_TOKEN and COVERALLS_TOKEN are
+# without losing much, if any security). The COVERALLS_TOKEN is a
 # secret env variable set in the TravisCI configuration.
 #
 # Linux:
@@ -238,7 +231,6 @@ script:
     && cd ${HOME}
     && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
     && cp -r ${HOME}/.ccache ${HOME}/docker/ccache
-    && cp -r $HOME/.sonar ${HOME}/docker/sonar
     && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
     && docker build
         --build-arg CXXFLAGS="-Werror -march=x86-64"
@@ -257,8 +249,6 @@ script:
         --build-arg TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}
         --build-arg ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
         --build-arg ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
-        --build-arg SONAR_TOKEN=${SONAR_TOKEN}
-        --build-arg SONARQUBE=${SONARQUBE}
         --build-arg GH_PAGES_REPO=${GH_PAGES_REPO}
         --build-arg GH_PAGES_SOURCE_BRANCH=${GH_PAGES_SOURCE_BRANCH}
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
@@ -273,7 +263,6 @@ script:
     && rm -rf ${HOME}/.ccache
     && CON=$(docker run -d ${TRAVIS_REPO_SLUG} /bin/bash)
     && docker cp ${CON}:/root/.ccache ${HOME}/
-    && docker cp ${CON}:/root/.sonar ${HOME}/
     && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
                  ${HOME}/docker/spectre;
   elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "${BUILD_CODE}" == "true" ]; then

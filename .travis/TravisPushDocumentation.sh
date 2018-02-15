@@ -6,10 +6,6 @@
 # This script is called from Dockerfile.travis, which is where the various
 # environment variables are defined, or received from TravisCI.
 
-# Add executables for SonarSQUBE to PATH
-export PATH=$PATH:/work/sonarcloud/sonar-scanner-2.8/bin
-export PATH=$PATH:/work/sonarcloud/build-wrapper-linux-x86
-
 # Setup lmod and spack to load dependencies
 . /etc/profile.d/lmod.sh
 export PATH=$PATH:/work/spack/bin

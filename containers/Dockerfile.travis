@@ -36,8 +36,6 @@ ARG TRAVIS_EVENT_TYPE
 ARG TRAVIS_SECURE_ENV_VARS
 ARG ENCRYPTED_KEY
 ARG ENCRYPTED_IV
-ARG SONAR_TOKEN
-ARG SONARQUBE
 ARG GH_PAGES_REPO
 ARG GH_PAGES_SOURCE_BRANCH
 ARG COVERALLS_TOKEN
@@ -60,9 +58,6 @@ COPY known_hosts /root/.ssh/known_hosts
 # Copy ccache from TravisCI cached data (we cache the ccache cache between
 # builds) to the Docker image
 COPY ccache /root/.ccache
-
-# Copy sonar files into Docker image
-COPY sonar /root/.sonar
 
 # Apply Charm++ patch
 WORKDIR /work/charm
@@ -101,16 +96,7 @@ RUN if [ ${RUN_CLANG_TIDY} ]; then \
     fi
 
 # TravisCI currently has 2 cores for a job, so we build on 2.
-RUN if [ ${SONARQUBE} ] \
-    && [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
-    && [ ${TRAVIS_EVENT_TYPE} = cron ] \
-    && [ ${CC} = gcc ]; then \
-      /work/sonarcloud/build-wrapper-linux-x86/build-wrapper-linux-x86-64 \
-        --out-dir sonar-output make test-executables -j2; \
-    elif [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+RUN if [ -z "${RUN_CLANG_TIDY}" ]; then \
       make test-executables -j2; \
     fi
 RUN ccache -s
@@ -173,35 +159,6 @@ RUN if [ ${CC} = gcc ] \
     && [ ${COVERAGE} ] \
     && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
     && [ ${TRAVIS_PULL_REQUEST} = false ]; then \
-      if [ ${SONARQUBE} ]; then \
-        # We run unit test coverage before running sonar so we also get data on
-        # code coverage. Here ${TRAVIS_REPO_SLUG}=sxs-collaboration/spectre
-        # The SONAR_TOKEN variable is an env variable set in the TravisCI config
-        # that is not visible in the build logs and provides secure access to
-        # the SXS collaboration SpECTRE project on SonarCloud.
-        # The sonar.host.url is set to where the Sonar server is running, which
-        # we use sonarcloud.io for since it is available for open-source
-        # projects.
-        /work/sonarcloud/sonar-scanner-2.8/bin/sonar-scanner \
-            -Dsonar.projectKey=spectre \
-            -Dsonar.projectName=spectre \
-            -Dsonar.projectVersion=${TRAVIS_COMMIT} \
-            -Dsonar.branch=/${TRAVIS_BRANCH} \
-            -Dsonar.links.homepage=http://github.com/${TRAVIS_REPO_SLUG} \
-            -Dsonar.links.ci=https://travis-ci.org/${TRAVIS_REPO_SLUG} \
-            -Dsonar.links.scm=https://github.com/${TRAVIS_REPO_SLUG} \
-            -Dsonar.links.issue=https://github.com/${TRAVIS_REPO_SLUG}/issues \
-            -Dsonar.sources=/work/spectre \
-            -Dsonar.exclusions=build/CMakeFiles/**,build/doc/**,tests/** \
-            -Dsonar.cfamily.build-wrapper-output=/work/build_${BUILD_TYPE}_${CC}/sonar-output \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.cfamily.gcov.reportsPath=/work/build_${BUILD_TYPE}_${CC}/tmp \
-            -Dsonar.organization=sxs-collaboration \
-            -Dsonar.login=${SONAR_TOKEN}; \
-      fi; \
-
-      # We intentionally run doc-coverage after sonar so sonar does not check
-      # the documentation coverage.
       make doc-coverage; \
 
       # the encrypted key is created using:
