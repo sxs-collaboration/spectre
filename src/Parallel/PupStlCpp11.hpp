@@ -10,11 +10,13 @@
 #include <algorithm>
 #include <array>
 #include <deque>
+#include <initializer_list>
 #include <memory>
 #include <pup_stl.h>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "Utilities/Requires.hpp"
 
@@ -135,32 +137,20 @@ inline void operator|(PUP::er& p, T& s) {  // NOLINT
   pup_bytes(&p, static_cast<void*>(&s), sizeof(T));
 }
 
-template <size_t N = 0, typename... Args,
-          Requires<0 == sizeof...(Args)> = nullptr>
-void pup_tuple_impl(PUP::er& /* p */, std::tuple<Args...>& /* t */) {  // NOLINT
+namespace detail {
+// clang-tidy: no references
+template <typename... Args, size_t... Is>
+void pup_tuple_impl(PUP::er& p, std::tuple<Args...>& t,  // NOLINT
+                    std::index_sequence<Is...> /*meta*/) noexcept {
+  (void)std::initializer_list<char>{(p | std::get<Is>(t), '0')...};
 }
-
-template <size_t N = 0, typename... Args,
-          Requires<(0 < sizeof...(Args) and 0 == N)> = nullptr>
-void pup_tuple_impl(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
-  p | std::get<N>(t);
-}
-
-template <size_t N, typename... Args,
-          Requires<(sizeof...(Args) > 0 and N > 0)> = nullptr>
-void pup_tuple_impl(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
-  p | std::get<N>(t);
-  pup_tuple_impl<N - 1>(p, t);
-}
+}  // namespace detail
 
 /// \ingroup ParallelGroup
 /// Serialization of std::tuple for Charm++
 template <typename... Args>
-inline void pup(PUP::er& p, std::tuple<Args...>& t) {  // NOLINT
-  if (p.isUnpacking()) {
-    t = std::tuple<Args...>{};
-  }
-  pup_tuple_impl<sizeof...(Args) - 1>(p, t);
+inline void pup(PUP::er& p, std::tuple<Args...>& t) noexcept {  // NOLINT
+  detail::pup_tuple_impl(p, t, std::make_index_sequence<sizeof...(Args)>{});
 }
 
 /// \ingroup ParallelGroup

@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -367,6 +368,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
                   "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> v(1, -3.0);
   test_serialization(v);
+  auto tuple_of_v = std::make_tuple(
+      Variables<tmpl::list<VariablesTestTags_detail::vector>>{1, -4.0});
+  test_serialization(tuple_of_v);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.assign_subset",
