@@ -16,3 +16,4 @@ See LICENSE.txt for details.
 - \ref profiling_with_projections "Profiling With Charm++ Projections" and PAPI
   for optimizing performance
 - \ref writing_unit_tests "Writing Unit Tests"
+- \ref travis_guide "Travis CI"
