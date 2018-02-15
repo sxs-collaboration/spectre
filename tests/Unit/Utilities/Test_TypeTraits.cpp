@@ -551,3 +551,60 @@ static_assert(cpp17::is_same_v<
 static_assert(cpp17::is_same_v<A, tt::remove_reference_wrapper_t<A>>,
               "Failed testing remove_reference_wrapper");
 /// [remove_reference_wrapper_example]
+
+/// [remove_cvref_wrap]
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<int>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<int&>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<const int&>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<int&&>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<const int&&>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<const int>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<volatile int>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<tt::remove_cvref_wrap_t<const volatile int>, int>,
+    "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<volatile int&>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<tt::remove_cvref_wrap_t<const volatile int&>, int>,
+    "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<tt::remove_cvref_wrap_t<volatile int&&>, int>,
+              "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<tt::remove_cvref_wrap_t<const volatile int&&>, int>,
+    "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<tt::remove_cvref_wrap_t<std::reference_wrapper<const int>>,
+                     int>,
+    "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<tt::remove_cvref_wrap_t<std::reference_wrapper<int>>, int>,
+    "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<
+                  tt::remove_cvref_wrap_t<std::reference_wrapper<int*>>, int*>,
+              "Failed testing remove_cvref_wrap");
+static_assert(cpp17::is_same_v<
+                  tt::remove_cvref_wrap_t<std::reference_wrapper<const int*>>,
+                  const int*>,
+              "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<
+        tt::remove_cvref_wrap_t<std::reference_wrapper<int* const>>, int*>,
+    "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<tt::remove_cvref_wrap_t<const std::reference_wrapper<int>>,
+                     std::reference_wrapper<int>>,
+    "Failed testing remove_cvref_wrap");
+static_assert(
+    cpp17::is_same_v<
+        tt::remove_cvref_wrap_t<const volatile std::reference_wrapper<int>>,
+        std::reference_wrapper<int>>,
+    "Failed testing remove_cvref_wrap");
+/// [remove_cvref_wrap]
