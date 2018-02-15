@@ -288,6 +288,7 @@ script:
              -D LIBXSMM_ROOT=$HOME/libxsmm/build
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D MACOSX_MIN=10.11
+             -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
              ${TRAVIS_BUILD_DIR}
     && make test-executables -j2
     && ctest --output-on-failure

@@ -13,8 +13,8 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
                   "[ErrorHandling][Unit]") {
   ERROR_TEST();
   enable_floating_point_exceptions();
-  double x = -1.0;
-  double invalid = sqrt(x);
+  volatile double x = -1.0;
+  volatile double invalid = sqrt(x);
   static_cast<void>(invalid);
   CHECK(true);
 }
