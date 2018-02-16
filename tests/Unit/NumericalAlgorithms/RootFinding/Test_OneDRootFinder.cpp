@@ -116,7 +116,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748RootSolver.DataVector",
   double lower = sqrt(2.);
   const auto f_lambda = [](double x) { return 2.0 - x * x; };
 
-  find_root_of_function(f_lambda, lower, upper, abs_tol, rel_tol);
+  // clang-tidy: internal boost warning, can't fix it.
+  find_root_of_function(f_lambda, lower, upper, abs_tol, rel_tol);  // NOLINT
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

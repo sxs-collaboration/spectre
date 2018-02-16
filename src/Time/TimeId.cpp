@@ -25,7 +25,8 @@ size_t hash_value(const TimeId& id) noexcept {
   return h;
 }
 
-namespace std {
+// clang-tidy: do not modify std namespace (okay for hash)
+namespace std {  // NOLINT
 size_t hash<TimeId>::operator()(const TimeId& id) const noexcept {
   return boost::hash<TimeId>{}(id);
 }
