@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <blaze/math/typetraits/IsVector.h>
+#include <cstdint>
 #include <type_traits>
 
 #include "ErrorHandling/Assert.hpp"
@@ -61,12 +62,12 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
  * \note The largest representable factorial is 20!. It is up to the user to
  * ensure this is satisfied
  */
-constexpr size_t falling_factorial(
-    const size_t x, const size_t n) noexcept {
+constexpr uint64_t falling_factorial(
+    const uint64_t x, const uint64_t n) noexcept {
   // clang-tidy: don't warn about STL internals, I can't fix them
   assert(n <= x);  // NOLINT
-  size_t r = 1;
-  for (size_t k = 0; k < n; ++k) {
+  uint64_t r = 1;
+  for (uint64_t k = 0; k < n; ++k) {
     r *= (x - k);
   }
   return r;
@@ -76,7 +77,7 @@ constexpr size_t falling_factorial(
  * \ingroup ConstantExpressionsGroup
  * \brief Compute the factorial of \f$n!\f$
  */
-constexpr size_t factorial(const size_t n) noexcept {
+constexpr uint64_t factorial(const uint64_t n) noexcept {
   assert(n <= 20);  // NOLINT
   return falling_factorial(n, n);
 }
