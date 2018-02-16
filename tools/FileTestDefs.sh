@@ -34,7 +34,7 @@ pretty_grep() {
 
 # Utility functions for checks classifying a file based on its name
 is_hpp() { [[ $1 =~ \.hpp$ ]] ; }
-is_c++() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] ; }
+is_c++() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
 
 # Utility function for checks that returns false if the first argument
 # matches any of the shell regexes passed as subsequent arguments.
@@ -145,6 +145,8 @@ long_lines_test() {
     local eighty=${ten}${ten}${ten}${ten}${ten}${ten}${ten}${ten}
     test_check pass foo.cpp "${eighty}"$'\n'
     test_check fail foo.cpp "${eighty}x"$'\n'
+    test_check fail foo.hpp "${eighty}x"$'\n'
+    test_check fail foo.tpp "${eighty}x"$'\n'
     test_check pass foo.yaml "${eighty}x"$'\n'
     test_check pass foo.cpp "#include ${eighty}x"$'\n'
     test_check pass foo.cpp "xxx http://${eighty}x"$'\n'
