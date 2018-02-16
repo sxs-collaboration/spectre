@@ -22,10 +22,9 @@ void test_definite_integral_1d(const Index<1>& extents) {
       integrand[s] = pow(x[s], a);
     }
     if (0 == a % 2) {
-      CHECK(2.0 / (a + 1.0) ==
-            approx(Basis::lgl::definite_integral(integrand, extents)));
+      CHECK(2.0 / (a + 1.0) == approx(definite_integral(integrand, extents)));
     } else {
-      CHECK(0.0 == approx(Basis::lgl::definite_integral(integrand, extents)));
+      CHECK(0.0 == approx(definite_integral(integrand, extents)));
     }
   }
 }
@@ -44,9 +43,9 @@ void test_definite_integral_2d(const Index<2>& extents) {
       }
       if (0 == a % 2 and 0 == b % 2) {
         CHECK(4.0 / ((a + 1.0) * (b + 1.0)) ==
-              approx(Basis::lgl::definite_integral(integrand, extents)));
+              approx(definite_integral(integrand, extents)));
       } else {
-        CHECK(0.0 == approx(Basis::lgl::definite_integral(integrand, extents)));
+        CHECK(0.0 == approx(definite_integral(integrand, extents)));
       }
     }
   }
@@ -70,10 +69,9 @@ void test_definite_integral_3d(const Index<3>& extents) {
         }
         if (0 == a % 2 and 0 == b % 2 and 0 == c % 2) {
           CHECK(8.0 / ((a + 1.0) * (b + 1.0) * (c + 1.0)) ==
-                approx(Basis::lgl::definite_integral(integrand, extents)));
+                approx(definite_integral(integrand, extents)));
         } else {
-          CHECK(0.0 ==
-                approx(Basis::lgl::definite_integral(integrand, extents)));
+          CHECK(0.0 == approx(definite_integral(integrand, extents)));
         }
       }
     }
