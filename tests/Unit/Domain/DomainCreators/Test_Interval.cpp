@@ -25,11 +25,7 @@ void test_interval_construction(
     const std::vector<std::unordered_set<Direction<1>>>&
         expected_external_boundaries) noexcept {
   const auto domain = interval.create_domain();
-  const auto& block = domain.blocks()[0];
-  const auto& neighbors = block.neighbors();
-  const auto& external_boundaries = block.external_boundaries();
 
-  CHECK(block.id() == 0);
   CHECK(interval.initial_extents() == expected_extents);
   CHECK(interval.initial_refinement_levels() == expected_refinement_level);
 

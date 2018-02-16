@@ -30,7 +30,6 @@ void test_sphere_construction(
     const std::array<size_t, 2>& expected_sphere_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level) {
   const auto domain = sphere.create_domain();
-  const auto& blocks = domain.blocks();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
       std::array<Direction<3>, 3>{{Direction<3>::lower_eta(),

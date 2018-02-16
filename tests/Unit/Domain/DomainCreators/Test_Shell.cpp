@@ -22,7 +22,6 @@ void test_shell_construction(
     const std::array<size_t, 2>& expected_shell_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level) {
   const auto domain = shell.create_domain();
-  const auto& blocks = domain.blocks();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
       std::array<Direction<3>, 3>{{Direction<3>::lower_eta(),

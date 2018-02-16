@@ -28,11 +28,7 @@ void test_brick_construction(
     const std::vector<std::unordered_set<Direction<3>>>&
         expected_external_boundaries) {
   const auto domain = brick.create_domain();
-  const auto& block = domain.blocks()[0];
-  const auto& neighbors = block.neighbors();
-  const auto& external_boundaries = block.external_boundaries();
 
-  CHECK(block.id() == 0);
   CHECK(brick.initial_extents() == expected_extents);
   CHECK(brick.initial_refinement_levels() == expected_refinement_level);
 
