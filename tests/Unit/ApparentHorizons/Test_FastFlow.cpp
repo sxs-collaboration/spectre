@@ -9,7 +9,6 @@
 #include "ApparentHorizons/StrahlkorperDataBox.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -19,6 +18,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

@@ -23,9 +23,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/MakeWithValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits.hpp"
