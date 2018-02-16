@@ -179,9 +179,9 @@ std::vector<Direction<VolumeDim>> get_directions_along_face(
            "the edge is parallel to the xi, eta, or zeta axis, respectively. "
            "This ASSERT is triggered when the two corners passed do not make "
            "up an edge of the n-cube.");
-    const size_t dimension = std::round(log2(abs(direction_pow2)));
+    const size_t logical_dimension = std::round(log2(abs(direction_pow2)));
     const Side side = direction_pow2 > 0 ? Side::Upper : Side::Lower;
-    result.push_back(Direction<VolumeDim>(dimension, side));
+    result.push_back(Direction<VolumeDim>(logical_dimension, side));
   }
   return result;
 }
@@ -195,7 +195,8 @@ Direction<VolumeDim> mapped(
   const auto correspondence = obtain_correspondence_between_blocks(
       block_id1, block_id2, corners_of_all_blocks);
   for (size_t i = 0; i < VolumeDim; i++) {
-    if (dir_in_block1.dimension() == (correspondence.first)[i].dimension()) {
+    if (dir_in_block1.logical_dimension() ==
+        (correspondence.first)[i].logical_dimension()) {
       return dir_in_block1.side() == (correspondence.first)[i].side()
                  ? (correspondence.second)[i]
                  : (correspondence.second)[i].opposite();

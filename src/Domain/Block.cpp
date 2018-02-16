@@ -13,7 +13,7 @@ Block<VolumeDim, TargetFrame>::Block(
     : map_(std::move(map)), id_(id), neighbors_(std::move(neighbors)) {
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
-  for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+  for (const auto& direction : Direction<VolumeDim>::all_logical_directions()) {
     if (neighbors_.find(direction) == neighbors_.end()) {
       external_boundaries_.emplace(std::move(direction));
     }

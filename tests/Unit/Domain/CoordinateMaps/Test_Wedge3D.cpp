@@ -19,7 +19,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Sphere.Equiangular",
   const std::array<double, 3> test_point2{{0.5, 0.7, -0.5}};
   const std::array<double, 3> test_point3{{0.9, -1.0, 0.4}};
 
-  for (const auto& direction : Direction<3>::all_directions()) {
+  for (const auto& direction : Direction<3>::all_logical_directions()) {
     const CoordinateMaps::Wedge3D map(sqrt(3.0), 2.0 * sqrt(3.0), direction, 1,
                                       true);
     test_jacobian(map, test_point1);
@@ -61,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Sphere.Equidistant",
   const std::array<double, 3> test_point2{{0.5, 0.7, -0.5}};
   const std::array<double, 3> test_point3{{0.9, -1.0, 0.4}};
 
-  for (const auto& direction : Direction<3>::all_directions()) {
+  for (const auto& direction : Direction<3>::all_logical_directions()) {
     const CoordinateMaps::Wedge3D map(sqrt(3.0), 2.0 * sqrt(3.0), direction, 1,
                                       false);
     test_jacobian(map, test_point1);
@@ -472,7 +472,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Jacobian.Equiangular",
   const double sphericity = unit_dis(gen);
   CAPTURE_PRECISE(sphericity);
 
-  for (const auto direction : Direction<3>::all_directions()) {
+  for (const auto direction : Direction<3>::all_logical_directions()) {
     const CoordinateMaps::Wedge3D map{inner_radius, outer_radius, direction,
                                       sphericity, true};
     const CoordinateMaps::Wedge3D map_spheres{inner_radius, outer_radius,
@@ -509,7 +509,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Jacobian.Equidistant",
   const double sphericity = unit_dis(gen);
   CAPTURE_PRECISE(sphericity);
 
-  for (const auto direction : Direction<3>::all_directions()) {
+  for (const auto direction : Direction<3>::all_logical_directions()) {
     const CoordinateMaps::Wedge3D map{inner_radius, outer_radius, direction,
                                       sphericity, false};
     const CoordinateMaps::Wedge3D map_spheres{inner_radius, outer_radius,

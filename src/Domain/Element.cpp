@@ -12,17 +12,17 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id,
                             Neighbors_t neighbors) noexcept
     : id_(std::move(id)),
       neighbors_(std::move(neighbors)),
-      number_of_neighbors_([this](){
+      number_of_neighbors_([this]() {
         size_t number_of_neighbors = 0;
         for (const auto& p : neighbors_) {
           number_of_neighbors += p.second.size();
         }
         return number_of_neighbors;
       }()),
-      external_boundaries_([this](){
+      external_boundaries_([this]() {
         std::unordered_set<Direction<VolumeDim>> external_boundaries(
-            Direction<VolumeDim>::all_directions().begin(),
-            Direction<VolumeDim>::all_directions().end());
+            Direction<VolumeDim>::all_logical_directions().begin(),
+            Direction<VolumeDim>::all_logical_directions().end());
         for (const auto& neighbor_direction : neighbors_) {
           external_boundaries.erase(neighbor_direction.first);
         }

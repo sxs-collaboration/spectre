@@ -104,7 +104,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equidistant",
   CAPTURE_PRECISE(outer_radius);
   const std::array<double, 2> test_point{{xi, eta}};
 
-  for (const auto& direction : Direction<2>::all_directions()) {
+  for (const auto& direction : Direction<2>::all_logical_directions()) {
     const CoordinateMaps::Wedge2D map{inner_radius, outer_radius, direction,
                                       false};
     test_jacobian(map, test_point);
@@ -215,7 +215,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equiangular",
   CAPTURE_PRECISE(outer_radius);
   const std::array<double, 2> test_point{{xi, eta}};
 
-  for (const auto& direction : Direction<2>::all_directions()) {
+  for (const auto& direction : Direction<2>::all_logical_directions()) {
     const CoordinateMaps::Wedge2D map{inner_radius, outer_radius, direction,
                                       true};
     test_jacobian(map, test_point);

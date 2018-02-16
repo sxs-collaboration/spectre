@@ -22,7 +22,7 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal_impl(
   const auto inv_jacobian_on_interface =
       map.inv_jacobian(std::move(interface_coords));
 
-  const auto sliced_away_dim = direction.dimension();
+  const auto sliced_away_dim = direction.logical_dimension();
   const double sign = direction.sign();
 
   tnsr::i<DataVector, VolumeDim, TargetFrame> face_normal(

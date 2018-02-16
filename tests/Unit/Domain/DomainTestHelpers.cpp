@@ -30,7 +30,7 @@ boost::rational<size_t> fraction_of_block_face_area(
     const Direction<VolumeDim>& direction) noexcept {
   const auto& segment_ids = element_id.segment_ids();
   size_t sum_of_refinement_levels = 0;
-  const size_t dim_normal_to_face = direction.dimension();
+  const size_t dim_normal_to_face = direction.logical_dimension();
   for (size_t d = 0; d < VolumeDim; ++d) {
     if (dim_normal_to_face != d) {
       sum_of_refinement_levels += gsl::at(segment_ids, d).refinement_level();
@@ -159,7 +159,7 @@ void test_refinement_levels_of_neighbors(
     }
   }
 }
-// Iterates over the logical corners of a VolumeDim-dimensional cube.
+// Iterates over the logical corners of a VolumeDim-logical_dimensional cube.
 template <size_t VolumeDim>
 class VolumeCornerIterator {
  public:
@@ -185,7 +185,7 @@ class VolumeCornerIterator {
 };
 
 // Iterates over the 2^(VolumeDim-1) logical corners of the face of a
-// VolumeDim-dimensional cube in the given direction.
+// VolumeDim-logical_dimensional cube in the given direction.
 template <size_t VolumeDim>
 class FaceCornerIterator {
  public:
@@ -194,7 +194,7 @@ class FaceCornerIterator {
     face_index_++;
     do {
       index_++;
-    } while (get_nth_bit(index_, direction_.dimension()) ==
+    } while (get_nth_bit(index_, direction_.logical_dimension()) ==
              (direction_.side() == Side::Upper ? 0 : 1));
     for (size_t i = 0; i < VolumeDim; ++i) {
       corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
@@ -227,7 +227,7 @@ FaceCornerIterator<VolumeDim>::FaceCornerIterator(
     Direction<VolumeDim> direction) noexcept
     : direction_(std::move(direction)),
       index_(direction.side() == Side::Upper
-                 ? two_to_the(direction_.dimension())
+                 ? two_to_the(direction_.logical_dimension())
                  : 0) {
   for (size_t i = 0; i < VolumeDim; ++i) {
     corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
@@ -290,7 +290,7 @@ tnsr::I<double, VolumeDim, Frame::Logical> get_corner_of_orthant(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions) noexcept {
   tnsr::I<double, VolumeDim, Frame::Logical> result{};
   for (size_t i = 0; i < VolumeDim; i++) {
-    result[gsl::at(directions, i).dimension()] =
+    result[gsl::at(directions, i).logical_dimension()] =
         gsl::at(directions, i).side() == Side::Upper ? 1.0 : -1.0;
   }
   return result;

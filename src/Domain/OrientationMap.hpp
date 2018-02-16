@@ -17,9 +17,9 @@
  * \ingroup DomainCreators
  * \brief A mapping of the logical coordinate axes of a host to the logical
  * coordinate axes of a neighbor of the host.
- * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
- * host, an `OrientationMap` will give the corresponding value in the neighbor.
- * \tparam VolumeDim the dimension of the blocks.
+ * \usage Given a `size_t logical_dimension`, a `Direction`, or a `SegmentId` of
+ * the host, an `OrientationMap` will give the corresponding value in the
+ * neighbor. \tparam VolumeDim the logical_dimension of the blocks.
  */
 template <size_t VolumeDim>
 class OrientationMap {
@@ -42,16 +42,17 @@ class OrientationMap {
   /// True when mapped(Direction) == Direction
   bool is_aligned() const noexcept { return is_aligned_; }
 
-  /// The corresponding dimension in the neighbor.
+  /// The corresponding logical_dimension in the neighbor.
   size_t operator()(const size_t dim) const noexcept {
-    return gsl::at(mapped_directions_, dim).dimension();
+    return gsl::at(mapped_directions_, dim).logical_dimension();
   }
 
   /// The corresponding direction in the neighbor.
   Direction<VolumeDim> operator()(const Direction<VolumeDim>& direction) const {
     return direction.side() == Side::Upper
-               ? gsl::at(mapped_directions_, direction.dimension())
-               : gsl::at(mapped_directions_, direction.dimension()).opposite();
+               ? gsl::at(mapped_directions_, direction.logical_dimension())
+               : gsl::at(mapped_directions_, direction.logical_dimension())
+                     .opposite();
   }
 
   /// The corresponding SegmentIds in the neighbor.
