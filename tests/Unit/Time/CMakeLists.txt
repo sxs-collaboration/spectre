@@ -13,4 +13,5 @@ add_subdirectory(Actions)
 add_subdirectory(TimeSteppers)
 
 set(SPECTRE_TESTS "${SPECTRE_TESTS};${TIME_TESTS}" PARENT_SCOPE)
+set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};Time" PARENT_SCOPE)
 
