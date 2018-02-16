@@ -18,24 +18,28 @@ At a high level, describe what this PR does.
 
 ### Code review checklist
 
-- [ ] Follows [code review guidelines](https://sxs-collaboration.github.io/spectre/code_review_guide.html)
-- [ ] Code has documentation and unit tests
-- [ ] Private member variables have a trailing underscore
-- [ ] Do not use [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation), e.g. `double* pd_blah` is bad
-- [ ] Header order:
+- Follows [code review guidelines](https://sxs-collaboration.github.io/spectre/code_review_guide.html)
+- Code has documentation and unit tests
+- Private member variables have a trailing underscore
+- Do not use [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation), e.g. `double* pd_blah` is bad
+- Header order:
   1. hpp corresponding to cpp (only in cpp files)
   2. Blank line (only in cpp files)
   3. STL and externals (in alphabetical order)
   4. Blank line
   5. SpECTRE includes (in alphabetical order)
-- [ ] File lists in CMake are alphabetical
-- [ ] Correct `noexcept` specification for functions (if unsure, mark `noexcept`)
-- [ ] Mark objects `const` whenever possible
-- [ ] Almost always `auto`, except with expression templates, i.e. `DataVector`
-- [ ] All commits for performance changes provide quantitative evidence and the tests used to obtain said evidence.
-- [ ] Make sure error messages are helpful, e.g. "The number of grid points in the matrix 'F' is not the same as the number of grid points in the determinant."
-- [ ] Prefix commits addressing PR requests with `fixup`
-
+- File lists in CMake are alphabetical
+- Correct `noexcept` specification for functions (if unsure, mark `noexcept`)
+- Mark objects `const` whenever possible
+- Almost always `auto`, except with expression templates, i.e. `DataVector`
+- All commits for performance changes provide quantitative evidence and the tests used to obtain said evidence.
+- Make sure error messages are helpful, e.g. "The number of grid points in the matrix 'F' is not the same as the number of grid points in the determinant."
+- Prefix commits addressing PR requests with `fixup`. These commits are flagged
+  by Travis so we do not accidentally merge them.
+- Include what you use, prefer forward declarations in hpp files.
+- Explicitly make numbers floating point, e.g. `2.` or `2.0` over `2`
+- Use `Tensor`'s non-member get if the indices are constant expressions, e.g.
+  `get<1>(tensor)`
 
 ### Further comments
 
