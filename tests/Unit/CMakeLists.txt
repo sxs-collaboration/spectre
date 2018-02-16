@@ -7,6 +7,8 @@ set(SPECTRE_TESTS "TestFramework.cpp")
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
+set(LIBRARIES_TO_LINK "Informer")
+
 add_subdirectory(ApparentHorizons)
 add_subdirectory(ControlSystem)
 add_subdirectory(DataStructures)
@@ -26,30 +28,16 @@ set(SPECTRE_TESTS "${SPECTRE_TESTS};Test_TestHelpers.cpp")
 add_charm_module(${executable})
 
 add_executable(
-    ${executable}
-    ${executable}.cpp
-    ${executable}.decl.h
-    ${executable}.def.h
-    ${SPECTRE_TESTS}
-)
+  ${executable}
+  ${executable}.cpp
+  ${executable}.decl.h
+  ${executable}.def.h
+  ${SPECTRE_TESTS}
+  )
 
 target_link_libraries(
   ${executable}
-  ApparentHorizons
-  ControlSystem
-  CoordinateMaps
-  CurvedScalarWave
-  Domain
-  DomainCreators
-  EinsteinSolutions
-  GeneralizedHarmonic
-  GeneralRelativity
-  IO
-  LinearOperators
-  RootFinding
-  ScalarWave
-  Time
-  WaveEquation
+  ${LIBRARIES_TO_LINK}
   ${SPECTRE_LIBRARIES}
 )
 
