@@ -20,6 +20,8 @@ FROM sxscollaboration/spectrebuildenv:latest
 ARG COVERAGE=OFF
 ARG CC
 ARG CXX
+ARG FC
+ARG CHARM_CC
 ARG CXXFLAGS
 ARG BUILD_TYPE
 ARG DOCUMENTATION_ONLY
@@ -73,6 +75,8 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
     export PATH=$PATH:/work/spack/bin; \
     . /work/spack/share/spack/setup-env.sh; \
     spack load gsl; \
+    spack load pkg-config; \
+    spack load benchmark; \
     spack load blaze; \
     spack load brigand; \
     spack load catch; \
@@ -82,7 +86,8 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
           -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_CXX_COMPILER=${CXX} \
           -D CMAKE_CXX_FLAGS=\"${CXXFLAGS}\" \
-          -D CHARM_ROOT=/work/charm/multicore-linux64-${CC} \
+          -D CMAKE_Fortran_COMPILER=${FC} \
+          -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC} \
           -D USE_CCACHE=ON \
           -D COVERAGE=${COVERAGE} \
           ../spectre/"
@@ -96,22 +101,24 @@ RUN if [ ${RUN_CLANG_TIDY} ]; then \
     fi
 
 # TravisCI currently has 2 cores for a job, so we build on 2.
-RUN if [ -z "${RUN_CLANG_TIDY}" ]; then \
-      make test-executables -j2; \
-    fi
-RUN ccache -s
-
 RUN if [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ]; then \
       bash -c ". /etc/profile.d/lmod.sh; \
                export PATH=$PATH:/work/spack/bin; \
                . /work/spack/share/spack/setup-env.sh; \
                spack load gsl; \
+               spack load pkg-config; \
+               spack load benchmark; \
                spack load blaze; \
                spack load brigand; \
                spack load catch; \
                spack load libxsmm; \
                spack load yaml-cpp; \
+               make test-executables -j2; \
+               if [ $BUILD_TYPE = Release ]; then \
+                   make Benchmark -j2; \
+               fi; \
+               ccache -s; \
                ctest --output-on-failure"; \
     fi
 
@@ -125,7 +132,7 @@ RUN if [ "${CC}" = "gcc" ] \
       ! grep 'warning' ./doxygen.log; \
     fi
 
-RUN if [ "${CC}" = "gcc" ] \
+RUN if [ "${CHARM_CC}" = "gcc" ] \
     && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ ${COVERAGE} = ON ]; then \

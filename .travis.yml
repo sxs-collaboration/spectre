@@ -96,6 +96,14 @@ matrix:
     dist: trusty
     env: BUILD_TYPE=Release BUILD_CODE=true
   - os: linux
+    compiler: gcc-6
+    dist: trusty
+    env: BUILD_TYPE=Debug BUILD_CODE=true COMPILER=gcc-6
+  - os: linux
+    compiler: gcc-6
+    dist: trusty
+    env: BUILD_TYPE=Release BUILD_CODE=true COMPILER=gcc-6
+  - os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Debug BUILD_CODE=true
@@ -127,6 +135,17 @@ cache:
 # ccache is used to reduce build times.
 before_install:
   - export CHARM_PATCH=v6.8.patch
+  - export CHARM_CC=${CC}
+  - export FC=gfortran
+  - if [[ ${COMPILER} =~ (gcc|clang)-([0-9\.]+) ]]; then
+      CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
+      if [[ ${BASH_REMATCH[1]} = gcc ]]; then
+          CXX=g++-${BASH_REMATCH[2]};
+          FC=gfortran-${BASH_REMATCH[2]};
+      else
+          CXX=clang++-${BASH_REMATCH[2]};
+      fi
+    fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export CHARM_VERSION=6.8.0;
       export BLAZE_VERSION=3.2;
@@ -238,6 +257,8 @@ script:
         --build-arg BUILD_TYPE=${BUILD_TYPE}
         --build-arg CC=${CC}
         --build-arg CXX=${CXX}
+        --build-arg FC=${FC}
+        --build-arg CHARM_CC=${CHARM_CC}
         --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH}
         --build-arg TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER}
         --build-arg TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
