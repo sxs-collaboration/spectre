@@ -109,31 +109,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
     }
   }
 
-  // Test determinant function for Tensors of different (not double) types:
-  // * use rank-2 Tensor in 2 dimensions, i.e. a 2x2 matrix.
-  // * use Tensor<T,...> for T in {int, DataVector}.
-  SECTION("Test Tensors of different types") {
-    {
-      tnsr::ij<int, 2, Frame::Grid> matrix{};
-      get<0, 0>(matrix) = 9;
-      get<0, 1>(matrix) = 1;
-      get<1, 0>(matrix) = -3;
-      get<1, 1>(matrix) = -4;
-      const auto det = determinant(matrix);
-      CHECK(-33 == det.get());
-    }
-
-    {
-      tnsr::ij<DataVector, 2, Frame::Grid> matrix{};
-      get<0, 0>(matrix) = DataVector({6.0, 5.9, 9.8, 6.4});
-      get<0, 1>(matrix) = DataVector({6.1, 0.3, 2.4, 5.7});
-      get<1, 0>(matrix) = DataVector({4.2, 7.1, 1.1, 6.5});
-      get<1, 1>(matrix) = DataVector({7.2, 8.4, 6.1, 3.7});
-      const auto det = determinant(matrix);
-      CHECK(17.58 == approx(det.get()[0]));
-      CHECK(47.43 == approx(det.get()[1]));
-      CHECK(57.14 == approx(det.get()[2]));
-      CHECK(-13.37 == approx(det.get()[3]));
-    }
+  SECTION("Test Tensors of DataVector") {
+    tnsr::ij<DataVector, 2, Frame::Grid> matrix{};
+    get<0, 0>(matrix) = DataVector({6.0, 5.9, 9.8, 6.4});
+    get<0, 1>(matrix) = DataVector({6.1, 0.3, 2.4, 5.7});
+    get<1, 0>(matrix) = DataVector({4.2, 7.1, 1.1, 6.5});
+    get<1, 1>(matrix) = DataVector({7.2, 8.4, 6.1, 3.7});
+    const auto det = determinant(matrix);
+    CHECK(17.58 == approx(det.get()[0]));
+    CHECK(47.43 == approx(det.get()[1]));
+    CHECK(57.14 == approx(det.get()[2]));
+    CHECK(-13.37 == approx(det.get()[3]));
   }
 }

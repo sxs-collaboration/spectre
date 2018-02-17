@@ -78,6 +78,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "If you are sure you need rank 5 or higher Tensor's please "
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
+  static_assert(
+      cpp17::is_same_v<X, double> or cpp17::is_same_v<X, DataVector>,
+      "Only a Tensor<double> or Tensor<DataVector> is currently "
+      "allowed. While other types are technically possible it is not "
+      "clear that Tensor is the correct container for them. Please "
+      "seek advice on the topic by discussing with the SpECTRE developers.");
   /// The number of \ref SpacetimeIndex "TensorIndexType"'s
   ///
   /// Note: Scalars need to have 1 so we can still store their data.

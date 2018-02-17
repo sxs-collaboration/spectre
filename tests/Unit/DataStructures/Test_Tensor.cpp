@@ -3,6 +3,7 @@
 
 #include <catch.hpp>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -998,12 +999,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
   // the case doing a for (int...) loop over the Tensor's underlying storage
   // vector, which is iterating over all independent components.
   const int dim = 4;
-  Tensor<std::vector<double>, Symmetry<1, 2, 2>,
+  Tensor<DataVector, Symmetry<1, 2, 2>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       tensor_a(1_st);
-  Tensor<std::vector<double>, Symmetry<1, 2, 2>,
+  Tensor<DataVector, Symmetry<1, 2, 2>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
@@ -1057,7 +1058,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
 
   // Check sum of components
   const int dim2 = 3;
-  Tensor<std::vector<double>, Symmetry<1, 2, 2>,
+  Tensor<DataVector, Symmetry<1, 2, 2>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
@@ -1082,7 +1083,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
                   "[DataStructures][Unit]") {
-  Tensor<std::vector<double>, Symmetry<1, 2, 2>,
+  Tensor<DataVector, Symmetry<1, 2, 2>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
@@ -1101,7 +1102,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Multiplicity",
                   "[DataStructures][Unit]") {
-  Tensor<std::vector<double>, Symmetry<1, 2, 2>,
+  Tensor<DataVector, Symmetry<1, 2, 2>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
@@ -1129,13 +1130,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamData",
       "T(1)=(2,2,2,2,2,2,2,2,2,2)\n"
       "T(2)=(2,2,2,2,2,2,2,2,2,2)";
 
-  CHECK(get_output(Tensor<std::vector<double>, Symmetry<1>,
+  CHECK(get_output(Tensor<DataVector, Symmetry<1>,
                           index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>(
             10_st, 2.0)) == compare_out);
 
   compare_out =
       "T()=(2,2,2,2,2,2,2,2,2,2)";
-  CHECK(get_output(Scalar<std::vector<double>>(10_st, 2.0)) == compare_out);
+  CHECK(get_output(Scalar<DataVector>(10_st, 2.0)) == compare_out);
 
   compare_out =
       "T(0,0,0)=0\n"
@@ -1213,7 +1214,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
 SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
                   "[DataStructures][Unit][Serialization]") {
   constexpr size_t dim = 4;
-  tnsr::Abb<std::vector<double>, dim - 1, Frame::Grid> tensor(1_st);
+  tnsr::Abb<DataVector, dim - 1, Frame::Grid> tensor(1_st);
   // Fill the tensors
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
@@ -1286,12 +1287,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
   // NOTE: This test depends on the implementation of serialize and Tensor,
   // but that is inevitable without making the test more complicated.
   /// [init_vector]
-  tnsr::I<std::vector<double>, 3, Frame::Grid> tensor_std_vector(
-      {{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}});
+  tnsr::I<DataVector, 3, Frame::Grid> tensor_std_vector{
+      std::array<DataVector, 3>{{DataVector{1., 2., 3.}, DataVector{4., 5., 6.},
+                                 DataVector{7., 8., 9.}}}};
   /// [init_vector]
   CHECK(std::make_pair(std::vector<std::string>{"x", "y", "z"},
-                       std::vector<std::vector<double>>{
-                           {1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) ==
+                       std::vector<DataVector>{
+                           {1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}) ==
         tensor_std_vector.get_vector_of_data());
 
   tnsr::I<double, 3, Frame::Grid> tensor_double{{{1.0, 2.0, 3.0}}};
