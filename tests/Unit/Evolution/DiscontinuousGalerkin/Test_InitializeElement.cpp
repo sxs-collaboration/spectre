@@ -195,4 +195,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                                              {{4, 5, 3}}});
 }
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

@@ -104,4 +104,4 @@ BENCHMARK(bench_all_gradient);
 
 BENCHMARK_MAIN()
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

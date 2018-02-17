@@ -128,7 +128,7 @@ void UpwindFlux<Dim>::operator()(
 // Generate explicit instantiations of partial_derivatives function as well as
 // all other functions in Equations.cpp
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 
 template <size_t Dim>
 using derivative_tags = typename ScalarWave::System<Dim>::gradients_tags;

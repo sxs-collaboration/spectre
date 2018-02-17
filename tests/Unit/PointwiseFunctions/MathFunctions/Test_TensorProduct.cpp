@@ -16,7 +16,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
@@ -228,3 +227,5 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
   test_with_numerical_derivatives(Index<3>{8, 8, 8}, 1.5,
                                   std::move(generic_3d));
 }
+
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

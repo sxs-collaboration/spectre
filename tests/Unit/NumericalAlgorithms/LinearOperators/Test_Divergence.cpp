@@ -254,4 +254,4 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence.ComputeItem",
 }
 
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
