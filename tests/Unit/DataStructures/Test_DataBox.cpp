@@ -397,6 +397,23 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
   static_cast<void>(db::get_item_from_box<double>(original_box, "time__"));
 }
 
+namespace {
+struct NonCopyableFunctor {
+  NonCopyableFunctor() = default;
+  NonCopyableFunctor(const NonCopyableFunctor&) = delete;
+  NonCopyableFunctor(NonCopyableFunctor&&) = delete;
+  NonCopyableFunctor& operator=(const NonCopyableFunctor&) = delete;
+  NonCopyableFunctor& operator=(NonCopyableFunctor&&) = delete;
+  ~NonCopyableFunctor() = default;
+
+  // The && before the function body requires the object to be an
+  // rvalue for the method to be called.  This checks that the apply
+  // functions correctly preserve the value category of the functor.
+  template <typename... Args>
+  void operator()(Args&&... /*unused*/) && {}
+};
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
                   "[Unit][DataStructures]") {
   auto original_box =
@@ -424,6 +441,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
       check_result_args, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_example]
+
+  db::apply<typelist<>>(NonCopyableFunctor{}, original_box);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
@@ -460,6 +479,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
       typelist<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_args, original_box, std::vector<int>{1, 4, 8});
   /// [apply_with_box_example]
+
+  db::apply_with_box<typelist<>>(NonCopyableFunctor{}, original_box);
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]

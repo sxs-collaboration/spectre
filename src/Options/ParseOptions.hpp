@@ -29,48 +29,41 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \ingroup OptionParsingGroup
-/// The type that options are passed around as.  Contains YAML node
-/// data and an OptionContext.
-class Option {
- public:
-  /// NOTE: This constructor overwrites the mark data in the supplied
-  /// context with the one from the node.
-  explicit Option(YAML::Node node,
-                  OptionContext context = OptionContext()) noexcept
-      // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
-      : node_(std::move(node)), context_(std::move(context)) {  // NOLINT
+// Defining methods as inline in a different header from the class
+// definition is somewhat strange.  It is done here to minimize the
+// amount of code in the frequently-included Options.hpp file.  The
+// only external consumers of Option should be create_from_yaml
+// specializations, and they should only be instantiated by code in
+// this file.  (Or explicitly instantiated in cpp files, which can
+// include this file.)
+
+inline Option::Option(YAML::Node node, OptionContext context) noexcept
+  // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
+  : node_(std::make_unique<YAML::Node>(std::move(node))),
+    context_(std::move(context)) {  // NOLINT
     context_.line = node.Mark().line;
     context_.column = node.Mark().column;
   }
 
-  explicit Option(OptionContext context) noexcept
-      : context_(std::move(context)) {}
+inline Option::Option(OptionContext context) noexcept
+  : node_(std::make_unique<YAML::Node>()), context_(std::move(context)) {}
 
-  const YAML::Node& node() const noexcept { return node_; }
-  const OptionContext& context() const noexcept { return context_; }
+inline const YAML::Node& Option::node() const noexcept { return *node_; }
+inline const OptionContext& Option::context() const noexcept {
+  return context_;
+}
 
-  /// Append a line to the contained context.
-  void append_context(const std::string& context) noexcept {
-    context_.append(context);
-  }
+/// Append a line to the contained context.
+inline void Option::append_context(const std::string& context) noexcept {
+  context_.append(context);
+}
 
-  /// Sets the node and updates the context's mark to correspond to it.
-  void set_node(YAML::Node node) noexcept {
-    // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
-    node_ = std::move(node);  // NOLINT
-    context_.line = node_.Mark().line;
-    context_.column = node_.Mark().column;
-  }
-
-  /// Convert to an object of type `T`.
-  template <typename T>
-  T parse_as() const;
-
- private:
-  YAML::Node node_;
-  OptionContext context_;
-};
+inline void Option::set_node(YAML::Node node) noexcept {
+  // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
+  *node_ = std::move(node);  // NOLINT
+  context_.line = node_->Mark().line;
+  context_.column = node_->Mark().column;
+}
 
 template <typename T>
 T Option::parse_as() const {
@@ -597,12 +590,35 @@ struct convert<Options_detail::CreateWrapper<T>> {
 template <typename K, typename V, typename H, typename P>
 struct create_from_yaml<std::unordered_map<K, V, H, P>> {
   static std::unordered_map<K, V, H, P> create(const Option& options) {
-    std::map<K, V> ordered = options.parse_as<std::map<K, V>>();
+    // This shared_ptr stuff is a hack to work around the inability to
+    // extract keys from maps before C++17.  Once we require C++17
+    // this function and the conversion code for maps in
+    // OptionsDetails.hpp can be updated to use the map `extract`
+    // method and the shared_ptr conversion below can be removed.
+    std::map<std::shared_ptr<K>, V> ordered =
+        options.parse_as<std::map<std::shared_ptr<K>, V>>();
     std::unordered_map<K, V, H, P> result;
-    result.insert(std::make_move_iterator(ordered.begin()),
-                  std::make_move_iterator(ordered.end()));
+    for (auto& kv : ordered) {
+      result.emplace(std::move(*kv.first), std::move(kv.second));
+    }
     return result;
   }
 };
+
+// This is more of the hack for pre-C++17 unordered_maps
+template <typename T>
+struct create_from_yaml<std::shared_ptr<T>> {
+  static std::shared_ptr<T> create(const Option& options) {
+    return std::make_shared<T>(options.parse_as<T>());
+  }
+};
+
+// This is more of the hack for pre-C++17 unordered_maps
+namespace Options_detail {
+template <typename T>
+struct yaml_type<std::shared_ptr<T>> {
+  static std::string value() noexcept { return yaml_type<T>::value(); }
+};
+}  // namespace Options_detail
 
 #include "Options/Factory.hpp"
