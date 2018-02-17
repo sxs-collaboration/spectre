@@ -12,9 +12,12 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace VariablesTestTags_detail {
+/// [simple_variables_tag]
 struct vector : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "vector";
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
+/// [simple_variables_tag]
 
 struct scalar : db::DataBoxTag {
   using type = Scalar<DataVector>;
@@ -24,12 +27,14 @@ struct scalar2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
 };
 
+/// [prefix_variables_tag]
 template <class Tag>
 struct PrefixTag0 : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "PrefixTag0";
 };
+/// [prefix_variables_tag]
 
 template <class Tag>
 struct PrefixTag1 : db::DataBoxPrefix {
