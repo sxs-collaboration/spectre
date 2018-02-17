@@ -268,7 +268,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {
   test_ostream();
 }
 
-// [[OutputRegex, Value 0.5 is below the lower bound of 1.]
+// [[OutputRegex, Value 0.5 is below the lower bound of 1.]]
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowOptFail",
                   "[Utilities][Unit]") {
   ERROR_TEST();
