@@ -3,6 +3,19 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# Setup lmod and spack to load dependencies
+. /etc/profile.d/lmod.sh
+export PATH=$PATH:/work/spack/bin
+. /work/spack/share/spack/setup-env.sh
+spack load benchmark
+spack load blaze
+spack load brigand
+spack load catch
+spack load gsl
+spack load libxsmm
+spack load pkg-config
+spack load yaml-cpp
+
 BUILD_DIR=`pwd`
 git clone ${UPSTREAM_REPO} /work/spectre_upstream
 cd /work/spectre_upstream
@@ -56,7 +69,8 @@ echo ''
 
 for FILENAME in $MODIFIED_FILES
 do
-    make clang-tidy FILE=/work/spectre/${FILENAME} 2>&1 >> ${CLANG_TIDY_OUTPUT}
+    printf "\n\nRunning clang-tidy on file $FILENAME\n"
+    make clang-tidy FILE=/work/spectre/${FILENAME} >> ${CLANG_TIDY_OUTPUT} 2>&1
 done
 
 if [ -f "${CLANG_TIDY_OUTPUT}" ]; then
@@ -68,6 +82,8 @@ if [ -f "${CLANG_TIDY_OUTPUT}" ] \
        && ( grep 'warning:' ${CLANG_TIDY_OUTPUT} > /dev/null ||
                 grep 'error:' ${CLANG_TIDY_OUTPUT} > /dev/null )
 then
+    sed -i '/.*Built target.*/d'  ${CLANG_TIDY_OUTPUT}
+    sed -i '/.*Generating .*/d'  ${CLANG_TIDY_OUTPUT}
     printf "\nclang-tidy found problems! Output:\n\n"
     more ${CLANG_TIDY_OUTPUT}
     exit 1
