@@ -114,6 +114,7 @@ class DataVector {
 
   /// Create from an initializer list of doubles. All elements in the
   /// `std::initializer_list` must have decimal points
+  // cppcheck-suppress syntaxError
   template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
   DataVector(std::initializer_list<T> list);
 

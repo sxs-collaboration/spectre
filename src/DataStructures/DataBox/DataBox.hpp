@@ -758,6 +758,7 @@ class DataBox<TagsList<Tags...>> {
             Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
   const db::item_type<Tag>& get_impl() const noexcept;
 
+  // cppcheck-suppress syntaxError
   template <typename Tag,
             Requires<cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
   const DataBox& get_impl() const noexcept;
