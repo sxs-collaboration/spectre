@@ -26,9 +26,6 @@ DataVector integrate_over_last_dimension(const DataVector& integrand,
 }
 }  // namespace
 
-namespace Basis {
-namespace lgl {
-
 template <size_t Dim>
 double definite_integral(const DataVector& integrand,
                          const Index<Dim>& extents) noexcept {
@@ -48,12 +45,9 @@ double definite_integral<1>(const DataVector& integrand,
   return ddot_(num_points, weights.data(), 1, integrand.data(), 1);
 }
 
-}  // namespace lgl
-}  // namespace Basis
-
 /// \cond
-template double Basis::lgl::definite_integral<2>(const DataVector&,
-                                                 const Index<2>&) noexcept;
-template double Basis::lgl::definite_integral<3>(const DataVector&,
-                                                 const Index<3>&) noexcept;
+template double definite_integral<2>(const DataVector&,
+                                     const Index<2>&) noexcept;
+template double definite_integral<3>(const DataVector&,
+                                     const Index<3>&) noexcept;
 /// \endcond

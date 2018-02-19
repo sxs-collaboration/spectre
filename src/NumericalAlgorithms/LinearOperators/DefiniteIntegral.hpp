@@ -12,9 +12,6 @@ class DataVector;
 template <size_t>
 class Index;
 
-namespace Basis {
-namespace lgl {
-
 /*!
  * \ingroup NumericalAlgorithmsGroup
  * \brief Compute the definite integral of a grid-function over a manifold.
@@ -30,6 +27,3 @@ namespace lgl {
 template <size_t Dim>
 double definite_integral(const DataVector& integrand,
                          const Index<Dim>& extents) noexcept;
-
-}  // namespace lgl
-}  // namespace Basis
