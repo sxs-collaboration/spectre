@@ -9,6 +9,7 @@
 #include "AlgorithmSingleton.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
@@ -69,4 +70,5 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &DomainCreators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<MathFunction<1>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
-static const std::vector<void (*)()> charm_init_proc_funcs{};
+static const std::vector<void (*)()> charm_init_proc_funcs{
+    &enable_floating_point_exceptions};

@@ -7,6 +7,7 @@
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -361,7 +362,8 @@ struct TestMetavariables {
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};
-static const std::vector<void (*)()> charm_init_proc_funcs{};
+static const std::vector<void (*)()> charm_init_proc_funcs{
+    &enable_floating_point_exceptions};
 
 using charm_metavariables = TestMetavariables;
 
