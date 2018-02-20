@@ -334,4 +334,77 @@ struct Interface<DirectionsTag, Direction<VolumeDim>>
   using argument_tags = tmpl::list<DirectionsTag>;
 };
 /// \endcond
+
+namespace detail {
+template <size_t VolumeDim>
+struct InterfaceExtents : db::ComputeItemTag {
+  static constexpr auto function(
+      const ::Direction<VolumeDim>& direction,
+      const ::Index<VolumeDim>& volume_extents) noexcept {
+    return volume_extents.slice_away(direction.dimension());
+  }
+  using argument_tags = tmpl::list<Direction<VolumeDim>, Extents<VolumeDim>>;
+  using volume_tags = tmpl::list<Extents<VolumeDim>>;
+};
+}  // namespace detail
+
+/// \cond
+template <typename DirectionsTag, size_t InterfaceDim>
+struct Interface<DirectionsTag, Extents<InterfaceDim>>
+    : InterfaceBase<DirectionsTag, Extents<InterfaceDim>,
+                    detail::InterfaceExtents<InterfaceDim + 1>> {};
+/// \endcond
 }  // namespace Tags
+
+namespace db {
+template <typename DirectionsTag, typename VariablesTag>
+struct Subitems<Tags::Interface<DirectionsTag, VariablesTag>,
+                Requires<tt::is_a_v<Variables, item_type<VariablesTag>>>> {
+  using type = tmpl::transform<
+      typename item_type<VariablesTag>::tags_list,
+      tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
+
+  using tag = Tags::Interface<DirectionsTag, VariablesTag>;
+
+  template <typename Subtag>
+  static void create_item(
+      const gsl::not_null<item_type<tag>*> parent_value,
+      const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
+    sub_value->clear();
+    for (auto& direction_vars : *parent_value) {
+      const auto& direction = direction_vars.first;
+      auto& parent_vars = get<typename Subtag::tag>(direction_vars.second);
+      auto& sub_var = (*sub_value)[direction];
+      for (auto vars_it = parent_vars.begin(), sub_var_it = sub_var.begin();
+           vars_it != parent_vars.end(); ++vars_it, ++sub_var_it) {
+        sub_var_it->set_data_ref(&*vars_it);
+      }
+    }
+  }
+
+  template <typename Subtag>
+  static auto create_compute_item(const item_type<tag>& parent_value) noexcept {
+    item_type<Subtag> sub_value;
+    for (const auto& direction_vars : parent_value) {
+      const auto& direction = direction_vars.first;
+      const auto& parent_vars =
+          get<typename Subtag::tag>(direction_vars.second);
+      auto& sub_var = sub_value[direction];
+      auto sub_var_it = sub_var.begin();
+      for (auto vars_it = parent_vars.begin();
+           vars_it != parent_vars.end(); ++vars_it, ++sub_var_it) {
+        // clang-tidy: do not use const_cast
+        // The DataBox will only give out a const reference to the
+        // result of a compute item.  Here, that is a reference to a
+        // const map to Tensors of DataVectors.  There is no (publicly
+        // visible) indirection there, so having the map const will
+        // allow only allow const access to the contained DataVectors,
+        // so no modification through the pointer cast here is
+        // possible.
+        sub_var_it->set_data_ref(const_cast<DataVector*>(&*vars_it));  // NOLINT
+      }
+    }
+    return sub_value;
+  }
+};
+}  // namespace db

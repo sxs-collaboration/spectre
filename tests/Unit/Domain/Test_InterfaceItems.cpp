@@ -8,6 +8,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
@@ -162,4 +165,88 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
                              TestTags::Negate<TestTags::Double>>>(box)) ==
         (std::unordered_map<Direction<dim>, double>{
             {Direction<dim>::upper_xi(), -4.5}}));
+}
+
+namespace {
+constexpr size_t dim = 2;
+
+struct Dirs : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "Dirs";
+  static auto function() noexcept {
+    return std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
+                                              Direction<dim>::upper_eta()};
+  }
+  using argument_tags = tmpl::list<>;
+};
+
+template <size_t N>
+struct Var : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Var";
+  using type = Scalar<DataVector>;
+};
+
+template <size_t VolumeDim>
+struct Compute : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "Compute";
+  static auto function(const Index<VolumeDim>& extents) {
+    auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
+        extents.product(), VolumeDim);
+    get(get<Var<10 * VolumeDim>>(ret)) *= 5;
+    return ret;
+  }
+  using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
+};
+
+template <size_t N>
+auto make_interface_variables(DataVector value_xi,
+                              DataVector value_eta) noexcept {
+  const auto make = [](DataVector value) noexcept {
+    Variables<tmpl::list<Var<N>>> v(value.size());
+    get(get<Var<N>>(v)) = std::move(value);
+    return v;
+  };
+  std::unordered_map<Direction<dim>, decltype(make(value_xi))> ret;
+  ret.emplace(Direction<dim>::lower_xi(), make(std::move(value_xi)));
+  ret.emplace(Direction<dim>::upper_eta(), make(std::move(value_eta)));
+  return ret;
+}
+
+auto make_interface_tensor(DataVector value_xi, DataVector value_eta) noexcept {
+  std::unordered_map<Direction<dim>, Scalar<DataVector>> ret;
+  ret.emplace(Direction<dim>::lower_xi(),
+              Scalar<DataVector>(std::move(value_xi)));
+  ret.emplace(Direction<dim>::upper_eta(),
+              Scalar<DataVector>(std::move(value_eta)));
+  return ret;
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
+  const Index<dim> extents{{{4, 3}}};
+
+  const DataVector boundary_vars_xi{10., 11., 12.};
+  const DataVector boundary_vars_eta{20., 21., 22., 23.};
+
+  auto box = db::create<
+      db::AddTags<Tags::Extents<dim>,
+                  Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
+      db::AddComputeItemsTags<Dirs, Tags::Interface<Dirs, Tags::Direction<dim>>,
+                              Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
+                              Tags::Interface<Dirs, Compute<1>>>>(
+      extents,
+      make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+
+  CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
+        make_interface_tensor(boundary_vars_xi, boundary_vars_eta));
+  CHECK((db::get<Tags::Interface<Dirs, Var<1>>>(box)) ==
+        make_interface_tensor({1., 1., 1.}, {1., 1., 1., 1.}));
+  CHECK((db::get<Tags::Interface<Dirs, Var<10>>>(box)) ==
+        make_interface_tensor({5., 5., 5.}, {5., 5., 5., 5.}));
+
+  db::mutate<Tags::Interface<Dirs, Var<0>>>(
+      box, [](auto& boundary_tensor) noexcept {
+        get(boundary_tensor.at(Direction<dim>::lower_xi())) *= 3.;
+      });
+  CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
+        make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));
 }
