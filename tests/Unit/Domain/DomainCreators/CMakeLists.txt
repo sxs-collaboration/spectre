@@ -6,6 +6,7 @@ set(SPECTRE_UNIT_DOMAIN_CREATORS
   Domain/DomainCreators/Test_Disk.cpp
   Domain/DomainCreators/Test_Interval.cpp
   Domain/DomainCreators/Test_Rectangle.cpp
+  Domain/DomainCreators/Test_RotatedIntervals.cpp
   Domain/DomainCreators/Test_Shell.cpp
   Domain/DomainCreators/Test_Sphere.cpp
   )
