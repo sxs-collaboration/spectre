@@ -34,7 +34,7 @@ struct RunEventsAndTriggers {
                     const ArrayIndex& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const component) noexcept {
-    get<Tags::EventsAndTriggersTagBase>(cache).run_events(
+    Parallel::get<Tags::EventsAndTriggersTagBase>(cache).run_events(
         box, cache, array_index, component);
 
     return std::forward_as_tuple(box);
