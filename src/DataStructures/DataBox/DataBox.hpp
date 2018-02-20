@@ -633,10 +633,6 @@ class DataBox<TagsList<Tags...>> {
       tmpl::filter<item_tags, tmpl::bind<databox_detail::is_variables,
                                          tmpl::bind<db::item_type, tmpl::_1>>>;
 
-  using extracted_from_variables = tmpl::list_difference<
-      databox_detail::extracted_items<variables_item_tags>,
-      variables_item_tags>;
-
   using edge_list =
       tmpl::fold<compute_item_tags, typelist<>,
                  databox_detail::create_dependency_graph<void, tmpl::_element,
@@ -1191,21 +1187,18 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
       args_tuple, data_, typelist<NewTags...>{},
       std::make_index_sequence<sizeof...(NewTags)>{}, typelist<>{});
 
-  // For all the variable tags in the DataBox, check if one of their Tags is
-  // being mutated. We do not allow this to be done in create_from so it results
-  // in an error
-  using mutated_tags_list = tmpl::list<MutatedTags...>;
-  using variables_tags_from_single_tags = tmpl::filter<
-      extracted_from_variables,
-      tmpl::bind<tmpl::list_contains, tmpl::pin<mutated_tags_list>, tmpl::_1>>;
-  static_assert(cpp17::is_same_v<tmpl::list<>, variables_tags_from_single_tags>,
-                "You are not allowed to mutate a single component of a "
-                "Variables with db::create_from, you must mutate the entire "
-                "Variables instead.");
+  // Check that we're not removing part of a Variables without
+  // removing the whole thing.
+  using partially_kept_items = tmpl::list_difference<
+      databox_detail::extracted_items<typelist<KeepTags...>>,
+      typelist<KeepTags...>>;
+  static_assert(cpp17::is_same_v<partially_kept_items, typelist<>>,
+                "You are not allowed to remove part of a Variables with "
+                "db::create_from.");
 
   // Reset dependent compute items
   using mutated_items_including_variables =
-      databox_detail::extracted_items<mutated_tags_list>;
+      databox_detail::extracted_items<tmpl::list<MutatedTags...>>;
   using first_compute_items_to_reset = tmpl::transform<
       tmpl::filter<edge_list,
                    tmpl::bind<tmpl::list_contains,
