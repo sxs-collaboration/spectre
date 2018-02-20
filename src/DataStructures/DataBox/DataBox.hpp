@@ -771,10 +771,7 @@ class DataBox<TagsList<Tags...>> {
 
   SPECTRE_ALWAYS_INLINE void check_tags() const {
 #ifdef SPECTRE_DEBUG
-    ASSERT(tmpl::size<tags_list>::value == 0 or
-               tmpl::for_each<tags_list>(detail::check_tag_labels{}).value,
-           "Could not match one of the Tag labels with the Tag type. That is, "
-           "the label of a Tag must be the same as the Tag.");
+    tmpl::for_each<tags_list>(detail::check_tag_labels{});
 #endif
   }
 

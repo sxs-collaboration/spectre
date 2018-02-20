@@ -204,14 +204,10 @@ struct tag_label_correct_type<
 // @}
 
 struct check_tag_labels {
-  using value_type = bool;
-  value_type value{false};
   template <typename T>
   void operator()(tmpl::type_<T> /*meta*/) {
-    bool correct = pretty_type::get_name<T>().find(std::string(T::label)) !=
-                   std::string::npos;
-    value |= correct;
-    ASSERT(correct,
+    ASSERT(pretty_type::get_name<T>().find(std::string(T::label)) !=
+               std::string::npos,
            "Failed to match the Tag label " << std::string(T::label)
                                             << " with its type name "
                                             << pretty_type::get_name<T>());
