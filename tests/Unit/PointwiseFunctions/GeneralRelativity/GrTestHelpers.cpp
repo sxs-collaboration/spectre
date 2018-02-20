@@ -229,6 +229,43 @@ tnsr::Ijj<DataType, SpatialDim> make_spatial_christoffel_second_kind(
 }
 
 template <size_t SpatialDim, typename DataType>
+tnsr::aBcc<DataType, SpatialDim> make_deriv_spacetime_christoffel_second_kind(
+    const DataType& used_for_size) {
+  auto deriv_christoffel =
+      make_with_value<tnsr::aBcc<DataType, SpatialDim>>(used_for_size, 0.);
+  for (size_t i = 0; i < SpatialDim + 1; i++) {
+    for (size_t j = i; j < SpatialDim + 1; j++) {
+      for (size_t k = 0; k < SpatialDim + 1; k++) {
+        for (size_t l = 0; l < SpatialDim + 1; ++l) {
+          deriv_christoffel.get(k, l, i, j) = make_with_value<DataType>(
+              used_for_size, (i + 2.) * (j + 1.) * (k + 2.) * (l + 4.));
+        }
+      }
+    }
+  }
+  return deriv_christoffel;
+}
+
+template <size_t SpatialDim, typename DataType>
+tnsr::iJkk<DataType, SpatialDim> make_deriv_spatial_christoffel_second_kind(
+    const DataType& used_for_size){
+  auto deriv_christoffel =
+      make_with_value<tnsr::iJkk<DataType, SpatialDim>>(used_for_size, 0.);
+  for (size_t i = 0; i < SpatialDim; i++) {
+    for (size_t j = i; j < SpatialDim; j++) {
+      for (size_t k = 0; k < SpatialDim; k++) {
+        for (size_t l = 0; l < SpatialDim; ++l) {
+          deriv_christoffel.get(k, l, i, j) = make_with_value<DataType>(
+              used_for_size, 4. * (i + 1.) * (j + 1.) - k * (l + 4.));
+        }
+      }
+    }
+  }
+  return deriv_christoffel;
+}
+
+
+template <size_t SpatialDim, typename DataType>
 tnsr::aa<DataType, SpatialDim> make_spacetime_metric(
     const DataType& used_for_size) {
   auto spacetime_metric =
@@ -322,6 +359,12 @@ tnsr::I<DataType, SpatialDim> make_trace_spatial_christoffel_second_kind(
   make_spacetime_christoffel_second_kind(const DTYPE(data) & used_for_size); \
   template tnsr::Ijj<DTYPE(data), DIM(data)>                                 \
   make_spatial_christoffel_second_kind(const DTYPE(data) & used_for_size);   \
+  template tnsr::iJkk<DTYPE(data), DIM(data)>                                \
+  make_deriv_spatial_christoffel_second_kind(                                \
+      const DTYPE(data) & used_for_size);                                    \
+  template tnsr::aBcc<DTYPE(data), DIM(data)>                                \
+  make_deriv_spacetime_christoffel_second_kind(                              \
+      const DTYPE(data) & used_for_size);                                    \
   template tnsr::aa<DTYPE(data), DIM(data)> make_spacetime_metric(           \
       const DTYPE(data) & used_for_size);                                    \
   template tnsr::AA<DTYPE(data), DIM(data)> make_inverse_spacetime_metric(   \
