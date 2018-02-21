@@ -45,7 +45,8 @@ DataVector& DataVector::operator=(const DataVector& rhs) {
     }
     data_ = decltype(data_){owned_data_.data(), size_};
   } else {
-    ASSERT(rhs.size() == size(), "Must copy into same size");
+    ASSERT(rhs.size() == size(), "Must copy into same size, not "
+                                     << rhs.size() << " into " << size());
     std::copy(rhs.begin(), rhs.end(), begin());
   }
   return *this;
@@ -76,7 +77,8 @@ DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
     data_ = std::move(rhs.data_);  // NOLINT
     owning_ = rhs.owning_;
   } else {
-    ASSERT(rhs.size() == size(), "Must copy into same size");
+    ASSERT(rhs.size() == size(), "Must copy into same size, not "
+                                     << rhs.size() << " into " << size());
     std::copy(rhs.begin(), rhs.end(), begin());
   }
   rhs.owning_ = true;
