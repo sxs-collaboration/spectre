@@ -56,6 +56,41 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
 
 /*!
  * \ingroup DataStructuresGroup
+ * \brief Slices volume `Tensor`s into a `Variables`
+ *
+ * The slice has a constant logical coordinate in direction `sliced_dim`,
+ * slicing the volume at `fixed_index` in that dimension.  For
+ * example, to get the lower boundary of `sliced_dim`, pass `0` for
+ * `fixed_index`; to get the upper boundary, pass
+ * `extents[sliced_dim] - 1`.
+ */
+template <typename... TagsToSlice, size_t VolumeDim>
+Variables<tmpl::list<TagsToSlice...>> data_on_slice(
+    const Index<VolumeDim>& element_extents,
+    const size_t sliced_dim, const size_t fixed_index,
+    const typename TagsToSlice::type&... tensors) noexcept {
+  const size_t interface_grid_points =
+      element_extents.slice_away(sliced_dim).product();
+  Variables<tmpl::list<TagsToSlice...>> interface_vars(interface_grid_points);
+  for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
+    const auto lambda = [&si](auto& interface_tensor,
+                              const auto& volume_tensor) noexcept {
+      for (decltype(auto) interface_and_volume_tensor_components :
+           boost::combine(interface_tensor, volume_tensor)) {
+        boost::get<0>(
+            interface_and_volume_tensor_components)[si.slice_offset()] =
+            boost::get<1>(
+                interface_and_volume_tensor_components)[si.volume_offset()];
+      }
+    };
+    swallow((lambda(get<TagsToSlice>(interface_vars), tensors),
+             cpp17::void_type{})...);
+  }
+  return interface_vars;
+}
+
+/*!
+ * \ingroup DataStructuresGroup
  * \brief Adds data on a codimension 1 slice to a volume quantity. The
  * slice has a constant logical coordinate in direction `sliced_dim`,
  * slicing the volume at `fixed_index` in that dimension.  For
