@@ -114,10 +114,9 @@ struct no_op {
 };
 
 struct initialize {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -269,10 +268,9 @@ struct test_args {
 };
 
 struct initialize {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -401,10 +399,9 @@ struct update_instance {
 };
 
 struct initialize {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,

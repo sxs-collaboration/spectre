@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include <exception>
+
+#include "Parallel/Abort.hpp"
 
 inline void setup_error_handling() {
   std::set_terminate([]() {
@@ -11,5 +13,4 @@ inline void setup_error_handling() {
         "Terminate was called, calling Charm++'s abort function to properly "
         "terminate execution.");
   });
-  enable_floating_point_exceptions();
 }

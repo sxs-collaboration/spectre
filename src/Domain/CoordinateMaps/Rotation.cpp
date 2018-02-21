@@ -3,8 +3,8 @@
 
 #include "Domain/CoordinateMaps/Rotation.hpp"
 
-#include "DataStructures/MakeWithValue.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace CoordinateMaps {
 

@@ -293,6 +293,7 @@ struct wrap_create_types_impl<std::vector<T>> {
   static auto unwrap(std::vector<T> wrapped) {
     using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
     std::vector<UnwrappedT> result;
+    result.reserve(wrapped.size());
     for (auto& w : wrapped) {
       result.push_back(unwrap_create_types<T>(std::move(w)));
     }

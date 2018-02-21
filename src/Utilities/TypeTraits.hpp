@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <deque>
 #include <forward_list>
+#include <functional>  // for reference_wrapper
 #include <future>
 #include <list>
 #include <map>
@@ -1295,5 +1296,23 @@ struct remove_reference_wrapper<std::reference_wrapper<T>> {
 
 template <typename T>
 using remove_reference_wrapper_t = typename remove_reference_wrapper<T>::type;
+// @}
+
+// @{
+/*!
+ * \ingroup TypeTraitsGroup
+ * \brief Removes std::reference_wrapper, references, and cv qualifiers.
+ *
+ * \example
+ * \snippet Utilities/Test_TypeTraits.cpp remove_cvref_wrap
+ * \see std::reference_wrapper remove_reference_wrapper std::remove_cvref
+ */
+template <typename T>
+struct remove_cvref_wrap {
+  using type = cpp20::remove_cvref_t<tt::remove_reference_wrapper_t<T>>;
+};
+
+template <typename T>
+using remove_cvref_wrap_t = typename remove_cvref_wrap<T>::type;
 // @}
 }  // namespace tt

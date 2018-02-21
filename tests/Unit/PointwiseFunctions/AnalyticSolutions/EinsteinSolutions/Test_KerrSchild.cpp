@@ -304,4 +304,4 @@ SPECTRE_TEST_CASE(
   opts.get<KerrSchild>();
 }
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

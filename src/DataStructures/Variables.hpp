@@ -44,7 +44,19 @@ class Variables;
 /*!
  * \ingroup DataStructuresGroup
  * \brief A Variables holds a contiguous memory block with Tensors pointing
- * into it
+ * into it.
+ *
+ * The `Tags` are `struct`s that must have a public type alias `type` whose
+ * value must be a `Tensor<DataVector, ...>`, a `static constexpr
+ * db::DataBoxString` variable named `label`, and must derive off of
+ * `db::DataBoxTag`. In general, they should be DataBoxTags that are not compute
+ * items. For example,
+ *
+ * \snippet Test_Variables.cpp simple_variables_tag
+ *
+ * Prefix tags can also be stored and their format is:
+ *
+ * \snippet Test_Variables.cpp prefix_variables_tag
  */
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {

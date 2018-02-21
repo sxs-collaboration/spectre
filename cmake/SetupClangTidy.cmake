@@ -76,4 +76,19 @@ if (CLANG_TIDY_BIN)
     clang-tidy-all
     ${MODULES_TO_DEPEND_ON}
   )
+  add_custom_target(
+      clang-tidy-hash
+      COMMAND ${CMAKE_SOURCE_DIR}/tools/ClangTidyHash.sh
+      ${CMAKE_BINARY_DIR}
+      ${CMAKE_SOURCE_DIR}
+      \${HASH}
+  )
+  set_target_properties(
+      clang-tidy-hash
+      PROPERTIES EXCLUDE_FROM_ALL TRUE
+  )
+  add_dependencies(
+    clang-tidy-hash
+    ${MODULES_TO_DEPEND_ON}
+  )
 endif()

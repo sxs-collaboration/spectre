@@ -3,11 +3,11 @@
 
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace CoordinateMaps {
 

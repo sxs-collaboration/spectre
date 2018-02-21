@@ -36,7 +36,7 @@ boost::rational<size_t> fraction_of_block_face_area(
       sum_of_refinement_levels += gsl::at(segment_ids, d).refinement_level();
     }
   }
-  return boost::rational<size_t>(1, two_to_the(sum_of_refinement_levels));
+  return {1, two_to_the(sum_of_refinement_levels)};
 }
 
 template <size_t VolumeDim>
@@ -394,7 +394,7 @@ boost::rational<size_t> fraction_of_block_volume(
   for (const auto& segment_id : segment_ids) {
     sum_of_refinement_levels += segment_id.refinement_level();
   }
-  return boost::rational<size_t>(1, two_to_the(sum_of_refinement_levels));
+  return {1, two_to_the(sum_of_refinement_levels)};
 }
 
 template <size_t VolumeDim>

@@ -17,10 +17,6 @@
 # - COVERALLS_TOKEN: Sign up to coveralls and link to GitHub. Add the
 #                    repository you want to display, and copy the repo_token.
 #                    The repo_token is what COVERALLS_TOKEN must be set to.
-# - SONAR_TOKEN: Setup your repository on SonarCloud, then go to My Account
-#                and select Security. You can now generate a new token that
-#                will be used to upload SonarCloud reports. This is the value
-#                that SONAR_TOKEN must be set to.
 # - ENCRYPTION_LABEL:
 #      The file encryption mechanism of TravisCI is used to encrypt the private
 #      SSH key we need to push to the gh-pages branch of the repository. Follow
@@ -72,19 +68,19 @@ matrix:
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CLANG_TIDY=true BUILD_TYPE=Release BUILD_CODE=true
+    env: RUN_CLANG_TIDY=true BUILD_TYPE=Release
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug BUILD_CODE=true
+    env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CPPCHECK=true BUILD_TYPE=Release BUILD_CODE=true
+    env: RUN_CPPCHECK=true BUILD_TYPE=Release
     compiler: clang
   - os: linux
     dist: trusty
-    env: RUN_CPPCHECK=true BUILD_TYPE=Debug BUILD_CODE=true
+    env: RUN_CPPCHECK=true BUILD_TYPE=Debug
     compiler: clang
   - os: linux
     dist: trusty
@@ -94,37 +90,42 @@ matrix:
   - os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Debug SONARQUBE=ON COVERAGE=ON BUILD_CODE=true
+    env: BUILD_TYPE=Debug COVERAGE=ON
   - os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Release BUILD_CODE=true
+    env: BUILD_TYPE=Release
+  - os: linux
+    compiler: gcc-6
+    dist: trusty
+    env: BUILD_TYPE=Debug COMPILER=gcc-6
+  - os: linux
+    compiler: gcc-6
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=gcc-6
   - os: linux
     compiler: clang
     dist: trusty
-    env: BUILD_TYPE=Debug BUILD_CODE=true
+    env: BUILD_TYPE=Debug
   - os: linux
     compiler: clang
     dist: trusty
-    env: BUILD_TYPE=Release BUILD_CODE=true
+    env: BUILD_TYPE=Release
   - os: osx
-    env: BUILD_TYPE=Debug BUILD_CODE=true
+    env: BUILD_TYPE=Debug
     osx_image: xcode7.3
     compiler: clang
   - os: osx
     osx_image: xcode8.3
-    env: BUILD_TYPE=Release BUILD_CODE=true
+    env: BUILD_TYPE=Release
     compiler: clang
 
 
 # Travis allows caching of data between builds to reduce build times or perform
 # regression testing. We use ccache (https://ccache.samba.org/) to reduce
-# compilation time. SonarCloud, a static analysis tool (https://sonarcloud.io/)
-# also has a cache directory that needs to be managed.
+# compilation time.
 cache:
   ccache: true
-  directories:
-      - $HOME/.sonar
 
 # For macOS we install all dependencies in the before_install step of Travis.
 # Unfortunately installing ccache and jemalloc from brew causes a brew update,
@@ -134,6 +135,17 @@ cache:
 # ccache is used to reduce build times.
 before_install:
   - export CHARM_PATCH=v6.8.patch
+  - export CHARM_CC=${CC}
+  - export FC=gfortran
+  - if [[ ${COMPILER} =~ (gcc|clang)-([0-9\.]+) ]]; then
+      CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
+      if [[ ${BASH_REMATCH[1]} = gcc ]]; then
+          CXX=g++-${BASH_REMATCH[2]};
+          FC=gfortran-${BASH_REMATCH[2]};
+      else
+          CXX=clang++-${BASH_REMATCH[2]};
+      fi
+    fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export CHARM_VERSION=6.8.0;
       export BLAZE_VERSION=3.2;
@@ -197,7 +209,7 @@ before_install:
 # container to build SpECTRE, and build natively on macOS.
 # The ENCRYPTED_KEY_VAR and ENCRYPTED_IV_VAR are used to retrieve the encrypted
 # variables from TravisCI without showing the encrypt ID (which could be public
-# without losing much, if any security). The SONAR_TOKEN and COVERALLS_TOKEN are
+# without losing much, if any security). The COVERALLS_TOKEN is a
 # secret env variable set in the TravisCI configuration.
 #
 # Linux:
@@ -233,12 +245,11 @@ script:
     ./tools/CheckFiles.sh;
   elif [ "${TEST_CHECK_FILES}" ==  "true" ]; then
     ./tools/CheckFiles.sh --test;
-  elif [ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${BUILD_CODE}" == "true" ]; then
+  elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
     && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
     && cp -r ${HOME}/.ccache ${HOME}/docker/ccache
-    && cp -r $HOME/.sonar ${HOME}/docker/sonar
     && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
     && docker build
         --build-arg CXXFLAGS="-Werror -march=x86-64"
@@ -246,6 +257,8 @@ script:
         --build-arg BUILD_TYPE=${BUILD_TYPE}
         --build-arg CC=${CC}
         --build-arg CXX=${CXX}
+        --build-arg FC=${FC}
+        --build-arg CHARM_CC=${CHARM_CC}
         --build-arg TRAVIS_BRANCH=${TRAVIS_BRANCH}
         --build-arg TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER}
         --build-arg TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
@@ -257,8 +270,6 @@ script:
         --build-arg TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}
         --build-arg ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
         --build-arg ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
-        --build-arg SONAR_TOKEN=${SONAR_TOKEN}
-        --build-arg SONARQUBE=${SONARQUBE}
         --build-arg GH_PAGES_REPO=${GH_PAGES_REPO}
         --build-arg GH_PAGES_SOURCE_BRANCH=${GH_PAGES_SOURCE_BRANCH}
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
@@ -273,10 +284,9 @@ script:
     && rm -rf ${HOME}/.ccache
     && CON=$(docker run -d ${TRAVIS_REPO_SLUG} /bin/bash)
     && docker cp ${CON}:/root/.ccache ${HOME}/
-    && docker cp ${CON}:/root/.sonar ${HOME}/
     && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
                  ${HOME}/docker/spectre;
-  elif [ "${TRAVIS_OS_NAME}" == "osx" ] && [ "${BUILD_CODE}" == "true" ]; then
+  elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
     cd $HOME
     && mkdir build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
     && cd ./build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
@@ -288,6 +298,7 @@ script:
              -D LIBXSMM_ROOT=$HOME/libxsmm/build
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D MACOSX_MIN=10.11
+             -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
              ${TRAVIS_BUILD_DIR}
     && make test-executables -j2
     && ctest --output-on-failure

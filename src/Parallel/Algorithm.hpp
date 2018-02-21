@@ -169,6 +169,14 @@ void apply_visitor_helper(boost::variant<Variants...>& box,
           [&box](std::false_type /*returns_void*/, auto&&... my_args) {
             box = std::get<0>(Invokable::apply(boost::get<ThisVariant>(box),
                                                std::forward<Args>(my_args)...));
+            using return_box_type = decltype(std::get<0>(Invokable::apply(
+                boost::get<ThisVariant>(box), std::forward<Args>(my_args)...)));
+            static_assert(
+                cpp17::is_same_v<std::decay_t<return_box_type>, ThisVariant> or
+                    cpp17::is_same_v<db::DataBox<tmpl::list<>>, ThisVariant>,
+                "An explicit single Action must return either void or the same "
+                "DataBox that was passed into it, or only be invokable with an "
+                "empty DataBox.");
           })(
           typename std::is_same<void, decltype(Invokable::apply(
                                           std::declval<ThisVariant&>(),

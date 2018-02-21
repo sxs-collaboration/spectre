@@ -80,6 +80,7 @@ inline std::ostream& operator<<(std::ostream& s,
 namespace Options_detail {
 class propagate_context : public std::exception {
  public:
+  // cppcheck-suppress passedByValue
   explicit propagate_context(std::string message) noexcept
       : message_(std::move(message)) {}
 

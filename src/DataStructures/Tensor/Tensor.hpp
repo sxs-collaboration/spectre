@@ -9,7 +9,6 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -20,6 +19,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -78,6 +78,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "If you are sure you need rank 5 or higher Tensor's please "
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
+  static_assert(
+      cpp17::is_same_v<X, double> or cpp17::is_same_v<X, DataVector>,
+      "Only a Tensor<double> or Tensor<DataVector> is currently "
+      "allowed. While other types are technically possible it is not "
+      "clear that Tensor is the correct container for them. Please "
+      "seek advice on the topic by discussing with the SpECTRE developers.");
   /// The number of \ref SpacetimeIndex "TensorIndexType"'s
   ///
   /// Note: Scalars need to have 1 so we can still store their data.

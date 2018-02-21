@@ -119,9 +119,11 @@ class HistoryIterator {
     return std::get<0>(base_[n]);
   }
   HistoryIterator& operator++() noexcept { ++base_; return *this; }
-  HistoryIterator operator++(int) noexcept { return base_++; }
+  // clang-tidy: return const... Really? What?
+  HistoryIterator operator++(int) noexcept { return base_++; }  // NOLINT
   HistoryIterator& operator--() noexcept { --base_; return *this; }
-  HistoryIterator operator--(int) noexcept { return base_--; }
+  // clang-tidy: return const... Really? What?
+  HistoryIterator operator--(int) noexcept { return base_--; }  // NOLINT
   HistoryIterator& operator+=(difference_type n) noexcept {
     base_ += n;
     return *this;

@@ -7,13 +7,17 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace VariablesTestTags_detail {
+/// [simple_variables_tag]
 struct vector : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "vector";
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
+/// [simple_variables_tag]
 
 struct scalar : db::DataBoxTag {
   using type = Scalar<DataVector>;
@@ -23,12 +27,14 @@ struct scalar2 : db::DataBoxTag {
   using type = Scalar<DataVector>;
 };
 
+/// [prefix_variables_tag]
 template <class Tag>
 struct PrefixTag0 : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "PrefixTag0";
 };
+/// [prefix_variables_tag]
 
 template <class Tag>
 struct PrefixTag1 : db::DataBoxPrefix {
@@ -367,6 +373,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
                   "[DataStructures][Unit]") {
   Variables<tmpl::list<VariablesTestTags_detail::vector>> v(1, -3.0);
   test_serialization(v);
+  auto tuple_of_v = std::make_tuple(
+      Variables<tmpl::list<VariablesTestTags_detail::vector>>{1, -4.0});
+  test_serialization(tuple_of_v);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.assign_subset",

@@ -3,7 +3,6 @@
 
 #include <catch.hpp>
 
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -11,6 +10,7 @@
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

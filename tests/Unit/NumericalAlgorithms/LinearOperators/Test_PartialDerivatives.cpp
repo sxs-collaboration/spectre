@@ -21,7 +21,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.cpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 
 namespace {
 

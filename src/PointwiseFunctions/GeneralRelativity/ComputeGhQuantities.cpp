@@ -4,9 +4,9 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>

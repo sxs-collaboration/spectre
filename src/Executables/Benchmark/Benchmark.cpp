@@ -9,7 +9,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/AffineMap.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Element.hpp"
@@ -31,7 +31,7 @@ namespace {
 // at CppCon in 2015,
 // https://www.youtube.com/watch?v=nXaxk27zwlk
 
-// static void bench_create(benchmark::State &state) {
+// void bench_create(benchmark::State &state) {
 //  while (state.KeepRunning()) {
 //    std::vector<int> v;
 //    benchmark::DoNotOptimize(&v);
@@ -40,7 +40,7 @@ namespace {
 // }
 // BENCHMARK(bench_create);
 
-// static void bench_reserve(benchmark::State &state) {
+// void bench_reserve(benchmark::State &state) {
 //  while (state.KeepRunning()) {
 //    std::vector<int> v;
 //    v.reserve(1);
@@ -49,7 +49,7 @@ namespace {
 // }
 // BENCHMARK(bench_reserve);
 
-// static void bench_push_back(benchmark::State &state) {
+// void bench_push_back(benchmark::State &state) {
 //  while (state.KeepRunning()) {
 //    std::vector<int> v;
 //    v.reserve(1);
@@ -76,14 +76,15 @@ struct Psi : db::DataBoxTag {
   static constexpr db::DataBoxString label = "Psi";
 };
 
-static void bench_all_gradient(benchmark::State& state) {
+// clang-tidy: don't pass be non-const reference
+void bench_all_gradient(benchmark::State& state) {  // NOLINT
   constexpr const size_t pts_1d = 4;
   constexpr const size_t Dim = 3;
   const Index<Dim> extents(pts_1d);
-  CoordinateMaps::AffineMap map1d(-1.0, 1.0, -1.0, 1.0);
-  using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::AffineMap,
-                                               CoordinateMaps::AffineMap,
-                                               CoordinateMaps::AffineMap>;
+  CoordinateMaps::Affine map1d(-1.0, 1.0, -1.0, 1.0);
+  using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+                                               CoordinateMaps::Affine,
+                                               CoordinateMaps::Affine>;
   CoordinateMap<Frame::Logical, Frame::Grid, Map3d> map(
       Map3d{map1d, map1d, map1d});
 
@@ -102,3 +103,5 @@ BENCHMARK(bench_all_gradient);
 }  // namespace
 
 BENCHMARK_MAIN()
+
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

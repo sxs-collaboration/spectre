@@ -13,56 +13,41 @@
 # someone who does. Since changes to this image effect our testing
 # infrastructure it is important all changes be carefully reviewed.
 
-FROM ubuntu:17.04
+FROM ubuntu:17.10
 
 ARG PARALLEL_MAKE_ARG=-j2
 
 # Install required packages for SpECTRE
-RUN apt-get update -y
-RUN apt-get install -y gcc g++ gfortran git cmake
-RUN apt-get install -y libopenblas-dev liblapack-dev libhdf5-dev libgsl0-dev
-RUN apt-get install -y clang clang-format clang-tidy iwyu lcov cppcheck
-RUN apt-get install -y libboost-all-dev
+RUN apt-get update -y && \
+    apt-get install -y gcc g++ gfortran gcc-6 g++-6 gfortran-6 git cmake \
+                       libopenblas-dev liblapack-dev libhdf5-dev \
+                       libgsl0-dev \
+                       clang clang-format clang-tidy \
+                       iwyu lcov cppcheck \
+                       libboost-all-dev
 
 # Update is needed to get libc++ correctly
-RUN apt-get update -y
-RUN apt-get install -y libc++-dev libc++1 libc++abi-dev
-
 # Install jemalloc
-RUN apt-get update -y && apt-get install -y libjemalloc1 libjemalloc-dev
+RUN apt-get update -y && apt-get install -y libc++-dev libc++1 libc++abi-dev \
+    && apt-get update -y && apt-get install -y libjemalloc1 libjemalloc-dev
 
-# Install ccache to cache compilations for reduced compile time
-RUN apt-get install -y ccache
-
-# Install Doxygen and coverxygen to check documentation coverage
-RUN apt-get install -y doxygen python-pip
-RUN pip install coverxygen
-
-# wget and unzip are needed for retrieving SonarCloud executables. Java is needed
-# for running SonarCloud's sonar-scanner, which does the code analysis
-# Get the SonarCloud source files and extract them. These are needed for static
-# analysis using SonarCloud.
-RUN apt-get update -y && apt-get install -y wget unzip openjdk-8-jdk
-RUN wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-2.8.zip \
-https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip \
-&& mkdir /work && mkdir /work/sonarcloud/ \
-&& unzip sonar-scanner-2.8.zip -d /work/sonarcloud/ \
-&& unzip build-wrapper-linux-x86.zip -d /work/sonarcloud/ \
-&& echo "export PATH=\$PATH:/work/sonarcloud/sonar-scanner-2.8/bin" >> root/.bashrc \
-&& echo "export PATH=\$PATH:/work/sonarcloud/build-wrapper-linux-x86" >> root/.bashrc
+# Install ccache to cache compilations for reduced compile time, Doxygen
+# and coverxygen to check documentation coverage
+RUN apt-get install -y ccache doxygen python-pip && pip install coverxygen
 
 # Add ruby gems and install coveralls using gem
-RUN apt-get update -y && apt-get install -y rubygems && gem install coveralls-lcov
+RUN apt-get update -y && apt-get install -y rubygems && \
+    gem install coveralls-lcov
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
-RUN apt-get update -y && apt-get install -y bash-completion
-RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
+RUN apt-get update -y && apt-get install -y bash-completion && \
+    printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
 
 # Install LMod which is needed by Spack and set it to load at login
-RUN apt-get update -y && apt-get install -y curl lmod
-RUN printf '. /etc/profile.d/lmod.sh\n' >> /root/.bashrc
-RUN . /etc/profile.d/lmod.sh
+RUN apt-get update -y && apt-get install -y curl lmod && \
+    printf '. /etc/profile.d/lmod.sh\n' >> /root/.bashrc && \
+    . /etc/profile.d/lmod.sh
 
 # Install Spack to get remaining dependencies
 WORKDIR /work
@@ -71,7 +56,7 @@ WORKDIR /work/spack
 # Since spack/develop is rather unstable, we check out a commit we
 # know is stable. This should be updated periodically to update
 # installed packages.
-RUN git checkout c4db3d384ecd7b75ebf92a5ea0f3740c5137a8ab
+RUN git checkout v0.11.1
 WORKDIR /work
 
 # Spack needs to be pointed to the system OpenSSL to work properly, we add this
@@ -81,35 +66,44 @@ RUN printf "\n  openssl:\n    paths:\n      openssl@1.0.2g: /usr\n\
     buildable: False\n" >> /work/spack/etc/spack/defaults/packages.yaml
 
 # Add Spack to PATH and install required dependencies
-RUN echo "export PATH=\$PATH:/work/spack/bin" >> /root/.bashrc
-RUN echo '. /work/spack/share/spack/setup-env.sh' >> /root/.bashrc
-RUN export PATH=$PATH:/work/spack/bin
-RUN /work/spack/bin/spack install catch@1.9.1
-RUN /work/spack/bin/spack install brigand@master
-RUN /work/spack/bin/spack install blaze
-RUN /work/spack/bin/spack install gsl%gcc
-RUN /work/spack/bin/spack install libxsmm
+# The sed commands are necessary because spack fails to find the
+# fortran compilers for an unknown reason. We compile the libraries with GCC6
+# so that we do not need separate versions for GCC6 and GCC7.
+RUN echo "export PATH=\$PATH:/work/spack/bin" >> /root/.bashrc && \
+    echo '. /work/spack/share/spack/setup-env.sh' >> /root/.bashrc && \
+    export PATH=$PATH:/work/spack/bin && \
+    spack compiler find && \
+    sed -i 's@fc: null@fc: /usr/bin/gfortran@' \
+    /root/.spack/linux/compilers.yaml && \
+    sed -i 's@f77: null@f77: /usr/bin/gfortran@' \
+    /root/.spack/linux/compilers.yaml
+RUN /work/spack/bin/spack install --no-checksum catch@2.1.0 && \
+    /work/spack/bin/spack install brigand@master && \
+    /work/spack/bin/spack install blaze && \
+    /work/spack/bin/spack install gsl%gcc@6.4.0
+RUN /work/spack/bin/spack install libxsmm%gcc@6.4.0
 # On 09/03/2017 CMake 3.9.0 failed to build with spack
-RUN /work/spack/bin/spack install cmake@3.8.0
-RUN /work/spack/bin/spack install yaml-cpp@develop ^cmake@3.8.0
+RUN /work/spack/bin/spack install cmake@3.8.0%gcc@6.4.0
+RUN /work/spack/bin/spack install yaml-cpp@develop%gcc@6.4.0 ^cmake@3.8.0%gcc@6.4.0
+RUN /work/spack/bin/spack install benchmark%gcc@6.4.0 ^cmake@3.8.0%gcc@6.4.0
 
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
 # use the same build environment.
 ARG CHARM_GIT_TAG=v6.8.0
-RUN git clone https://charm.cs.illinois.edu/gerrit/charm
-WORKDIR /work/charm
-RUN git checkout ${CHARM_GIT_TAG}
-RUN ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g -O0
-RUN ./build charm++ multicore-linux64 clang ${PARALLEL_MAKE_ARG} \
--g -O0
+RUN git clone https://charm.cs.illinois.edu/gerrit/charm && \
+    cd /work/charm && \
+    git checkout ${CHARM_GIT_TAG}  && \
+    ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g -O0  && \
+    ./build charm++ multicore-linux64 clang ${PARALLEL_MAKE_ARG} -g -O0
 
 WORKDIR /work
 
 # Load Spack dependencies at container load
-RUN echo 'spack load catch' >> /root/.bashrc
-RUN echo 'spack load brigand' >> /root/.bashrc
-RUN echo 'spack load blaze' >> /root/.bashrc
-RUN echo 'spack load gsl' >> /root/.bashrc
-RUN echo 'spack load libxsmm' >> /root/.bashrc
-RUN echo 'spack load yaml-cpp' >> /root/.bashrc
+RUN echo 'spack load catch' >> /root/.bashrc && \
+    echo 'spack load brigand' >> /root/.bashrc && \
+    echo 'spack load blaze' >> /root/.bashrc && \
+    echo 'spack load gsl' >> /root/.bashrc && \
+    echo 'spack load libxsmm' >> /root/.bashrc && \
+    echo 'spack load yaml-cpp' >> /root/.bashrc && \
+    echo 'spack load benchmark' >> /root/.bashrc

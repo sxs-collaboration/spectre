@@ -7,6 +7,7 @@
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -57,10 +58,9 @@ namespace SingletonActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -120,10 +120,9 @@ namespace ArrayActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -239,10 +238,9 @@ namespace GroupActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -302,10 +300,9 @@ namespace NodegroupActions {
 struct Initialize {
   using apply_args = tmpl::list<>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& /*box*/,
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -483,7 +480,8 @@ struct TestMetavariables {
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};
-static const std::vector<void (*)()> charm_init_proc_funcs{};
+static const std::vector<void (*)()> charm_init_proc_funcs{
+    &enable_floating_point_exceptions};
 
 using charm_metavariables = TestMetavariables;
 

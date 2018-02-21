@@ -6,8 +6,8 @@
 #include <cmath>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace StrahlkorperTags {
 

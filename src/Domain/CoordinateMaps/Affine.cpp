@@ -4,9 +4,9 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace CoordinateMaps {
 

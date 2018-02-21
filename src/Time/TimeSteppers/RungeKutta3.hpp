@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "DataStructures/MakeWithValue.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Time/BoundaryHistory.hpp"
@@ -14,6 +13,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 struct TimeId;
 

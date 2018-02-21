@@ -10,13 +10,13 @@
 #include <memory>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace PUP {
 class er;

@@ -11,11 +11,11 @@
 // These things are here to avoid problems with Time possibly being
 // incomplete in the header.
 
-Time Slab::start() const noexcept { return Time(*this, 0); }
+Time Slab::start() const noexcept { return {*this, 0}; }
 
-Time Slab::end() const noexcept { return Time(*this, 1); }
+Time Slab::end() const noexcept { return {*this, 1}; }
 
-TimeDelta Slab::duration() const noexcept { return TimeDelta(*this, 1); }
+TimeDelta Slab::duration() const noexcept { return {*this, 1}; }
 
 Slab Slab::advance_towards(const TimeDelta& dt) const noexcept {
   ASSERT(dt.is_positive() or (-dt).is_positive(),
@@ -39,7 +39,8 @@ size_t hash_value(const Slab& s) noexcept {
   return h;
 }
 
-namespace std {
+// clang-tidy: do not modify std namespace (okay for hash)
+namespace std {  // NOLINT
 size_t hash<Slab>::operator()(const Slab& s) const noexcept {
   return boost::hash<Slab>{}(s);
 }

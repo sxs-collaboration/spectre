@@ -33,7 +33,8 @@ std::ostream& operator<<(std::ostream& os, const Topology& topology);
  * the contiguous arrays of x, y, and z coordinates that bound the cell.
  */
 struct CellInTopology {
-  CellInTopology(Topology top, std::vector<size_t> bounding_ind)
+  // cppcheck-suppress passedByValue
+  CellInTopology(const Topology& top, std::vector<size_t> bounding_ind)
       : topology(top), bounding_indices(std::move(bounding_ind)) {}
   CellInTopology() = default;
   CellInTopology(const CellInTopology& /*rhs*/) = default;

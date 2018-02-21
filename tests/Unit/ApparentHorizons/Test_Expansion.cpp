@@ -7,7 +7,6 @@
 #include "ApparentHorizons/StrahlkorperDataBox.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
@@ -16,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

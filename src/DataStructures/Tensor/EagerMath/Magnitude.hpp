@@ -7,9 +7,9 @@
 #pragma once
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/MakeWithValue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 /*!
  * \ingroup TensorGroup
