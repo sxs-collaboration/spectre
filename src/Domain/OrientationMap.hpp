@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class template OrientationMap.
-
 #pragma once
 
 #include <array>
@@ -14,7 +11,7 @@
 #include "Domain/SegmentId.hpp"
 
 /*!
- * \ingroup DomainCreators
+ * \ingroup DomainCreatorsGroup
  * \brief A mapping of the logical coordinate axes of a host to the logical
  * coordinate axes of a neighbor of the host.
  * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
@@ -84,4 +81,35 @@ template <size_t VolumeDim>
 bool operator!=(const OrientationMap<VolumeDim>& lhs,
                 const OrientationMap<VolumeDim>& rhs) noexcept {
   return not(lhs == rhs);
+}
+
+/// \ingroup DomainCreatorsGroup
+/// `OrientationMap`s define an active rotation of the logical axes that bring
+/// the axes of a host block into alignment with the logical axes of the
+/// neighbor block. `discrete_rotation` applies this active rotation on the
+/// coordinates as opposed to the axes.
+/// For a two-dimensional example, consider a host block and a neighbor block,
+/// where the OrientationMap between them is \f$\{-\eta,+\xi\}\f$. A quarter-
+/// turn counterclockwise of the host block's logical axes would bring them into
+/// alignment with those of the neighbor. That is, after this active rotation,
+/// the blocks would be Aligned. Now consider a point A with coordinates
+/// (+1.0,-0.5). An active quarter-turn rotation counter-clockwise about the
+/// origin, keeping the axes fixed, brings point A into the coordinates
+/// (+0.5,+1.0). This is how `discrete_rotation` interprets the
+/// `OrientationMap` passed to it.
+template <size_t VolumeDim, typename T>
+std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
+    const OrientationMap<VolumeDim>& rotation,
+    std::array<T, VolumeDim> source_coords) noexcept {
+  using ReturnType = tt::remove_cvref_wrap_t<T>;
+  std::array<ReturnType, VolumeDim> new_coords{};
+  for (size_t i = 0; i < VolumeDim; i++) {
+    const auto new_direction = rotation(Direction<VolumeDim>(i, Side::Upper));
+    gsl::at(new_coords, i) =
+        std::move(gsl::at(source_coords, new_direction.dimension()));
+    if (new_direction.side() != Side::Upper) {
+      gsl::at(new_coords, i) *= -1.0;
+    }
+  }
+  return new_coords;
 }
