@@ -650,3 +650,27 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+namespace db {
+template <typename Tag>
+struct Subitems<Tag, Requires<tt::is_a_v<Variables, item_type<Tag>>>> {
+  using type = typename item_type<Tag>::tags_list;
+
+  template <typename Subtag>
+  static void create_item(
+      const gsl::not_null<item_type<Tag>*> parent_value,
+      const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
+    auto& vars = get<Subtag>(*parent_value);
+    for (auto vars_it = vars.begin(), var_it = sub_value->begin();
+         vars_it != vars.end(); ++vars_it, ++var_it) {
+      var_it->set_data_ref(&*vars_it);
+    }
+  }
+
+  template <typename Subtag>
+  static item_type<Subtag> create_compute_item(
+      const item_type<Tag>& parent_value) noexcept {
+    return get<Subtag>(parent_value);
+  }
+};
+}  // namespace db
