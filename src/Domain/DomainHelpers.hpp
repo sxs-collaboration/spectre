@@ -7,10 +7,14 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <numeric>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockNeighbor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 /// \ingroup ComputationalDomainGroup
@@ -47,3 +51,10 @@ void set_periodic_boundaries(
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks);
+
+/// \ingroup ComputationalDomainGroup
+/// These are the six Wedge3Ds used in the DomainCreators for Sphere and Shell.
+template <typename TargetFrame>
+std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+wedge_coordinate_maps(double inner_radius, double outer_radius,
+                      double sphericity, bool use_equiangular_map) noexcept;

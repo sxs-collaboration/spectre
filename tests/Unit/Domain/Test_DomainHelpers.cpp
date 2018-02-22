@@ -3,6 +3,7 @@
 
 #include <catch.hpp>
 
+#include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
@@ -62,4 +63,51 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
                                 {Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllWedgeDirections",
+                  "[Domain][Unit]") {
+  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  const double inner_radius = 1.0;
+  const double outer_radius = 2.0;
+  const double sphericity = 1.0;
+  const bool use_equiangular_map = true;
+
+  const auto expected_coord_maps =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+                     sphericity, use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius,
+                     OrientationMap<3>{std::array<Direction<3>, 3>{
+                         {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                          Direction<3>::lower_zeta()}}},
+                     sphericity, use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius,
+                     OrientationMap<3>{std::array<Direction<3>, 3>{
+                         {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
+                          Direction<3>::upper_xi()}}},
+                     sphericity, use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius,
+                     OrientationMap<3>{std::array<Direction<3>, 3>{
+                         {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+                          Direction<3>::lower_xi()}}},
+                     sphericity, use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius,
+                     OrientationMap<3>{std::array<Direction<3>, 3>{
+                         {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                          Direction<3>::upper_eta()}}},
+                     sphericity, use_equiangular_map},
+          Wedge3DMap{inner_radius, outer_radius,
+                     OrientationMap<3>{std::array<Direction<3>, 3>{
+                         {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+                          Direction<3>::upper_eta()}}},
+                     sphericity, use_equiangular_map});
+  const auto maps = wedge_coordinate_maps<Frame::Inertial>(
+      inner_radius, outer_radius, sphericity, use_equiangular_map);
+  CHECK(*expected_coord_maps[0] == *maps[0]);
+  CHECK(*expected_coord_maps[1] == *maps[1]);
+  CHECK(*expected_coord_maps[2] == *maps[2]);
+  CHECK(*expected_coord_maps[3] == *maps[3]);
+  CHECK(*expected_coord_maps[4] == *maps[4]);
+  CHECK(*expected_coord_maps[5] == *maps[5]);
 }

@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -18,12 +19,12 @@ namespace CoordinateMaps {
 
 Wedge3D::Wedge3D(const double radius_of_other_surface,
                  const double radius_of_spherical_surface,
-                 const Direction<3> direction_of_wedge,
+                 const OrientationMap<3> orientation_of_wedge,
                  const double sphericity_of_other_surface,
                  const bool with_equiangular_map) noexcept
     : radius_of_other_surface_(radius_of_other_surface),
       radius_of_spherical_surface_(radius_of_spherical_surface),
-      direction_of_wedge_(direction_of_wedge),
+      orientation_of_wedge_(orientation_of_wedge),
       sphericity_of_other_surface_(sphericity_of_other_surface),
       with_equiangular_map_(with_equiangular_map) {
   ASSERT(radius_of_other_surface > 0,
@@ -69,38 +70,9 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::operator()(
   ReturnType physical_x = physical_z * cap_xi;
   ReturnType physical_y = physical_z * cap_eta;
 
-  // Assigns location of wedge based on passed "direction_of_wedge"
-  // Wedges on z axis:
-  if (direction_of_wedge_.axis() == Direction<3>::Axis::Zeta) {
-    return (direction_of_wedge_.side() == Side::Upper)
-               ? std::array<ReturnType, 3>{{std::move(physical_x),
-                                            std::move(physical_y),
-                                            std::move(physical_z)}}
-               : std::array<ReturnType, 3>{{std::move(physical_x),
-                                            std::move(physical_y *= -1.0),
-                                            std::move(physical_z *= -1.0)}};
-  }
-  // Wedges on y axis:
-  if (direction_of_wedge_.axis() == Direction<3>::Axis::Eta) {
-    return (direction_of_wedge_.side() == Side::Upper)
-               ? std::array<ReturnType, 3>{{std::move(physical_y),
-                                            std::move(physical_z),
-                                            std::move(physical_x)}}
-               : std::array<ReturnType, 3>{{std::move(physical_y),
-                                            std::move(physical_z *= -1.0),
-                                            std::move(physical_x *= -1.0)}};
-  }
-  // Wedges on x axis:
-  if (direction_of_wedge_.axis() == Direction<3>::Axis::Xi) {
-    return (direction_of_wedge_.side() == Side::Upper)
-               ? std::array<ReturnType, 3>{{std::move(physical_z),
-                                            std::move(physical_x),
-                                            std::move(physical_y)}}
-               : std::array<ReturnType, 3>{{std::move(physical_z *= -1.0),
-                                            std::move(physical_x *= -1.0),
-                                            std::move(physical_y)}};
-  }
-  ERROR("Improper axis passed to function.");
+  std::array<ReturnType, 3> physical_coords{
+      {std::move(physical_x), std::move(physical_y), std::move(physical_z)}};
+  return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
 template <typename T>
@@ -108,60 +80,21 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::inverse(
     const std::array<T, 3>& target_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
-  ReturnType physical_x;
-  ReturnType physical_y;
-  ReturnType physical_z;
+  const std::array<ReturnType, 3> physical_coords =
+      discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
+  const ReturnType& physical_x = physical_coords[0];
+  const ReturnType& physical_y = physical_coords[1];
+  const ReturnType& physical_z = physical_coords[2];
 
-  // Assigns location of wedge based on passed "direction_of_wedge"
-  // Wedges on z axis:
-  switch (direction_of_wedge_.axis()) {
-    case Direction<3>::Axis::Zeta:
-      if (direction_of_wedge_.side() == Side::Upper) {
-        physical_x = target_coords[0];
-        physical_y = target_coords[1];
-        physical_z = target_coords[2];
-      } else {
-        physical_x = target_coords[0];
-        physical_y = -target_coords[1];
-        physical_z = -target_coords[2];
-      }
-      break;
-      // Wedges on y axis:
-    case Direction<3>::Axis::Eta:
-      if (direction_of_wedge_.side() == Side::Upper) {
-        physical_x = target_coords[2];
-        physical_y = target_coords[0];
-        physical_z = target_coords[1];
-      } else {
-        physical_x = -target_coords[2];
-        physical_y = target_coords[0];
-        physical_z = -target_coords[1];
-      }
-      break;
-      // Wedges on x axis:
-    case Direction<3>::Axis::Xi:
-      if (direction_of_wedge_.side() == Side::Upper) {
-        physical_x = target_coords[1];
-        physical_y = target_coords[2];
-        physical_z = target_coords[0];
-      } else {
-        physical_x = -target_coords[1];
-        physical_y = target_coords[2];
-        physical_z = -target_coords[0];
-      }
-      break;
-    default:
-      ERROR("Switch failed... somehow?.");
-  }
-
-  ReturnType cap_xi = physical_x / physical_z;
-  ReturnType cap_eta = physical_y / physical_z;
-  ReturnType one_over_rho = 1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
-  ReturnType common_factor_one =
+  const ReturnType cap_xi = physical_x / physical_z;
+  const ReturnType cap_eta = physical_y / physical_z;
+  const ReturnType one_over_rho =
+      1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
+  const ReturnType common_factor_one =
       0.5 * radius_of_other_surface_ *
       ((1.0 - sphericity_of_other_surface_) / sqrt(3.0) +
        sphericity_of_other_surface_ * one_over_rho);
-  ReturnType common_factor_two =
+  const ReturnType common_factor_two =
       0.5 * radius_of_spherical_surface_ * one_over_rho;
   ReturnType zeta = (physical_z - (common_factor_two + common_factor_one)) /
                     (common_factor_two - common_factor_one);
@@ -215,79 +148,51 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
           dereference_wrapper(source_coords[0]), 0.0);
 
-  auto &dx_dxi = get<0, 0>(jacobian_matrix),
-       &dx_deta = get<0, 1>(jacobian_matrix),
-       &dx_dzeta = get<0, 2>(jacobian_matrix),
-       &dy_dxi = get<1, 0>(jacobian_matrix),
-       &dy_deta = get<1, 1>(jacobian_matrix),
-       &dy_dzeta = get<1, 2>(jacobian_matrix),
-       &dz_dxi = get<2, 0>(jacobian_matrix),
-       &dz_deta = get<2, 1>(jacobian_matrix),
-       &dz_dzeta = get<2, 2>(jacobian_matrix);
+  ReturnType dz_dxi =
+      -second_blending_factor_over_rho_cubed * cap_xi * cap_xi_deriv;
+  ReturnType dx_dxi =
+      (first_blending_factor +
+       second_blending_factor_over_rho_cubed * (1.0 + square(cap_eta))) *
+      cap_xi_deriv;
+  ReturnType dy_dxi = dz_dxi * cap_eta;
 
-  dz_dxi = -second_blending_factor_over_rho_cubed * cap_xi * cap_xi_deriv;
-  dz_deta = -second_blending_factor_over_rho_cubed * cap_eta * cap_eta_deriv;
-  dz_dzeta = first_blending_rate + second_blending_rate_over_rho;
-  dx_dxi = (first_blending_factor +
-            second_blending_factor_over_rho_cubed * (1.0 + square(cap_eta))) *
-           cap_xi_deriv;
-  dx_deta = dz_deta * cap_xi;
-  dx_dzeta = dz_dzeta * cap_xi;
-  dy_dxi = dz_dxi * cap_eta;
-  dy_deta = (first_blending_factor +
-             second_blending_factor_over_rho_cubed * (1.0 + square(cap_xi))) *
-            cap_eta_deriv;
-  dy_dzeta = dz_dzeta * cap_eta;
+  std::array<ReturnType, 3> dX_dlogical = discrete_rotation(
+      orientation_of_wedge_,
+      std::array<ReturnType, 3>{
+          {std::move(dx_dxi), std::move(dy_dxi), std::move(dz_dxi)}});
 
-  // Implement Rotation:
-  if (direction_of_wedge_ == Direction<3>::lower_zeta()) {
-    dz_dxi *= -1;
-    dz_deta *= -1;
-    dz_dzeta *= -1;
+  get<0, 0>(jacobian_matrix) = dX_dlogical[0];
+  get<1, 0>(jacobian_matrix) = dX_dlogical[1];
+  get<2, 0>(jacobian_matrix) = dX_dlogical[2];
 
-    dy_dxi *= -1;
-    dy_deta *= -1;
-    dy_dzeta *= -1;
-  }
+  // reuse allocation, compute next subset of Jacobian
+  dX_dlogical[2] =  // dz_deta
+      -second_blending_factor_over_rho_cubed * cap_eta * cap_eta_deriv;
+  dX_dlogical[0] =  // dx_deta
+      dX_dlogical[2] * cap_xi;
+  dX_dlogical[1] =  // dy_deta
+      (first_blending_factor +
+       second_blending_factor_over_rho_cubed * (1.0 + square(cap_xi))) *
+      cap_eta_deriv;
 
-  if (direction_of_wedge_.axis() == Direction<3>::Axis::Eta) {
-    std::swap(dx_dxi, dy_dxi);
-    std::swap(dx_deta, dy_deta);
-    std::swap(dx_dzeta, dy_dzeta);
-    std::swap(dy_dxi, dz_dxi);
-    std::swap(dy_deta, dz_deta);
-    std::swap(dy_dzeta, dz_dzeta);
+  dX_dlogical =
+      discrete_rotation(orientation_of_wedge_, std::move(dX_dlogical));
 
-    if (direction_of_wedge_.side() == Side::Lower) {
-      dy_dxi *= -1;
-      dy_deta *= -1;
-      dy_dzeta *= -1;
+  get<0, 1>(jacobian_matrix) = dX_dlogical[0];
+  get<1, 1>(jacobian_matrix) = dX_dlogical[1];
+  get<2, 1>(jacobian_matrix) = dX_dlogical[2];
 
-      dz_dxi *= -1;
-      dz_deta *= -1;
-      dz_dzeta *= -1;
-    }
-  }
+  dX_dlogical[2] =  // dz_dzeta
+      first_blending_rate + second_blending_rate_over_rho;
+  dX_dlogical[0] = dX_dlogical[2] * cap_xi;   // dx_dzeta
+  dX_dlogical[1] = dX_dlogical[2] * cap_eta;  // dy_dzeta
 
-  if (direction_of_wedge_.axis() == Direction<3>::Axis::Xi) {
-    std::swap(dx_dxi, dz_dxi);
-    std::swap(dx_deta, dz_deta);
-    std::swap(dx_dzeta, dz_dzeta);
-    std::swap(dz_dxi, dy_dxi);
-    std::swap(dz_deta, dy_deta);
-    std::swap(dz_dzeta, dy_dzeta);
+  dX_dlogical =
+      discrete_rotation(orientation_of_wedge_, std::move(dX_dlogical));
 
-    if (direction_of_wedge_.side() == Side::Lower) {
-      dx_dxi *= -1;
-      dx_deta *= -1;
-      dx_dzeta *= -1;
-
-      dy_dxi *= -1;
-      dy_deta *= -1;
-      dy_dzeta *= -1;
-    }
-  }
-
+  get<0, 2>(jacobian_matrix) = dX_dlogical[0];
+  get<1, 2>(jacobian_matrix) = dX_dlogical[1];
+  get<2, 2>(jacobian_matrix) = dX_dlogical[2];
   return jacobian_matrix;
 }
 
@@ -300,7 +205,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::inv_jacobian(
 void Wedge3D::pup(PUP::er& p) noexcept {
   p | radius_of_other_surface_;
   p | radius_of_spherical_surface_;
-  p | direction_of_wedge_;
+  p | orientation_of_wedge_;
   p | sphericity_of_other_surface_;
   p | with_equiangular_map_;
 }
@@ -309,7 +214,7 @@ bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
   return lhs.radius_of_other_surface_ == rhs.radius_of_other_surface_ and
          lhs.radius_of_spherical_surface_ ==
              rhs.radius_of_spherical_surface_ and
-         lhs.direction_of_wedge_ == rhs.direction_of_wedge_ and
+         lhs.orientation_of_wedge_ == rhs.orientation_of_wedge_ and
          lhs.sphericity_of_other_surface_ ==
              rhs.sphericity_of_other_surface_ and
          lhs.with_equiangular_map_ == rhs.with_equiangular_map_;
