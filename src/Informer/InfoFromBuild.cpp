@@ -39,3 +39,7 @@ std::string info_from_build() {
   }();
   return info;
 }
+
+std::string unit_test_path() noexcept {
+  return "@CMAKE_SOURCE_DIR@/tests/Unit/";
+}
