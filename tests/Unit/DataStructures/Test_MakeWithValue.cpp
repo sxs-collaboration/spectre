@@ -22,10 +22,10 @@ struct Var2 {
 };
 
 template <size_t Dim>
-using two_vars = typelist<Var1<Dim>, Var2>;
+using two_vars = tmpl::list<Var1<Dim>, Var2>;
 
 template <size_t Dim>
-using one_var = typelist<Var1<Dim>>;
+using one_var = tmpl::list<Var1<Dim>>;
 
 template <typename R, typename T>
 void check_make_with_value(const R& expected, const T& input,

@@ -12,7 +12,7 @@ If you encounter issues it may
 be necessary to clone the git repository and build the correct version
 from scratch. Note that the version of Charm++ used to compile SpECTRE
 should match the version of Projections used to analyze the trace data.
-You can collect the trace data on a different machine than the one you 
+You can collect the trace data on a different machine than the one you
 will be analyzing the data on. For example, you can collect the data on
 a supercomputer and analyze it on your desktop or laptop.
 
@@ -36,7 +36,7 @@ in the main executable. This typically means right after the
 `the_ordered_actions_list` list is defined in the main executable. For example,
 
 ```cpp
-using the_ordered_actions_list = typelist<
+using the_ordered_actions_list = tmpl::list<
     Algorithms::CheckTriggers<the_system, the_volume_dim>,
     Algorithms::SendDataForFluxes<the_system, the_volume_dim>,
     Algorithms::ComputeVolumeDtU<the_system, the_volume_dim>,
@@ -46,7 +46,7 @@ using the_ordered_actions_list = typelist<
     Algorithms::AdvanceSlab<the_system, the_volume_dim>,
     Algorithms::UpdateInstance<the_system, the_volume_dim>>;
 
-using the_trace_actions_list = typelist<
+using the_trace_actions_list = tmpl::list<
     Algorithms::CheckTriggers<the_system, the_volume_dim>,
     Algorithms::ComputeVolumeDtU<the_system, the_volume_dim>,
     Algorithms::ComputeBoundaryFlux<the_system, the_volume_dim>,

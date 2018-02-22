@@ -50,11 +50,11 @@ struct TestMetavariables {
   // ctest passes options to control the tests
   static constexpr bool ignore_unrecognized_command_line_options = true;
   using component_list =
-      typelist<Test_Tentacles::Group<TestMetavariables>,
-               Test_Tentacles::NodeGroup<TestMetavariables>,
-               Test_Tentacles::Chare<TestMetavariables>,
-               Test_Tentacles::Array<TestMetavariables>,
-               Test_Tentacles::BoundArray<TestMetavariables>>;
+      tmpl::list<Test_Tentacles::Group<TestMetavariables>,
+                 Test_Tentacles::NodeGroup<TestMetavariables>,
+                 Test_Tentacles::Chare<TestMetavariables>,
+                 Test_Tentacles::Array<TestMetavariables>,
+                 Test_Tentacles::BoundArray<TestMetavariables>>;
   enum class phase { Initialization, Exit };
   static phase determine_next_phase(
       const Parallel::CProxy_ConstGlobalCache<TestMetavariables>& cache_proxy) {

@@ -59,8 +59,8 @@ template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags, DerivativeFrame>> divergence(
     const Variables<FluxTags>& F, const Index<Dim>& extents,
     const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                 typelist<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
-                          SpatialIndex<Dim, UpLo::Lo, DerivativeFrame>>>&
+                 tmpl::list<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
+                            SpatialIndex<Dim, UpLo::Lo, DerivativeFrame>>>&
         inverse_jacobian) noexcept;
 
 namespace Tags {

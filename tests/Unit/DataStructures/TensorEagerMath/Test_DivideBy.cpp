@@ -18,7 +18,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   const DataVector thirteen(npts, 13.0);
 
   const Tensor<DataVector, Symmetry<1>,
-               typelist<SpatialIndex<1, UpLo::Lo, Frame::Grid>>>
+               tmpl::list<SpatialIndex<1, UpLo::Lo, Frame::Grid>>>
       one_d_covector{{{two}}};
   const auto normalized_one_d_covector = divide_by(one_d_covector, two);
   for (size_t s = 0; s < npts; ++s) {
@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   }
 
   const Tensor<DataVector, Symmetry<1>,
-               typelist<SpacetimeIndex<1, UpLo::Up, Frame::Grid>>>
+               tmpl::list<SpacetimeIndex<1, UpLo::Up, Frame::Grid>>>
       two_d_vector{{{three, four}}};
   const auto normalized_two_d_vector = divide_by(two_d_vector, five);
   for (size_t s = 0; s < npts; ++s) {
@@ -35,7 +35,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   }
 
   const Tensor<DataVector, Symmetry<1>,
-               typelist<SpatialIndex<2, UpLo::Up, Frame::Grid>>>
+               tmpl::list<SpatialIndex<2, UpLo::Up, Frame::Grid>>>
       two_d_spatial_vector{{{five, twelve}}};
   const auto normalized_two_d_spatial_vector =
       divide_by(two_d_spatial_vector, thirteen);
@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   }
 
   const Tensor<DataVector, Symmetry<1>,
-               typelist<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+               tmpl::list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
       three_d_covector{{{three, twelve, four}}};
   const auto normalized_three_d_covector =
       divide_by(three_d_covector, thirteen);
@@ -56,7 +56,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   }
 
   const Tensor<DataVector, Symmetry<1>,
-               typelist<SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
+               tmpl::list<SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
       five_d_covector{{{two, twelve, four, one, two}}};
   const auto normalized_five_d_covector = divide_by(five_d_covector, thirteen);
   for (size_t s = 0; s < npts; ++s) {

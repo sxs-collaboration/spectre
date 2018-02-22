@@ -88,7 +88,7 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
   CoordinateMap<Frame::Logical, Frame::Grid, Map3d> map(
       Map3d{map1d, map1d, map1d});
 
-  using VarTags = typelist<Kappa<Dim>, Psi<Dim>>;
+  using VarTags = tmpl::list<Kappa<Dim>, Psi<Dim>>;
   const InverseJacobian<Dim, Frame::Logical, Frame::Grid> inv_jac =
       map.inv_jacobian(logical_coordinates(extents));
   const auto grid_coords = map(logical_coordinates(extents));

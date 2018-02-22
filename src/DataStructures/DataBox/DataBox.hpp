@@ -519,7 +519,7 @@ inline constexpr Deferred<::db::item_type<Tag>>&& get(
 template <typename Element>
 struct extract_dependent_items {
   using type =
-      tmpl::append<typelist<Element>, typename Subitems<Element>::type>;
+      tmpl::append<tmpl::list<Element>, typename Subitems<Element>::type>;
 };
 
 // Given a typelist of items List, returns a new typelist containing
@@ -530,7 +530,7 @@ using dependent_items = tmpl::flatten<
 
 template <typename T>
 using has_subitems =
-    tmpl::not_<std::is_same<typename Subitems<T>::type, typelist<>>>;
+    tmpl::not_<std::is_same<typename Subitems<T>::type, tmpl::list<>>>;
 
 template <typename Caller, typename Callee, typename List,
           typename = std::nullptr_t>
@@ -589,9 +589,9 @@ class DataBox<TagsList<Tags...>> {
 
  public:
   /*!
-   * \brief A ::typelist of Tags that the DataBox holds
+   * \brief A typelist (`tmpl::list`) of Tags that the DataBox holds
    */
-  using tags_list = typelist<Tags...>;
+  using tags_list = tmpl::list<Tags...>;
 
   using compute_item_tags =
       tmpl::filter<tags_list, db::is_compute_item<tmpl::_1>>;
@@ -600,7 +600,7 @@ class DataBox<TagsList<Tags...>> {
 
  private:
   using edge_list =
-      tmpl::fold<compute_item_tags, typelist<>,
+      tmpl::fold<compute_item_tags, tmpl::list<>,
                  databox_detail::create_dependency_graph<void, tmpl::_element,
                                                          tmpl::_state>>;
 
@@ -718,18 +718,18 @@ class DataBox<TagsList<Tags...>> {
             typename... Args,
             Requires<not tmpl2::flat_any_v<
                 db::is_databox<std::decay_t<Args>>::value...>> = nullptr>
-  constexpr DataBox(typelist<TagsInArgsOrder...> /*meta*/,
-                    typelist<FullItems...> /*meta*/,
-                    typelist<ComputeItemTags...> /*meta*/,
-                    typelist<FullComputeItems...> /*meta*/, Args&&... args);
+  constexpr DataBox(tmpl::list<TagsInArgsOrder...> /*meta*/,
+                    tmpl::list<FullItems...> /*meta*/,
+                    tmpl::list<ComputeItemTags...> /*meta*/,
+                    tmpl::list<FullComputeItems...> /*meta*/, Args&&... args);
 
   template <typename OldTags, typename... KeepTags, typename... NewTags,
             typename... NewComputeItems, typename ComputeItemsToKeep,
             typename... MutatedTags, typename... Args>
   constexpr DataBox(const DataBox<OldTags>& old_box,
-                    typelist<KeepTags...> /*meta*/,
-                    typelist<NewTags...> /*meta*/,
-                    typelist<NewComputeItems...> /*meta*/,
+                    tmpl::list<KeepTags...> /*meta*/,
+                    tmpl::list<NewTags...> /*meta*/,
+                    tmpl::list<NewComputeItems...> /*meta*/,
                     ComputeItemsToKeep /*meta*/,
                     tmpl::list<MutatedTags...> /*meta*/, Args&&... args);
 
@@ -749,13 +749,13 @@ template <typename ParentTag, typename... Ts, typename... Tags,
           Requires<not has_subitems<ParentTag>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
-    typelist<Ts...> /*meta*/) {}
+    tmpl::list<Ts...> /*meta*/) {}
 
 template <typename ParentTag, typename... Subtags, typename... Tags,
           Requires<has_subitems<ParentTag>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
-    typelist<Subtags...> /*meta*/) {
+    tmpl::list<Subtags...> /*meta*/) {
   const auto helper = [lazy_function = ::db::databox_detail::get<ParentTag>(
                            data)](auto tag) {
     return Subitems<ParentTag>::template create_compute_item<decltype(tag)>(
@@ -772,13 +772,13 @@ template <typename ParentTag, typename... Subtags, typename... Tags,
           Requires<not has_subitems<ParentTag>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void add_subitem_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
-    typelist<Subtags...> /*meta*/) {}
+    tmpl::list<Subtags...> /*meta*/) {}
 
 template <typename ParentTag, typename... Subtags, typename... Tags,
           Requires<has_subitems<ParentTag>::value> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr void add_subitem_tags_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
-    typelist<Subtags...> /*meta*/) {
+    tmpl::list<Subtags...> /*meta*/) {
   const auto helper = [&data](auto tag_v) {
     using tag = decltype(tag_v);
     ::db::databox_detail::get<tag>(data) =
@@ -1080,9 +1080,9 @@ template <
     typename... ComputeItemTags, typename... FullComputeItems, typename... Args,
     Requires<not tmpl2::flat_any_v<is_databox<std::decay_t<Args>>::value...>>>
 constexpr DataBox<TagsList<Tags...>>::DataBox(
-    typelist<TagsInArgsOrder...> /*meta*/, typelist<FullItems...> /*meta*/,
-    typelist<ComputeItemTags...> /*meta*/,
-    typelist<FullComputeItems...> /*meta*/, Args&&... args) {
+    tmpl::list<TagsInArgsOrder...> /*meta*/, tmpl::list<FullItems...> /*meta*/,
+    tmpl::list<ComputeItemTags...> /*meta*/,
+    tmpl::list<FullComputeItems...> /*meta*/, Args&&... args) {
   check_tags();
   static_assert(
       sizeof...(Tags) == sizeof...(FullItems) + sizeof...(FullComputeItems),
@@ -1096,10 +1096,11 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
       "the function creating the new DataBox.");
 
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
-  databox_detail::add_items_to_box<typelist<FullItems..., FullComputeItems...>>(
-      args_tuple, data_, typelist<TagsInArgsOrder...>{},
+  databox_detail::add_items_to_box<
+      tmpl::list<FullItems..., FullComputeItems...>>(
+      args_tuple, data_, tmpl::list<TagsInArgsOrder...>{},
       std::make_index_sequence<sizeof...(TagsInArgsOrder)>{},
-      typelist<ComputeItemTags...>{});
+      tmpl::list<ComputeItemTags...>{});
 }
 
 template <template <typename...> class TagsList, typename... Tags>
@@ -1107,8 +1108,8 @@ template <typename OldTags, typename... KeepTags, typename... NewTags,
           typename... NewComputeItems, typename ComputeItemsToKeep,
           typename... MutatedTags, typename... Args>
 constexpr DataBox<TagsList<Tags...>>::DataBox(
-    const DataBox<OldTags>& old_box, typelist<KeepTags...> /*meta*/,
-    typelist<NewTags...> /*meta*/, typelist<NewComputeItems...> /*meta*/,
+    const DataBox<OldTags>& old_box, tmpl::list<KeepTags...> /*meta*/,
+    tmpl::list<NewTags...> /*meta*/, tmpl::list<NewComputeItems...> /*meta*/,
     ComputeItemsToKeep /*meta*/, tmpl::list<MutatedTags...> /*meta*/,
     Args&&... args) {
   static_assert(sizeof...(NewTags) == sizeof...(Args),
@@ -1122,19 +1123,19 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
   check_tags();
   // Merge old tags, including all ComputeItems even though they might be
   // reset.
-  databox_detail::merge_old_box(old_box, data_, typelist<KeepTags...>{});
+  databox_detail::merge_old_box(old_box, data_, tmpl::list<KeepTags...>{});
 
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
-  databox_detail::add_items_to_box<typelist<NewTags...>>(
-      args_tuple, data_, typelist<NewTags...>{},
-      std::make_index_sequence<sizeof...(NewTags)>{}, typelist<>{});
+  databox_detail::add_items_to_box<tmpl::list<NewTags...>>(
+      args_tuple, data_, tmpl::list<NewTags...>{},
+      std::make_index_sequence<sizeof...(NewTags)>{}, tmpl::list<>{});
 
   // Check that we're not removing a subitem without removing its
   // parent.
   using partially_kept_items = tmpl::list_difference<
-      databox_detail::dependent_items<typelist<KeepTags...>>,
-      typelist<KeepTags...>>;
-  static_assert(cpp17::is_same_v<partially_kept_items, typelist<>>,
+      databox_detail::dependent_items<tmpl::list<KeepTags...>>,
+      tmpl::list<KeepTags...>>;
+  static_assert(cpp17::is_same_v<partially_kept_items, tmpl::list<>>,
                 "You are not allowed to remove part of an item with "
                 "db::create_from.");
 
@@ -1153,9 +1154,9 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
 
   // Add new compute items
   databox_detail::add_items_to_box<
-      typelist<KeepTags..., NewTags..., NewComputeItems...>>(
-      args_tuple, data_, typelist<>{}, std::make_index_sequence<0>{},
-      typelist<NewComputeItems...>{});
+      tmpl::list<KeepTags..., NewTags..., NewComputeItems...>>(
+      args_tuple, data_, tmpl::list<>{}, std::make_index_sequence<0>{},
+      tmpl::list<NewComputeItems...>{});
 }
 
 template <template <typename...> class TagsList, typename... Tags>
@@ -1225,21 +1226,21 @@ constexpr auto DataBox<TagsList<Tags...>>::create_from(const Box& box,
  * \brief List of Tags to remove from the DataBox
  */
 template <typename... Tags>
-using RemoveTags = tmpl::flatten<typelist<Tags...>>;
+using RemoveTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
  * \brief List of Tags to add to the DataBox
  */
 template <typename... Tags>
-using AddTags = tmpl::flatten<typelist<Tags...>>;
+using AddTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
  * \brief List of Compute Item Tags to add to the DataBox
  */
 template <typename... Tags>
-using AddComputeItemsTags = tmpl::flatten<typelist<Tags...>>;
+using AddComputeItemsTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
@@ -1262,7 +1263,7 @@ using AddComputeItemsTags = tmpl::flatten<typelist<Tags...>>;
  * to add to the DataBox
  *  \param args the data to be added to the DataBox
  */
-template <typename AddTags, typename AddComputeItems = typelist<>,
+template <typename AddTags, typename AddComputeItems = tmpl::list<>,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   return DataBox<::db::get_databox_list<databox_detail::dependent_items<
@@ -1294,8 +1295,9 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
  * \param args the values for the items to add to the DataBox
  * \return DataBox like `box` but altered by RemoveTags and AddTags
  */
-template <typename RemoveTags, typename AddTags = typelist<>,
-          typename AddComputeItems = typelist<>, typename Box, typename... Args>
+template <typename RemoveTags, typename AddTags = tmpl::list<>,
+          typename AddComputeItems = tmpl::list<>, typename Box,
+          typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
                                                  Args&&... args) {
   return DataBox<::db::get_databox_list<tmpl::append<
@@ -1421,7 +1423,7 @@ struct Apply<TagsList<Tags...>> {
  * `T2` in the DataBox `box` be `Tag1` and `Tag2`, and objects `a1` of type
  * `A1` and `a2` of type `A2`, then
  * \code
- * auto result = apply<typelist<Tag1, Tag2>>(func, box, a1, a2);
+ * auto result = apply<tmpl::list<Tag1, Tag2>>(func, box, a1, a2);
  * \endcode
  * \return `decltype(func(box.get<Tag1>(), box.get<Tag2>(), a1, a2))`
  *
@@ -1590,7 +1592,7 @@ mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
  * and `T2` in the DataBox `box` be `Tag1` and `Tag2`, and objects `a1` of type
  * `A1` and `a2` of type `A2`, then
  * \code
- * auto result = apply_with_box<typelist<Tag1, Tag2>>(func, box, a1, a2);
+ * auto result = apply_with_box<tmpl::list<Tag1, Tag2>>(func, box, a1, a2);
  * \endcode
  * \return `decltype(func(box, box.get<Tag1>(), box.get<Tag2>(), a1, a2))`
  *

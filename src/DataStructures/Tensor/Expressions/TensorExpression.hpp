@@ -147,9 +147,9 @@ struct rhs_elements_in_lhs_helper {
 /// typelist
 ///
 /// \semantics
-/// If `Lhs = typelist<A, B, C, D>` and `Rhs = typelist<B, E, A>`, then
+/// If `Lhs = tmpl::list<A, B, C, D>` and `Rhs = tmpl::list<B, E, A>`, then
 /// \code{.cpp}
-/// result = typelist<B, A>;
+/// result = tmpl::list<B, A>;
 /// \endcode
 template <typename Lhs, typename Rhs>
 using rhs_elements_in_lhs =

@@ -82,10 +82,10 @@ struct shape_of_nametag : shape_of_nametag_base {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = typelist<name, age, height>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<name, age, height>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
@@ -93,11 +93,11 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = typelist<height, shape_of_nametag>;
+  using const_global_cache_tag_list = tmpl::list<height, shape_of_nametag>;
   using array_index = int;
-  using options = typelist<>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
@@ -105,10 +105,10 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = typelist<name>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<name>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
@@ -116,20 +116,20 @@ struct GroupParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = typelist<height>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<height>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
   using reduction_actions_list = tmpl::list<>;
 };
 
 struct TestMetavariables {
   using component_list =
-      typelist<SingletonParallelComponent<TestMetavariables>,
-               ArrayParallelComponent<TestMetavariables>,
-               GroupParallelComponent<TestMetavariables>,
-               NodegroupParallelComponent<TestMetavariables>>;
+      tmpl::list<SingletonParallelComponent<TestMetavariables>,
+                 ArrayParallelComponent<TestMetavariables>,
+                 GroupParallelComponent<TestMetavariables>,
+                 NodegroupParallelComponent<TestMetavariables>>;
 };
 
 }  // namespace

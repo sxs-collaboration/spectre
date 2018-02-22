@@ -131,7 +131,7 @@ struct Initialize {
     static_assert(cpp17::is_same_v<ParallelComponent,
                                    ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(db::create<typelist<Tags::CountActionsCalled>>(0));
+    return std::make_tuple(db::create<tmpl::list<Tags::CountActionsCalled>>(0));
   }
 };
 
@@ -163,7 +163,8 @@ struct AddIntValue10 {
     const bool terminate_algorithm =
         db::get<Tags::CountActionsCalled>(box) >= 15;
     return std::make_tuple(
-        db::create_from<typelist<>, typelist<Tags::Int0>>(std::move(box), 10),
+        db::create_from<tmpl::list<>, tmpl::list<Tags::Int0>>(std::move(box),
+                                                              10),
         terminate_algorithm);
   }
 };
@@ -205,7 +206,7 @@ struct RemoveInt0 {
     db::mutate<Tags::CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
     return std::make_tuple(
-        db::create_from<typelist<Tags::Int0>>(std::move(box)));
+        db::create_from<tmpl::list<Tags::Int0>>(std::move(box)));
   }
 };
 
@@ -249,7 +250,7 @@ struct Initialize {
     static_assert(cpp17::is_same_v<ParallelComponent,
                                    GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(db::create<typelist<Tags::CountActionsCalled>>(0));
+    return std::make_tuple(db::create<tmpl::list<Tags::CountActionsCalled>>(0));
   }
 };
 
@@ -312,7 +313,7 @@ struct Initialize {
         cpp17::is_same_v<ParallelComponent,
                          NodegroupParallelComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(db::create<typelist<Tags::CountActionsCalled>>(0));
+    return std::make_tuple(db::create<tmpl::list<Tags::CountActionsCalled>>(0));
   }
 };
 
@@ -322,12 +323,12 @@ struct Initialize {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<SingletonActions::CountReceives>;
-  using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
+  using action_list = tmpl::list<SingletonActions::CountReceives>;
+  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
   using explicit_single_actions_list = tmpl::list<SingletonActions::Initialize>;
-  using options = typelist<>;
+  using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -353,17 +354,17 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using action_list =
-      typelist<ArrayActions::AddIntValue10, ArrayActions::IncrementInt0,
-               ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>;
+      tmpl::list<ArrayActions::AddIntValue10, ArrayActions::IncrementInt0,
+                 ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>;
   using array_index = int;
   using initial_databox =
-      db::DataBox<db::get_databox_list<typelist<Tags::CountActionsCalled>>>;
+      db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
 
   using explicit_single_actions_list = tmpl::list<ArrayActions::Initialize>;
-  using options = typelist<>;
+  using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -397,14 +398,14 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<GroupActions::PrintSomething>;
+  using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
-      db::DataBox<db::get_databox_list<typelist<Tags::CountActionsCalled>>>;
+      db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
 
   using explicit_single_actions_list = tmpl::list<GroupActions::Initialize>;
-  using options = typelist<>;
+  using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -421,15 +422,15 @@ struct GroupParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<GroupActions::PrintSomething>;
+  using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
-      db::DataBox<db::get_databox_list<typelist<Tags::CountActionsCalled>>>;
+      db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
 
   using explicit_single_actions_list =
       tmpl::list<NodegroupActions::Initialize>;
-  using options = typelist<>;
+  using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {

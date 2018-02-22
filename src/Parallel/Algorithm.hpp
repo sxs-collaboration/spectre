@@ -317,7 +317,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// The metavariables class passed to the Algorithm
   using metavariables = Metavariables;
   /// List of Actions in the order they will be executed
-  using actions_list = typelist<ActionsPack...>;
+  using actions_list = tmpl::list<ActionsPack...>;
   /// List off all the Tags that can be received into the Inbox
   using inbox_tags_list = Parallel::get_inbox_tags<actions_list>;
   /// The type of the object used to identify the element of the array, group
@@ -601,7 +601,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       "single action, which is undefined behavior. See the first template "
       "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
       "missing the explicit instantiation. An example of an "
-      "explicit_single_actions_list is: typelist<initialize>");
+      "explicit_single_actions_list is: tmpl::list<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -631,7 +631,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       "single action, which is undefined behavior. See the first template "
       "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
       "missing the explicit instantiation. An example of an "
-      "explicit_single_actions_list is: typelist<initialize>");
+      "explicit_single_actions_list is: tmpl::list<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "

@@ -50,26 +50,26 @@ struct Tag3 : db::DataBoxTag {
 struct ComputeTag0 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ComputeTag0";
   static constexpr auto function = multiply_by_two;
-  using argument_tags = typelist<Tag0>;
+  using argument_tags = tmpl::list<Tag0>;
 };
 /// [databox_compute_item_tag_example]
 struct ComputeTag1 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ComputeTag1";
   static constexpr auto function = append_word;
-  using argument_tags = typelist<Tag2, ComputeTag0>;
+  using argument_tags = tmpl::list<Tag2, ComputeTag0>;
 };
 
 struct TagTensor : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "TagTensor";
   static constexpr auto function = get_tensor;
-  using argument_tags = typelist<>;
+  using argument_tags = tmpl::list<>;
 };
 
 /// [compute_item_tag_function]
 struct ComputeLambda0 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ComputeLambda0";
   static constexpr double function(const double a) { return 3.0 * a; }
-  using argument_tags = typelist<Tag0>;
+  using argument_tags = tmpl::list<Tag0>;
 };
 /// [compute_item_tag_function]
 
@@ -77,7 +77,7 @@ struct ComputeLambda0 : db::ComputeItemTag {
 struct ComputeLambda1 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ComputeLambda1";
   static constexpr double function() { return 7.0; }
-  using argument_tags = typelist<>;
+  using argument_tags = tmpl::list<>;
 };
 /// [compute_item_tag_no_tags]
 
@@ -92,7 +92,7 @@ struct TagPrefix : db::DataBoxPrefix {
 }  // namespace test_databox_tags
 
 namespace {
-using Box_t = db::DataBox<db::get_databox_list<typelist<
+using Box_t = db::DataBox<db::get_databox_list<tmpl::list<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
     test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
     test_databox_tags::ComputeTag0, test_databox_tags::ComputeTag1>>>;
@@ -101,7 +101,7 @@ static_assert(
     std::is_same<
         decltype(
             db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(Box_t{})),
-        db::DataBox<db::get_databox_list<typelist<
+        db::DataBox<db::get_databox_list<tmpl::list<
             test_databox_tags::Tag0, test_databox_tags::Tag2,
             test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
             test_databox_tags::ComputeTag0, test_databox_tags::ComputeTag1>>>>::
@@ -112,7 +112,7 @@ static_assert(
     std::is_same<
         decltype(db::create_from<
                  db::RemoveTags<test_databox_tags::ComputeTag1>>(Box_t{})),
-        db::DataBox<db::get_databox_list<typelist<
+        db::DataBox<db::get_databox_list<tmpl::list<
             test_databox_tags::Tag0, test_databox_tags::Tag1,
             test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
             test_databox_tags::Tag2, test_databox_tags::ComputeTag0>>>>::value,
@@ -142,7 +142,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   static_assert(
       std::is_same<
           decltype(original_box),
-          db::DataBox<db::get_databox_list<typelist<
+          db::DataBox<db::get_databox_list<tmpl::list<
               test_databox_tags::Tag0, test_databox_tags::Tag1,
               test_databox_tags::Tag2, test_databox_tags::ComputeTag0,
               test_databox_tags::ComputeTag1, test_databox_tags::ComputeLambda0,
@@ -250,7 +250,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
     CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
   };
-  db::apply<typelist<Tags::DataBox>>(check_result_no_args, original_box);
+  db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
   /// [databox_self_tag_example]
 }
 
@@ -428,7 +428,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
     CHECK(sample_string == "My Sample String"s);
     CHECK(computed_string == "My Sample String6.28"s);
   };
-  db::apply<typelist<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+  db::apply<
+      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_no_args, original_box);
 
   /// [apply_example]
@@ -438,12 +439,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
     CHECK(computed_string == "My Sample String6.28"s);
     CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
   };
-  db::apply<typelist<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+  db::apply<
+      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_args, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_example]
 
-  db::apply<typelist<>>(NonCopyableFunctor{}, original_box);
+  db::apply<tmpl::list<>>(NonCopyableFunctor{}, original_box);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
@@ -463,7 +465,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
           (std::vector<double>{8.7, 93.2, 84.7}));
   };
   db::apply_with_box<
-      typelist<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_no_args, original_box);
 
   /// [apply_with_box_example]
@@ -477,11 +479,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
     CHECK((vector == std::vector<int>{1, 4, 8}));
   };
   db::apply_with_box<
-      typelist<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_args, original_box, std::vector<int>{1, 4, 8});
   /// [apply_with_box_example]
 
-  db::apply_with_box<typelist<>>(NonCopyableFunctor{}, original_box);
+  db::apply_with_box<tmpl::list<>>(NonCopyableFunctor{}, original_box);
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
@@ -527,7 +529,7 @@ auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
 struct Var1 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Var1";
   static constexpr auto function = get_vector;
-  using argument_tags = typelist<>;
+  using argument_tags = tmpl::list<>;
 };
 
 struct Var2 : db::DataBoxTag {
@@ -543,9 +545,9 @@ struct PrefixTag0 : db::DataBoxPrefix {
   static constexpr db::DataBoxString label = "PrefixTag0";
 };
 
-using two_vars = typelist<Var1, Var2>;
-using vector_only = typelist<Var1>;
-using scalar_only = typelist<Var2>;
+using two_vars = tmpl::list<Var1, Var2>;
+using vector_only = tmpl::list<Var1>;
+using scalar_only = tmpl::list<Var2>;
 
 static_assert(
     cpp17::is_same_v<
@@ -664,37 +666,37 @@ struct MultiplyScalarByTwo : db::ComputeItemTag {
       tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>;
   static constexpr db::DataBoxString label = "MultiplyScalarByTwo";
   static constexpr auto function = multiply_scalar_by_two;
-  using argument_tags = typelist<test_databox_tags::ScalarTag>;
+  using argument_tags = tmpl::list<test_databox_tags::ScalarTag>;
 };
 
 struct MultiplyScalarByFour : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "MultiplyScalarByFour";
   static constexpr auto function = multiply_scalar_by_four;
-  using argument_tags = typelist<test_databox_tags::ScalarTag2>;
+  using argument_tags = tmpl::list<test_databox_tags::ScalarTag2>;
 };
 
 struct MultiplyScalarByThree : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "MultiplyScalarByThree";
   static constexpr auto function = multiply_scalar_by_three;
-  using argument_tags = typelist<test_databox_tags::MultiplyScalarByFour>;
+  using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByFour>;
 };
 
 struct DivideScalarByThree : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "DivideScalarByThree";
   static constexpr auto function = divide_scalar_by_three;
-  using argument_tags = typelist<test_databox_tags::MultiplyScalarByThree>;
+  using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByThree>;
 };
 
 struct DivideScalarByTwo : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "DivideScalarByTwo";
   static constexpr auto function = divide_scalar_by_two;
-  using argument_tags = typelist<test_databox_tags::DivideScalarByThree>;
+  using argument_tags = tmpl::list<test_databox_tags::DivideScalarByThree>;
 };
 
 struct MultiplyVariablesByTwo : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "MultiplyVariablesByTwo";
   static constexpr auto function = multiply_variables_by_two;
-  using argument_tags = typelist<Tags::Variables<
+  using argument_tags = tmpl::list<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>;
 };
 }  // namespace test_databox_tags
@@ -1163,12 +1165,12 @@ struct MutateComputeTag0 : db::ComputeItemTag {
   using return_type = std::vector<double>;
   static constexpr db::DataBoxString label = "MutateComputeTag0";
   static constexpr auto function = multiply_by_two_mutate;
-  using argument_tags = typelist<Tag0>;
+  using argument_tags = tmpl::list<Tag0>;
 };
 struct NonMutateComputeTag0 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "NonMutateComputeTag0";
   static constexpr auto function = multiply_by_two_non_mutate;
-  using argument_tags = typelist<Tag0>;
+  using argument_tags = tmpl::list<Tag0>;
 };
 /// [databox_mutating_compute_item_tag]
 struct MutateVariablesCompute : db::ComputeItemTag {
@@ -1176,7 +1178,7 @@ struct MutateVariablesCompute : db::ComputeItemTag {
   static constexpr auto function = mutate_variables;
   using return_type = Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
-  using argument_tags = typelist<Tag0>;
+  using argument_tags = tmpl::list<Tag0>;
 };
 /// [databox_mutating_compute_item_tag]
 }  // namespace test_databox_tags
@@ -1310,7 +1312,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
                vec_size = DataBoxTest_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
   auto box = db::create<db::AddTags<DataBoxTest_detail::vector>>([]() {
-    Variables<typelist<DataBoxTest_detail::vector>> vars(24, 0.);
+    Variables<tmpl::list<DataBoxTest_detail::vector>> vars(24, 0.);
     for (size_t s = 0; s < vars.size(); ++s) {
       // clang-tidy: do not use pointer arithmetic
       vars.data()[s] = s;  // NOLINT
@@ -1318,7 +1320,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
     return get<DataBoxTest_detail::vector>(vars);
   }());
 
-  Variables<typelist<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
+  Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
       y_extents * z_extents, 0.),
       expected_vars_sliced_in_y(x_extents * z_extents, 0.),
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
@@ -1371,7 +1373,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
       db::AddTags<DataBoxTest_detail::vector, DataBoxTest_detail::scalar,
                   DataBoxTest_detail::vector2>>(
       []() {
-        Variables<typelist<DataBoxTest_detail::vector>> vars(24, 0.);
+        Variables<tmpl::list<DataBoxTest_detail::vector>> vars(24, 0.);
         for (size_t s = 0; s < vars.size(); ++s) {
           // clang-tidy: do not use pointer arithmetic
           vars.data()[s] = s;  // NOLINT
@@ -1380,7 +1382,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
       }(),
       Scalar<DataVector>(DataVector{8.9, 0.7, 6.7}),
       []() {
-        Variables<typelist<DataBoxTest_detail::vector>> vars(24, 0.);
+        Variables<tmpl::list<DataBoxTest_detail::vector>> vars(24, 0.);
         for (size_t s = 0; s < vars.size(); ++s) {
           // clang-tidy: do not use pointer arithmetic
           vars.data()[s] = s * 10.0;  // NOLINT
@@ -1388,7 +1390,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
         return get<DataBoxTest_detail::vector>(vars);
       }());
 
-  Variables<typelist<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
+  Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
       y_extents * z_extents, 0.),
       expected_vars_sliced_in_y(x_extents * z_extents, 0.),
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
@@ -1427,13 +1429,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
           get<DataBoxTest_detail::vector>(expected_vars_sliced_in_x));
     CHECK(get<DataBoxTest_detail::vector2>(sliced0) ==
           get<DataBoxTest_detail::vector>(
-              Variables<typelist<DataBoxTest_detail::vector>>(
+              Variables<tmpl::list<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_x * 10.0)));
     const auto sliced1 = data_on_slice(
         box, extents, 0, x_offset, tmpl::list<DataBoxTest_detail::vector2>{});
     CHECK(get<DataBoxTest_detail::vector2>(sliced1) ==
           get<DataBoxTest_detail::vector>(
-              Variables<typelist<DataBoxTest_detail::vector>>(
+              Variables<tmpl::list<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_x * 10.0)));
   }
   // y slice
@@ -1445,13 +1447,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
           get<DataBoxTest_detail::vector>(expected_vars_sliced_in_y));
     CHECK(get<DataBoxTest_detail::vector2>(sliced0) ==
           get<DataBoxTest_detail::vector>(
-              Variables<typelist<DataBoxTest_detail::vector>>(
+              Variables<tmpl::list<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_y * 10.0)));
     const auto sliced1 = data_on_slice(
         box, extents, 1, y_offset, tmpl::list<DataBoxTest_detail::vector2>{});
     CHECK(get<DataBoxTest_detail::vector2>(sliced1) ==
           get<DataBoxTest_detail::vector>(
-              Variables<typelist<DataBoxTest_detail::vector>>(
+              Variables<tmpl::list<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_y * 10.0)));
   }
   // z slice
@@ -1463,13 +1465,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
           get<DataBoxTest_detail::vector>(expected_vars_sliced_in_z));
     CHECK(get<DataBoxTest_detail::vector2>(sliced0) ==
           get<DataBoxTest_detail::vector>(
-              Variables<typelist<DataBoxTest_detail::vector>>(
+              Variables<tmpl::list<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_z * 10.0)));
     const auto sliced1 = data_on_slice(
         box, extents, 2, z_offset, tmpl::list<DataBoxTest_detail::vector2>{});
     CHECK(get<DataBoxTest_detail::vector2>(sliced1) ==
           get<DataBoxTest_detail::vector>(
-              Variables<typelist<DataBoxTest_detail::vector>>(
+              Variables<tmpl::list<DataBoxTest_detail::vector>>(
                   expected_vars_sliced_in_z * 10.0)));
   }
 }

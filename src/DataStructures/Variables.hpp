@@ -313,7 +313,7 @@ class Variables<tmpl::list<Tags...>> {
   //@}
 
   static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
-      typelist<> /*unused*/, const size_t /*variable_offset*/ = 0) {
+      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) {
     ASSERT(sizeof...(Tags) > 0,
            "This ASSERT is triggered if you try to construct a Variables "
            "with no Tags. A Variables with no Tags is a valid type, but "
@@ -323,7 +323,7 @@ class Variables<tmpl::list<Tags...>> {
   template <
       typename TagToAdd, typename... Rest,
       Requires<tt::is_a<Tensor, typename TagToAdd::type>::value> = nullptr>
-  void add_reference_variable_data(typelist<TagToAdd, Rest...> /*unused*/,
+  void add_reference_variable_data(tmpl::list<TagToAdd, Rest...> /*unused*/,
                                    size_t variable_offset = 0);
 
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
@@ -349,7 +349,7 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
       size_(number_of_grid_points * number_of_independent_components),
       number_of_grid_points_(number_of_grid_points) {
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
 }
 
 /// \cond HIDDEN_SYMBOLS
@@ -360,7 +360,7 @@ Variables<tmpl::list<Tags...>>::Variables(
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
       size_(rhs.size_),
       number_of_grid_points_(rhs.number_of_grid_points()) {
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
 }
 
 template <typename... Tags>
@@ -373,7 +373,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = rhs.number_of_grid_points();
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 
@@ -387,7 +387,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 
@@ -401,7 +401,7 @@ Variables<tmpl::list<Tags...>>::Variables(
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
       size_(rhs.size_),
       number_of_grid_points_(rhs.number_of_grid_points()) {
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
 }
 
 template <typename... Tags>
@@ -414,7 +414,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = rhs.number_of_grid_points();
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 
@@ -440,7 +440,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 
@@ -452,7 +452,7 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
   if (p.isUnpacking()) {
     variable_data_.reset(variable_data_impl_.data(),
                          variable_data_impl_.size());
-    add_reference_variable_data(typelist<Tags...>{});
+    add_reference_variable_data(tmpl::list<Tags...>{});
   }
 }
 /// \endcond
@@ -483,7 +483,7 @@ Variables<tmpl::list<Tags...>>::Variables(
       size_((~expression).size()),
       number_of_grid_points_(size_ / number_of_independent_components) {
   variable_data_ = expression;
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
 }
 
 /// \cond
@@ -496,7 +496,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_.resize(size_);
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   variable_data_ = expression;
-  add_reference_variable_data(typelist<Tags...>{});
+  add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 /// \endcond
@@ -506,7 +506,7 @@ template <typename... Tags>
 template <typename TagToAdd, typename... Rest,
           Requires<tt::is_a<Tensor, typename TagToAdd::type>::value>>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
-    typelist<TagToAdd, Rest...> /*unused*/, const size_t variable_offset) {
+    tmpl::list<TagToAdd, Rest...> /*unused*/, const size_t variable_offset) {
   ASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *
                      number_of_grid_points_,
          "This ASSERT is typically triggered because a Variables class was "
@@ -520,7 +520,7 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
         &variable_data_[(variable_offset + i) * number_of_grid_points_],
         number_of_grid_points_);
   }
-  add_reference_variable_data(typelist<Rest...>{},
+  add_reference_variable_data(tmpl::list<Rest...>{},
                               variable_offset + TagToAdd::type::size());
 }
 /// \endcond
@@ -586,13 +586,13 @@ Variables<tmpl::list<Tags...>> operator/(
 namespace Variables_detail {
 template <typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
-                           typelist<> /*meta*/) {
+                           tmpl::list<> /*meta*/) {
   return os << "Variables is empty!";
 }
 
 template <typename Tag, typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
-                           typelist<Tag> /*meta*/) {
+                           tmpl::list<Tag> /*meta*/) {
   return os << pretty_type::short_name<Tag>() << ":\n" << get<Tag>(d);
 }
 
@@ -600,10 +600,10 @@ template <typename Tag, typename SecondTag, typename... RemainingTags,
           typename TagsList>
 std::ostream& print_helper(
     std::ostream& os, const Variables<TagsList>& d,
-    typelist<Tag, SecondTag, RemainingTags...> /*meta*/) {
+    tmpl::list<Tag, SecondTag, RemainingTags...> /*meta*/) {
   os << pretty_type::short_name<Tag>() << ":\n";
   os << get<Tag>(d) << "\n\n";
-  print_helper(os, d, typelist<SecondTag, RemainingTags...>{});
+  print_helper(os, d, tmpl::list<SecondTag, RemainingTags...>{});
   return os;
 }
 }  // namespace Variables_detail
