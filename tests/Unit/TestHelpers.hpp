@@ -432,13 +432,22 @@ std::string get_output(const Container& c) {
   return os.str();
 }
 
+namespace TestHelpers_detail {
+template <typename T>
+std::string format_capture_precise(const T& t) noexcept {
+  std::ostringstream os;
+  os << std::scientific << std::setprecision(18) << t;
+  return os.str();
+}
+}  // namespace TestHelpers_detail
+
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Alternative to Catch's CAPTURE that prints more digits.
  */
 #define CAPTURE_PRECISE(variable)                                    \
-  INFO(std::scientific << std::setprecision(18) << #variable << ": " \
-                       << (variable));
+  INFO(#variable << ": "                                             \
+       << TestHelpers_detail::format_capture_precise(variable))
 
 /*!
  * \ingroup TestingFrameworkGroup

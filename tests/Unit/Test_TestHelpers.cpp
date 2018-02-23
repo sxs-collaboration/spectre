@@ -47,6 +47,11 @@ SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   CHECK_ITERABLE_APPROX(vecmap_a, vecmap_b);
   vecmap_b[1][1] += 1e-12;
   CHECK_ITERABLE_CUSTOM_APPROX(vecmap_a, vecmap_b, larger_approx);
+
+  // Check that CAPTURE_PRECISE accepts an STL type (we cannot test
+  // the output because that is only produced on a Catch failure,
+  // which would fail the test.
+  CAPTURE_PRECISE((std::array<double, 1>{{1.5}}));
 }
 
 SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {
