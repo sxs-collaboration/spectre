@@ -21,12 +21,14 @@ Wedge3D::Wedge3D(const double radius_of_other_surface,
                  const double radius_of_spherical_surface,
                  const OrientationMap<3> orientation_of_wedge,
                  const double sphericity_of_other_surface,
-                 const bool with_equiangular_map) noexcept
+                 const bool with_equiangular_map,
+                 const WedgeHalves halves_to_use) noexcept
     : radius_of_other_surface_(radius_of_other_surface),
       radius_of_spherical_surface_(radius_of_spherical_surface),
       orientation_of_wedge_(orientation_of_wedge),
       sphericity_of_other_surface_(sphericity_of_other_surface),
-      with_equiangular_map_(with_equiangular_map) {
+      with_equiangular_map_(with_equiangular_map),
+      halves_to_use_(halves_to_use) {
   ASSERT(radius_of_other_surface > 0,
          "The radius of the other surface must be greater than zero.");
   ASSERT(radius_of_spherical_surface > 0,
@@ -46,15 +48,20 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::operator()(
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
-  const ReturnType cap_xi =
-      with_equiangular_map_
-          ? tan(M_PI_4 * static_cast<ReturnType>(source_coords[0]))
-          : static_cast<ReturnType>(source_coords[0]);
-  const ReturnType cap_eta =
-      with_equiangular_map_
-          ? tan(M_PI_4 * static_cast<ReturnType>(source_coords[1]))
-          : static_cast<ReturnType>(source_coords[1]);
+  ReturnType xi = source_coords[0];
+  if (halves_to_use_ == WedgeHalves::UpperOnly) {
+    xi += 1.0;
+    xi *= 0.5;
+  }
+  if (halves_to_use_ == WedgeHalves::LowerOnly) {
+    xi -= 1.0;
+    xi *= 0.5;
+  }
+  const ReturnType& eta = source_coords[1];
   const ReturnType& zeta = source_coords[2];
+
+  const ReturnType& cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
 
   const ReturnType first_blending_factor =
       0.5 * (1.0 - sphericity_of_other_surface_) * radius_of_other_surface_ /
@@ -102,6 +109,14 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::inverse(
       with_equiangular_map_ ? atan(cap_xi) / M_PI_4 : std::move(cap_xi);
   ReturnType eta =
       with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : std::move(cap_eta);
+  if (halves_to_use_ == WedgeHalves::UpperOnly) {
+    xi *= 2.0;
+    xi -= 1.0;
+  }
+  if (halves_to_use_ == WedgeHalves::LowerOnly) {
+    xi *= 2.0;
+    xi += 1.0;
+  }
   return std::array<ReturnType, 3>{
       {std::move(xi), std::move(eta), std::move(zeta)}};
 }
@@ -111,7 +126,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
 
-  const ReturnType& xi = source_coords[0];
+  ReturnType xi = source_coords[0];
+  if (halves_to_use_ == WedgeHalves::UpperOnly) {
+    xi += 1.0;
+    xi *= 0.5;
+  }
+  if (halves_to_use_ == WedgeHalves::LowerOnly) {
+    xi -= 1.0;
+    xi *= 0.5;
+  }
   const ReturnType& eta = source_coords[1];
   const ReturnType& zeta = source_coords[2];
 
@@ -155,6 +178,13 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
        second_blending_factor_over_rho_cubed * (1.0 + square(cap_eta))) *
       cap_xi_deriv;
   ReturnType dy_dxi = dz_dxi * cap_eta;
+
+  // Implement Scalings:
+  if (halves_to_use_ != WedgeHalves::Both) {
+    dz_dxi *= 0.5;
+    dy_dxi *= 0.5;
+    dx_dxi *= 0.5;
+  }
 
   std::array<ReturnType, 3> dX_dlogical = discrete_rotation(
       orientation_of_wedge_,
@@ -208,6 +238,7 @@ void Wedge3D::pup(PUP::er& p) noexcept {
   p | orientation_of_wedge_;
   p | sphericity_of_other_surface_;
   p | with_equiangular_map_;
+  p | halves_to_use_;
 }
 
 bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
@@ -217,7 +248,8 @@ bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
          lhs.orientation_of_wedge_ == rhs.orientation_of_wedge_ and
          lhs.sphericity_of_other_surface_ ==
              rhs.sphericity_of_other_surface_ and
-         lhs.with_equiangular_map_ == rhs.with_equiangular_map_;
+         lhs.with_equiangular_map_ == rhs.with_equiangular_map_ and
+         lhs.halves_to_use_ == rhs.halves_to_use_;
 }
 
 bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
