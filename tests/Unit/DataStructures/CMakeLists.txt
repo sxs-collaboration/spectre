@@ -6,6 +6,7 @@ set(DATA_STRUCTURES_TESTS
     DataStructures/Test_DataBoxTag.cpp
     DataStructures/Test_DataVector.cpp
     DataStructures/Test_GeneralIndexIterator.cpp
+    DataStructures/Test_Identity.cpp
     DataStructures/Test_Index.cpp
     DataStructures/Test_IndexIterator.cpp
     DataStructures/Test_MakeWithValue.cpp
