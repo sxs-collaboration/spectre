@@ -202,8 +202,6 @@ template <class Metavariables>
 struct ArrayParallelComponent;
 
 struct array_reduce {
-  using apply_args = tmpl::list<>;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

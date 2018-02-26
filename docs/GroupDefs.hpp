@@ -17,6 +17,11 @@
  */
 
 /*!
+ * \defgroup CharmExtensionsGroup Charm++ Extensions
+ * \brief Classes and functions used to make Charm++ easier and safer to use.
+ */
+
+/*!
  * \defgroup ComputationalDomainGroup  Computational Domain
  * \brief The building blocks used to describe the computational domain.
  *

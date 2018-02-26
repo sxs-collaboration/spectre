@@ -56,8 +56,6 @@ struct NodegroupParallelComponent;
 
 namespace SingletonActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& box,
@@ -118,8 +116,6 @@ struct CountReceives {
 
 namespace ArrayActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -237,8 +233,6 @@ struct SendToSingleton {
 
 namespace GroupActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -299,8 +293,6 @@ struct ReduceInt {
 
 namespace NodegroupActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -327,7 +319,6 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<SingletonActions::CountReceives>;
   using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
-  using explicit_single_actions_list = tmpl::list<SingletonActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -362,8 +353,6 @@ struct ArrayParallelComponent {
   using array_index = int;
   using initial_databox =
       db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
-
-  using explicit_single_actions_list = tmpl::list<ArrayActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -403,8 +392,6 @@ struct GroupParallelComponent {
   using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
       db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
-
-  using explicit_single_actions_list = tmpl::list<GroupActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -427,9 +414,6 @@ struct NodegroupParallelComponent {
   using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
       db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
-
-  using explicit_single_actions_list =
-      tmpl::list<NodegroupActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -458,7 +442,6 @@ struct TestMetavariables {
     Initialization,
     PerformSingletonAlgorithm,
     PerformArrayAlgorithm,
-    Run2,
     Exit
   };
   static Phase determine_next_phase(const Phase& current_phase,
@@ -471,8 +454,7 @@ struct TestMetavariables {
     } else if (current_phase == Phase::PerformSingletonAlgorithm) {
       return Phase::PerformArrayAlgorithm;
     } else if (current_phase == Phase::PerformArrayAlgorithm) {
-      // TODO(nils): check if Run2 should do something, otherwise remove it
-      return Phase::Run2;
+      return Phase::Exit;
     }
 
     return Phase::Exit;

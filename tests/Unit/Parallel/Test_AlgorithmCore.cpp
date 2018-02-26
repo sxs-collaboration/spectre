@@ -1,29 +1,43 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+// Need CATCH_CONFIG_RUNNER to avoid linking errors with Catch2
+#define CATCH_CONFIG_RUNNER
+
 #include <catch.hpp>
+#include <cstddef>
+#include <tuple>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "AlgorithmSingleton.hpp"
+#include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Options/Options.hpp"
+#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
+#include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/TMPL.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
-namespace {
-struct TestMetavariables {
-  using component_list = tmpl::list<>;
-  enum class Phase { Initialization, Exit };
-};
+struct TestMetavariables;
 
 template <class Metavariables>
-struct SingletonParallelComponent;
+struct NoOpsComponent;
 
 struct TestAlgorithmArrayInstance {
   explicit TestAlgorithmArrayInstance(int ii) : i(ii) {}
   TestAlgorithmArrayInstance() = default;
   int i = 0;
+  // clang-tidy: no non-const references
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    p | i;
+  }
 };
 
 bool operator==(const TestAlgorithmArrayInstance& lhs,
@@ -36,7 +50,6 @@ TestAlgorithmArrayInstance& operator++(
   instance.i++;
   return instance;
 }
-}  // namespace
 
 namespace std {
 template <>
@@ -47,7 +60,6 @@ struct hash<TestAlgorithmArrayInstance> {
 };
 }  // namespace std
 
-namespace {
 /// \cond
 struct ElementId {};
 /// \endcond
@@ -71,9 +83,11 @@ struct TemporalId : db::DataBoxTag {
   static constexpr db::DataBoxString label = "TemporalId";
   using type = TestAlgorithmArrayInstance;
 };
-}  // namespace
 
-namespace {
+//////////////////////////////////////////////////////////////////////
+// Test actions that do not add or remove from the DataBox
+//////////////////////////////////////////////////////////////////////
+
 namespace no_op_test {
 struct increment_count_actions_called {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -86,8 +100,7 @@ struct increment_count_actions_called {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
+        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
@@ -107,8 +120,7 @@ struct no_op {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
+        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     return std::forward_as_tuple(std::move(box));
   }
@@ -124,8 +136,7 @@ struct initialize {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
+        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create<tmpl::list<CountActionsCalled, Int0, Int1>>(0, 1, 100));
@@ -145,35 +156,52 @@ struct finalize {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
     static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
+        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
-    CHECK(db::get<CountActionsCalled>(box) == 5);
-    CHECK(db::get<Int0>(box) == 1);
-    CHECK(db::get<Int1>(box) == 100);
+    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 5);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 1);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 100);
     return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace no_op_test
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_no_ops", "[Unit][Parallel]") {
-  // Test 2 Actions that do not add or remove elements from a DataBox with 2
-  // int tags
-  Parallel::AlgorithmImpl<
-      SingletonParallelComponent<TestMetavariables>,
-      Parallel::Algorithms::Singleton, TestMetavariables,
-      tmpl::list<no_op_test::increment_count_actions_called, no_op_test::no_op>,
-      ElementId,
-      db::DataBox<
-          db::get_databox_list<tmpl::list<CountActionsCalled, Int0, Int1>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<no_op_test::initialize>();
-  al_gore.perform_algorithm();
-  al_gore.template explicit_single_action<no_op_test::finalize>();
-}
+template <class Metavariables>
+struct NoOpsComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using action_list =
+      tmpl::list<no_op_test::increment_count_actions_called, no_op_test::no_op>;
+  using initial_databox = db::DataBox<
+      db::get_databox_list<tmpl::list<CountActionsCalled, Int0, Int1>>>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
 
-namespace {
+  static void initialize(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<NoOpsComponent>(local_cache)
+        .template explicit_single_action<no_op_test::initialize>();
+  }
+
+  static void execute_next_global_actions(
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    if (next_phase == Metavariables::Phase::NoOpsStart) {
+      Parallel::get_parallel_component<NoOpsComponent>(local_cache)
+          .perform_algorithm();
+    } else if (next_phase == Metavariables::Phase::NoOpsFinish) {
+      Parallel::get_parallel_component<NoOpsComponent>(local_cache)
+          .template explicit_single_action<no_op_test::finalize>();
+    }
+  }
+};
+
+//////////////////////////////////////////////////////////////////////
+// Adding and remove elements from DataBox tests
+//////////////////////////////////////////////////////////////////////
+
 namespace add_remove_test {
 struct add_int_value_10 {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -185,10 +213,6 @@ struct add_int_value_10 {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
     static int a = 0;
@@ -208,10 +232,6 @@ struct increment_int0 {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
     db::mutate<Int0>(box, [](int& int0) { int0++; });
@@ -229,15 +249,11 @@ struct remove_int0 {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-    CHECK(db::get<Int0>(box) == 11);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 11);
     db::mutate<CountActionsCalled>(
         box,
         [](int& count_actions_called, const int& int0) {
-          CHECK(int0 == 11);
+          SPECTRE_PARALLEL_REQUIRE(int0 == 11);
           count_actions_called++;
         },
         db::get<Int0>(box));
@@ -246,8 +262,6 @@ struct remove_int0 {
 };
 
 struct test_args {
-  using apply_args = tmpl::list<double, std::vector<double>>;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -258,12 +272,8 @@ struct test_args {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/, const double& v0,
                     std::vector<double>&& v1) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-    CHECK(v0 == 4.82937);
-    CHECK(v1 == (std::vector<double>{3.2, -8.4, 7.5}));
+    SPECTRE_PARALLEL_REQUIRE(v0 == 4.82937);
+    SPECTRE_PARALLEL_REQUIRE(v1 == (std::vector<double>{3.2, -8.4, 7.5}));
     return std::forward_as_tuple(box);
   }
 };
@@ -277,10 +287,6 @@ struct initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create<tmpl::list<CountActionsCalled, TemporalId>>(
             0, TestAlgorithmArrayInstance{0}));
@@ -299,37 +305,53 @@ struct finalize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-    CHECK(db::get<CountActionsCalled>(box) == 13);
+    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
     return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace add_remove_test
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_mutate", "[Unit][Parallel]") {
-  // Test 3 Actions where the first adds an item to the DataBox, the second
-  // mutates it, and the third removes it.
-  Parallel::AlgorithmImpl<
-      SingletonParallelComponent<TestMetavariables>,
-      Parallel::Algorithms::Singleton, TestMetavariables,
+template <class Metavariables>
+struct MutateComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using array_index = ElementId;  // Just to test nothing breaks
+  using action_list =
       tmpl::list<add_remove_test::add_int_value_10,
-                 add_remove_test::increment_int0, add_remove_test::remove_int0>,
-      ElementId,
-      db::DataBox<
-          db::get_databox_list<tmpl::list<CountActionsCalled, TemporalId>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<add_remove_test::initialize>();
-  al_gore.perform_algorithm();
-  al_gore.template explicit_single_action<add_remove_test::test_args>(
-      std::make_tuple(4.82937, std::vector<double>{3.2, -8.4, 7.5}));
-  al_gore.template explicit_single_action<add_remove_test::finalize>();
-}
+                 add_remove_test::increment_int0, add_remove_test::remove_int0>;
+  using initial_databox = db::DataBox<
+      db::get_databox_list<tmpl::list<CountActionsCalled, TemporalId>>>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
 
-namespace {
+  static void initialize(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<MutateComponent>(local_cache)
+        .template explicit_single_action<add_remove_test::initialize>();
+  }
+
+  static void execute_next_global_actions(
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    if (next_phase == Metavariables::Phase::MutateStart) {
+      Parallel::get_parallel_component<MutateComponent>(local_cache)
+          .perform_algorithm();
+    } else if (next_phase == Metavariables::Phase::MutateFinish) {
+      Parallel::get_parallel_component<MutateComponent>(local_cache)
+          .template explicit_single_action<add_remove_test::test_args>(
+              std::make_tuple(4.82937, std::vector<double>{3.2, -8.4, 7.5}));
+      Parallel::get_parallel_component<MutateComponent>(local_cache)
+          .template explicit_single_action<add_remove_test::finalize>();
+    }
+  }
+};
+
+//////////////////////////////////////////////////////////////////////
+// Test receiving data
+//////////////////////////////////////////////////////////////////////
+
 namespace receive_data_test {
 struct IntReceiveTag {
   using temporal_id = TestAlgorithmArrayInstance;
@@ -348,10 +370,6 @@ struct add_int0_from_receive {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
     static int a = 0;
@@ -372,8 +390,8 @@ struct add_int0_from_receive {
       const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox = tuples::get<IntReceiveTag>(inboxes);
     // The const_cast in this function is purely for testing purposes, this is
-    // NOT an example of how to use this function. clang-tidy: do not use
-    // const_cast
+    // NOT an example of how to use this function.
+    // clang-tidy: do not use const_cast
     db::mutate<Int1>(const_cast<db::DataBox<DbTags>&>(box),  // NOLINT
                      [](int& int1) { int1++; });
     return inbox.count(db::get<TemporalId>(box)) != 0;
@@ -390,10 +408,6 @@ struct update_instance {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     db::mutate<TemporalId>(
         box, [](TestAlgorithmArrayInstance& temporal_id) { ++temporal_id; });
     return std::forward_as_tuple(std::move(box));
@@ -409,10 +423,6 @@ struct initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create<tmpl::list<CountActionsCalled, Int1, TemporalId>>(
             0, 0, TestAlgorithmArrayInstance{0}));
@@ -433,43 +443,66 @@ struct finalize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-    CHECK(tuples::get<IntReceiveTag>(inboxes).empty());
-    CHECK(db::get<TemporalId>(box) == TestAlgorithmArrayInstance{4});
-    CHECK(db::get<CountActionsCalled>(box) == 13);
-    CHECK(db::get<Int1>(box) == 10);
+    SPECTRE_PARALLEL_REQUIRE(tuples::get<IntReceiveTag>(inboxes).empty());
+    SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
+                             TestAlgorithmArrayInstance{4});
+    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 10);
     return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace receive_data_test
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_receive", "[Unit][Parallel]") {
-  // Test that actions block on receive correctly
-  Parallel::AlgorithmImpl<
-      SingletonParallelComponent<TestMetavariables>,
-      Parallel::Algorithms::Singleton, TestMetavariables,
+template <class Metavariables>
+struct ReceiveComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using array_index = ElementId;  // Just to test nothing breaks
+  using action_list =
       tmpl::list<receive_data_test::add_int0_from_receive,
                  add_remove_test::increment_int0, add_remove_test::remove_int0,
-                 receive_data_test::update_instance>,
-      ElementId,
-      db::DataBox<db::get_databox_list<
-          tmpl::list<CountActionsCalled, Int1, TemporalId>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<receive_data_test::initialize>();
-  al_gore.perform_algorithm();
-  for (TestAlgorithmArrayInstance instance{0};
-       not(instance == TestAlgorithmArrayInstance{5}); ++instance) {
-    int dummy_int = 10;
-    al_gore.receive_data<receive_data_test::IntReceiveTag>(instance, dummy_int);
-  }
-  al_gore.template explicit_single_action<receive_data_test::finalize>();
-}
+                 receive_data_test::update_instance>;
+  using initial_databox = db::DataBox<
+      db::get_databox_list<tmpl::list<CountActionsCalled, Int1, TemporalId>>>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
 
-namespace {
+  static void initialize(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<ReceiveComponent>(local_cache)
+        .template explicit_single_action<receive_data_test::initialize>();
+  }
+
+  static void execute_next_global_actions(
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    if (next_phase == Metavariables::Phase::ReceiveStart) {
+      Parallel::get_parallel_component<ReceiveComponent>(local_cache)
+          .perform_algorithm();
+    } else if (next_phase == Metavariables::Phase::ReceiveSendData) {
+      for (TestAlgorithmArrayInstance instance{0};
+           not(instance == TestAlgorithmArrayInstance{5}); ++instance) {
+        int dummy_int = 10;
+        Parallel::get_parallel_component<ReceiveComponent>(local_cache)
+            .template receive_data<receive_data_test::IntReceiveTag>(instance,
+                                                                     dummy_int);
+      }
+    } else if (next_phase == Metavariables::Phase::ReceiveFinish) {
+      Parallel::get_parallel_component<ReceiveComponent>(local_cache)
+          .template explicit_single_action<receive_data_test::finalize>();
+    }
+  }
+};
+
+//////////////////////////////////////////////////////////////////////
+// Test out of order execution of Actions
+//////////////////////////////////////////////////////////////////////
+
+template <class Metavariables>
+struct AnyOrderComponent;
+
 namespace any_order {
 struct iterate_increment_int0 {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
@@ -477,19 +510,19 @@ struct iterate_increment_int0 {
             typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::ConstGlobalCache<Metavariables>&
+                    /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept
+                    const ActionList /*meta*/, const ParallelComponent* const
+                    /*meta*/) noexcept
       -> std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool, size_t> {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   AnyOrderComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
-    CHECK((db::get<CountActionsCalled>(box) - 1) / 2 ==
-          db::get<Int0>(box) - 10);
+    SPECTRE_PARALLEL_REQUIRE((db::get<CountActionsCalled>(box) - 1) / 2 ==
+                             db::get<Int0>(box) - 10);
 
     const int max_int0_value = 25;
     if (db::get<Int0>(box) < max_int0_value) {
@@ -498,7 +531,7 @@ struct iterate_increment_int0 {
           tmpl::index_of<ActionList, ::add_remove_test::increment_int0>::value);
     }
 
-    CHECK(db::get<Int0>(box) == max_int0_value);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == max_int0_value);
     return std::tuple<decltype(std::move(box)), bool, size_t>(
         std::move(box), true,
         tmpl::index_of<ActionList, iterate_increment_int0>::value + 1);
@@ -514,185 +547,118 @@ struct finalize {
           tmpl2::flat_any_v<cpp17::is_same_v<Int0, DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::ConstGlobalCache<Metavariables>&
+                    /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-    CHECK(db::get<TemporalId>(box) == db::item_type<TemporalId>{0});
-    CHECK(db::get<CountActionsCalled>(box) == 31);
-    CHECK(db::get<Int0>(box) == 25);
+                    const ActionList /*meta*/, const ParallelComponent* const
+                    /*meta*/) {
+    static_assert(cpp17::is_same_v<ParallelComponent,
+                                   AnyOrderComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
+    SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
+                             db::item_type<TemporalId>{0});
+    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 31);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 25);
     return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace any_order
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.local_order", "[Unit][Parallel]") {
-  // Test that out-of-order execution of Actions is supported
-  Parallel::AlgorithmImpl<
-      SingletonParallelComponent<TestMetavariables>,
-      Parallel::Algorithms::Singleton, TestMetavariables,
-      tmpl::list<
-          add_remove_test::add_int_value_10, add_remove_test::increment_int0,
-          any_order::iterate_increment_int0, add_remove_test::remove_int0,
-          receive_data_test::update_instance>,
-      ElementId,
-      db::DataBox<
-          db::get_databox_list<tmpl::list<CountActionsCalled, TemporalId>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<add_remove_test::initialize>();
-  al_gore.perform_algorithm();
-  al_gore.template explicit_single_action<any_order::finalize>();
-}
-
-namespace {
-struct error_size_zero {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-  }
-};
-}  // namespace
-
-// [[OutputRegex, Cannot call apply function of '\(anonymous
-// namespace\)::error_size_zero' with DataBox]]
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.bad_box_apply", "[Unit][Parallel]") {
-  ERROR_TEST();
-  Parallel::AlgorithmImpl<SingletonParallelComponent<TestMetavariables>,
-                          Parallel::Algorithms::Singleton, TestMetavariables,
-                          tmpl::list<>, ElementId,
-                          db::DataBox<db::get_databox_list<tmpl::list<>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<error_size_zero>();
-}
-
-namespace {
-template <typename Algorithm>
-struct error_call_single_action_from_action {
-  using apply_args = tmpl::list<Algorithm&, int>;
-
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/, Algorithm& al_gore,
-                    int which) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
-    if (which == 0) {
-      al_gore.template explicit_single_action<no_op_test::finalize>();
-    }
-    al_gore.template explicit_single_action<
-        error_call_single_action_from_action<Parallel::AlgorithmImpl<
-            SingletonParallelComponent<TestMetavariables>,
-            Parallel::Algorithms::Singleton, TestMetavariables, tmpl::list<>,
-            ElementId, db::DataBox<db::get_databox_list<tmpl::list<>>>>>>(
-        std::tuple<Parallel::AlgorithmImpl<
-                       SingletonParallelComponent<TestMetavariables>,
-                       Parallel::Algorithms::Singleton, TestMetavariables,
-                       tmpl::list<>, ElementId,
-                       db::DataBox<db::get_databox_list<tmpl::list<>>>>&,
-                   int>(al_gore, 0));
-  }
-};
-}  // namespace
-
-// [[OutputRegex, Already performing an Action and cannot execute additional
-// Actions from inside of an Action. This is only possible if the
-// explicit_single_action function is not invoked via a proxy, which we do not
-// allow]]
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.action_from_action_1",
-                  "[Unit][Parallel]") {
-  ERROR_TEST();
-  Parallel::AlgorithmImpl<SingletonParallelComponent<TestMetavariables>,
-                          Parallel::Algorithms::Singleton, TestMetavariables,
-                          tmpl::list<>, ElementId,
-                          db::DataBox<db::get_databox_list<tmpl::list<>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<
-      error_call_single_action_from_action<Parallel::AlgorithmImpl<
-          SingletonParallelComponent<TestMetavariables>,
-          Parallel::Algorithms::Singleton, TestMetavariables, tmpl::list<>,
-          ElementId, db::DataBox<db::get_databox_list<tmpl::list<>>>>>>(
-      std::tuple<
-          Parallel::AlgorithmImpl<
-              SingletonParallelComponent<TestMetavariables>,
-              Parallel::Algorithms::Singleton, TestMetavariables, tmpl::list<>,
-              ElementId, db::DataBox<db::get_databox_list<tmpl::list<>>>>&,
-          int>(al_gore, 0));
-}
-
-// [[OutputRegex, Already performing an Action and cannot execute additional
-// Actions from inside of an Action. This is only possible if the
-// explicit_single_action function is not invoked via a proxy, which we do not
-// allow]]
-SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.action_from_action_2",
-                  "[Unit][Parallel]") {
-  ERROR_TEST();
-  Parallel::AlgorithmImpl<SingletonParallelComponent<TestMetavariables>,
-                          Parallel::Algorithms::Singleton, TestMetavariables,
-                          tmpl::list<>, ElementId,
-                          db::DataBox<db::get_databox_list<tmpl::list<>>>>
-      al_gore{};
-  al_gore.template explicit_single_action<
-      error_call_single_action_from_action<Parallel::AlgorithmImpl<
-          SingletonParallelComponent<TestMetavariables>,
-          Parallel::Algorithms::Singleton, TestMetavariables, tmpl::list<>,
-          ElementId, db::DataBox<db::get_databox_list<tmpl::list<>>>>>>(
-      std::tuple<
-          Parallel::AlgorithmImpl<
-              SingletonParallelComponent<TestMetavariables>,
-              Parallel::Algorithms::Singleton, TestMetavariables, tmpl::list<>,
-              ElementId, db::DataBox<db::get_databox_list<tmpl::list<>>>>&,
-          int>(al_gore, 1));
-}
-
-namespace {
 template <class Metavariables>
-struct SingletonParallelComponent {
+struct AnyOrderComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using array_index = int;
-  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
-  using explicit_single_actions_list = tmpl::list<
-      no_op_test::initialize, no_op_test::finalize, add_remove_test::initialize,
-      add_remove_test::finalize, add_remove_test::test_args,
-      receive_data_test::initialize, receive_data_test::finalize,
-      any_order::finalize, error_size_zero,
-      error_call_single_action_from_action<Parallel::AlgorithmImpl<
-          SingletonParallelComponent<TestMetavariables>,
-          Parallel::Algorithms::Singleton, TestMetavariables, tmpl::list<>,
-          ElementId, db::DataBox<db::get_databox_list<tmpl::list<>>>>>>;
+  using array_index = ElementId;  // Just to test nothing breaks
+  using action_list = tmpl::list<
+      add_remove_test::add_int_value_10, add_remove_test::increment_int0,
+      any_order::iterate_increment_int0, add_remove_test::remove_int0,
+      receive_data_test::update_instance>;
+  using initial_databox = db::DataBox<
+      db::get_databox_list<tmpl::list<CountActionsCalled, TemporalId>>>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
+        .template explicit_single_action<add_remove_test::initialize>();
+  }
 
   static void execute_next_global_actions(
-      const typename Metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_ConstGlobalCache<
-          Metavariables>& /*global_cache*/) {}
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    if (next_phase == Metavariables::Phase::AnyOrderStart) {
+      Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
+          .perform_algorithm();
+    } else if (next_phase == Metavariables::Phase::AnyOrderFinish) {
+      Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
+          .template explicit_single_action<any_order::finalize>();
+    }
+  }
 };
-}  // namespace
+
+struct TestMetavariables {
+  using component_list = tmpl::list<NoOpsComponent<TestMetavariables>,
+                                    MutateComponent<TestMetavariables>,
+                                    ReceiveComponent<TestMetavariables>,
+                                    AnyOrderComponent<TestMetavariables>>;
+  enum class Phase {
+    Initialization,
+    NoOpsStart,
+    NoOpsFinish,
+    MutateStart,
+    MutateFinish,
+    ReceiveStart,
+    ReceiveSendData,
+    ReceiveFinish,
+    AnyOrderStart,
+    AnyOrderFinish,
+    Exit
+  };
+
+  static constexpr OptionString help = "Executable for testing";
+
+  static Phase determine_next_phase(const Phase& current_phase,
+                                    const Parallel::CProxy_ConstGlobalCache<
+                                        TestMetavariables>& /*cache_proxy*/) {
+    switch (current_phase) {
+      case Phase::Initialization:
+        return Phase::NoOpsStart;
+      case Phase::NoOpsStart:
+        return Phase::NoOpsFinish;
+      case Phase::NoOpsFinish:
+        return Phase::MutateStart;
+      case Phase::MutateStart:
+        return Phase::MutateFinish;
+      case Phase::MutateFinish:
+        return Phase::ReceiveStart;
+      case Phase::ReceiveStart:
+        return Phase::ReceiveSendData;
+      case Phase::ReceiveSendData:
+        return Phase::ReceiveFinish;
+      case Phase::ReceiveFinish:
+        return Phase::AnyOrderStart;
+      case Phase::AnyOrderStart:
+        return Phase::AnyOrderFinish;
+      case Phase::AnyOrderFinish:
+        return Phase::Exit;
+      case Phase::Exit:
+        return Phase::Exit;
+      default:
+        ERROR("Unknown Phase...");
+    }
+
+    return Phase::Exit;
+  }
+};
+
+static const std::vector<void (*)()> charm_init_node_funcs{
+    &setup_error_handling};
+static const std::vector<void (*)()> charm_init_proc_funcs{
+    &enable_floating_point_exceptions};
+
+using charm_metavariables = TestMetavariables;
+
+#include "Parallel/CharmMain.cpp"

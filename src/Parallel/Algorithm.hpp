@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
@@ -21,41 +22,6 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
-namespace charmxx {
-/*!
- * Uses the __PRETTY_FUNCTION__ compiler intrinsic to extract the template
- * parameter names in the same form that Charm++ uses to register entry methods.
- * This is used by the generated Singleton, Array, Group and Nodegroup headers,
- * as well as in CharmMain.cpp.
- */
-template <class... Args>
-std::string get_template_parameters_as_string() {
-  std::string function_name(static_cast<char const*>(__PRETTY_FUNCTION__));
-  std::string template_params =
-      function_name.substr(function_name.find(std::string("Args = ")) + 8);
-  template_params.erase(template_params.end() - 2, template_params.end());
-  size_t pos = 0;
-  while ((pos = template_params.find(" >")) != std::string::npos) {
-    template_params.replace(pos, 1, ">");
-    template_params.erase(pos + 1, 1);
-  }
-  pos = 0;
-  while ((pos = template_params.find(", ", pos)) != std::string::npos) {
-    template_params.erase(pos + 1, 1);
-  }
-  pos = 0;
-  while ((pos = template_params.find('>', pos + 2)) != std::string::npos) {
-    template_params.replace(pos, 1, " >");
-  }
-  std::replace(template_params.begin(), template_params.end(), '%', '>');
-  // GCC's __PRETTY_FUNCTION__ adds the return type at the end, so we remove it.
-  if (template_params.find('}') != std::string::npos) {
-    template_params.erase(template_params.find('}'), template_params.size());
-  }
-  return template_params;
-}
-}  // namespace charmxx
-
 /*!
  * \ingroup ParallelGroup
  * \brief Lock a converse CmiNodeLock
@@ -494,7 +460,6 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       box_;
   tuples::TaggedTupleTypelist<inbox_tags_list> inboxes_{};
   array_index array_index_;
-  // int temporal_id_;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -592,16 +557,9 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
                    InitialDataBox>::explicit_single_action(std::tuple<Args...>
                                                                args) noexcept {
+  (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
+                                                Args...>::registrar;
   lock(&node_lock_);
-  static_assert(
-      tmpl::found<typename ParallelComponent::explicit_single_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value and
-          cpp17::is_same_v<typename Action::apply_args, tmpl::list<Args...>>,
-      "Could not find explicit instantiation of the correct explicit "
-      "single action, which is undefined behavior. See the first template "
-      "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
-      "missing the explicit instantiation. An example of an "
-      "explicit_single_actions_list is: tmpl::list<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -623,15 +581,9 @@ template <typename Action>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
                    InitialDataBox>::explicit_single_action() noexcept {
+  (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
+                                                Action>::registrar;
   lock(&node_lock_);
-  static_assert(
-      tmpl::found<typename ParallelComponent::explicit_single_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value,
-      "Could not find explicit instantiation of the correct explicit "
-      "single action, which is undefined behavior. See the first template "
-      "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
-      "missing the explicit instantiation. An example of an "
-      "explicit_single_actions_list is: tmpl::list<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "

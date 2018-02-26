@@ -6,6 +6,7 @@
 #include <charm++.h>
 #include <tuple>
 
+#include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"

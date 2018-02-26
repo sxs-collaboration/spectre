@@ -10,12 +10,19 @@
 #include <type_traits>
 #include <vector>
 
+#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/NoSuchType.hpp"
 
 namespace Parallel {
 namespace charmxx {
+/// \cond
+std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
+size_t charm_register_list_capacity = 0;
+size_t charm_register_list_size = 0;
+/// \endcond
+
 template <class...>
 using void_t = void;
 
@@ -55,34 +62,14 @@ struct has_reduction_actions<T, void_t<typename T::reduction_actions_list>>
 template <class... Ts>
 void swallow(Ts&&... /*ts*/) {}
 
-template <class TemplateParameters, class ParallelComponent>
-struct charm_types_with_parameters;
-
-template <template <class...> class F, class... Args, class ParallelComponent>
-struct charm_types_with_parameters<F<Args...>, ParallelComponent> {
-  using cproxy =
-      typename ParallelComponent::chare_type::template cproxy<ParallelComponent,
-                                                              Args...>;
-  using cbase =
-      typename ParallelComponent::chare_type::template cbase<ParallelComponent,
-                                                             Args...>;
-  using algorithm =
-      typename ParallelComponent::chare_type::template algorithm_type<
-          ParallelComponent, Args...>;
-  using ckindex = typename ParallelComponent::chare_type::template ckindex<
-      ParallelComponent, Args...>;
-};
-
 template <class ParallelComponent>
 struct CharmRegisterFunctions {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      tmpl::list<
-          typename ParallelComponent::metavariables,
-          typename ParallelComponent::action_list,
-          typename get_array_index<chare_type>::template f<ParallelComponent>,
-          typename ParallelComponent::initial_databox>,
-      ParallelComponent>;
+      ParallelComponent, typename ParallelComponent::metavariables,
+      typename ParallelComponent::action_list,
+      typename get_array_index<chare_type>::template f<ParallelComponent>,
+      typename ParallelComponent::initial_databox>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -134,38 +121,7 @@ struct CharmRegisterFunctions {
                  Actions, typename Actions::reduction_type>(nullptr),
              0)...);
   }
-
-  template <class Action>
-  static void register_explicit_single_action(tmpl::list<> /*meta*/) {
-    ckindex::template idx_explicit_single_action<Action>(
-        static_cast<void (algorithm::*)()>(nullptr));
-  }
-
-  template <class Action, class Arg0, class... Args>
-  static void register_explicit_single_action(
-      tmpl::list<Arg0, Args...> /*meta*/) {
-    ckindex::template idx_explicit_single_action<Action>(
-        static_cast<void (algorithm::*)(const std::tuple<Arg0, Args...>&)>(
-            nullptr));
-  }
-
-  template <class... ExplicitActionsParameters>
-  static void register_explicit_single_actions(
-      tmpl::list<ExplicitActionsParameters...> /*meta*/) {
-    swallow(((void)register_explicit_single_action<ExplicitActionsParameters>(
-                 typename ExplicitActionsParameters::apply_args{}),
-             0)...);
-  }
 };
-
-template <class ParallelComponent>
-void register_explicit_single_actions(std::true_type /*meta*/) {
-  CharmRegisterFunctions<ParallelComponent>::register_explicit_single_actions(
-      typename ParallelComponent::explicit_single_actions_list{});
-}
-
-template <class ParallelComponent>
-void register_explicit_single_actions(std::false_type /*meta*/) {}
 
 template <class ParallelComponent>
 void register_reduction_actions(std::true_type /*meta*/) {
@@ -184,6 +140,18 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
   }
   done_registration = true;
 
+  // Charm++ requires the order of registration to be the same across all
+  // processors. To make sure this is satisfied regardless of any possible weird
+  // behavior with static variable initialization we sort the list before
+  // registering anything.
+  // clang-tidy: do not user pointer arithmetic
+  std::sort(charm_register_list,
+            charm_register_list + charm_register_list_size,  // NOLINT
+            [](const std::unique_ptr<RegistrationHelper>& a,
+               const std::unique_ptr<RegistrationHelper>& b) {
+              return a->name() < b->name();
+            });
+
   swallow(
       ((void)CharmRegisterFunctions<ParallelComponents>::register_algorithm(),
        0)...);
@@ -191,9 +159,13 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
       (void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
           Parallel::get_inbox_tags<typename ParallelComponents::action_list>{}),
       0)...);
-  swallow(((void)register_explicit_single_actions<ParallelComponents>(
-               typename has_single_actions<ParallelComponents>::type{}),
-           0)...);
+  // register simple actions
+  for (size_t i = 0;
+       i < charm_register_list_size and i < charm_register_list_capacity; ++i) {
+    // clang-tidy: do not use pointer arithmetic
+    charm_register_list[i]->register_with_charm();  // NOLINT
+  }
+  delete[] charm_register_list;
   swallow(((void)register_reduction_actions<ParallelComponents>(
                typename has_reduction_actions<ParallelComponents>::type{}),
            0)...);

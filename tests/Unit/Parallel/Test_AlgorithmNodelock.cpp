@@ -39,8 +39,6 @@ struct total_receives_on_node : db::DataBoxTag {
 }  // namespace Tags
 
 struct nodegroup_initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -63,8 +61,6 @@ struct nodegroup_initialize {
 };
 
 struct nodegroup_receive {
-  using apply_args = tmpl::list<int>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -97,8 +93,6 @@ struct nodegroup_receive {
 };
 
 struct nodegroup_check_first_result {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -130,8 +124,6 @@ struct nodegroup_check_first_result {
 };
 
 struct nodegroup_threaded_receive {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename NodeLock,
             Requires<sizeof...(DbTags) == 2> = nullptr>
@@ -158,8 +150,6 @@ struct nodegroup_threaded_receive {
 };
 
 struct nodegroup_check_threaded_result {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -191,8 +181,6 @@ struct nodegroup_check_threaded_result {
 };
 
 struct reduce_to_nodegroup {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -215,8 +203,6 @@ struct reduce_to_nodegroup {
 };
 
 struct reduce_threaded_method {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
