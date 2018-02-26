@@ -34,7 +34,6 @@ struct Var : db::DataBoxTag {
 struct System {
   static constexpr const size_t volume_dim = 2;
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
-  using dt_variables_tag = Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>;
   static constexpr const size_t number_of_independent_components =
       db::item_type<variables_tag>::number_of_independent_components;
 
@@ -48,6 +47,8 @@ struct System {
     }
   };
 };
+
+using dt_variables_tag = Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>;
 
 class NumericalFlux {
  public:
@@ -255,7 +256,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                                   221400., 241600., 261800.};
 
   CHECK_ITERABLE_APPROX(
-      get<Tags::dt<Var>>(db::get<System::dt_variables_tag>(received_box)).get(),
+      get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box)).get(),
       xi_lift * xi_boundaries + eta_lift * eta_boundaries);
 }
 
@@ -305,6 +306,6 @@ SPECTRE_TEST_CASE(
       std::get<0>(runner.apply<component, Actions::ComputeBoundaryFlux<System>>(
           sent_box, self_id));
 
-  CHECK(get<Tags::dt<Var>>(db::get<System::dt_variables_tag>(received_box))
+  CHECK(get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box))
             .get() == (DataVector{0., 0., 0., 0., 0., 0., 0., 0., 0.}));
 }
