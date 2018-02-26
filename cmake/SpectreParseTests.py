@@ -33,6 +33,7 @@ allowed_tags = [
                 "RelativisticEuler",
                 "RootFinding",
                 "Serialization",
+                "SlopeLimiters",
                 "Spectral",
                 "Time",
                 "Unit",

@@ -996,6 +996,11 @@ then typically look as follows:
  */
 
 /*!
+ * \defgroup SlopeLimitersGroup Slope Limiters
+ * \brief Slope limiters to control shocks and surfaces in the solution.
+ */
+
+/*!
  * \defgroup SpectralGroup Spectral
  * Things related to spectral transformations.
  */

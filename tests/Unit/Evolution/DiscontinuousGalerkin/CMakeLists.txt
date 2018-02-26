@@ -7,6 +7,8 @@ set(LIBRARY_SOURCES
   Test_InitializeElement.cpp
   )
 
+add_subdirectory(SlopeLimiters)
+
 add_test_library(
   ${LIBRARY}
   "Evolution/DiscontinuousGalerkin/"
