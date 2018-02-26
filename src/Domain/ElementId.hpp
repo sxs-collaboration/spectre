@@ -24,9 +24,9 @@ class ArrayIndex;
 }  // namespace Parallel
 
 /// \ingroup ComputationalDomainGroup
-/// An ElementId uniquely labels a Element.
+/// An ElementId uniquely labels an Element.
 /// It is constructed from the BlockId of the Block to which the Element belongs
-/// and the VolumeDim SegementIds that label the segments of the Block that the
+/// and the VolumeDim SegmentIds that label the segments of the Block that the
 /// Element covers.
 template <size_t VolumeDim>
 class ElementId {
