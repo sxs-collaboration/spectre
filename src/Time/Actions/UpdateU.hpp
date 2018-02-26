@@ -23,19 +23,20 @@ namespace Actions {
 /// \ingroup TimeGroup
 /// \brief Perform variable updates for one substep
 ///
+/// With `dt_variables_tag =
+/// db::add_tag_prefix<Tags::dt, system::variables_tag>`:
+///
 /// Uses:
 /// - ConstGlobalCache: CacheTags::TimeStepper
-/// - DataBox: system::variables_tag, system::dt_variables_tag,
-///   Tags::HistoryEvolvedVariables<system::variables_tag,
-///                                 system::dt_variables_tag>,
+/// - DataBox: system::variables_tag, dt_variables_tag,
+///   Tags::HistoryEvolvedVariables<system::variables_tag, dt_variables_tag>,
 ///   Tags::Time, Tags::TimeStep
 ///
 /// DataBox changes:
 /// - Adds: nothing
-/// - Removes: system::dt_variables_tag
-/// - Modifies: system::variables_tag,
-///   Tags::HistoryEvolvedVariables<system::variables_tag,
-///                                 system::dt_variables_tag>
+/// - Removes: nothing
+/// - Modifies: system::variables_tag, dt_variables_tag,
+///   Tags::HistoryEvolvedVariables<system::variables_tag, dt_variables_tag>
 struct UpdateU {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
