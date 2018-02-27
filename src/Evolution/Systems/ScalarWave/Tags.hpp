@@ -17,16 +17,19 @@ namespace ScalarWave {
 struct Psi : db::DataBoxTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Psi";
+  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 struct Pi : db::DataBoxTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Pi";
+  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 template <size_t Dim>
 struct Phi : db::DataBoxTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
   static constexpr db::DataBoxString label = "Phi";
+  static constexpr bool should_be_sliced_to_boundary = true;
 };
 }  // namespace ScalarWave

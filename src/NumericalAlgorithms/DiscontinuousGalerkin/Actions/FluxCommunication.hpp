@@ -13,105 +13,121 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/IndexToSliceAt.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+namespace dg {
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Receive boundary data from neighbors and compute boundary
 /// contribution to the time derivative.
 ///
-/// \note The data must be oriented by the sender, but this class
-/// handles projection, etc.
-///
 /// Uses:
-/// - ConstGlobalCache: Metavariables::numerical_flux
-/// - DataBox: Tags::Element<volume_dim>,
-///   Tags::HistoryBoundaryVariables<Direction<volume_dim>,
-///       system::variables_tag>, Tags::Extents<volume_dim>, Tags::TimeId,
-///   Tags::Interface<Tags::InternalDirections<volume_dim>,
-///                   Tags::UnnormalizedFaceNormal<volume_dim>>
+/// - ConstGlobalCache: Metavariables::normal_dot_numerical_flux
+/// - DataBox:
+///   Tags::Element<volume_dim>,
+///   Tags::Extents<volume_dim>,
 ///   Tags::Interface<Tags::InternalDirections<volume_dim>,
 ///                   typename System::template magnitude_tag<
-///                       Tags::UnnormalizedFaceNormal<volume_dim>>>
+///                       Tags::UnnormalizedFaceNormal<volume_dim>>>,
+///   Tags::Mortars<implementation_defined_local_data>,
+///   Tags::TimeId,
+///   db::add_tag_prefix<Tags::dt, variables_tag>
 ///
 /// DataBox changes:
-/// - Adds: db::add_tag_prefix<Tags::dt, variables_tag>
-/// - Removes: Tags::HistoryBoundaryVariables<Direction<volume_dim>,
-///       system::variables_tag>
-/// - Modifies: nothing
-template <typename System>
+/// - Adds: nothing
+/// - Removes: Tags::Mortars<implementation_defined_local_data>
+/// - Modifies: db::add_tag_prefix<Tags::dt, variables_tag>
+template <typename Metavariables>
 struct ComputeBoundaryFlux {
+  using PackagedData = Variables<
+      typename Metavariables::normal_dot_numerical_flux::type::package_tags>;
+  using system = typename Metavariables::system;
+  static constexpr size_t volume_dim = system::volume_dim;
+
+  using normal_dot_fluxes_tag =
+      db::add_tag_prefix<Tags::NormalDotFlux, typename system::variables_tag>;
+  using NormalDotFluxesType = db::item_type<normal_dot_fluxes_tag>;
+
+  using LocalData = Variables<tmpl::remove_duplicates<
+      tmpl::append<typename NormalDotFluxesType::tags_list,
+                   typename PackagedData::tags_list>>>;
+
+  using mortars_local_data_tag =
+      Tags::Mortars<Tags::Variables<typename LocalData::tags_list>, volume_dim>;
+
   struct FluxesTag {
     using temporal_id = TimeId;
-    using type =
-        std::unordered_map<
-            TimeId,
-            std::unordered_map<
-                std::pair<Direction<System::volume_dim>,
-                          ElementId<System::volume_dim>>,
-                db::item_type<typename System::variables_tag>,
-                boost::hash<std::pair<Direction<System::volume_dim>,
-                                      ElementId<System::volume_dim>>>>>;
+    using type = std::unordered_map<
+        TimeId, std::unordered_map<
+                    std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+                    PackagedData,
+                    boost::hash<std::pair<Direction<volume_dim>,
+                                          ElementId<volume_dim>>>>>;
   };
 
   using inbox_tags = tmpl::list<FluxesTag>;
 
  private:
-  template <size_t Dim, typename Tag>
-  using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
-
-  template <typename Flux, typename... Tags, typename... ArgumentTags>
-  static auto apply_flux(const Flux& flux,
-                         const tuples::TaggedTuple<Tags...>& self_data,
-                         const tuples::TaggedTuple<Tags...>& neighbor_data,
-                         tmpl::list<ArgumentTags...> /*meta*/) noexcept {
-    return flux(tuples::get<ArgumentTags>(self_data)...,
-                tuples::get<ArgumentTags>(neighbor_data)...);
+  template <typename Flux, typename... NumericalFluxTags, typename... SelfTags,
+            typename... PackagedTags, typename... ArgumentTags,
+            typename... Args>
+  static void apply_normal_dot_numerical_flux(
+      const gsl::not_null<Variables<tmpl::list<NumericalFluxTags...>>*>
+          numerical_fluxes,
+      const Flux& flux,
+      const Variables<tmpl::list<SelfTags...>>& self_packaged_data,
+      const Variables<tmpl::list<PackagedTags...>>&
+          neighbor_packaged_data) noexcept {
+    flux(make_not_null(&get<NumericalFluxTags>(*numerical_fluxes))...,
+         get<PackagedTags>(self_packaged_data)...,
+         get<PackagedTags>(neighbor_packaged_data)...);
   }
 
  public:
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<System, typename Metavariables::system>,
-                  "Inconsistent systems");
-    constexpr const size_t volume_dim = System::volume_dim;
-    using variables_tag = typename System::variables_tag;
+    using variables_tag = typename system::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
-    const auto& flux_computer =
-        get<typename Metavariables::numerical_flux>(cache);
+    using normal_dot_numerical_flux_tag =
+        db::add_tag_prefix<Tags::NormalDotNumericalFlux, variables_tag>;
+
+    const auto& normal_dot_numerical_flux_computer =
+        get<typename Metavariables::normal_dot_numerical_flux>(cache);
     const auto& extents = db::get<Tags::Extents<volume_dim>>(box);
-    const auto& local_data =
-        db::get<Tags::HistoryBoundaryVariables<
-                  Direction<volume_dim>, variables_tag>>(box);
+    const auto& local_data = db::get<mortars_local_data_tag>(box);
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
 
@@ -132,103 +148,48 @@ struct ComputeBoundaryFlux {
       ASSERT(remote_data.end() != neighbor_data_it,
              "Attempting to access neighbor flux data that does not exist. "
              "The neighbor attempting to be accessed is: "
-             << neighbor << " in direction " << direction
-             << ". The known keys are " << keys_of(remote_data) << ".");
-      const auto& local_value = local_data.at(direction);
-      const auto& neighbor_value = neighbor_data_it->second;
+                 << neighbor << " in direction " << direction
+                 << ". The known keys are " << keys_of(remote_data) << ".");
+      const auto& local_mortar_data =
+          local_data.at(std::make_pair(direction, neighbor));
+      const PackagedData& neighbor_mortar_data = neighbor_data_it->second;
 
-      // This needs to be fixed for hp-adaptivity to handle
+      // All of this needs to be fixed for hp-adaptivity to handle
       // projections correctly
-
-      const auto& face_normal =
-          db::get<interface_tag<volume_dim,
-                                Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
+      const auto& magnitude_of_face_normal =
+          db::get<
+              Tags::Interface<Tags::InternalDirections<volume_dim>,
+                              typename system::template magnitude_tag<
+                                  Tags::UnnormalizedFaceNormal<volume_dim>>>>(
+              box)
               .at(direction);
 
-      const auto& magnitude_of_face_normal = db::get<interface_tag<
-          volume_dim, typename System::template magnitude_tag<
-                          Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
-                                                 .at(direction);
+      // Compute numerical flux
+      db::item_type<normal_dot_numerical_flux_tag> normal_dot_numerical_fluxes(
+          magnitude_of_face_normal.begin()->size(), 0.0);
+      apply_normal_dot_numerical_flux(
+          make_not_null(&normal_dot_numerical_fluxes),
+          normal_dot_numerical_flux_computer, local_mortar_data,
+          neighbor_mortar_data);
 
-      std::decay_t<decltype(face_normal)> unit_face_normal(
-          magnitude_of_face_normal.size(), 0.0);
-      for (size_t d = 0; d < volume_dim; ++d) {
-        unit_face_normal.get(d) =
-            face_normal.get(d) / get(magnitude_of_face_normal);
-      }
-
-      // Using this instead of auto prevents incomprehensible errors
-      // if the return type of compute_flux is wrong.
-      using FluxType = db::item_type<
-          db::add_tag_prefix<Tags::Flux, variables_tag,
-                             tmpl::size_t<volume_dim>, Frame::Inertial>>;
-      const FluxType local_boundary_flux =
-          System::compute_flux::apply(local_value);
-      const FluxType neighbor_boundary_flux =
-          System::compute_flux::apply(neighbor_value);
-      using normal_flux_tag =
-          db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>;
-      db::item_type<normal_flux_tag> local_normal_flux(
-          local_boundary_flux.number_of_grid_points(), 0.);
-      db::item_type<normal_flux_tag> neighbor_normal_flux(
-          local_boundary_flux.number_of_grid_points(), 0.);
-      tmpl::for_each<typename variables_tag::tags_list>([
-        &local_normal_flux, &neighbor_normal_flux, &local_boundary_flux,
-        &neighbor_boundary_flux, &unit_face_normal
-      ](auto tag) noexcept {
-        using Tag = tmpl::type_from<decltype(tag)>;
-        using flux_tag = Tags::Flux<Tag, tmpl::size_t<2>, Frame::Inertial>;
-
-        const auto& local_bf = get<flux_tag>(local_boundary_flux);
-        auto& local_nf = get<Tags::NormalDotFlux<Tag>>(local_normal_flux);
-        const auto& neighbor_bf = get<flux_tag>(neighbor_boundary_flux);
-        auto& neighbor_nf = get<Tags::NormalDotFlux<Tag>>(neighbor_normal_flux);
-        for (auto flux_it = local_bf.begin(); flux_it != local_bf.end();
-             ++flux_it) {
-          const auto flux_index =
-              local_bf.get_tensor_index(flux_it);
-          const size_t contract_index = flux_index[0];
-          const auto other_indices =
-              all_but_specified_element_of<0>(flux_index);
-          local_nf.get(other_indices) +=
-              unit_face_normal.get(contract_index) * local_bf.get(flux_index);
-          neighbor_nf.get(other_indices) +=
-              unit_face_normal.get(contract_index) *
-              neighbor_bf.get(flux_index);
-        }
-      });
-
-      const tuples::TaggedTuple<variables_tag, normal_flux_tag> self_data(
-          local_value, std::move(local_normal_flux));
-      const tuples::TaggedTuple<variables_tag, normal_flux_tag> neighbor_data(
-          neighbor_value, std::move(neighbor_normal_flux));
-
-      auto normal_dot_numerical_flux = apply_flux(
-          flux_computer, self_data, neighbor_data,
-          typename std::decay_t<decltype(flux_computer)>::argument_tags{});
-
-      const db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
-          tuples::get<normal_flux_tag>(self_data),
-          std::move(normal_dot_numerical_flux),
-          extents[dimension],
-          magnitude_of_face_normal));
+      db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
+          local_mortar_data, std::move(normal_dot_numerical_fluxes),
+          extents[dimension], magnitude_of_face_normal));
 
       db::mutate<dt_variables_tag>(box, [
         &lifted_data, &extents, &dimension, &direction
       ](db::item_type<dt_variables_tag> & dt_vars) noexcept {
-        add_slice_to_data(
-            make_not_null(&dt_vars), lifted_data, extents, dimension,
-            direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+        add_slice_to_data(make_not_null(&dt_vars), lifted_data, extents,
+                          dimension, index_to_slice_at(extents, direction));
       });
     }
 
     return std::make_tuple(
-        db::create_from<db::RemoveTags<Tags::HistoryBoundaryVariables<
-            Direction<volume_dim>, variables_tag>>>(box));
+        db::create_from<db::RemoveTags<mortars_local_data_tag>>(
+            std::move(box)));
   }
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex>
+  template <typename DbTags, typename... InboxTags, typename ArrayIndex>
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
@@ -238,8 +199,7 @@ struct ComputeBoundaryFlux {
     const auto& inbox = tuples::get<FluxesTag>(inboxes);
     auto receives = inbox.find(time_id);
     const auto number_of_neighbors =
-        db::get<Tags::Element<Metavariables::system::volume_dim>>(box)
-            .number_of_neighbors();
+        db::get<Tags::Element<volume_dim>>(box).number_of_neighbors();
     const size_t num_receives =
         receives == inbox.end() ? 0 : receives->second.size();
     return num_receives == number_of_neighbors;
@@ -248,21 +208,27 @@ struct ComputeBoundaryFlux {
 
 /// \ingroup ActionsGroup
 /// \ingroup DiscontinuousGalerkinGroup
-/// \brief Compute local boundary data needed for fluxes and send it
-/// to neighbors.
+/// \brief Send local boundary data needed for fluxes to neighbors.
 ///
-/// \note The data is oriented for the receiver, but the receiver is
-/// responsible for projection, etc.
+/// With:
+/// - `Interface<Tag> =
+///   Tags::Interface<Tags::InternalDirections<volume_dim>, Tag>`
 ///
 /// Uses:
-/// - ConstGlobalCache: Receiver
-/// - DataBox: system::variables_tag, Tags::Element<volume_dim>,
-///   Tags::Extents<volume_dim>, Tags::TimeId
+/// - ConstGlobalCache: Metavariables::normal_dot_numerical_flux
+/// - DataBox:
+///   Tags::Element<volume_dim>,
+///   Interface<Tags listed in
+///             Metavariables::normal_dot_numerical_flux::type::slice_tags>,
+///   Interface<Tags::Extents<volume_dim - 1>>,
+///   Interface<db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>,
+///   Interface<typename System::template magnitude_tag<
+///             Tags::UnnormalizedFaceNormal<volume_dim>>>,
+///   Tags::TimeId
 ///
 /// DataBox changes:
-/// - Adds: Tags::HistoryBoundaryVariables<Direction<volume_dim>,
-///       system::variables_tag>
-/// - Removes: nothing
+/// - Adds: Tags::Mortars<implementation_defined_local_data>
+/// - Removes: Interface<db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>
 /// - Modifies: nothing
 struct SendDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -274,58 +240,110 @@ struct SendDataForFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    using ReceiverAction = ComputeBoundaryFlux<Metavariables>;
     using system = typename Metavariables::system;
-    constexpr const size_t volume_dim = system::volume_dim;
-    using variables_tag = typename system::variables_tag;
+    constexpr size_t volume_dim = system::volume_dim;
+
+    using normal_dot_fluxes_tag =
+        typename ReceiverAction::normal_dot_fluxes_tag;
+
+    using interface_normal_dot_fluxes_tag =
+        Tags::Interface<Tags::InternalDirections<volume_dim>,
+                        normal_dot_fluxes_tag>;
+
+    const auto& normal_dot_numerical_flux_computer =
+        get<typename Metavariables::normal_dot_numerical_flux>(cache);
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
-    const auto& extents = db::get<Tags::Extents<volume_dim>>(box);
     const auto& time_id = db::get<Tags::TimeId>(box);
-    const auto& evolved_vars = db::get<variables_tag>(box);
 
-    std::unordered_map<Direction<volume_dim>, db::item_type<variables_tag>>
-        mortars;
+    using LocalData = typename ReceiverAction::LocalData;
+
+    std::unordered_map<
+        std::pair<Direction<volume_dim>, ElementId<volume_dim>>, LocalData,
+        boost::hash<std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>
+        mortars_local_data;
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
-      const auto& neighbors_in_direction = direction_neighbors.second;
-
       const size_t dimension = direction.dimension();
-      const auto& segment_id = gsl::at(element.id().segment_ids(), dimension);
+      const auto& neighbors_in_direction = direction_neighbors.second;
+      ASSERT(neighbors_in_direction.size() == 1,
+             "h-adaptivity is not supported yet.\nDirection: "
+                 << direction << "\nDimension: " << dimension
+                 << "\nNeighbors:\n"
+                 << neighbors_in_direction);
       const auto& orientation = neighbors_in_direction.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
-      const auto boundary_extents = extents.slice_away(dimension);
-      auto boundary_variables = data_on_slice(
-          evolved_vars, extents, dimension,
-          direction.side() == Side::Lower ? 0 : extents[dimension] - 1);
+      const auto& boundary_extents =
+          db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
+                                  Tags::Extents<volume_dim - 1>>>(box)
+              .at(direction);
 
-      const auto neighbor_variables = orient_variables_on_slice(
-          boundary_variables, boundary_extents, dimension, orientation);
+      // Everything below here needs to be fixed for
+      // hp-adaptivity to handle projections correctly
+
+      // We compute the parts of the numerical flux that only depend on data
+      // from this side of the mortar now, then package it into a Variables.
+      // We store one copy of the Variables and send another, since we need
+      // the data on both sides of the mortar.
+      using normal_tag = Tags::UnnormalizedFaceNormal<volume_dim>;
+      using package_arguments = tmpl::append<
+          typename db::item_type<normal_dot_fluxes_tag>::tags_list,
+          typename Metavariables::normal_dot_numerical_flux::type::slice_tags,
+          tmpl::list<Tags::Normalized<
+              normal_tag,
+              typename system::template magnitude_tag<normal_tag>>>>;
+      const auto packaged_data = db::apply<tmpl::transform<
+          package_arguments,
+          tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
+                     tmpl::_1>>>(
+          [&boundary_extents, &direction, &normal_dot_numerical_flux_computer](
+              const auto&... args) noexcept {
+            typename ReceiverAction::PackagedData ret(
+                boundary_extents.product(), 0.0);
+            normal_dot_numerical_flux_computer.package_data(
+                make_not_null(&ret), args.at(direction)...);
+            return ret;
+          },
+          box);
+
+      LocalData local_data(boundary_extents.product());
+      local_data.assign_subset(
+          db::get<interface_normal_dot_fluxes_tag>(box).at(direction));
+      local_data.assign_subset(packaged_data);
+
+      const auto direction_from_neighbor = orientation(direction.opposite());
+
+      // orient_variables_on_slice only needs to be done in the case where
+      // the data is oriented differently. This needs to improved later.
+      // Note: avoiding the same-orientation-on-both-sides copy is possible
+      // even with AMR since the quantities are already on the mortar at this
+      // point
+      const auto neighbor_packaged_data = orient_variables_on_slice(
+          packaged_data, boundary_extents, dimension, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
-        const auto& neighbor_segment_id =
-            gsl::at(neighbor.segment_ids(), dimension);
-
         receiver_proxy[neighbor]
             .template receive_data<
-                typename ComputeBoundaryFlux<system>::FluxesTag>(
-                time_id,
-                std::make_pair(
-                    std::make_pair(direction_from_neighbor, element.id()),
-                    neighbor_variables));
-      }
+                typename ComputeBoundaryFlux<Metavariables>::FluxesTag>(
+                time_id, std::make_pair(std::make_pair(direction_from_neighbor,
+                                                       element.id()),
+                                        neighbor_packaged_data));
 
-      mortars.emplace(direction, std::move(boundary_variables));
-    }
+        mortars_local_data.emplace(std::make_pair(direction, neighbor),
+                                   local_data);
+      }  // loop over neighbors_in_direction
+    }    // loop over element.neighbors()
+
     return std::make_tuple(
         db::create_from<
-            db::RemoveTags<>,
-            db::AddTags<Tags::HistoryBoundaryVariables<Direction<volume_dim>,
-                                                       variables_tag>>>(
-            box, std::move(mortars)));
+            db::RemoveTags<interface_normal_dot_fluxes_tag>,
+            db::AddTags<typename ReceiverAction::mortars_local_data_tag>>(
+            box, std::move(mortars_local_data)));
   }
 };
 }  // namespace Actions
+}  // namespace dg

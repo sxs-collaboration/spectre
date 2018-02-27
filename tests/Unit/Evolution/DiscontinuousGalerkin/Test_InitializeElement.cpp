@@ -39,6 +39,7 @@ namespace {
 struct Var : db::DataBoxTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Var";
+  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 struct SystemAnalyticSolution {
@@ -190,9 +191,15 @@ void test_initialize_element(const ElementId<Dim>& element_id,
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 Tags::UnnormalizedFaceNormal<Dim>>>(box);
+  using magnitude_tag =
+      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>;
+  (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>, magnitude_tag>>(
+      box);
   (void)db::get<Tags::Interface<
-    Tags::InternalDirections<Dim>,
-    Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>>(box);
+      Tags::InternalDirections<Dim>,
+      Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>, magnitude_tag>>>(box);
+  (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
+                                typename System::variables_tag>>(box);
 }
 }  // namespace
 

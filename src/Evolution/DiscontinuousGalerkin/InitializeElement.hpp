@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
@@ -91,7 +92,15 @@ struct InitializeElement {
       interface_tag<Tags::Extents<Dim - 1>>,
       interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       interface_tag<typename System::template magnitude_tag<
-          Tags::UnnormalizedFaceNormal<Dim>>>>;
+          Tags::UnnormalizedFaceNormal<Dim>>>,
+      interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>,
+                                     typename System::template magnitude_tag<
+                                         Tags::UnnormalizedFaceNormal<Dim>>>>,
+      // This should be the boundary forms of
+      // System::normal_dot_fluxes::argument_tags, but it is not clear
+      // how to get that.  System::variables_tag should generally be a
+      // superset.
+      interface_tag<typename System::variables_tag>>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>

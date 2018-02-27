@@ -13,7 +13,8 @@
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication2.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -45,6 +46,7 @@ struct EvolutionMetavars {
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
       tmpl::list<Actions::ComputeVolumeDuDt<Dim>,
+                 dg::Actions::ComputeNonconservativeBoundaryFluxes,
                  dg::Actions::SendDataForFluxes,
                  dg::Actions::ComputeBoundaryFlux<EvolutionMetavars>,
                  Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;

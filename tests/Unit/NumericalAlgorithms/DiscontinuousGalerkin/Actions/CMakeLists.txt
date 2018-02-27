@@ -3,7 +3,7 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
+  Actions/Test_ComputeNonconservativeBoundaryFluxes.cpp
   Actions/Test_FluxCommunication.cpp
-  Actions/Test_FluxCommunication2.cpp
   PARENT_SCOPE
   )
