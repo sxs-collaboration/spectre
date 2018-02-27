@@ -151,7 +151,7 @@ struct ComputeBoundaryFlux {
       db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
           local_normal_dot_flux.at(std::make_pair(direction, neighbor)),
           std::move(normal_dot_numerical_fluxes), extents[dimension],
-          get(magnitude(face_normal))));
+          magnitude(face_normal)));
 
       db::mutate<dt_variables_tag>(box, [
         &lifted_data, &extents, &dimension, &direction

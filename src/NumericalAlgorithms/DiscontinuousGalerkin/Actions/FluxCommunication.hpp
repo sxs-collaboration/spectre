@@ -134,12 +134,13 @@ struct ComputeBoundaryFlux {
       const auto& face_normal =
           db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(direction);
 
-      DataVector magnitude_of_face_normal = get(magnitude(face_normal));
+      auto magnitude_of_face_normal = magnitude(face_normal);
 
       std::decay_t<decltype(face_normal)> unit_face_normal(
           magnitude_of_face_normal.size(), 0.0);
       for (size_t d = 0; d < volume_dim; ++d) {
-        unit_face_normal.get(d) = face_normal.get(d) / magnitude_of_face_normal;
+        unit_face_normal.get(d) =
+            face_normal.get(d) / get(magnitude_of_face_normal);
       }
 
       // Using this instead of auto prevents incomprehensible errors
@@ -193,10 +194,11 @@ struct ComputeBoundaryFlux {
           typename std::decay_t<decltype(flux_computer)>::argument_tags{});
 
       // Needs fixing for GH/curved
-      auto lifted_data(dg::lift_flux(tuples::get<normal_flux_tag>(self_data),
-                                     std::move(normal_dot_numerical_flux),
-                                     extents[dimension],
-                                     std::move(magnitude_of_face_normal)));
+      const db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
+          tuples::get<normal_flux_tag>(self_data),
+          std::move(normal_dot_numerical_flux),
+          extents[dimension],
+          std::move(magnitude_of_face_normal)));
 
       db::mutate<dt_variables_tag>(box, [
         &lifted_data, &extents, &dimension, &direction
