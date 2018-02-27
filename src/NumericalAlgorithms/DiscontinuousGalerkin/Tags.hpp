@@ -3,7 +3,23 @@
 
 #pragma once
 
+#include <boost/functional/hash.hpp>
+#include <utility>
+
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/ElementId.hpp"
 #include "Options/Options.hpp"
+
+namespace Tags {
+template <typename Tag, size_t VolumeDim>
+struct Mortars : db::DataBoxPrefix {
+  static constexpr db::DataBoxString label = "Mortar";
+  using tag = Tag;
+  using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
+  using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;
+};
+}  // namespace Tags
 
 namespace CacheTags {
 /*!
