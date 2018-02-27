@@ -26,7 +26,6 @@ struct Var : db::DataBoxTag {
 
 struct System {
   using variables_tag = Var;
-  using dt_variables_tag = Tags::dt<Var>;
 };
 
 struct Metavariables;
