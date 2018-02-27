@@ -137,7 +137,7 @@ function(compilation_tests_parse_file SOURCE_FILE TEST_TARGET)
     set_tests_properties(
       "${TEST_NAME}"
       PROPERTIES
-      TIMEOUT 5
+      TIMEOUT 10
       LABELS "${TEST_TAGS}"
       PASS_REGULAR_EXPRESSION ${OUTPUT_REGEX}
       )
