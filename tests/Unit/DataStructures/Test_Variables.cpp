@@ -480,6 +480,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
   CHECK(data_on_slice(vars, extents, 0, x_offset) == expected_vars_sliced_in_x);
   CHECK(data_on_slice(vars, extents, 1, y_offset) == expected_vars_sliced_in_y);
   CHECK(data_on_slice(vars, extents, 2, z_offset) == expected_vars_sliced_in_z);
+
+  CHECK(
+      data_on_slice<VariablesTestTags_detail::vector>(
+          extents, 0, x_offset, get<VariablesTestTags_detail::vector>(vars)) ==
+      expected_vars_sliced_in_x);
+  CHECK(
+      data_on_slice<VariablesTestTags_detail::vector>(
+          extents, 1, y_offset, get<VariablesTestTags_detail::vector>(vars)) ==
+      expected_vars_sliced_in_y);
+  CHECK(
+      data_on_slice<VariablesTestTags_detail::vector>(
+          extents, 2, z_offset, get<VariablesTestTags_detail::vector>(vars)) ==
+      expected_vars_sliced_in_z);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",

@@ -11,6 +11,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -33,24 +34,7 @@ Variables<tmpl::list<TagsToSlice...>> data_on_slice(
     const db::DataBox<TagsList>& box, const Index<VolumeDim>& element_extents,
     const size_t sliced_dim, const size_t fixed_index,
     tmpl::list<TagsToSlice...> /*meta*/) noexcept {
-  const size_t interface_grid_points =
-      element_extents.slice_away(sliced_dim).product();
-  Variables<tmpl::list<TagsToSlice...>> interface_vars(interface_grid_points);
-  for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
-    const auto lambda = [&si](auto& interface_tensor,
-                              const auto& volume_tensor) noexcept {
-      for (decltype(auto) interface_and_volume_tensor_components :
-           boost::combine(interface_tensor, volume_tensor)) {
-        boost::get<0>(
-            interface_and_volume_tensor_components)[si.slice_offset()] =
-            boost::get<1>(
-                interface_and_volume_tensor_components)[si.volume_offset()];
-      }
-    };
-    swallow(
-        (lambda(get<TagsToSlice>(interface_vars), db::get<TagsToSlice>(box)),
-         cpp17::void_type{})...);
-  }
-  return interface_vars;
+  return data_on_slice<TagsToSlice...>(element_extents, sliced_dim, fixed_index,
+                                       db::get<TagsToSlice>(box)...);
 }
 }  // namespace db

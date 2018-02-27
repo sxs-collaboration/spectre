@@ -16,6 +16,7 @@ set(SPECTRE_UNIT_DOMAIN
   Domain/Test_ElementMap.cpp
   Domain/Test_FaceNormal.cpp
   Domain/Test_InitialElementIds.cpp
+  Domain/Test_InterfaceItems.cpp
   Domain/Test_LogicalCoordinates.cpp
   Domain/Test_Neighbors.cpp
   Domain/Test_OrientationMap.cpp

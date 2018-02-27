@@ -661,9 +661,9 @@ struct Subitems<Tag, Requires<tt::is_a_v<Variables, item_type<Tag>>>> {
       const gsl::not_null<item_type<Tag>*> parent_value,
       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
     auto& vars = get<Subtag>(*parent_value);
-    for (auto vars_it = vars.begin(), var_it = sub_value->begin();
-         vars_it != vars.end(); ++vars_it, ++var_it) {
-      var_it->set_data_ref(&*vars_it);
+    for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
+         vars_it != vars.end(); ++vars_it, ++sub_var_it) {
+      sub_var_it->set_data_ref(&*vars_it);
     }
   }
 
