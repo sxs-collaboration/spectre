@@ -219,8 +219,8 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::Affine{x_map});
   const auto x = map_1d(logical_coordinates(extents));
-  const InverseJacobian<1, Frame::Logical, Frame::Grid> inverse_jacobian(
-      extents.product(), 2.0);
+  const InverseJacobian<DataVector, 1, Frame::Logical, Frame::Grid>
+      inverse_jacobian(extents.product(), 2.0);
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<
@@ -256,7 +256,7 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
       make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_2d{
           affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55}});
   const auto x = prod_map2d(logical_coordinates(extents));
-  InverseJacobian<2, Frame::Logical, Frame::Grid> inverse_jacobian(
+  InverseJacobian<DataVector, 2, Frame::Logical, Frame::Grid> inverse_jacobian(
       number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
@@ -301,7 +301,7 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
           affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55},
           affine_map{-1.0, 1.0, 2.3, 2.8}});
   const auto x = prod_map3d(logical_coordinates(extents));
-  InverseJacobian<3, Frame::Logical, Frame::Grid> inverse_jacobian(
+  InverseJacobian<DataVector, 3, Frame::Logical, Frame::Grid> inverse_jacobian(
       extents.product(), 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
