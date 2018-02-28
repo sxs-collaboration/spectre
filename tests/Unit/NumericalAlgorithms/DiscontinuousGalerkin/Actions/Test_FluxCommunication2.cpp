@@ -15,6 +15,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication2.hpp"
 #include "Time/Slab.hpp"
@@ -110,6 +111,15 @@ using mortars_packaged_data_tag = dg::Actions::DgActions_detail::mortars_tag<
     2,
     Tags::Variables<
         typename Metavariables::normal_dot_numerical_flux::type::package_tags>>;
+
+template <typename Tag>
+using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
+
+using compute_items = db::AddComputeItemsTags<
+    Tags::InternalDirections<2>,
+    interface_tag<Tags::Direction<2>>,
+    interface_tag<Tags::Extents<1>>,
+    interface_tag<Tags::UnnormalizedFaceNormal<2>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
@@ -164,7 +174,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
         db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
                     Tags::ElementMap<2>, System::variables_tag,
                     db::add_tag_prefix<Tags::dt, System::variables_tag>>,
-        db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+        compute_items>(
         time_id, extents, element, std::move(map), std::move(variables),
         std::move(dt_variables));
   }();
@@ -248,7 +258,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
     auto box =
         db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
                                System::variables_tag, Tags::ElementMap<2>>,
-                   db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+                   compute_items>(
             time_id, extents, element, std::move(variables), std::move(map));
     runner.apply<component, dg::Actions::SendDataForFluxes>(
         box, CharmIndexType(south_id));
@@ -275,7 +285,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
     auto box =
         db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
                                System::variables_tag, Tags::ElementMap<2>>,
-                   db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+                   compute_items>(
             time_id, extents, element, std::move(variables), std::move(map));
     runner.apply<component, dg::Actions::SendDataForFluxes>(
         box, CharmIndexType(east_id));
@@ -301,18 +311,24 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
       0.,
       0.,
       15774. /
-          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::lower_xi())))[0],
+          get(magnitude(db::get<Tags::Interface<Tags::InternalDirections<2>,
+                                            Tags::UnnormalizedFaceNormal<2>>>(
+                        start_box)
+                        .at(Direction<2>::upper_xi())))[0],
       0.,
       0.,
       18048. /
-          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::lower_xi())))[1],
+          get(magnitude(db::get<Tags::Interface<Tags::InternalDirections<2>,
+                                            Tags::UnnormalizedFaceNormal<2>>>(
+                        start_box)
+                        .at(Direction<2>::upper_xi())))[1],
       0.,
       0.,
       20322. /
-          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::lower_xi())))[2]};
+          get(magnitude(db::get<Tags::Interface<Tags::InternalDirections<2>,
+                                            Tags::UnnormalizedFaceNormal<2>>>(
+                        start_box)
+                        .at(Direction<2>::upper_xi())))[2]};
   const DataVector eta_boundaries{
       0.,
       0.,
@@ -321,14 +337,20 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
       0.,
       0.,
       16612. / 3. /
-          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta())))[0],
+          get(magnitude(db::get<Tags::Interface<Tags::InternalDirections<2>,
+                                            Tags::UnnormalizedFaceNormal<2>>>(
+                        start_box)
+                        .at(Direction<2>::upper_eta())))[0],
       18128. / 3. /
-          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta())))[1],
+          get(magnitude(db::get<Tags::Interface<Tags::InternalDirections<2>,
+                                            Tags::UnnormalizedFaceNormal<2>>>(
+                        start_box)
+                        .at(Direction<2>::upper_eta())))[1],
       19644. / 3. /
-          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta())))[2]};
+          get(magnitude(db::get<Tags::Interface<Tags::InternalDirections<2>,
+                                            Tags::UnnormalizedFaceNormal<2>>>(
+                        start_box)
+                        .at(Direction<2>::upper_eta())))[2]};
 
   CHECK_ITERABLE_APPROX(
       get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box)).get(),
@@ -363,7 +385,7 @@ SPECTRE_TEST_CASE(
       db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
                   Tags::ElementMap<2>, System::variables_tag,
                   db::add_tag_prefix<Tags::dt, System::variables_tag>>,
-      db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+      compute_items>(
       time_id, extents, element, std::move(map), std::move(variables),
       std::move(dt_variables));
 

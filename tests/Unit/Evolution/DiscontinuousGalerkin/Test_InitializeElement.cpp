@@ -20,6 +20,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
@@ -184,8 +185,8 @@ void test_initialize_element(const ElementId<Dim>& element_id,
   CHECK((db::get<db::add_tag_prefix<Tags::dt, typename System::variables_tag>>(
             box)) ==
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
-  CHECK(db::get<Tags::UnnormalizedFaceNormal<Dim>>(box) ==
-        Tags::UnnormalizedFaceNormal<Dim>::function(extents, map));
+  (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
+                                Tags::UnnormalizedFaceNormal<Dim>>>(box);
 }
 }  // namespace
 

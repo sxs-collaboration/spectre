@@ -15,6 +15,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "Time/Slab.hpp"
@@ -84,6 +85,15 @@ struct Metavariables {
   using component_list = tmpl::list<component>;
   using numerical_flux = NumericalFluxTag;
 };
+
+template <typename Tag>
+using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
+
+using compute_items = db::AddComputeItemsTags<
+    Tags::InternalDirections<2>,
+    interface_tag<Tags::Direction<2>>,
+    interface_tag<Tags::Extents<1>>,
+    interface_tag<Tags::UnnormalizedFaceNormal<2>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
@@ -144,7 +154,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
                     Tags::ElementMap<2>, System::variables_tag,
                     db::add_tag_prefix<Tags::dt, System::variables_tag>>,
-        db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+        compute_items>(
         time_id, extents, element, std::move(map), std::move(variables),
         std::move(dt_variables));
   }();
@@ -291,7 +301,7 @@ SPECTRE_TEST_CASE(
       db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
                   Tags::ElementMap<2>, System::variables_tag,
                   db::add_tag_prefix<Tags::dt, System::variables_tag>>,
-      db::AddComputeItemsTags<Tags::UnnormalizedFaceNormal<2>>>(
+      compute_items>(
       time_id, extents, element, std::move(map), std::move(variables),
       std::move(dt_variables));
 

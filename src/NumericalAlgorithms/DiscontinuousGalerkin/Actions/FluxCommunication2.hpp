@@ -24,6 +24,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
@@ -66,6 +67,10 @@ struct ComputeBoundaryFlux {
   using inbox_tags = tmpl::list<FluxesTag>;
 
  private:
+  template <typename Tag>
+  using interface_tag =
+      Tags::Interface<Tags::InternalDirections<volume_dim>, Tag>;
+
   template <typename Flux, typename... NumericalFluxTags, typename... Tags,
             typename... ArgumentTags, typename... Args>
   static void apply_normal_dot_numerical_flux(
@@ -137,7 +142,8 @@ struct ComputeBoundaryFlux {
       // All of this needs to be fixed for hp-adaptivity to handle
       // projections correctly
       const auto& face_normal =
-          db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(direction);
+          db::get<interface_tag<Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
+              .at(direction);
 
       // Compute numerical flux
       db::item_type<normal_dot_numerical_flux_tag> normal_dot_numerical_fluxes(
@@ -187,6 +193,9 @@ struct ComputeBoundaryFlux {
 
 struct SendDataForFluxes {
  private:
+  template <size_t Dim, typename Tag>
+  using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+
   template <typename PackagedData, typename NumericalFluxComputer,
             typename... NormalDotFluxTags, typename TagsList, typename... Args,
             typename... SliceTags>
@@ -277,9 +286,9 @@ struct SendDataForFluxes {
       // Everything in the loop over neighbors needs to be fixed for
       // hp-adaptivity to handle projections correctly
       for (const auto& neighbor : neighbors_in_direction) {
-        const auto& face_normal =
-            db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(
-                direction);
+        const auto& face_normal = db::get<interface_tag<
+            volume_dim, Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
+                                      .at(direction);
         DataVector magnitude_of_face_normal = get(magnitude(face_normal));
         std::decay_t<decltype(face_normal)> unit_face_normal(
             magnitude_of_face_normal.size(), 0.0);

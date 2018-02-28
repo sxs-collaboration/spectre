@@ -22,6 +22,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
@@ -49,7 +50,8 @@ namespace Actions {
 /// - DataBox: Tags::Element<volume_dim>,
 ///   Tags::HistoryBoundaryVariables<Direction<volume_dim>,
 ///       system::variables_tag>, Tags::Extents<volume_dim>, Tags::TimeId,
-///   Tags::UnnormalizedFaceNormal<volume_dim>
+///   Tags::Interface<Tags::InternalDirections<volume_dim>,
+///                   Tags::UnnormalizedFaceNormal<volume_dim>>
 ///
 /// DataBox changes:
 /// - Adds: db::add_tag_prefix<Tags::dt, variables_tag>
@@ -73,6 +75,10 @@ struct ComputeBoundaryFlux {
 
   using inbox_tags = tmpl::list<FluxesTag>;
 
+ private:
+  template <size_t Dim, typename Tag>
+  using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+
   template <typename Flux, typename... Tags, typename... ArgumentTags>
   static auto apply_flux(const Flux& flux,
                          const tuples::TaggedTuple<Tags...>& self_data,
@@ -82,6 +88,7 @@ struct ComputeBoundaryFlux {
                 tuples::get<ArgumentTags>(neighbor_data)...);
   }
 
+ public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -132,7 +139,9 @@ struct ComputeBoundaryFlux {
       // projections correctly
 
       const auto& face_normal =
-          db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(direction);
+          db::get<interface_tag<volume_dim,
+                                Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
+          .at(direction);
 
       auto magnitude_of_face_normal = magnitude(face_normal);
 

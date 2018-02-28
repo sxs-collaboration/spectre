@@ -19,7 +19,6 @@
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
@@ -118,33 +117,6 @@ struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
     return element_map.inv_jacobian(source_coords);
   }
   using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
-};
-
-namespace detail {
-template <size_t VolumeDim>
-auto make_unnormalized_face_normals(
-    const Index<VolumeDim>& extents,
-    const ::ElementMap<VolumeDim, Frame::Inertial>& map) noexcept {
-  std::unordered_map<Direction<VolumeDim>,
-                     tnsr::i<DataVector, VolumeDim, Frame::Inertial>>
-      result;
-  for (const auto& d : Direction<VolumeDim>::all_directions()) {
-    result.emplace(
-        d, unnormalized_face_normal(extents.slice_away(d.dimension()), map, d));
-  }
-  return result;
-}
-}  // namespace detail
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The unnormalized grid normal one form on each side
-template <size_t VolumeDim>
-struct UnnormalizedFaceNormal : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "UnnormalizedFaceNormal";
-  static constexpr auto function =
-      detail::make_unnormalized_face_normals<VolumeDim>;
-  using argument_tags = tmpl::list<Extents<VolumeDim>, ElementMap<VolumeDim>>;
 };
 
 /// \ingroup DataBoxTagsGroup

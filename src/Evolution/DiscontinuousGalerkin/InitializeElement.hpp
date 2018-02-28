@@ -18,6 +18,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -66,6 +67,9 @@ namespace Actions {
 /// - Modifies: nothing
 template <size_t Dim>
 struct InitializeElement {
+  template <typename Tag>
+  using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+
   template <class System>
   using return_tag_list = tmpl::list<
       Tags::TimeId, Tags::Time, Tags::TimeStep, Tags::LogicalCoordinates<Dim>,
@@ -82,7 +86,10 @@ struct InitializeElement {
                   Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                         Tags::LogicalCoordinates<Dim>>>,
       db::add_tag_prefix<Tags::dt, typename System::variables_tag>,
-      Tags::UnnormalizedFaceNormal<Dim>>;
+      Tags::InternalDirections<Dim>,
+      interface_tag<Tags::Direction<Dim>>,
+      interface_tag<Tags::Extents<Dim - 1>>,
+      interface_tag<Tags::UnnormalizedFaceNormal<Dim>>>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>
