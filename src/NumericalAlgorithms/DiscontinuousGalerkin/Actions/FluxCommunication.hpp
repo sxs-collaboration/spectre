@@ -51,7 +51,7 @@ namespace Actions {
 ///   Tags::UnnormalizedFaceNormal<volume_dim>
 ///
 /// DataBox changes:
-/// - Adds: system::dt_variables_tag
+/// - Adds: db::add_tag_prefix<Tags::dt, variables_tag>
 /// - Removes: Tags::HistoryBoundaryVariables<Direction<volume_dim>,
 ///       system::variables_tag>
 /// - Modifies: nothing
@@ -94,7 +94,7 @@ struct ComputeBoundaryFlux {
                   "Inconsistent systems");
     constexpr const size_t volume_dim = System::volume_dim;
     using variables_tag = typename System::variables_tag;
-    using dt_variables_tag = typename System::dt_variables_tag;
+    using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
     const auto& flux_computer =
         get<typename Metavariables::numerical_flux>(cache);
