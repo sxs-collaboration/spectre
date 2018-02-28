@@ -1,18 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines the class Wedge3D.
-
 #pragma once
 
 #include <array>
 #include <limits>
 #include <memory>
-#include <pup.h>
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Direction.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace CoordinateMaps {
 
@@ -199,26 +200,20 @@ class Wedge3D {
   Wedge3D& operator=(Wedge3D&&) = default;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> operator()(
+  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> inverse(
+  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
       const std::array<T, 3>& target_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 3>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 3>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
