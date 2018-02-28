@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace CoordinateMaps {
 
@@ -28,8 +29,8 @@ Equiangular::Equiangular(const double A, const double B, const double a,
                                            length_of_range_) {}
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> Equiangular::
-operator()(const std::array<T, 1>& source_coords) const noexcept {
+std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::operator()(
+    const std::array<T, 1>& source_coords) const noexcept {
   return {
       {0.5 * (a_ + b_ +
               length_of_range_ * tan(m_pi_4_over_length_of_domain_ *
@@ -37,8 +38,8 @@ operator()(const std::array<T, 1>& source_coords) const noexcept {
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1>
-Equiangular::inverse(const std::array<T, 1>& target_coords) const noexcept {
+std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::inverse(
+    const std::array<T, 1>& target_coords) const noexcept {
   return {{0.5 * (A_ + B_ +
                   length_of_domain_over_m_pi_4_ *
                       atan(one_over_length_of_range_ *
@@ -46,34 +47,30 @@ Equiangular::inverse(const std::array<T, 1>& target_coords) const noexcept {
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Equiangular::jacobian(const std::array<T, 1>& source_coords) const noexcept {
-  const std::decay_t<tt::remove_reference_wrapper_t<T>> tan_variable =
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Equiangular::jacobian(
+    const std::array<T, 1>& source_coords) const noexcept {
+  const tt::remove_cvref_wrap_t<T> tan_variable =
       tan(m_pi_4_over_length_of_domain_ * (-B_ - A_ + 2.0 * source_coords[0]));
-  return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-                tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
-      linear_jacobian_times_m_pi_4_ * (1.0 + square(tan_variable))};
+  auto jacobian_matrix =
+      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
+          dereference_wrapper(source_coords[0]), 0.0);
+  get<0, 0>(jacobian_matrix) =
+      linear_jacobian_times_m_pi_4_ * (1.0 + square(tan_variable));
+  return jacobian_matrix;
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>
 Equiangular::inv_jacobian(const std::array<T, 1>& source_coords) const
     noexcept {
-  const std::decay_t<tt::remove_reference_wrapper_t<T>> tan_variable =
+  const tt::remove_cvref_wrap_t<T> tan_variable =
       tan(m_pi_4_over_length_of_domain_ * (-B_ - A_ + 2.0 * source_coords[0]));
-  return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-                tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
-      linear_inverse_jacobian_over_m_pi_4_ / (1.0 + square(tan_variable))};
+  auto inv_jacobian_matrix =
+      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
+          dereference_wrapper(source_coords[0]), 0.0);
+  get<0, 0>(inv_jacobian_matrix) =
+      linear_inverse_jacobian_over_m_pi_4_ / (1.0 + square(tan_variable));
+  return inv_jacobian_matrix;
 }
 
 void Equiangular::pup(PUP::er& p) noexcept {
@@ -109,41 +106,22 @@ bool operator==(const CoordinateMaps::Equiangular& lhs,
 /// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<DTYPE(data), 1> Equiangular::operator()(               \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 1>&        \
-          source_coords) const noexcept;                                     \
-  template std::array<DTYPE(data), 1> Equiangular::operator()(               \
-      const std::array<DTYPE(data), 1>& source_coords) const noexcept;       \
-  template std::array<DTYPE(data), 1> Equiangular::inverse(                  \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 1>&        \
-          target_coords) const noexcept;                                     \
-  template std::array<DTYPE(data), 1> Equiangular::inverse(                  \
-      const std::array<DTYPE(data), 1>& target_coords) const noexcept;       \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,      \
-                  index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,      \
-                             SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>     \
-  Equiangular::jacobian(                                                     \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 1>&        \
-          source_coords) const noexcept;                                     \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,      \
-                  index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,      \
-                             SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>     \
-  Equiangular::jacobian(const std::array<DTYPE(data), 1>& source_coords)     \
-      const noexcept;                                                        \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,      \
-                  index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,      \
-                             SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>     \
-  Equiangular::inv_jacobian(                                                 \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 1>&        \
-          source_coords) const noexcept;                                     \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,      \
-                  index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,      \
-                             SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>     \
-  Equiangular::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) \
+#define INSTANTIATE(_, data)                                                  \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> Equiangular::  \
+  operator()(const std::array<DTYPE(data), 1>& source_coords) const noexcept; \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                \
+  Equiangular::inverse(const std::array<DTYPE(data), 1>& target_coords)       \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
+  Equiangular::jacobian(const std::array<DTYPE(data), 1>& source_coords)      \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
+  Equiangular::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)  \
       const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
+                                      std::reference_wrapper<const double>,
+                                      std::reference_wrapper<const DataVector>))
 
 #undef DTYPE
 #undef INSTANTIATE

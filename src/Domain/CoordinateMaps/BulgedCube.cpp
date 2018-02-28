@@ -104,9 +104,9 @@ BulgedCube::BulgedCube(const double radius, const double sphericity,
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> BulgedCube::
-operator()(const std::array<T, 3>& source_coords) const noexcept {
-  using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
+std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
+    const std::array<T, 3>& source_coords) const noexcept {
+  using ReturnType = tt::remove_cvref_wrap_t<T>;
   const auto physical_coordinates = [this](
       const ReturnType& cap_xi, const ReturnType& cap_eta,
       const ReturnType& cap_zeta) noexcept {
@@ -144,9 +144,9 @@ operator()(const std::array<T, 3>& source_coords) const noexcept {
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3>
-BulgedCube::inverse(const std::array<T, 3>& target_coords) const noexcept {
-  using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
+std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::inverse(
+    const std::array<T, 3>& target_coords) const noexcept {
+  using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType& physical_x = target_coords[0];
   const ReturnType& physical_y = target_coords[1];
   const ReturnType& physical_z = target_coords[2];
@@ -167,10 +167,9 @@ BulgedCube::inverse(const std::array<T, 3>& target_coords) const noexcept {
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3>
-BulgedCube::xi_derivative(const std::array<T, 3>& source_coords) const
-    noexcept {
-  using ReturnType = std::decay_t<tt::remove_reference_wrapper_t<T>>;
+std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::xi_derivative(
+    const std::array<T, 3>& source_coords) const noexcept {
+  using ReturnType = tt::remove_cvref_wrap_t<T>;
   const auto derivative_lambda = [this](const ReturnType& cap_xi,
                                         const ReturnType& cap_eta,
                                         const ReturnType& cap_zeta,
@@ -218,30 +217,22 @@ BulgedCube::xi_derivative(const std::array<T, 3>& source_coords) const
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-BulgedCube::jacobian(const std::array<T, 3>& source_coords) const noexcept {
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> BulgedCube::jacobian(
+    const std::array<T, 3>& source_coords) const noexcept {
   const auto dX_dxi = xi_derivative(source_coords);
   const auto dX_deta = xi_derivative(
-      std::array<std::reference_wrapper<
-                     const std::decay_t<tt::remove_reference_wrapper_t<T>>>,
-                 3>{{std::cref(dereference_wrapper(source_coords[1])),
-                     std::cref(dereference_wrapper(source_coords[0])),
-                     std::cref(dereference_wrapper(source_coords[2]))}});
+      std::array<std::reference_wrapper<const tt::remove_cvref_wrap_t<T>>, 3>{
+          {std::cref(dereference_wrapper(source_coords[1])),
+           std::cref(dereference_wrapper(source_coords[0])),
+           std::cref(dereference_wrapper(source_coords[2]))}});
   const auto dX_dzeta = xi_derivative(
-      std::array<std::reference_wrapper<
-                     const std::decay_t<tt::remove_reference_wrapper_t<T>>>,
-                 3>{{std::cref(dereference_wrapper(source_coords[2])),
-                     std::cref(dereference_wrapper(source_coords[1])),
-                     std::cref(dereference_wrapper(source_coords[0]))}});
-  auto jacobian_matrix = make_with_value<
-      Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-             tmpl::integral_list<std::int32_t, 2, 1>,
-             index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                        SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>>(
-      dereference_wrapper(source_coords[0]), 0.0);
+      std::array<std::reference_wrapper<const tt::remove_cvref_wrap_t<T>>, 3>{
+          {std::cref(dereference_wrapper(source_coords[2])),
+           std::cref(dereference_wrapper(source_coords[1])),
+           std::cref(dereference_wrapper(source_coords[0]))}});
+  auto jacobian_matrix =
+      make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
+          dereference_wrapper(source_coords[0]), 0.0);
 
   get<0, 0>(jacobian_matrix) = dX_dxi[0];
   get<0, 1>(jacobian_matrix) = dX_deta[1];
@@ -255,20 +246,17 @@ BulgedCube::jacobian(const std::array<T, 3>& source_coords) const noexcept {
   return jacobian_matrix;
 }
 
+template <typename T>
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
+BulgedCube::inv_jacobian(const std::array<T, 3>& source_coords) const noexcept {
+  const auto jac = jacobian(source_coords);
+  return determinant_and_inverse(jac).second;
+}
+
 void BulgedCube::pup(PUP::er& p) noexcept {
   p | radius_;
   p | sphericity_;
   p | use_equiangular_map_;
-}
-
-template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-BulgedCube::inv_jacobian(const std::array<T, 3>& source_coords) const noexcept {
-  const auto jac = jacobian(source_coords);
-  return determinant_and_inverse(jac).second;
 }
 
 bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {
@@ -284,41 +272,22 @@ bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {
 /// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template std::array<DTYPE(data), 3> BulgedCube::operator()(               \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 3>&       \
-          source_coords) const noexcept;                                    \
-  template std::array<DTYPE(data), 3> BulgedCube::operator()(               \
-      const std::array<DTYPE(data), 3>& source_coords) const noexcept;      \
-  template std::array<DTYPE(data), 3> BulgedCube::inverse(                  \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 3>&       \
-          target_coords) const noexcept;                                    \
-  template std::array<DTYPE(data), 3> BulgedCube::inverse(                  \
-      const std::array<DTYPE(data), 3>& target_coords) const noexcept;      \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,     \
-                  index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,     \
-                             SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>    \
-  BulgedCube::jacobian(                                                     \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 3>&       \
-          source_coords) const noexcept;                                    \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,     \
-                  index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,     \
-                             SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>    \
-  BulgedCube::jacobian(const std::array<DTYPE(data), 3>& source_coords)     \
-      const noexcept;                                                       \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,     \
-                  index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,     \
-                             SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>    \
-  BulgedCube::inv_jacobian(                                                 \
-      const std::array<std::reference_wrapper<const DTYPE(data)>, 3>&       \
-          source_coords) const noexcept;                                    \
-  template Tensor<DTYPE(data), tmpl::integral_list<std::int32_t, 2, 1>,     \
-                  index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,     \
-                             SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>    \
-  BulgedCube::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords) \
+#define INSTANTIATE(_, data)                                                  \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> BulgedCube::   \
+  operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
+  BulgedCube::inverse(const std::array<DTYPE(data), 3>& target_coords)        \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
+  BulgedCube::jacobian(const std::array<DTYPE(data), 3>& source_coords)       \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
+  BulgedCube::inv_jacobian(const std::array<DTYPE(data), 3>& source_coords)   \
       const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
+                                      std::reference_wrapper<const double>,
+                                      std::reference_wrapper<const DataVector>))
 
 #undef DTYPE
 #undef INSTANTIATE

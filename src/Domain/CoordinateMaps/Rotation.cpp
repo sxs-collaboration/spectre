@@ -4,6 +4,7 @@
 #include "Domain/CoordinateMaps/Rotation.hpp"
 
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace CoordinateMaps {
@@ -20,8 +21,8 @@ Rotation<2>::Rotation(const double rotation_angle)
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> Rotation<2>::
-operator()(const std::array<T, 2>& source_coords) const {
+std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
+    const std::array<T, 2>& source_coords) const noexcept {
   return {{source_coords[0] * get<0, 0>(rotation_matrix_) +
                source_coords[1] * get<0, 1>(rotation_matrix_),
            source_coords[0] * get<1, 0>(rotation_matrix_) +
@@ -29,8 +30,8 @@ operator()(const std::array<T, 2>& source_coords) const {
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2>
-Rotation<2>::inverse(const std::array<T, 2>& target_coords) const {
+std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::inverse(
+    const std::array<T, 2>& target_coords) const noexcept {
   return {{target_coords[0] * get<0, 0>(rotation_matrix_) +
                target_coords[1] * get<1, 0>(rotation_matrix_),
            target_coords[0] * get<0, 1>(rotation_matrix_) +
@@ -38,41 +39,30 @@ Rotation<2>::inverse(const std::array<T, 2>& target_coords) const {
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::jacobian(const std::array<T, 2>& source_coords) const {
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-      jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
+    const std::array<T, 2>& source_coords) const noexcept {
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian_matrix{
+      make_with_value<tt::remove_cvref_wrap_t<T>>(
           dereference_wrapper(source_coords[0]), 0.0)};
-  get<0, 0>(jac) = get<0, 0>(rotation_matrix_);
-  get<1, 0>(jac) = get<1, 0>(rotation_matrix_);
-  get<0, 1>(jac) = get<0, 1>(rotation_matrix_);
-  get<1, 1>(jac) = get<1, 1>(rotation_matrix_);
-  return jac;
+  get<0, 0>(jacobian_matrix) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(jacobian_matrix) = get<1, 0>(rotation_matrix_);
+  get<0, 1>(jacobian_matrix) = get<0, 1>(rotation_matrix_);
+  get<1, 1>(jacobian_matrix) = get<1, 1>(rotation_matrix_);
+  return jacobian_matrix;
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::inv_jacobian(const std::array<T, 2>& source_coords) const {
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame>
+Rotation<2>::inv_jacobian(const std::array<T, 2>& source_coords) const
+    noexcept {
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian_matrix{
+      make_with_value<tt::remove_cvref_wrap_t<T>>(
           dereference_wrapper(source_coords[0]), 0.0)};
-  get<0, 0>(inv_jac) = get<0, 0>(rotation_matrix_);
-  get<1, 0>(inv_jac) = get<0, 1>(rotation_matrix_);
-  get<0, 1>(inv_jac) = get<1, 0>(rotation_matrix_);
-  get<1, 1>(inv_jac) = get<1, 1>(rotation_matrix_);
-  return inv_jac;
+  get<0, 0>(inv_jacobian_matrix) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(inv_jacobian_matrix) = get<0, 1>(rotation_matrix_);
+  get<0, 1>(inv_jacobian_matrix) = get<1, 0>(rotation_matrix_);
+  get<1, 1>(inv_jacobian_matrix) = get<1, 1>(rotation_matrix_);
+  return inv_jacobian_matrix;
 }
 
 void Rotation<2>::pup(PUP::er& p) {
@@ -117,8 +107,8 @@ Rotation<3>::Rotation(const double rotation_about_z,
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> Rotation<3>::
-operator()(const std::array<T, 3>& source_coords) const {
+std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation<3>::operator()(
+    const std::array<T, 3>& source_coords) const noexcept {
   return {{source_coords[0] * get<0, 0>(rotation_matrix_) +
                source_coords[1] * get<0, 1>(rotation_matrix_) +
                source_coords[2] * get<0, 2>(rotation_matrix_),
@@ -131,8 +121,8 @@ operator()(const std::array<T, 3>& source_coords) const {
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3>
-Rotation<3>::inverse(const std::array<T, 3>& target_coords) const {
+std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation<3>::inverse(
+    const std::array<T, 3>& target_coords) const noexcept {
   // Inverse rotation matrix is the same as the transpose.
   return {{target_coords[0] * get<0, 0>(rotation_matrix_) +
                target_coords[1] * get<1, 0>(rotation_matrix_) +
@@ -146,51 +136,40 @@ Rotation<3>::inverse(const std::array<T, 3>& target_coords) const {
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::jacobian(const std::array<T, 3>& source_coords) const {
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-      jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Rotation<3>::jacobian(
+    const std::array<T, 3>& source_coords) const noexcept {
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian_matrix{
+      make_with_value<tt::remove_cvref_wrap_t<T>>(
           dereference_wrapper(source_coords[0]), 0.0)};
-  get<0, 0>(jac) = get<0, 0>(rotation_matrix_);
-  get<1, 0>(jac) = get<1, 0>(rotation_matrix_);
-  get<0, 1>(jac) = get<0, 1>(rotation_matrix_);
-  get<1, 1>(jac) = get<1, 1>(rotation_matrix_);
-  get<2, 0>(jac) = get<2, 0>(rotation_matrix_);
-  get<2, 1>(jac) = get<2, 1>(rotation_matrix_);
-  get<0, 2>(jac) = get<0, 2>(rotation_matrix_);
-  get<1, 2>(jac) = get<1, 2>(rotation_matrix_);
-  get<2, 2>(jac) = get<2, 2>(rotation_matrix_);
-  return jac;
+  get<0, 0>(jacobian_matrix) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(jacobian_matrix) = get<1, 0>(rotation_matrix_);
+  get<0, 1>(jacobian_matrix) = get<0, 1>(rotation_matrix_);
+  get<1, 1>(jacobian_matrix) = get<1, 1>(rotation_matrix_);
+  get<2, 0>(jacobian_matrix) = get<2, 0>(rotation_matrix_);
+  get<2, 1>(jacobian_matrix) = get<2, 1>(rotation_matrix_);
+  get<0, 2>(jacobian_matrix) = get<0, 2>(rotation_matrix_);
+  get<1, 2>(jacobian_matrix) = get<1, 2>(rotation_matrix_);
+  get<2, 2>(jacobian_matrix) = get<2, 2>(rotation_matrix_);
+  return jacobian_matrix;
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::inv_jacobian(const std::array<T, 3>& source_coords) const {
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-      inv_jac{make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
+Rotation<3>::inv_jacobian(const std::array<T, 3>& source_coords) const
+    noexcept {
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian_matrix{
+      make_with_value<tt::remove_cvref_wrap_t<T>>(
           dereference_wrapper(source_coords[0]), 0.0)};
-  get<0, 0>(inv_jac) = get<0, 0>(rotation_matrix_);
-  get<1, 0>(inv_jac) = get<0, 1>(rotation_matrix_);
-  get<0, 1>(inv_jac) = get<1, 0>(rotation_matrix_);
-  get<1, 1>(inv_jac) = get<1, 1>(rotation_matrix_);
-  get<2, 0>(inv_jac) = get<0, 2>(rotation_matrix_);
-  get<2, 1>(inv_jac) = get<1, 2>(rotation_matrix_);
-  get<0, 2>(inv_jac) = get<2, 0>(rotation_matrix_);
-  get<1, 2>(inv_jac) = get<2, 1>(rotation_matrix_);
-  get<2, 2>(inv_jac) = get<2, 2>(rotation_matrix_);
-  return inv_jac;
+  get<0, 0>(inv_jacobian_matrix) = get<0, 0>(rotation_matrix_);
+  get<1, 0>(inv_jacobian_matrix) = get<0, 1>(rotation_matrix_);
+  get<0, 1>(inv_jacobian_matrix) = get<1, 0>(rotation_matrix_);
+  get<1, 1>(inv_jacobian_matrix) = get<1, 1>(rotation_matrix_);
+  get<2, 0>(inv_jacobian_matrix) = get<0, 2>(rotation_matrix_);
+  get<2, 1>(inv_jacobian_matrix) = get<1, 2>(rotation_matrix_);
+  get<0, 2>(inv_jacobian_matrix) = get<2, 0>(rotation_matrix_);
+  get<1, 2>(inv_jacobian_matrix) = get<2, 1>(rotation_matrix_);
+  get<2, 2>(inv_jacobian_matrix) = get<2, 2>(rotation_matrix_);
+  return inv_jacobian_matrix;
 }
 
 void Rotation<3>::pup(PUP::er& p) {  // NOLINT
@@ -209,127 +188,35 @@ bool operator==(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {
 bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {
   return not(lhs == rhs);
 }
+// Explicit instantiations
+/// \cond
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-template std::array<double, 2> Rotation<2>::operator()(
-    const std::array<std::reference_wrapper<const double>, 2>& source_coords)
-    const;
-template std::array<double, 2> Rotation<2>::operator()(
-    const std::array<double, 2>& source_coords) const;
-template std::array<DataVector, 2> Rotation<2>::operator()(
-    const std::array<std::reference_wrapper<const DataVector>, 2>&
-        source_coords) const;
-template std::array<DataVector, 2> Rotation<2>::operator()(
-    const std::array<DataVector, 2>& source_coords) const;
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
+  Rotation<DIM(data)>::operator()(                                             \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
+  Rotation<DIM(data)>::inverse(                                                \
+      const std::array<DTYPE(data), DIM(data)>& target_coords) const noexcept; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
+                    Frame::NoFrame>                                            \
+  Rotation<DIM(data)>::jacobian(                                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
+                    Frame::NoFrame>                                            \
+  Rotation<DIM(data)>::inv_jacobian(                                           \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
 
-template std::array<double, 2> Rotation<2>::inverse(
-    const std::array<std::reference_wrapper<const double>, 2>& target_coords)
-    const;
-template std::array<double, 2> Rotation<2>::inverse(
-    const std::array<double, 2>& target_coords) const;
-template std::array<DataVector, 2> Rotation<2>::inverse(
-    const std::array<std::reference_wrapper<const DataVector>, 2>&
-        target_coords) const;
-template std::array<DataVector, 2> Rotation<2>::inverse(
-    const std::array<DataVector, 2>& target_coords) const;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
+                        (double, DataVector,
+                         std::reference_wrapper<const double>,
+                         std::reference_wrapper<const DataVector>))
 
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::jacobian(const std::array<std::reference_wrapper<const double>, 2>&
-                          source_coords) const;
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::jacobian(const std::array<double, 2>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::jacobian(const std::array<std::reference_wrapper<const DataVector>,
-                                       2>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::jacobian(const std::array<DataVector, 2>& source_coords) const;
-
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::inv_jacobian(const std::array<std::reference_wrapper<const double>,
-                                           2>& source_coords) const;
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::inv_jacobian(const std::array<double, 2>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::inv_jacobian(
-    const std::array<std::reference_wrapper<const DataVector>, 2>&
-        source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-Rotation<2>::inv_jacobian(const std::array<DataVector, 2>& source_coords) const;
-
-template std::array<double, 3> Rotation<3>::operator()(
-    const std::array<std::reference_wrapper<const double>, 3>& source_coords)
-    const;
-template std::array<double, 3> Rotation<3>::operator()(
-    const std::array<double, 3>& source_coords) const;
-template std::array<DataVector, 3> Rotation<3>::operator()(
-    const std::array<std::reference_wrapper<const DataVector>, 3>&
-        source_coords) const;
-template std::array<DataVector, 3> Rotation<3>::operator()(
-    const std::array<DataVector, 3>& source_coords) const;
-
-template std::array<double, 3> Rotation<3>::inverse(
-    const std::array<std::reference_wrapper<const double>, 3>& target_coords)
-    const;
-template std::array<double, 3> Rotation<3>::inverse(
-    const std::array<double, 3>& target_coords) const;
-template std::array<DataVector, 3> Rotation<3>::inverse(
-    const std::array<std::reference_wrapper<const DataVector>, 3>&
-        target_coords) const;
-template std::array<DataVector, 3> Rotation<3>::inverse(
-    const std::array<DataVector, 3>& target_coords) const;
-
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::jacobian(const std::array<std::reference_wrapper<const double>, 3>&
-                          source_coords) const;
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::jacobian(const std::array<double, 3>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::jacobian(const std::array<std::reference_wrapper<const DataVector>,
-                                       3>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::jacobian(const std::array<DataVector, 3>& source_coords) const;
-
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::inv_jacobian(const std::array<std::reference_wrapper<const double>,
-                                           3>& source_coords) const;
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::inv_jacobian(const std::array<double, 3>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::inv_jacobian(
-    const std::array<std::reference_wrapper<const DataVector>, 3>&
-        source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-Rotation<3>::inv_jacobian(const std::array<DataVector, 3>& source_coords) const;
+#undef DIM
+#undef DTYPE
+#undef INSTANTIATE
+/// \endcond
 
 }  // namespace CoordinateMaps

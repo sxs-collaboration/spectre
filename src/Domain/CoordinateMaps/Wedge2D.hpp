@@ -12,6 +12,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace CoordinateMaps {
 
@@ -39,26 +40,20 @@ class Wedge2D {
   Wedge2D& operator=(const Wedge2D&) = default;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> operator()(
+  std::array<tt::remove_cvref_wrap_t<T>, 2> operator()(
       const std::array<T, 2>& source_coords) const noexcept;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> inverse(
+  std::array<tt::remove_cvref_wrap_t<T>, 2> inverse(
       const std::array<T, 2>& target_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 2>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian(
+      const std::array<T, 2>& source_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 2>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian(
+      const std::array<T, 2>& source_coords) const noexcept;
 
   // clang-tidy: google runtime references
   void pup(PUP::er& p);  // NOLINT

@@ -10,7 +10,11 @@
 #include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace CoordinateMaps {
 
@@ -51,26 +55,20 @@ class Rotation<2> {
   Rotation& operator=(Rotation&&) = default;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> operator()(
-      const std::array<T, 2>& source_coords) const;
+  std::array<tt::remove_cvref_wrap_t<T>, 2> operator()(
+      const std::array<T, 2>& source_coords) const noexcept;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 2> inverse(
-      const std::array<T, 2>& target_coords) const;
+  std::array<tt::remove_cvref_wrap_t<T>, 2> inverse(
+      const std::array<T, 2>& target_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 2>& source_coords) const;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian(
+      const std::array<T, 2>& source_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 2>& source_coords) const;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian(
+      const std::array<T, 2>& source_coords) const noexcept;
 
   void pup(PUP::er& p);  // NOLINT
 
@@ -129,26 +127,20 @@ class Rotation<3> {
   Rotation& operator=(Rotation&&) = default;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> operator()(
-      const std::array<T, 3>& source_coords) const;
+  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> inverse(
-      const std::array<T, 3>& target_coords) const;
+  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
+      const std::array<T, 3>& target_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 3>& source_coords) const;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 3>& source_coords) const;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   void pup(PUP::er& p);  // NOLINT
 
