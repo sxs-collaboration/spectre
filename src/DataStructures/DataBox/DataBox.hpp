@@ -814,6 +814,24 @@ SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
   return cpp17::void_type{};  // must return in constexpr function
 }
 
+// This function exists so that the user can look at the template
+// arguments to find out what triggered the static_assert.
+template <typename ComputeItem, typename Argument, typename FullTagList>
+constexpr cpp17::void_type check_compute_item_argument_exists() noexcept {
+  using compute_item_index = tmpl::index_of<FullTagList, ComputeItem>;
+  static_assert(
+      tmpl::less<tmpl::index_if<FullTagList,
+                                std::is_same<tmpl::pin<Argument>, tmpl::_1>,
+                                compute_item_index>,
+                 compute_item_index>::value,
+      "The dependencies of a ComputeItem must be added before the "
+      "ComputeItem itself. This is done to ensure no cyclic "
+      "dependencies arise.  See the first and second template "
+      "arguments of the instantiation of this function for the "
+      "compute item and missing dependency.");
+  return cpp17::void_type{};
+}
+
 template <typename ComputeItem, typename FullTagList, typename... Tags,
           typename... ComputeItemArgumentsTags>
 // clang-format off
@@ -833,20 +851,12 @@ add_compute_item_to_box_impl(
       "Cannot have non-DataBoxTag arguments to a ComputeItem. Please make "
       "sure all the specified argument_tags in the ComputeItem derive from "
       "db::DataBoxTag.");
-  using index = tmpl::index_of<FullTagList, ComputeItem>;
   static_assert(not tmpl2::flat_any_v<
                     cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
                 "A ComputeItem cannot take its own Tag as an argument.");
-  static_assert(
-      tmpl2::flat_all_v<tmpl::less<
-          tmpl::index_if<
-              FullTagList,
-              std::is_same<tmpl::pin<ComputeItemArgumentsTags>, tmpl::_1>,
-              index>,
-          index>::value...>,
-      "The dependencies of a ComputeItem must be added before the "
-      "ComputeItem itself. This is done to ensure no cyclic "
-      "dependencies arise.");
+  swallow(
+      check_compute_item_argument_exists<ComputeItem, ComputeItemArgumentsTags,
+                                         FullTagList>()...);
 
   ::db::databox_detail::get<ComputeItem>(data) =
       make_deferred<db::item_type<ComputeItem>>(
