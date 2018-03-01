@@ -79,4 +79,49 @@ Scalar<DataVector> expansion(
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
 
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Extrinsic curvature of a 2D `Strahlkorper` embedded in a 3D space.
+ *
+ * \details Implements Eq. (D.43) of Carroll's Spacetime and Geometry text.
+ * Specifically,
+ * \f$ K_{ij} = P^k_i P^l_j \nabla_{(k} S_{l)} \f$, where
+ * \f$ P^k_i = \delta^k_i - S^k S_i \f$,
+ * `grad_normal` is the quantity \f$ \nabla_k S_l \f$ returned by
+ * `StrahlkorperGr::grad_unit_normal_one_form`, and `unit_normal_vector` is
+ * \f$S^i = g^{ij} S_j\f$ where \f$S_j\f$ is the unit normal one form.
+ * Not to be confused with the extrinsic curvature of a 3D spatial slice
+ * embedded in 3+1 spacetime.
+ * Because StrahlkorperGr::grad_unit_normal_one_form is symmetric, this
+ * can be expanded into
+ * \f$ K_{ij} = \nabla_{i}S_{j} - 2 S^k S_{(i}\nabla_{j)}S_k
+ * + S_i S_j S^k S^l \nabla_{k} n_{l}\f$.
+ */
+template <typename Frame>
+tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
+    const tnsr::ii<DataVector, 3, Frame>& grad_normal,
+    const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector) noexcept;
+
+/// \ingroup SurfacesGroup
+/// \brief Intrinsic Ricci scalar of a 2D `Strahlkorper`.
+///
+/// \details Implements Eq. (D.51) of
+/// Sean Carroll's Spacetime and Geometry textbook (except correcting
+/// sign errors: both extrinsic curvature terms are off by a minus sign
+/// in Carroll's text but correct in Carroll's errata).
+/// \f$ \hat{R}=R - 2 R_{ij} S^i S^j + K^2-K^{ij}K_{ij}.\f$
+/// Here \f$\hat{R}\f$ is the intrinsic Ricci scalar curvature of
+/// the Strahlkorper, \f$R\f$ and \f$R_{ij}\f$ are the Ricci scalar and
+/// Ricci tensor of the 3D space that contains the Strahlkorper,
+/// \f$ K_{ij} \f$ the output of StrahlkorperGr::extrinsic_curvature,
+/// \f$ K \f$ is the trace of \f$K_{ij}\f$,
+/// and `unit_normal_vector` is
+/// \f$S^i = g^{ij} S_j\f$ where \f$S_j\f$ is the unit normal one form.
+template <typename Frame>
+Scalar<DataVector> ricci_scalar(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
+    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
 }  // namespace StrahlkorperGr
