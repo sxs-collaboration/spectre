@@ -37,6 +37,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   Parallel::printf("%d %lld %s %s %s %s\n", -100, 3000000000, TestStream{},
                    c_string0, c_string1, c_string2);
   delete[] c_string1;
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Parallel.printf does not need to check anything
+  CHECK(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel]") {

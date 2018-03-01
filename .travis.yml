@@ -171,7 +171,7 @@ before_install:
 
       git clone https://github.com/philsquared/Catch.git;
       cd Catch;
-      git checkout v1.9.4;
+      git checkout v2.1.2;
       cd $HOME;
 
       git clone https://github.com/edouarda/brigand.git;

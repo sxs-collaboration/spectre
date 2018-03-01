@@ -17,7 +17,7 @@ See LICENSE.txt for details.
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.2
 * [Boost](http://www.boost.org/)
 * [Brigand](https://github.com/edouarda/brigand)
-* [Catch](https://github.com/philsquared/Catch)
+* [Catch](https://github.com/philsquared/Catch) 2.1.0 or later
 * [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
