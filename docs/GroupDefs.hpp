@@ -367,7 +367,7 @@ into two classes:
  * To compare two floating-point numbers that may differ by round-off, use the
  * helper object `approx`. This is an instance of Catch's comparison class
  * `Approx` in which the relative tolerance for comparisons is set to roughly
- * \f$10^{-14}\f$ (i.e. `std\:\:numeric_limits<double>\:\:epsilon()*100`).
+ * \f$10^{-14}\f$ (i.e. `std::numeric_limits<double>::%epsilon()*100`).
  * When possible, we recommend using `approx` for fuzzy comparisons as follows:
  * \example
  * \snippet TestFramework.cpp approx_default
@@ -385,7 +385,7 @@ into two classes:
  * \snippet TestFramework.cpp approx_new_custom
  *
  * Note: We provide the `approx` object because Catch's `Approx` defaults to a
- * very loose tolerance (`std\:\:numeric_limits<float>\:\:epsilon()*100`, or
+ * very loose tolerance (`std::numeric_limits<float>::%epsilon()*100`, or
  * roughly \f$10^{-5}\f$ relative error), and so is poorly-suited to checking
  * many numerical algorithms that rely on double-precision accuracy. By
  * providing a tighter tolerance with `approx`, we avoid having to redefine the
@@ -416,12 +416,12 @@ into two classes:
  * </td>
  * </tr>
  * <tr>
- * <td>ErrorRegex </td>
+ * <td>OutputRegex </td>
  * <td>
  * When testing failure modes the exact error message must be tested, not
  * just that the test failed. Since the string passed is a regular
  * expression you must escape any regex tokens. For example, to match
- * "some (word) and" you must specify the string "some \(word\) and".
+ * `some (word) and` you must specify the string `some \(word\) and`.
  * </td>
  * </tr>
  * </table>
