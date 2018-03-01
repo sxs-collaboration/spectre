@@ -24,9 +24,6 @@ struct DgElementArray {
   using action_list = ActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using explicit_single_actions_list =
-      tmpl::list<dg::Actions::InitializeElement<volume_dim>>;
-
   using initial_databox = db::compute_databox_type<
       typename dg::Actions::InitializeElement<volume_dim>::
           template return_tag_list<typename Metavariables::system>>;

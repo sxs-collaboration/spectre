@@ -60,7 +60,8 @@ CkReductionMsg* reduce_reduction_data(const int number_of_messages,
 }
 /// [custom_reduce_function]
 
-struct singleton_reduce_sum_int {
+/// [reduce_sum_int_action]
+struct ProcessReducedSumOfInts {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -70,18 +71,15 @@ struct singleton_reduce_sum_int {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    int value) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+                    const int& value) noexcept {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
                                  (number_of_1d_array_elements - 1) / 2 ==
                              value);
   }
 };
+/// [reduce_sum_int_action]
 
-struct singleton_reduce_sum_double {
+struct ProcessReducedSumOfDoubles {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -91,7 +89,7 @@ struct singleton_reduce_sum_double {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    double value) noexcept {
+                    const double& value) noexcept {
     static_assert(
         cpp17::is_same_v<ParallelComponent,
                          SingletonParallelComponent<TestMetavariables>>,
@@ -101,7 +99,7 @@ struct singleton_reduce_sum_double {
   }
 };
 
-struct singleton_reduce_product_double {
+struct ProcessReducedProductOfDoubles {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -111,7 +109,7 @@ struct singleton_reduce_product_double {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    double value) noexcept {
+                    const double& value) noexcept {
     static_assert(
         cpp17::is_same_v<ParallelComponent,
                          SingletonParallelComponent<TestMetavariables>>,
@@ -121,7 +119,8 @@ struct singleton_reduce_product_double {
   }
 };
 
-struct singleton_reduce_custom_reduction_action {
+/// [custom_reduction_action]
+struct ProcessCustomReductionAction {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -131,13 +130,9 @@ struct singleton_reduce_custom_reduction_action {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      Parallel::ReductionData<int, std::unordered_map<std::string, int>,
-                              std::vector<int>>
+      const Parallel::ReductionData<int, std::unordered_map<std::string, int>,
+                                    std::vector<int>>&
           value) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<0>(value) == 10);
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<1>(value).at("unity") ==
                              number_of_1d_array_elements - 1);
@@ -152,6 +147,7 @@ struct singleton_reduce_custom_reduction_action {
             -8 * number_of_1d_array_elements}));
   }
 };
+/// [custom_reduction_action]
 
 template <class Metavariables>
 struct SingletonParallelComponent {
@@ -180,7 +176,7 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent;
 
-struct array_reduce {
+struct ArrayReduce {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -196,19 +192,25 @@ struct array_reduce {
     /// [contribute_to_reduction_example]
     Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
                                       SingletonParallelComponent<Metavariables>,
-                                      singleton_reduce_sum_int>(
+                                      ProcessReducedSumOfInts>(
         cache, array_index, CkReduction::sum_int, my_send_int);
     /// [contribute_to_reduction_example]
+    /// [contribute_to_broadcast_reduction]
+    Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
+                                      ArrayParallelComponent<Metavariables>,
+                                      ProcessReducedSumOfInts>(
+        cache, array_index, CkReduction::sum_int, my_send_int);
+    /// [contribute_to_broadcast_reduction]
 
     double my_send_double = 13.4;
     Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
                                       SingletonParallelComponent<Metavariables>,
-                                      singleton_reduce_sum_double>(
+                                      ProcessReducedSumOfDoubles>(
         cache, array_index, CkReduction::sum_double, my_send_double);
 
     Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
                                       SingletonParallelComponent<Metavariables>,
-                                      singleton_reduce_product_double>(
+                                      ProcessReducedProductOfDoubles>(
         cache, array_index, CkReduction::product_double, my_send_double);
 
     /// [custom_contribute_to_reduction_example]
@@ -219,12 +221,21 @@ struct array_reduce {
     Parallel::contribute_to_reduction<&reduce_reduction_data,
                                       ArrayParallelComponent<Metavariables>,
                                       SingletonParallelComponent<Metavariables>,
-                                      singleton_reduce_custom_reduction_action>(
+                                      ProcessCustomReductionAction>(
         cache, array_index,
         Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                                 std::vector<int>>{
-            10, std::move(my_send_map), std::vector<int>{array_index, 10, -8}});
+            10, my_send_map, std::vector<int>{array_index, 10, -8}});
     /// [custom_contribute_to_reduction_example]
+    /// [custom_contribute_to_broadcast_reduction]
+    Parallel::contribute_to_reduction<
+        &reduce_reduction_data, ArrayParallelComponent<Metavariables>,
+        ArrayParallelComponent<Metavariables>, ProcessCustomReductionAction>(
+        cache, array_index,
+        Parallel::ReductionData<int, std::unordered_map<std::string, int>,
+                                std::vector<int>>{
+            10, my_send_map, std::vector<int>{array_index, 10, -8}});
+    /// [custom_contribute_to_broadcast_reduction]
 
     return std::forward_as_tuple(std::move(box));
   }
@@ -239,8 +250,6 @@ struct ArrayParallelComponent {
   using action_list = tmpl::list<>;
   using array_index = int;
   using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
-
-  using explicit_single_actions_list = tmpl::list<array_reduce>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -263,7 +272,7 @@ struct ArrayParallelComponent {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
-          .template explicit_single_action<array_reduce>();
+          .template explicit_single_action<ArrayReduce>();
     }
   }
 };

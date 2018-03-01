@@ -36,6 +36,8 @@ struct EvolutionMetavars {
       CacheTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using normal_dot_numerical_flux =
       CacheTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
+  // A tmpl::list of tags to be added to the ConstGlobalCache by the
+  // metavariables
   using dg_element_array_add_to_cache =
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;

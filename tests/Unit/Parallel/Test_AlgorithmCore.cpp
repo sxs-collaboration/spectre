@@ -110,6 +110,7 @@ struct increment_count_actions_called {
 };
 
 struct no_op {
+  /// [apply_iterative]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -118,7 +119,9 @@ struct no_op {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/) noexcept
+  /// [apply_iterative]
+  {
     static_assert(
         cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
@@ -188,8 +191,10 @@ struct NoOpsComponent {
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::NoOpsStart) {
+      /// [perform_algorithm]
       Parallel::get_parallel_component<NoOpsComponent>(local_cache)
           .perform_algorithm();
+      /// [perform_algorithm]
     } else if (next_phase == Metavariables::Phase::NoOpsFinish) {
       Parallel::get_parallel_component<NoOpsComponent>(local_cache)
           .template explicit_single_action<no_op_test::finalize>();
@@ -323,9 +328,11 @@ struct MutateComponent {
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<MutateComponent>(local_cache)
+    auto& cache = *(global_cache.ckLocalBranch());
+    /// [simple_action_call]
+    Parallel::get_parallel_component<MutateComponent>(cache)
         .template explicit_single_action<add_remove_test::initialize>();
+    /// [simple_action_call]
   }
 
   static void execute_next_global_actions(
@@ -378,13 +385,16 @@ struct add_int0_from_receive {
         db::create_from<tmpl::list<>, tmpl::list<Int0>>(box, int0), ++a >= 5);
   }
 
+  /// [is_ready_example]
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex>
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
+      const ArrayIndex& /*array_index*/) noexcept
+      /// [is_ready_example]
+  {
     const auto& inbox = tuples::get<IntReceiveTag>(inboxes);
     // The const_cast in this function is purely for testing purposes, this is
     // NOT an example of how to use this function.
@@ -428,7 +438,7 @@ struct initialize {
 
 struct finalize {
   using inbox_tags = tmpl::list<IntReceiveTag>;
-
+  /// [requires_action]
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -439,7 +449,8 @@ struct finalize {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+                    const ParallelComponent* const /*meta*/) noexcept {
+    /// [requires_action]
     SPECTRE_PARALLEL_REQUIRE(tuples::get<IntReceiveTag>(inboxes).empty());
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              TestAlgorithmArrayInstance{4});
@@ -528,9 +539,11 @@ struct iterate_increment_int0 {
     }
 
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == max_int0_value);
+    /// [out_of_order_action]
     return std::tuple<decltype(std::move(box)), bool, size_t>(
         std::move(box), true,
         tmpl::index_of<ActionList, iterate_increment_int0>::value + 1);
+    /// [out_of_order_action]
   }
 };
 
@@ -595,10 +608,25 @@ struct AnyOrderComponent {
 };
 
 struct TestMetavariables {
+  /// [component_list_example]
   using component_list = tmpl::list<NoOpsComponent<TestMetavariables>,
                                     MutateComponent<TestMetavariables>,
                                     ReceiveComponent<TestMetavariables>,
                                     AnyOrderComponent<TestMetavariables>>;
+  /// [component_list_example]
+
+  /// [help_string_example]
+  static constexpr OptionString help =
+      "An executable for testing the core functionality of the Algorithm. "
+      "Actions that do not perform any operations (no-ops), invoking simple "
+      "actions, mutating data in the DataBox, adding and removing items from "
+      "the DataBox, receiving data from other parallel components, and "
+      "out-of-order execution of Actions are all tested. All tests are run "
+      "just by running the executable, no input file or command line arguments "
+      "are required";
+  /// [help_string_example]
+
+  /// [determine_next_phase_example]
   enum class Phase {
     Initialization,
     NoOpsStart,
@@ -613,11 +641,10 @@ struct TestMetavariables {
     Exit
   };
 
-  static constexpr OptionString help = "Executable for testing";
-
-  static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
-                                        TestMetavariables>& /*cache_proxy*/) {
+  static Phase determine_next_phase(
+      const Phase& current_phase,
+      const Parallel::CProxy_ConstGlobalCache<
+          TestMetavariables>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
         return Phase::NoOpsStart;
@@ -647,12 +674,15 @@ struct TestMetavariables {
 
     return Phase::Exit;
   }
+  /// [determine_next_phase_example]
 };
 
+/// [charm_init_funcs_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
+/// [charm_init_funcs_example]
 
 /// [charm_main_example]
 using charmxx_main_component = Parallel::Main<TestMetavariables>;

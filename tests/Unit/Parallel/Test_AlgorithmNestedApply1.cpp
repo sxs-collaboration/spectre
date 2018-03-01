@@ -27,10 +27,12 @@ struct error_call_single_action_from_action {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    Parallel::get_parallel_component<ParallelComponent>(cache)
-        .ckLocal()
-        ->template explicit_single_action<
-            error_call_single_action_from_action>();
+    /// [bad_recursive_call]
+    auto& local_parallel_component =
+        *Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal();
+    local_parallel_component.template explicit_single_action<
+        error_call_single_action_from_action>();
+    /// [bad_recursive_call]
   }
 };
 

@@ -193,8 +193,10 @@ struct reduce_to_nodegroup {
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
+    /// [simple_action_with_args]
     local_nodegroup.template explicit_single_action<nodegroup_receive>(
         std::make_tuple(array_index));
+    /// [simple_action_with_args]
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -230,9 +232,6 @@ struct ArrayParallelComponent {
   using action_list = tmpl::list<>;
   using array_index = int;
   using initial_databox = db::DataBox<tmpl::list<>>;
-
-  using explicit_single_actions_list =
-      tmpl::list<reduce_to_nodegroup, reduce_threaded_method>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -275,10 +274,6 @@ struct NodegroupParallelComponent {
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<db::get_databox_list<
       tmpl::list<Tags::total_receives_on_node, Tags::vector_of_array_indexs>>>;
-
-  using explicit_single_actions_list =
-      tmpl::list<nodegroup_initialize, nodegroup_receive,
-                 nodegroup_check_first_result, nodegroup_check_threaded_result>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
