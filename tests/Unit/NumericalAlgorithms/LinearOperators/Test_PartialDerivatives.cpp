@@ -99,10 +99,10 @@ struct Var2 : db::DataBoxTag {
 };
 
 template <size_t Dim>
-using two_vars = typelist<Var1<Dim>, Var2>;
+using two_vars = tmpl::list<Var1<Dim>, Var2>;
 
 template <size_t Dim>
-using one_var = typelist<Var1<Dim>>;
+using one_var = tmpl::list<Var1<Dim>>;
 
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_logical_partial_derivatives_1d(const Index<1>& extents) {

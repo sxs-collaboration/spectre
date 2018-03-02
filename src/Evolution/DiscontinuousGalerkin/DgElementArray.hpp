@@ -18,8 +18,8 @@ struct DgElementArray {
 
   using chare_type = Parallel::Algorithms::Array;
   using const_global_cache_tag_list = tmpl::flatten<
-      typelist<CacheTags::FinalTime, CacheTags::TimeStepper,
-               typename Metavariables::dg_element_array_add_to_cache>>;
+      tmpl::list<CacheTags::FinalTime, CacheTags::TimeStepper,
+                 typename Metavariables::dg_element_array_add_to_cache>>;
   using metavariables = Metavariables;
   using action_list = ActionList;
   using array_index = ElementIndex<volume_dim>;
@@ -31,8 +31,8 @@ struct DgElementArray {
       typename dg::Actions::InitializeElement<volume_dim>::
           template return_tag_list<typename Metavariables::system>>;
 
-  using options = typelist<typename Metavariables::domain_creator_tag,
-                           OptionTags::InitialTime, OptionTags::DeltaT>;
+  using options = tmpl::list<typename Metavariables::domain_creator_tag,
+                             OptionTags::InitialTime, OptionTags::DeltaT>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,

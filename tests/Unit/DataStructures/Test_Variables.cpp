@@ -439,7 +439,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.assign_subset",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
                   "[DataStructures][Unit]") {
-  Variables<typelist<VariablesTestTags_detail::vector>> vars(24, 0.);
+  Variables<tmpl::list<VariablesTestTags_detail::vector>> vars(24, 0.);
   const size_t x_extents = 2, y_extents = 3, z_extents = 4,
                vec_size = VariablesTestTags_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
@@ -447,7 +447,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",
     // clang-tidy: do not use pointer arithmetic
     vars.data()[s] = s;  // NOLINT
   }
-  Variables<typelist<VariablesTestTags_detail::vector>>
+  Variables<tmpl::list<VariablesTestTags_detail::vector>>
       expected_vars_sliced_in_x(y_extents * z_extents, 0.),
       expected_vars_sliced_in_y(x_extents * z_extents, 0.),
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
@@ -499,7 +499,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",
                   "[DataStructures][Unit]") {
   using Vector = VariablesTestTags_detail::vector::type;
   const Index<2> extents{{{4, 2}}};
-  Variables<typelist<VariablesTestTags_detail::vector>> vars(extents.product());
+  Variables<tmpl::list<VariablesTestTags_detail::vector>> vars(
+      extents.product());
   get<VariablesTestTags_detail::vector>(vars) =
       Vector{{{{1110000., 1120000., 1130000., 1140000., 1210000., 1220000.,
                 1230000., 1240000.},
@@ -510,7 +511,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",
 
   {
     const auto slice_extents = extents.slice_away(0);
-    Variables<typelist<VariablesTestTags_detail::vector>> slice(
+    Variables<tmpl::list<VariablesTestTags_detail::vector>> slice(
         slice_extents.product(), 0.);
     get<VariablesTestTags_detail::vector>(slice) =
         Vector{{{{1100., 1200.}, {2100., 2200.}, {3100., 3200.}}}};
@@ -518,7 +519,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",
   }
   {
     const auto slice_extents = extents.slice_away(1);
-    Variables<typelist<VariablesTestTags_detail::vector>> slice(
+    Variables<tmpl::list<VariablesTestTags_detail::vector>> slice(
         slice_extents.product(), 0.);
     get<VariablesTestTags_detail::vector>(slice) = Vector{
         {{{11., 12., 13., 14.}, {21., 22., 23., 24.}, {31., 32., 33., 34.}}}};

@@ -35,7 +35,7 @@ class Base {
 
   template <typename T>
   int fv(int x) {
-    return fake_virtual_fv<typelist<Derived>, T>(this, x);
+    return fake_virtual_fv<tmpl::list<Derived>, T>(this, x);
   }
 };
 
@@ -62,7 +62,7 @@ DEFINE_FAKE_VIRTUAL(deduced_and_nondeduced)
 
 class A;
 class B;
-using AB = typelist<A, B>;
+using AB = tmpl::list<A, B>;
 
 class MultipleBase {
  public:

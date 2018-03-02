@@ -23,7 +23,7 @@
  */
 template <typename DataType, typename Index>
 DataType magnitude(
-    const Tensor<DataType, Symmetry<1>, typelist<Index>>& tensor) {
+    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& tensor) {
   auto magnitude_squared = make_with_value<DataType>(tensor, 0.);
   for (size_t d = 0; d < Index::dim; ++d) {
     magnitude_squared += square(tensor.get(d));
@@ -43,8 +43,8 @@ DataType magnitude(
  */
 template <typename DataType, typename Index0, typename Index1>
 DataType magnitude(
-    const Tensor<DataType, Symmetry<1>, typelist<Index0>>& tensor,
-    const Tensor<DataType, Symmetry<1, 1>, typelist<Index1, Index1>>&
+    const Tensor<DataType, Symmetry<1>, tmpl::list<Index0>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>, tmpl::list<Index1, Index1>>&
         metric) {
   static_assert(std::is_same<Index0, change_index_up_lo<Index1>>::value,
                 "The indices of the tensor and metric must be the same, "

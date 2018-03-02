@@ -56,8 +56,8 @@ struct NonCopyable {
 template <typename Metavariables>
 struct Group {
   using type = CProxy_TestGroupChare<Metavariables>;
-  using const_global_cache_tag_list = typelist<Options::NonCopyable>;
-  using options = typelist<Options::Integer>;
+  using const_global_cache_tag_list = tmpl::list<Options::NonCopyable>;
+  using options = tmpl::list<Options::Integer>;
   static void initialize(
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& /*unused*/,
       const int& /*unused*/) {}
@@ -69,8 +69,8 @@ struct Group {
 template <typename Metavariables>
 struct NodeGroup {
   using type = CProxy_TestNodeGroupChare<Metavariables>;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<Options::NonCopyable>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<Options::NonCopyable>;
   static void initialize(
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& /*unused*/,
       const MainTestObjects::CreatableNonCopyable& /*unused*/) {}
@@ -82,8 +82,8 @@ struct NodeGroup {
 template <typename Metavariables>
 struct Chare {
   using type = CProxy_TestChare<Metavariables>;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<Options::Integer>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<Options::Integer>;
   static void initialize(
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& cache_proxy,
       const int& integer) {
@@ -100,8 +100,8 @@ struct Chare {
 template <typename Metavariables>
 struct Array {
   using type = CProxy_TestArrayChare<Metavariables>;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
   static void initialize(
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& cache_proxy);
   static void execute_next_global_actions(
@@ -113,8 +113,8 @@ template <typename Metavariables>
 struct BoundArray {
   using type = CProxy_TestBoundArrayChare<Metavariables>;
   using bind_to = Test_Tentacles::Array<Metavariables>;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
   static void initialize(
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& /*unused*/) {}
   static void execute_next_global_actions(

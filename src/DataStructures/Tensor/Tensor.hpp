@@ -112,7 +112,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   using symmetry = Symm;
   /// Typelist of the \ref SpacetimeIndex "TensorIndexType"'s that the
   /// Tensor has
-  using index_list = typelist<Indices...>;
+  using index_list = tmpl::list<Indices...>;
   /// The type of the TensorExpression that would represent this Tensor in a
   /// tensor expression.
   template <typename ArgsList>

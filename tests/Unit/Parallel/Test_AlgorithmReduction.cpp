@@ -173,11 +173,11 @@ struct singleton_reduce_custom_reduction {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
-  using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
+  using action_list = tmpl::list<>;
+  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
   using reduction_actions_list =
       tmpl::list<singleton_reduce_sum_int, singleton_reduce_sum_double,
                  singleton_reduce_product_double,
@@ -255,12 +255,12 @@ struct array_reduce {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using array_index = int;
-  using initial_databox = db::DataBox<db::get_databox_list<typelist<>>>;
+  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
 
   using explicit_single_actions_list = tmpl::list<array_reduce>;
 

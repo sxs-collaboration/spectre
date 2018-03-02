@@ -107,7 +107,7 @@ struct Flux2 : db::DataBoxTag {
 };
 
 template <size_t Dim, typename Frame>
-using two_fluxes = typelist<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
+using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence(

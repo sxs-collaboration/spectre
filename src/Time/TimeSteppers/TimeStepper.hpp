@@ -41,9 +41,8 @@ class TimeStepper : public PUP::able {
   using Inherit =
       TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
           TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>;
-  using creatable_classes = typelist<
-      TimeSteppers::AdamsBashforthN,
-      TimeSteppers::RungeKutta3>;
+  using creatable_classes =
+      tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::RungeKutta3>;
 
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 

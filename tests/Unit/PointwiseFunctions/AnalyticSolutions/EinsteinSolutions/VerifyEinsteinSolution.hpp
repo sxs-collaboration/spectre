@@ -44,7 +44,7 @@ void verify_time_independent_einstein_solution(
   using Pi = ::GeneralizedHarmonic::Pi<3, Frame::Inertial>;
   using Phi = ::GeneralizedHarmonic::Phi<3, Frame::Inertial>;
   using GaugeH = ::GeneralizedHarmonic::GaugeH<3, Frame::Inertial>;
-  using VariablesTags = typelist<SpacetimeMetric, Pi, Phi, GaugeH>;
+  using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);

@@ -59,7 +59,7 @@ struct ThetaPhi : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ThetaPhi";
   static StrahlkorperTags_detail::ThetaPhi<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
-  using argument_tags = typelist<Strahlkorper<Frame>>;
+  using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 
 /// \f$x_i/\sqrt{x^2+y^2+z^2}\f$ on the grid.
@@ -69,7 +69,7 @@ struct Rhat : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Rhat";
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
-  using argument_tags = typelist<ThetaPhi<Frame>>;
+  using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 
 /// `Jacobian(i,0)` is \f$\frac{1}{r}\partial x^i/\partial\theta\f$,
@@ -82,7 +82,7 @@ struct Jacobian : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Jacobian";
   static StrahlkorperTags_detail::Jacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
-  using argument_tags = typelist<ThetaPhi<Frame>>;
+  using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 
 /// `InvJacobian(0,i)` is \f$r\partial\theta/\partial x^i\f$,
@@ -94,7 +94,7 @@ struct InvJacobian : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "InvJacobian";
   static StrahlkorperTags_detail::InvJacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
-  using argument_tags = typelist<ThetaPhi<Frame>>;
+  using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 
 /// `InvHessian(k,i,j)` is \f$\partial (J^{-1}){}^k_j/\partial x^i\f$,
@@ -106,7 +106,7 @@ struct InvHessian : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "InvHessian";
   static StrahlkorperTags_detail::InvHessian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
-  using argument_tags = typelist<ThetaPhi<Frame>>;
+  using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 
 /// (Euclidean) distance \f$r(\theta,\phi)\f$ from the center to each
@@ -119,7 +119,7 @@ struct Radius : db::ComputeItemTag {
     return strahlkorper.ylm_spherepack().spec_to_phys(
         strahlkorper.coefficients());
   }
-  using argument_tags = typelist<Strahlkorper<Frame>>;
+  using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 
 /// \f$(x,y,z)\f$ of each point on the surface.
@@ -130,7 +130,7 @@ struct CartesianCoords : db::ComputeItemTag {
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<Rhat<Frame>>& r_hat) noexcept;
   using argument_tags =
-      typelist<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
+      tmpl::list<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
 };
 
 /// `DxRadius(i)` is \f$\partial r/\partial x^i\f$.
@@ -144,7 +144,7 @@ struct DxRadius : db::ComputeItemTag {
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<InvJacobian<Frame>>& inv_jac) noexcept;
   using argument_tags =
-      typelist<Strahlkorper<Frame>, Radius<Frame>, InvJacobian<Frame>>;
+      tmpl::list<Strahlkorper<Frame>, Radius<Frame>, InvJacobian<Frame>>;
 };
 
 /// `D2xRadius(i,j)` is \f$\partial^2 r/\partial x^i\partial x^j\f$.
@@ -158,8 +158,8 @@ struct D2xRadius : db::ComputeItemTag {
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<InvJacobian<Frame>>& inv_jac,
       const db::item_type<InvHessian<Frame>>& inv_hess) noexcept;
-  using argument_tags = typelist<Strahlkorper<Frame>, Radius<Frame>,
-                                 InvJacobian<Frame>, InvHessian<Frame>>;
+  using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
+                                   InvJacobian<Frame>, InvHessian<Frame>>;
 };
 
 /// \f$\nabla^2 r\f$, the flat Laplacian of the surface.
@@ -172,7 +172,7 @@ struct LaplacianRadius : db::ComputeItemTag {
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags =
-      typelist<Strahlkorper<Frame>, Radius<Frame>, ThetaPhi<Frame>>;
+      tmpl::list<Strahlkorper<Frame>, Radius<Frame>, ThetaPhi<Frame>>;
 };
 
 /// Cartesian components of (unnormalized) one-form defining the surface.
@@ -186,7 +186,7 @@ struct NormalOneForm : db::ComputeItemTag {
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const db::item_type<DxRadius<Frame>>& dx_radius,
       const db::item_type<Rhat<Frame>>& r_hat) noexcept;
-  using argument_tags = typelist<DxRadius<Frame>, Rhat<Frame>>;
+  using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
 };
 
 /// `Tangents(j,i)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
@@ -203,18 +203,18 @@ struct Tangents : db::ComputeItemTag {
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<Rhat<Frame>>& r_hat,
       const db::item_type<Jacobian<Frame>>& jac) noexcept;
-  using argument_tags = typelist<Strahlkorper<Frame>, Radius<Frame>,
-                                 Rhat<Frame>, Jacobian<Frame>>;
+  using argument_tags = tmpl::list<Strahlkorper<Frame>, Radius<Frame>,
+                                   Rhat<Frame>, Jacobian<Frame>>;
 };
 
 template <typename Frame>
-using items_tags = typelist<Strahlkorper<Frame>>;
+using items_tags = tmpl::list<Strahlkorper<Frame>>;
 
 template <typename Frame>
 using compute_items_tags =
-    typelist<ThetaPhi<Frame>, Rhat<Frame>, Jacobian<Frame>, InvJacobian<Frame>,
-             InvHessian<Frame>, Radius<Frame>, CartesianCoords<Frame>,
-             DxRadius<Frame>, D2xRadius<Frame>, LaplacianRadius<Frame>,
-             NormalOneForm<Frame>, Tangents<Frame>>;
+    tmpl::list<ThetaPhi<Frame>, Rhat<Frame>, Jacobian<Frame>,
+               InvJacobian<Frame>, InvHessian<Frame>, Radius<Frame>,
+               CartesianCoords<Frame>, DxRadius<Frame>, D2xRadius<Frame>,
+               LaplacianRadius<Frame>, NormalOneForm<Frame>, Tangents<Frame>>;
 
 }  // namespace StrahlkorperTags

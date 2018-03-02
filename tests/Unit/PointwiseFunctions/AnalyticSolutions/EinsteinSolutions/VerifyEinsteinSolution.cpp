@@ -16,5 +16,5 @@ using Pi = ::GeneralizedHarmonic::Pi<3, Frame::Inertial>;
 using Phi = ::GeneralizedHarmonic::Phi<3, Frame::Inertial>;
 using GaugeH = ::GeneralizedHarmonic::GaugeH<3, Frame::Inertial>;
 
-using VariablesTags = typelist<SpacetimeMetric, Pi, Phi, GaugeH>;
+using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 }  // namespace

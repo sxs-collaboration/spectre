@@ -19,7 +19,7 @@ namespace determinant_and_inverse_detail {
 // Helps to shorten some repeated code:
 template <typename Index0, typename Index1>
 using inverse_indices =
-    typelist<change_index_up_lo<Index1>, change_index_up_lo<Index0>>;
+    tmpl::list<change_index_up_lo<Index1>, change_index_up_lo<Index0>>;
 template <typename T, typename Symm, typename Index0, typename Index1>
 using determinant_inverse_pair =
     std::pair<Scalar<T>, Tensor<T, Symm, inverse_indices<Index0, Index1>>>;
@@ -32,7 +32,7 @@ template <typename Symm, typename Index0, typename Index1>
 struct DetAndInverseImpl<Symm, Index0, Index1, Requires<Index0::dim == 1>> {
   template <typename T>
   static determinant_inverse_pair<T, Symm, Index0, Index1> apply(
-      const Tensor<T, Symm, typelist<Index0, Index1>>& tensor) {
+      const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     // inv is non-const so that it can be moved into the std::pair:
     Tensor<T, Symm, inverse_indices<Index0, Index1>> inv{
@@ -47,7 +47,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
                          Requires<Index0::dim == 2>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
-      const Tensor<T, Symmetry<2, 1>, typelist<Index0, Index1>>& tensor) {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t10 = get<1, 0>(tensor);
@@ -69,7 +69,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
                          Requires<Index0::dim == 2>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
-      const Tensor<T, Symmetry<1, 1>, typelist<Index0, Index0>>& tensor) {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t11 = get<1, 1>(tensor);
@@ -91,7 +91,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
                          Requires<Index0::dim == 3>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
-      const Tensor<T, Symmetry<2, 1>, typelist<Index0, Index1>>& tensor) {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t02 = get<0, 2>(tensor);
@@ -126,7 +126,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
                          Requires<Index0::dim == 3>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
-      const Tensor<T, Symmetry<1, 1>, typelist<Index0, Index0>>& tensor) {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t02 = get<0, 2>(tensor);
@@ -171,7 +171,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
                          Requires<Index0::dim == 4>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
-      const Tensor<T, Symmetry<2, 1>, typelist<Index0, Index1>>& tensor) {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
     const T& p00 = get<0, 0>(tensor);
     const T& p01 = get<0, 1>(tensor);
     const T& p10 = get<1, 0>(tensor);
@@ -263,7 +263,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
                          Requires<Index0::dim == 4>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
-      const Tensor<T, Symmetry<1, 1>, typelist<Index0, Index0>>& tensor) {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
     const T& p00 = get<0, 0>(tensor);
     const T& p01 = get<0, 1>(tensor);
     const T& p11 = get<1, 1>(tensor);
@@ -349,10 +349,12 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
  * 3-metric, in which only the spatial 3-metric needs to be inverted.
  */
 template <typename T, typename Symm, typename Index0, typename Index1>
-std::pair<Scalar<T>, Tensor<T, Symm, typelist<change_index_up_lo<Index1>,
-                                              change_index_up_lo<Index0>>>>
+std::pair<
+    Scalar<T>,
+    Tensor<T, Symm,
+           tmpl::list<change_index_up_lo<Index1>, change_index_up_lo<Index0>>>>
 determinant_and_inverse(
-    const Tensor<T, Symm, typelist<Index0, Index1>>& tensor) {
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
   static_assert(Index0::dim == Index1::dim,
                 "Cannot take the inverse of a Tensor whose Indices are not "
                 "of the same dimensionality.");

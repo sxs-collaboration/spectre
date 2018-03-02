@@ -14,7 +14,7 @@ struct DerivedInPupStlCpp11;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 struct Base : public PUP::able {
-  using creatable_classes = typelist<Test_Classes::DerivedInPupStlCpp11>;
+  using creatable_classes = tmpl::list<Test_Classes::DerivedInPupStlCpp11>;
   // clang-tidy: internal charm++ warnings
   WRAPPED_PUPable_abstract(Base);  // NOLINT
 };

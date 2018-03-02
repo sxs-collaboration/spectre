@@ -467,11 +467,6 @@ using branch_if_t = typename branch_if<B>::template type<T, F>;
 
 namespace tmpl = brigand;
 
-/// \ingroup UtilitiesGroup
-/// \brief Construct a typelist of types `Ts`.
-template <typename... Ts>
-using typelist = tmpl::list<Ts...>;
-
 /*!
  * \ingroup UtilitiesGroup
  * \brief Metaprogramming things that are not planned to be submitted to Brigand

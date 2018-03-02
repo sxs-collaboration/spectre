@@ -87,8 +87,8 @@ Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
 partial_derivatives(
     const Variables<VariableTags>& u, const Index<Dim>& extents,
     const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                 typelist<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
-                          SpatialIndex<Dim, UpLo::Lo, DerivativeFrame>>>&
+                 tmpl::list<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
+                            SpatialIndex<Dim, UpLo::Lo, DerivativeFrame>>>&
         inverse_jacobian) noexcept;
 
 namespace Tags {
@@ -123,9 +123,9 @@ struct deriv_impl<
       partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                           derivative_frame_index::dim,
                           typename derivative_frame_index::Frame>;
-  using argument_tags =
-      typelist<Tags::Variables<variables_tags>,
-               Tags::Extents<derivative_frame_index::dim>, InverseJacobianTag>;
+  using argument_tags = tmpl::list<Tags::Variables<variables_tags>,
+                                   Tags::Extents<derivative_frame_index::dim>,
+                                   InverseJacobianTag>;
 };
 
 // Logical partial derivatives
@@ -140,7 +140,7 @@ struct deriv_impl<tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
       logical_partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                                   Dim>;
   using argument_tags =
-      typelist<Tags::Variables<variables_tags>, Tags::Extents<Dim>>;
+      tmpl::list<Tags::Variables<variables_tags>, Tags::Extents<Dim>>;
 };
 }  // namespace Tags_detail
 }  // namespace Tags

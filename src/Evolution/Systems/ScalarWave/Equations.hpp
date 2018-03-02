@@ -58,7 +58,8 @@ namespace ScalarWave {
  */
 template <size_t Dim>
 struct ComputeDuDt {
-  using return_tags = typelist<Tags::dt<Pi>, Tags::dt<Phi<Dim>>, Tags::dt<Psi>>;
+  using return_tags =
+      tmpl::list<Tags::dt<Pi>, Tags::dt<Phi<Dim>>, Tags::dt<Psi>>;
 
   using argument_tags =
       tmpl::list<Pi, Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,

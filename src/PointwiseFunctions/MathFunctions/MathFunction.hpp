@@ -35,8 +35,8 @@ template <>
 class MathFunction<1> : public PUP::able {
  public:
   using creatable_classes =
-      typelist<MathFunctions::Gaussian, MathFunctions::PowX,
-               MathFunctions::Sinusoid>;
+      tmpl::list<MathFunctions::Gaussian, MathFunctions::PowX,
+                 MathFunctions::Sinusoid>;
 
   WRAPPED_PUPable_abstract(MathFunction);  // NOLINT
 

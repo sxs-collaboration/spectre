@@ -100,7 +100,7 @@ struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {
     return element_map(source_coords);
   }
-  using argument_tags = typelist<MapTag, SourceCoordsTag>;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -117,7 +117,7 @@ struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {
     return element_map.inv_jacobian(source_coords);
   }
-  using argument_tags = typelist<MapTag, SourceCoordsTag>;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
 };
 
 namespace detail {

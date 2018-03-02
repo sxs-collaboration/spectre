@@ -81,7 +81,7 @@ static_assert(cpp17::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
               "Failed testing remove_first_index");
 
 // Test check_index_symmetry
-static_assert(TensorMetafunctions::check_index_symmetry_v<typelist<>>,
+static_assert(TensorMetafunctions::check_index_symmetry_v<tmpl::list<>>,
               "Failed testing check_index_symmetry");
 static_assert(TensorMetafunctions::check_index_symmetry_v<
                   Symmetry<1>, SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
@@ -174,10 +174,10 @@ static_assert(
     "Failed testing check_index_symmetry");
 
 static_assert(not cpp17::is_constructible_v<
-                  Tensor<double, Symmetry<>, typelist<>>, typelist<>>,
+                  Tensor<double, Symmetry<>, tmpl::list<>>, tmpl::list<>>,
               "Tensor construction failed to be SFINAE friendly");
 static_assert(
-    cpp17::is_constructible_v<Tensor<double, Symmetry<>, typelist<>>, double>,
+    cpp17::is_constructible_v<Tensor<double, Symmetry<>, tmpl::list<>>, double>,
     "Tensor construction failed to be SFINAE friendly");
 
 namespace {

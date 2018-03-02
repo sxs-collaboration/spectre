@@ -69,8 +69,9 @@ namespace CurvedScalarWave {
  */
 template <size_t Dim>
 struct ComputeDuDt {
-  using return_tags = typelist<Tags::dt<Pi>, Tags::dt<Phi<Dim>>, Tags::dt<Psi>>;
-  using argument_tags = typelist<
+  using return_tags =
+      tmpl::list<Tags::dt<Pi>, Tags::dt<Phi<Dim>>, Tags::dt<Psi>>;
+  using argument_tags = tmpl::list<
       Pi, Phi<Dim>, Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,
       Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
       Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,

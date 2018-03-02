@@ -47,21 +47,21 @@ struct domain_creators;
 template <>
 struct domain_creators<1> {
   template <typename Frame>
-  using creators = typelist<DomainCreators::Interval<Frame>,
-                            DomainCreators::RotatedIntervals<Frame>>;
+  using creators = tmpl::list<DomainCreators::Interval<Frame>,
+                              DomainCreators::RotatedIntervals<Frame>>;
 };
 template <>
 struct domain_creators<2> {
   template <typename Frame>
   using creators =
-      typelist<DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>>;
+      tmpl::list<DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>>;
 };
 template <>
 struct domain_creators<3> {
   template <typename Frame>
   using creators =
-      typelist<DomainCreators::Brick<Frame>, DomainCreators::Shell<Frame>,
-               DomainCreators::Sphere<Frame>>;
+      tmpl::list<DomainCreators::Brick<Frame>, DomainCreators::Shell<Frame>,
+                 DomainCreators::Sphere<Frame>>;
 };
 }  // namespace DomainCreators_detail
 

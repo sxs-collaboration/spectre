@@ -53,8 +53,8 @@ struct nodegroup_initialize {
         cpp17::is_same_v<ParallelComponent,
                          NodegroupParallelComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(db::create<typelist<Tags::vector_of_array_indexs,
-                                               Tags::total_receives_on_node>>(
+    return std::make_tuple(db::create<tmpl::list<Tags::vector_of_array_indexs,
+                                                 Tags::total_receives_on_node>>(
         std::vector<int>(
             static_cast<size_t>(number_of_1d_array_elements_per_core *
                                 Parallel::procs_on_node(Parallel::my_node()))),
@@ -241,12 +241,12 @@ struct reduce_threaded_method {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using array_index = int;
-  using initial_databox = db::DataBox<typelist<>>;
+  using initial_databox = db::DataBox<tmpl::list<>>;
 
   using explicit_single_actions_list =
       tmpl::list<reduce_to_nodegroup, reduce_threaded_method>;
@@ -286,12 +286,12 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = typelist<>;
-  using options = typelist<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = typelist<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<db::get_databox_list<
-      typelist<Tags::total_receives_on_node, Tags::vector_of_array_indexs>>>;
+      tmpl::list<Tags::total_receives_on_node, Tags::vector_of_array_indexs>>>;
 
   using explicit_single_actions_list =
       tmpl::list<nodegroup_initialize, nodegroup_receive,
