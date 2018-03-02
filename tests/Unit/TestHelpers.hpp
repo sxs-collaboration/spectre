@@ -61,7 +61,7 @@
  *
  * \details
  * Catch's default (relative) tolerance for comparing floating-point numbers is
- * `std\:\:numeric_limits<float>\:\:epsilon() * 100`, or roughly \f$10^{-5}\f$.
+ * `std::numeric_limits<float>::%epsilon() * 100`, or roughly \f$10^{-5}\f$.
  * This tolerance is too loose for checking many scientific algorithms that
  * rely on double precision floating-point accuracy, so we provide a tighter
  * tighter tolerance through the `approx` static object.

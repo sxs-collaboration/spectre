@@ -14,12 +14,14 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 template <size_t Dim>
 class Index;
 template <typename DataType, typename Symm, typename IndexList>
 class Tensor;
 template <typename TagsList>
 class Variables;
+/// \endcond
 
 namespace Tags {
 template <size_t Dim>

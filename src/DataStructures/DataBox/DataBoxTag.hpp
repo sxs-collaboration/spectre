@@ -381,9 +381,8 @@ struct compute_item_result_impl<
   using type = typename Tag::type;
 };
 
-template <typename Tag>
-struct compute_item_result_impl<
-    Tag, Requires<not std::is_base_of<db::DataBoxTag, Tag>::value>> {
+template <>
+struct compute_item_result_impl<Tags::DataBox> {
   using type = NoSuchType;
 };
 }  // namespace detail

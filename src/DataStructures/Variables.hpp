@@ -466,10 +466,20 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
  */
 template <typename Tag, typename TagList>
 constexpr typename Tag::type& get(Variables<TagList>& v) noexcept {
+  static_assert(tmpl::list_contains_v<TagList, Tag>,
+                "Could not retrieve Tag from Variables. See the first "
+                "template parameter of the instantiation for what Tag is "
+                "being retrieved and the second template parameter for "
+                "what Tags are available.");
   return tuples::get<Tag>(v.reference_variable_data_);
 }
 template <typename Tag, typename TagList>
 constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
+  static_assert(tmpl::list_contains_v<TagList, Tag>,
+                "Could not retrieve Tag from Variables. See the first "
+                "template parameter of the instantiation for what Tag is "
+                "being retrieved and the second template parameter for "
+                "what Tags are available.");
   return tuples::get<Tag>(v.reference_variable_data_);
 }
 // @}
