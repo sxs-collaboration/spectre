@@ -19,6 +19,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 

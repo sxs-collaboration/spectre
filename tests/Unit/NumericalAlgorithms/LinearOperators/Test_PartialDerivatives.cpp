@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 #include "DataStructures/DataBox/DataBox.hpp"
