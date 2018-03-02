@@ -5,7 +5,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_1d_spatial_raise(const DataVector& used_for_size) {

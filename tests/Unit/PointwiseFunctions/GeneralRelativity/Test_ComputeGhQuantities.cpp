@@ -7,7 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_compute_1d_phi(const DataVector& used_for_size) {

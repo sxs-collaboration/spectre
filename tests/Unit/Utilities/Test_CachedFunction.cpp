@@ -7,7 +7,7 @@
 
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.CachedFunction", "[Unit][Utilities]") {
   size_t call_count = 0;

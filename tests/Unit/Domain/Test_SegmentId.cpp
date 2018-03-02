@@ -6,6 +6,7 @@
 #include "Domain/SegmentId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
   // Test default constructor:

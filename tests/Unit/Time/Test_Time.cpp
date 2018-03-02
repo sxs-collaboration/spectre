@@ -7,6 +7,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   using rational_t = Time::rational_t;

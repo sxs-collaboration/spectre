@@ -11,6 +11,7 @@
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

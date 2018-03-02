@@ -6,7 +6,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   DataVector a{2};

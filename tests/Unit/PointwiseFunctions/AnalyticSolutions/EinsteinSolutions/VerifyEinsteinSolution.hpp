@@ -24,7 +24,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 /// \ingroup TestingFrameworkGroup
 /// Determines if the given `solution` is a time-independent solution

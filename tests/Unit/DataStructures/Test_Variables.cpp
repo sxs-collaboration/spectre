@@ -10,6 +10,7 @@
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace VariablesTestTags_detail {
 /// [simple_variables_tag]

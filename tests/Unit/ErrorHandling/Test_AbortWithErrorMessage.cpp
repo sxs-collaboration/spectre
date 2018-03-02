@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 // [[OutputRegex, 'a == b' violated!]]
 [[noreturn]] SPECTRE_TEST_CASE(

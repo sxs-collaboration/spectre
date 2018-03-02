@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

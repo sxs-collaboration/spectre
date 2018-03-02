@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 // [[OutputRegex, Floating point exception!]]
 SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",

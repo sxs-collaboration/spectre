@@ -18,6 +18,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 namespace TestExpansion {

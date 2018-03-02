@@ -8,7 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Identity.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim, typename DataType>

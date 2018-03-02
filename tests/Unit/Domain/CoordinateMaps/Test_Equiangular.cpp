@@ -8,6 +8,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Equiangular", "[Domain][Unit]") {
   const double xA = -1.0;

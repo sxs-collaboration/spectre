@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename T>

@@ -8,6 +8,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace Test_Classes {
 struct DerivedInPupStlCpp11;

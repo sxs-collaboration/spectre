@@ -10,7 +10,7 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t VolumeDim>

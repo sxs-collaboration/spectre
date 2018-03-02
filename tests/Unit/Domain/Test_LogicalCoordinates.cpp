@@ -9,7 +9,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   using Affine2d = CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,

@@ -8,6 +8,7 @@
 #include "Utilities/Array.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 // AppleClang does not correctly compute noexcept
 #ifndef __APPLE__

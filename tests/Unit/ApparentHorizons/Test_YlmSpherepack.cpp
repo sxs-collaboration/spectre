@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

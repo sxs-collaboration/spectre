@@ -24,7 +24,7 @@ void register_pupables();
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

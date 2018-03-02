@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 // [[OutputRegex, Assumes that there are two real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(

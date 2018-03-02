@@ -6,7 +6,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename DataType>

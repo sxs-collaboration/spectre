@@ -7,6 +7,7 @@
 #include "Time/TimeId.hpp"
 
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeId", "[Unit][Time]") {
   using Hash = std::hash<TimeId>;

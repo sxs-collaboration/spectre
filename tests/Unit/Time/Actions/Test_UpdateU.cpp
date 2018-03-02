@@ -16,7 +16,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct Var : db::DataBoxTag {

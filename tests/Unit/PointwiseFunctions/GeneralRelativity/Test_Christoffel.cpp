@@ -4,7 +4,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_1d_spatial_christoffel_first_kind(const DataVector &used_for_size) {

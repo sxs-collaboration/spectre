@@ -9,7 +9,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim>

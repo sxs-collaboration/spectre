@@ -7,6 +7,7 @@
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
   CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);

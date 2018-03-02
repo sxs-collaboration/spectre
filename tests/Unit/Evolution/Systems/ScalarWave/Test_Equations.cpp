@@ -15,7 +15,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim>

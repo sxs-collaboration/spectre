@@ -8,6 +8,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 /// [change_up_lo]
 using Index = SpatialIndex<3, UpLo::Lo, Frame::Grid>;

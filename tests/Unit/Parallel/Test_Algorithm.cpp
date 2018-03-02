@@ -8,7 +8,7 @@
 #include "Parallel/Info.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct TestMetavariables {

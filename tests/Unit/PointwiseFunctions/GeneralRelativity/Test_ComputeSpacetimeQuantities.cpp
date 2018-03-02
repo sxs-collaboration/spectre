@@ -7,7 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_compute_1d_spacetime_metric(const DataVector& used_for_size) {

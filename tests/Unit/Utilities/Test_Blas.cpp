@@ -3,7 +3,7 @@
 
 #include <catch.hpp>
 
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 #include "tests/Unit/Utilities/Test_Blas.hpp"
 
 // [[OutputRegex, TRANSA must be upper or lower case N, T, or C. See the BLAS

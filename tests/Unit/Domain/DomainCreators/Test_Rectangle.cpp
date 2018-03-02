@@ -12,7 +12,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 using Affine = CoordinateMaps::Affine;

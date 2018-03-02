@@ -5,7 +5,7 @@
 
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Tuple.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [tuple_fold_struct_defn]

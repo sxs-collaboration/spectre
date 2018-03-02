@@ -5,6 +5,7 @@
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.SpherepackIterator",
                   "[ApparentHorizons][Unit]") {

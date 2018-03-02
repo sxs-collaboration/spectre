@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "NumericalAlgorithms/RootFinding/RootFinder.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 double f_free(double x) { return 2.0 - x * x; }

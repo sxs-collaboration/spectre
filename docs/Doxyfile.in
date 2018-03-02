@@ -82,7 +82,8 @@ INPUT += @PROJECT_SOURCE_DIR@/docs
 INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/TestCreation.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/TestHelpers.hpp
+         @PROJECT_SOURCE_DIR@/tests/Unit/TestHelpers.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/TestingFramework.hpp
 
 
 

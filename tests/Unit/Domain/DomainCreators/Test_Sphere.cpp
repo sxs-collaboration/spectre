@@ -20,7 +20,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_sphere_construction(

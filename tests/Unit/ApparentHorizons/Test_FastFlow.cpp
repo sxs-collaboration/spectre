@@ -20,6 +20,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

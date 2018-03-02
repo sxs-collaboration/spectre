@@ -11,6 +11,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_wedge3d_all_directions(const bool with_equiangular_map) {

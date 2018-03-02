@@ -7,7 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags, DerivativeFrame>> divergence(

@@ -10,6 +10,7 @@
 #include "Time/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 Time make_time(const double t) noexcept {

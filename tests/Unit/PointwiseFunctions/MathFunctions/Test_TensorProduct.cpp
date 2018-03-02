@@ -24,6 +24,7 @@
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 using Affine = CoordinateMaps::Affine;

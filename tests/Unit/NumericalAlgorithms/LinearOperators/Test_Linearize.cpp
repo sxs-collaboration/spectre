@@ -11,7 +11,7 @@
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {

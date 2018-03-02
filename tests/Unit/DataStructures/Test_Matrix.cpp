@@ -6,6 +6,7 @@
 
 #include "DataStructures/Matrix.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
   Matrix matrix(3, 5, 1.0);

@@ -5,9 +5,11 @@
 #include <memory>
 #include <vector>
 
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename T>

@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Literals.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 double multiply_by_two(const double value) { return 2.0 * value; }

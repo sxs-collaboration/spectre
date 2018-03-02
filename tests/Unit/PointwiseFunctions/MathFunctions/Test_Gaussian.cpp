@@ -7,6 +7,7 @@
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
                   "[PointwiseFunctions][Unit]") {
