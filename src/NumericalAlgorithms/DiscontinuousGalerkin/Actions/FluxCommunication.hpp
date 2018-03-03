@@ -31,6 +31,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 

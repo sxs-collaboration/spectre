@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,

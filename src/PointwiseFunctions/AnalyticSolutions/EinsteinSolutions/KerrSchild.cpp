@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace EinsteinSolutions {
 

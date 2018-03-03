@@ -5,7 +5,7 @@
 
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace ScalarWave {
 namespace Solutions {

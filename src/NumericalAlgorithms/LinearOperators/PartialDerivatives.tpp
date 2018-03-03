@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace partial_derivatives_detail {
 template <size_t Dim, typename VariableTags, typename DerivativeTags>
