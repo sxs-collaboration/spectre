@@ -6,6 +6,7 @@ set(LIBRARY "Test_ControlSystem")
 set(LIBRARY_SOURCES
   Test_PiecewisePolynomial.cpp
   Test_SettleToConstant.cpp
+  Test_TimescaleTuner.cpp
   )
 
 add_test_library(
