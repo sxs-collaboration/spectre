@@ -348,6 +348,10 @@ constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
 template <class T>
 constexpr bool is_floating_point_v = std::is_floating_point<T>::value;
 
+/// \ingroup TypeTraitsGroup
+template <class T>
+constexpr bool is_fundamental_v = std::is_fundamental<T>::value;
+
 }  // namespace cpp17
 
 /// \ingroup TypeTraitsGroup
