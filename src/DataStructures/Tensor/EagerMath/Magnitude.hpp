@@ -15,34 +15,30 @@
  * \ingroup TensorGroup
  * \brief compute the Euclidean magnitude of a rank-1 tensor
  *
- * \returns the Euclidean magnitude of the rank-1 tensor
- *
  * \details
  * Computes the square root of the sum of the squares of the components of
  * the rank-1 tensor.
  */
 template <typename DataType, typename Index>
-DataType magnitude(
+Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& tensor) {
   auto magnitude_squared = make_with_value<DataType>(tensor, 0.);
   for (size_t d = 0; d < Index::dim; ++d) {
     magnitude_squared += square(tensor.get(d));
   }
-  return sqrt(magnitude_squared);
+  return Scalar<DataType>{sqrt(magnitude_squared)};
 }
 
 /*!
  * \ingroup TensorGroup
  * \brief compute the magnitude of a rank-1 tensor
  *
- * \returns the magnitude of the rank-1 tensor
- *
  * \details
  * Returns the square root of the input tensor contracted twice with the given
  * metric.
  */
 template <typename DataType, typename Index0, typename Index1>
-DataType magnitude(
+Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1>, tmpl::list<Index0>>& tensor,
     const Tensor<DataType, Symmetry<1, 1>, tmpl::list<Index1, Index1>>&
         metric) {
@@ -55,5 +51,5 @@ DataType magnitude(
       magnitude_squared += tensor.get(a) * tensor.get(b) * metric.get(a, b);
     }
   }
-  return sqrt(magnitude_squared);
+  return Scalar<DataType>{sqrt(magnitude_squared)};
 }

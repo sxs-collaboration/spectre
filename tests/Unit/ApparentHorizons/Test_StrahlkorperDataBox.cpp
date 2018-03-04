@@ -273,7 +273,7 @@ void test_normals() {
     return sqrt(normsquared);
   }();
   const auto& normal_mag = magnitude(normal_one_form, invg);
-  CHECK_ITERABLE_APPROX(expected_normal_mag, normal_mag);
+  CHECK_ITERABLE_APPROX(expected_normal_mag, get(normal_mag));
 }
 }  // namespace
 

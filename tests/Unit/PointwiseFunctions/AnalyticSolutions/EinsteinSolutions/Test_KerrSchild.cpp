@@ -85,7 +85,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
     }
   }
 
-  const DataType r = magnitude(x);
+  const DataType r = get(magnitude(x));
   const DataType one_over_r_squared = 1.0 / square(r);
   const DataType one_over_r_cubed = 1.0 / cube(r);
   const DataType one_over_r_fifth = one_over_r_squared * one_over_r_cubed;

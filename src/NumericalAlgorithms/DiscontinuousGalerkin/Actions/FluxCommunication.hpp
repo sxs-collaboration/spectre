@@ -134,7 +134,7 @@ struct ComputeBoundaryFlux {
       const auto& face_normal =
           db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(direction);
 
-      DataVector magnitude_of_face_normal = magnitude(face_normal);
+      DataVector magnitude_of_face_normal = get(magnitude(face_normal));
 
       std::decay_t<decltype(face_normal)> unit_face_normal(
           magnitude_of_face_normal.size(), 0.0);

@@ -53,7 +53,7 @@ size_t FastFlow::current_l_mesh(const Strahlkorper<Frame>& strahlkorper) const
 namespace {
 template <typename Frame>
 DataVector fast_flow_weight(
-    const DataVector& one_form_magnitude,
+    const Scalar<DataVector>& one_form_magnitude,
     const db::item_type<StrahlkorperTags::Rhat<Frame>>& r_hat,
     const db::item_type<StrahlkorperTags::Radius<Frame>>& radius,
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric) noexcept {
@@ -74,7 +74,7 @@ DataVector fast_flow_weight(
     }
   }
 
-  return 2.0 * one_form_magnitude * square(radius) / denominator;
+  return 2.0 * get(one_form_magnitude) * square(radius) / denominator;
 }
 }  // namespace
 
@@ -114,7 +114,7 @@ FastFlow::iterate_horizon_finder(
   const auto one_form_magnitude =
       magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
                 upper_spatial_metric);
-  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const DataVector one_over_one_form_magnitude = 1.0 / get(one_form_magnitude);
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
       one_over_one_form_magnitude);
@@ -136,7 +136,7 @@ FastFlow::iterate_horizon_finder(
       // Do nothing
       break;
     case FlowType::Curvature: {
-      weighted_residual *= one_form_magnitude;
+      weighted_residual *= get(one_form_magnitude);
     } break;
     case FlowType::Fast: {
       weighted_residual *= fast_flow_weight<Frame>(
