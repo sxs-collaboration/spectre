@@ -23,11 +23,15 @@ struct TestMetavariables;
 template <class Metavariables>
 struct SingletonParallelComponent;
 
-static constexpr int number_of_1d_array_elements = 14;
+// The reason we use a 46 element array is that on Wheeler, the SXS
+// supercomputer at Caltech, there are 23 worker threads per node and we want to
+// be able to test on two nodes to make sure multinode communication is working
+// correctly.
+static constexpr int number_of_1d_array_elements = 46;
 
 /// [custom_reduce_function]
 CkReductionMsg* reduce_reduction_data(const int number_of_messages,
-                                      CkReductionMsg** const msgs) {
+                                      CkReductionMsg** const msgs) noexcept {
   // clang-tidy: do not use pointer arithmetic
   Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                           std::vector<int>>
@@ -55,14 +59,6 @@ CkReductionMsg* reduce_reduction_data(const int number_of_messages,
   return Parallel::new_reduction_msg(reduced);
 }
 /// [custom_reduce_function]
-
-/// [custom_reduce_register_function]
-CkReduction::reducerType reduction_data_reducer;
-
-void register_custom_reductions() {
-  reduction_data_reducer = CkReduction::addReducer(reduce_reduction_data);
-}
-/// [custom_reduce_register_function]
 
 struct singleton_reduce_sum_int {
   using reduction_type = int;
@@ -134,7 +130,7 @@ struct singleton_reduce_product_double {
   }
 };
 
-struct singleton_reduce_custom_reduction {
+struct singleton_reduce_custom_reduction_action {
   using reduction_type =
       Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                               std::vector<int>>;
@@ -181,7 +177,7 @@ struct SingletonParallelComponent {
   using reduction_actions_list =
       tmpl::list<singleton_reduce_sum_int, singleton_reduce_sum_double,
                  singleton_reduce_product_double,
-                 singleton_reduce_custom_reduction>;
+                 singleton_reduce_custom_reduction_action>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -232,15 +228,16 @@ struct array_reduce {
                                       singleton_reduce_product_double>(
         cache, array_index, CkReduction::product_double, my_send_double);
 
+    /// [custom_contribute_to_reduction_example]
     std::unordered_map<std::string, int> my_send_map;
     my_send_map["unity"] = array_index;
     my_send_map["double"] = 2 * array_index;
     my_send_map["negative"] = -array_index;
-    /// [custom_contribute_to_reduction_example]
-    Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
+    Parallel::contribute_to_reduction<&reduce_reduction_data,
+                                      ArrayParallelComponent<Metavariables>,
                                       SingletonParallelComponent<Metavariables>,
-                                      singleton_reduce_custom_reduction>(
-        cache, array_index, reduction_data_reducer,
+                                      singleton_reduce_custom_reduction_action>(
+        cache, array_index,
         Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                                 std::vector<int>>{
             10, std::move(my_send_map), std::vector<int>{array_index, 10, -8}});
@@ -305,10 +302,8 @@ struct TestMetavariables {
   }
 };
 
-/// [custom_reduce_register]
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &register_custom_reductions};
-/// [custom_reduce_register]
+    &setup_error_handling};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 

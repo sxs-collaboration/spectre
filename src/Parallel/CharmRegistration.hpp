@@ -215,3 +215,77 @@ bool Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                              Action>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterSimpleAction<ParallelComponent, Action>>();
+
+/// \cond
+class CkReductionMsg;
+/// \endcond
+
+namespace Parallel {
+namespace charmxx {
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief The type of a function pointer to a Charm++ custom reduction function.
+ */
+using ReducerFunctions = CkReductionMsg* (*)(int, CkReductionMsg**);
+/// \cond
+extern ReducerFunctions* charm_reducer_functions_list;
+extern size_t charm_reducer_functions_capacity;
+extern size_t charm_reducer_functions_size;
+extern std::unordered_map<size_t, CkReduction::reducerType>
+    charm_reducer_functions;
+/// \endcond
+
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Class used for registering custom reduction function
+ *
+ * The static member variable is initialized before main is entered. This means
+ * we are able to inject code into the beginning of the execution of an
+ * executable by "using" the variable (casting to void counts) the function that
+ * initializes the variable is called. We "use" `registrar` inside the
+ * `Parallel::contribute_to_reduction` function.
+ */
+template <ReducerFunctions>
+struct RegisterReducerFunction {
+  static bool registrar;
+};
+
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Function that stores a function pointer to the custom reduction
+ * function to be registered later.
+ *
+ * Used to initialize the `registrar` bool of `RegisterReducerFunction`. When
+ * invoked it adds the function `F` of type `ReducerFunctions` to the list
+ * `charm_reducer_functions_list`.
+ *
+ * \note The reason for not using a `std::vector<ReducerFunctions>` is that this
+ * did not behave correctly when calling `push_back`. Specifically, the final
+ * vector was always size 1, even though multiple elements were pushed back. The
+ * reason for that behavior was never tracked down and so in the future it could
+ * be possible to use a `std::vector`.
+ */
+template <ReducerFunctions F>
+bool register_reducer_function() noexcept {
+  if (charm_reducer_functions_size >= charm_reducer_functions_capacity) {
+    auto* const t = new ReducerFunctions[charm_reducer_functions_capacity + 10];
+    for (size_t i = 0; i < charm_reducer_functions_capacity; ++i) {
+      // clang-tidy: do not use pointer arithmetic
+      t[i] = std::move(charm_reducer_functions_list[i]);  // NOLINT
+    }
+    delete[] charm_reducer_functions_list;
+    charm_reducer_functions_list = t;
+    charm_reducer_functions_capacity += 10;
+  }
+  charm_reducer_functions_size++;
+  // clang-tidy: do not use pointer arithmetic
+  charm_reducer_functions_list[charm_reducer_functions_size - 1] = F;  // NOLINT
+  return true;
+}
+}  // namespace charmxx
+}  // namespace Parallel
+
+// clang-tidy: do not use pointer arithmetic
+template <Parallel::charmxx::ReducerFunctions F>
+bool Parallel::charmxx::RegisterReducerFunction<F>::registrar =  // NOLINT
+    Parallel::charmxx::register_reducer_function<F>();
