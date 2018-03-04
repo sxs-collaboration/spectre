@@ -28,9 +28,6 @@ size_t charm_reducer_functions_size = 0;
 std::unordered_map<size_t, CkReduction::reducerType> charm_reducer_functions{};
 /// \endcond
 
-template <class...>
-using void_t = void;
-
 template <class T>
 struct get_value_type;
 
@@ -51,18 +48,6 @@ struct get_value_type<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>> {
 
 template <class T>
 using get_value_type_t = typename get_value_type<T>::type;
-
-template <class T, class = void>
-struct has_single_actions : std::false_type {};
-template <class T>
-struct has_single_actions<T, void_t<typename T::explicit_single_actions_list>>
-    : std::true_type {};
-
-template <class T, class = void>
-struct has_reduction_actions : std::false_type {};
-template <class T>
-struct has_reduction_actions<T, void_t<typename T::reduction_actions_list>>
-    : std::true_type {};
 
 template <class... Ts>
 void swallow(Ts&&... /*ts*/) {}
@@ -115,27 +100,7 @@ struct CharmRegisterFunctions {
                 nullptr)),
         0)...);
   }
-
-  template <class... Actions>
-  static void register_reduction_actions(tmpl::list<Actions...> /*meta*/) {
-    swallow(((void)ckindex::template idx_reduction_action<
-                 Actions, typename Actions::reduction_type>(
-                 static_cast<void (algorithm::*)(
-                     const typename Actions::reduction_type&)>(nullptr)),
-             (void)ckindex::template redn_wrapper_reduction_action<
-                 Actions, typename Actions::reduction_type>(nullptr),
-             0)...);
-  }
 };
-
-template <class ParallelComponent>
-void register_reduction_actions(std::true_type /*meta*/) {
-  CharmRegisterFunctions<ParallelComponent>::register_reduction_actions(
-      typename ParallelComponent::reduction_actions_list{});
-}
-
-template <class ParallelComponent>
-void register_reduction_actions(std::false_type /*meta*/) {}
 
 template <class... ParallelComponents>
 void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
@@ -164,16 +129,13 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
       (void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
           Parallel::get_inbox_tags<typename ParallelComponents::action_list>{}),
       0)...);
-  // register simple actions
+  // register reduction and simple actions
   for (size_t i = 0;
        i < charm_register_list_size and i < charm_register_list_capacity; ++i) {
     // clang-tidy: do not use pointer arithmetic
     charm_register_list[i]->register_with_charm();  // NOLINT
   }
   delete[] charm_register_list;
-  swallow(((void)register_reduction_actions<ParallelComponents>(
-               typename has_reduction_actions<ParallelComponents>::type{}),
-           0)...);
 }
 
 /*!

@@ -61,8 +61,6 @@ CkReductionMsg* reduce_reduction_data(const int number_of_messages,
 /// [custom_reduce_function]
 
 struct singleton_reduce_sum_int {
-  using reduction_type = int;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -85,8 +83,6 @@ struct singleton_reduce_sum_int {
 };
 
 struct singleton_reduce_sum_double {
-  using reduction_type = double;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -108,8 +104,6 @@ struct singleton_reduce_sum_double {
 };
 
 struct singleton_reduce_product_double {
-  using reduction_type = double;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -131,10 +125,6 @@ struct singleton_reduce_product_double {
 };
 
 struct singleton_reduce_custom_reduction_action {
-  using reduction_type =
-      Parallel::ReductionData<int, std::unordered_map<std::string, int>,
-                              std::vector<int>>;
-
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -174,10 +164,6 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
-  using reduction_actions_list =
-      tmpl::list<singleton_reduce_sum_int, singleton_reduce_sum_double,
-                 singleton_reduce_product_double,
-                 singleton_reduce_custom_reduction_action>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {

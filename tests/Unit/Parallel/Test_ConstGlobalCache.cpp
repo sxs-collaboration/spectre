@@ -87,7 +87,6 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 template <class Metavariables>
@@ -99,7 +98,6 @@ struct ArrayParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 template <class Metavariables>
@@ -110,7 +108,6 @@ struct GroupParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 template <class Metavariables>
@@ -121,7 +118,6 @@ struct NodegroupParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 struct TestMetavariables {

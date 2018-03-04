@@ -521,18 +521,9 @@ template <typename Action, typename Arg>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
                    InitialDataBox>::reduction_action(Arg arg) noexcept {
+  (void)Parallel::charmxx::RegisterReductionAction<
+      ParallelComponent, Action, std::decay_t<Arg>>::registrar;
   lock(&node_lock_);
-  static_assert(
-      tmpl::found<typename ParallelComponent::reduction_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value and
-          cpp17::is_same_v<typename Action::reduction_type, std::decay_t<Arg>>,
-      "Could not find explicit instantiation of the correct "
-      "reduction_action function, which is undefined behavior. See the first "
-      "template parameter of 'Parallel::AlgorithmImpl' for which "
-      "ParallelComponent is missing the explicit instantiation. The two "
-      "reasons this error occurs is missing the Action in the "
-      "'reduction_actions_list' of the ParallelComponent, or the Action's "
-      "reduction_type member type alias being of the incorrect type.");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "

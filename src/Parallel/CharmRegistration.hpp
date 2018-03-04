@@ -166,6 +166,50 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
 
 /*!
  * \ingroup CharmExtensionsGroup
+ * \brief Derived class for registering reduction actions
+ *
+ * Calls the appropriate Charm++ functions to register a reduction action.
+ */
+template <typename ParallelComponent, typename Action, typename ReductionType>
+struct RegisterReductionAction : RegistrationHelper {
+  using chare_type = typename ParallelComponent::chare_type;
+  using charm_type = charm_types_with_parameters<
+      ParallelComponent, typename ParallelComponent::metavariables,
+      typename ParallelComponent::action_list,
+      typename get_array_index<chare_type>::template f<ParallelComponent>,
+      typename ParallelComponent::initial_databox>;
+  using cproxy = typename charm_type::cproxy;
+  using ckindex = typename charm_type::ckindex;
+  using algorithm = typename charm_type::algorithm;
+
+  RegisterReductionAction() = default;
+  RegisterReductionAction(const RegisterReductionAction&) = default;
+  RegisterReductionAction& operator=(const RegisterReductionAction&) = default;
+  RegisterReductionAction(RegisterReductionAction&&) = default;
+  RegisterReductionAction& operator=(RegisterReductionAction&&) = default;
+  ~RegisterReductionAction() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    ckindex::template idx_reduction_action<Action, ReductionType>(
+        static_cast<void (algorithm::*)(const ReductionType&)>(nullptr));
+    ckindex::template redn_wrapper_reduction_action<Action, ReductionType>(
+        nullptr);
+  }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterReductionAction>();
+  }
+
+  static bool registrar;
+};
+
+/*!
+ * \ingroup CharmExtensionsGroup
  * \brief Function that adds a pointer to a specific derived class to the
  * `charm_register_list`
  *
@@ -215,6 +259,13 @@ bool Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                              Action>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterSimpleAction<ParallelComponent, Action>>();
+
+// clang-tidy: redundant declaration
+template <typename ParallelComponent, typename Action, typename ReductionType>
+bool Parallel::charmxx::RegisterReductionAction<
+    ParallelComponent, Action, ReductionType>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterReductionAction<ParallelComponent, Action, ReductionType>>();
 
 /// \cond
 class CkReductionMsg;
