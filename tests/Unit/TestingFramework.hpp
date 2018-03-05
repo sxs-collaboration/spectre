@@ -92,7 +92,7 @@ std::string format_capture_precise(const T& t) noexcept {
  * tighter tolerance through the `approx` static object.
  *
  * \example
- * \snippet TestFramework.cpp approx_test
+ * \snippet Test_TestingFramework.cpp approx_test
  */
 // clang-tidy: static object creation may throw exception
 static Approx approx =                                          // NOLINT
@@ -225,7 +225,7 @@ struct check_iterable_approx<
  * the SPECTRE_TEST_CASE.
  *
  * \example
- * \snippet TestFramework.cpp error_test
+ * \snippet Test_TestingFramework.cpp error_test
  */
 #define ERROR_TEST()                                      \
   do {                                                    \

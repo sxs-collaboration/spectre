@@ -3,7 +3,7 @@
 
 set(executable RunTests)
 
-set(SPECTRE_TESTS "TestFramework.cpp")
+set(SPECTRE_TESTS "Test_TestingFramework.cpp")
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
