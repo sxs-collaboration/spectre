@@ -7,8 +7,11 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/TypeTraits.hpp"
 
 namespace Parallel {
 namespace charmxx {
@@ -209,6 +212,95 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
 };
 /// \endcond
 
+namespace detail {
+template <class T>
+struct get_value_type;
+
+template <class Key, class Mapped, class Hash, class KeyEqual, class Allocator>
+struct get_value_type<
+    std::unordered_map<Key, Mapped, Hash, KeyEqual, Allocator>> {
+  // When sending data it is typical to use `std:make_pair(a, b)` which results
+  // in a non-const Key type, which is different from what
+  // `unordered_map::value_type` is. This difference leads to issues with
+  // function registration with Charm++.
+  using type = std::pair<Key, Mapped>;
+};
+
+template <class Key, class Hash, class KeyEqual, class Allocator>
+struct get_value_type<std::unordered_multiset<Key, Hash, KeyEqual, Allocator>> {
+  using type = Key;
+};
+
+template <class T>
+using get_value_type_t = typename get_value_type<T>::type;
+}  // namespace detail
+
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Derived class for registering receive_data functions
+ *
+ * Calls the appropriate Charm++ function to register a receive_data function.
+ * There is a bug in Charm++ that doesn't allow default values for entry method
+ * arguments for groups and nodegroups, so we have to handle the (node)group
+ * cases separately from the singleton and array cases.
+ */
+template <typename ParallelComponent, typename ReceiveTag>
+struct RegisterReceiveData : RegistrationHelper {
+  using chare_type = typename ParallelComponent::chare_type;
+  using charm_type = charm_types_with_parameters<
+      ParallelComponent, typename ParallelComponent::metavariables,
+      typename ParallelComponent::action_list,
+      typename get_array_index<chare_type>::template f<ParallelComponent>,
+      typename ParallelComponent::initial_databox>;
+  using cproxy = typename charm_type::cproxy;
+  using ckindex = typename charm_type::ckindex;
+  using algorithm = typename charm_type::algorithm;
+
+  RegisterReceiveData() = default;
+  RegisterReceiveData(const RegisterReceiveData&) = default;
+  RegisterReceiveData& operator=(const RegisterReceiveData&) = default;
+  RegisterReceiveData(RegisterReceiveData&&) = default;
+  RegisterReceiveData& operator=(RegisterReceiveData&&) = default;
+  ~RegisterReceiveData() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    register_with_charm_helper(
+        std::integral_constant<
+            bool, (not Parallel::is_group_proxy<cproxy>::value and
+                   not Parallel::is_node_group_proxy<cproxy>::value)>{});
+  }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterReceiveData>();
+  }
+
+  static bool registrar;
+
+ private:
+  void register_with_charm_helper(std::true_type /*not is_group*/) const
+      noexcept {
+    ckindex::template idx_receive_data<ReceiveTag>(
+        static_cast<void (algorithm::*)(
+            const typename ReceiveTag::temporal_id&,
+            const detail::get_value_type_t<
+                typename ReceiveTag::type::mapped_type>&,
+            bool)>(nullptr));
+  }
+  void register_with_charm_helper(std::false_type /*is_group*/) const noexcept {
+    ckindex::template idx_receive_data<ReceiveTag>(
+        static_cast<void (algorithm::*)(
+            const typename ReceiveTag::temporal_id&,
+            const typename std::decay<
+                typename ReceiveTag::type::mapped_type::value_type>::type&)>(
+            nullptr));
+  }
+};
+
 /*!
  * \ingroup CharmExtensionsGroup
  * \brief Derived class for registering reduction actions
@@ -311,6 +403,13 @@ bool Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                              Action>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterSimpleAction<ParallelComponent, Action>>();
+
+// clang-tidy: redundant declaration
+template <typename ParallelComponent, typename ReceiveTag>
+bool Parallel::charmxx::RegisterReceiveData<ParallelComponent,
+                                            ReceiveTag>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterReceiveData<ParallelComponent, ReceiveTag>>();
 
 // clang-tidy: redundant declaration
 template <typename ParallelComponent, typename Action, typename ReductionType>

@@ -621,6 +621,8 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
                  const bool enable_if_disabled) noexcept {
+  (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
+                                               ReceiveTag>::registrar;
   try {
     lock(&node_lock_);
     if (enable_if_disabled) {
