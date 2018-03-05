@@ -76,7 +76,7 @@ class Variables<tmpl::list<Tags...>> {
   /// \cond
   // If you encounter an error of the `size()` function not existing you are
   // not filling the Variables with Tensors. Variables can be generalized to
-  // holding containers other than Tensor by having the contaiers have a
+  // holding containers other than Tensor by having the containers have a
   // `size()` function that in most cases should return 1. For Tensors the
   // `size()` function returns the number of independent components.
   template <typename State, typename Element>

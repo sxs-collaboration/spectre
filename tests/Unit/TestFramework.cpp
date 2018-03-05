@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {
   CHECK(1.0 == approx(1.0 + 5e-13).epsilon(1e-12));
   /// [approx_single_custom]
   /// [approx_new_custom]
-  // The checks in this test need tolerance 1d-12 for X reason.
+  // The checks in this test need tolerance 1e-12 for X reason.
   Approx my_approx = Approx::custom().epsilon(1e-12);
   CHECK(1.0 == my_approx(1.0 + 5e-13));
   CHECK(1.0 != my_approx(1.0 + 5e-12));
