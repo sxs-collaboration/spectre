@@ -1,10 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-
 #include "Utilities/EqualWithinRoundoff.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 static_assert(equal_within_roundoff(1.0, 1.0 - 4.0e-16, 1.0e-15),
               "Failed testing EqualWithinRoundoff");

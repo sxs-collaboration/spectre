@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/EagerMath/DivideBy.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
                   "[DataStructures][Unit]") {

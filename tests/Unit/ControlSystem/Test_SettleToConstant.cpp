@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "ControlSystem/SettleToConstant.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.SettleToConstant",
                   "[ControlSystem][Unit]") {

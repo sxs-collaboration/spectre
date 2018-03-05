@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 /*!
  * \ingroup TestingFrameworkGroup

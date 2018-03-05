@@ -11,7 +11,7 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #include "Utilities/StdArrayHelpers.hpp"
 #pragma GCC diagnostic pop
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Arithmetic",
                   "[DataStructures][Unit]") {

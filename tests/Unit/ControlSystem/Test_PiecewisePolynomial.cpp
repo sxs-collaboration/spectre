@@ -5,7 +5,7 @@
 
 #include "ControlSystem/PiecewisePolynomial.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
                   "[ControlSystem][Unit]") {

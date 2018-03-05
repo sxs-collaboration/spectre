@@ -5,7 +5,7 @@
 
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [overloader_example]

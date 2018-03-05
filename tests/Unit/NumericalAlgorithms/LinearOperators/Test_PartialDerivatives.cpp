@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"

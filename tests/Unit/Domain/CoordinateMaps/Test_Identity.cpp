@@ -7,6 +7,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 template <size_t Dim>
 void test_identity() {

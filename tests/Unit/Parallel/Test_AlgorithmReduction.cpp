@@ -17,7 +17,7 @@
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 struct TestMetavariables;
 template <class Metavariables>

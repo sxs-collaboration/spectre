@@ -17,7 +17,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Utilities/MakeVector.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;

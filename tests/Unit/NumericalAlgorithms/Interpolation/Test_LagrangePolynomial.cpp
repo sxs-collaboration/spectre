@@ -5,7 +5,8 @@
 #include <catch.hpp>
 
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/Gsl.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.LagrangePolynomial",
                   "[Unit][NumericalAlgorithms]") {

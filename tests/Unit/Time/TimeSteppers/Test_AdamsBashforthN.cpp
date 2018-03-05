@@ -16,6 +16,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {

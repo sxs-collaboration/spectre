@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Utilities/DereferenceWrapper.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 static_assert(
     std::is_same<decltype(dereference_wrapper(std::declval<double>())),

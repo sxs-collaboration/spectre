@@ -5,7 +5,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void check_slice_iterator_helper(SliceIterator si) {

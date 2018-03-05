@@ -10,7 +10,7 @@
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

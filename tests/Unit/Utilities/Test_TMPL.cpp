@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 /// [swallow_example]
 namespace {

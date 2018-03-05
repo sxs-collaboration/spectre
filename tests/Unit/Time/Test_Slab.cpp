@@ -7,6 +7,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
   const double tstart_d = 0.68138945475734402635;

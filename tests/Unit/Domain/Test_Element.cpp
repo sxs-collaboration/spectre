@@ -11,6 +11,7 @@
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t VolumeDim>

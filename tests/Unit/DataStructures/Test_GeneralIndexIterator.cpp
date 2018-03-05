@@ -6,7 +6,7 @@
 
 #include "DataStructures/GeneralIndexIterator.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.GeneralIndexIterator",
                   "[Unit][DataStructures]") {

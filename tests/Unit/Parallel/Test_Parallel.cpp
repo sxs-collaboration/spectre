@@ -5,7 +5,7 @@
 
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct TestStream {

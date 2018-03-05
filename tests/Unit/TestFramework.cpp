@@ -2,9 +2,8 @@
 // See LICENSE.txt for details.
 
 #include <catch.hpp>
-#include <charm++.h>
 
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {
   /// [approx_test]
@@ -35,8 +34,8 @@ SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {
 
 /// [error_test]
 // [[OutputRegex, I failed]]
-SPECTRE_TEST_CASE("TestFramework.Abort", "[Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("TestFramework.Abort", "[Unit]") {
   ERROR_TEST();
   /// [error_test]
-  CkAbort("I failed");
+  Parallel::abort("I failed");
 }

@@ -5,7 +5,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/StripeIterator.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void check_stripe_iterator_helper(StripeIterator s) {

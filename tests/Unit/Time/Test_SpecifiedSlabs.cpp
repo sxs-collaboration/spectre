@@ -12,6 +12,7 @@
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct TimeTriggers {

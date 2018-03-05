@@ -14,7 +14,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 static constexpr int number_of_1d_array_elements = 14;
 

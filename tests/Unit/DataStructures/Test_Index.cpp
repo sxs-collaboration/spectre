@@ -7,6 +7,7 @@
 #include "DataStructures/Index.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   Index<0> index_0d;

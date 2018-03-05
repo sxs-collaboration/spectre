@@ -22,6 +22,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <size_t VolumeDim>

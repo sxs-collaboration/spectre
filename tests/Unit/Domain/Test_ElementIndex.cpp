@@ -8,6 +8,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/SegmentId.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t VolumeDim>

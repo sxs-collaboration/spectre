@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "Utilities/Deferred.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [functions_used]

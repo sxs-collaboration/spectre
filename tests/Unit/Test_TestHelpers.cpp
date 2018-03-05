@@ -4,7 +4,9 @@
 #include <catch.hpp>
 
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   std::vector<double> vector{0, 1, 2, 3};

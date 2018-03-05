@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "DataStructures/IndexIterator.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.IndexIterator",
                   "[DataStructures][Unit]") {

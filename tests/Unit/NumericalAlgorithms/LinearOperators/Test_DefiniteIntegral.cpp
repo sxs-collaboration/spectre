@@ -10,7 +10,7 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_definite_integral_1d(const Index<1>& extents) {

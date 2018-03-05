@@ -7,7 +7,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "tests/Unit/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim>

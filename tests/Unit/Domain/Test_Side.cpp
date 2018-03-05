@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "Domain/Side.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.Side", "[Domain][Unit]") {
   Side side_lower = Side::Lower;

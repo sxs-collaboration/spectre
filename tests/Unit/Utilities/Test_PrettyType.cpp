@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "Utilities/PrettyType.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.Fundamental",
                   "[Utilities][Unit]") {

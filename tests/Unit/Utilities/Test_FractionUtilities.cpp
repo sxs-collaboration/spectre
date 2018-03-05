@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Utilities/FractionUtilities.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename Source>

@@ -7,6 +7,7 @@
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

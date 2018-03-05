@@ -13,6 +13,7 @@
 #include "tests/Unit/PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/VerifyEinsteinSolution.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

@@ -9,7 +9,7 @@
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Blas.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",

@@ -16,7 +16,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t N>

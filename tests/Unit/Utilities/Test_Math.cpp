@@ -4,7 +4,7 @@
 #include <catch.hpp>
 
 #include "Utilities/Math.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
   // Test number_of_digits

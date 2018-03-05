@@ -11,6 +11,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 using DV = DataVector;
