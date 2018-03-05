@@ -64,11 +64,6 @@ struct CharmRegisterFunctions {
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
 
-  static void register_algorithm() {
-    ckindex::__register(get_template_parameters_as_string<algorithm>().c_str(),
-                        sizeof(algorithm));
-  }
-
   template <class... ReceiveTags,
             typename std::enable_if<
                 (sizeof...(ReceiveTags),
@@ -122,9 +117,15 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
               return a->name() < b->name();
             });
 
-  swallow(
-      ((void)CharmRegisterFunctions<ParallelComponents>::register_algorithm(),
-       0)...);
+  // register chares and parallel components
+  for (size_t i = 0;
+       i < charm_register_list_size and i < charm_register_list_capacity; ++i) {
+    // clang-tidy: do not use pointer arithmetic
+    if (charm_register_list[i]->is_registering_chare()) {  // NOLINT
+      charm_register_list[i]->register_with_charm();       // NOLINT
+    }
+  }
+
   swallow((
       (void)CharmRegisterFunctions<ParallelComponents>::register_receive_data(
           Parallel::get_inbox_tags<typename ParallelComponents::action_list>{}),
@@ -133,7 +134,9 @@ void register_parallel_components(tmpl::list<ParallelComponents...> /*meta*/) {
   for (size_t i = 0;
        i < charm_register_list_size and i < charm_register_list_capacity; ++i) {
     // clang-tidy: do not use pointer arithmetic
-    charm_register_list[i]->register_with_charm();  // NOLINT
+    if (not charm_register_list[i]->is_registering_chare()) {  // NOLINT
+      charm_register_list[i]->register_with_charm();           // NOLINT
+    }
   }
   delete[] charm_register_list;
 }

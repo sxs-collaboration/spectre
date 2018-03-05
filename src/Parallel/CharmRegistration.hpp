@@ -82,6 +82,51 @@ struct RegistrationHelper {
 
   virtual void register_with_charm() const noexcept = 0;
   virtual std::string name() const noexcept = 0;
+  virtual bool is_registering_chare() const noexcept { return false; };
+};
+
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Derived class for registering parallel components.
+ *
+ * Calls the appropriate Charm++ function to register a parallel component.
+ */
+template <typename ParallelComponent>
+struct RegisterParallelComponent : RegistrationHelper {
+  using chare_type = typename ParallelComponent::chare_type;
+  using charm_type = charm_types_with_parameters<
+      ParallelComponent, typename ParallelComponent::metavariables,
+      typename ParallelComponent::action_list,
+      typename get_array_index<chare_type>::template f<ParallelComponent>,
+      typename ParallelComponent::initial_databox>;
+  using ckindex = typename charm_type::ckindex;
+  using algorithm = typename charm_type::algorithm;
+
+  RegisterParallelComponent() = default;
+  RegisterParallelComponent(const RegisterParallelComponent&) = default;
+  RegisterParallelComponent& operator=(const RegisterParallelComponent&) =
+      default;
+  RegisterParallelComponent(RegisterParallelComponent&&) = default;
+  RegisterParallelComponent& operator=(RegisterParallelComponent&&) = default;
+  ~RegisterParallelComponent() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    ckindex::__register(get_template_parameters_as_string<algorithm>().c_str(),
+                        sizeof(algorithm));
+  }
+
+  bool is_registering_chare() const noexcept override { return true; }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterParallelComponent>();
+  }
+
+  static bool registrar;
 };
 
 /*!
@@ -245,6 +290,13 @@ bool register_func_with_charm() noexcept {
 }
 }  // namespace charmxx
 }  // namespace Parallel
+
+// clang-tidy: redundant declaration
+template <typename ParallelComponent>
+bool Parallel::charmxx::RegisterParallelComponent<
+    ParallelComponent>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterParallelComponent<ParallelComponent>>();
 
 // clang-tidy: redundant declaration
 template <typename ParallelComponent, typename Action, typename... Args>

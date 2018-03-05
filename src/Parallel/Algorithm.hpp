@@ -504,6 +504,11 @@ template <typename ParallelComponent, typename ChareType,
 AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
               tmpl::list<ActionsPack...>, ArrayIndex,
               InitialDataBox>::~AlgorithmImpl() {
+  // We place the registrar in the destructor since every AlgorithmImpl will
+  // have a destructor, but we have different constructors so it's not clear
+  // which will be instantiated.
+  (void)Parallel::charmxx::RegisterParallelComponent<
+      ParallelComponent>::registrar;
   make_overloader(
       [](CmiNodeLock& node_lock) {
 #pragma GCC diagnostic push
