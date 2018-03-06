@@ -14,8 +14,9 @@ function(add_scalar_wave_executable DIM)
     "// See LICENSE.txt for details.\n"
     "\n"
     "#include \"Evolution/Executables/ScalarWave/EvolveScalarWave.hpp\"\n"
+    "#include \"Parallel/Main.hpp\"\n"
     "\n"
-    "using charm_metavariables = EvolutionMetavars<${DIM}>;\n"
+    "using charmxx_main_component = Parallel::Main<EvolutionMetavars<${DIM}>>;\n"
     "\n"
     "#include \"Parallel/CharmMain.cpp\"\n"
     )

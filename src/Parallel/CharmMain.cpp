@@ -115,25 +115,6 @@ void register_init_node_and_proc() noexcept {
     _registerInitCall(*init_proc_func, 0);
   }
 }
-
-template <class Metavariables>
-void register_main_and_cache() noexcept {
-  static bool done_registration{false};
-  if (done_registration) {
-    return;  // LCOV_EXCL_LINE
-  }
-  done_registration = true;
-  Parallel::CkIndex_Main<Metavariables>::__register(
-      Parallel::charmxx::get_template_parameters_as_string<
-          Main<Metavariables>>()
-          .c_str(),
-      sizeof(Parallel::Main<Metavariables>));
-  Parallel::CkIndex_ConstGlobalCache<Metavariables>::__register(
-      Parallel::charmxx::get_template_parameters_as_string<
-          Parallel::ConstGlobalCache<Metavariables>>()
-          .c_str(),
-      sizeof(Parallel::ConstGlobalCache<Metavariables>));
-}
 }  // namespace charmxx
 }  // namespace Parallel
 
@@ -150,7 +131,8 @@ void register_main_and_cache() noexcept {
  * components, all entry methods, and all custom reduction functions.
  */
 extern "C" void CkRegisterMainModule() {
+  (void)charmxx_main_component{
+      Parallel::charmxx::MainChareRegistrationConstructor{}};
   Parallel::charmxx::register_init_node_and_proc();
-  Parallel::charmxx::register_main_and_cache<charm_metavariables>();
   Parallel::charmxx::register_parallel_components();
 }

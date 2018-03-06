@@ -61,6 +61,9 @@ struct SystemAnalyticSolution {
     }
     return variables;
   }
+
+  // clang-tidy: do not use references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 struct System {

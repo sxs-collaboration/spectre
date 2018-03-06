@@ -659,6 +659,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 
-using charm_metavariables = TestMetavariables;
+/// [charm_main_example]
+using charmxx_main_component = Parallel::Main<TestMetavariables>;
+/// [charm_main_example]
 
 #include "Parallel/CharmMain.cpp"

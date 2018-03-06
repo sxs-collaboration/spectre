@@ -78,6 +78,9 @@ class NumericalFlux {
     normal_dot_numerical_flux->get() = 11.0 * packaged_var_interior.get() +
                                        1000. * packaged_var_exterior.get();
   }
+
+  // clang-tidy: do not use references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 struct NumericalFluxTag {

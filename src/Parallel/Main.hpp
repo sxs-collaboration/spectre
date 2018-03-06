@@ -15,6 +15,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -56,6 +57,22 @@ class Main : public CBase_Main<Metavariables> {
   using component_list = typename Metavariables::component_list;
   using const_global_cache_tags =
       typename ConstGlobalCache<Metavariables>::tag_list;
+
+  /// \cond HIDDEN_SYMBOLS
+  /// The constructor used to register the class
+  explicit Main(
+      const Parallel::charmxx::
+          MainChareRegistrationConstructor& /*used for registration*/) noexcept
+      : options_{"Uninitialized during default construction"} {}
+  ~Main() noexcept override {
+    (void)Parallel::charmxx::RegisterChare<
+        Main<Metavariables>, CkIndex_Main<Metavariables>>::registrar;
+  }
+  Main(const Main&) = default;
+  Main& operator=(const Main&) = default;
+  Main(Main&&) = default;
+  Main& operator=(Main&&) = default;
+  /// \endcond
 
   explicit Main(CkArgMsg* msg) noexcept;
   explicit Main(CkMigrateMessage* /*msg*/)

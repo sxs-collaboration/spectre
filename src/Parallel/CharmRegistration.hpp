@@ -15,6 +15,18 @@
 
 namespace Parallel {
 namespace charmxx {
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Class to mark a constructor as a constructor for the main chare.
+ *
+ * The main chare must have a constructor that takes a `const
+ * Parallel::charmxx::MainChareRegistrationConstructor&` as its only argument.
+ * This constructor is only used to trigger the `RegisterChare::registrar` code
+ * needed for automatic registration.
+ * \see RegisterChare
+ */
+struct MainChareRegistrationConstructor {};
+
 /// \cond
 struct RegistrationHelper;
 extern std::unique_ptr<RegistrationHelper>* charm_register_list;
@@ -127,6 +139,54 @@ struct RegisterParallelComponent : RegistrationHelper {
 
   std::string name() const noexcept override {
     return get_template_parameters_as_string<RegisterParallelComponent>();
+  }
+
+  static bool registrar;
+};
+
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Derived class for registering chares.
+ *
+ * Calls the appropriate Charm++ function to register a chare
+ *
+ * The chare that is being registered must have the following in the destructor:
+ * \code
+ * (void)Parallel::charmxx::RegisterChare<ChareName,
+ *     CkIndex_ChareName>::registrar;
+ * \endcode
+ *
+ * The main chare must also have a constructor that takes a `const
+ * Parallel::charmxx::MainChareRegistrationConstructor&` as its only argument.
+ * This constructor is only used to trigger the `RegisterChare::registrar` code
+ * needed for automatic registration. The main chare is determined by specifying
+ * the type alias `charmxx_main_component` before the `Parallel/CharmMain.cpp`
+ * include.
+ * \snippet Test_AlgorithmCore.cpp charm_main_example
+ */
+template <typename Chare, typename CkIndex>
+struct RegisterChare : RegistrationHelper {
+  RegisterChare() = default;
+  RegisterChare(const RegisterChare&) = default;
+  RegisterChare& operator=(const RegisterChare&) = default;
+  RegisterChare(RegisterChare&&) = default;
+  RegisterChare& operator=(RegisterChare&&) = default;
+  ~RegisterChare() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    CkIndex::__register(get_template_parameters_as_string<Chare>().c_str(),
+                        sizeof(Chare));
+  }
+
+  bool is_registering_chare() const noexcept override { return true; }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterChare>();
   }
 
   static bool registrar;
@@ -389,6 +449,12 @@ bool Parallel::charmxx::RegisterParallelComponent<
     ParallelComponent>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterParallelComponent<ParallelComponent>>();
+
+// clang-tidy: redundant declaration
+template <typename Chare, typename CkIndex>
+bool Parallel::charmxx::RegisterChare<Chare, CkIndex>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterChare<Chare, CkIndex>>();
 
 // clang-tidy: redundant declaration
 template <typename ParallelComponent, typename Action, typename... Args>

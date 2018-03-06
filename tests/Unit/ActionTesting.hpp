@@ -67,6 +67,16 @@ class MockProxy {
         (*local_algorithms_)[index], (*inboxes_)[index]);
   }
 
+  // clang-tidy: no non-const references
+  void pup(PUP::er& /*p*/) noexcept {  // NOLINT
+    ERROR(
+        "Should not try to serialize the mock proxy. If you encountered this "
+        "error you are using the mocking framework in a way that it was not "
+        "intended to be used. It may be possible to extend it to more use "
+        "cases but it is recommended you file an issue to discuss before "
+        "modifying the mocking framework.");
+  }
+
  private:
   LocalAlgorithms* local_algorithms_;
   Inboxes* inboxes_;

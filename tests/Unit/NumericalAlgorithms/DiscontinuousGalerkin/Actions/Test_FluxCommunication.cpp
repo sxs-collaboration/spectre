@@ -60,6 +60,9 @@ class NumericalFlux {
       const db::item_type<flux_tag>& neighbor_fluxes) const noexcept {
     return 11. * self_fluxes + 1000. * neighbor_fluxes;
   }
+
+  // clang-tidy: do not use references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 struct NumericalFluxTag {
