@@ -3,7 +3,10 @@
 
 set(executable RunTests)
 
-set(SPECTRE_TESTS "Test_TestingFramework.cpp")
+set(SPECTRE_TESTS
+    "Test_TestHelpers.cpp"
+    "Test_TestingFramework.cpp"
+    )
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
@@ -25,8 +28,6 @@ add_subdirectory(Pypp)
 add_subdirectory(TestUtilities)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
-
-set(SPECTRE_TESTS "${SPECTRE_TESTS};Test_TestHelpers.cpp")
 
 add_charm_module(${executable})
 
