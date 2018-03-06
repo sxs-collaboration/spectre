@@ -473,33 +473,27 @@ class BulgedCube {
   BulgedCube& operator=(BulgedCube&&) noexcept = default;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> operator()(
+  std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> inverse(
+  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
       const std::array<T, 3>& target_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-  jacobian(const std::array<T, 3>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   template <typename T>
-  Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-         tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::NoFrame>,
-                    SpatialIndex<3, UpLo::Lo, Frame::NoFrame>>>
-  inv_jacobian(const std::array<T, 3>& source_coords) const noexcept;
+  tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> inv_jacobian(
+      const std::array<T, 3>& source_coords) const noexcept;
 
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   template <typename T>
-  std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 3> xi_derivative(
+  std::array<tt::remove_cvref_wrap_t<T>, 3> xi_derivative(
       const std::array<T, 3>& source_coords) const noexcept;
   friend bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) noexcept;
   double radius_;

@@ -371,13 +371,15 @@ using iJkk = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
 
 }  // namespace tnsr
 
-template <size_t Dim, typename SourceFrame, typename TargetFrame>
+template <typename DataType, size_t Dim, typename SourceFrame,
+          typename TargetFrame>
 using InverseJacobian =
-    Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-           tmpl::list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+           index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
                       SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>;
 
-template <size_t Dim, typename SourceFrame, typename TargetFrame>
-using Jacobian = Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                        tmpl::list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
+template <typename DataType, size_t Dim, typename SourceFrame,
+          typename TargetFrame>
+using Jacobian = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+                        index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
                                    SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>;

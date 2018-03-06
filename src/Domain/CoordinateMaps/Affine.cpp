@@ -3,9 +3,12 @@
 
 #include "Domain/CoordinateMaps/Affine.hpp"
 
+#include <pup.h>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace CoordinateMaps {
@@ -21,45 +24,33 @@ Affine::Affine(const double A, const double B, const double a, const double b)
       inverse_jacobian_(length_of_domain_ / length_of_range_) {}
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> Affine::
-operator()(const std::array<T, 1>& source_coords) const {
+std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::operator()(
+    const std::array<T, 1>& source_coords) const noexcept {
   return {{(length_of_range_ * source_coords[0] + a_ * B_ - b_ * A_) /
            length_of_domain_}};
 }
 
 template <typename T>
-std::array<std::decay_t<tt::remove_reference_wrapper_t<T>>, 1> Affine::inverse(
-    const std::array<T, 1>& target_coords) const {
+std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::inverse(
+    const std::array<T, 1>& target_coords) const noexcept {
   return {{(length_of_domain_ * target_coords[0] - a_ * B_ + b_ * A_) /
            length_of_range_}};
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<T, 1>& source_coords) const {
-  return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-                tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
-      make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
-          dereference_wrapper(source_coords[0]), jacobian_)};
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Affine::jacobian(
+    const std::array<T, 1>& source_coords) const noexcept {
+  return make_with_value<
+      tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
+      dereference_wrapper(source_coords[0]), jacobian_);
 }
 
 template <typename T>
-Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-       tmpl::integral_list<std::int32_t, 2, 1>,
-       index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                  SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<T, 1>& source_coords) const {
-  return Tensor<std::decay_t<tt::remove_reference_wrapper_t<T>>,
-                tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>{
-      make_with_value<std::decay_t<tt::remove_reference_wrapper_t<T>>>(
-          dereference_wrapper(source_coords[0]), inverse_jacobian_)};
+tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> Affine::inv_jacobian(
+    const std::array<T, 1>& source_coords) const noexcept {
+  return make_with_value<
+      tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>>(
+      dereference_wrapper(source_coords[0]), inverse_jacobian_);
 }
 
 void Affine::pup(PUP::er& p) {
@@ -83,63 +74,27 @@ bool operator==(const CoordinateMaps::Affine& lhs,
 }
 
 // Explicit instantiations
-template std::array<double, 1> Affine::operator()(
-    const std::array<std::reference_wrapper<const double>, 1>& source_coords)
-    const;
-template std::array<double, 1> Affine::operator()(
-    const std::array<double, 1>& source_coords) const;
-template std::array<DataVector, 1> Affine::operator()(
-    const std::array<std::reference_wrapper<const DataVector>, 1>&
-        source_coords) const;
-template std::array<DataVector, 1> Affine::operator()(
-    const std::array<DataVector, 1>& source_coords) const;
+/// \cond
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template std::array<double, 1> Affine::inverse(
-    const std::array<std::reference_wrapper<const double>, 1>& target_coords)
-    const;
-template std::array<double, 1> Affine::inverse(
-    const std::array<double, 1>& target_coords) const;
-template std::array<DataVector, 1> Affine::inverse(
-    const std::array<std::reference_wrapper<const DataVector>, 1>&
-        target_coords) const;
-template std::array<DataVector, 1> Affine::inverse(
-    const std::array<DataVector, 1>& target_coords) const;
+#define INSTANTIATE(_, data)                                                  \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> Affine::       \
+  operator()(const std::array<DTYPE(data), 1>& source_coords) const noexcept; \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                \
+  Affine::inverse(const std::array<DTYPE(data), 1>& target_coords)            \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
+  Affine::jacobian(const std::array<DTYPE(data), 1>& source_coords)           \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
+  Affine::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)       \
+      const noexcept;
 
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<std::reference_wrapper<const double>, 1>&
-                     source_coords) const;
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<double, 1>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<std::reference_wrapper<const DataVector>, 1>&
-                     source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::jacobian(const std::array<DataVector, 1>& source_coords) const;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
+                                      std::reference_wrapper<const double>,
+                                      std::reference_wrapper<const DataVector>))
 
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<std::reference_wrapper<const double>, 1>&
-                         source_coords) const;
-template Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<double, 1>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<std::reference_wrapper<const DataVector>,
-                                      1>& source_coords) const;
-template Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                index_list<SpatialIndex<1, UpLo::Up, Frame::NoFrame>,
-                           SpatialIndex<1, UpLo::Lo, Frame::NoFrame>>>
-Affine::inv_jacobian(const std::array<DataVector, 1>& source_coords) const;
+#undef DTYPE
+#undef INSTANTIATE
+/// \endcond
 }  // namespace CoordinateMaps
