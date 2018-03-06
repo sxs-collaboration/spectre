@@ -80,6 +80,7 @@ INPUT += @PROJECT_SOURCE_DIR@/docs
 
 # Add files to scan that explain testing framework
 INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/DataStructures/TestHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/TestCreation.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/TestHelpers.hpp \
