@@ -19,27 +19,32 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanMagnitude",
     const DataVector twelve(npts, 12.0);
 
     const tnsr::i<DataVector, 1, Frame::Grid> one_d_covector{{{two}}};
-    CHECK(get(magnitude(one_d_covector)) == two);
+    CHECK_ITERABLE_APPROX(get(magnitude(one_d_covector)), two);
 
     const tnsr::i<DataVector, 1, Frame::Grid> negative_one_d_covector{
         {{minus_three}}};
-    CHECK(get(magnitude(negative_one_d_covector)) == (DataVector{npts, 3.0}));
+    CHECK_ITERABLE_APPROX(get(magnitude(negative_one_d_covector)),
+                          (DataVector{npts, 3.0}));
 
     const tnsr::A<DataVector, 1, Frame::Grid> one_d_vector{
         {{minus_three, four}}};
-    CHECK(get(magnitude(one_d_vector)) == (DataVector{npts, 5.0}));
+    CHECK_ITERABLE_APPROX(get(magnitude(one_d_vector)),
+                          (DataVector{npts, 5.0}));
 
     const tnsr::I<DataVector, 2, Frame::Grid> two_d_vector{
         {{minus_five, twelve}}};
-    CHECK(get(magnitude(two_d_vector)) == (DataVector{npts, 13.0}));
+    CHECK_ITERABLE_APPROX(get(magnitude(two_d_vector)),
+                          (DataVector{npts, 13.0}));
 
     const tnsr::i<DataVector, 3, Frame::Grid> three_d_covector{
         {{minus_three, twelve, four}}};
-    CHECK(get(magnitude(three_d_covector)) == (DataVector{npts, 13.0}));
+    CHECK_ITERABLE_APPROX(get(magnitude(three_d_covector)),
+                          (DataVector{npts, 13.0}));
 
     const tnsr::a<DataVector, 4, Frame::Grid> five_d_covector{
         {{two, twelve, four, one, two}}};
-    CHECK(get(magnitude(five_d_covector)) == (DataVector{npts, 13.0}));
+    CHECK_ITERABLE_APPROX(get(magnitude(five_d_covector)),
+                          (DataVector{npts, 13.0}));
   }
   // Check case for doubles
   {
@@ -72,7 +77,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
       return tensor;
     }();
 
-    CHECK(get(magnitude(one_d_covector, inv_h)) == (DataVector{npts, 4.0}));
+    CHECK_ITERABLE_APPROX(get(magnitude(one_d_covector, inv_h)),
+                          (DataVector{npts, 4.0}));
     const tnsr::i<DataVector, 3, Frame::Grid> three_d_covector{
         {{minus_three, twelve, four}}};
     const tnsr::II<DataVector, 3, Frame::Grid> inv_g =
@@ -86,8 +92,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
           get<2, 2>(tensor) = thirteen;
           return tensor;
         }();
-    CHECK(get(magnitude(three_d_covector, inv_g)) ==
-          (DataVector{npts, sqrt(778.0)}));
+    CHECK_ITERABLE_APPROX(get(magnitude(three_d_covector, inv_g)),
+                          (DataVector{npts, sqrt(778.0)}));
   }
 
   {
@@ -95,7 +101,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     const tnsr::i<double, 1, Frame::Grid> one_d_covector{2.0};
     const tnsr::II<double, 1, Frame::Grid> inv_h = []() {
       tnsr::II<double, 1, Frame::Grid> tensor{};
-      get<0, 0>(tensor) = 4.;
+      get<0, 0>(tensor) = 4.0;
       return tensor;
     }();
 
@@ -104,12 +110,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     const tnsr::i<double, 3, Frame::Grid> three_d_covector{{{-3.0, 12.0, 4.0}}};
     const tnsr::II<double, 3, Frame::Grid> inv_g = []() {
       tnsr::II<double, 3, Frame::Grid> tensor{};
-      get<0, 0>(tensor) = 2;
-      get<0, 1>(tensor) = -3;
-      get<0, 2>(tensor) = 4;
-      get<1, 1>(tensor) = -5;
-      get<1, 2>(tensor) = 12;
-      get<2, 2>(tensor) = 13;
+      get<0, 0>(tensor) = 2.0;
+      get<0, 1>(tensor) = -3.0;
+      get<0, 2>(tensor) = 4.0;
+      get<1, 1>(tensor) = -5.0;
+      get<1, 2>(tensor) = 12.0;
+      get<2, 2>(tensor) = 13.0;
       return tensor;
     }();
     CHECK(get(magnitude(three_d_covector, inv_g)) == sqrt(778.0));
