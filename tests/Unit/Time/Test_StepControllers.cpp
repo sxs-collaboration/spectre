@@ -33,6 +33,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction.Factory",
                   "[Unit][Time]") {
   test_factory_creation<StepController>("  BinaryFraction");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Time.StepControllers.BinaryFraction.Factory does not need to
+  // check anything
+  CHECK(true);
 }
 
 // [[OutputRegex, Not at a binary-fraction time within slab]]
@@ -64,6 +68,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab.Factory",
                   "[Unit][Time]") {
   test_factory_creation<StepController>("  FullSlab");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Time.StepControllers.FullSlab.Factory does not need to
+  // check anything
+  CHECK(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
@@ -91,6 +99,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes.Factory",
                   "[Unit][Time]") {
   test_factory_creation<StepController>("  SimpleTimes");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Time.StepControllers.SimpleTimes.Factory does not need to
+  // check anything
+  CHECK(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
@@ -114,4 +126,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining.Factory",
                   "[Unit][Time]") {
   test_factory_creation<StepController>("  SplitRemaining");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Time.StepControllers.SplitRemaining.Factory does not need to
+  // check anything
+  CHECK(true);
 }

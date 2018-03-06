@@ -35,6 +35,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Stability",
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Factory",
                   "[Unit][Time]") {
   test_factory_creation<TimeStepper>("  RungeKutta3");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Time.TimeSteppers.RungeKutta3.Factory does not need to
+  // check anything
+  CHECK(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Boundary.Equal",

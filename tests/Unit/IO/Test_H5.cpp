@@ -62,6 +62,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {
   auto my_file2 = std::make_unique<h5::H5File<h5::AccessType::ReadWrite>>(
       std::move(*my_file));
   my_file.reset();
+  CHECK(my_file == nullptr);
 
   h5::H5File<h5::AccessType::ReadWrite> my_file3(h5_file_name2);
   my_file3 = std::move(*my_file2);
@@ -501,6 +502,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
         file_id, "/group/group2/group3", h5::AccessType::ReadWrite);
     h5::detail::OpenGroup group2(std::move(*group));
     group.reset();
+    CHECK(group == nullptr);
     CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
   }
 

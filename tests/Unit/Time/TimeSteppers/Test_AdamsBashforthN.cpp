@@ -84,6 +84,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Factory",
                   "[Unit][Time]") {
   test_factory_creation<TimeStepper>("  AdamsBashforthN:\n"
                                      "    TargetOrder: 3");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Time.TimeSteppers.AdamsBashforthN.Factory does not need to
+  // check anything
+  CHECK(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Equal",

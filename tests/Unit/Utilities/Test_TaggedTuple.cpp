@@ -5,7 +5,6 @@
 #include <sstream>
 #include <vector>
 
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
@@ -150,6 +149,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.NoTag", "[Unit][Utilities]") {
   tuples::TaggedTuple<> dummy;
   tuples::TaggedTuple<> dummy1;
   dummy.swap(dummy1);
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Utilities.TaggedTuple.NoTag does not need to check anything
+  CHECK(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.SingleTag", "[Unit][Utilities]") {
@@ -681,32 +683,31 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.relational",
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.helper_classes",
-                  "[Unit][Utilities]") {
-  static_assert(
-      tuples::tuple_size<
-          tuples::TaggedTuple<tags::no_default, tags::empty_base>>::value == 2,
-      "Failed check tuple_size");
-  static_assert(tuples::tuple_size<const tuples::TaggedTuple<
-                        tags::no_default, tags::empty_base>>::value == 2,
-                "Failed check tuple_size");
-  static_assert(tuples::tuple_size<volatile tuples::TaggedTuple<
-                        tags::no_default, tags::empty_base>>::value == 2,
-                "Failed check tuple_size");
-  static_assert(tuples::tuple_size<const volatile tuples::TaggedTuple<
-                        tags::no_default, tags::empty_base>>::value == 2,
-                "Failed check tuple_size");
+static_assert(
+    tuples::tuple_size<
+        tuples::TaggedTuple<tags::no_default, tags::empty_base>>::value == 2,
+    "Failed check tuple_size");
+static_assert(
+    tuples::tuple_size<
+        const tuples::TaggedTuple<tags::no_default, tags::empty_base>>::value ==
+        2,
+    "Failed check tuple_size");
+static_assert(tuples::tuple_size<volatile tuples::TaggedTuple<
+                      tags::no_default, tags::empty_base>>::value == 2,
+              "Failed check tuple_size");
+static_assert(tuples::tuple_size<const volatile tuples::TaggedTuple<
+                      tags::no_default, tags::empty_base>>::value == 2,
+              "Failed check tuple_size");
 
-  static_assert(tuples::tuple_size<tuples::TaggedTuple<>>::value == 0,
-                "Failed check tuple_size");
-  static_assert(tuples::tuple_size<const tuples::TaggedTuple<>>::value == 0,
-                "Failed check tuple_size");
-  static_assert(tuples::tuple_size<volatile tuples::TaggedTuple<>>::value == 0,
-                "Failed check tuple_size");
-  static_assert(
-      tuples::tuple_size<const volatile tuples::TaggedTuple<>>::value == 0,
-      "Failed check tuple_size");
-}
+static_assert(tuples::tuple_size<tuples::TaggedTuple<>>::value == 0,
+              "Failed check tuple_size");
+static_assert(tuples::tuple_size<const tuples::TaggedTuple<>>::value == 0,
+              "Failed check tuple_size");
+static_assert(tuples::tuple_size<volatile tuples::TaggedTuple<>>::value == 0,
+              "Failed check tuple_size");
+static_assert(tuples::tuple_size<const volatile tuples::TaggedTuple<>>::value ==
+                  0,
+              "Failed check tuple_size");
 
 // C++17 Draft 23.5.3.3 swap
 struct not_swappable {
