@@ -59,6 +59,7 @@ struct NormalDotFlux : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "NormalDotFlux";
+  static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 /// \ingroup DataBoxTagsGroup
