@@ -52,8 +52,8 @@ struct Flux<Tag, VolumeDim, Fr,
 /// \endcond
 
 /// \ingroup DataBoxTagsGroup
-/// \brief Prefix indicating an unnormalized boundary normal vector
-/// dotted into the flux
+/// \brief Prefix indicating a boundary unit normal vector dotted into
+/// the flux
 template <typename Tag>
 struct NormalDotFlux : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
@@ -62,8 +62,8 @@ struct NormalDotFlux : db::DataBoxPrefix {
 };
 
 /// \ingroup DataBoxTagsGroup
-/// \brief Prefix indicating an unnormalized boundary normal vector
-/// dotted into the numerical flux
+/// \brief Prefix indicating a boundary unit normal vector dotted into
+/// the numerical flux
 template <typename Tag>
 struct NormalDotNumericalFlux : db::DataBoxPrefix {
   using type = db::item_type<Tag>;
