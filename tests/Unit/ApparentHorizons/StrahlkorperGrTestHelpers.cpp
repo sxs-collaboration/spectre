@@ -20,7 +20,7 @@ tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
 
   constexpr auto dimensionality = index_dim<0>(ricci);
 
-  const DataType r = magnitude(x);
+  const DataType r = get(magnitude(x));
 
   for (size_t i = 0; i < dimensionality; ++i) {
     for (size_t j = i; j < dimensionality; ++j) {
@@ -46,7 +46,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature_sphere(
 
   constexpr auto dimensionality = index_dim<0>(extrinsic_curvature);
 
-  const DataType one_over_r = 1.0 / magnitude(x);
+  const DataType one_over_r = 1.0 / get(magnitude(x));
 
   for (size_t i = 0; i < dimensionality; ++i) {
     extrinsic_curvature.get(i, i) += 1.0;

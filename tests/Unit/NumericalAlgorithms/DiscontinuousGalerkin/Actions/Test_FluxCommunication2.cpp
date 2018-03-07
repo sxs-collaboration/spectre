@@ -297,16 +297,19 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
   const DataVector xi_boundaries{
       0.,
       0.,
-      15774. / magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-                   Direction<2>::lower_xi()))[0],
+      15774. /
+          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::lower_xi())))[0],
       0.,
       0.,
-      18048. / magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-                   Direction<2>::lower_xi()))[1],
+      18048. /
+          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::lower_xi())))[1],
       0.,
       0.,
-      20322. / magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-                   Direction<2>::lower_xi()))[2]};
+      20322. /
+          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::lower_xi())))[2]};
   const DataVector eta_boundaries{
       0.,
       0.,
@@ -315,14 +318,14 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication2",
       0.,
       0.,
       16612. / 3. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta()))[0],
+          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::upper_eta())))[0],
       18128. / 3. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta()))[1],
+          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::upper_eta())))[1],
       19644. / 3. /
-          magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
-              Direction<2>::upper_eta()))[2]};
+          get(magnitude(db::get<Tags::UnnormalizedFaceNormal<2>>(start_box).at(
+              Direction<2>::upper_eta())))[2]};
 
   CHECK_ITERABLE_APPROX(
       get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box)).get(),
@@ -376,6 +379,6 @@ SPECTRE_TEST_CASE(
       runner.apply<component, dg::Actions::ComputeBoundaryFlux<Metavariables>>(
           sent_box, CharmIndexType(self_id)));
 
-  CHECK(get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box))
-            .get() == (DataVector{0., 0., 0., 0., 0., 0., 0., 0., 0.}));
+  CHECK(get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box)).get() ==
+        (DataVector{0., 0., 0., 0., 0., 0., 0., 0., 0.}));
 }

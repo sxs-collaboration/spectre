@@ -151,7 +151,7 @@ struct ComputeBoundaryFlux {
       db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
           local_normal_dot_flux.at(std::make_pair(direction, neighbor)),
           std::move(normal_dot_numerical_fluxes), extents[dimension],
-          magnitude(face_normal)));
+          get(magnitude(face_normal))));
 
       db::mutate<dt_variables_tag>(box, [
         &lifted_data, &extents, &dimension, &direction
@@ -280,7 +280,7 @@ struct SendDataForFluxes {
         const auto& face_normal =
             db::get<Tags::UnnormalizedFaceNormal<volume_dim>>(box).at(
                 direction);
-        DataVector magnitude_of_face_normal = magnitude(face_normal);
+        DataVector magnitude_of_face_normal = get(magnitude(face_normal));
         std::decay_t<decltype(face_normal)> unit_face_normal(
             magnitude_of_face_normal.size(), 0.0);
         for (size_t d = 0; d < volume_dim; ++d) {

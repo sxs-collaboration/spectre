@@ -50,9 +50,9 @@ void test_schwarzschild() {
       determinant_and_inverse(spatial_metric).second;
 
   const DataVector one_over_one_form_magnitude =
-      1.0 /
-      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-                inverse_spatial_metric);
+      1.0 / get(magnitude(
+                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                inverse_spatial_metric));
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
@@ -105,9 +105,9 @@ void test_minkowski() {
       solution.inverse_spatial_metric(cart_coords, t);
 
   const DataVector one_over_one_form_magnitude =
-      1.0 /
-      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-                inverse_spatial_metric);
+      1.0 / get(magnitude(
+                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                inverse_spatial_metric));
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
@@ -156,9 +156,9 @@ void test_minkowski() {
       solution.inverse_spatial_metric(cart_coords, t);
 
   const DataVector one_over_one_form_magnitude =
-      1.0 /
-      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-                inverse_spatial_metric);
+      1.0 / get(magnitude(
+                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                inverse_spatial_metric));
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
@@ -213,9 +213,9 @@ void test_schwarzschild() {
       determinant_and_inverse(spatial_metric).second;
 
   const DataVector one_over_one_form_magnitude =
-      1.0 /
-      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-                inverse_spatial_metric);
+      1.0 / get(magnitude(
+                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                inverse_spatial_metric));
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
@@ -263,9 +263,9 @@ void test_minkowski() {
       solution.inverse_spatial_metric(cart_coords, t);
 
   const DataVector one_over_one_form_magnitude =
-      1.0 /
-      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-                inverse_spatial_metric);
+      1.0 / get(magnitude(
+                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                inverse_spatial_metric));
   const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude);
