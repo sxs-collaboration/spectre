@@ -63,4 +63,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
       "    Amplitude: 3\n"
       "    Width: 2\n"
       "    Center: -9");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory does not need to
+  // check anything
+  CHECK(true);
 }

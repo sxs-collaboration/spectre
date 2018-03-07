@@ -58,4 +58,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
       "    Amplitude: 3\n"
       "    Wavenumber: 2\n"
       "    Phase: -9");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory does not need to
+  // check anything
+  CHECK(true);
 }

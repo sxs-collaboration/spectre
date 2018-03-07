@@ -19,6 +19,9 @@
 SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
   Options<tmpl::list<>> opts("");
   opts.parse("");
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Options.Empty.success does not need to check anything
+  CHECK(true);
 }
 
 // [[OutputRegex, In string:.*At line 1 column 1:.Option 'Option' is not a valid
@@ -286,6 +289,9 @@ SPECTRE_TEST_CASE("Unit.Options.ZeroArray.missing", "[Unit][Options]") {
   Options<tmpl::list<ZeroArray>> opts("");
   opts.parse("ZeroArray:");
   opts.get<ZeroArray>();
+  // Catch requires us to have at least one CHECK in each test
+  // The Unit.Options.ZeroArray.missing does not need to check anything
+  CHECK(true);
 }
 
 namespace {
