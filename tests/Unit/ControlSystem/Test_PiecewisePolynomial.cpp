@@ -1,9 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <cstddef>
 
+#include "ControlSystem/FunctionOfTime.hpp"
 #include "ControlSystem/PiecewisePolynomial.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

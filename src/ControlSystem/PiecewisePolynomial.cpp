@@ -4,11 +4,16 @@
 #include "ControlSystem/PiecewisePolynomial.hpp"
 
 #include <algorithm>
-#include <utility>
+#include <iterator>
+#include <ostream>
+#include <utility>  // IWYU pragma: keep
 
+#include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 
 template <size_t MaxDeriv>

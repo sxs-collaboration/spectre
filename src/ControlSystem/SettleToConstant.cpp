@@ -3,10 +3,9 @@
 
 #include "ControlSystem/SettleToConstant.hpp"
 
-#include <algorithm>
-#include <utility>
+#include <cmath>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 FunctionsOfTime::SettleToConstant::SettleToConstant(
