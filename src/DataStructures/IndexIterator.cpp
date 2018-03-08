@@ -37,4 +37,5 @@ template class IndexIterator<0>;
 template class IndexIterator<1>;
 template class IndexIterator<2>;
 template class IndexIterator<3>;
+template class IndexIterator<4>;
 /// \endcond
