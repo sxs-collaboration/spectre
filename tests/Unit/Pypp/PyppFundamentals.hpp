@@ -21,7 +21,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -203,6 +205,13 @@ struct ToPyObject<DataVector, std::nullptr_t> {
     return npy_array;
   }
 };
+
+template <typename T>
+struct ToPyObject<Scalar<T>> {
+  static PyObject* convert(const Scalar<T>& t) { return to_py_object(t.get()); }
+};
+
+template <>
 struct FromPyObject<long, std::nullptr_t> {
   static long convert(PyObject* t) {
     if (t == nullptr) {
@@ -384,5 +393,102 @@ struct FromPyObject<DataVector, std::nullptr_t> {
     return t;
   }
 };
+
+template <typename T>
+struct FromPyObject<Scalar<T>> {
+  static Scalar<T> convert(PyObject* p) {
+    return Scalar<T>{from_py_object<T>(p)};
+  }
+};
+
+// This function is needed because one cannot cast an array of size_t's (used by
+// SpECTRE) to an array of longs (used by NumPy).
+template <size_t Size>
+std::array<long, Size> convert_array_of_size_t_to_array_of_long(
+    const std::array<size_t, Size>& arr_of_size_t) {
+  std::array<long, Size> arr_of_long{};
+  for (size_t i = 0; i < Size; ++i) {
+    gsl::at(arr_of_long, i) = static_cast<long>(gsl::at(arr_of_size_t, i));
+  }
+  return arr_of_long;
+}
+
+template <typename T, size_t Size, typename PyObj>
+T* get_ptr_to_elem(PyObj* npy_array, const std::array<size_t, Size>& idx) {
+  auto t = static_cast<T*>(PyArray_GetPtr(          // NOLINT
+      reinterpret_cast<PyArrayObject*>(npy_array),  // NOLINT
+      convert_array_of_size_t_to_array_of_long(idx).data()));
+  if (t == nullptr) {
+    throw std::runtime_error{"Failed to access element of PyArray."};
+  }
+  return t;
+}
+
+template <typename T>
+struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0>> {
+  static T convert(PyObject* p) {
+    if (p == nullptr) {
+      throw std::runtime_error{"Received null PyObject."};
+    }
+    // clang-tidy: c-style casts. (Expanded from macro)
+    if (not PyArray_CheckExact(p)) {  // NOLINT
+      throw std::runtime_error{"Cannot convert non-array type to Tensor."};
+    }
+    // clang-tidy: reinterpret_cast
+    const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
+    if (PyArray_TYPE(npy_array) != NPY_DOUBLE) {
+      throw std::runtime_error{
+          "Cannot convert array of non-double type to Tensor."};
+    } else if (PyArray_NDIM(npy_array) != static_cast<long>(T::rank())) {
+      throw std::runtime_error{
+          "Mismatch between ndim of numpy ndarray and rank of Tensor."};
+    }
+
+    const auto npy_array_dims = PyArray_DIMS(npy_array);
+    const auto& t_array_dims = T::index_dims();
+    for (size_t i = 0; i < T::rank(); ++i) {
+      if (npy_array_dims[i] != static_cast<long>(gsl::at(t_array_dims, i))) {
+        throw std::runtime_error{
+            "Mismatch between number of components of ndarray and Tensor in " +
+            std::to_string(i) + "\'th dim"};
+      }
+    }
+    auto t = make_with_value<T>(*get_ptr_to_elem<typename T::type>(
+                                    npy_array, make_array<T::rank()>(0ul)),
+                                0.);
+    for (IndexIterator<T::rank()> index_it((Index<T::rank()>(T::index_dims())));
+         index_it; ++index_it) {
+      const auto tensor_idx = (*index_it).indices();
+      t.get(tensor_idx) =
+          *get_ptr_to_elem<typename T::type>(npy_array, tensor_idx);
+    }
+    return t;
+  }
+};
+
+template <typename T>
+struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0>> {
+  static PyObject* convert(const T& t) {
+    std::array<long, T::rank()> dims =
+        convert_array_of_size_t_to_array_of_long(T::index_dims());
+    // clang-tidy: cstyle casts, pointer arithmetic, implicit decay array to
+    // pointer. (Expanded from macro.)
+    PyObject* npy_array =
+        PyArray_SimpleNew(T::rank(), dims.data(), NPY_DOUBLE);  // NOLINT
+    if (npy_array == nullptr) {
+      throw std::runtime_error{"Failed to create PyArray."};
+    }
+
+    for (IndexIterator<T::rank()> index_it((Index<T::rank()>(T::index_dims())));
+         index_it; ++index_it) {
+      const auto tensor_idx = (*index_it).indices();
+      *get_ptr_to_elem<typename T::type>(npy_array, tensor_idx) =
+          t.get(tensor_idx);
+    }
+    return npy_array;
+  }
+};
+
 ///\endcond
+
 }  // namespace pypp

@@ -53,3 +53,71 @@ def two_dim_ndarray():
 def ndarray_of_floats():
     import numpy as np
     return np.array([1., 2.], dtype='float32')
+
+# These are used to check converting to a Tensor works
+
+def scalar():
+    return 0.8
+
+
+def vector():
+    return np.array([3., 4., 5., 6.])
+
+
+def tnsr_ia():
+    return np.array([[i + 2 * j + 1. for j in range(4)] for i in range(3)])
+
+
+def tnsr_AA():
+    return np.array([[i + j + 1. for j in range(4)] for i in range(4)])
+
+
+def tnsr_iaa():
+    return np.array([[[2. * (k + 1) * (j + 1) + i + 1. for k in range(4)]
+                      for j in range(4)] for i in range(3)])
+
+
+def tnsr_aia():
+    a = np.array([[[2. * (k + 1) * (i + 1) + j + 1.5 for k in range(4)]
+                   for j in range(3)] for i in range(4)])
+    return a
+
+
+def tnsr_aBcc():
+    return np.array([[[[3. * i + j + (k + 1) * (l + 1) + 1. for l in range(4)]
+                       for k in range(4)] for j in range(4)]
+                     for i in range(4)])
+
+# Test conversion from Tensor to numpy array works
+
+
+def convert_scalar_successful(a):
+    return a == scalar()
+
+
+def convert_vector_successful(a):
+    return bool(np.all(a == vector()))
+
+
+def convert_tnsr_ia_successful(a):
+    return bool(np.all(a == tnsr_ia()))
+
+
+def convert_tnsr_AA_successful(a):
+    return bool(np.all(a == tnsr_AA()))
+
+
+def convert_tnsr_iaa_successful(a):
+    return bool(np.all(a == tnsr_iaa()))
+
+
+def convert_tnsr_aia_successful(a):
+    return bool(np.all(a == tnsr_aia()))
+
+
+def convert_tnsr_aBcc_successful(a):
+    return bool(np.all(a == tnsr_aBcc()))
+
+
+def test_einsum(scalar, t_A, t_ia, t_AA, t_iaa):
+    return scalar * np.einsum("a,ia->i", t_A, t_ia) + np.einsum("ab, iab->i", t_AA, t_iaa)
