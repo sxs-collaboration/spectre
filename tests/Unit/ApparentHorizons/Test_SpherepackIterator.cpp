@@ -1,9 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <cstddef>
+#include <string>
+#include <vector>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
+#include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <ostream>
+
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "ErrorHandling/Error.hpp"
 

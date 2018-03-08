@@ -4,14 +4,18 @@
 #include "ApparentHorizons/Strahlkorper.hpp"
 
 #include <cmath>
+#include <ostream>
 #include <pup.h>
 #include <utility>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+/// \cond
+namespace Frame {
+struct Inertial;
+}  // namespace Frame
+/// \endcond
 
 template <typename Frame>
 Strahlkorper<Frame>::Strahlkorper(const size_t l_max, const size_t m_max,

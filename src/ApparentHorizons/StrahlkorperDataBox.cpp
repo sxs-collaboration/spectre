@@ -4,9 +4,12 @@
 #include "ApparentHorizons/StrahlkorperDataBox.hpp"
 
 #include <cmath>
+#include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace StrahlkorperTags {

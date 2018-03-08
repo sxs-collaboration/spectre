@@ -3,15 +3,25 @@
 
 #include <algorithm>
 #include <array>
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
 #include <random>
-#include <utility>
+#include <type_traits>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+/// \cond
+namespace Frame {
+struct Inertial;
+}  // namespace Frame
+/// \endcond
 
 namespace {
 

@@ -3,12 +3,19 @@
 
 #include "ApparentHorizons/YlmSpherepack.hpp"
 
+#include <algorithm>
 #include <cmath>
+#include <ostream>
+#include <tuple>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/Blas.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Error.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Spherepack.hpp"
 
 //============================================================================

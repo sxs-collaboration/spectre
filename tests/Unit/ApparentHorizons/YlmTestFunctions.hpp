@@ -3,6 +3,11 @@
 
 #pragma once
 
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <vector>
+
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
