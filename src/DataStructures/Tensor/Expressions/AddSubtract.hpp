@@ -6,8 +6,24 @@
 
 #pragma once
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
+/// \cond
+namespace TensorExpressions {
+template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,
+          int Sign>
+struct AddSub;
+}  // namespace TensorExpressions
+template <typename Derived, typename DataType, typename Symm,
+          typename IndexList, typename Args, typename ReducedArgs>
+struct TensorExpression;
+/// \endcond
 
 namespace TensorExpressions {
 

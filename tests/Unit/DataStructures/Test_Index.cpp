@@ -1,8 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <numeric>
+#include <string>
 
 #include "DataStructures/Index.hpp"
 #include "Utilities/Literals.hpp"

@@ -1,15 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 // In the spirit of the Tensor type aliases, but for a rank-2 Tensor with each

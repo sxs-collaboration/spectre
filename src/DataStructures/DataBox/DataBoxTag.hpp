@@ -7,21 +7,19 @@
 
 #pragma once
 
+#include <cstddef>
 #include <ostream>
 #include <string>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ForceInline.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
-template <typename TagsList>
-class Variables;
-
 namespace Tags {
 template <typename TagsList>
 struct Variables;

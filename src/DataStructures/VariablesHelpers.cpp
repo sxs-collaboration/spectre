@@ -3,6 +3,18 @@
 
 #include "DataStructures/VariablesHelpers.hpp"
 
+#include <algorithm>
+#include <array>
+#include <numeric>
+
+#include "DataStructures/Index.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Side.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
+
 namespace OrientVariablesOnSlice_detail {
 
 std::vector<size_t> oriented_offset(

@@ -1,8 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <cstddef>
 #include <sstream>
+#include <string>
+#include <type_traits>
 
 #include "DataStructures/Matrix.hpp"
 #include "tests/Unit/TestHelpers.hpp"

@@ -1,8 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-
+#include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

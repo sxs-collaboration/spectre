@@ -2,7 +2,9 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/GeneralIndexIterator.hpp"
 #include "Utilities/Gsl.hpp"

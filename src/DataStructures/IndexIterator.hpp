@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/Index.hpp"
 
 /// \ingroup DataStructuresGroup

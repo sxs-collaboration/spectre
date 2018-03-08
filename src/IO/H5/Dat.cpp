@@ -13,6 +13,7 @@
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Version.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 /*!

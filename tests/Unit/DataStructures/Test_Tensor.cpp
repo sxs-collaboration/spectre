@@ -1,14 +1,29 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+// Needed to deal with ADL compiler issues for operator<< std::pair
+#include <catch.hpp> // IWYU pragma: keep
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <numeric>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/StdHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+// IWYU pragma: no_forward_declare Tensor
 
 /// [change_up_lo]
 using Index = SpatialIndex<3, UpLo::Lo, Frame::Grid>;

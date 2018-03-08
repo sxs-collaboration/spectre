@@ -1,21 +1,37 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <cstddef>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxHelpers.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/DataOnSlice.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
+template <typename TagsList>
+class Variables;
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
 
 namespace {
 double multiply_by_two(const double value) { return 2.0 * value; }

@@ -3,9 +3,10 @@
 
 #include "DataStructures/SliceIterator.hpp"
 
+#include <functional>
 #include <numeric>
 
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Index.hpp"  // IWYU pragma: keep
 #include "Utilities/Literals.hpp"
 
 template <size_t Dim>

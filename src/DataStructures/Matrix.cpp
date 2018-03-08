@@ -3,6 +3,7 @@
 
 #include "Matrix.hpp"
 
+#include <algorithm>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>

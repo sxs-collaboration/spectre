@@ -3,9 +3,10 @@
 
 #include "DataStructures/StripeIterator.hpp"
 
+#include <functional>
 #include <numeric>
 
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Index.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 

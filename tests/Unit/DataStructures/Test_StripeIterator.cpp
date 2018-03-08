@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <cstddef>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/StripeIterator.hpp"
