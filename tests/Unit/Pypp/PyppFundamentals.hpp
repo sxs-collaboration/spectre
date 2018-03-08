@@ -13,7 +13,14 @@
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
+// Disable compiler warnings. NumPy ensures API compatibility among different
+// 1.x versions, as features become deprecated in Numpy 1.x will still function
+// but cause a compiler warning
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/IndexIterator.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -173,6 +180,29 @@ struct ToPyObject<std::array<T, Size>, std::nullptr_t> {
 };
 
 template <>
+struct ToPyObject<DataVector, std::nullptr_t> {
+  static PyObject* convert(const DataVector& t) {
+    PyObject* npy_array = PyArray_SimpleNew(  // NOLINT
+        1, (std::array<long, 1>{{static_cast<long>(t.size())}}.data()),
+        NPY_DOUBLE);
+
+    if (npy_array == nullptr) {
+      throw std::runtime_error{"Failed to convert argument."};
+    }
+    for (size_t i = 0; i < t.size(); ++i) {
+      // clang-tidy: Do not use pointer arithmetic
+      // clang-tidy: Do not use reinterpret cast
+      const auto data = static_cast<double*>(PyArray_GETPTR1(  // NOLINT
+          reinterpret_cast<PyArrayObject*>(npy_array),         // NOLINT
+          static_cast<long>(i)));
+      if (data == nullptr) {
+        throw std::runtime_error{"Failed to access argument of PyArray."};
+      }
+      *data = t[i];
+    }
+    return npy_array;
+  }
+};
 struct FromPyObject<long, std::nullptr_t> {
   static long convert(PyObject* t) {
     if (t == nullptr) {
@@ -316,6 +346,40 @@ struct FromPyObject<T, Requires<tt::is_std_array_v<T>>> {
         throw std::runtime_error{"Failed to get argument from list."};
       }
       gsl::at(t, i) = from_py_object<typename T::value_type>(value);
+    }
+    return t;
+  }
+};
+template <>
+struct FromPyObject<DataVector, std::nullptr_t> {
+  static DataVector convert(PyObject* p) {
+    if (p == nullptr) {
+      throw std::runtime_error{"Received null PyObject."};
+    }
+    // clang-tidy: c-style casts. (Expanded from macro)
+    if (not PyArray_CheckExact(p)) {  // NOLINT
+      throw std::runtime_error{"Cannot convert non-array type to DataVector."};
+    }
+    // clang-tidy: reinterpret_cast
+    const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
+    if (PyArray_TYPE(npy_array) != NPY_DOUBLE) {
+      throw std::runtime_error{
+          "Cannot convert array of non-double type to DataVector."};
+    }
+    if (PyArray_NDIM(npy_array) != 1) {
+      throw std::runtime_error{
+          "Cannot convert array of ndim != 1 to DataVector."};
+    }
+    // clang-tidy: c-style casts, pointer arithmetic. (Expanded from macro)
+    DataVector t(static_cast<size_t>(PyArray_Size(p)));  // NOLINT
+    for (size_t i = 0; i < t.size(); ++i) {
+      // clang-tidy: pointer arithmetic. (Expanded from macro)
+      const auto value = static_cast<const double*>(
+          PyArray_GETPTR1(npy_array, static_cast<long>(i)));  // NOLINT
+      if (value == nullptr) {
+        throw std::runtime_error{"Failed to get argument from PyArray."};
+      }
+      t[i] = *value;
     }
     return t;
   }

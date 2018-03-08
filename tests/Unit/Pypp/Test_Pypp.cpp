@@ -92,3 +92,15 @@ SPECTRE_TEST_CASE("Unit.Pypp.std::array", "[Pypp][Unit]") {
                                   std::array<double, 2>{{1.3, 4.9}},
                                   std::array<double, 2>{{4.2, 6.8}}));
 }
+
+SPECTRE_TEST_CASE("Unit.Pypp.DataVector", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  const auto ret = pypp::call<DataVector>(
+      "numpy", "multiply", DataVector{1.3, 4.9}, DataVector{4.2, 6.8});
+  CHECK(approx(ret[0]) == 1.3 * 4.2);
+  CHECK(approx(ret[1]) == 4.9 * 6.8);
+  CHECK_THROWS(pypp::call<std::string>(
+      "numpy", "multiply", DataVector{1.3, 4.9}, DataVector{4.2, 6.8}));
+  CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "two_dim_ndarray"));
+  CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "ndarray_of_floats"));
+}

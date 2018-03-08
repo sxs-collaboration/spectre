@@ -1,6 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import numpy as np
+
+
 def test_none():
     return None
 
@@ -39,3 +42,14 @@ def test_string(a):
     if a != "test string":
         raise RuntimeError('Failed string test')
     return "back test string"
+
+# These are used to check that converting to a DataVectors throws
+
+def two_dim_ndarray():
+    import numpy as np
+    return np.array([[1., 2.], [3., 4]])
+
+
+def ndarray_of_floats():
+    import numpy as np
+    return np.array([1., 2.], dtype='float32')
