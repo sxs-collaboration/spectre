@@ -797,19 +797,20 @@ SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
     std::tuple<Ts...>& tupull,
     databox_detail::TaggedDeferredTuple<Tags...>&
         data) noexcept(noexcept(::db::databox_detail::get<Tag>(data) =
-                                    Deferred<item_type<Tag>>(std::move(
-                                        std::get<ArgsIndex>(tupull)))) and
+                                    Deferred<item_type<Tag>>(
+                                        std::forward<std::tuple_element_t<
+                                            ArgsIndex, std::tuple<Ts...>>>(
+                                            std::get<ArgsIndex>(tupull)))) and
                        noexcept(add_subitem_tags_to_box<Tag>(
                            data, typename Subitems<Tag>::type{}))) {
-  static_assert(
-      not tt::is_a<Deferred,
-                   std::decay_t<decltype(std::get<ArgsIndex>(tupull))>>::value,
-      "Cannot pass a Deferred into the DataBox as an Item. This "
-      "functionally can trivially be added, however it is "
-      "intentionally omitted because users of DataBox are not "
-      "supposed to deal with Deferred.");
-  ::db::databox_detail::get<Tag>(data) =
-      Deferred<item_type<Tag>>(std::move(std::get<ArgsIndex>(tupull)));
+  using ArgType = std::tuple_element_t<ArgsIndex, std::tuple<Ts...>>;
+  static_assert(not tt::is_a<Deferred, std::decay_t<ArgType>>::value,
+                "Cannot pass a Deferred into the DataBox as an Item. This "
+                "functionally can trivially be added, however it is "
+                "intentionally omitted because users of DataBox are not "
+                "supposed to deal with Deferred.");
+  ::db::databox_detail::get<Tag>(data) = Deferred<item_type<Tag>>(
+      std::forward<ArgType>(std::get<ArgsIndex>(tupull)));
   add_subitem_tags_to_box<Tag>(data, typename Subitems<Tag>::type{});
   return cpp17::void_type{};  // must return in constexpr function
 }

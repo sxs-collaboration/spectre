@@ -3,6 +3,7 @@
 
 #include <catch.hpp>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -13,6 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Literals.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 namespace {
@@ -232,6 +234,38 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     // Check retrieving compute item result
     CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
   }
+}
+
+namespace ArgumentTypeTags {
+struct NonCopyable : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "NonCopyable";
+  using type = ::NonCopyable;
+};
+template <size_t N>
+struct String : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "String";
+  using type = std::string;
+};
+}  // namespace ArgumentTypeTags
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_argument_types",
+                  "[Unit][DataStructures]") {
+  std::string mutable_string = "mutable";
+  const std::string const_string = "const";
+  std::string move_string = "move";
+  const std::string const_move_string = "const move";
+  // clang-tidy: std::move of a const variable
+  auto box = db::create<
+      db::AddTags<ArgumentTypeTags::NonCopyable, ArgumentTypeTags::String<0>,
+                  ArgumentTypeTags::String<1>, ArgumentTypeTags::String<2>,
+                  ArgumentTypeTags::String<3>>>(
+      NonCopyable{}, mutable_string, const_string, std::move(move_string),
+      std::move(const_move_string));  // NOLINT
+  CHECK(mutable_string == "mutable");
+  CHECK(const_string == "const");
+  CHECK(db::get<ArgumentTypeTags::String<0>>(box) == "mutable");
+  CHECK(db::get<ArgumentTypeTags::String<1>>(box) == "const");
+  CHECK(db::get<ArgumentTypeTags::String<2>>(box) == "move");
+  CHECK(db::get<ArgumentTypeTags::String<3>>(box) == "const move");
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
