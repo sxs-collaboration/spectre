@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <catch.hpp>
 #include <memory>
 #include <sstream>
 #include <vector>

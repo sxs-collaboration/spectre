@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Catch 1.8 REQUIRED)
+find_package(Catch 2.1.0 REQUIRED)
 
 include_directories(SYSTEM "${CATCH_INCLUDE_DIR}")
 message(STATUS "Catch include: ${CATCH_INCLUDE_DIR}")
