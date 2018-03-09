@@ -49,6 +49,7 @@ include(SetupHdf5)
 include(SetupJemalloc)
 include(SetupLIBXSMM)
 include(SetupPapi)
+include(SetupPythonLibs)
 include(SetupYamlCpp)
 
 # The precompiled header must be setup after all libraries have been found
