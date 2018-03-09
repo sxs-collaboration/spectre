@@ -20,6 +20,7 @@ add_subdirectory(NumericalAlgorithms)
 add_subdirectory(Options)
 add_subdirectory(Parallel)
 add_subdirectory(PointwiseFunctions)
+add_subdirectory(Pypp)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
 
