@@ -209,6 +209,7 @@ license() {
               'cmake/FindPythonModule.cmake$' \
               'cmake/Findcppcheck.cmake$' \
               'cmake/Findcppcheck.cpp$' \
+              'docs/config/footer.html' \
               'LICENSE' \
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
