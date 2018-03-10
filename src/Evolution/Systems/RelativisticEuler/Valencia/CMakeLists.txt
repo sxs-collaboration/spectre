@@ -5,6 +5,7 @@ set(LIBRARY Valencia)
 
 set(LIBRARY_SOURCES
   ConservativeFromPrimitive.cpp
+  Fluxes.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
