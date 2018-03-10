@@ -65,7 +65,7 @@ struct nodegroup_receive {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -88,7 +88,6 @@ struct nodegroup_receive {
                         [](int& t) { t++; });
           total_receives_on_node++;
         });
-    return std::forward_as_tuple(box);
   }
 };
 
@@ -97,7 +96,7 @@ struct nodegroup_check_first_result {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -119,7 +118,6 @@ struct nodegroup_check_first_result {
           value == number_of_1d_array_elements_per_core *
                        Parallel::procs_on_node(Parallel::my_node()));
     });
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
@@ -154,7 +152,7 @@ struct nodegroup_check_threaded_result {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -176,7 +174,6 @@ struct nodegroup_check_threaded_result {
           value == 2 * number_of_1d_array_elements_per_core *
                        Parallel::procs_on_node(Parallel::my_node()));
     });
-    return std::forward_as_tuple(std::move(box));
   }
 };
 

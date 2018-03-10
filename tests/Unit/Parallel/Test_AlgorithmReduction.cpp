@@ -64,7 +64,7 @@ struct singleton_reduce_sum_int {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  static void apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -78,7 +78,6 @@ struct singleton_reduce_sum_int {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
                                  (number_of_1d_array_elements - 1) / 2 ==
                              value);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
@@ -86,7 +85,7 @@ struct singleton_reduce_sum_double {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  static void apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -99,7 +98,6 @@ struct singleton_reduce_sum_double {
         "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(approx(13.4 * number_of_1d_array_elements) ==
                              value);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
@@ -107,7 +105,7 @@ struct singleton_reduce_product_double {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  static void apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -120,7 +118,6 @@ struct singleton_reduce_product_double {
         "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(approx(pow<number_of_1d_array_elements>(13.4)) ==
                              value);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
@@ -128,8 +125,9 @@ struct singleton_reduce_custom_reduction_action {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(
-      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  static void apply(
+      db::DataBox<DbTags>& /*box*/,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
@@ -152,7 +150,6 @@ struct singleton_reduce_custom_reduction_action {
             number_of_1d_array_elements * (number_of_1d_array_elements - 1) / 2,
             number_of_1d_array_elements * 10,
             -8 * number_of_1d_array_elements}));
-    return std::forward_as_tuple(std::move(box));
   }
 };
 

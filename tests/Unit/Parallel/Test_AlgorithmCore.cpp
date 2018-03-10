@@ -149,7 +149,7 @@ struct finalize {
             typename ParallelComponent,
             Requires<tmpl2::flat_any_v<
                 cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -161,7 +161,6 @@ struct finalize {
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 5);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 1);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 100);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace no_op_test
@@ -265,7 +264,7 @@ struct test_args {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  static void apply(db::DataBox<DbTags>& /*box*/,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -274,7 +273,6 @@ struct test_args {
                     std::vector<double>&& v1) noexcept {
     SPECTRE_PARALLEL_REQUIRE(v0 == 4.82937);
     SPECTRE_PARALLEL_REQUIRE(v1 == (std::vector<double>{3.2, -8.4, 7.5}));
-    return std::forward_as_tuple(box);
   }
 };
 
@@ -299,14 +297,13 @@ struct finalize {
             typename ParallelComponent,
             Requires<tmpl2::flat_any_v<
                 cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace add_remove_test
@@ -437,7 +434,7 @@ struct finalize {
             typename ParallelComponent,
             Requires<tmpl2::flat_any_v<
                 cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -448,7 +445,6 @@ struct finalize {
                              TestAlgorithmArrayInstance{4});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 10);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace receive_data_test
@@ -545,7 +541,7 @@ struct finalize {
       Requires<
           tmpl2::flat_any_v<cpp17::is_same_v<CountActionsCalled, DbTags>...> and
           tmpl2::flat_any_v<cpp17::is_same_v<Int0, DbTags>...>> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>&
                     /*cache*/,
@@ -559,7 +555,6 @@ struct finalize {
                              db::item_type<TemporalId>{0});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 31);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 25);
-    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace any_order
