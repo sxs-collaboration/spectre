@@ -23,9 +23,22 @@ void check_dot_product(const T& used_for_size) noexcept {
   {
     const tnsr::i<T, 1, Frame::Grid> one_d_covector{{{two}}};
     const tnsr::I<T, 1, Frame::Grid> one_d_vector{{{four}}};
+    const tnsr::w<T, 1, Frame::Grid> one_d_euclidean_a{{{two}}};
+    const tnsr::w<T, 1, Frame::Grid> one_d_euclidean_b{{{four}}};
     CHECK_ITERABLE_APPROX(get(dot_product(one_d_covector, one_d_vector)),
                           eight);
     CHECK_ITERABLE_APPROX(get(dot_product(one_d_vector, one_d_covector)),
+                          eight);
+    CHECK_ITERABLE_APPROX(get(dot_product(one_d_covector, one_d_euclidean_a)),
+                          four);
+    CHECK_ITERABLE_APPROX(get(dot_product(one_d_euclidean_a, one_d_covector)),
+                          four);
+    CHECK_ITERABLE_APPROX(get(dot_product(one_d_vector, one_d_euclidean_a)),
+                          eight);
+    CHECK_ITERABLE_APPROX(get(dot_product(one_d_euclidean_a, one_d_vector)),
+                          eight);
+    CHECK_ITERABLE_APPROX(get(dot_product(one_d_euclidean_a,
+                                          one_d_euclidean_b)),
                           eight);
 
     const tnsr::i<T, 1, Frame::Grid> negative_one_d_covector{{{minus_three}}};

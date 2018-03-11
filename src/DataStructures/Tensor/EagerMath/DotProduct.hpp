@@ -13,40 +13,17 @@
 
 /*!
  * \ingroup TensorGroup
- * \brief Compute the Euclidean dot product of two vectors or one forms
- *
- * \details
- * Returns \f$A^a B^b \delta_{ab}\f$ for input vectors \f$A^a\f$ and \f$B^b\f$
- * or \f$A_a B_b \delta^{ab}\f$ for input one forms \f$A_a\f$ and \f$B_b\f$.
+ * \brief Contract the indices of a pair of rank-1 tensors
  */
-template <typename DataType, typename Index>
+template <typename DataType, typename IndexA, typename IndexB>
 Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_b) noexcept {
-  auto dot_product = make_with_value<Scalar<DataType>>(vector_a, 0.);
-  for (size_t d = 0; d < Index::dim; ++d) {
-    get(dot_product) += vector_a.get(d) * vector_b.get(d);
-  }
-  return dot_product;
-}
-
-/*!
- * \ingroup TensorGroup
- * \brief Compute the dot product of a vector and a one form
- *
- * \details
- * Returns \f$A^a B_b \delta_{a}^b\f$ for input vector \f$A^a\f$ and
- * input one form \f$B_b\f$
- * or \f$A_a B^b \delta^a_b\f$ for input one form \f$A_a\f$ and
- * input vector \f$B^b\f$.
- */
-template <typename DataType, typename Index>
-Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, tmpl::list<change_index_up_lo<Index>>>&
+    const Tensor<DataType, Symmetry<1>, tmpl::list<IndexA>>& vector_a,
+    const Tensor<DataType, Symmetry<1>, tmpl::list<IndexB>>&
         vector_b) noexcept {
+  static_assert(can_contract_v<IndexA, IndexB>,
+                "Noncontractible tensors passed to dot_product");
   auto dot_product = make_with_value<Scalar<DataType>>(vector_a, 0.);
-  for (size_t d = 0; d < Index::dim; ++d) {
+  for (size_t d = 0; d < IndexA::dim; ++d) {
     get(dot_product) += vector_a.get(d) * vector_b.get(d);
   }
   return dot_product;
