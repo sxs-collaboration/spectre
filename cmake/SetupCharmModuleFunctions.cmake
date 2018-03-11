@@ -56,6 +56,13 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
     RESULT_VARIABLE SUCCEEDED_GENERATING_CHARM
     )
 
+  if (${SUCCEEDED_GENERATING_CHARM} EQUAL 255)
+    # The python script returns 255 if the ci and hpp files exist
+    # and are up-to-date. In this case we do not need to run charmc again
+    # and can save compilation time by not "updating" up-to-date files.
+    return()
+  endif()
+
   if (NOT ${SUCCEEDED_GENERATING_CHARM} EQUAL 0)
     message(FATAL_ERROR
       "Failed to run script SetupCharmAlgorithm.py for "
