@@ -26,7 +26,8 @@ using Scalar = Tensor<T, Symmetry<>, index_list<>>;
  *
  * Lower case letters represent covariant indices and upper case letters
  * represent contravariant indices. Letters a, b, c, d represent spacetime
- * indices and i, j, k, l represent spatial indices.
+ * indices and i, j, k, l represent spatial indices.  Letters near the end
+ * of the alphabet (w, x, y, z) represent Euclidean indices.
  */
 namespace tnsr {
 // Rank 1
@@ -46,6 +47,9 @@ using i = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using I = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
                  index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using w = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
+                 index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
 
 // Rank 2
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
@@ -96,6 +100,10 @@ template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using ia = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
 index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
            SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using iw = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
 
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>

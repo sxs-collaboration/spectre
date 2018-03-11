@@ -9,7 +9,9 @@
 #include <ostream>
 #include <type_traits>
 
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace brigand {
 template <class...>
@@ -17,18 +19,44 @@ struct list;
 }  // namespace brigand
 
 /// \ingroup TensorGroup
-/// Whether a \ref SpacetimeIndex "TensorIndexType" is covariant or
-/// contravariant
+/// Whether a \ref SpacetimeIndex "TensorIndexType" is covariant,
+/// contravariant, or Euclidean
 enum class UpLo {
   /// Contravariant, or Upper index
   Up,
   /// Covariant, or Lower index
-  Lo
+  Lo,
+  /// Euclidean index, upper and lower are not distinguished
+  Euclidean
 };
+
+/// \ingroup TensorGroup
+/// The opposite index position (swapping Up and Lo)
+constexpr UpLo opposite(UpLo ul) noexcept {
+  switch (ul) {
+    case UpLo::Up:
+      return UpLo::Lo;
+    case UpLo::Lo:
+      return UpLo::Up;
+    case UpLo::Euclidean:
+      return UpLo::Euclidean;
+    default:
+      return ul;
+  }
+}
 
 /// \cond HIDDEN_SYMBOLS
 inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) {
-  return os << (ul == UpLo::Up ? "Up"s : "Lo"s);
+  switch (ul) {
+    case UpLo::Up:
+      return os << "Up";
+    case UpLo::Lo:
+      return os << "Lo";
+    case UpLo::Euclidean:
+      return os << "Euclidean";
+    default:
+      ERROR("Invalid UpLo");
+  }
 }
 /// \endcond
 
@@ -114,12 +142,13 @@ inline std::ostream& operator<<(std::ostream& os, const IndexType& index_type) {
 
 namespace Tensor_detail {
 /// \ingroup TensorGroup
-/// A ::TensorIndexType holds information about what type of index an index of a
-/// Tensor is. It holds the information about the number of spatial dimensions,
-/// whether the index is covariant or contravariant (::UpLo), the ::Frame the
-/// index is in, and whether the Index is Spatial or Spacetime.
+/// A ::TensorIndexType holds information about what type of index an
+/// index of a Tensor is. It holds the information about the number of
+/// spatial dimensions, whether the index is covariant, contravariant,
+/// or Euclidean (::UpLo), the ::Frame the index is in, and whether
+/// the Index is Spatial or Spacetime.
 /// \tparam SpatialDim the spatial dimensionality of the TensorIndex
-/// \tparam Ul either UpLo::Up or UpLo::Lo for contra or covariant
+/// \tparam Ul an UpLo describing index position
 /// \tparam Fr the Frame the TensorIndex is in
 /// \tparam Index either IndexType::Spatial or IndexType::Spacetime
 template <size_t SpatialDim, UpLo Ul, typename Fr, IndexType Index>
@@ -127,6 +156,8 @@ struct TensorIndexType {
   static_assert(SpatialDim > 0,
                 "Cannot have a spatial dimensionality less than 1 (one) in a "
                 "TensorIndexType");
+  static_assert(not(Ul == UpLo::Euclidean and Index == IndexType::Spacetime),
+                "Spacetime should not be treated as Euclidean");
   using value_type = decltype(SpatialDim);
   static constexpr value_type dim =
       Index == IndexType::Spatial ? SpatialDim
@@ -142,11 +173,11 @@ struct TensorIndexType {
 
 /// \ingroup TensorGroup
 /// A SpatialIndex holds information about the number of spatial
-/// dimensions, whether the index is covariant or contravariant (::UpLo), and
-/// the ::Frame the index is in.
-/// \tparam SpatialDim the spatial dimensionality of the \ref
-/// SpatialIndex "TensorIndexType"
-/// \tparam Ul either UpLo::Up or UpLo::Lo for contra or covariant
+/// dimensions, whether the index is covariant, contravariant, or
+/// Euclidean (::UpLo), and the ::Frame the index is in.  \tparam
+/// SpatialDim the spatial dimensionality of the \ref SpatialIndex
+/// "TensorIndexType"
+/// \tparam Ul an UpLo describing index position
 /// \tparam Fr the ::Frame the \ref SpatialIndex "TensorIndexType"
 /// is in
 template <size_t SpatialDim, UpLo Ul, typename Fr>
@@ -189,7 +220,8 @@ using is_tensor_index_type_t = typename is_tensor_index_type<T>::type;
 
 /// \ingroup TensorGroup
 /// Change the \ref SpacetimeIndex "TensorIndexType" to be covariant
-/// if it's contravariant and vice-versa
+/// if it's contravariant and vice-versa.  Euclidean indices are left
+/// unchanged.
 ///
 /// Here is an example of how to use ::change_index_up_lo
 /// \snippet Test_Tensor.cpp change_up_lo
@@ -198,8 +230,16 @@ using is_tensor_index_type_t = typename is_tensor_index_type<T>::type;
 template <typename Index>
 using change_index_up_lo = Tensor_detail::TensorIndexType<
     Index::index_type == IndexType::Spatial ? Index::value : Index::value - 1,
-    Index::ul == UpLo::Up ? UpLo::Lo : UpLo::Up, typename Index::Frame,
-    Index::index_type>;
+    opposite(Index::ul), typename Index::Frame, Index::index_type>;
+
+/// \ingroup TensorGroup
+/// Whether contracting a pair of indices makes sense
+template <typename IndexA, typename IndexB>
+constexpr bool can_contract_v =
+    IndexA::index_type == IndexB::index_type and
+    IndexA::dim == IndexB::dim and
+    cpp17::is_same_v<typename IndexA::Frame, typename IndexB::Frame> and
+    (IndexA::ul != IndexB::ul or IndexA::ul == UpLo::Euclidean);
 
 template <typename... Ts>
 using index_list = brigand::list<Ts...>;

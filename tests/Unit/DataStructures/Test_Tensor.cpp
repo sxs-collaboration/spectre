@@ -16,6 +16,59 @@ using UpIndex = change_index_up_lo<Index>;
 static_assert(cpp17::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
               "Failed testing change_index_up_lo");
 /// [change_up_lo]
+static_assert(
+    cpp17::is_same_v<change_index_up_lo<SpatialIndex<3, UpLo::Up, Frame::Grid>>,
+                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
+    "Failed testing change_index_up_lo");
+static_assert(
+    cpp17::is_same_v<
+        change_index_up_lo<SpatialIndex<3, UpLo::Euclidean, Frame::Grid>>,
+        SpatialIndex<3, UpLo::Euclidean, Frame::Grid>>,
+    "Failed testing change_index_up_lo");
+static_assert(cpp17::is_same_v<
+                  change_index_up_lo<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>,
+                  SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing change_index_up_lo");
+
+static_assert(not can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                                 SpatialIndex<3, UpLo::Up, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Euclidean, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Up, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(not can_contract_v<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                                 SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Euclidean, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Euclidean, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Up, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Euclidean, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(can_contract_v<SpatialIndex<3, UpLo::Euclidean, Frame::Grid>,
+                             SpatialIndex<3, UpLo::Euclidean, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(not can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                                 SpatialIndex<3, UpLo::Lo, Frame::Logical>>,
+              "Failed testing can_contract_v");
+static_assert(not can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                                 SpatialIndex<4, UpLo::Lo, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(not can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                                 SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>,
+              "Failed testing can_contract_v");
+static_assert(not can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
+                                 SpacetimeIndex<2, UpLo::Lo, Frame::Grid>>,
+              "Failed testing can_contract_v");
 
 /// [is_frame_physical]
 static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
