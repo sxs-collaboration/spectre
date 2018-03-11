@@ -4,8 +4,21 @@
 #include "Domain/OrientationMap.hpp"
 
 #include <ostream>
+#include <set>
 
 #include "Domain/SegmentId.hpp"
+
+namespace {
+template <size_t VolumeDim>
+std::set<size_t> set_of_dimensions(
+    const std::array<Direction<VolumeDim>, VolumeDim>& directions) noexcept {
+  std::set<size_t> set_of_dims;
+  for (size_t j = 0; j < VolumeDim; j++) {
+    set_of_dims.insert(gsl::at(directions, j).dimension());
+  }
+  return set_of_dims;
+}
+}  // namespace
 
 template <size_t VolumeDim>
 OrientationMap<VolumeDim>::OrientationMap() {
@@ -13,6 +26,7 @@ OrientationMap<VolumeDim>::OrientationMap() {
     gsl::at(mapped_directions_, j) = Direction<VolumeDim>(j, Side::Upper);
   }
 }
+
 template <size_t VolumeDim>
 OrientationMap<VolumeDim>::OrientationMap(
     std::array<Direction<VolumeDim>, VolumeDim> mapped_directions)
@@ -23,6 +37,8 @@ OrientationMap<VolumeDim>::OrientationMap(
       is_aligned_ = false;
     }
   }
+  ASSERT(set_of_dimensions(mapped_directions).size() == VolumeDim,
+         "This OrientationMap fails to map Directions one-to-one.");
 }
 
 template <size_t VolumeDim>
@@ -38,6 +54,10 @@ OrientationMap<VolumeDim>::OrientationMap(
       is_aligned_ = false;
     }
   }
+  ASSERT(set_of_dimensions(directions_in_host).size() == VolumeDim,
+         "This OrientationMap fails to map Directions one-to-one.");
+  ASSERT(set_of_dimensions(directions_in_neighbor).size() == VolumeDim,
+         "This OrientationMap fails to map Directions one-to-one.");
 }
 
 template <size_t VolumeDim>

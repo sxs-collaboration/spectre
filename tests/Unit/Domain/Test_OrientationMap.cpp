@@ -264,6 +264,55 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
   test_3d();
 }
 
+// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.Bijective",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_orientationmap = OrientationMap<2>{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_xi(), Direction<2>::lower_xi()}}};
+  static_cast<void>(failed_orientationmap);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.BijectiveHost",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_orientationmap = OrientationMap<2>{
+      std::array<Direction<2>, 2>{
+          {Direction<2>::upper_xi(), Direction<2>::lower_xi()}},
+      std::array<Direction<2>, 2>{
+          {Direction<2>::upper_xi(), Direction<2>::upper_eta()}},
+  };
+  static_cast<void>(failed_orientationmap);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.BijectiveNeighbor",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_orientationmap = OrientationMap<3>{
+      std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
+                                   Direction<3>::lower_eta(),
+                                   Direction<3>::lower_zeta()}},
+      std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
+                                   Direction<3>::upper_eta(),
+                                   Direction<3>::lower_eta()}},
+  };
+  static_cast<void>(failed_orientationmap);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
 namespace {
 template <size_t VolumeDim>
 OrientationMap<VolumeDim> generate_orientation_map(
