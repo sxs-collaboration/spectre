@@ -194,7 +194,7 @@ struct reduce_to_nodegroup {
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
     /// [simple_action_with_args]
-    local_nodegroup.template explicit_single_action<nodegroup_receive>(
+    local_nodegroup.template simple_action<nodegroup_receive>(
         std::make_tuple(array_index));
     /// [simple_action_with_args]
     return std::forward_as_tuple(std::move(box));
@@ -257,10 +257,10 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
     if (next_phase == Metavariables::Phase::ArrayToNodegroup) {
-      array_proxy.template explicit_single_action<reduce_to_nodegroup>();
+      array_proxy.template simple_action<reduce_to_nodegroup>();
     }
     if (next_phase == Metavariables::Phase::TestThreadedMethod) {
-      array_proxy.template explicit_single_action<reduce_threaded_method>();
+      array_proxy.template simple_action<reduce_threaded_method>();
     }
   }
 };
@@ -279,7 +279,7 @@ struct NodegroupParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
-        .template explicit_single_action<nodegroup_initialize>();
+        .template simple_action<nodegroup_initialize>();
   }
 
   static void execute_next_global_actions(
@@ -290,12 +290,10 @@ struct NodegroupParallelComponent {
         Parallel::get_parallel_component<NodegroupParallelComponent>(
             local_cache);
     if (next_phase == Metavariables::Phase::CheckFirstResult) {
-      nodegroup_proxy
-          .template explicit_single_action<nodegroup_check_first_result>();
+      nodegroup_proxy.template simple_action<nodegroup_check_first_result>();
     }
     if (next_phase == Metavariables::Phase::CheckThreadedResult) {
-      nodegroup_proxy
-          .template explicit_single_action<nodegroup_check_threaded_result>();
+      nodegroup_proxy.template simple_action<nodegroup_check_threaded_result>();
     }
   }
 };

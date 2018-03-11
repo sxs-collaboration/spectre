@@ -351,7 +351,7 @@ struct SingletonParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
-        .template explicit_single_action<SingletonActions::Initialize>();
+        .template simple_action<SingletonActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -395,7 +395,7 @@ struct ArrayParallelComponent {
     }
     array_proxy.doneInserting();
 
-    array_proxy.template explicit_single_action<ArrayActions::Initialize>();
+    array_proxy.template simple_action<ArrayActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -424,7 +424,7 @@ struct GroupParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<GroupParallelComponent>(local_cache)
-        .template explicit_single_action<GroupActions::Initialize>();
+        .template simple_action<GroupActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -446,7 +446,7 @@ struct NodegroupParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
-        .template explicit_single_action<NodegroupActions::Initialize>();
+        .template simple_action<NodegroupActions::Initialize>();
   }
 
   static void execute_next_global_actions(

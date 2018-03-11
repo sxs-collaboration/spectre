@@ -41,8 +41,7 @@ struct error_call_single_action_from_action {
                     const ParallelComponent* const /*meta*/) {
     Parallel::get_parallel_component<ParallelComponent>(cache)
         .ckLocal()
-        ->template explicit_single_action<
-            another_action>();
+        ->template simple_action<another_action>();
   }
 };
 
@@ -60,8 +59,7 @@ struct Component {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<Component>(local_cache)
         .ckLocal()
-        ->template explicit_single_action<
-            error_call_single_action_from_action>();
+        ->template simple_action<error_call_single_action_from_action>();
   }
 
   static void execute_next_global_actions(

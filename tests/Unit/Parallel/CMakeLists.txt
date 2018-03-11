@@ -104,12 +104,12 @@ type 'db::DataBox<brigand::list<> >'")
 add_algorithm_test(
   "AlgorithmNestedApply1"
   "Already performing an Action and cannot execute additional Actions \
-from inside of an Action. This is only possible if the explicit_single_action \
+from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test(
   "AlgorithmNestedApply2"
   "Already performing an Action and cannot execute additional Actions \
-from inside of an Action. This is only possible if the explicit_single_action \
+from inside of an Action. This is only possible if the simple_action \
 function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test("AlgorithmParallel" "")
 add_algorithm_test("AlgorithmReduction" "")

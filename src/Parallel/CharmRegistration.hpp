@@ -223,7 +223,7 @@ struct RegisterSimpleAction : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    ckindex::template idx_explicit_single_action<Action>(
+    ckindex::template idx_simple_action<Action>(
         static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
   }
 
@@ -260,7 +260,7 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    ckindex::template idx_explicit_single_action<Action>(
+    ckindex::template idx_simple_action<Action>(
         static_cast<void (algorithm::*)()>(nullptr));
   }
 

@@ -267,7 +267,7 @@ class AlgorithmImpl;
  * error of the following form:
  *
  * \verbatim
- * registration happened after init Entry point: explicit_single_action(), addr:
+ * registration happened after init Entry point: simple_action(), addr:
  * 0x555a3d0e2090
  * ------------- Processor 0 Exiting: Called CmiAbort ------------
  * Reason: Did you forget to instantiate a templated entry method in a .ci file?
@@ -348,10 +348,10 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// \brief Explicitly call the action `Action`. If the returned DataBox type
   /// is not one of the types of the algorithm then a compilation error occurs.
   template <typename Action, typename... Args>
-  void explicit_single_action(std::tuple<Args...> args) noexcept;
+  void simple_action(std::tuple<Args...> args) noexcept;
 
   template <typename Action>
-  void explicit_single_action() noexcept;
+  void simple_action() noexcept;
 
   /// Call an Action on a local nodegroup requiring the Action to handle thread
   /// safety.
@@ -553,8 +553,8 @@ template <typename ParallelComponent, typename ChareType,
 template <typename Action, typename... Args>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::explicit_single_action(std::tuple<Args...>
-                                                               args) noexcept {
+                   InitialDataBox>::simple_action(std::tuple<Args...>
+                                                      args) noexcept {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
                                                 Args...>::registrar;
   lock(&node_lock_);
@@ -562,7 +562,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
         "from inside of an Action. This is only possible if the "
-        "explicit_single_action function is not invoked via a proxy, which "
+        "simple_action function is not invoked via a proxy, which "
         "we do not allow.");
   }
   performing_action_ = true;
@@ -578,7 +578,7 @@ template <typename ParallelComponent, typename ChareType,
 template <typename Action>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::explicit_single_action() noexcept {
+                   InitialDataBox>::simple_action() noexcept {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                 Action>::registrar;
   lock(&node_lock_);
@@ -586,7 +586,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
         "from inside of an Action. This is only possible if the "
-        "explicit_single_action function is not invoked via a proxy, which "
+        "simple_action function is not invoked via a proxy, which "
         "we do not allow.");
   }
   performing_action_ = true;

@@ -43,7 +43,7 @@ struct Component {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<Component>(local_cache)
-        .template explicit_single_action<error_size_zero>();
+        .template simple_action<error_size_zero>();
   }
 
   static void execute_next_global_actions(

@@ -8,8 +8,8 @@ def create_interface_file(args):
     """
     Generate the Charm++ interface file for the algorithm
     """
-    ci_file = open("%s/Algorithm%s.ci" %
-                   (args['build_dir'], args['algorithm_name']), "w")
+    ci_file = open("%s/Algorithm%s.ci" % (args['build_dir'],
+                                          args['algorithm_name']), "w")
     ci_file.write(
         "// Distributed under the MIT License.\n"
         "// See LICENSE.txt for details.\n\n"
@@ -19,8 +19,8 @@ def create_interface_file(args):
         "\n"
         "  template <typename ParallelComponent, typename Metavariables, \n"
         "            typename OrderedActionsList,\n"
-        "            typename SpectreArrayIndex, typename InitialDataBox>\n"
-        % args['algorithm_name'])
+        "            typename SpectreArrayIndex, typename InitialDataBox>\n" %
+        args['algorithm_name'])
     # The chare type needs to be checked
     if args['algorithm_type'] == "array":
         ci_file.write("  array [SpectreArrayIndex]")
@@ -33,11 +33,11 @@ def create_interface_file(args):
         "Parallel::CProxy_ConstGlobalCache<Metavariables>);\n"
         "\n"
         "    template <typename Action, typenameLDOTLDOTLDOT Args>\n"
-        "    entry void explicit_single_action(\n"
+        "    entry void simple_action(\n"
         "               std::tuple<COMPUTE_VARIADIC_ARGS>& args);\n"
         "\n"
         "    template <typename Action>\n"
-        "    entry void explicit_single_action();\n"
+        "    entry void simple_action();\n"
         "\n"
         "    template <typename Action, typename Arg>\n"
         "    entry [reductiontarget] void reduction_action(Arg arg);\n"
@@ -48,8 +48,8 @@ def create_interface_file(args):
     # A bug in Charm++ prevents entry methods with default argument values.
     # The workaround is to have two entry methods and default the argument in
     # the AlgorithmImpl member function.
-    if (args['algorithm_type'] == "group" or
-            args['algorithm_type'] == "nodegroup"):
+    if (args['algorithm_type'] == "group"
+            or args['algorithm_type'] == "nodegroup"):
         ci_file.write(
             "    template <typename ReceiveTag, typename ReceiveData_t>\n"
             "    entry [inline] void receive_data(ReceiveTag_temporal_id&,\n"
@@ -93,7 +93,7 @@ def create_header_file(args):
                       "\n#pragma once\n"
                       "\n"
                       "#include \"Parallel/Algorithm.hpp\"\n\n"
-                      "#include \"Algorithms/Algorithm%s.decl.h\"\n\n"%
+                      "#include \"Algorithms/Algorithm%s.decl.h\"\n\n" %
                       args['algorithm_name'])
     # Write "ChareType" struct
     header_file.write(
@@ -164,8 +164,7 @@ def create_header_file(args):
     # Write include of the def file, but including only the template definitions
     header_file.write("#define CK_TEMPLATES_ONLY\n"
                       "#include \"Algorithms/Algorithm%s.def.h\"\n"
-                      "#undef CK_TEMPLATES_ONLY\n" %
-                      args['algorithm_name'])
+                      "#undef CK_TEMPLATES_ONLY\n" % args['algorithm_name'])
     return None
 
 

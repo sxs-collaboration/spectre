@@ -30,8 +30,8 @@ struct error_call_single_action_from_action {
     /// [bad_recursive_call]
     auto& local_parallel_component =
         *Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal();
-    local_parallel_component.template explicit_single_action<
-        error_call_single_action_from_action>();
+    local_parallel_component
+        .template simple_action<error_call_single_action_from_action>();
     /// [bad_recursive_call]
   }
 };
@@ -50,8 +50,7 @@ struct Component {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<Component>(local_cache)
         .ckLocal()
-        ->template explicit_single_action<
-            error_call_single_action_from_action>();
+        ->template simple_action<error_call_single_action_from_action>();
   }
 
   static void execute_next_global_actions(

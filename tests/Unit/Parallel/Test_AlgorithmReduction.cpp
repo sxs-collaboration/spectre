@@ -272,7 +272,7 @@ struct ArrayParallelComponent {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
-          .template explicit_single_action<ArrayReduce>();
+          .template simple_action<ArrayReduce>();
     }
   }
 };

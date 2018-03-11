@@ -183,7 +183,7 @@ struct NoOpsComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<NoOpsComponent>(local_cache)
-        .template explicit_single_action<no_op_test::initialize>();
+        .template simple_action<no_op_test::initialize>();
   }
 
   static void execute_next_global_actions(
@@ -197,7 +197,7 @@ struct NoOpsComponent {
       /// [perform_algorithm]
     } else if (next_phase == Metavariables::Phase::NoOpsFinish) {
       Parallel::get_parallel_component<NoOpsComponent>(local_cache)
-          .template explicit_single_action<no_op_test::finalize>();
+          .template simple_action<no_op_test::finalize>();
     }
   }
 };
@@ -331,7 +331,7 @@ struct MutateComponent {
     auto& cache = *(global_cache.ckLocalBranch());
     /// [simple_action_call]
     Parallel::get_parallel_component<MutateComponent>(cache)
-        .template explicit_single_action<add_remove_test::initialize>();
+        .template simple_action<add_remove_test::initialize>();
     /// [simple_action_call]
   }
 
@@ -344,10 +344,10 @@ struct MutateComponent {
           .perform_algorithm();
     } else if (next_phase == Metavariables::Phase::MutateFinish) {
       Parallel::get_parallel_component<MutateComponent>(local_cache)
-          .template explicit_single_action<add_remove_test::test_args>(
+          .template simple_action<add_remove_test::test_args>(
               std::make_tuple(4.82937, std::vector<double>{3.2, -8.4, 7.5}));
       Parallel::get_parallel_component<MutateComponent>(local_cache)
-          .template explicit_single_action<add_remove_test::finalize>();
+          .template simple_action<add_remove_test::finalize>();
     }
   }
 };
@@ -478,7 +478,7 @@ struct ReceiveComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ReceiveComponent>(local_cache)
-        .template explicit_single_action<receive_data_test::initialize>();
+        .template simple_action<receive_data_test::initialize>();
   }
 
   static void execute_next_global_actions(
@@ -498,7 +498,7 @@ struct ReceiveComponent {
       }
     } else if (next_phase == Metavariables::Phase::ReceiveFinish) {
       Parallel::get_parallel_component<ReceiveComponent>(local_cache)
-          .template explicit_single_action<receive_data_test::finalize>();
+          .template simple_action<receive_data_test::finalize>();
     }
   }
 };
@@ -590,7 +590,7 @@ struct AnyOrderComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
-        .template explicit_single_action<add_remove_test::initialize>();
+        .template simple_action<add_remove_test::initialize>();
   }
 
   static void execute_next_global_actions(
@@ -602,7 +602,7 @@ struct AnyOrderComponent {
           .perform_algorithm();
     } else if (next_phase == Metavariables::Phase::AnyOrderFinish) {
       Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
-          .template explicit_single_action<any_order::finalize>();
+          .template simple_action<any_order::finalize>();
     }
   }
 };

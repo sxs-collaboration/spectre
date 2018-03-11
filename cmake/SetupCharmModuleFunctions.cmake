@@ -93,7 +93,7 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
   # handle variadic entry methods, so we must hack this in a little
   #
   # Third block:
-  # Use move semantics in explicit_single_action
+  # Use move semantics in simple_action
   execute_process(
     COMMAND bash -c
     "perl -pi -e 's@\(\\s*impl_obj->template\\s+receive_data<\\s*ReceiveTag\),\\s*ReceiveData_t\\s*>\\\(\(impl_noname_\\d\),\\s*\(impl_noname_\\d\)@\\1>\(std::move\(\\2\), std::move\(\\3\)@g' Algorithm${ALGORITHM_NAME}.def.h \
@@ -101,7 +101,7 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
      \
      && perl -pi -e 's/LDOTLDOTLDOT/.../g' Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/LDOTLDOTLDOT/.../g' Algorithm${ALGORITHM_NAME}.decl.h \
-     && perl -pi -e 's/\(\\\"explicit_single_action\\\(const\\s+std::tuple<\\s*\)COMPUTE_VARIADIC_ARGS\(\\s*>\\s*&args\\\)\\\"\)/std::string\(std::string\(\\1\"\) + Parallel::charmxx::get_template_parameters_as_string<Args...>\(\) + std::string\(\"\\2\)\).c_str\(\)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/\(\\\"simple_action\\\(const\\s+std::tuple<\\s*\)COMPUTE_VARIADIC_ARGS\(\\s*>\\s*&args\\\)\\\"\)/std::string\(std::string\(\\1\"\) + Parallel::charmxx::get_template_parameters_as_string<Args...>\(\) + std::string\(\"\\2\)\).c_str\(\)/g' Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/COMPUTE_VARIADIC_ARGS/Args.../g' \
              Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/COMPUTE_VARIADIC_ARGS/Args.../g' \
@@ -112,8 +112,8 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
              Algorithm${ALGORITHM_NAME}.decl.h \
      \
      \
-     && perl -pi -e 's/\(\\s*impl_obj->template\\s+explicit_single_action<\\s*Action\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \
-     && perl -pi -e 's/\(\\s*impl_obj->template\\s+explicit_single_action<\\s*Action, Args...\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/\(\\s*impl_obj->template\\s+simple_action<\\s*Action\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/\(\\s*impl_obj->template\\s+simple_action<\\s*Action, Args...\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \
      \
      \
      && perl -pi -e 's/ReceiveTag_temporal_id/typename ReceiveTag::temporal_id/g' Algorithm${ALGORITHM_NAME}.def.h \
