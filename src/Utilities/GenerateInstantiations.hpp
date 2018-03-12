@@ -136,7 +136,7 @@
  * One thing that can be difficult is debugging metaprograms (be they template
  * or macro-based). To this end we provide a make target `DebugPreprocessor`
  * which prints the output of running the preprocessor on the file
- * \ref src/Executables/DebugPreprocessor/DebugPreprocessor.cpp .
+ * `src/Executables/DebugPreprocessor/DebugPreprocessor.cpp`.
  * Note that the output of the `GENERATE_INSTANTIATIONS` macro will be on a
  * single line, so it often proves useful to copy-paste the output into an
  * editor and run clang-format over the code so it's easier to reason about.

@@ -10,6 +10,7 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 template <typename>
 class Variables;
 
@@ -39,6 +40,7 @@ struct Pi;
 template <size_t Dim>
 struct Phi;
 }  // namespace ScalarWave
+/// \endcond
 
 namespace ScalarWave {
 /*!
