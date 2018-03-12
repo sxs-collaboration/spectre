@@ -49,13 +49,17 @@ SUBGROUPING            = YES
 # Build related configuration options
 #---------------------------------------------------------------------------
 
-EXTRACT_ALL            = YES
+EXTRACT_ALL            = NO
 
 EXTRACT_PRIVATE        = NO
 
-EXTRACT_STATIC         = YES
+EXTRACT_STATIC         = NO
 
-EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_CLASSES  = NO
+
+# We want to be able to have undocumented members, such as size() that show
+# up but what they do is rather obvious.
+WARN_IF_UNDOCUMENTED   = NO
 
 CASE_SENSE_NAMES       = YES
 
@@ -115,14 +119,6 @@ EXAMPLE_PATTERNS       =
 EXAMPLE_RECURSIVE      = NO
 
 #---------------------------------------------------------------------------
-# configuration options related to source browsing
-#---------------------------------------------------------------------------
-
-REFERENCED_BY_RELATION = YES
-
-REFERENCES_RELATION    = YES
-
-#---------------------------------------------------------------------------
 # configuration options related to the output
 #---------------------------------------------------------------------------
 
@@ -176,7 +172,7 @@ ALLEXTERNALS           = NO
 
 CLASS_DIAGRAMS         = NO
 
-HAVE_DOT               = YES
+HAVE_DOT               = NO
 
 CLASS_GRAPH            = NO
 
@@ -184,7 +180,7 @@ COLLABORATION_GRAPH    = NO
 
 GROUP_GRAPHS           = NO
 
-UML_LOOK               = YES
+UML_LOOK               = NO
 
 TEMPLATE_RELATIONS     = NO
 
