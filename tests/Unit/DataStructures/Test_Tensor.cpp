@@ -70,6 +70,69 @@ static_assert(not can_contract_v<SpatialIndex<3, UpLo::Up, Frame::Grid>,
                                  SpacetimeIndex<2, UpLo::Lo, Frame::Grid>>,
               "Failed testing can_contract_v");
 
+template <typename From, typename To, bool Expected>
+struct check_can_convert_index {
+  static_assert(can_convert_index<From, To>::value == Expected,
+                "Failed testing can_convert_index");
+  static_assert(can_convert_index_v<From, To> == Expected,
+                "Failed testing can_convert_index_v");
+  static_assert(cpp17::is_same_v<typename can_convert_index<From, To>::type,
+                                 std::integral_constant<bool, Expected>>,
+                "Failed testing can_convert_index");
+  static_assert(cpp17::is_same_v<can_convert_index_t<From, To>,
+                                 std::integral_constant<bool, Expected>>,
+                "Failed testing can_convert_index_t");
+};
+
+template struct check_can_convert_index<
+    SpatialIndex<2, UpLo::Up, Frame::Grid>,
+    SpatialIndex<2, UpLo::Up, Frame::Grid>, true>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Grid>,
+    SpatialIndex<4, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Grid>,
+    SpacetimeIndex<3, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
+    SpatialIndex<3, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Grid>,
+    SpacetimeIndex<2, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpacetimeIndex<2, UpLo::Up, Frame::Grid>,
+    SpatialIndex<3, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Logical>,
+    SpatialIndex<3, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Grid>,
+    SpatialIndex<3, UpLo::Up, Frame::Grid>, true>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Grid>,
+    SpatialIndex<3, UpLo::Lo, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Up, Frame::Grid>,
+    SpatialIndex<3, UpLo::Euclidean, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+    SpatialIndex<3, UpLo::Up, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+    SpatialIndex<3, UpLo::Lo, Frame::Grid>, true>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+    SpatialIndex<3, UpLo::Euclidean, Frame::Grid>, false>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Euclidean, Frame::Grid>,
+    SpatialIndex<3, UpLo::Up, Frame::Grid>, true>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Euclidean, Frame::Grid>,
+    SpatialIndex<3, UpLo::Lo, Frame::Grid>, true>;
+template struct check_can_convert_index<
+    SpatialIndex<3, UpLo::Euclidean, Frame::Grid>,
+    SpatialIndex<3, UpLo::Euclidean, Frame::Grid>, true>;
+
 /// [is_frame_physical]
 static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
               "Failed testing Frame::is_frame_physical");
@@ -1385,4 +1448,61 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
   CHECK("Inertial" == get_output(Frame::Inertial{}));
   CHECK("Distorted" == get_output(Frame::Distorted{}));
   CHECK("NoFrame" == get_output(Frame::NoFrame{}));
+}
+
+namespace {
+template <typename Tnsr, typename Source>
+void check_conversion(const Source& tensor) noexcept {
+  static_assert(Tnsr::index_dim(0) == Source::index_dim(0) and
+                Tnsr::index_dim(1) == Source::index_dim(1), "Bug in test");
+  const Tnsr constructed = Source(tensor);
+  auto assigned = make_with_value<Tnsr>(tensor, 0.);
+  assigned = Source(tensor);
+  for (size_t i = 0; i < Source::index_dim(0); ++i) {
+    for (size_t j = 0; j < Source::index_dim(1); ++j) {
+      CHECK(tensor.get(i, j) == constructed.get(i, j));
+      CHECK(tensor.get(i, j) == assigned.get(i, j));
+    }
+  }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ConvertIndices",
+                  "[Unit][DataStructures]") {
+  {
+    auto tnsr_wx = make_with_value<tnsr::wx<double, 2>>(0., 0.);
+    get<0, 0>(tnsr_wx) = 1.;
+    get<0, 1>(tnsr_wx) = 2.;
+    get<1, 0>(tnsr_wx) = 3.;
+    get<1, 1>(tnsr_wx) = 4.;
+    check_conversion<tnsr::iw<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::Iw<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::wi<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::wI<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::ij<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::iJ<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::Ij<double, 2>>(tnsr_wx);
+    check_conversion<tnsr::IJ<double, 2>>(tnsr_wx);
+  }
+
+  {
+    auto tnsr_wa = make_with_value<tnsr::wa<double, 2>>(0., 0.);
+    get<0, 0>(tnsr_wa) = 1.;
+    get<0, 1>(tnsr_wa) = 2.;
+    get<0, 2>(tnsr_wa) = 3.;
+    get<1, 0>(tnsr_wa) = 4.;
+    get<1, 1>(tnsr_wa) = 5.;
+    get<1, 2>(tnsr_wa) = 6.;
+    check_conversion<tnsr::ia<double, 2>>(tnsr_wa);
+  }
+
+  {
+    auto tnsr_ww = make_with_value<tnsr::ww<double, 2>>(0., 0.);
+    get<0, 0>(tnsr_ww) = 1.;
+    get<0, 1>(tnsr_ww) = 2.;
+    get<1, 0>(tnsr_ww) = 3.;
+    get<1, 1>(tnsr_ww) = 4.;
+    check_conversion<tnsr::ii<double, 2>>(tnsr_ww);
+    check_conversion<tnsr::II<double, 2>>(tnsr_ww);
+  }
 }

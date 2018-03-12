@@ -11,6 +11,7 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace brigand {
@@ -240,6 +241,28 @@ constexpr bool can_contract_v =
     IndexA::dim == IndexB::dim and
     cpp17::is_same_v<typename IndexA::Frame, typename IndexB::Frame> and
     (IndexA::ul != IndexB::ul or IndexA::ul == UpLo::Euclidean);
+
+/// \ingroup TensorGroup
+/// Whether an index can be converted to another.  They can be if they
+/// are the same or the first is Euclidean.
+//@{
+template <typename From, typename To, typename = std::nullptr_t>
+struct can_convert_index : std::false_type {};
+/// \cond HIDDEN_SYMBOLS
+template <typename From, typename To>
+struct can_convert_index<
+    From, To,
+    Requires<From::index_type == To::index_type and From::dim == To::dim and
+             cpp17::is_same_v<typename From::Frame, typename To::Frame> and
+             (From::ul == To::ul or From::ul == UpLo::Euclidean)>>
+    : std::true_type {};
+/// \endcond
+template <typename From, typename To>
+using can_convert_index_t = typename can_convert_index<From, To>::type;
+
+template <typename From, typename To>
+constexpr bool can_convert_index_v = can_convert_index<From, To>::value;
+//@}
 
 template <typename... Ts>
 using index_list = brigand::list<Ts...>;

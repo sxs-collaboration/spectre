@@ -411,6 +411,24 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   std::pair<std::vector<std::string>, std::vector<X>> get_vector_of_data()
       const;
 
+  /// Convert from Euclidean indices to up/down indices.
+  //@{
+  template <typename... OtherIndices,
+            Requires<tmpl::all<tmpl::list<
+                can_convert_index<OtherIndices, Indices>...>>::value> = nullptr>
+  Tensor(Tensor<X, Symm, IndexList<OtherIndices...>>&& other) noexcept
+      : data_(std::move(other.data_)) {}
+
+  template <typename... OtherIndices,
+            Requires<tmpl::all<tmpl::list<
+                can_convert_index<OtherIndices, Indices>...>>::value> = nullptr>
+  Tensor& operator=(
+      Tensor<X, Symm, IndexList<OtherIndices...>>&& other) noexcept {
+    data_ = std::move(other.data_);
+    return *this;
+  }
+  //@}
+
   /// \cond HIDDEN_SYMBOLS
   /// Serialization function used by Charm++
   void pup(PUP::er& p) {  // NOLINT
@@ -419,6 +437,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \endcond
 
  private:
+  /// \cond
+  // For the converting constructor
+  template <typename, typename, typename>
+  friend class Tensor;
+  /// \endcond
+
   // clang-tidy: redundant declaration
   /// \cond
   template <int I, class... Ts>

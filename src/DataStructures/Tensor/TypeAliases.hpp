@@ -97,6 +97,10 @@ using IJ = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
                   index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
                              SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using wx = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using ia = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
 index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
            SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
@@ -104,6 +108,34 @@ template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using iw = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
 index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
            SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Iw = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using wi = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using wI = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using aw = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Aw = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpacetimeIndex<SpatialDim, UpLo::Up, Fr>,
+           SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using wa = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>,
+           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using wA = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>,
+           SpacetimeIndex<SpatialDim, UpLo::Up, Fr>>>;
 
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
@@ -127,6 +159,10 @@ template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using II = Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
                   index_list<SpatialIndex<SpatialDim, UpLo::Up, Fr>,
                              SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using ww = Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
+                  index_list<SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>,
+                             SpatialIndex<SpatialDim, UpLo::Euclidean, Fr>>>;
 
 // Rank 3 - spacetime
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
