@@ -479,6 +479,23 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     CHECK(get<2>(spatial_vector3) == 3);
   }
 
+  {
+    /// [index_dim]
+    using T = Tensor<double, Symmetry<1, 2, 3>,
+                     index_list<SpacetimeIndex<2, UpLo::Up, Frame::Inertial>,
+                                SpatialIndex<1, UpLo::Up, Frame::Inertial>,
+                                SpatialIndex<2, UpLo::Up, Frame::Inertial>>>;
+    const T t{};
+    CHECK(index_dim<0>(t) == 3);
+    CHECK(index_dim<1>(t) == 1);
+    CHECK(index_dim<2>(t) == 2);
+    CHECK(T::index_dim(0) == 3);
+    CHECK(T::index_dim(1) == 1);
+    CHECK(T::index_dim(2) == 2);
+    CHECK(T::index_dims() == std::array<size_t, 3>{{3, 1, 2}});
+    /// [index_dim]
+  }
+
   Tensor<double, Symmetry<3>,
          index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
       spatial_vector4{};
