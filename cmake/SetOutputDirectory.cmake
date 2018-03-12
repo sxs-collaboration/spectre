@@ -11,3 +11,19 @@ if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
       CACHE STRING "Choose the directory where executables are placed" FORCE
   )
 endif (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+
+if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(
+    CMAKE_LIBRARY_OUTPUT_DIRECTORY
+    "${CMAKE_BINARY_DIR}/lib/"
+    CACHE STRING "Choose the directory where shared libraries are placed" FORCE
+    )
+endif (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+
+if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(
+    CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+    "${CMAKE_BINARY_DIR}/lib/"
+    CACHE STRING "Choose the directory where static libraries are placed" FORCE
+    )
+endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
