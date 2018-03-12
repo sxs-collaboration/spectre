@@ -14,6 +14,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(CheckCompilerVersion)
 include(ProhibitInSourceBuild)
+include(SetupNinjaColors)
 include(SetOutputDirectory)
 include(SetupGitHooks)
 include(SetBuildType)
