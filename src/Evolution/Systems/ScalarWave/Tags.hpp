@@ -26,7 +26,7 @@ struct Pi : db::DataBoxTag {
 
 template <size_t Dim>
 struct Phi : db::DataBoxTag {
-  using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+  using type = tnsr::w<DataVector, Dim, Frame::Inertial>;
   static constexpr db::DataBoxString label = "Phi";
 };
 }  // namespace ScalarWave

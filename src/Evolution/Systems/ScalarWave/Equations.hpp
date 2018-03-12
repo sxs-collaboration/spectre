@@ -66,10 +66,10 @@ struct ComputeDuDt {
                  Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_pi,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
+      gsl::not_null<tnsr::w<DataVector, Dim, Frame::Inertial>*> dt_phi,
       gsl::not_null<Scalar<DataVector>*> dt_psi, const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
-      const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) noexcept;
+      const tnsr::iw<DataVector, Dim, Frame::Inertial>& d_phi) noexcept;
 };
 
 /*!
@@ -88,11 +88,11 @@ struct ComputeNormalDotFluxes {
                  Tags::NormalDotFlux<Psi>>;
   using argument_tags = tmpl::list<Pi, Phi<Dim>>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
-                    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+                    gsl::not_null<tnsr::w<DataVector, Dim, Frame::Inertial>*>
                         phi_normal_dot_flux,
                     gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
                     const Scalar<DataVector>& pi,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+                    const tnsr::w<DataVector, Dim, Frame::Inertial>& phi,
                     const tnsr::i<DataVector, Dim, Frame::Inertial>&
                         interface_unit_normal) noexcept;
 };
@@ -146,7 +146,7 @@ struct UpwindFlux {
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,
       const Scalar<DataVector>& normal_dot_flux_pi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
+      const tnsr::w<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
       const Scalar<DataVector>& /*normal_dot_flux_psi*/,
       const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
@@ -156,17 +156,17 @@ struct UpwindFlux {
   // user-level code
   void operator()(
       gsl::not_null<Scalar<DataVector>*> pi_normal_dot_numerical_flux,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::w<DataVector, Dim, Frame::Inertial>*>
           phi_normal_dot_numerical_flux,
       gsl::not_null<Scalar<DataVector>*> psi_normal_dot_numerical_flux,
       const Scalar<DataVector>& normal_dot_flux_pi_interior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::w<DataVector, Dim, Frame::Inertial>&
           normal_dot_flux_phi_interior,
       const Scalar<DataVector>& pi_interior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           normal_times_flux_pi_interior,
       const Scalar<DataVector>& minus_normal_dot_flux_pi_exterior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::w<DataVector, Dim, Frame::Inertial>&
           minus_normal_dot_flux_phi_exterior,
       const Scalar<DataVector>& pi_exterior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&

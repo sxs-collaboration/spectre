@@ -80,7 +80,7 @@ class PlaneWave {
 
   /// The spatial derivatives of the scalar field
   template <typename T>
-  tnsr::i<T, Dim> dpsi_dx(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  tnsr::w<T, Dim> dpsi_dx(const tnsr::I<T, Dim>& x, double t) const noexcept;
 
   /// The second time derivative of the scalar field
   template <typename T>
@@ -88,11 +88,11 @@ class PlaneWave {
 
   /// The second mixed derivatives of the scalar field
   template <typename T>
-  tnsr::i<T, Dim> d2psi_dtdx(const tnsr::I<T, Dim>& x, double t) const noexcept;
+  tnsr::w<T, Dim> d2psi_dtdx(const tnsr::I<T, Dim>& x, double t) const noexcept;
 
   /// The second spatial derivatives of the scalar field
   template <typename T>
-  tnsr::ii<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const
+  tnsr::ww<T, Dim> d2psi_dxdx(const tnsr::I<T, Dim>& x, double t) const
       noexcept;
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
