@@ -26,16 +26,17 @@ namespace CoordinateMaps {
  *
  * \details The mapping that goes from a reference cube to a three-dimensional
  *  wedge centered on a coordinate axis covering a volume between an inner
- *  surface and outer surface. One of the surfaces must be spherical, but the
- *  curvature of the other surface can be anything between flat (a sphericity of
- *  0) and spherical (a sphericity of 1).
+ *  surface and outer surface. The inner surface can be given a curvature
+ *  between flat (a sphericity of 0) or spherical (a sphericity of 1).
+ *  The sphericity of the outer surface is currently constrained to have a
+ *  value of 1.
  *
  *  The first two logical coordinates correspond to the two angular coordinates,
  *  and the third to the radial coordinate.
  *
  *  The Wedge3D map is constructed by linearly interpolating between a bulged
- *  face of radius `radius_of_other_surface` to a spherical face of
- *  radius `radius_of_spherical_surface`, where the radius of the bulged face
+ *  face of radius `radius_of_inner_surface` to a spherical face of
+ *  radius `radius_of_outer_surface`, where the radius of the bulged face
  *  is defined to be the radius of the sphere circumscribing the bulge.
  *
  *  We make a choice here as to whether we wish to use the logical coordinates
@@ -73,7 +74,7 @@ namespace CoordinateMaps {
  * \f$+z\f$
  *  direction in either choice of coordinates is then given by:
  *
- *  \f[\sigma_{spherical}: \vec{\xi} \rightarrow \vec{x}(\vec{\xi})\f]
+ *  \f[\vec{\sigma}_{spherical}: \vec{\xi} \rightarrow \vec{x}(\vec{\xi})\f]
  *  Where
  *  \f[
  *  \vec{x}(\xi,\eta) =
@@ -81,11 +82,11 @@ namespace CoordinateMaps {
  *  x(\xi,\eta)\\
  *  y(\xi,\eta)\\
  *  z(\xi,\eta)\\
- *  \end{bmatrix}  = R
+ *  \end{bmatrix}  = \frac{R}{\rho}
  *  \begin{bmatrix}
- *  \Xi/\rho\\
- *  \mathrm{H}/\rho\\
- *  1/\rho\\
+ *  \Xi\\
+ *  \mathrm{H}\\
+ *  1\\
  *  \end{bmatrix}\f]
  *
  *  ### The Bulged Face Map
@@ -109,12 +110,11 @@ namespace CoordinateMaps {
  *  \end{bmatrix}\f]
  *
  *  To construct the bulged map we interpolate between this cubical face map
- *  and a spherical face map of radius `radius_of_other_surface`, with the
- *  interpolation parameter being \f$s\f$, the `sphericity_of_other_surface`.
- *  The surface map for the bulged face lying in the \f$+z\f$ direction is then
- *  given by:
+ *  and a spherical face map of radius \f$R\f$, with the
+ *  interpolation parameter being \f$s\f$. The surface map for the bulged face
+ *  lying in the \f$+z\f$ direction is then given by:
  *
- *  \f[\vec{\sigma}_{other}(\xi,\eta) = {(1-s)L + \frac{sR_{other}}{\rho}}
+ *  \f[\vec{\sigma}_{bulged}(\xi,\eta) = {(1-s)L + \frac{sR}{\rho}}
  *  \begin{bmatrix}
  *  \Xi\\
  *  \mathrm{H}\\
@@ -122,55 +122,71 @@ namespace CoordinateMaps {
  *  \end{bmatrix}\f]
  *
  *  We constrain L by demanding that the spherical face circumscribe the cube.
- *  With this condition, we have \f$L = R_{other}/\sqrt3\f$.
+ *  With this condition, we have \f$L = R/\sqrt3\f$.
+ *  \note This differs from the choice in SpEC where it is demanded that the
+ *  surfaces touch at the center, which leads to \f$L = R\f$.
  *
  *  ### The Full Volume Map
  *  The final map for the wedge which lies along the \f$+z\f$ is obtained by
- *  interpolating between the spherical and bulged surfaces with the
+ *  interpolating between the two surfaces with the
  *  interpolation parameter being the logical coordinate \f$\zeta\f$. This
  *  results in:
  *
- *  \f[\vec{x}(\xi,\eta,\zeta) = \frac{1}{2}\big\{(1-\zeta)(1-s)L
- *   + (1-\zeta)s\frac{R_{other}}{\rho} +
- *  (1+\zeta)\frac{R_{spherical}}{\rho}\big\}\begin{bmatrix}
+ *  \f[\vec{x}(\xi,\eta,\zeta) =
+ *  \frac{1}{2}\left\{(1-\zeta)\Big[(1-s_{inner})\frac{R_{inner}}{\sqrt 3}
+ *   + s_{inner}\frac{R_{inner}}{\rho}\Big] +
+ *  (1+\zeta)\Big[(1-s_{outer})\frac{R_{outer}}{\sqrt 3} +s_{outer}
+ *  \frac{R_{outer}}{\rho}\Big] \right\}\begin{bmatrix}
  *  \Xi\\
  *  \mathrm{H}\\
  *  1\\
  *  \end{bmatrix}\f]
  *
- *  We will define the variables \f$b_{f1}\f$ and \f$b_{f2}\f$, the first and
- *  second *blending factors*:
+ *  We will define the variables \f$F(\zeta)\f$ and \f$S(\zeta)\f$, the frustum
+ * and sphere factors: \f[F(\zeta) = F_0 + F_1\zeta\f] \f[S(\zeta) = S_0 +
+ * S_1\zeta\f]
+ *  Where \f{align*}F_0 &= \frac{1}{2} \big\{ (1-s_{outer})R_{outer} +
+ * (1-s_{inner})R_{inner}\big\}\\
+ *  F_1 &= \partial_{\zeta} F = \frac{1}{2} \big\{ (1-s_{outer})R_{outer} -
+ * (1-s_{inner})R_{inner}\big\}\\
+ *  S_0 &= \frac{1}{2} \big\{ s_{outer}R_{outer} + s_{inner}R_{inner}\big\}\\
+ *  S_1 &= \partial_{\zeta} F = \frac{1}{2} \big\{ s_{outer}R_{outer} -
+ * s_{inner}R_{inner}\big\}\f}
  *
- *  \f[b_{f1} = \frac{1}{2}\big\{(1-\zeta)(1-s)L\big\}\f]
+ *  The map can then be rewritten as:
+ * \f[\vec{x}(\xi,\eta,\zeta) = \left\{\frac{F(\zeta)}{\sqrt 3} +
+ * \frac{S(\zeta)}{\rho}\right\}\begin{bmatrix}
+ *  \Xi\\
+ *  \mathrm{H}\\
+ *  1\\
+ *  \end{bmatrix}\f]
  *
- *  \f[b_{f2} = \frac{1}{2}\big\{(1-\zeta)sR_{other} + (1+\zeta)R_{spherical}
- *  \big\}\f]
- *
- *  We also define their zeta-derivatives, the *blending rates*:
- *
- *  \f[b_{r1} = \frac{\mathrm{d}b_{f1}}{\mathrm{d}\zeta} =
- *  \frac{1}{2}(s-1)L\f]
- *
- *  \f[b_{r2} = \frac{\mathrm{d}b_{f2}}{\mathrm{d}\zeta} =
- *  \frac{1}{2}\big\{-sR_{other} + R_{spherical}\big\}\f]
- *
+ *  We provide some common derivatives:
+ *  \f[\partial_{\xi}z = \frac{-S(\zeta)\Xi\Xi'}{\rho^3}\f]
+ *  \f[\partial_{\eta}z = \frac{-S(\zeta)\mathrm{H}\mathrm{H}'}{\rho^3}\f]
+ * \f[\partial_{\zeta}z = \frac{F'}{\sqrt 3} + \frac{S'}{\rho}\f]
  *  The Jacobian then is: \f[J =
  *  \begin{bmatrix}
- *  b_{f1}\Xi' & 0 &b_{r1}\Xi\\
- *  0 & b_{f1}\mathrm{H}' &b_{r1}\mathrm{H}\\
- *  0 & 0 &b_{r1}\\
- *  \end{bmatrix} + \begin{bmatrix}
- *  b_{f2}\Xi'(1+\mathrm{H}^2)/{\rho^3} & -b_{f2}\mathrm{H}'\Xi\mathrm{H}/\rho^3
- * &
- *  b_{r2}\Xi/\rho\\
- *  -b_{f2}\Xi'\Xi\mathrm{H}/\rho^3 & b_{f2}\mathrm{H}'(1+\Xi^2)/\rho^3 &
- *  b_{r2}\mathrm{H}/\rho\\
- *  -b_{f2}\Xi'\Xi/\rho^3 & -b_{f2}\mathrm{H}'\mathrm{H}/\rho^3 & b_{r2}/\rho\\
+ *  \Xi'z + \Xi\partial_{\xi}z & \Xi\partial_{\eta}z & \Xi\partial_{\zeta}z \\
+ *  \mathrm{H}\partial_{\xi}z & \mathrm{H}'z +
+ *  \mathrm{H}\partial_{\eta}z & \mathrm{H}\partial_{\zeta}z\\
+ *   \partial_{\xi}z&\partial_{\eta}z &\partial_{\zeta}z \\
  *  \end{bmatrix}
  *  \f]
  *
- *  \note This differs from the choice in SpEC where it is demanded that the
- *  surfaces touch at the center, which leads to \f$L = R_{other}\f$.
+ *  A common factor that shows up in the inverse jacobian is:
+ *  \f[ T:= \frac{S(\zeta)}{(\partial_{\zeta}z)\rho^3}\f]
+ *
+ *  The inverse Jacobian then is: \f[J^{-1} =
+ *  \frac{1}{z}\begin{bmatrix}
+ *  \Xi'^{-1} & 0 & -\Xi\Xi'^{-1}\\
+ *  0 & \mathrm{H}'^{-1} & -\mathrm{H}\mathrm{H}'^{-1}\\
+ *  T\Xi &
+ *  T\mathrm{H} &
+ *  T + F(\partial_{\zeta}z)^{-1}/\sqrt 3\\
+ *  \end{bmatrix}
+ *  \f]
+ *
  */
 class Wedge3D {
  public:
@@ -186,16 +202,16 @@ class Wedge3D {
 
   /*!
    * Constructs a 3D wedge.
-   * \param radius_of_spherical_surface Radius of the spherical surface
-   * \param radius_of_other_surface Distance from the origin to one of the
-   * corners which lie on the other surface, which may be anything between flat
+   * \param radius_outer Radius of the spherical surface
+   * \param radius_inner Distance from the origin to one of the
+   * corners which lie on the inner surface, which may be anything between flat
    * and spherical.
    * \param orientation_of_wedge The orientation of the desired wedge relative
    * to the orientation of the default wedge which is a wedge that has its
    * curved surfaces pierced by the upper-z axis. The logical xi and eta
    * coordinates point in the cartesian x and y directions, respectively.
-   * \param sphericity_of_other_surface Value between 0 and 1 which determines
-   * whether the other surface is flat (value of 0), spherical (value of 1) or
+   * \param sphericity_inner Value between 0 and 1 which determines
+   * whether the inner surface is flat (value of 0), spherical (value of 1) or
    * somewhere in between
    * \param with_equiangular_map Determines whether to apply a tangent function
    * mapping to the logical coordinates (for `true`) or not (for `false`).
@@ -205,9 +221,9 @@ class Wedge3D {
    * full wedge, or the full wedge entirely (value of `Both`). Half wedges are
    * currently only useful in constructing domains for binary systems.
    */
-  Wedge3D(double radius_of_other_surface, double radius_of_spherical_surface,
-          OrientationMap<3> orientation_of_wedge,
-          double sphericity_of_other_surface, bool with_equiangular_map,
+  Wedge3D(double radius_inner, double radius_outer,
+          OrientationMap<3> orientation_of_wedge, double sphericity_inner,
+          bool with_equiangular_map,
           WedgeHalves halves_to_use = WedgeHalves::Both) noexcept;
 
   Wedge3D() = default;
@@ -237,16 +253,24 @@ class Wedge3D {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
+  // factors out calculation of z needed for mapping and jacobian
+  template <typename T>
+  tt::remove_cvref_wrap_t<T> default_physical_z(const T& zeta,
+                                                const T& one_over_rho) const
+      noexcept;
   friend bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept;
 
-  double radius_of_other_surface_{std::numeric_limits<double>::signaling_NaN()};
-  double radius_of_spherical_surface_{
-      std::numeric_limits<double>::signaling_NaN()};
+  double radius_inner_{std::numeric_limits<double>::signaling_NaN()};
+  double radius_outer_{std::numeric_limits<double>::signaling_NaN()};
   OrientationMap<3> orientation_of_wedge_{};
-  double sphericity_of_other_surface_{
-      std::numeric_limits<double>::signaling_NaN()};
+  double sphericity_inner_{std::numeric_limits<double>::signaling_NaN()};
+  double sphericity_outer_{1.0};
   bool with_equiangular_map_ = false;
   WedgeHalves halves_to_use_ = WedgeHalves::Both;
+  double scaled_frustum_zero_{std::numeric_limits<double>::signaling_NaN()};
+  double sphere_zero_{std::numeric_limits<double>::signaling_NaN()};
+  double scaled_frustum_rate_{std::numeric_limits<double>::signaling_NaN()};
+  double sphere_rate_{std::numeric_limits<double>::signaling_NaN()};
 };
 bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept;
 }  // namespace CoordinateMaps
