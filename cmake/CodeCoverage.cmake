@@ -108,7 +108,7 @@ function(SETUP_TARGET_FOR_COVERAGE
       COMMAND ${LCOV} --gcov-tool ${GCOV} --rc lcov_branch_coverage=0
       --remove ${OUTPUT}.total.info '*/c++/*' '*/include/*'
       '*/boost/*' '*/charm/*' '*.decl.h' '*.def.h'
-      '*/STDIN' '*/tut/*' '*/moduleinit*'
+      '*/STDIN' '*/tut/*' '*/moduleinit*' '*InfoFromBuild.cpp'
       '${CMAKE_SOURCE_DIR}/src/Executables/*'
       ${ARG_IGNORE_COV}
       --output-file ${OUTPUT}.filtered.info
