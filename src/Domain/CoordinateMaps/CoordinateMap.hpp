@@ -62,26 +62,18 @@ class CoordinateMapBase : public PUP::able {
   // @{
   /// Compute the inverse Jacobian of the `Maps` at the point(s)
   /// `source_point`
-  virtual Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                 index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
-                            SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
-  virtual Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                 index_list<SpatialIndex<Dim, UpLo::Up, SourceFrame>,
-                            SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
+  virtual InverseJacobian<double, Dim, SourceFrame, TargetFrame> inv_jacobian(
+      tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
+  virtual InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>
   inv_jacobian(tnsr::I<DataVector, Dim, SourceFrame> source_point) const = 0;
   // @}
 
   // @{
   /// Compute the Jacobian of the `Maps` at the point(s) `source_point`
-  virtual Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                 index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
-                            SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
-  jacobian(tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
-  virtual Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                 index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
-                            SpatialIndex<Dim, UpLo::Lo, SourceFrame>>>
-  jacobian(tnsr::I<DataVector, Dim, SourceFrame> source_point) const = 0;
+  virtual Jacobian<double, Dim, SourceFrame, TargetFrame> jacobian(
+      tnsr::I<double, Dim, SourceFrame> source_point) const = 0;
+  virtual Jacobian<DataVector, Dim, SourceFrame, TargetFrame> jacobian(
+      tnsr::I<DataVector, Dim, SourceFrame> source_point) const = 0;
   // @}
  private:
   virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
@@ -173,33 +165,25 @@ class CoordinateMap
   // @{
   /// Compute the inverse Jacobian of the `Maps...` at the point(s)
   /// `source_point`
-  constexpr Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                   index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
-                              SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(tnsr::I<double, dim, SourceFrame> source_point) const override {
+  constexpr InverseJacobian<double, dim, SourceFrame, TargetFrame> inv_jacobian(
+      tnsr::I<double, dim, SourceFrame> source_point) const override {
     return inv_jacobian_impl(std::move(source_point));
   }
-  constexpr Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                   index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
-                              SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(tnsr::I<DataVector, dim, SourceFrame> source_point)
-      const override {
+  constexpr InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>
+  inv_jacobian(
+      tnsr::I<DataVector, dim, SourceFrame> source_point) const override {
     return inv_jacobian_impl(std::move(source_point));
   }
   // @}
 
   // @{
   /// Compute the Jacobian of the `Maps...` at the point(s) `source_point`
-  constexpr Tensor<double, tmpl::integral_list<std::int32_t, 2, 1>,
-                   index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
-                              SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-  jacobian(tnsr::I<double, dim, SourceFrame> source_point) const override {
+  constexpr Jacobian<double, dim, SourceFrame, TargetFrame> jacobian(
+      tnsr::I<double, dim, SourceFrame> source_point) const override {
     return jacobian_impl(std::move(source_point));
   }
-  constexpr Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                   index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
-                              SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-  jacobian(tnsr::I<DataVector, dim, SourceFrame> source_point) const override {
+  constexpr Jacobian<DataVector, dim, SourceFrame, TargetFrame> jacobian(
+      tnsr::I<DataVector, dim, SourceFrame> source_point) const override {
     return jacobian_impl(std::move(source_point));
   }
   // @}
@@ -238,17 +222,12 @@ class CoordinateMap
 
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE
-      Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-             index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
-                        SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
+      InverseJacobian<T, dim, SourceFrame, TargetFrame>
       inv_jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const;
 
   template <typename T>
-  constexpr SPECTRE_ALWAYS_INLINE
-      Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-             index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
-                        SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-      jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const;
+  constexpr SPECTRE_ALWAYS_INLINE Jacobian<T, dim, SourceFrame, TargetFrame>
+  jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const;
 
   std::tuple<Maps...> maps_;
 };
@@ -295,15 +274,10 @@ template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE auto
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
     tnsr::I<T, dim, SourceFrame>&& source_point) const
-    -> Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-              index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
-                         SpatialIndex<dim, UpLo::Lo, TargetFrame>>> {
+    -> InverseJacobian<T, dim, SourceFrame, TargetFrame> {
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
-  Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<dim, UpLo::Up, SourceFrame>,
-                    SpatialIndex<dim, UpLo::Lo, TargetFrame>>>
-      inv_jac{};
+  InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
 
   tuple_transform(
       maps_,
@@ -348,14 +322,9 @@ template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE auto
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
     tnsr::I<T, dim, SourceFrame>&& source_point) const
-    -> Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-              index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
-                         SpatialIndex<dim, UpLo::Lo, SourceFrame>>> {
+    -> Jacobian<T, dim, SourceFrame, TargetFrame> {
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
-  Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<dim, UpLo::Up, TargetFrame>,
-                    SpatialIndex<dim, UpLo::Lo, SourceFrame>>>
-      jac{};
+  Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
   tuple_transform(
       maps_,
       [&jac, &mapped_point](const auto& map, auto index,

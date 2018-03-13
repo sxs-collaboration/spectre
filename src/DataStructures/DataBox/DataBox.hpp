@@ -1085,6 +1085,21 @@ inline const DataBox<TagsList<Tags...>>& DataBox<TagsList<Tags...>>::get_impl()
   return *this;
 }
 
+namespace DataBox_detail {
+// This function (and its unused template argument) exist so that
+// users can see what tag has the wrong type when the static_assert
+// fails.
+template <typename Tag, typename TagType, typename SuppliedType>
+constexpr int check_argument_type() noexcept {
+  static_assert(cpp17::is_same_v<TagType, SuppliedType>,
+                "The type of each Tag must be the same as the type being "
+                "passed into the function creating the new DataBox.  See the "
+                "function template parameters for the tag, expected type, and "
+                "supplied type.");
+  return 0;
+}
+}  // namespace DataBox_detail
+
 template <template <typename...> class TagsList, typename... Tags>
 template <
     typename... TagsInArgsOrder, typename... FullItems,
@@ -1100,11 +1115,9 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
       "Must pass in as many (compute) items as there are Tags.");
   static_assert(sizeof...(TagsInArgsOrder) == sizeof...(Args),
                 "Must pass in as many arguments as AddTags");
-  static_assert(
-      tmpl2::flat_all_v<cpp17::is_same_v<typename TagsInArgsOrder::type,
-                                         std::decay_t<Args>>...>,
-      "The type of each Tag must be the same as the type being passed into "
-      "the function creating the new DataBox.");
+  swallow(DataBox_detail::check_argument_type<TagsInArgsOrder,
+                                              typename TagsInArgsOrder::type,
+                                              std::decay_t<Args>>()...);
 
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
   databox_detail::add_items_to_box<
@@ -1125,11 +1138,8 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
     Args&&... args) {
   static_assert(sizeof...(NewTags) == sizeof...(Args),
                 "Must pass in as many arguments as AddTags");
-  static_assert(
-      tmpl2::flat_all_v<
-          cpp17::is_same_v<typename NewTags::type, std::decay_t<Args>>...>,
-      "The type of each Tag must be the same as the type being passed into "
-      "the function creating the new DataBox.");
+  swallow(DataBox_detail::check_argument_type<NewTags, typename NewTags::type,
+                                              std::decay_t<Args>>()...);
 
   check_tags();
   // Merge old tags, including all ComputeItems even though they might be

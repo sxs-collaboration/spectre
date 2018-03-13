@@ -116,10 +116,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Wedge2D::jacobian(
                                       const auto& cap_eta_deriv) noexcept {
     const ReturnType one_over_rho = 1.0 / sqrt(1.0 + square(cap_eta));
 
-    Tensor<tt::remove_cvref_wrap_t<T>, tmpl::integral_list<std::int32_t, 2, 1>,
-           index_list<SpatialIndex<2, UpLo::Up, Frame::NoFrame>,
-                      SpatialIndex<2, UpLo::Lo, Frame::NoFrame>>>
-        jacobian_matrix{};
+    tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian_matrix{};
 
     auto &dxdxi = get<0, 0>(jacobian_matrix),
          &dydeta = get<1, 1>(jacobian_matrix),

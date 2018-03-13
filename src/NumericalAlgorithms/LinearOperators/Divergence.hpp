@@ -60,9 +60,7 @@ struct div : Tags_detail::div_impl<T, S> {};
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags, DerivativeFrame>> divergence(
     const Variables<FluxTags>& F, const Index<Dim>& extents,
-    const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-                 tmpl::list<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
-                            SpatialIndex<Dim, UpLo::Lo, DerivativeFrame>>>&
+    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept;
 
 namespace Tags {

@@ -152,11 +152,8 @@ using derivative_frame = Frame::Inertial;
                       DIM(data), derivative_frame>(                          \
       const Variables<variables_tags<DIM(data)>>& u,                         \
       const Index<DIM(data)>& extents,                                       \
-      const Tensor<                                                          \
-          DataVector, tmpl::integral_list<std::int32_t, 2, 1>,               \
-          tmpl::list<SpatialIndex<DIM(data), UpLo::Up, Frame::Logical>,      \
-                     SpatialIndex<DIM(data), UpLo::Lo, derivative_frame>>>&  \
-          inverse_jacobian) noexcept;
+      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+                            derivative_frame>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -67,10 +67,8 @@ class ElementMap {
   }
 
   template <typename T>
-  Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
-                    SpatialIndex<Dim, UpLo::Lo, TargetFrame>>>
-  inv_jacobian(tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
+  InverseJacobian<T, Dim, Frame::Logical, TargetFrame> inv_jacobian(
+      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
     auto inv_jac = block_map_->inv_jacobian(std::move(source_point));
     for (size_t d = 0; d < Dim; ++d) {
@@ -82,10 +80,8 @@ class ElementMap {
   }
 
   template <typename T>
-  Tensor<T, tmpl::integral_list<std::int32_t, 2, 1>,
-         index_list<SpatialIndex<Dim, UpLo::Up, TargetFrame>,
-                    SpatialIndex<Dim, UpLo::Lo, Frame::Logical>>>
-  jacobian(tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
+  Jacobian<T, Dim, Frame::Logical, TargetFrame> jacobian(
+      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
     auto jac = block_map_->jacobian(std::move(source_point));
     for (size_t d = 0; d < Dim; ++d) {

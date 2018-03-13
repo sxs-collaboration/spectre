@@ -21,11 +21,9 @@ auto compose_jacobians(const Map1& map1, const Map2& map2,
   const auto jac1 = map1.jacobian(point);
   const auto jac2 = map2.jacobian(map1(point));
 
-  auto result = make_with_value<
-      Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-             index_list<SpatialIndex<Dim, UpLo::Up, Frame::Grid>,
-                        SpatialIndex<Dim, UpLo::Lo, Frame::Logical>>>>(
-      point[0], 0.);
+  auto result =
+      make_with_value<Jacobian<DataType, Dim, Frame::Logical, Frame::Grid>>(
+          point[0], 0.);
   for (size_t target = 0; target < Dim; ++target) {
     for (size_t source = 0; source < Dim; ++source) {
       for (size_t dummy = 0; dummy < Dim; ++dummy) {
@@ -44,10 +42,8 @@ auto compose_inv_jacobians(const Map1& map1, const Map2& map2,
   const auto inv_jac2 = map2.inv_jacobian(map1(point));
 
   auto result = make_with_value<
-      Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-             index_list<SpatialIndex<Dim, UpLo::Up, Frame::Logical>,
-                        SpatialIndex<Dim, UpLo::Lo, Frame::Grid>>>>(
-      point[0], 0.);
+      InverseJacobian<DataType, Dim, Frame::Logical, Frame::Grid>>(point[0],
+                                                                   0.);
   for (size_t target = 0; target < Dim; ++target) {
     for (size_t source = 0; source < Dim; ++source) {
       for (size_t dummy = 0; dummy < Dim; ++dummy) {

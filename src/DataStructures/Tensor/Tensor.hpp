@@ -339,14 +339,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   // @{
   /// Get dimensionality of i'th tensor index
   ///
-  /// \details
-  /// Consider the tensor \f$T_{abc}\f$ where the dimensionality of each index
-  /// is \f$(3, 2, 4)\f$, respectively. Then
-  /// \code
-  /// dimensionality(0) = 3;
-  /// dimensionality(1) = 2;
-  /// dimensionality(2) = 4;
-  /// \endcode
+  /// \snippet Test_Tensor.cpp index_dim
+  /// \see ::index_dim
   SPECTRE_ALWAYS_INLINE static constexpr size_t index_dim(
       const size_t i) noexcept {
     static_assert(sizeof...(Indices),
@@ -375,6 +369,9 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
   //@{
   /// Return array of dimensionality of each index
+  ///
+  /// \snippet Test_Tensor.cpp index_dim
+  /// \see index_dim ::index_dim
   SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, sizeof...(Indices)>
   index_dims() noexcept {
     return structure::dims();
@@ -423,9 +420,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
  private:
   // clang-tidy: redundant declaration
+  /// \cond
   template <int I, class... Ts>
   friend SPECTRE_ALWAYS_INLINE constexpr size_t index_dim(  // NOLINT
       const Tensor<Ts...>& /*t*/) noexcept;
+  /// \endcond
 
   storage_type data_;
 };
@@ -501,6 +500,8 @@ bool operator!=(const Tensor<X, Symm, IndexList<Indices...>>& lhs,
 
 /// \ingroup TensorGroup
 /// Get dimensionality of i'th tensor index
+///
+/// \snippet Test_Tensor.cpp index_dim
 template <int I, class... Ts>
 SPECTRE_ALWAYS_INLINE constexpr size_t index_dim(
     const Tensor<Ts...>& /*t*/) noexcept {

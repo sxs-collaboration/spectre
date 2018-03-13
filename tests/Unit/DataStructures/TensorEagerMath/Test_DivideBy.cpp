@@ -18,26 +18,21 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
   const DataVector twelve(npts, 12.0);
   const DataVector thirteen(npts, 13.0);
 
-  const Tensor<DataVector, Symmetry<1>,
-               tmpl::list<SpatialIndex<1, UpLo::Lo, Frame::Grid>>>
-      one_d_covector{{{two}}};
+  const tnsr::i<DataVector, 1, Frame::Grid> one_d_covector{{{two}}};
   const auto normalized_one_d_covector = divide_by(one_d_covector, two);
   for (size_t s = 0; s < npts; ++s) {
     CHECK(get<0>(normalized_one_d_covector)[s] == 1.0);
   }
 
-  const Tensor<DataVector, Symmetry<1>,
-               tmpl::list<SpacetimeIndex<1, UpLo::Up, Frame::Grid>>>
-      two_d_vector{{{three, four}}};
+  const tnsr::A<DataVector, 1, Frame::Grid> two_d_vector{{{three, four}}};
   const auto normalized_two_d_vector = divide_by(two_d_vector, five);
   for (size_t s = 0; s < npts; ++s) {
     CHECK(get<0>(normalized_two_d_vector)[s] == 0.6);
     CHECK(get<1>(normalized_two_d_vector)[s] == 0.8);
   }
 
-  const Tensor<DataVector, Symmetry<1>,
-               tmpl::list<SpatialIndex<2, UpLo::Up, Frame::Grid>>>
-      two_d_spatial_vector{{{five, twelve}}};
+  const tnsr::I<DataVector, 2, Frame::Grid> two_d_spatial_vector{
+      {{five, twelve}}};
   const auto normalized_two_d_spatial_vector =
       divide_by(two_d_spatial_vector, thirteen);
   for (size_t s = 0; s < npts; ++s) {
@@ -45,9 +40,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
     CHECK(get<1>(normalized_two_d_spatial_vector)[s] == 12.0 / 13.0);
   }
 
-  const Tensor<DataVector, Symmetry<1>,
-               tmpl::list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      three_d_covector{{{three, twelve, four}}};
+  const tnsr::i<DataVector, 3, Frame::Grid> three_d_covector{
+      {{three, twelve, four}}};
   const auto normalized_three_d_covector =
       divide_by(three_d_covector, thirteen);
   for (size_t s = 0; s < npts; ++s) {
@@ -56,9 +50,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DivideBy",
     CHECK(get<2>(normalized_three_d_covector)[s] == 4.0 / 13.0);
   }
 
-  const Tensor<DataVector, Symmetry<1>,
-               tmpl::list<SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
-      five_d_covector{{{two, twelve, four, one, two}}};
+  const tnsr::a<DataVector, 4, Frame::Grid> five_d_covector{
+      {{two, twelve, four, one, two}}};
   const auto normalized_five_d_covector = divide_by(five_d_covector, thirteen);
   for (size_t s = 0; s < npts; ++s) {
     CHECK(get<0>(normalized_five_d_covector)[s] == 2.0 / 13.0);
