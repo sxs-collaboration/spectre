@@ -99,13 +99,13 @@ class Variables<tmpl::list<Tags...>> {
 
   explicit Variables(
       size_t number_of_grid_points,
-      double value = std::numeric_limits<double>::signaling_NaN());
+      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
 
   Variables(Variables&& rhs) noexcept = default;
   Variables& operator=(Variables&& rhs) noexcept;
 
-  Variables(const Variables& rhs);
-  Variables& operator=(const Variables& rhs);
+  Variables(const Variables& rhs) noexcept;
+  Variables& operator=(const Variables& rhs) noexcept;
 
   // @{
   /// Copy and move semantics for wrapped variables
@@ -124,12 +124,13 @@ class Variables<tmpl::list<Tags...>> {
             Requires<tmpl2::flat_all_v<
                 cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
                                  db::remove_all_prefixes<Tags>>...>> = nullptr>
-  explicit Variables(const Variables<tmpl::list<WrappedTags...>>& rhs);
+  explicit Variables(const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all_v<
                 cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
                                  db::remove_all_prefixes<Tags>>...>> = nullptr>
-  Variables& operator=(const Variables<tmpl::list<WrappedTags...>>& rhs);
+  Variables& operator=(
+      const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
   // @}
 
   /// \cond HIDDEN_SYMBOLS
@@ -171,7 +172,7 @@ class Variables<tmpl::list<Tags...>> {
 
   /// Serialization for Charm++.
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
   // @{
   /// \brief Assign a subset of the `Tensor`s from another Variables or a
@@ -201,10 +202,10 @@ class Variables<tmpl::list<Tags...>> {
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
   template <typename VT, bool VF>
-  Variables(const blaze::Vector<VT, VF>& expression);  // NOLINT
+  Variables(const blaze::Vector<VT, VF>& expression) noexcept;  // NOLINT
 
   template <typename VT, bool VF>
-  Variables& operator=(const blaze::Vector<VT, VF>& expression);
+  Variables& operator=(const blaze::Vector<VT, VF>& expression) noexcept;
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all_v<
@@ -325,7 +326,7 @@ class Variables<tmpl::list<Tags...>> {
   //@}
 
   static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
-      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) {
+      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {
     ASSERT(sizeof...(Tags) > 0,
            "This ASSERT is triggered if you try to construct a Variables "
            "with no Tags. A Variables with no Tags is a valid type, but "
@@ -336,7 +337,7 @@ class Variables<tmpl::list<Tags...>> {
       typename TagToAdd, typename... Rest,
       Requires<tt::is_a<Tensor, typename TagToAdd::type>::value> = nullptr>
   void add_reference_variable_data(tmpl::list<TagToAdd, Rest...> /*unused*/,
-                                   size_t variable_offset = 0);
+                                   size_t variable_offset = 0) noexcept;
 
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
     return lhs.variable_data_ == rhs.variable_data_;
@@ -355,7 +356,7 @@ class Variables<tmpl::list<Tags...>> {
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
-                                          const double value)
+                                          const double value) noexcept
     : variable_data_impl_(
           number_of_grid_points * number_of_independent_components, value),
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
@@ -367,7 +368,7 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<Tags...>>& rhs)
+    const Variables<tmpl::list<Tags...>>& rhs) noexcept
     : variable_data_impl_(rhs.variable_data_impl_),
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
       size_(rhs.size_),
@@ -377,7 +378,7 @@ Variables<tmpl::list<Tags...>>::Variables(
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    const Variables<tmpl::list<Tags...>>& rhs) {
+    const Variables<tmpl::list<Tags...>>& rhs) noexcept {
   if (&rhs == this) {
     return *this;
   }
@@ -408,7 +409,7 @@ template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
                                        db::remove_all_prefixes<WrappedTags>,
                                        db::remove_all_prefixes<Tags>>...>>>
 Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<WrappedTags...>>& rhs)
+    const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
     : variable_data_impl_(rhs.variable_data_impl_),
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
       size_(rhs.size_),
@@ -421,7 +422,7 @@ template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
                                        db::remove_all_prefixes<WrappedTags>,
                                        db::remove_all_prefixes<Tags>>...>>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    const Variables<tmpl::list<WrappedTags...>>& rhs) {
+    const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
   variable_data_impl_ = rhs.variable_data_impl_;
   variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
@@ -457,7 +458,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 }
 
 template <typename... Tags>
-void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
+void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
   p | variable_data_impl_;
   p | size_;
   p | number_of_grid_points_;
@@ -499,7 +500,7 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
-    const blaze::Vector<VT, VF>& expression)
+    const blaze::Vector<VT, VF>& expression) noexcept
     : variable_data_impl_((~expression).size()),
       variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
       size_((~expression).size()),
@@ -512,7 +513,7 @@ Variables<tmpl::list<Tags...>>::Variables(
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    const blaze::Vector<VT, VF>& expression) {
+    const blaze::Vector<VT, VF>& expression) noexcept {
   size_ = (~expression).size();
   number_of_grid_points_ = size_ / number_of_independent_components;
   variable_data_impl_.resize(size_);
@@ -528,7 +529,8 @@ template <typename... Tags>
 template <typename TagToAdd, typename... Rest,
           Requires<tt::is_a<Tensor, typename TagToAdd::type>::value>>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
-    tmpl::list<TagToAdd, Rest...> /*unused*/, const size_t variable_offset) {
+    tmpl::list<TagToAdd, Rest...> /*unused*/,
+    const size_t variable_offset) noexcept {
   ASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *
                      number_of_grid_points_,
          "This ASSERT is typically triggered because a Variables class was "
@@ -608,13 +610,13 @@ Variables<tmpl::list<Tags...>> operator/(
 namespace Variables_detail {
 template <typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
-                           tmpl::list<> /*meta*/) {
+                           tmpl::list<> /*meta*/) noexcept {
   return os << "Variables is empty!";
 }
 
 template <typename Tag, typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
-                           tmpl::list<Tag> /*meta*/) {
+                           tmpl::list<Tag> /*meta*/) noexcept {
   return os << pretty_type::short_name<Tag>() << ":\n" << get<Tag>(d);
 }
 
@@ -622,7 +624,7 @@ template <typename Tag, typename SecondTag, typename... RemainingTags,
           typename TagsList>
 std::ostream& print_helper(
     std::ostream& os, const Variables<TagsList>& d,
-    tmpl::list<Tag, SecondTag, RemainingTags...> /*meta*/) {
+    tmpl::list<Tag, SecondTag, RemainingTags...> /*meta*/) noexcept {
   os << pretty_type::short_name<Tag>() << ":\n";
   os << get<Tag>(d) << "\n\n";
   print_helper(os, d, tmpl::list<SecondTag, RemainingTags...>{});
@@ -631,13 +633,14 @@ std::ostream& print_helper(
 }  // namespace Variables_detail
 
 template <typename TagsList>
-std::ostream& operator<<(std::ostream& os, const Variables<TagsList>& d) {
+std::ostream& operator<<(std::ostream& os,
+                         const Variables<TagsList>& d) noexcept {
   return Variables_detail::print_helper(os, d, TagsList{});
 }
 
 template <typename TagsList>
 bool operator!=(const Variables<TagsList>& lhs,
-                const Variables<TagsList>& rhs) {
+                const Variables<TagsList>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
@@ -646,8 +649,8 @@ template <typename TagList>
 struct MakeWithValueImpl<Variables<TagList>, DataVector> {
   /// \brief Returns a Variables whose DataVectors are the same size as `input`,
   /// with each element equal to `value`.
-  static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(const DataVector& input,
-                                                        const double value) {
+  static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
+      const DataVector& input, const double value) noexcept {
     return Variables<TagList>(input.size(), value);
   }
 };
@@ -657,7 +660,8 @@ struct MakeWithValueImpl<Variables<TagList>, Tensor<DataVector, Structure...>> {
   /// \brief Returns a Variables whose DataVectors are the same size as `input`,
   /// with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
-      const Tensor<DataVector, Structure...>& input, const double value) {
+      const Tensor<DataVector, Structure...>& input,
+      const double value) noexcept {
     return Variables<TagList>(input.begin()->size(), value);
   }
 };
@@ -667,7 +671,7 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
   /// \brief Returns a Variables whose DataVectors are the same size as `input`,
   /// with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Variables<TagListOut> apply(
-      const Variables<TagListIn>& input, const double value) {
+      const Variables<TagListIn>& input, const double value) noexcept {
     return Variables<TagListOut>(input.number_of_grid_points(), value);
   }
 };
