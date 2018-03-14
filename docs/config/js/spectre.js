@@ -56,11 +56,6 @@ window.onload = function(){
             "$1implementation defined") );
     });
 
-    // Remove all return types
-    $("body").children().find("td.memItemLeft, td.memTemplItemLeft").each(function () {
-        $(this).html( $(this).html().replace(/(constexpr)?.*/g, "$1") );
-    });
-
     // Italicize "implementation defined"
     // Not applied to div.memitem because that causes problems with rendering
     // MathJAX

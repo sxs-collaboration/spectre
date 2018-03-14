@@ -246,9 +246,9 @@ make_array_from_list_helper(
 /// \return array of integral values from the typelist
 template <typename List,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
-                            tmpl::size<List>::value>
-make_array_from_list() {
+inline constexpr auto make_array_from_list()
+    -> std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+                  tmpl::size<List>::value> {
   return detail::make_array_from_list_helper<List>(
       std::make_integer_sequence<size_t, tmpl::size<List>::value>{});
 }

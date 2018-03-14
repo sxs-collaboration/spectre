@@ -186,10 +186,10 @@ inline std::ostream& operator<<(std::ostream& os, const array<T, N>& a) {
 namespace detail {
 template <typename List, size_t... indices,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
-                              tmpl::size<List>::value>
-make_cpp17_array_from_list_helper(
-    std::integer_sequence<size_t, indices...> /*meta*/) {
+inline constexpr auto make_cpp17_array_from_list_helper(
+    std::integer_sequence<size_t, indices...> /*meta*/)
+    -> cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+                    tmpl::size<List>::value> {
   return cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                       tmpl::size<List>::value>{
       {tmpl::at<List, tmpl::size_t<indices>>::value...}};
@@ -204,9 +204,9 @@ make_cpp17_array_from_list_helper(
 /// \return array of integral values from the typelist
 template <typename List,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
-                              tmpl::size<List>::value>
-make_cpp17_array_from_list() {
+inline constexpr auto make_cpp17_array_from_list()
+    -> cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+                    tmpl::size<List>::value> {
   return detail::make_cpp17_array_from_list_helper<List>(
       std::make_integer_sequence<size_t, tmpl::size<List>::value>{});
 }
