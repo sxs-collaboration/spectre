@@ -137,6 +137,12 @@ class Variables<tmpl::list<Tags...>> {
   ~Variables() noexcept = default;
   /// \endcond
 
+  /// Initialize a Variables to the state it would have after calling
+  /// the constructor with the same arguments.
+  void initialize(
+      size_t number_of_grid_points,
+      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
+
   constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
       noexcept {
     return number_of_grid_points_;
@@ -356,12 +362,18 @@ class Variables<tmpl::list<Tags...>> {
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
-                                          const double value) noexcept
-    : variable_data_impl_(
-          number_of_grid_points * number_of_independent_components, value),
-      variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
-      size_(number_of_grid_points * number_of_independent_components),
-      number_of_grid_points_(number_of_grid_points) {
+                                          const double value) noexcept {
+  initialize(number_of_grid_points, value);
+}
+
+template <typename... Tags>
+void Variables<tmpl::list<Tags...>>::initialize(
+    const size_t number_of_grid_points, const double value) noexcept {
+  variable_data_impl_.assign(
+      number_of_grid_points * number_of_independent_components, value);
+  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
+  size_ = number_of_grid_points * number_of_independent_components;
+  number_of_grid_points_ = number_of_grid_points;
   add_reference_variable_data(tmpl::list<Tags...>{});
 }
 

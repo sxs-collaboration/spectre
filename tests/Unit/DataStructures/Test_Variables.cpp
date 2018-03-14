@@ -70,6 +70,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
                        VariablesTestTags_detail::scalar,
                        VariablesTestTags_detail::scalar2>>
       v(1, -3.0);
+  decltype(v) v_initialize;
+  v_initialize.initialize(1, -3.0);
+  CHECK(v == v_initialize);
 
   CHECK(v.size() ==
         v.number_of_grid_points() * v.number_of_independent_components);
