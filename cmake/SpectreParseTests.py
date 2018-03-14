@@ -23,6 +23,7 @@ allowed_tags = [
                 "Options",
                 "Parallel",
                 "PointwiseFunctions",
+                "Pypp",
                 "RelativisticEuler",
                 "RootFinding",
                 "Serialization",

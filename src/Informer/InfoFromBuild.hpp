@@ -41,3 +41,9 @@ int spectre_minor_version();
  * \brief Returns patch version
  */
 int spectre_patch_version();
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Returns the path to the Unit test directory.
+ */
+std::string unit_test_path() noexcept;
