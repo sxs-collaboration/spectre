@@ -5,6 +5,7 @@ set(LIBRARY Valencia)
 
 set(LIBRARY_SOURCES
   ConservativeFromPrimitive.cpp
+  Equations.cpp
   Fluxes.cpp
   )
 
