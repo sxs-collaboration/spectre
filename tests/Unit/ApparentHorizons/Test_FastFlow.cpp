@@ -205,12 +205,13 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
   CHECK(*r_minmax.second == custom_approx(2.0));
 }
 
-void test_kerr(FastFlow::Flow::type type_of_flow, const size_t max_iterations) {
-  Strahlkorper<Frame::Inertial> strahlkorper(8, 8, 2.0, {{0, 0, 0}});
+void test_kerr(FastFlow::Flow::type type_of_flow, const double mass,
+               const size_t max_iterations) {
+  Strahlkorper<Frame::Inertial> strahlkorper(8, 8, 2.0 * mass, {{0, 0, 0}});
   FastFlow flow(type_of_flow, 1.0, 0.5, 1e-12, 1e-2, 1.2, 5, max_iterations);
 
   const std::array<double, 3> spin = {{0.1, 0.2, 0.3}};
-  const EinsteinSolutions::KerrSchild solution(1.0, spin, {{0., 0., 0.}});
+  const EinsteinSolutions::KerrSchild solution(mass, spin, {{0., 0., 0.}});
 
   const auto status = do_iteration(&strahlkorper, &flow, solution);
   CHECK(converged(status));
@@ -223,7 +224,7 @@ void test_kerr(FastFlow::Flow::type type_of_flow, const size_t max_iterations) {
   // direction parallel to Spin)
   const double r_min_pt = strahlkorper.radius(acos(spin[2] / spin_magnitude),
                                               atan2(spin[1], spin[0]));
-  const double r_min_val = 1.0 + sqrt(1.0 - square(spin_magnitude));
+  const double r_min_val = mass * (1.0 + sqrt(1.0 - square(spin_magnitude)));
 
   const std::array<double, 3> vector_normal_to_spin = {{0.0, -0.3, 0.2}};
   const double vector_magnitude =
@@ -236,7 +237,8 @@ void test_kerr(FastFlow::Flow::type type_of_flow, const size_t max_iterations) {
   const double r_max_pt = strahlkorper.radius(
       acos(vector_normal_to_spin[2] / vector_magnitude),
       atan2(vector_normal_to_spin[1], vector_normal_to_spin[0]));
-  const double r_max_val = sqrt(2.0 + 2.0 * sqrt(1.0 - square(spin_magnitude)));
+  const double r_max_val =
+      mass * sqrt(2.0 + 2.0 * sqrt(1.0 - square(spin_magnitude)));
 
   Approx custom_approx = Approx::custom().epsilon(1.e-10).scale(1.);
   CHECK(r_min_pt == custom_approx(r_min_val));
@@ -253,9 +255,12 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowSchwarzschild",
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowKerr", "[Utilities][Unit]") {
-  test_kerr(FastFlow::FlowType::Fast, 100);
-  test_kerr(FastFlow::FlowType::Jacobi, 200);
-  test_kerr(FastFlow::FlowType::Curvature, 200);
+  test_kerr(FastFlow::FlowType::Fast, 2.0, 100);
+  // Changing the mass to 2.0 for Jacobi and Curvature slows down
+  // those methods, so we keep mass=1.0 for those tests so that they
+  // don't take too much time.
+  test_kerr(FastFlow::FlowType::Jacobi, 1.0, 200);
+  test_kerr(FastFlow::FlowType::Curvature, 1.0, 200);
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {

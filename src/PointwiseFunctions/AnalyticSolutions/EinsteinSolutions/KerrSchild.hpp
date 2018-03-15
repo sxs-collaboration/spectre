@@ -221,7 +221,7 @@ class KerrSchild {
   using options = tmpl::list<Mass, Spin, Center>;
   static constexpr OptionString help{"Black hole in Kerr-Schild coordinates"};
 
-  KerrSchild(double mass, Spin::type spin, Center::type center,
+  KerrSchild(double mass, Spin::type dimensionless_spin, Center::type center,
              const OptionContext& context = {});
 
   explicit KerrSchild(CkMigrateMessage* /*unused*/) noexcept {}
@@ -264,18 +264,21 @@ class KerrSchild {
   SPECTRE_ALWAYS_INLINE const std::array<double, 3>& center() const noexcept {
     return center_;
   }
-  SPECTRE_ALWAYS_INLINE const std::array<double, 3>& spin() const noexcept {
-    return spin_;
+  SPECTRE_ALWAYS_INLINE const std::array<double, 3>& dimensionless_spin() const
+      noexcept {
+    return dimensionless_spin_;
   }
 
  private:
   double mass_{1.0};
-  std::array<double, 3> spin_{{0.0, 0.0, 0.0}}, center_{{0.0, 0.0, 0.0}};
+  std::array<double, 3> dimensionless_spin_{{0.0, 0.0, 0.0}},
+      center_{{0.0, 0.0, 0.0}};
 };
 
 SPECTRE_ALWAYS_INLINE bool operator==(const KerrSchild& lhs,
                                       const KerrSchild& rhs) noexcept {
-  return lhs.mass() == rhs.mass() and lhs.spin() == rhs.spin() and
+  return lhs.mass() == rhs.mass() and
+         lhs.dimensionless_spin() == rhs.dimensionless_spin() and
          lhs.center() == rhs.center();
 }
 
