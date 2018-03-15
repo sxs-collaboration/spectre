@@ -2,9 +2,11 @@
 // See LICENSE.txt for detai
 
 #include <array>
+#include <random>
 #include <string>
 #include <vector>
 
+#include "tests/Unit/DataStructures/TestHelpers.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestingFramework.hpp"
@@ -105,7 +107,7 @@ SPECTRE_TEST_CASE("Unit.Pypp.DataVector", "[Pypp][Unit]") {
   CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "ndarray_of_floats"));
 }
 
-SPECTRE_TEST_CASE("Unit.Pypp.Tensor", "[Pypp][Unit]") {
+SPECTRE_TEST_CASE("Unit.Pypp.Tensor.Double", "[Pypp][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
 
   const Scalar<double> scalar{0.8};
@@ -197,10 +199,121 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor", "[Pypp][Unit]") {
   // Check conversion throws with correct rank but incorrect dimension
   CHECK_THROWS((pypp::call<tnsr::i<double, 3>>("PyppPyTests", "vector")));
   CHECK_THROWS((pypp::call<tnsr::iaa<double, 3>>("PyppPyTests", "tnsr_aia")));
+}
 
-  // Test usage of einsum
-  const auto expected = [&scalar, &vector, &tnsr_ia, &tnsr_AA, &tnsr_iaa]() {
-    tnsr::i<double, 3> tnsr{0.};
+SPECTRE_TEST_CASE("Unit.Pypp.Tensor.DataVector", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  const size_t npts = 5;
+  const Scalar<DataVector> scalar{DataVector(npts, 0.8)};
+
+  const tnsr::A<DataVector, 3> vector{
+      {{DataVector(npts, 3.), DataVector(npts, 4.), DataVector(npts, 5.),
+        DataVector(npts, 6.)}}};
+
+  const auto tnsr_ia = []() {
+    tnsr::ia<DataVector, 3> tnsr{};
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = 0; j < 4; ++j) {
+        tnsr.get(i, j) = DataVector(npts, i + 2. * j + 1.);
+      }
+    }
+    return tnsr;
+  }();
+  const auto tnsr_AA = []() {
+    tnsr::AA<DataVector, 3> tnsr{};
+    for (size_t i = 0; i < 4; ++i) {
+      for (size_t j = 0; j < 4; ++j) {
+        tnsr.get(i, j) = DataVector(npts, i + j + 1.);
+      }
+    }
+    return tnsr;
+  }();
+  const auto tnsr_iaa = []() {
+    tnsr::iaa<DataVector, 3> tnsr{};
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = 0; j < 4; ++j) {
+        for (size_t k = 0; k < 4; ++k) {
+          tnsr.get(i, j, k) = DataVector(npts, 2. * (k + 1) * (j + 1) + i + 1.);
+        }
+      }
+    }
+    return tnsr;
+  }();
+  const auto tnsr_aia = []() {
+    tnsr::aia<DataVector, 3> tnsr{};
+    for (size_t i = 0; i < 4; ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        for (size_t k = 0; k < 4; ++k) {
+          tnsr.get(i, j, k) =
+              DataVector(npts, 2. * (k + 1) * (i + 1) + j + 1.5);
+        }
+      }
+    }
+    return tnsr;
+  }();
+  const auto tnsr_aBcc = []() {
+    tnsr::aBcc<DataVector, 3> tnsr{};
+    for (size_t i = 0; i < 4; ++i) {
+      for (size_t j = 0; j < 4; ++j) {
+        for (size_t k = 0; k < 4; ++k) {
+          for (size_t l = 0; l < 4; ++l) {
+            tnsr.get(i, j, k, l) =
+                DataVector(npts, 3. * i + j + (k + 1) * (l + 1) + 1.);
+          }
+        }
+      }
+    }
+    return tnsr;
+  }();
+
+  CHECK(scalar ==
+        (pypp::call<Scalar<DataVector>>("PyppPyTests", "identity", scalar)));
+  CHECK(vector == (pypp::call<tnsr::A<DataVector, 3>>("PyppPyTests", "identity",
+                                                      vector)));
+  CHECK(tnsr_ia == (pypp::call<tnsr::ia<DataVector, 3>>("PyppPyTests",
+                                                        "identity", tnsr_ia)));
+  CHECK(tnsr_AA == (pypp::call<tnsr::AA<DataVector, 3>>("PyppPyTests",
+                                                        "identity", tnsr_AA)));
+  CHECK(tnsr_iaa == (pypp::call<tnsr::iaa<DataVector, 3>>(
+                        "PyppPyTests", "identity", tnsr_iaa)));
+  CHECK(tnsr_aia == (pypp::call<tnsr::aia<DataVector, 3>>(
+                        "PyppPyTests", "identity", tnsr_aia)));
+  CHECK(tnsr_aBcc == (pypp::call<tnsr::aBcc<DataVector, 3>>(
+                         "PyppPyTests", "identity", tnsr_aBcc)));
+}
+
+namespace {
+template<typename T>
+void test_einsum(const T &used_for_size) {
+  std::random_device r;
+  const auto seed = r();
+  std::mt19937 generator(seed);
+  INFO("seed" << seed);
+  std::uniform_real_distribution<> dist(-10., 10.);
+
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_dist = make_not_null(&dist);
+
+  const auto scalar =
+      make_with_random_values < Scalar
+          < T >> (nn_generator, nn_dist, used_for_size);
+  const auto vector = make_with_random_values < tnsr::A < T,
+  3 >> (
+      nn_generator, nn_dist, used_for_size);
+  const auto tnsr_ia = make_with_random_values < tnsr::ia < T,
+  3 >> (
+      nn_generator, nn_dist, used_for_size);
+  const auto tnsr_AA = make_with_random_values < tnsr::AA < T,
+  3 >> (
+      nn_generator, nn_dist, used_for_size);
+  const auto tnsr_iaa = make_with_random_values < tnsr::iaa < T,
+  3 >> (
+      nn_generator, nn_dist, used_for_size);
+
+  const auto expected = [&scalar, &vector, &tnsr_ia, &tnsr_AA, &tnsr_iaa,
+      &used_for_size]() {
+    auto tnsr = make_with_value < tnsr::i < T,
+    3 >> (used_for_size, 0.);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t a = 0; a < 4; ++a) {
         tnsr.get(i) += scalar.get() * vector.get(a) * tnsr_ia.get(i, a);
@@ -211,8 +324,17 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor", "[Pypp][Unit]") {
     }
     return tnsr;
   }();
+  /// [einsum_example]
+  const auto tensor_from_python = pypp::call < tnsr::i < T,
+  3 >> (
+      "PyppPyTests", "test_einsum", scalar, vector, tnsr_ia, tnsr_AA, tnsr_iaa);
+  /// [einsum_example]
+  CHECK_ITERABLE_APPROX(expected, tensor_from_python);
+}
+} // namespace
 
-  CHECK(expected ==
-        (pypp::call<tnsr::i<double, 3>>("PyppPyTests", "test_einsum", scalar,
-                                        vector, tnsr_ia, tnsr_AA, tnsr_iaa)));
+SPECTRE_TEST_CASE("Unit.Pypp.EinSum", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  test_einsum<double>(0.);
+  test_einsum<DataVector>(DataVector(5));
 }
