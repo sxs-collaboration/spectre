@@ -2,10 +2,14 @@
 // See LICENSE.txt for details.
 
 #include <catch.hpp>
+#include <functional>
+#include <numeric>
 
+#include "DataStructures/DataVector.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
@@ -258,4 +262,184 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
   test_1d();
   test_2d();
   test_3d();
+}
+
+// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.Bijective",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_orientationmap = OrientationMap<2>{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_xi(), Direction<2>::lower_xi()}}};
+  static_cast<void>(failed_orientationmap);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.BijectiveHost",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_orientationmap = OrientationMap<2>{
+      std::array<Direction<2>, 2>{
+          {Direction<2>::upper_xi(), Direction<2>::lower_xi()}},
+      std::array<Direction<2>, 2>{
+          {Direction<2>::upper_xi(), Direction<2>::upper_eta()}},
+  };
+  static_cast<void>(failed_orientationmap);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.BijectiveNeighbor",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_orientationmap = OrientationMap<3>{
+      std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
+                                   Direction<3>::lower_eta(),
+                                   Direction<3>::lower_zeta()}},
+      std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
+                                   Direction<3>::upper_eta(),
+                                   Direction<3>::lower_eta()}},
+  };
+  static_cast<void>(failed_orientationmap);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+namespace {
+template <size_t VolumeDim>
+OrientationMap<VolumeDim> generate_orientation_map(
+    const VolumeCornerIterator<VolumeDim>& vci,
+    const std::array<size_t, VolumeDim>& dimensions) {
+  std::array<Direction<VolumeDim>, VolumeDim> array_of_directions{};
+  for (size_t i = 0; i < VolumeDim; i++) {
+    gsl::at(array_of_directions, i) =
+        Direction<VolumeDim>{gsl::at(dimensions, i), gsl::at(vci(), i)};
+  }
+  return OrientationMap<VolumeDim>{array_of_directions};
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.AllOrientations",
+                  "[Domain][Unit]") {
+  std::array<size_t, 2> dimensions_2d{};
+  std::iota(dimensions_2d.begin(), dimensions_2d.end(), 0);
+  do {
+    for (VolumeCornerIterator<2> vci{}; vci; ++vci) {
+      const OrientationMap<2> map_2d =
+          generate_orientation_map<2>(vci, dimensions_2d);
+      const std::array<double, 2> original_point{{0.5, -2.0}};
+      const std::array<double, 2> new_point =
+          discrete_rotation(map_2d, original_point);
+      for (size_t d = 0; d < 2; d++) {
+        CHECK(gsl::at(new_point, d) ==
+              (map_2d(Direction<2>{d, Side::Upper}).side() == Side::Upper
+                   ? gsl::at(original_point, map_2d(d))
+                   : -1.0 * gsl::at(original_point, map_2d(d))));
+      }
+    }
+  } while (std::next_permutation(dimensions_2d.begin(), dimensions_2d.end()));
+  std::array<size_t, 3> dimensions_3d{};
+  std::iota(dimensions_3d.begin(), dimensions_3d.end(), 0);
+  do {
+    for (VolumeCornerIterator<3> vci{}; vci; ++vci) {
+      const OrientationMap<3> map_3d =
+          generate_orientation_map<3>(vci, dimensions_3d);
+      const std::array<double, 3> original_point{{0.5, -2.0, 1.5}};
+      const std::array<double, 3> new_point =
+          discrete_rotation(map_3d, original_point);
+      for (size_t d = 0; d < 3; d++) {
+        CHECK(gsl::at(new_point, d) ==
+              (map_3d(Direction<3>{d, Side::Upper}).side() == Side::Upper
+                   ? gsl::at(original_point, map_3d(d))
+                   : -1.0 * gsl::at(original_point, map_3d(d))));
+      }
+    }
+  } while (std::next_permutation(dimensions_3d.begin(), dimensions_3d.end()));
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.Rotation", "[Domain][Unit]") {
+  const OrientationMap<1> rotation1(
+      std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
+  const std::array<DataVector, 1> test_points1{
+      {DataVector{-1.0, 1.0, 0.7, 0.0}}};
+  const std::array<DataVector, 1> expected_rotated_points1{
+      {DataVector{1.0, -1.0, -0.7, 0.0}}};
+  CHECK(discrete_rotation(rotation1, test_points1) == expected_rotated_points1);
+  CHECK(discrete_rotation(rotation1, std::array<double, 1>{{-0.2}}) ==
+        std::array<double, 1>{{0.2}});
+
+  const OrientationMap<2> rotation2(std::array<Direction<2>, 2>{
+      {Direction<2>::upper_eta(), Direction<2>::upper_xi()}});
+  const std::array<DataVector, 2> test_points2{
+      {DataVector{-1.0, 1.0, 0.7, 0.0}, DataVector{0.25, 1.0, -0.2, 0.0}}};
+  const std::array<DataVector, 2> expected_rotated_points2{
+      {DataVector{0.25, 1.0, -0.2, 0.0}, DataVector{-1.0, 1.0, 0.7, 0.0}}};
+  CHECK(discrete_rotation(rotation2, test_points2) == expected_rotated_points2);
+  CHECK(discrete_rotation(rotation2, std::array<double, 2>{{-1.0, 0.5}}) ==
+        std::array<double, 2>{{0.5, -1.0}});
+
+  const OrientationMap<3> rotation3(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+       Direction<3>::lower_xi()}});
+  const std::array<DataVector, 3> test_points3{
+      {DataVector{-1.0, 1.0, 0.7, 0.0}, DataVector{0.25, 1.0, -0.2, 0.0},
+       DataVector{0.0, -0.5, 0.4, 0.0}}};
+  const std::array<DataVector, 3> expected_rotated_points3{
+      {DataVector{0.25, 1.0, -0.2, 0.0}, DataVector{0.0, 0.5, -0.4, 0.0},
+       DataVector{1.0, -1.0, -0.7, 0.0}}};
+  CHECK(discrete_rotation(rotation3, test_points3) == expected_rotated_points3);
+  CHECK(discrete_rotation(rotation3, std::array<double, 3>{{-1.0, 0.5, 1.0}}) ==
+        std::array<double, 3>{{0.5, -1.0, 1.0}});
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.ReferenceWrapper",
+                  "[Domain][Unit]") {
+  const OrientationMap<3> rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+       Direction<3>::lower_xi()}});
+
+  // This test will check that these points are not modified.
+  DataVector x_points{-1.0, 1.0, 0.7, 0.0};
+  DataVector y_points{0.25, 1.0, -0.2, 0.0};
+  DataVector z_points{0.0, -0.5, 0.4, 0.0};
+
+  // These variables are not passed to any functions;
+  // they will not be modified by construction.
+  // clang-tidy: local copy is never modified
+  const DataVector x_points_proof = x_points;  // NOLINT
+  const DataVector y_points_proof = y_points;  // NOLINT
+  const DataVector z_points_proof = z_points;  // NOLINT
+
+  // References to the points to be tested:
+  const auto ref_x_points = std::cref(x_points);
+  const auto ref_y_points = std::cref(y_points);
+  const auto ref_z_points = std::cref(z_points);
+
+  // Array of references to the points to be tested.
+  const std::array<const std::reference_wrapper<const DataVector>, 3>
+      test_points{{ref_x_points, ref_y_points, ref_z_points}};
+
+  // The value of new_points is irrelevant to this test.
+  auto new_points = discrete_rotation(rotation, test_points);
+  CHECK(test_points[0] == x_points_proof);
+  CHECK(test_points[1] == y_points_proof);
+  CHECK(test_points[2] == z_points_proof);
+
+  const DataVector new_pt{0.0, 0.5, -0.4, 0.0};
+  new_points[0] = new_pt;
+  new_points[1] = new_pt;
+  new_points[2] = new_pt;
+
+  // Check that modifying new_points does not modify the test points.
+  CHECK(test_points[0] == x_points_proof);
+  CHECK(test_points[1] == y_points_proof);
+  CHECK(test_points[2] == z_points_proof);
 }

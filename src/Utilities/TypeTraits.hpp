@@ -1296,6 +1296,19 @@ template <typename T>
 struct remove_reference_wrapper<std::reference_wrapper<T>> {
   using type = T;
 };
+template <typename T>
+struct remove_reference_wrapper<const std::reference_wrapper<T>> {
+  using type = T;
+};
+template <typename T>
+struct remove_reference_wrapper<volatile std::reference_wrapper<T>> {
+  using type = T;
+};
+template <typename T>
+struct remove_reference_wrapper<const volatile std::reference_wrapper<T>> {
+  using type = T;
+};
+
 /// \endcond
 
 template <typename T>

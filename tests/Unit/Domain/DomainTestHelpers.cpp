@@ -160,30 +160,6 @@ void test_refinement_levels_of_neighbors(
     }
   }
 }
-// Iterates over the logical corners of a VolumeDim-dimensional cube.
-template <size_t VolumeDim>
-class VolumeCornerIterator {
- public:
-  VolumeCornerIterator() noexcept = default;
-  void operator++() noexcept {
-    ++index_;
-    for (size_t i = 0; i < VolumeDim; i++) {
-      corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
-    }
-  }
-  explicit operator bool() noexcept { return index_ < two_to_the(VolumeDim); }
-  tnsr::I<double, VolumeDim, Frame::Logical> operator()() noexcept {
-    return corner_;
-  }
-  tnsr::I<double, VolumeDim, Frame::Logical> operator*() noexcept {
-    return corner_;
-  }
-
- private:
-  size_t index_ = 0;
-  tnsr::I<double, VolumeDim, Frame::Logical> corner_ =
-      make_array<VolumeDim>(-1);
-};
 
 // Iterates over the 2^(VolumeDim-1) logical corners of the face of a
 // VolumeDim-dimensional cube in the given direction.
