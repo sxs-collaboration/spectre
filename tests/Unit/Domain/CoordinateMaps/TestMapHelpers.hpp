@@ -6,14 +6,19 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <functional>
+#include <numeric>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
@@ -277,3 +282,42 @@ void test_map3d(const Map& map) {
     test_inverse_map(map2, point);
   }
 }
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief An iterator for looping through all possible orientations
+ * of the n-dim cube.
+ */
+template <size_t VolumeDim>
+class OrientationMapIterator {
+ public:
+  OrientationMapIterator() noexcept {
+    std::iota(dims_.begin(), dims_.end(), 0);
+    set_map();
+  }
+  void operator++() noexcept {
+    ++vci_;
+    if (not vci_) {
+      not_at_end_ = std::next_permutation(dims_.begin(), dims_.end());
+      vci_ = VolumeCornerIterator<VolumeDim>{};
+    }
+    set_map();
+  }
+  explicit operator bool() const noexcept { return not_at_end_; }
+  const OrientationMap<VolumeDim>& operator()() const noexcept { return map_; }
+  const OrientationMap<VolumeDim>& operator*() const noexcept { return map_; }
+  void set_map() noexcept {
+    for (size_t i = 0; i < VolumeDim; i++) {
+      gsl::at(directions_, i) =
+          Direction<VolumeDim>{gsl::at(dims_, i), gsl::at(vci_(), i)};
+    }
+    map_ = OrientationMap<VolumeDim>{directions_};
+  }
+
+ private:
+  bool not_at_end_ = true;
+  std::array<size_t, VolumeDim> dims_{};
+  std::array<Direction<VolumeDim>, VolumeDim> directions_{};
+  VolumeCornerIterator<VolumeDim> vci_{};
+  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>{};
+};
