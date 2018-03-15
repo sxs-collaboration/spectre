@@ -41,16 +41,9 @@ void test_wedge3d_all_directions(const bool with_equiangular_map) {
   // Set up random number generator
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> unit_dis(0, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(4, 7);
-  const double xi = real_dis(gen);
-  CAPTURE_PRECISE(xi);
-  const double eta = real_dis(gen);
-  CAPTURE_PRECISE(eta);
-  const double zeta = real_dis(gen);
-  CAPTURE_PRECISE(zeta);
   const double inner_radius = inner_dis(gen);
   CAPTURE_PRECISE(inner_radius);
   const double outer_radius = outer_dis(gen);
@@ -58,36 +51,19 @@ void test_wedge3d_all_directions(const bool with_equiangular_map) {
   const double sphericity = unit_dis(gen);
   CAPTURE_PRECISE(sphericity);
 
-  const std::array<std::array<double, 3>, 4> test_points{{{{-0.1, 0.3, 0.1}},
-                                                          {{0.5, 0.7, -0.5}},
-                                                          {{0.9, -1.0, 0.4}},
-                                                          {{xi, eta, zeta}}}};
-
   using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
   const std::array<WedgeHalves, 3> halves_array = {
       {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
   for (const auto& halves : halves_array) {
     for (const auto& direction : all_wedge_directions()) {
-      const CoordinateMaps::Wedge3D map(inner_radius, outer_radius, direction,
-                                        sphericity, with_equiangular_map,
-                                        halves);
-      test_serialization(map);
-      CHECK_FALSE(map != map);
-      test_coordinate_map_argument_types(map, test_points[0]);
-      for (const auto& point : test_points) {
-        test_jacobian(map, point);
-        test_inv_jacobian(map, point);
-        test_inverse_map(map, point);
-      }
-      const auto map2 = serialize_and_deserialize(map);
-      for (const auto& point : test_points) {
-        test_jacobian(map2, point);
-        test_inv_jacobian(map2, point);
-        test_inverse_map(map2, point);
-      }
+      const CoordinateMaps::Wedge3D wedge_map(inner_radius, outer_radius,
+                                              direction, sphericity,
+                                              with_equiangular_map, halves);
+      test_map3d(wedge_map);
     }
   }
 }
+
 void test_wedge3d_alignment(const bool with_equiangular_map) {
   // This test tests that the logical axes point along the expected directions
   // in physical space
