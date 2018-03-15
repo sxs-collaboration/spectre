@@ -6,6 +6,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
 
+/// \cond
 namespace brigand {
 template <class...>
 struct list;
@@ -13,6 +14,7 @@ struct list;
 
 template <class>
 class Variables;
+/// \endcond
 
 /*!
  * \ingroup EvolutionSystemsGroup

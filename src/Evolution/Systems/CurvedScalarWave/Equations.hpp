@@ -10,10 +10,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 template <typename>
 class Variables;
 
 class DataVector;
+/// \endcond
 
 namespace Tags {
 template <typename, typename, typename>
