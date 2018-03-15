@@ -47,11 +47,10 @@ See LICENSE.txt for details.
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can
 be used to build SpECTRE on a personal machine.
-
-**Note**: The Docker image is the recommended way of using SpECTRE on a personal
-Linux machine. Because of the wide variety of operating systems available today
+This is the recommended way of using SpECTRE on a personal
+Linux or MacOS machine. (Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
-as outlined below is a supported alternative to Docker images.
+as outlined below is a supported alternative to Docker images.)
 
 **NOTE**: If you have SELinux active
 on your system you must figure out how to enable sharing files with the host
@@ -61,37 +60,43 @@ disable SELinux at the expense of reducing the security of your system.
 
 To build with the docker image:
 
-1. Clone SpECTRE into SPECTRE_ROOT, a directory of your choice.
-2. Retrieve the docker image (you may need `sudo` in front of this command)
+1. Clone SpECTRE into a directory of your choice.
+1. cd into cloned_spectre and then
+   ```
+   export SPECTRE_ROOT=`pwd` && cd ..
+   ```
+1. Retrieve the docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
    ```
-3. Start the docker container (you may need `sudo`)
+1. Start the docker container (you may need `sudo`)
    ```
-   docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
+   docker run -v $SPECTRE_ROOT:$SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
-   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
-   of your choice. If you don't name your container, docker will generate an
-   arbitrary name.)
+   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a
+   name of your choice. If you don't name your container, docker will
+   generate an arbitrary name.)
    You will end up in a shell in a docker container,
    as root (you need to be root).
-   Within the container, SPECTRE_ROOT is available and
+   Within the container, the directory $SPECTRE_ROOT is available and
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
-4. `cd` into /work/charm, and apply the Charm++ patch by
-   running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
-5. Make a build directory somewhere inside the container, e.g.
+1. Apply the Charm++ patch with
+   ```
+   cd $CHARM_DIR; git apply $SPECTRE_ROOT/support/Charm/v6.8.patch
+   ```
+1. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
-6. Build SpECTRE with
-   `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT`
+1. Build SpECTRE with
+   `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc $SPECTRE_ROOT`
    then
    `make -jN`
    to compile the code, and `ctest` to run the tests.
 
-Notes:
+**Notes**:
   * Everything in your build directory is owned by root, and is
     accessible only within the container.
-  * You should edit source files in SPECTRE_ROOT in a separate terminal
+  * You should edit source files in $SPECTRE_ROOT in a separate terminal
     outside the container, and use the container only for compiling and
     running the code.
   * If you exit the container (e.g. ctrl-d),
@@ -108,13 +113,13 @@ Notes:
     To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
     (or `docker exec -it CONTAINER_ID /bin/bash`) from
     a terminal outside the container.
-  * In step 3 above, the `-v SPECTRE_ROOT:SPECTRE_ROOT` maps the directory
-    SPECTRE_ROOT outside the container to SPECTRE_ROOT inside the container.
-    Technically docker allows you to say `-v SPECTRE_ROOT:/my/new/path`
-    to map SPECTRE_ROOT outside the container to any path you want inside
+  * In step 3 above, the `-v $SPECTRE_ROOT:$SPECTRE_ROOT` maps the directory
+    $SPECTRE_ROOT outside the container to $SPECTRE_ROOT inside the container.
+    Technically docker allows you to say `-v $SPECTRE_ROOT:/my/new/path`
+    to map $SPECTRE_ROOT outside the container to any path you want inside
     the container, but **do not do this**.  Compiling inside the container
-    sets up git hooks in SPECTRE_ROOT that
-    contain hardcoded pathnames to SPECTRE_ROOT *as seen from
+    sets up git hooks in $SPECTRE_ROOT that
+    contain hardcoded pathnames to $SPECTRE_ROOT *as seen from
     inside the container*. So if your source paths inside and outside the
     container are different, commands like `git commit` run *from
     outside the container* will die with `No such file or directory`.
@@ -123,7 +128,7 @@ Notes:
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \
           -D CMAKE_Fortran_COMPILER=gfortran \
-          -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
+          -D CHARM_ROOT=/work/charm/multicore-linux64-clang $SPECTRE_ROOT
 ```
 
 ## Using Spack to set up a SpECTRE environment
@@ -173,13 +178,13 @@ or (equivalently) use the `module load` command.
 it is recommended you read the [documentation](https://spack.readthedocs.io) if
 you require features such as packages installed with different compilers.
 
-### Building SpECTRE
+### Building SpECTRE (within Spack environment)
 
 After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
 Follow these steps:
 
 1.  Clone [SpECTRE](https://github.com/sxs-collaboration/spectre) into
-    `SPECTRE_ROOT`, a directory of your choice.
+    `$SPECTRE_ROOT`, a directory of your choice.
 2.  Install Charm++:
   * Clone [Charm++](http://charm.cs.illinois.edu/software) into `CHARM_DIR`,
     again a directory of your choice.
@@ -187,7 +192,7 @@ Follow these steps:
     `git checkout v6.8.0` to switch to a supported, stable release of Charm++.
   * Charm++ is compiled by running
     `./build charm++ ARCH OPTIONS`.
-    To figure out the correct target architecture and options, you can simply
+    To figure out the correct target architecture and options, you can
     run `./build`; the script will then ask you questions to guide you towards
     the correct settings (see notes below for additional details).
     Then compile Charm++.
@@ -196,7 +201,7 @@ Follow these steps:
     appended to the architecture.
   * The SpECTRE repo contains a patch that must be applied to Charm++ *after*
     Charm++ has been compiled. While still in `CHARM_DIR`, apply this patch by
-    running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
+    running `git apply $SPECTRE_ROOT/support/Charm/v6.8.patch`.
   * On macOS 10.12 it is necessary to patch the STL implementation. Insert
     \code
     #ifndef _MACH_PORT_T
@@ -212,7 +217,7 @@ Follow these steps:
 3.  Return to `SPECTRE_ROOT`, and create a build dir by running
     `mkdir build && cd build`
 4.  Build SpECTRE with
-    `cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT`
+    `cmake -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS $SPECTRE_ROOT`
     then
     `make -jN`
     to compile the code.
@@ -240,7 +245,7 @@ Follow these steps:
   cmake -D CMAKE_CXX_COMPILER=clang++ \
         -D CMAKE_C_COMPILER=clang \
         -D CMAKE_Fortran_COMPILER=gfortran \
-        -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS SPECTRE_ROOT
+        -D CHARM_ROOT=CHARM_DIR/ARCH_OPTS $SPECTRE_ROOT
   ```
 * Inside the SpECTRE build directory, use `make list` to see all available
   targets. This list can be refreshed by running CMake again.
