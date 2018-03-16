@@ -7,6 +7,7 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/DomainHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
@@ -14,6 +15,28 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 namespace {
+// Wedge OrientationMap in each of the six directions.
+std::array<OrientationMap<3>, 6> all_wedge_directions() {
+  const OrientationMap<3> upper_zeta_rotation{};
+  const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+       Direction<3>::lower_zeta()}});
+  const OrientationMap<3> upper_eta_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
+       Direction<3>::upper_xi()}});
+  const OrientationMap<3> lower_eta_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+       Direction<3>::lower_xi()}});
+  const OrientationMap<3> upper_xi_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+       Direction<3>::upper_eta()}});
+  const OrientationMap<3> lower_xi_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+       Direction<3>::upper_eta()}});
+  return {{upper_zeta_rotation, lower_zeta_rotation, upper_eta_rotation,
+           lower_eta_rotation, upper_xi_rotation, lower_xi_rotation}};
+}
+
 void test_wedge3d_all_directions(const bool with_equiangular_map) {
   // Set up random number generator
   std::random_device rd;
@@ -40,7 +63,7 @@ void test_wedge3d_all_directions(const bool with_equiangular_map) {
                                                           {{0.9, -1.0, 0.4}},
                                                           {{xi, eta, zeta}}}};
 
-  for (const auto& direction : Direction<3>::all_directions()) {
+  for (const auto& direction : all_wedge_directions()) {
     const CoordinateMaps::Wedge3D map(inner_radius, outer_radius, direction,
                                       sphericity, with_equiangular_map);
     test_serialization(map);
@@ -67,23 +90,24 @@ void test_wedge3d_alignment(const bool with_equiangular_map) {
   const double inner_r = sqrt(3.0);
   const double outer_r = 2.0 * sqrt(3.0);
 
+  const auto wedge_directions = all_wedge_directions();
   const CoordinateMaps::Wedge3D map_upper_zeta(
-      inner_r, outer_r, Direction<3>::upper_zeta(), 0,
+      inner_r, outer_r, wedge_directions[0], 0,
       with_equiangular_map);  // Upper Z wedge
   const CoordinateMaps::Wedge3D map_upper_eta(
-      inner_r, outer_r, Direction<3>::upper_eta(), 0,
+      inner_r, outer_r, wedge_directions[2], 0,
       with_equiangular_map);  // Upper Y wedge
   const CoordinateMaps::Wedge3D map_upper_xi(
-      inner_r, outer_r, Direction<3>::upper_xi(), 0,
+      inner_r, outer_r, wedge_directions[4], 0,
       with_equiangular_map);  // Upper X Wedge
   const CoordinateMaps::Wedge3D map_lower_zeta(
-      inner_r, outer_r, Direction<3>::lower_zeta(), 0,
+      inner_r, outer_r, wedge_directions[1], 0,
       with_equiangular_map);  // Lower Z wedge
   const CoordinateMaps::Wedge3D map_lower_eta(
-      inner_r, outer_r, Direction<3>::lower_eta(), 0,
+      inner_r, outer_r, wedge_directions[3], 0,
       with_equiangular_map);  // Lower Y wedge
   const CoordinateMaps::Wedge3D map_lower_xi(
-      inner_r, outer_r, Direction<3>::lower_xi(), 0,
+      inner_r, outer_r, wedge_directions[5], 0,
       with_equiangular_map);  // Lower X wedge
   const std::array<double, 3> lowest_corner{{-1.0, -1.0, -1.0}};
   const std::array<double, 3> along_xi{{1.0, -1.0, -1.0}};
@@ -184,24 +208,25 @@ void test_wedge3d_random_radii(const bool with_equiangular_map) {
   const double random_outer_radius_upper_zeta = outer_dis(gen);
   CAPTURE_PRECISE(random_outer_radius_upper_zeta);
 
+  const auto wedge_directions = all_wedge_directions();
   const CoordinateMaps::Wedge3D map_lower_xi(
       random_inner_radius_lower_xi, random_outer_radius_lower_xi,
-      Direction<3>::lower_xi(), 0, with_equiangular_map);
+      wedge_directions[5], 0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_lower_eta(
       random_inner_radius_lower_eta, random_outer_radius_lower_eta,
-      Direction<3>::lower_eta(), 0, with_equiangular_map);
+      wedge_directions[3], 0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_lower_zeta(
       random_inner_radius_lower_zeta, random_outer_radius_lower_zeta,
-      Direction<3>::lower_zeta(), 0, with_equiangular_map);
+      wedge_directions[1], 0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_upper_xi(
       random_inner_radius_upper_xi, random_outer_radius_upper_xi,
-      Direction<3>::upper_xi(), 0, with_equiangular_map);
+      wedge_directions[4], 0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_upper_eta(
       random_inner_radius_upper_eta, random_outer_radius_upper_eta,
-      Direction<3>::upper_eta(), 0, with_equiangular_map);
+      wedge_directions[2], 0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_upper_zeta(
       random_inner_radius_upper_zeta, random_outer_radius_upper_zeta,
-      Direction<3>::upper_zeta(), 0, with_equiangular_map);
+      wedge_directions[0], 0, with_equiangular_map);
   CHECK(map_lower_xi(outer_corner)[0] ==
         approx(-random_outer_radius_lower_xi / sqrt(3.0)));
   CHECK(map_lower_eta(outer_corner)[1] ==

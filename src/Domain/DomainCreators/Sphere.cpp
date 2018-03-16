@@ -34,7 +34,6 @@ Sphere<TargetFrame>::Sphere(
 
 template <typename TargetFrame>
 Domain<3, TargetFrame> Sphere<TargetFrame>::create_domain() const noexcept {
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
@@ -50,20 +49,10 @@ Domain<3, TargetFrame> Sphere<TargetFrame>::create_domain() const noexcept {
       {{4, 3, 8, 7, 12, 11, 16, 15}},  // Lower x
       {{3, 1, 4, 2, 7, 5, 8, 6}}};     // center cube
 
-  auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          Wedge3DMap{inner_radius_, outer_radius_, Direction<3>::upper_zeta(),
-                     0.0, use_equiangular_map_},
-          Wedge3DMap{inner_radius_, outer_radius_, Direction<3>::lower_zeta(),
-                     0.0, use_equiangular_map_},
-          Wedge3DMap{inner_radius_, outer_radius_, Direction<3>::upper_eta(),
-                     0.0, use_equiangular_map_},
-          Wedge3DMap{inner_radius_, outer_radius_, Direction<3>::lower_eta(),
-                     0.0, use_equiangular_map_},
-          Wedge3DMap{inner_radius_, outer_radius_, Direction<3>::upper_xi(),
-                     0.0, use_equiangular_map_},
-          Wedge3DMap{inner_radius_, outer_radius_, Direction<3>::lower_xi(),
-                     0.0, use_equiangular_map_});
+  std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+      coord_maps = wedge_coordinate_maps<TargetFrame>(
+          inner_radius_, outer_radius_, 0.0, use_equiangular_map_);
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::Logical, TargetFrame>(Equiangular3D{

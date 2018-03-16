@@ -9,6 +9,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace PUP {
@@ -180,8 +181,10 @@ class Wedge3D {
    * \param radius_of_other_surface Distance from the origin to one of the
    * corners which lie on the other surface, which may be anything between flat
    * and spherical.
-   * \param direction_of_wedge The axis on which the
-   * wedge is centred.
+   * \param orientation_of_wedge The orientation of the desired wedge relative
+   * to the orientation of the default wedge which is a wedge that has its
+   * curved surfaces pierced by the upper-z axis. The logical xi and eta
+   * coordinates point in the cartesian x and y directions, respectively.
    * \param sphericity_of_other_surface Value between 0 and 1 which determines
    * whether the other surface is flat (value of 0), spherical (value of 1) or
    * somewhere in between
@@ -189,7 +192,8 @@ class Wedge3D {
    * mapping to the logical coordinates (for 'true') or not (for 'false').
    */
   Wedge3D(double radius_of_other_surface, double radius_of_spherical_surface,
-          Direction<3> direction_of_wedge, double sphericity_of_other_surface,
+          OrientationMap<3> orientation_of_wedge,
+          double sphericity_of_other_surface,
           bool with_equiangular_map) noexcept;
 
   Wedge3D() = default;
@@ -224,7 +228,7 @@ class Wedge3D {
   double radius_of_other_surface_{std::numeric_limits<double>::signaling_NaN()};
   double radius_of_spherical_surface_{
       std::numeric_limits<double>::signaling_NaN()};
-  Direction<3> direction_of_wedge_{};
+  OrientationMap<3> orientation_of_wedge_{};
   double sphericity_of_other_surface_{
       std::numeric_limits<double>::signaling_NaN()};
   bool with_equiangular_map_ = false;
