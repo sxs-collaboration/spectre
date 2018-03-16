@@ -9,6 +9,7 @@
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/StrahlkorperDataBox.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/StrahlkorperGr.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
@@ -31,15 +32,16 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
-template <typename Solution, typename ExpectedLambda>
+template <typename Solution, typename Fr, typename ExpectedLambda>
 void test_expansion(const Solution& solution,
+                    const Strahlkorper<Fr>& strahlkorper,
                     const ExpectedLambda& expected) noexcept {
-  // Make surface of radius 2.
+  // Make databox from surface
   const auto box =
       db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
                  db::AddComputeItemsTags<
                      StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
+          strahlkorper);
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -93,6 +95,7 @@ void test_expansion(const Solution& solution,
   CHECK_ITERABLE_CUSTOM_APPROX(get(residual), expected(get(residual).size()),
                                custom_approx);
 }
+} // namespace
 
 namespace TestExtrinsicCurvature {
 void test_minkowski() {
@@ -207,18 +210,38 @@ void test_ricci_scalar(const Solution& solution,
       inverse_spatial_metric);
 
   CHECK_ITERABLE_APPROX(get(ricci_scalar), expected(get(ricci_scalar).size()));
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
                   "[ApparentHorizons][Unit]") {
+  const auto sphere =
+      Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}});
+
   test_expansion(
       EinsteinSolutions::KerrSchild{1.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
-      [](const size_t size) noexcept { return DataVector(size, 0.0); });
+      sphere, [](const size_t size) noexcept { return DataVector(size, 0.0); });
   test_expansion(
-      EinsteinSolutions::Minkowski<3>{}, [](const size_t size) noexcept {
-        return DataVector(size, 1.0);
-      });
+      EinsteinSolutions::Minkowski<3>{},
+      sphere, [](const size_t size) noexcept { return DataVector(size, 1.0); });
+
+  constexpr int l_max = 20;
+  const double mass = 4.444;
+  const std::array<double, 3> spin{{0.3, 0.4, 0.5}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+
+  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+          .ylm_spherepack()
+          .theta_phi_points(),
+      mass, spin);
+
+  const auto kerr_horizon =
+      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+
+  test_expansion(EinsteinSolutions::KerrSchild{mass, spin, center},
+                 kerr_horizon, [](const size_t size) noexcept {
+                   return DataVector(size, 0.0);
+                 });
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.ExtrinsicCurvature",
