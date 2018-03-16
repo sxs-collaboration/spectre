@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -71,6 +72,8 @@ struct SystemAnalyticSolution {
 struct System {
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
   using gradients_tags = tmpl::list<Var>;
+  template <typename Tag>
+  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
 
 template <size_t Dim>
@@ -187,6 +190,9 @@ void test_initialize_element(const ElementId<Dim>& element_id,
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 Tags::UnnormalizedFaceNormal<Dim>>>(box);
+  (void)db::get<Tags::Interface<
+    Tags::InternalDirections<Dim>,
+    Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>>(box);
 }
 }  // namespace
 

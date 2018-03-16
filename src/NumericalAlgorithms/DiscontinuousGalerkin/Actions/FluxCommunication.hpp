@@ -16,7 +16,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
@@ -52,6 +51,9 @@ namespace Actions {
 ///       system::variables_tag>, Tags::Extents<volume_dim>, Tags::TimeId,
 ///   Tags::Interface<Tags::InternalDirections<volume_dim>,
 ///                   Tags::UnnormalizedFaceNormal<volume_dim>>
+///   Tags::Interface<Tags::InternalDirections<volume_dim>,
+///                   typename System::template magnitude_tag<
+///                       Tags::UnnormalizedFaceNormal<volume_dim>>>
 ///
 /// DataBox changes:
 /// - Adds: db::add_tag_prefix<Tags::dt, variables_tag>
@@ -141,9 +143,12 @@ struct ComputeBoundaryFlux {
       const auto& face_normal =
           db::get<interface_tag<volume_dim,
                                 Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
-          .at(direction);
+              .at(direction);
 
-      auto magnitude_of_face_normal = magnitude(face_normal);
+      const auto& magnitude_of_face_normal = db::get<interface_tag<
+          volume_dim, typename System::template magnitude_tag<
+                          Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
+                                                 .at(direction);
 
       std::decay_t<decltype(face_normal)> unit_face_normal(
           magnitude_of_face_normal.size(), 0.0);
@@ -202,12 +207,11 @@ struct ComputeBoundaryFlux {
           flux_computer, self_data, neighbor_data,
           typename std::decay_t<decltype(flux_computer)>::argument_tags{});
 
-      // Needs fixing for GH/curved
       const db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
           tuples::get<normal_flux_tag>(self_data),
           std::move(normal_dot_numerical_flux),
           extents[dimension],
-          std::move(magnitude_of_face_normal)));
+          magnitude_of_face_normal));
 
       db::mutate<dt_variables_tag>(box, [
         &lifted_data, &extents, &dimension, &direction

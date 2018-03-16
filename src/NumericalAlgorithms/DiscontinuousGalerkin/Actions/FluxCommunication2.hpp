@@ -141,13 +141,14 @@ struct ComputeBoundaryFlux {
 
       // All of this needs to be fixed for hp-adaptivity to handle
       // projections correctly
-      const auto& face_normal =
-          db::get<interface_tag<Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
+      const auto& magnitude_of_face_normal =
+          db::get<interface_tag<typename system::template magnitude_tag<
+              Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
               .at(direction);
 
       // Compute numerical flux
       db::item_type<normal_dot_numerical_flux_tag> normal_dot_numerical_fluxes(
-          face_normal.begin()->size(), 0.0);
+          magnitude_of_face_normal.begin()->size(), 0.0);
       apply_normal_dot_numerical_flux(
           make_not_null(&normal_dot_numerical_fluxes),
           normal_dot_numerical_flux_computer, self_packaged_data,
@@ -157,7 +158,7 @@ struct ComputeBoundaryFlux {
       db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
           local_normal_dot_flux.at(std::make_pair(direction, neighbor)),
           std::move(normal_dot_numerical_fluxes), extents[dimension],
-          magnitude(face_normal)));
+          magnitude_of_face_normal));
 
       db::mutate<dt_variables_tag>(box, [
         &lifted_data, &extents, &dimension, &direction
@@ -289,12 +290,15 @@ struct SendDataForFluxes {
         const auto& face_normal = db::get<interface_tag<
             volume_dim, Tags::UnnormalizedFaceNormal<volume_dim>>>(box)
                                       .at(direction);
-        DataVector magnitude_of_face_normal = get(magnitude(face_normal));
+        const auto& magnitude_of_face_normal = db::get<interface_tag<
+            volume_dim, typename system::template magnitude_tag<
+                            Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
+                                                   .at(direction);
         std::decay_t<decltype(face_normal)> unit_face_normal(
-            magnitude_of_face_normal.size(), 0.0);
+            magnitude_of_face_normal.begin()->size(), 0.0);
         for (size_t d = 0; d < volume_dim; ++d) {
           unit_face_normal.get(d) =
-              face_normal.get(d) / magnitude_of_face_normal;
+              face_normal.get(d) / get(magnitude_of_face_normal);
         }
 
         // This needs to be updated for conservative systems where we can just

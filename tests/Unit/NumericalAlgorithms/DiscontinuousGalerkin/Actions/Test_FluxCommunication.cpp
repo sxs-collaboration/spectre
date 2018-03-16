@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -37,6 +38,9 @@ struct System {
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
   static constexpr const size_t number_of_independent_components =
       db::item_type<variables_tag>::number_of_independent_components;
+
+  template <typename Tag>
+  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 
   struct compute_flux {
     static auto apply(const Variables<tmpl::list<Var>>& value) noexcept {
@@ -93,7 +97,8 @@ using compute_items = db::AddComputeItemsTags<
     Tags::InternalDirections<2>,
     interface_tag<Tags::Direction<2>>,
     interface_tag<Tags::Extents<1>>,
-    interface_tag<Tags::UnnormalizedFaceNormal<2>>>;
+    interface_tag<Tags::UnnormalizedFaceNormal<2>>,
+    interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",

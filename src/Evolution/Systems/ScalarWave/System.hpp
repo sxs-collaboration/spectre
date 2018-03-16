@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,5 +36,8 @@ struct System {
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
+
+  template <typename Tag>
+  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
 }  // namespace ScalarWave

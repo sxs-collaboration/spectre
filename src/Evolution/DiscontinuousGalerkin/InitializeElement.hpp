@@ -89,7 +89,9 @@ struct InitializeElement {
       Tags::InternalDirections<Dim>,
       interface_tag<Tags::Direction<Dim>>,
       interface_tag<Tags::Extents<Dim - 1>>,
-      interface_tag<Tags::UnnormalizedFaceNormal<Dim>>>;
+      interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      interface_tag<typename System::template magnitude_tag<
+          Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>
