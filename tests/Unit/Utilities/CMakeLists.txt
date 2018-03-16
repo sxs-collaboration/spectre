@@ -13,6 +13,7 @@ set(UTILITIES_TESTS
     Utilities/Test_EqualWithinRoundoff.cpp
     Utilities/Test_FakeVirtual.cpp
     Utilities/Test_FileSystem.cpp
+    Utilities/Test_ForConstexpr.cpp
     Utilities/Test_FractionUtilities.cpp
     Utilities/Test_Gsl.cpp
     Utilities/Test_MakeArray.cpp

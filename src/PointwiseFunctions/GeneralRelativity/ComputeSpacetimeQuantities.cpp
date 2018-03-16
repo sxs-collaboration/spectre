@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ForConstexpr.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -18,23 +19,29 @@ tnsr::aa<DataType, Dim, Frame> spacetime_metric(
 
   get<0, 0>(spacetime_metric) = -get(lapse) * get(lapse);
 
-  for (size_t m = 0; m < Dim; ++m) {
-    get<0, 0>(spacetime_metric) +=
-        spatial_metric.get(m, m) * shift.get(m) * shift.get(m);
-    for (size_t n = 0; n < m; ++n) {
-      get<0, 0>(spacetime_metric) +=
-          2 * spatial_metric.get(m, n) * shift.get(m) * shift.get(n);
-    }
-  }
+  for_constexpr<for_bounds<0, Dim>, for_symm_lower<0, 0>>(
+      [&spacetime_metric, &spatial_metric, &shift](auto m, auto n)
+          SPECTRE_JUST_ALWAYS_INLINE {
+            if (0 == n) {
+              get<0, 0>(spacetime_metric) +=
+                  get<m, m>(spatial_metric) * get<m>(shift) * get<m>(shift);
+            }
+            get<0, 0>(spacetime_metric) +=
+                2.0 * get<m, n>(spatial_metric) * get<m>(shift) * get<n>(shift);
+          });
 
-  for (size_t i = 0; i < Dim; ++i) {
-    for (size_t m = 0; m < Dim; ++m) {
-      spacetime_metric.get(0, i + 1) += spatial_metric.get(m, i) * shift.get(m);
-    }
-    for (size_t j = i; j < Dim; ++j) {
-      spacetime_metric.get(i + 1, j + 1) = spatial_metric.get(i, j);
-    }
-  }
+  for_constexpr<for_bounds<0, Dim>, for_bounds<0, Dim>>(
+      [&spacetime_metric, &spatial_metric, &shift](auto m, auto n)
+          SPECTRE_JUST_ALWAYS_INLINE {
+            get<0, m + 1>(spacetime_metric) +=
+                spatial_metric.get(n, m) * get<n>(shift);
+          });
+
+  for_constexpr<for_bounds<0, Dim>, for_symm_upper<0, Dim>>(
+      [&spacetime_metric, &spatial_metric](auto i, auto j)
+          SPECTRE_JUST_ALWAYS_INLINE {
+            get<i + 1, j + 1>(spacetime_metric) = get<i, j>(spatial_metric);
+          });
   return spacetime_metric;
 }
 
