@@ -131,6 +131,8 @@ HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/config/header.html
 
 HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
 
+IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs/Images/
+
 GENERATE_LATEX         = NO
 
 GENERATE_RTF           = NO
