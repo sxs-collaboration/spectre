@@ -41,25 +41,26 @@ struct Var : db::DataBoxTag {
 
 struct SystemAnalyticSolution {
   template <size_t Dim>
-  Variables<tmpl::list<Var>> evolution_variables(
-      const tnsr::I<DataVector, Dim>& x, double t) const noexcept {
-    Variables<tmpl::list<Var>> variables(x.begin()->size());
-    get(get<Var>(variables)) = x.get(0) + t;
+  tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& x,
+                                     double t, tmpl::list<Var> /*meta*/) const
+      noexcept {
+    tuples::TaggedTuple<Var> vars(x.get(0) + t);
     for (size_t d = 1; d < Dim; ++d) {
-      get(get<Var>(variables)) += x.get(d) + t;
+      get(get<Var>(vars)) += x.get(d) + t;
     }
-    return variables;
+    return vars;
   }
 
   template <size_t Dim>
-  Variables<tmpl::list<Tags::dt<Var>>> dt_evolution_variables(
-      const tnsr::I<DataVector, Dim>& x, double t) const noexcept {
-    Variables<tmpl::list<Tags::dt<Var>>> variables(x.begin()->size());
-    get(get<Tags::dt<Var>>(variables)) = 2.0 * x.get(0) + t;
+  tuples::TaggedTuple<Tags::dt<Var>> variables(
+      const tnsr::I<DataVector, Dim>& x, double t,
+      tmpl::list<Tags::dt<Var>> /*meta*/) const noexcept {
+    tuples::TaggedTuple<Tags::dt<Var>> vars{
+        Scalar<DataVector>(2.0 * x.get(0) + t)};
     for (size_t d = 1; d < Dim; ++d) {
-      get(get<Tags::dt<Var>>(variables)) += 2.0 * x.get(d) + t;
+      get(get<Tags::dt<Var>>(vars)) += 2.0 * x.get(d) + t;
     }
-    return variables;
+    return vars;
   }
 
   // clang-tidy: do not use references
@@ -149,10 +150,17 @@ void test_initialize_element(const ElementId<Dim>& element_id,
       past_t -= past_dt;
 
       CHECK(*entry == past_t);
-      CHECK(entry.value() ==
-            solution.evolution_variables(inertial_coords, past_t.value()));
-      CHECK(entry.derivative() ==
-            solution.dt_evolution_variables(inertial_coords, past_t.value()));
+      tmpl::for_each<tmpl::list<Var>>([&solution, &entry, &inertial_coords,
+                                       &past_t](auto type_wrapped_tag) {
+        using tag = tmpl::type_from<decltype(type_wrapped_tag)>;
+        CHECK(get<tag>(entry.value()) ==
+              get<tag>(solution.variables(inertial_coords, past_t.value(),
+                                          tmpl::list<Var>{})));
+        CHECK(
+            get<Tags::dt<tag>>(entry.derivative()) ==
+            get<Tags::dt<tag>>(solution.variables(
+                inertial_coords, past_t.value(), tmpl::list<Tags::dt<Var>>{})));
+      });
     }
   }
   CHECK((db::get<Tags::Coordinates<Tags::ElementMap<Dim>,
@@ -166,10 +174,13 @@ void test_initialize_element(const ElementId<Dim>& element_id,
                         typename System::gradients_tags,
                         Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                               Tags::LogicalCoordinates<Dim>>>>(
-            box)) ==
-        partial_derivatives<tmpl::list<Var>>(
-            SystemAnalyticSolution{}.evolution_variables(inertial_coords, 0.),
-            extents, map.inv_jacobian(logical_coords)));
+            box)) == ([&inertial_coords, &extents, &map, &logical_coords]() {
+          Variables<tmpl::list<Var>> vars(inertial_coords.begin()->size(), 0.);
+          vars.assign_subset(SystemAnalyticSolution{}.variables(
+              inertial_coords, 0., tmpl::list<Var>{}));
+          return partial_derivatives<tmpl::list<Var>>(
+              vars, extents, map.inv_jacobian(logical_coords));
+        }()));
   CHECK((db::get<db::add_tag_prefix<Tags::dt, typename System::variables_tag>>(
             box)) ==
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));

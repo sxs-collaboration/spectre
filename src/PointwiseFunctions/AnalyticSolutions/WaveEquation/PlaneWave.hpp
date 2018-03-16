@@ -96,19 +96,21 @@ class PlaneWave {
       noexcept;
 
   /// Retrieve the evolution variables at time `t` and spatial coordinates `x`
-  Variables<tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>>
-  evolution_variables(const tnsr::I<DataVector, Dim>& x, double t) const
-      noexcept;
+  tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<Dim>, ScalarWave::Psi>
+  variables(const tnsr::I<DataVector, Dim>& x, double t,
+            tmpl::list<ScalarWave::Pi, ScalarWave::Phi<Dim>,
+                       ScalarWave::Psi> /*meta*/) const noexcept;
 
   /// Retrieve the time derivative of the evolution variables at time `t` and
   /// spatial coordinates `x`
   ///
   /// \note This function's expected use case is setting the past time
   /// derivative values for Adams-Bashforth-like steppers.
-  Variables<tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-                       Tags::dt<ScalarWave::Psi>>>
-  dt_evolution_variables(const tnsr::I<DataVector, Dim>& x, double t) const
-      noexcept;
+  tuples::TaggedTuple<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                      Tags::dt<ScalarWave::Psi>>
+  variables(const tnsr::I<DataVector, Dim>& x, double t,
+            tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                       Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
 
   // clang-tidy: no pass by reference
   void pup(PUP::er& p) noexcept;  // NOLINT

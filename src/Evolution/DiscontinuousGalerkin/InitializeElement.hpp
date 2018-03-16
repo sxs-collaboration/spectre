@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
@@ -113,8 +114,9 @@ struct InitializeElement {
     auto inertial_coords = map(logical_coords);
 
     // Set initial data from analytic solution
-    auto vars = Parallel::get<solution_tag>(cache).evolution_variables(
-        inertial_coords, initial_time.value());
+    Variables<variables_tags> vars{num_grid_points};
+    vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
+        inertial_coords, initial_time.value(), variables_tags{}));
 
     typename Tags::HistoryEvolvedVariables<
         Tags::Variables<variables_tags>,
@@ -128,13 +130,16 @@ struct InitializeElement {
       for (size_t i = time_stepper.number_of_past_steps(); i > 0; --i) {
         past_dt = past_dt.with_slab(past_dt.slab().advance_towards(-past_dt));
         past_t -= past_dt;
-
-        history_dt_vars.insert_initial(
-            past_t,
-            Parallel::get<solution_tag>(cache).evolution_variables(
-                inertial_coords, past_t.value()),
-            Parallel::get<solution_tag>(cache).dt_evolution_variables(
-                inertial_coords, past_t.value()));
+        Variables<variables_tags> hist_vars{num_grid_points};
+        Variables<db::wrap_tags_in<Tags::dt, variables_tags>> dt_hist_vars{
+            num_grid_points};
+        hist_vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
+            inertial_coords, past_t.value(), variables_tags{}));
+        dt_hist_vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
+            inertial_coords, past_t.value(),
+            db::wrap_tags_in<Tags::dt, variables_tags>{}));
+        history_dt_vars.insert_initial(past_t, std::move(hist_vars),
+                                       std::move(dt_hist_vars));
       }
     }
 
