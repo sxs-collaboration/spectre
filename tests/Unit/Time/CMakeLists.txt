@@ -1,20 +1,25 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(TIME_TESTS
-    Time/Test_EveryNSlabs.cpp
-    Time/Test_History.cpp
-    Time/Test_PastTime.cpp
-    Time/Test_Slab.cpp
-    Time/Test_SpecifiedSlabs.cpp
-    Time/Test_StepControllers.cpp
-    Time/Test_Time.cpp
-    Time/Test_TimeId.cpp
-    )
+set(LIBRARY "Test_Time")
+
+set(LIBRARY_SOURCES
+  Test_EveryNSlabs.cpp
+  Test_History.cpp
+  Test_PastTime.cpp
+  Test_Slab.cpp
+  Test_SpecifiedSlabs.cpp
+  Test_StepControllers.cpp
+  Test_Time.cpp
+  Test_TimeId.cpp
+  )
 
 add_subdirectory(Actions)
 add_subdirectory(TimeSteppers)
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${TIME_TESTS}" PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};Time" PARENT_SCOPE)
-
+add_test_library(
+  ${LIBRARY}
+  "Time"
+  "${LIBRARY_SOURCES}"
+  "Time"
+  )

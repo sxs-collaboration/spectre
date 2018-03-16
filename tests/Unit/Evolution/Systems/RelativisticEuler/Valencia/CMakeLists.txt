@@ -1,14 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(VALENCIA_DIR Evolution/Systems/RelativisticEuler/Valencia)
+set(LIBRARY "Test_Valencia")
 
-set(VALENCIA_TESTS
-  ${VALENCIA_DIR}/Test_ConservativeFromPrimitive.cpp
-  ${VALENCIA_DIR}/Test_Fluxes.cpp
+set(LIBRARY_SOURCES
+  Test_ConservativeFromPrimitive.cpp
+  Test_Fluxes.cpp
   )
 
-set(RELATIVISTIC_EULER_TESTS
-  "${RELATIVISTIC_EULER_TESTS};${VALENCIA_TESTS}" PARENT_SCOPE
+add_test_library(
+  ${LIBRARY}
+  "Evolution/Systems/RelativisticEuler/Valencia/"
+  "${LIBRARY_SOURCES}"
+  "Valencia"
   )
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};Valencia" PARENT_SCOPE)

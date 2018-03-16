@@ -1,11 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(SPECTRE_UNIT_WAVE_EQUATION
-  PointwiseFunctions/AnalyticSolutions/WaveEquation/Test_PlaneWave.cpp
+
+set(LIBRARY "Test_WaveEquation")
+
+set(LIBRARY_SOURCES
+  Test_PlaneWave.cpp
   )
 
-set(SPECTRE_UNIT_ANALYTIC_SOLUTIONS
-  "${SPECTRE_UNIT_ANALYTIC_SOLUTIONS};${SPECTRE_UNIT_WAVE_EQUATION}"
-  PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};WaveEquation" PARENT_SCOPE)
+add_test_library(
+  ${LIBRARY}
+  "PointwiseFunctions/AnalyticSolutions/WaveEquation/"
+  "${LIBRARY_SOURCES}"
+  "WaveEquation"
+  )

@@ -1,10 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(CONTROL_SYSTEM_TESTS
-    ControlSystem/Test_PiecewisePolynomial.cpp
-    ControlSystem/Test_SettleToConstant.cpp
-    )
+set(LIBRARY "Test_ControlSystem")
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${CONTROL_SYSTEM_TESTS}" PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};ControlSystem" PARENT_SCOPE)
+set(LIBRARY_SOURCES
+  Test_PiecewisePolynomial.cpp
+  Test_SettleToConstant.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "ControlSystem"
+  "${LIBRARY_SOURCES}"
+  "ControlSystem"
+  )

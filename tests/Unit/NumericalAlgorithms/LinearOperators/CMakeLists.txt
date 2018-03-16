@@ -1,17 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(SPECTRE_UNIT_LINEAR_OPERATORS
-  NumericalAlgorithms/LinearOperators/Test_DefiniteIntegral.cpp
-  NumericalAlgorithms/LinearOperators/Test_Divergence.cpp
-  NumericalAlgorithms/LinearOperators/Test_Linearize.cpp
-  NumericalAlgorithms/LinearOperators/Test_MeanValue.cpp
-  NumericalAlgorithms/LinearOperators/Test_PartialDerivatives.cpp
-  NumericalAlgorithms/LinearOperators/Test_Transpose.cpp
+set(LIBRARY "Test_LinearOperators")
+
+set(LIBRARY_SOURCES
+  Test_DefiniteIntegral.cpp
+  Test_Divergence.cpp
+  Test_Linearize.cpp
+  Test_MeanValue.cpp
+  Test_PartialDerivatives.cpp
+  Test_Transpose.cpp
   )
 
-set(SPECTRE_UNIT_NUMERICAL_ALGORITHMS
-  "${SPECTRE_UNIT_NUMERICAL_ALGORITHMS};${SPECTRE_UNIT_LINEAR_OPERATORS}"
-  PARENT_SCOPE
+add_test_library(
+  ${LIBRARY}
+  "NumericalAlgorithms/LinearOperators/"
+  "${LIBRARY_SOURCES}"
+  "LinearOperators"
   )
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};LinearOperators" PARENT_SCOPE)

@@ -1,10 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(OPTIONS_TESTS
-    Options/Test_CustomTypeConstruction.cpp
-    Options/Test_Factory.cpp
-    Options/Test_Options.cpp
-    )
+set(LIBRARY "Test_Options")
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${OPTIONS_TESTS}" PARENT_SCOPE)
+set(LIBRARY_SOURCES
+  Test_CustomTypeConstruction.cpp
+  Test_Factory.cpp
+  Test_Options.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Options/"
+  "${LIBRARY_SOURCES}"
+  "" # Header-only, link dependencies included from testing lib
+  )

@@ -1,16 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(TEST_DIR
-  PointwiseFunctions/AnalyticSolutions/EinsteinSolutions)
+set(LIBRARY "Test_EinsteinSolutions")
 
-set(SPECTRE_UNIT_EINSTEIN_SOLUTION
-  ${TEST_DIR}/Test_KerrSchild.cpp
-  ${TEST_DIR}/Test_Minkowski.cpp
-  ${TEST_DIR}/VerifyEinsteinSolution.cpp
+set(LIBRARY_SOURCES
+  Test_KerrSchild.cpp
+  Test_Minkowski.cpp
+  VerifyEinsteinSolution.cpp
   )
 
-set(SPECTRE_UNIT_ANALYTIC_SOLUTIONS
-  "${SPECTRE_UNIT_ANALYTIC_SOLUTIONS};${SPECTRE_UNIT_EINSTEIN_SOLUTION}"
-  PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};EinsteinSolutions" PARENT_SCOPE)
+add_test_library(
+  ${LIBRARY}
+  "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/"
+  "${LIBRARY_SOURCES}"
+  "EinsteinSolutions"
+  )

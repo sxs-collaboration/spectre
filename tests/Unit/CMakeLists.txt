@@ -7,7 +7,8 @@ set(SPECTRE_TESTS "TestFramework.cpp")
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
-set(LIBRARIES_TO_LINK "Informer")
+set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")
+set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIBS_PROPERTY "")
 
 add_subdirectory(ApparentHorizons)
 add_subdirectory(ControlSystem)
@@ -28,6 +29,17 @@ set(SPECTRE_TESTS "${SPECTRE_TESTS};Test_TestHelpers.cpp")
 
 add_charm_module(${executable})
 
+write_test_registration_function(
+  "${CMAKE_BINARY_DIR}/tests/Unit/RunTestsRegister.hpp"
+  "register_run_tests_libs"
+  )
+
+get_property(
+  SPECTRE_TESTS_LIBRARIES
+  GLOBAL
+  PROPERTY
+  SPECTRE_TESTS_LIBS_PROPERTY)
+
 add_executable(
   ${executable}
   ${executable}.cpp
@@ -38,9 +50,10 @@ add_executable(
 
 target_link_libraries(
   ${executable}
-  ${LIBRARIES_TO_LINK}
+  Informer
+  ${SPECTRE_TESTS_LIBRARIES}
   ${SPECTRE_LIBRARIES}
-)
+  )
 
 add_dependencies(
   ${executable}
@@ -50,7 +63,7 @@ add_dependencies(
 
 add_dependencies(test-executables ${executable})
 
-spectre_add_catch_tests(${executable})
+spectre_add_catch_tests(${executable} "${SPECTRE_TESTS_LIBRARIES}")
 
 # Setup code coverage for unit tests
 if(COVERAGE)
