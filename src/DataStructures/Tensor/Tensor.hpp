@@ -150,13 +150,13 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   }
   /// \endcond
 
-  /// Initialize a Vector with the value in the std::initializer_list
+  /// Initialize a vector or scalar from an array
   ///
   /// \example
   /// \snippet Test_Tensor.cpp init_vector
   /// \param data the values of the individual components of the Vector
   template <size_t NumberOfIndices = sizeof...(Indices),
-            Requires<(NumberOfIndices == 1)> = nullptr>
+            Requires<(NumberOfIndices <= 1)> = nullptr>
   explicit Tensor(storage_type data) noexcept;
 
   /// Constructor that passes "args" to constructor of X and initializes each
@@ -437,7 +437,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-template <size_t NumberOfIndices, Requires<(NumberOfIndices == 1)>>
+template <size_t NumberOfIndices, Requires<(NumberOfIndices <= 1)>>
 Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data) noexcept
     : data_(std::move(data)) {}
 
