@@ -134,7 +134,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \param tensor_expression the tensor expression being evaluated
   template <typename... LhsIndices, typename T,
             Requires<std::is_base_of<Expression, T>::value> = nullptr>
-  Tensor(const T& tensor_expression, tmpl::list<LhsIndices...> /*meta*/) {
+  Tensor(const T& tensor_expression,
+         tmpl::list<LhsIndices...> /*meta*/) noexcept {
     static_assert(
         sizeof...(LhsIndices) == sizeof...(Indices),
         "When calling evaluate<...>(...) you must pass the same "
@@ -156,7 +157,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \param data the values of the individual components of the Vector
   template <size_t NumberOfIndices = sizeof...(Indices),
             Requires<(NumberOfIndices == 1)> = nullptr>
-  explicit Tensor(storage_type data);
+  explicit Tensor(storage_type data) noexcept;
 
   /// Constructor that passes "args" to constructor of X and initializes each
   /// component to be the same
@@ -166,7 +167,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                              std::decay_t<Args>>...> and
                          sizeof...(Args) == 1) and
                      cpp17::is_constructible_v<X, Args...>> = nullptr>
-  explicit Tensor(Args&&... args);
+  explicit Tensor(Args&&... args) noexcept;
 
   using value_type = typename storage_type::value_type;
   using reference = typename storage_type::reference;
@@ -178,21 +179,21 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   using reverse_iterator = typename storage_type::reverse_iterator;
   using const_reverse_iterator = typename storage_type::const_reverse_iterator;
 
-  iterator begin() { return data_.begin(); }
-  const_iterator begin() const { return data_.begin(); }
-  const_iterator cbegin() const { return data_.begin(); }
+  iterator begin() noexcept { return data_.begin(); }
+  const_iterator begin() const noexcept { return data_.begin(); }
+  const_iterator cbegin() const noexcept { return data_.begin(); }
 
-  iterator end() { return data_.end(); }
-  const_iterator end() const { return data_.end(); }
-  const_iterator cend() const { return data_.end(); }
+  iterator end() noexcept { return data_.end(); }
+  const_iterator end() const noexcept { return data_.end(); }
+  const_iterator cend() const noexcept { return data_.end(); }
 
-  reverse_iterator rbegin() { return data_.rbegin(); }
-  const_reverse_iterator rbegin() const { return data_.rbegin(); }
-  const_reverse_iterator crbegin() const { return data_.rbegin(); }
+  reverse_iterator rbegin() noexcept { return data_.rbegin(); }
+  const_reverse_iterator rbegin() const noexcept { return data_.rbegin(); }
+  const_reverse_iterator crbegin() const noexcept { return data_.rbegin(); }
 
-  reverse_iterator rend() { return data_.rend(); }
-  const_reverse_iterator rend() const { return data_.rend(); }
-  const_reverse_iterator crend() const { return data_.rend(); }
+  reverse_iterator rend() noexcept { return data_.rend(); }
+  const_reverse_iterator rend() const noexcept { return data_.rend(); }
+  const_reverse_iterator crend() const noexcept { return data_.rend(); }
 
   // @{
   /// Get data entry using an array representing a tensor index
@@ -203,12 +204,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \param tensor_index the index at which to get the data
   template <typename T>
   SPECTRE_ALWAYS_INLINE constexpr reference get(
-      const std::array<T, sizeof...(Indices)>& tensor_index) {
+      const std::array<T, sizeof...(Indices)>& tensor_index) noexcept {
     return gsl::at(data_, structure::get_storage_index(tensor_index));
   }
   template <typename T>
   SPECTRE_ALWAYS_INLINE constexpr const_reference get(
-      const std::array<T, sizeof...(Indices)>& tensor_index) const {
+      const std::array<T, sizeof...(Indices)>& tensor_index) const noexcept {
     return gsl::at(data_, structure::get_storage_index(tensor_index));
   }
   // @}
@@ -220,7 +221,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// Then `get(0, 2, 1)` returns the \f$T_{0 2 1}\f$ component.
   /// \param n the index at which to get the data
   template <typename... N>
-  constexpr reference get(N... n) {
+  constexpr reference get(N... n) noexcept {
     static_assert(
         sizeof...(Indices) == sizeof...(N),
         "the number of tensor indices specified must match the rank of "
@@ -228,7 +229,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
     return gsl::at(data_, structure::get_storage_index(n...));
   }
   template <typename... N>
-  constexpr const_reference get(N... n) const {
+  constexpr const_reference get(N... n) const noexcept {
     static_assert(
         sizeof...(Indices) == sizeof...(N),
         "the number of tensor indices specified must match the rank of "
@@ -256,14 +257,14 @@ class Tensor<X, Symm, IndexList<Indices...>> {
             Requires<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
                      tmpl::is_set<N...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE constexpr TE<tmpl::list<N...>> operator()(
-      N... /*meta*/) const {
+      N... /*meta*/) const noexcept {
     return TE<tmpl::list<N...>>(*this);
   }
 
   template <typename... N,
             Requires<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
                      not tmpl::is_set<N...>::value> = nullptr>
-  SPECTRE_ALWAYS_INLINE constexpr auto operator()(N... /*meta*/) const
+  SPECTRE_ALWAYS_INLINE constexpr auto operator()(N... /*meta*/) const noexcept
       -> decltype(
           TensorExpressions::fully_contracted<
               TE, replace_indices<tmpl::list<N...>, repeated<tmpl::list<N...>>>,
@@ -279,10 +280,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
   // @{
   /// Return i'th component of storage vector
-  constexpr reference operator[](const size_t storage_index) {
+  constexpr reference operator[](const size_t storage_index) noexcept {
     return gsl::at(data_, storage_index);
   }
-  constexpr const_reference operator[](const size_t storage_index) const {
+  constexpr const_reference operator[](const size_t storage_index) const
+      noexcept {
     return gsl::at(data_, storage_index);
   }
   // @}
@@ -400,7 +402,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   static std::string component_name(
       const std::array<T, rank()>& tensor_index = std::array<T, rank()>{},
       const std::array<std::string, rank()>& axis_labels =
-          make_array<rank()>(std::string(""))) {
+          make_array<rank()>(std::string(""))) noexcept {
     return structure::component_name(tensor_index, axis_labels);
   }
   //@}
@@ -408,12 +410,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// Copy tensor data into an `std::vector<X>` along with the
   /// component names into a `std::vector<std::string>`
   /// \requires `std::is_same<X, DataVector>::%value` is true
-  std::pair<std::vector<std::string>, std::vector<X>> get_vector_of_data()
-      const;
+  std::pair<std::vector<std::string>, std::vector<X>> get_vector_of_data() const
+      noexcept;
 
   /// \cond HIDDEN_SYMBOLS
   /// Serialization function used by Charm++
-  void pup(PUP::er& p) {  // NOLINT
+  void pup(PUP::er& p) noexcept {  // NOLINT
     p | data_;
   }
   /// \endcond
@@ -436,7 +438,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 template <size_t NumberOfIndices, Requires<(NumberOfIndices == 1)>>
-Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data)
+Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data) noexcept
     : data_(std::move(data)) {}
 
 // The cpp17::disjunction is used to prevent the compiler from matching this
@@ -449,13 +451,13 @@ template <typename... Args,
                                         std::decay_t<Args>>...> and
                        sizeof...(Args) == 1) and
                    cpp17::is_constructible_v<X, Args...>>>
-Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args)
+Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args) noexcept
     : data_(make_array<size(), X>(std::forward<Args>(args)...)) {}
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 std::pair<std::vector<std::string>, std::vector<X>>
-Tensor<X, Symm, IndexList<Indices...>>::get_vector_of_data() const {
+Tensor<X, Symm, IndexList<Indices...>>::get_vector_of_data() const noexcept {
   std::vector<value_type> serialized_tensor(size());
   std::vector<std::string> component_names(size());
   for (size_t i = 0; i < data_.size(); ++i) {
@@ -488,13 +490,13 @@ SPECTRE_ALWAYS_INLINE constexpr typename Tensor<Args...>::const_reference get(
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 bool operator==(const Tensor<X, Symm, IndexList<Indices...>>& lhs,
-                const Tensor<X, Symm, IndexList<Indices...>>& rhs) {
+                const Tensor<X, Symm, IndexList<Indices...>>& rhs) noexcept {
   return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 bool operator!=(const Tensor<X, Symm, IndexList<Indices...>>& lhs,
-                const Tensor<X, Symm, IndexList<Indices...>>& rhs) {
+                const Tensor<X, Symm, IndexList<Indices...>>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
@@ -512,8 +514,9 @@ SPECTRE_ALWAYS_INLINE constexpr size_t index_dim(
 // explicitly instantiated.
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-std::ostream& operator<<(std::ostream& os,
-                         const Tensor<X, Symm, IndexList<Indices...>>& x) {
+std::ostream& operator<<(
+    std::ostream& os,
+    const Tensor<X, Symm, IndexList<Indices...>>& x) noexcept {
   static_assert(tt::is_streamable_v<decltype(os), X>,
                 "operator<< is not defined for the type you are trying to "
                 "stream in Tensor");
@@ -532,7 +535,7 @@ struct MakeWithValueImpl<Tensor<DataVector, Structure...>, DataVector> {
   /// \brief Returns a Tensor whose DataVectors are the same size as `input`,
   /// with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Tensor<DataVector, Structure...> apply(
-      const DataVector& input, const double value) {
+      const DataVector& input, const double value) noexcept {
     return Tensor<DataVector, Structure...>(input.size(), value);
   }
 };
@@ -542,7 +545,8 @@ struct MakeWithValueImpl<DataVector, Tensor<DataVector, Structure...>> {
   /// \brief Returns a DataVector with the same size as the DataVectors of
   /// `input`, with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE DataVector
-  apply(const Tensor<DataVector, Structure...>& input, const double value) {
+  apply(const Tensor<DataVector, Structure...>& input,
+        const double value) noexcept {
     return DataVector(input.begin()->size(), value);
   }
 };
@@ -553,7 +557,8 @@ struct MakeWithValueImpl<Tensor<DataVector, StructureOut...>,
   /// \brief Returns a Tensor whose DataVectors are the same size as the
   /// DataVectors of `input`, with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Tensor<DataVector, StructureOut...> apply(
-      const Tensor<DataVector, StructureIn...>& input, const double value) {
+      const Tensor<DataVector, StructureIn...>& input,
+      const double value) noexcept {
     return Tensor<DataVector, StructureOut...>(input.begin()->size(), value);
   }
 };
@@ -563,7 +568,7 @@ struct MakeWithValueImpl<Tensor<double, Structure...>, double> {
   /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
   /// is ignored).
   static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
-      const double& /*input*/, const double value) {
+      const double& /*input*/, const double value) noexcept {
     return Tensor<double, Structure...>(value);
   }
 };
@@ -572,7 +577,8 @@ template <typename... Structure>
 struct MakeWithValueImpl<double, Tensor<double, Structure...>> {
   /// \brief Returns a double initialized to `value` (`input` is ignored)
   static SPECTRE_ALWAYS_INLINE double apply(
-      const Tensor<double, Structure...>& /*input*/, const double value) {
+      const Tensor<double, Structure...>& /*input*/,
+      const double value) noexcept {
     return value;
   }
 };
@@ -583,7 +589,8 @@ struct MakeWithValueImpl<Tensor<double, StructureOut...>,
   /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
   /// is ignored).
   static SPECTRE_ALWAYS_INLINE Tensor<double, StructureOut...> apply(
-      const Tensor<double, StructureIn...>& /*input*/, const double value) {
+      const Tensor<double, StructureIn...>& /*input*/,
+      const double value) noexcept {
     return Tensor<double, StructureOut...>(value);
   }
 };
