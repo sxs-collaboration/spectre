@@ -16,7 +16,7 @@
  */
 template <typename DataType, typename Index>
 Scalar<DataType> magnitude(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector) noexcept {
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) noexcept {
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector)))};
 }
 
@@ -30,9 +30,9 @@ Scalar<DataType> magnitude(
  */
 template <typename DataType, typename Index>
 Scalar<DataType> magnitude(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
     const Tensor<DataType, Symmetry<1, 1>,
-                 tmpl::list<change_index_up_lo<Index>,
+                 index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>&
         metric) noexcept {
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector, metric)))};

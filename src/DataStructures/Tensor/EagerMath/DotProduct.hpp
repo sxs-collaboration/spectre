@@ -21,8 +21,8 @@
  */
 template <typename DataType, typename Index>
 Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_b) noexcept {
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b) noexcept {
   auto dot_product = make_with_value<Scalar<DataType>>(vector_a, 0.);
   for (size_t d = 0; d < Index::dim; ++d) {
     get(dot_product) += vector_a.get(d) * vector_b.get(d);
@@ -42,8 +42,8 @@ Scalar<DataType> dot_product(
  */
 template <typename DataType, typename Index>
 Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, tmpl::list<change_index_up_lo<Index>>>&
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>&
         vector_b) noexcept {
   auto dot_product = make_with_value<Scalar<DataType>>(vector_a, 0.);
   for (size_t d = 0; d < Index::dim; ++d) {
@@ -64,10 +64,10 @@ Scalar<DataType> dot_product(
  */
 template <typename DataType, typename Index>
 Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, tmpl::list<Index>>& vector_b,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b,
     const Tensor<DataType, Symmetry<1, 1>,
-                 tmpl::list<change_index_up_lo<Index>,
+                 index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) noexcept {
   auto dot_product = make_with_value<Scalar<DataType>>(vector_a, 0.);
   for (size_t a = 0; a < Index::dim; ++a) {
