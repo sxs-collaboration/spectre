@@ -39,7 +39,8 @@ void test_schwarzschild() {
   const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
   EinsteinSolutions::KerrSchild solution(mass, spin, center);
-  const auto vars = solution.solution(cart_coords, t);
+  const auto vars = solution.variables(
+      cart_coords, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
 
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
@@ -202,7 +203,8 @@ void test_schwarzschild() {
   const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
   EinsteinSolutions::KerrSchild solution(mass, spin, center);
-  const auto vars = solution.solution(cart_coords, t);
+  const auto vars = solution.variables(
+      cart_coords, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
 
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);

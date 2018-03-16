@@ -254,8 +254,9 @@ class KerrSchild {
       deriv_spatial_metric<DataType>>;
 
   template <typename DataType>
-  tuples::TaggedTupleTypelist<tags<DataType>> solution(
-      const tnsr::I<DataType, 3>& x, double t) const noexcept;
+  tuples::TaggedTupleTypelist<tags<DataType>> variables(
+      const tnsr::I<DataType, 3>& x, double t, tags<DataType> /*meta*/) const
+      noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT

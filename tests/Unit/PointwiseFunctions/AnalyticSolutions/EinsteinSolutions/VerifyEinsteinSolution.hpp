@@ -65,7 +65,8 @@ void verify_time_independent_einstein_solution(
   const double t = 1.3;  // Arbitrary time for time-independent solution.
 
   // Evaluate analytic solution
-  const auto vars = solution.solution(x, t);
+  const auto vars =
+      solution.variables(x, t, typename Solution::template tags<DataVector>{});
   const auto& lapse = get<gr::Tags::Lapse<3>>(vars);
   const auto& dt_lapse = get<gr::Tags::DtLapse<3>>(vars);
   const auto& d_lapse =

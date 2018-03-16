@@ -46,8 +46,9 @@ void KerrSchild::pup(PUP::er& p) noexcept {
 }
 
 template <typename DataType>
-tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
-    const tnsr::I<DataType, 3>& x, const double /*t*/) const noexcept {
+tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
+    const tnsr::I<DataType, 3>& x, const double /*t*/,
+    tags<DataType> /*meta*/) const noexcept {
   // Input spin is dimensionless spin.  But below we use `spin` = the
   // Kerr spin parameter `a`, which is `J/M` where `J` is the angular
   // momentum.  So compute `spin=a` here.
@@ -239,9 +240,11 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
 
 template tuples::TaggedTupleTypelist<
     EinsteinSolutions::KerrSchild::tags<DataVector>>
-EinsteinSolutions::KerrSchild::solution(const tnsr::I<DataVector, 3>& x,
-                                        const double /*t*/) const noexcept;
+EinsteinSolutions::KerrSchild::variables(
+    const tnsr::I<DataVector, 3>& x, const double /*t*/,
+    KerrSchild::tags<DataVector> /*meta*/) const noexcept;
 template tuples::TaggedTupleTypelist<
     EinsteinSolutions::KerrSchild::tags<double>>
-EinsteinSolutions::KerrSchild::solution(const tnsr::I<double, 3>& x,
-                                        const double /*t*/) const noexcept;
+EinsteinSolutions::KerrSchild::variables(
+    const tnsr::I<double, 3>& x, const double /*t*/,
+    KerrSchild::tags<double> /*meta*/) const noexcept;

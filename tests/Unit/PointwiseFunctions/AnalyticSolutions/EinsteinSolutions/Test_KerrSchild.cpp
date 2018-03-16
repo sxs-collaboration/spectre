@@ -57,7 +57,8 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   // Evaluate solution
   EinsteinSolutions::KerrSchild solution(mass, spin, center);
 
-  const auto vars = solution.solution(x, t);
+  const auto vars =
+      solution.variables(x, t, EinsteinSolutions::KerrSchild::tags<DataType>{});
   const auto& lapse = get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(vars);
   const auto& dt_lapse =
       get<gr::Tags::DtLapse<3, Frame::Inertial, DataType>>(vars);
@@ -167,7 +168,8 @@ void test_double_vs_datavector() noexcept {
   const auto x1 = spatial_coords(0.0);
   const auto x2 = spatial_coords(DataVector{0.0, 0.0, 0.0});
 
-  const auto vars1 = solution.solution(x1, t);
+  const auto vars1 =
+      solution.variables(x1, t, EinsteinSolutions::KerrSchild::tags<double>{});
   const auto& lapse1 = get<gr::Tags::Lapse<3, Frame::Inertial, double>>(vars1);
   const auto& dt_lapse1 =
       get<gr::Tags::DtLapse<3, Frame::Inertial, double>>(vars1);
@@ -185,7 +187,8 @@ void test_double_vs_datavector() noexcept {
   const auto& d_g1 =
       get<EinsteinSolutions::KerrSchild::deriv_spatial_metric<double>>(vars1);
 
-  const auto vars2 = solution.solution(x2, t);
+  const auto vars2 = solution.variables(
+      x2, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
   const auto& lapse2 =
       get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars2);
   const auto& dt_lapse2 =

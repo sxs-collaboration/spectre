@@ -44,7 +44,8 @@ FastFlow::Status do_iteration(
     const double t = 0.0;
     const auto& cart_coords =
         db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
-    const auto vars = solution.solution(cart_coords, t);
+    const auto vars = solution.variables(
+        cart_coords, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
 
     const auto& spatial_metric =
         get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
