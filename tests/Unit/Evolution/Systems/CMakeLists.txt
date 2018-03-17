@@ -3,6 +3,7 @@
 
 add_subdirectory(CurvedScalarWave)
 add_subdirectory(GeneralizedHarmonic)
+add_subdirectory(NewtonianEuler)
 add_subdirectory(RelativisticEuler)
 add_subdirectory(ScalarWave)
 
