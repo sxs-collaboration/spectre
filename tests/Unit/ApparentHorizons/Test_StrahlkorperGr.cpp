@@ -45,7 +45,7 @@ void test_schwarzschild() {
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
   const auto& deriv_spatial_metric =
-      get<EinsteinSolutions::KerrSchild::deriv_spatial_metric<DataVector>>(
+      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataVector>>(
           vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
@@ -76,7 +76,7 @@ void test_schwarzschild() {
       gr::extrinsic_curvature(
           get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
           get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
-          get<EinsteinSolutions::KerrSchild::deriv_shift<DataVector>>(vars),
+          get<EinsteinSolutions::KerrSchild::DerivShift<DataVector>>(vars),
           spatial_metric,
           get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataVector>>(vars),
           deriv_spatial_metric));
@@ -209,7 +209,7 @@ void test_schwarzschild() {
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
   const auto& deriv_spatial_metric =
-      get<EinsteinSolutions::KerrSchild::deriv_spatial_metric<DataVector>>(
+      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataVector>>(
           vars);
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;

@@ -175,12 +175,12 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
 
   auto result = make_with_value<tuples::TaggedTuple<
       gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      gr::Tags::DtLapse<3, Frame::Inertial, DataType>, deriv_lapse<DataType>,
+      gr::Tags::DtLapse<3, Frame::Inertial, DataType>, DerivLapse<DataType>,
       gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      gr::Tags::DtShift<3, Frame::Inertial, DataType>, deriv_shift<DataType>,
+      gr::Tags::DtShift<3, Frame::Inertial, DataType>, DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
       gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataType>,
-      deriv_spatial_metric<DataType>>>(x, 0.0);
+      DerivSpatialMetric<DataType>>>(x, 0.0);
 
   get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) =
       sqrt(lapse_squared);
@@ -191,7 +191,7 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
         get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) *
         lapse_squared;
     for (size_t i = 0; i < 3; ++i) {
-      get<deriv_lapse<DataType>>(result).get(i) = temp * deriv_H.get(i);
+      get<DerivLapse<DataType>>(result).get(i) = temp * deriv_H.get(i);
     }
   }
 
@@ -205,7 +205,7 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
 
   for (size_t m = 0; m < 3; ++m) {
     for (size_t i = 0; i < 3; ++i) {
-      get<deriv_shift<DataType>>(result).get(m, i) =
+      get<DerivShift<DataType>>(result).get(m, i) =
           4.0 * H * null_form.get(i) * square(lapse_squared) *
               cube(null_vector_0) * deriv_H.get(m) -
           2.0 * lapse_squared * null_vector_0 *
@@ -226,10 +226,11 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {  // Symmetry
       for (size_t m = 0; m < 3; ++m) {
-        get<deriv_spatial_metric<DataType>>(result).get(m, i, j) =
+        get<DerivSpatialMetric<DataType>>(result).get(m, i, j) =
             2.0 * null_form.get(i) * null_form.get(j) * deriv_H.get(m) +
-            2.0 * H * (null_form.get(i) * deriv_null_form.get(m, j) +
-                       null_form.get(j) * deriv_null_form.get(m, i));
+            2.0 * H *
+                (null_form.get(i) * deriv_null_form.get(m, j) +
+                 null_form.get(j) * deriv_null_form.get(m, i));
       }
     }
   }
