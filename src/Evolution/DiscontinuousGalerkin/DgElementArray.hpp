@@ -24,9 +24,6 @@ struct DgElementArray {
   using action_list = ActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using explicit_single_actions_list =
-      tmpl::list<dg::Actions::InitializeElement<volume_dim>>;
-
   using initial_databox = db::compute_databox_type<
       typename dg::Actions::InitializeElement<volume_dim>::
           template return_tag_list<typename Metavariables::system>>;
@@ -84,8 +81,8 @@ void DgElementArray<Metavariables, ActionList>::initialize(
   const Time time = time_reversed ? slab.end() : slab.start();
   const TimeDelta dt = time_reversed ? -slab.duration() : slab.duration();
 
-  dg_element_array.template explicit_single_action<
-      dg::Actions::InitializeElement<volume_dim>>(
-      std::make_tuple(domain_creator->initial_extents(),
-                      std::move(domain), time, dt));
+  dg_element_array
+      .template simple_action<dg::Actions::InitializeElement<volume_dim>>(
+          std::make_tuple(domain_creator->initial_extents(), std::move(domain),
+                          time, dt));
 }

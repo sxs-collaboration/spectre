@@ -39,8 +39,6 @@ struct total_receives_on_node : db::DataBoxTag {
 }  // namespace Tags
 
 struct nodegroup_initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -63,13 +61,11 @@ struct nodegroup_initialize {
 };
 
 struct nodegroup_receive {
-  using apply_args = tmpl::list<int>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -92,18 +88,15 @@ struct nodegroup_receive {
                         [](int& t) { t++; });
           total_receives_on_node++;
         });
-    return std::forward_as_tuple(box);
   }
 };
 
 struct nodegroup_check_first_result {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -125,13 +118,10 @@ struct nodegroup_check_first_result {
           value == number_of_1d_array_elements_per_core *
                        Parallel::procs_on_node(Parallel::my_node()));
     });
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
 struct nodegroup_threaded_receive {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename NodeLock,
             Requires<sizeof...(DbTags) == 2> = nullptr>
@@ -158,13 +148,11 @@ struct nodegroup_threaded_receive {
 };
 
 struct nodegroup_check_threaded_result {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<sizeof...(DbTags) == 2> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -186,13 +174,10 @@ struct nodegroup_check_threaded_result {
           value == 2 * number_of_1d_array_elements_per_core *
                        Parallel::procs_on_node(Parallel::my_node()));
     });
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
 struct reduce_to_nodegroup {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -208,15 +193,15 @@ struct reduce_to_nodegroup {
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
-    local_nodegroup.template explicit_single_action<nodegroup_receive>(
+    /// [simple_action_with_args]
+    local_nodegroup.template simple_action<nodegroup_receive>(
         std::make_tuple(array_index));
+    /// [simple_action_with_args]
     return std::forward_as_tuple(std::move(box));
   }
 };
 
 struct reduce_threaded_method {
-  using apply_args = tmpl::list<>;
-
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -248,9 +233,6 @@ struct ArrayParallelComponent {
   using array_index = int;
   using initial_databox = db::DataBox<tmpl::list<>>;
 
-  using explicit_single_actions_list =
-      tmpl::list<reduce_to_nodegroup, reduce_threaded_method>;
-
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -275,10 +257,10 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
     if (next_phase == Metavariables::Phase::ArrayToNodegroup) {
-      array_proxy.template explicit_single_action<reduce_to_nodegroup>();
+      array_proxy.template simple_action<reduce_to_nodegroup>();
     }
     if (next_phase == Metavariables::Phase::TestThreadedMethod) {
-      array_proxy.template explicit_single_action<reduce_threaded_method>();
+      array_proxy.template simple_action<reduce_threaded_method>();
     }
   }
 };
@@ -293,15 +275,11 @@ struct NodegroupParallelComponent {
   using initial_databox = db::DataBox<db::get_databox_list<
       tmpl::list<Tags::total_receives_on_node, Tags::vector_of_array_indexs>>>;
 
-  using explicit_single_actions_list =
-      tmpl::list<nodegroup_initialize, nodegroup_receive,
-                 nodegroup_check_first_result, nodegroup_check_threaded_result>;
-
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
-        .template explicit_single_action<nodegroup_initialize>();
+        .template simple_action<nodegroup_initialize>();
   }
 
   static void execute_next_global_actions(
@@ -312,12 +290,10 @@ struct NodegroupParallelComponent {
         Parallel::get_parallel_component<NodegroupParallelComponent>(
             local_cache);
     if (next_phase == Metavariables::Phase::CheckFirstResult) {
-      nodegroup_proxy
-          .template explicit_single_action<nodegroup_check_first_result>();
+      nodegroup_proxy.template simple_action<nodegroup_check_first_result>();
     }
     if (next_phase == Metavariables::Phase::CheckThreadedResult) {
-      nodegroup_proxy
-          .template explicit_single_action<nodegroup_check_threaded_result>();
+      nodegroup_proxy.template simple_action<nodegroup_check_threaded_result>();
     }
   }
 };
@@ -365,6 +341,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 
-using charm_metavariables = TestMetavariables;
+using charmxx_main_component = Parallel::Main<TestMetavariables>;
 
 #include "Parallel/CharmMain.cpp"

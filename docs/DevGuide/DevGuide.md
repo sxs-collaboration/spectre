@@ -17,3 +17,4 @@ See LICENSE.txt for details.
   for optimizing performance
 - \ref writing_unit_tests "Writing Unit Tests"
 - \ref travis_guide "Travis CI"
+- \ref ParallelGroup "Parallelization infrastructure" components and usage

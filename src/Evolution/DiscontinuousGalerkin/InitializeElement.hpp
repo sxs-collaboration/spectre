@@ -65,10 +65,6 @@ namespace Actions {
 /// - Modifies: nothing
 template <size_t Dim>
 struct InitializeElement {
-  using apply_args =
-      tmpl::list<std::vector<std::array<size_t, Dim>>,
-                 Domain<Dim, Frame::Inertial>, ::Time, ::TimeDelta>;
-
   template <class System>
   using return_tag_list = tmpl::list<
       Tags::TimeId, Tags::Time, Tags::TimeStep, Tags::LogicalCoordinates<Dim>,

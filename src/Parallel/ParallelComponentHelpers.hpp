@@ -97,5 +97,20 @@ struct ConstGlobalCache;
 
 template <class Metavariables>
 struct CProxy_ConstGlobalCache;
+
+template <class ParallelComponent, class... Args>
+struct charm_types_with_parameters {
+  using cproxy =
+      typename ParallelComponent::chare_type::template cproxy<ParallelComponent,
+                                                              Args...>;
+  using cbase =
+      typename ParallelComponent::chare_type::template cbase<ParallelComponent,
+                                                             Args...>;
+  using algorithm =
+      typename ParallelComponent::chare_type::template algorithm_type<
+          ParallelComponent, Args...>;
+  using ckindex = typename ParallelComponent::chare_type::template ckindex<
+      ParallelComponent, Args...>;
+};
 }  // namespace Parallel
 /// \endcond

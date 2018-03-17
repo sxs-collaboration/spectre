@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ErrorHandling/Assert.hpp"
+#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCacheHelper.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/Requires.hpp"
@@ -66,6 +67,17 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
       tuples::TaggedTupleTypelist<tag_list> const_global_cache) noexcept
       : const_global_cache_(std::move(const_global_cache)) {}
   explicit ConstGlobalCache(CkMigrateMessage* /*msg*/) {}
+  ~ConstGlobalCache() noexcept override {
+    (void)Parallel::charmxx::RegisterChare<
+        ConstGlobalCache<Metavariables>,
+        CkIndex_ConstGlobalCache<Metavariables>>::registrar;
+  }
+  /// \cond
+  ConstGlobalCache(const ConstGlobalCache&) = default;
+  ConstGlobalCache& operator=(const ConstGlobalCache&) = default;
+  ConstGlobalCache(ConstGlobalCache&&) = default;
+  ConstGlobalCache& operator=(ConstGlobalCache&&) = default;
+  /// \endcond
 
   /// Entry method to set the ParallelComponents (should only be called once)
   void set_parallel_components(

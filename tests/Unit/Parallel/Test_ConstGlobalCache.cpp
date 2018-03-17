@@ -87,7 +87,6 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 template <class Metavariables>
@@ -99,7 +98,6 @@ struct ArrayParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 template <class Metavariables>
@@ -110,7 +108,6 @@ struct GroupParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 template <class Metavariables>
@@ -121,7 +118,6 @@ struct NodegroupParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
-  using reduction_actions_list = tmpl::list<>;
 };
 
 struct TestMetavariables {
@@ -206,3 +202,13 @@ PUP::able::PUP_ID Square::my_PUP_ID = 0;    // NOLINT
 #include "src/Parallel/ConstGlobalCache.def.h"
 
 #include "tests/Unit/Parallel/Test_ConstGlobalCache.def.h"
+
+namespace Parallel {
+namespace charmxx {
+/// \cond
+std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
+size_t charm_register_list_capacity = 0;
+size_t charm_register_list_size = 0;
+/// \endcond
+}  // namespace charmxx
+}  // namespace Parallel

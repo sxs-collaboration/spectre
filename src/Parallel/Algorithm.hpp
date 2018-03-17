@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
@@ -21,41 +22,6 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
-namespace charmxx {
-/*!
- * Uses the __PRETTY_FUNCTION__ compiler intrinsic to extract the template
- * parameter names in the same form that Charm++ uses to register entry methods.
- * This is used by the generated Singleton, Array, Group and Nodegroup headers,
- * as well as in CharmMain.cpp.
- */
-template <class... Args>
-std::string get_template_parameters_as_string() {
-  std::string function_name(static_cast<char const*>(__PRETTY_FUNCTION__));
-  std::string template_params =
-      function_name.substr(function_name.find(std::string("Args = ")) + 8);
-  template_params.erase(template_params.end() - 2, template_params.end());
-  size_t pos = 0;
-  while ((pos = template_params.find(" >")) != std::string::npos) {
-    template_params.replace(pos, 1, ">");
-    template_params.erase(pos + 1, 1);
-  }
-  pos = 0;
-  while ((pos = template_params.find(", ", pos)) != std::string::npos) {
-    template_params.erase(pos + 1, 1);
-  }
-  pos = 0;
-  while ((pos = template_params.find('>', pos + 2)) != std::string::npos) {
-    template_params.replace(pos, 1, " >");
-  }
-  std::replace(template_params.begin(), template_params.end(), '%', '>');
-  // GCC's __PRETTY_FUNCTION__ adds the return type at the end, so we remove it.
-  if (template_params.find('}') != std::string::npos) {
-    template_params.erase(template_params.find('}'), template_params.size());
-  }
-  return template_params;
-}
-}  // namespace charmxx
-
 /*!
  * \ingroup ParallelGroup
  * \brief Lock a converse CmiNodeLock
@@ -150,8 +116,8 @@ CREATE_IS_CALLABLE(is_ready)
 
 CREATE_IS_CALLABLE(apply)
 
-template <typename Invokable, typename ThisVariant, typename... Variants,
-          typename... Args,
+template <typename Invokable, typename InitialDataBox, typename ThisVariant,
+          typename... Variants, typename... Args,
           Requires<is_apply_callable_v<
               Invokable, std::add_lvalue_reference_t<ThisVariant>, Args&&...>> =
               nullptr>
@@ -172,11 +138,12 @@ void apply_visitor_helper(boost::variant<Variants...>& box,
             using return_box_type = decltype(std::get<0>(Invokable::apply(
                 boost::get<ThisVariant>(box), std::forward<Args>(my_args)...)));
             static_assert(
-                cpp17::is_same_v<std::decay_t<return_box_type>, ThisVariant> or
+                cpp17::is_same_v<std::decay_t<return_box_type>,
+                                 InitialDataBox> and
                     cpp17::is_same_v<db::DataBox<tmpl::list<>>, ThisVariant>,
-                "An explicit single Action must return either void or the same "
-                "DataBox that was passed into it, or only be invokable with an "
-                "empty DataBox.");
+                "A simple action must return either void or take an empty "
+                "DataBox and return the initial_databox set in the parallel "
+                "component.");
           })(
           typename std::is_same<void, decltype(Invokable::apply(
                                           std::declval<ThisVariant&>(),
@@ -194,8 +161,8 @@ void apply_visitor_helper(boost::variant<Variants...>& box,
   (*iter)++;
 }
 
-template <typename Invokable, typename ThisVariant, typename... Variants,
-          typename... Args,
+template <typename Invokable, typename InitialDataBox, typename ThisVariant,
+          typename... Variants, typename... Args,
           Requires<not is_apply_callable_v<
               Invokable, std::add_lvalue_reference_t<ThisVariant>, Args&&...>> =
               nullptr>
@@ -224,15 +191,16 @@ void apply_visitor_helper(boost::variant<Variants...>& box,
  * it is invoked, and returns a DataBox of a type that does not break the
  * Algorithm.
  */
-template <typename Invokable, typename... Variants, typename... Args>
+template <typename Invokable, typename InitialDataBox, typename... Variants,
+          typename... Args>
 void apply_visitor(boost::variant<Variants...>& box, Args&&... args) {
   // iter is the current element of the variant in the "for loop"
   int iter = 0;
   // already_visited ensures that only one visitor is invoked
   bool already_visited = false;
   static_cast<void>(std::initializer_list<char>{
-      (apply_visitor_helper<Invokable, Variants>(box, &iter, &already_visited,
-                                                 std::forward<Args>(args)...),
+      (apply_visitor_helper<Invokable, InitialDataBox, Variants>(
+           box, &iter, &already_visited, std::forward<Args>(args)...),
        '0')...});
 }
 }  // namespace Algorithm_detail
@@ -299,7 +267,7 @@ class AlgorithmImpl;
  * error of the following form:
  *
  * \verbatim
- * registration happened after init Entry point: explicit_single_action(), addr:
+ * registration happened after init Entry point: simple_action(), addr:
  * 0x555a3d0e2090
  * ------------- Processor 0 Exiting: Called CmiAbort ------------
  * Reason: Did you forget to instantiate a templated entry method in a .ci file?
@@ -380,10 +348,10 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// \brief Explicitly call the action `Action`. If the returned DataBox type
   /// is not one of the types of the algorithm then a compilation error occurs.
   template <typename Action, typename... Args>
-  void explicit_single_action(std::tuple<Args...> args) noexcept;
+  void simple_action(std::tuple<Args...> args) noexcept;
 
   template <typename Action>
-  void explicit_single_action() noexcept;
+  void simple_action() noexcept;
 
   /// Call an Action on a local nodegroup requiring the Action to handle thread
   /// safety.
@@ -449,7 +417,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_action(std::tuple<Args...>&& args,
                                std::index_sequence<Is...> /*meta*/) noexcept {
-    Algorithm_detail::apply_visitor<Action>(
+    Algorithm_detail::apply_visitor<Action, InitialDataBox>(
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
         std::add_pointer_t<ParallelComponent>{},
@@ -494,7 +462,6 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       box_;
   tuples::TaggedTupleTypelist<inbox_tags_list> inboxes_{};
   array_index array_index_;
-  // int temporal_id_;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -539,6 +506,11 @@ template <typename ParallelComponent, typename ChareType,
 AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
               tmpl::list<ActionsPack...>, ArrayIndex,
               InitialDataBox>::~AlgorithmImpl() {
+  // We place the registrar in the destructor since every AlgorithmImpl will
+  // have a destructor, but we have different constructors so it's not clear
+  // which will be instantiated.
+  (void)Parallel::charmxx::RegisterParallelComponent<
+      ParallelComponent>::registrar;
   make_overloader(
       [](CmiNodeLock& node_lock) {
 #pragma GCC diagnostic push
@@ -556,18 +528,9 @@ template <typename Action, typename Arg>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
                    InitialDataBox>::reduction_action(Arg arg) noexcept {
+  (void)Parallel::charmxx::RegisterReductionAction<
+      ParallelComponent, Action, std::decay_t<Arg>>::registrar;
   lock(&node_lock_);
-  static_assert(
-      tmpl::found<typename ParallelComponent::reduction_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value and
-          cpp17::is_same_v<typename Action::reduction_type, std::decay_t<Arg>>,
-      "Could not find explicit instantiation of the correct "
-      "reduction_action function, which is undefined behavior. See the first "
-      "template parameter of 'Parallel::AlgorithmImpl' for which "
-      "ParallelComponent is missing the explicit instantiation. The two "
-      "reasons this error occurs is missing the Action in the "
-      "'reduction_actions_list' of the ParallelComponent, or the Action's "
-      "reduction_type member type alias being of the incorrect type.");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -576,7 +539,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         "no sense for a reduction.");
   }
   performing_action_ = true;
-  Algorithm_detail::apply_visitor<Action>(
+  Algorithm_detail::apply_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{}, std::forward<Arg>(arg));
@@ -590,23 +553,16 @@ template <typename ParallelComponent, typename ChareType,
 template <typename Action, typename... Args>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::explicit_single_action(std::tuple<Args...>
-                                                               args) noexcept {
+                   InitialDataBox>::simple_action(std::tuple<Args...>
+                                                      args) noexcept {
+  (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
+                                                Args...>::registrar;
   lock(&node_lock_);
-  static_assert(
-      tmpl::found<typename ParallelComponent::explicit_single_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value and
-          cpp17::is_same_v<typename Action::apply_args, tmpl::list<Args...>>,
-      "Could not find explicit instantiation of the correct explicit "
-      "single action, which is undefined behavior. See the first template "
-      "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
-      "missing the explicit instantiation. An example of an "
-      "explicit_single_actions_list is: tmpl::list<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
         "from inside of an Action. This is only possible if the "
-        "explicit_single_action function is not invoked via a proxy, which "
+        "simple_action function is not invoked via a proxy, which "
         "we do not allow.");
   }
   performing_action_ = true;
@@ -622,25 +578,19 @@ template <typename ParallelComponent, typename ChareType,
 template <typename Action>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::explicit_single_action() noexcept {
+                   InitialDataBox>::simple_action() noexcept {
+  (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
+                                                Action>::registrar;
   lock(&node_lock_);
-  static_assert(
-      tmpl::found<typename ParallelComponent::explicit_single_actions_list,
-                  std::is_same<tmpl::_1, tmpl::pin<Action>>>::value,
-      "Could not find explicit instantiation of the correct explicit "
-      "single action, which is undefined behavior. See the first template "
-      "parameter of 'Parallel::AlgorithmImpl' for which ParallelComponent is "
-      "missing the explicit instantiation. An example of an "
-      "explicit_single_actions_list is: tmpl::list<initialize>");
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
         "from inside of an Action. This is only possible if the "
-        "explicit_single_action function is not invoked via a proxy, which "
+        "simple_action function is not invoked via a proxy, which "
         "we do not allow.");
   }
   performing_action_ = true;
-  Algorithm_detail::apply_visitor<Action>(
+  Algorithm_detail::apply_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{});
@@ -659,7 +609,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
     threaded_single_action(Args&&... args) noexcept {
   const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
-  Algorithm_detail::apply_visitor<Action>(
+  Algorithm_detail::apply_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), node_lock,
       std::forward<Args>(args)...);
@@ -673,6 +623,8 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
                  const bool enable_if_disabled) noexcept {
+  (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
+                                               ReceiveTag>::registrar;
   try {
     lock(&node_lock_);
     if (enable_if_disabled) {

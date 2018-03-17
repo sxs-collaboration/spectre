@@ -8,16 +8,24 @@ function(add_scalar_wave_executable DIM)
   set(BUILD_TARGET_FILENAME
     "${CMAKE_BINARY_DIR}/${SUBDIR_NAME}${EXECUTABLE_NAME}.cpp"
     )
+  # We use both file(WRITE) and configure_file so that we
+  # cause a rebuild only if the contents of the written file
+  # has actually changed.
   file(WRITE
-    ${BUILD_TARGET_FILENAME}
+    "${BUILD_TARGET_FILENAME}.out"
     "// Distributed under the MIT License.\n"
     "// See LICENSE.txt for details.\n"
     "\n"
     "#include \"Evolution/Executables/ScalarWave/EvolveScalarWave.hpp\"\n"
+    "#include \"Parallel/Main.hpp\"\n"
     "\n"
-    "using charm_metavariables = EvolutionMetavars<${DIM}>;\n"
+    "using charmxx_main_component = Parallel::Main<EvolutionMetavars<${DIM}>>;\n"
     "\n"
     "#include \"Parallel/CharmMain.cpp\"\n"
+    )
+  configure_file(
+    "${BUILD_TARGET_FILENAME}.out"
+    ${BUILD_TARGET_FILENAME}
     )
 
   add_executable(

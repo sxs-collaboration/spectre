@@ -34,10 +34,12 @@ struct CountActionsCalled : db::DataBoxTag {
   using type = int;
 };
 
+/// [int_receive_tag]
 struct IntReceiveTag {
   using temporal_id = int;
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
 };
+/// [int_receive_tag]
 }  // namespace Tags
 
 struct TestMetavariables;
@@ -56,8 +58,6 @@ struct NodegroupParallelComponent;
 
 namespace SingletonActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& box,
@@ -70,12 +70,16 @@ struct Initialize {
         cpp17::is_same_v<ParallelComponent,
                          SingletonParallelComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
+    /// [return_forward_as_tuple]
     return std::forward_as_tuple(box);
+    /// [return_forward_as_tuple]
   }
 };
 
 struct CountReceives {
+  /// [int_receive_tag_list]
   using inbox_tags = tmpl::list<Tags::IntReceiveTag>;
+  /// [int_receive_tag_list]
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -92,34 +96,48 @@ struct CountReceives {
         "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 70);
-    if (int_receives.size() == 70) {
-      for (const auto& p : int_receives) {
-        SPECTRE_PARALLEL_REQUIRE(p.second.size() == 1);
-        SPECTRE_PARALLEL_REQUIRE(*(p.second.begin()) % 3 == 0);
-      }
-      int_receives.clear();
-
-      // Call to arrays, have them execute once then reduce something through
-      // groups and nodegroups
-      auto& array_parallel_component = Parallel::get_parallel_component<
-          ArrayParallelComponent<Metavariables>>(cache);
-      for (int i = 0; i < number_of_1d_array_elements; ++i) {
-        // we do not do a broadcast so that we can check inline entry methods on
-        // array work. We pass "true" as the second argument to start the
-        // algorithm up again on the arrays
-        array_parallel_component[i].template receive_data<Tags::IntReceiveTag>(
-            0, 101, true);
-      }
+    for (const auto& p : int_receives) {
+      SPECTRE_PARALLEL_REQUIRE(p.second.size() == 1);
+      SPECTRE_PARALLEL_REQUIRE(*(p.second.begin()) % 3 == 0);
     }
+    int_receives.clear();
+
+    // Call to arrays, have them execute once then reduce something through
+    // groups and nodegroups
+    // We do not do a broadcast so that we can check inline entry methods on
+    // array work. We pass "true" as the second argument to start the
+    // algorithm up again on the arrays
+    /// [call_on_indexed_array]
+    auto& array_parallel_component =
+        Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(
+            cache);
+    for (int i = 0; i < number_of_1d_array_elements; ++i) {
+      array_parallel_component[i].template receive_data<Tags::IntReceiveTag>(
+          0, 101, true);
+    }
+    /// [call_on_indexed_array]
+    /// [return_with_termination]
     return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), true);
+    /// [return_with_termination]
   }
+
+  /// [int_receive_tag_is_ready]
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex>
+  static bool is_ready(
+      const db::DataBox<DbTags>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/) noexcept {
+    auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
+    return int_receives.size() == 70;
+  }
+  /// [int_receive_tag_is_ready]
 };
 }  // namespace SingletonActions
 
 namespace ArrayActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -152,11 +170,13 @@ struct AddIntValue10 {
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.empty() or int_receives.size() == 1);
     if (int_receives.size() == 1) {
+      /// [broadcast_to_group]
       auto& group_parallel_component = Parallel::get_parallel_component<
           GroupParallelComponent<Metavariables>>(cache);
       group_parallel_component.template receive_data<Tags::IntReceiveTag>(
           db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
           db::get<Tags::CountActionsCalled>(box));
+      /// [broadcast_to_group]
     }
     db::mutate<Tags::CountActionsCalled>(
         box, [](int& count_actions_called) { count_actions_called++; });
@@ -227,9 +247,11 @@ struct SendToSingleton {
     auto& singleton_parallel_component = Parallel::get_parallel_component<
         SingletonParallelComponent<Metavariables>>(cache);
     // Send CountActionsCalled to the SingletonParallelComponent several times
+    /// [receive_broadcast]
     singleton_parallel_component.template receive_data<Tags::IntReceiveTag>(
         db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
         db::get<Tags::CountActionsCalled>(box), true);
+    /// [receive_broadcast]
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -237,8 +259,6 @@ struct SendToSingleton {
 
 namespace GroupActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -299,8 +319,6 @@ struct ReduceInt {
 
 namespace NodegroupActions {
 struct Initialize {
-  using apply_args = tmpl::list<>;
-
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -327,14 +345,13 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<SingletonActions::CountReceives>;
   using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
-  using explicit_single_actions_list = tmpl::list<SingletonActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
-        .template explicit_single_action<SingletonActions::Initialize>();
+        .template simple_action<SingletonActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -362,8 +379,6 @@ struct ArrayParallelComponent {
   using array_index = int;
   using initial_databox =
       db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
-
-  using explicit_single_actions_list = tmpl::list<ArrayActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -380,7 +395,7 @@ struct ArrayParallelComponent {
     }
     array_proxy.doneInserting();
 
-    array_proxy.template explicit_single_action<ArrayActions::Initialize>();
+    array_proxy.template simple_action<ArrayActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -403,15 +418,13 @@ struct GroupParallelComponent {
   using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
       db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
-
-  using explicit_single_actions_list = tmpl::list<GroupActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<GroupParallelComponent>(local_cache)
-        .template explicit_single_action<GroupActions::Initialize>();
+        .template simple_action<GroupActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -427,16 +440,13 @@ struct NodegroupParallelComponent {
   using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
       db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
-
-  using explicit_single_actions_list =
-      tmpl::list<NodegroupActions::Initialize>;
   using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
-        .template explicit_single_action<NodegroupActions::Initialize>();
+        .template simple_action<NodegroupActions::Initialize>();
   }
 
   static void execute_next_global_actions(
@@ -458,7 +468,6 @@ struct TestMetavariables {
     Initialization,
     PerformSingletonAlgorithm,
     PerformArrayAlgorithm,
-    Run2,
     Exit
   };
   static Phase determine_next_phase(const Phase& current_phase,
@@ -471,19 +480,20 @@ struct TestMetavariables {
     } else if (current_phase == Phase::PerformSingletonAlgorithm) {
       return Phase::PerformArrayAlgorithm;
     } else if (current_phase == Phase::PerformArrayAlgorithm) {
-      // TODO(nils): check if Run2 should do something, otherwise remove it
-      return Phase::Run2;
+      return Phase::Exit;
     }
 
     return Phase::Exit;
   }
 };
 
+/// [charm_include_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 
-using charm_metavariables = TestMetavariables;
+using charmxx_main_component = Parallel::Main<TestMetavariables>;
 
 #include "Parallel/CharmMain.cpp"
+/// [charm_include_example]
