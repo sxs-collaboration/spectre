@@ -317,6 +317,11 @@ using iaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
                               SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using aia = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 2>,
+                   index_list<SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>,
+                              SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                              SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using iAA = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
                    index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
                               SpacetimeIndex<SpatialDim, UpLo::Up, Fr>,

@@ -13,13 +13,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   Index<0> index_0d;
   CHECK(index_0d.product() == 1);
   CHECK(index_0d.size() == 0);
+  CHECK(index_0d.indices() == (std::array<size_t, 0>{}));
   Index<1> index_1d(3);
   CHECK(index_1d.product() == 3);
+  CHECK(index_1d.indices() == (std::array<size_t, 1>{{3}}));
   CHECK(index_1d[0] == 3);
   CHECK(index_1d.size() == 1);
   CHECK(get_output(index_1d) == "(3)");
   const Index<2> index_2d(4);
   CHECK(index_2d.product() == 16);
+  CHECK(index_2d.indices() == (std::array<size_t, 2>{{4,4}}));
   CHECK(index_2d[0] == 4);
   CHECK(index_2d[1] == 4);
   CHECK(index_2d.slice_away(0)[0] == 4);
@@ -32,6 +35,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   Index<3> index_3d(1, 2, 3);
   CHECK(index_3d.size() == 3);
   CHECK(index_3d.product() == 6);
+  CHECK(index_3d.indices() == (std::array<size_t, 3>{{1, 2, 3}}));
   for (size_t i = 0; i < 3; ++i) {
     CHECK(index_3d[i] == i + 1);
     // clang-tidy: do not use pointer arithmetic

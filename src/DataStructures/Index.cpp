@@ -25,7 +25,7 @@ bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
   GEN_OP(==, DIM(data))            \
   GEN_OP(!=, DIM(data))
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 
 #undef DIM
 #undef GEN_OP

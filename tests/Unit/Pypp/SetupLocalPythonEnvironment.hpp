@@ -6,6 +6,9 @@
 #include <codecvt>
 #include <string>
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
 #include "Informer/InfoFromBuild.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
 
@@ -19,6 +22,7 @@ struct SetupLocalPythonEnvironment {
   explicit SetupLocalPythonEnvironment(
       const std::string& cur_dir_relative_to_unit_test_path) {
     Py_Initialize();
+    init_numpy();
     // clang-tidy: Do not use const-cast
     PyObject* pyob_old_paths =
         PySys_GetObject(const_cast<char*>("path"));  // NOLINT
@@ -48,5 +52,19 @@ struct SetupLocalPythonEnvironment {
   SetupLocalPythonEnvironment(const SetupLocalPythonEnvironment&&) = delete;
   SetupLocalPythonEnvironment& operator=(const SetupLocalPythonEnvironment&&) =
       delete;
+
+ private:
+// In order to use NumPy's API, import_array() must be called. However it is a
+// macro which contains a return statement, returning NULL in python 3 and void
+// in python 2. As such it needs to be factored into its own function which
+// returns either nullptr or void depending on the version.
+#if PY_MAJOR_VERSION == 3
+  std::nullptr_t init_numpy() {
+    import_array();
+    return nullptr;
+  }
+#else
+  void init_numpy() { import_array(); }
+#endif
 };
 }  // namespace pypp

@@ -106,6 +106,8 @@ class Index {
   const size_t* data() const noexcept { return indices_.data(); }
   size_t* data() noexcept { return indices_.data(); }
 
+  const std::array<size_t, Dim>& indices() const noexcept { return indices_; }
+
  private:
   std::array<size_t, Dim> indices_;
 };
