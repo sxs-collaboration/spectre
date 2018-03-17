@@ -118,6 +118,9 @@ def convert_tnsr_aia_successful(a):
 def convert_tnsr_aBcc_successful(a):
     return bool(np.all(a == tnsr_aBcc()))
 
+# Used to test tensor of datavectors
+def identity(a):
+    return a
 
 def test_einsum(scalar, t_A, t_ia, t_AA, t_iaa):
     return scalar * np.einsum("a,ia->i", t_A, t_ia) + np.einsum("ab, iab->i", t_AA, t_iaa)
