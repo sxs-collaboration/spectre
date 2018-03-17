@@ -9,6 +9,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
 
@@ -22,7 +23,9 @@ struct SetupLocalPythonEnvironment {
   explicit SetupLocalPythonEnvironment(
       const std::string& cur_dir_relative_to_unit_test_path) {
     Py_Initialize();
+    disable_floating_point_exceptions();
     init_numpy();
+    enable_floating_point_exceptions();
     // clang-tidy: Do not use const-cast
     PyObject* pyob_old_paths =
         PySys_GetObject(const_cast<char*>("path"));  // NOLINT
