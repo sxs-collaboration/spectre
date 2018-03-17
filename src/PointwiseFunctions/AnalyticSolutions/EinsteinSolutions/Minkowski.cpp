@@ -3,9 +3,24 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
 
+#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace EinsteinSolutions {
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTupleTypelist<typename Minkowski<Dim>::template tags<DataType>>
+Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double t,
+                          tags<DataType> /*meta*/) const noexcept {
+  return tuples::TaggedTupleTypelist<
+      typename Minkowski<Dim>::template tags<DataType>>(
+      lapse(x, t), dt_lapse(x, t), deriv_lapse(x, t), shift(x, t),
+      dt_shift(x, t), deriv_shift(x, t), spatial_metric(x, t),
+      dt_spatial_metric(x, t), deriv_spatial_metric(x, t));
+}
+
 template<size_t Dim>
 template<typename T>
 Scalar<T> Minkowski<Dim>::lapse(const tnsr::I<T, Dim> &x,
@@ -45,6 +60,13 @@ template<size_t Dim>
 template<typename T>
 tnsr::I<T, Dim> Minkowski<Dim>::shift(const tnsr::I<T, Dim> &x,
                                       const double /*t*/) const noexcept {
+  return tnsr::I<T, Dim>(make_with_value<T>(x, 0.));
+}
+
+template <size_t Dim>
+template <typename T>
+tnsr::I<T, Dim> Minkowski<Dim>::dt_shift(const tnsr::I<T, Dim>& x,
+                                         const double /*t*/) const noexcept {
   return tnsr::I<T, Dim>(make_with_value<T>(x, 0.));
 }
 
@@ -110,6 +132,12 @@ noexcept {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                   \
+  template tuples::TaggedTupleTypelist<typename EinsteinSolutions::Minkowski<  \
+      DIM(data)>::template tags<DTYPE(data)>>                                  \
+  EinsteinSolutions::Minkowski<DIM(data)>::variables(                          \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      typename EinsteinSolutions::Minkowski<DIM(data)>::template tags<DTYPE(   \
+          data)> /*meta*/) const noexcept;                                     \
   template Scalar<DTYPE(data)> EinsteinSolutions::Minkowski<DIM(data)>::lapse( \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/) const noexcept;  \
   template Scalar<DTYPE(data)>                                                 \
@@ -127,6 +155,9 @@ noexcept {
           const noexcept;                                                      \
   template tnsr::I<DTYPE(data), DIM(data)>                                     \
   EinsteinSolutions::Minkowski<DIM(data)>::shift(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/) const noexcept;  \
+  template tnsr::I<DTYPE(data), DIM(data)>                                     \
+  EinsteinSolutions::Minkowski<DIM(data)>::dt_shift(                           \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/) const noexcept;  \
   template tnsr::iJ<DTYPE(data), DIM(data)>                                    \
   EinsteinSolutions::Minkowski<DIM(data)>::deriv_shift(                        \

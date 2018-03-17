@@ -4,7 +4,9 @@
 #pragma once
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // for tags
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace EinsteinSolutions {
@@ -30,6 +32,33 @@ class Minkowski {
   Minkowski& operator=(Minkowski&& /*rhs*/) noexcept = default;
   ~Minkowski() = default;
 
+  template <typename DataType>
+  using DerivLapse =
+      Tags::deriv<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>;
+  template <typename DataType>
+  using DerivShift =
+      Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>;
+  template <typename DataType>
+  using DerivSpatialMetric =
+      Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>;
+  template <typename DataType>
+  using tags = tmpl::list<
+      gr::Tags::Lapse<Dim, Frame::Inertial, DataType>,
+      gr::Tags::DtLapse<Dim, Frame::Inertial, DataType>, DerivLapse<DataType>,
+      gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+      gr::Tags::DtShift<Dim, Frame::Inertial, DataType>, DerivShift<DataType>,
+      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+      gr::Tags::DtSpatialMetric<Dim, Frame::Inertial, DataType>,
+      DerivSpatialMetric<DataType>>;
+
+  template <typename DataType>
+  tuples::TaggedTupleTypelist<tags<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, double t, tags<DataType> /*meta*/) const
+      noexcept;
+
   template <typename T>
   Scalar<T> lapse(const tnsr::I<T, Dim>& x, double t) const noexcept;
 
@@ -50,6 +79,9 @@ class Minkowski {
 
   template <typename T>
   tnsr::I<T, Dim> shift(const tnsr::I<T, Dim>& x, double t) const noexcept;
+
+  template <typename T>
+  tnsr::I<T, Dim> dt_shift(const tnsr::I<T, Dim>& x, double t) const noexcept;
 
   template <typename T>
   tnsr::iJ<T, Dim> deriv_shift(const tnsr::I<T, Dim>& x, double t) const
