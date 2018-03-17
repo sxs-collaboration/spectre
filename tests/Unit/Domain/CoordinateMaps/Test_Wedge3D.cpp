@@ -63,26 +63,31 @@ void test_wedge3d_all_directions(const bool with_equiangular_map) {
                                                           {{0.9, -1.0, 0.4}},
                                                           {{xi, eta, zeta}}}};
 
-  for (const auto& direction : all_wedge_directions()) {
-    const CoordinateMaps::Wedge3D map(inner_radius, outer_radius, direction,
-                                      sphericity, with_equiangular_map);
-    test_serialization(map);
-    CHECK_FALSE(map != map);
-    test_coordinate_map_argument_types(map, test_points[0]);
-    for (const auto& point : test_points) {
-      test_jacobian(map, point);
-      test_inv_jacobian(map, point);
-      test_inverse_map(map, point);
-    }
-    const auto map2 = serialize_and_deserialize(map);
-    for (const auto& point : test_points) {
-      test_jacobian(map2, point);
-      test_inv_jacobian(map2, point);
-      test_inverse_map(map2, point);
+  using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
+  const std::array<WedgeHalves, 3> halves_array = {
+      {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
+  for (const auto& halves : halves_array) {
+    for (const auto& direction : all_wedge_directions()) {
+      const CoordinateMaps::Wedge3D map(inner_radius, outer_radius, direction,
+                                        sphericity, with_equiangular_map,
+                                        halves);
+      test_serialization(map);
+      CHECK_FALSE(map != map);
+      test_coordinate_map_argument_types(map, test_points[0]);
+      for (const auto& point : test_points) {
+        test_jacobian(map, point);
+        test_inv_jacobian(map, point);
+        test_inverse_map(map, point);
+      }
+      const auto map2 = serialize_and_deserialize(map);
+      for (const auto& point : test_points) {
+        test_jacobian(map2, point);
+        test_inv_jacobian(map2, point);
+        test_inverse_map(map2, point);
+      }
     }
   }
 }
-
 void test_wedge3d_alignment(const bool with_equiangular_map) {
   // This test tests that the logical axes point along the expected directions
   // in physical space

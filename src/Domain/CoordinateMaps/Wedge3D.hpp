@@ -174,6 +174,14 @@ namespace CoordinateMaps {
 class Wedge3D {
  public:
   static constexpr size_t dim = 3;
+  enum class WedgeHalves {
+    /// Use the entire wedge
+    Both,
+    /// Use only the upper logical half
+    UpperOnly,
+    /// Use only the lower logical half
+    LowerOnly
+  };
 
   /*!
    * Constructs a 3D wedge.
@@ -189,12 +197,17 @@ class Wedge3D {
    * whether the other surface is flat (value of 0), spherical (value of 1) or
    * somewhere in between
    * \param with_equiangular_map Determines whether to apply a tangent function
-   * mapping to the logical coordinates (for 'true') or not (for 'false').
+   * mapping to the logical coordinates (for `true`) or not (for `false`).
+   * \param halves_to_use Determines whether to use the logical xi
+   * coordinates in the [0,1] interval (value of `UpperOnly`) of the full wedge,
+   * the coordinates in the [-1,0] interval (value of `LowerOnly`) of the
+   * full wedge, or the full wedge entirely (value of `Both`). Half wedges are
+   * currently only useful in constructing domains for binary systems.
    */
   Wedge3D(double radius_of_other_surface, double radius_of_spherical_surface,
           OrientationMap<3> orientation_of_wedge,
-          double sphericity_of_other_surface,
-          bool with_equiangular_map) noexcept;
+          double sphericity_of_other_surface, bool with_equiangular_map,
+          WedgeHalves halves_to_use = WedgeHalves::Both) noexcept;
 
   Wedge3D() = default;
   ~Wedge3D() = default;
@@ -232,6 +245,7 @@ class Wedge3D {
   double sphericity_of_other_surface_{
       std::numeric_limits<double>::signaling_NaN()};
   bool with_equiangular_map_ = false;
+  WedgeHalves halves_to_use_ = WedgeHalves::Both;
 };
 bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept;
 }  // namespace CoordinateMaps
