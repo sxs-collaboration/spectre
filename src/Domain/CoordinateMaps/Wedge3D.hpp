@@ -22,6 +22,7 @@ namespace CoordinateMaps {
  * \ingroup CoordinateMapsGroup
  *
  * \brief Three dimensional map from the cube to a wedge.
+ * \image html Shell.png "A shell can be constructed out of six wedges."
  *
  * \details The mapping that goes from a reference cube to a three-dimensional
  *  wedge centered on a coordinate axis covering a volume between an inner
