@@ -321,6 +321,7 @@ struct TestMetavariables {
   using component_list =
       tmpl::list<ArrayParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
+  using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{"Test nodelocks in Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;

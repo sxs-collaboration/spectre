@@ -42,6 +42,7 @@ using component =
 
 struct Metavariables {
   using component_list = tmpl::list<component>;
+  using const_global_cache_tag_list = tmpl::list<>;
 };
 
 using EventsAndTriggersType = EventsAndTriggers<DefaultClasses, DefaultClasses>;

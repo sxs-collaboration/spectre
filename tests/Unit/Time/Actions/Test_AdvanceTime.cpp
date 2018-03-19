@@ -27,6 +27,7 @@ using component =
 
 struct Metavariables {
   using component_list = tmpl::list<component>;
+  using const_global_cache_tag_list = tmpl::list<>;
 };
 
 void do_check(const Time& start, const TimeDelta& time_step) {

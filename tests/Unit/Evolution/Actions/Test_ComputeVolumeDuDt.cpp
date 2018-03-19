@@ -46,6 +46,7 @@ using component = ActionTesting::MockArrayComponent<
 struct Metavariables {
   using component_list = tmpl::list<component>;
   using system = System;
+  using const_global_cache_tag_list = tmpl::list<>;
 };
 }  // namespace
 

@@ -110,6 +110,7 @@ struct Metavariables {
   using system = System<Dim>;
   using temporal_id = Tags::TimeId;
   using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
+  using const_global_cache_tag_list = tmpl::list<>;
 };
 
 template <size_t Dim, typename DomainCreatorType>

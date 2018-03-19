@@ -57,6 +57,8 @@ struct Component {
 
 struct TestMetavariables {
   using component_list = tmpl::list<Component<TestMetavariables>>;
+  using const_global_cache_tag_list = tmpl::list<>;
+
   enum class Phase { Initialization, Exit };
 
   static constexpr OptionString help = "Executable for testing";

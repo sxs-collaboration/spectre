@@ -33,9 +33,8 @@ struct DgElementArray {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::flatten<
-      tmpl::list<CacheTags::FinalTime, CacheTags::TimeStepper,
-                 typename Metavariables::dg_element_array_add_to_cache>>;
+  using const_global_cache_tag_list =
+      tmpl::list<CacheTags::FinalTime, CacheTags::TimeStepper>;
   using metavariables = Metavariables;
   using action_list = ActionList;
   using array_index = ElementIndex<volume_dim>;
