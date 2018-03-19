@@ -1,13 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <array>
-#include <catch.hpp>
 #include <string>
 #include <utility>
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 namespace {

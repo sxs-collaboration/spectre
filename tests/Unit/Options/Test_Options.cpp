@@ -2,7 +2,9 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
+#include <catch.hpp>  // IWYU pragma: keep
+#include <cstddef>
+#include <functional>
 #include <list>
 #include <map>
 #include <string>
@@ -10,9 +12,10 @@
 #include <utility>
 #include <vector>
 
+#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
-#include "Utilities/Literals.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
