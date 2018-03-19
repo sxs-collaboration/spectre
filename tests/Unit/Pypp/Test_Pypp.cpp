@@ -166,8 +166,6 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor.Double", "[Pypp][Unit]") {
     return tnsr;
   }();
 
-
-
   // Check converting from Tensor to ndarray
   CHECK(pypp::call<bool>("PyppPyTests", "convert_scalar_successful", scalar));
   CHECK(pypp::call<bool>("PyppPyTests", "convert_vector_successful", vector));
@@ -283,8 +281,8 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor.DataVector", "[Pypp][Unit]") {
 }
 
 namespace {
-template<typename T>
-void test_einsum(const T &used_for_size) {
+template <typename T>
+void test_einsum(const T& used_for_size) {
   std::random_device r;
   const auto seed = r();
   std::mt19937 generator(seed);
@@ -295,25 +293,19 @@ void test_einsum(const T &used_for_size) {
   const auto nn_dist = make_not_null(&dist);
 
   const auto scalar =
-      make_with_random_values < Scalar
-          < T >> (nn_generator, nn_dist, used_for_size);
-  const auto vector = make_with_random_values < tnsr::A < T,
-  3 >> (
+      make_with_random_values<Scalar<T>>(nn_generator, nn_dist, used_for_size);
+  const auto vector = make_with_random_values<tnsr::A<T, 3>>(
       nn_generator, nn_dist, used_for_size);
-  const auto tnsr_ia = make_with_random_values < tnsr::ia < T,
-  3 >> (
+  const auto tnsr_ia = make_with_random_values<tnsr::ia<T, 3>>(
       nn_generator, nn_dist, used_for_size);
-  const auto tnsr_AA = make_with_random_values < tnsr::AA < T,
-  3 >> (
+  const auto tnsr_AA = make_with_random_values<tnsr::AA<T, 3>>(
       nn_generator, nn_dist, used_for_size);
-  const auto tnsr_iaa = make_with_random_values < tnsr::iaa < T,
-  3 >> (
+  const auto tnsr_iaa = make_with_random_values<tnsr::iaa<T, 3>>(
       nn_generator, nn_dist, used_for_size);
 
   const auto expected = [&scalar, &vector, &tnsr_ia, &tnsr_AA, &tnsr_iaa,
-      &used_for_size]() {
-    auto tnsr = make_with_value < tnsr::i < T,
-    3 >> (used_for_size, 0.);
+                         &used_for_size]() {
+    auto tnsr = make_with_value<tnsr::i<T, 3>>(used_for_size, 0.);
     for (size_t i = 0; i < 3; ++i) {
       for (size_t a = 0; a < 4; ++a) {
         tnsr.get(i) += scalar.get() * vector.get(a) * tnsr_ia.get(i, a);
@@ -325,13 +317,12 @@ void test_einsum(const T &used_for_size) {
     return tnsr;
   }();
   /// [einsum_example]
-  const auto tensor_from_python = pypp::call < tnsr::i < T,
-  3 >> (
+  const auto tensor_from_python = pypp::call<tnsr::i<T, 3>>(
       "PyppPyTests", "test_einsum", scalar, vector, tnsr_ia, tnsr_AA, tnsr_iaa);
   /// [einsum_example]
   CHECK_ITERABLE_APPROX(expected, tensor_from_python);
 }
-} // namespace
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Pypp.EinSum", "[Pypp][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
