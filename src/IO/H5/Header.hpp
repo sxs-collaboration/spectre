@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <hdf5.h>
 #include <string>
 
 #include "IO/H5/Object.hpp"

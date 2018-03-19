@@ -3,13 +3,22 @@
 
 #include "VolumeDataFile.hpp"
 
+#include <cstring>
+#include <errno.h>
 #include <numeric>
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Type.hpp"
-#include "Utilities/FileSystem.hpp"
+#include "Utilities/StdHelpers.hpp"
+
+class DataVector;
+template <size_t Dim>
+class Index;
+
+// IWYU pragma: no_include "H5Ppublic.h"
 
 namespace vis {
 

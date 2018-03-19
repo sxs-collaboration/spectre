@@ -3,7 +3,9 @@
 
 #include "IO/Connectivity.hpp"
 
-#include "DataStructures/Index.hpp"
+#include <algorithm>
+
+#include "DataStructures/Index.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 
 namespace vis {

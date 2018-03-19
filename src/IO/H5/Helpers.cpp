@@ -3,16 +3,18 @@
 
 #include "IO/H5/Helpers.hpp"
 
-#include <cstring>
-#include <regex>
+#include <algorithm>
+#include <iterator>
+#include <ostream>
 #include <string>
+#include <type_traits>
 
 #include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
+#include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Type.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace h5 {
 void write_time(const hid_t group_id, const double time) {
