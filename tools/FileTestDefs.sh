@@ -156,6 +156,7 @@ standard_checks+=(long_lines)
 
 # Check for files containing tabs
 tabs() {
+    whitelist "$1" '.png' &&
     grep -q -F $'\t' "$1"
 }
 tabs_report() {
@@ -170,6 +171,7 @@ standard_checks+=(tabs)
 
 # Check for end-of-line spaces
 trailing_space() {
+    whitelist "$1" '.png' &&
     grep -q -E ' +$' "$1"
 }
 trailing_space_report() {
@@ -184,6 +186,7 @@ standard_checks+=(trailing_space)
 
 # Check for carriage returns
 carriage_returns() {
+    whitelist "$1" '.png' &&
     grep -q -F $'\r' "$1"
 }
 carriage_returns_report() {
@@ -213,6 +216,7 @@ license() {
               'LICENSE' \
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
+              '.png' \
               '.clang-format$' && \
         ! grep -q "Distributed under the MIT License" "$1"
 }
@@ -314,6 +318,7 @@ standard_checks+=(pragma_once)
 
 # Check for a newline at end of file
 final_newline() {
+    whitelist "$1" '.png' &&
     # Bash strips trailing newlines from $() output
     [ "$(tail -c 1 "$1" ; echo x)" != $'\n'x ]
 }
