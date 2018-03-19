@@ -6,27 +6,32 @@
 
 #include <catch.hpp>
 #include <cstddef>
+#include <functional>
+#include <pup.h>
 #include <tuple>
 #include <unordered_map>
-#include <utility>
+#include <unordered_set>
 #include <vector>
 
 #include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
-#include "Parallel/Printf.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 struct TestMetavariables;
-
 template <class Metavariables>
 struct NoOpsComponent;
 

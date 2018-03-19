@@ -7,10 +7,16 @@ void register_pupables();
 
 #include "tests/Unit/Parallel/Test_ConstGlobalCache.hpp"
 
+#include <algorithm>
 #include <catch.hpp>
+#include <charm++.h>
+#include <cstddef>
 #include <exception>
 #include <memory>
+#include <string>
 
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "AlgorithmArray.hpp"
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
@@ -25,6 +31,12 @@ void register_pupables();
 #include "Parallel/Printf.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+namespace Parallel {
+namespace charmxx {
+struct RegistrationHelper;
+}  // namespace charmxx
+}  // namespace Parallel
 
 namespace {
 
@@ -199,9 +211,9 @@ PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID Square::my_PUP_ID = 0;    // NOLINT
 /// \endcond
 
-#include "src/Parallel/ConstGlobalCache.def.h"
+#include "src/Parallel/ConstGlobalCache.def.h"  // IWYU pragma: keep
 
-#include "tests/Unit/Parallel/Test_ConstGlobalCache.def.h"
+#include "tests/Unit/Parallel/Test_ConstGlobalCache.def.h"  // IWYU pragma: keep
 
 namespace Parallel {
 namespace charmxx {

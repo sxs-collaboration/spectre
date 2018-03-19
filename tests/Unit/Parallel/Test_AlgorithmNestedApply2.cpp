@@ -1,21 +1,22 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <cstddef>
-#include <tuple>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 
 struct another_action {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,

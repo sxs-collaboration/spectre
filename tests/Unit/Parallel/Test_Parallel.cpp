@@ -1,7 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <cstddef>
+#include <ostream>
+#include <vector>
 
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"

@@ -1,12 +1,22 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <type_traits>
+
 #include "AlgorithmArray.hpp"
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 
 namespace {
 class PupableClass {
