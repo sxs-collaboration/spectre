@@ -2,12 +2,20 @@
 // See LICENSE.txt for details.
 
 #include <cmath>
+#include <cstddef>
+#include <random>
 
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+template <size_t VolumeDim>
+class MathFunction;
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
                   "[PointwiseFunctions][Unit]") {

@@ -3,14 +3,24 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include <cstddef>
+
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // for tags
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
-#include "Utilities/MakeWithValue.hpp"
-
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+namespace Tags {
+template <typename Tag>
+struct dt;
+}  // namespace Tags
+/// \endcond
 
 namespace EinsteinSolutions {
 

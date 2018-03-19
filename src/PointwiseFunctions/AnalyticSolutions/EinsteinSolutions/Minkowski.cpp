@@ -3,10 +3,11 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
 
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/TaggedTuple.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace EinsteinSolutions {
 

@@ -7,20 +7,35 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <memory>
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+class DataVector;
+namespace ScalarWave {
+struct Pi;
+struct Psi;
+template <size_t Dim>
+struct Phi;
+}
+namespace Tags {
+template <typename Tag>
+struct dt;
+}
+template <size_t VolumeDim>
+class MathFunction;
 
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 namespace ScalarWave {
 namespace Solutions {

@@ -5,6 +5,10 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
+
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
 
 template <typename DataType, typename Index0, typename Index1>
 Tensor<DataType, Symmetry<2, 1, 1>,

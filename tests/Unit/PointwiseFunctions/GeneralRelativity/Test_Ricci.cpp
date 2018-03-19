@@ -1,10 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <cstddef>
 #include <limits>
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

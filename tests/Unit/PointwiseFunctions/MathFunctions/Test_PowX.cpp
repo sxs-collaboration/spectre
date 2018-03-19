@@ -3,12 +3,18 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
 
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "Parallel/PupStlCpp11.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+template <size_t VolumeDim> class MathFunction;
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
                   "[PointwiseFunctions][Unit]") {

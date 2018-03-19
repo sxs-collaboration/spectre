@@ -3,8 +3,16 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 
-#include "Parallel/PupStlCpp11.hpp"
+#include <algorithm>
+
+#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"           // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "Parallel/PupStlCpp11.hpp"               // IWYU pragma: keep
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace ScalarWave {

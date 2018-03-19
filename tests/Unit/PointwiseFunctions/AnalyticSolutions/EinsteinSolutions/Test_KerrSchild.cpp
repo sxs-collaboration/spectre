@@ -1,15 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <cstddef>
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <limits>
+#include <string>
+
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/VerifyEinsteinSolution.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -308,5 +319,3 @@ SPECTRE_TEST_CASE(
       "  Center: [1.0,3.0,2.0]");
   opts.get<KerrSchild>();
 }
-
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace MathFunctions {

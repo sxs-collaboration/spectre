@@ -3,8 +3,8 @@
 
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 

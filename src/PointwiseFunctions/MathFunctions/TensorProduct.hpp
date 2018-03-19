@@ -12,8 +12,10 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
 template <size_t Dim>
 class MathFunction;
+/// \endcond
 
 namespace MathFunctions {
 

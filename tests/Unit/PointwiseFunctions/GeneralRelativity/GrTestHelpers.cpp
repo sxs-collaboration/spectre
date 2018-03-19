@@ -3,9 +3,9 @@
 
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 template <typename DataType>
 Scalar<DataType> make_lapse(const DataType& used_for_size) {

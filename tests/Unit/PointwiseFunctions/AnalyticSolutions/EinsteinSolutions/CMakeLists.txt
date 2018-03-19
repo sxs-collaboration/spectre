@@ -6,7 +6,6 @@ set(LIBRARY "Test_EinsteinSolutions")
 set(LIBRARY_SOURCES
   Test_KerrSchild.cpp
   Test_Minkowski.cpp
-  VerifyEinsteinSolution.cpp
   )
 
 add_test_library(

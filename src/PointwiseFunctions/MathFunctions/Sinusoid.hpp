@@ -6,8 +6,16 @@
 
 #pragma once
 
+#include <pup.h>
+
+#include "Parallel/CharmPupable.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
+
+/// \cond
+class DataVector;
+/// \endcond
 
 namespace MathFunctions {
 

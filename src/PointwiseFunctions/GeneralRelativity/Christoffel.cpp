@@ -3,9 +3,9 @@
 
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>

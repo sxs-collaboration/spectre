@@ -3,17 +3,23 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
 
+#include <cmath>
+#include <cstddef>
 #include <numeric>
+#include <ostream>
 #include <pup.h>
 #include <utility>
 
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
+#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace EinsteinSolutions {
 
