@@ -2,8 +2,9 @@
 // See LICENSE.txt for details.
 
 #include "Parallel/PupStlCpp11.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"

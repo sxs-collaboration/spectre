@@ -1,9 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <limits>
+#include <functional>
+#include <string>
 
+#include "ErrorHandling/Error.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "tests/Unit/TestHelpers.hpp"

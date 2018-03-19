@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include "Time/TimeId.hpp"
-#include "Utilities/Gsl.hpp"
 
 namespace TimeSteppers {
 

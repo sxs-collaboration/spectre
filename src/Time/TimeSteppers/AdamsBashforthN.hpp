@@ -8,31 +8,35 @@
 
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
-#include <deque>
+#include <cstddef>
 #include <iterator>
 #include <map>
+#include <ostream>
+#include <pup.h>
 #include <set>
-#include <tuple>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
-#include "DataStructures/GeneralIndexIterator.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
-#include "Time/BoundaryHistory.hpp"
-#include "Time/History.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "Time/BoundaryHistory.hpp"  // IWYU pragma: keep
+#include "Time/History.hpp"          // IWYU pragma: keep
 #include "Time/Time.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 
+/// \cond
 struct TimeId;
+/// \endcond
+
+// IWYU pragma: no_include <sys/types.h>
 
 namespace TimeSteppers {
 

@@ -2,7 +2,6 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"

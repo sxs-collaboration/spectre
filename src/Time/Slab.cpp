@@ -4,6 +4,7 @@
 #include "Time/Slab.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <ostream>
 #include <pup.h>
 
 #include "Time/Time.hpp"
