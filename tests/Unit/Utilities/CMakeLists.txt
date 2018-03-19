@@ -1,33 +1,39 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(UTILITIES_TESTS
-    Utilities/Test_Array.cpp
-    Utilities/Test_Blas.cpp
-    Utilities/Test_BoostHelpers.cpp
-    Utilities/Test_CachedFunction.cpp
-    Utilities/Test_ConstantExpressions.cpp
-    Utilities/Test_ContainerHelpers.cpp
-    Utilities/Test_Deferred.cpp
-    Utilities/Test_DereferenceWrapper.cpp
-    Utilities/Test_EqualWithinRoundoff.cpp
-    Utilities/Test_FakeVirtual.cpp
-    Utilities/Test_FileSystem.cpp
-    Utilities/Test_FractionUtilities.cpp
-    Utilities/Test_Gsl.cpp
-    Utilities/Test_MakeArray.cpp
-    Utilities/Test_MakeVector.cpp
-    Utilities/Test_Math.cpp
-    Utilities/Test_Overloader.cpp
-    Utilities/Test_PrettyType.cpp
-    Utilities/Test_Requires.cpp
-    Utilities/Test_StdArrayHelpers.cpp
-    Utilities/Test_StdHelpers.cpp
-    Utilities/Test_TaggedTuple.cpp
-    Utilities/Test_TMPL.cpp
-    Utilities/Test_Tuple.cpp
-    Utilities/Test_TypeTraits.cpp
-    )
+set(LIBRARY "Test_Utilities")
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${UTILITIES_TESTS}" PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};Utilities" PARENT_SCOPE)
+set(LIBRARY_SOURCES
+  Test_Array.cpp
+  Test_Blas.cpp
+  Test_BoostHelpers.cpp
+  Test_CachedFunction.cpp
+  Test_ConstantExpressions.cpp
+  Test_ContainerHelpers.cpp
+  Test_Deferred.cpp
+  Test_DereferenceWrapper.cpp
+  Test_EqualWithinRoundoff.cpp
+  Test_FakeVirtual.cpp
+  Test_FileSystem.cpp
+  Test_FractionUtilities.cpp
+  Test_Gsl.cpp
+  Test_MakeArray.cpp
+  Test_MakeVector.cpp
+  Test_Math.cpp
+  Test_Overloader.cpp
+  Test_PrettyType.cpp
+  Test_Requires.cpp
+  Test_StdArrayHelpers.cpp
+  Test_StdHelpers.cpp
+  Test_TaggedTuple.cpp
+  Test_TMPL.cpp
+  Test_Tuple.cpp
+  Test_TypeTraits.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Utilities"
+  "${LIBRARY_SOURCES}"
+  "Utilities"
+  )

@@ -1,9 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(SCALAR_WAVE_TESTS
-    Evolution/Systems/ScalarWave/Test_Equations.cpp
-    )
+set(LIBRARY "Test_Scalarwave")
 
-set(SYSTEM_TESTS "${SYSTEM_TESTS};${SCALAR_WAVE_TESTS}" PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};ScalarWave" PARENT_SCOPE)
+set(LIBRARY_SOURCES
+  Test_Equations.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Evolution/Systems/ScalarWave/"
+  "${LIBRARY_SOURCES}"
+  "ScalarWave"
+  )

@@ -6,6 +6,3 @@ add_subdirectory(GeneralizedHarmonic)
 add_subdirectory(NewtonianEuler)
 add_subdirectory(RelativisticEuler)
 add_subdirectory(ScalarWave)
-
-set(EVOLUTION_TESTS "${EVOLUTION_TESTS};${SYSTEM_TESTS}" PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK}" PARENT_SCOPE)

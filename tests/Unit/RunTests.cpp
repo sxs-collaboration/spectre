@@ -12,10 +12,12 @@
 #include "Parallel/Abort.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
+#include "tests/Unit/RunTestsRegister.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
   std::set_terminate(
       []() { Parallel::abort("Called terminate. Aborting..."); });
+  register_run_tests_libs();
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
   int result = Catch::Session().run(msg->argc, msg->argv);

@@ -40,11 +40,25 @@
 find_package(PythonInterp REQUIRED)
 
 # Main function - the only one designed to be called from outside this module.
-function(spectre_add_catch_tests TEST_TARGET)
+function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
     get_target_property(SOURCE_FILES ${TEST_TARGET} SOURCES)
     # For each of the source files, we use spectre_parse_file to find all the
     # Catch tests inside the source file and add them to CTest.
     # We ignore the Charm++ generated header files.
+
+    # For each one of the test libraries, retrieve the source files, and
+    # the path of the library relative to ${CMAKE_SOURCE_DIR}/tests/Unit
+    # (or whatever the testing root directory is). The results are stored
+    # in "CORRECTED_LIB_SOURCES" before being added to the "SOURCE_FILES"
+    foreach (TEST_LIB ${TEST_LIBS})
+      set(CORRECTED_LIB_SOURCES "")
+      get_target_property(LIB_SOURCES ${TEST_LIB} SOURCES)
+      get_target_property(LIB_FOLDER ${TEST_LIB} FOLDER)
+      foreach (SOURCE ${LIB_SOURCES})
+        set(CORRECTED_LIB_SOURCES "${CORRECTED_LIB_SOURCES};${LIB_FOLDER}${SOURCE}")
+      endforeach()
+      set(SOURCE_FILES "${SOURCE_FILES};${CORRECTED_LIB_SOURCES}")
+    endforeach()
 
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tmp")
 

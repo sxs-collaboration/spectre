@@ -57,7 +57,7 @@ target_link_libraries(
 
 add_dependencies(test-executables Test_ConstGlobalCache)
 
-spectre_add_catch_tests(Test_ConstGlobalCache)
+spectre_add_catch_tests(Test_ConstGlobalCache "")
 
 # Add integration tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on

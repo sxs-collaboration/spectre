@@ -20,6 +20,15 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+/// \cond
+// The macro SPECTRE_TEST_REGISTER_FUNCTION is defined inside the
+// add_test_library CMake function. It is used to make a call into a translation
+// unit so that static variables for Catch are properly initialized.
+#ifdef SPECTRE_TEST_REGISTER_FUNCTION
+void SPECTRE_TEST_REGISTER_FUNCTION() noexcept {}
+#endif // SPECTRE_TEST_REGISTER_FUNCTION
+/// \endcond
+
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief A replacement for Catch's TEST_CASE that silences clang-tidy warnings
@@ -239,4 +248,3 @@ std::string format_capture_precise(const T& t) noexcept {
 #define CAPTURE_PRECISE(variable)                                    \
   INFO(#variable << ": "                                             \
        << TestHelpers_detail::format_capture_precise(variable))
-

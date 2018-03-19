@@ -1,9 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(EVENTS_AND_TRIGGERS_TESTS
-    Evolution/EventsAndTriggers/Test_EventsAndTriggers.cpp
-   )
+set(LIBRARY "Test_EvolutionEventsAndTriggers")
 
-set(EVOLUTION_TESTS "${EVOLUTION_TESTS};${EVENTS_AND_TRIGGERS_TESTS}"
-    PARENT_SCOPE)
+set(LIBRARY_SOURCES
+  Test_EventsAndTriggers.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Evolution/EventsAndTriggers/"
+  "${LIBRARY_SOURCES}"
+  "" # Header-only, link dependencies included from testing lib
+  )

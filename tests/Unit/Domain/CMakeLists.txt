@@ -1,31 +1,37 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(SPECTRE_UNIT_DOMAIN
-  Domain/DomainTestHelpers.cpp
-  Domain/Test_Block.cpp
-  Domain/Test_BlockNeighbor.cpp
-  Domain/Test_CoordinatesTag.cpp
-  Domain/Test_CreateInitialElement.cpp
-  Domain/Test_Direction.cpp
-  Domain/Test_Domain.cpp
-  Domain/Test_DomainHelpers.cpp
-  Domain/Test_Element.cpp
-  Domain/Test_ElementId.cpp
-  Domain/Test_ElementIndex.cpp
-  Domain/Test_ElementMap.cpp
-  Domain/Test_FaceNormal.cpp
-  Domain/Test_InitialElementIds.cpp
-  Domain/Test_InterfaceItems.cpp
-  Domain/Test_LogicalCoordinates.cpp
-  Domain/Test_Neighbors.cpp
-  Domain/Test_OrientationMap.cpp
-  Domain/Test_SegmentId.cpp
-  Domain/Test_Side.cpp
+set(LIBRARY "Test_Domain")
+
+set(LIBRARY_SOURCES
+  DomainTestHelpers.cpp
+  Test_Block.cpp
+  Test_BlockNeighbor.cpp
+  Test_CoordinatesTag.cpp
+  Test_CreateInitialElement.cpp
+  Test_Direction.cpp
+  Test_Domain.cpp
+  Test_DomainHelpers.cpp
+  Test_Element.cpp
+  Test_ElementId.cpp
+  Test_ElementIndex.cpp
+  Test_ElementMap.cpp
+  Test_FaceNormal.cpp
+  Test_InitialElementIds.cpp
+  Test_InterfaceItems.cpp
+  Test_LogicalCoordinates.cpp
+  Test_Neighbors.cpp
+  Test_OrientationMap.cpp
+  Test_SegmentId.cpp
+  Test_Side.cpp
   )
 
 add_subdirectory(CoordinateMaps)
 add_subdirectory(DomainCreators)
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${SPECTRE_UNIT_DOMAIN}" PARENT_SCOPE)
-set(LIBRARIES_TO_LINK "${LIBRARIES_TO_LINK};Domain" PARENT_SCOPE)
+add_test_library(
+  ${LIBRARY}
+  "Domain"
+  "${LIBRARY_SOURCES}"
+  "Domain;CoordinateMaps;DomainCreators"
+  )

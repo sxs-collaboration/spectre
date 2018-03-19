@@ -1,8 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(EVOLUTION_DG_TESTS
-  Evolution/DiscontinuousGalerkin/Test_InitializeElement.cpp
+set(LIBRARY "Test_EvolutionDiscontinuousGalerkin")
+
+set(LIBRARY_SOURCES
+  Test_InitializeElement.cpp
   )
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${EVOLUTION_DG_TESTS}" PARENT_SCOPE)
+add_test_library(
+  ${LIBRARY}
+  "Evolution/DiscontinuousGalerkin/"
+  "${LIBRARY_SOURCES}"
+  "" # Header-only, link dependencies included from testing lib
+  )
