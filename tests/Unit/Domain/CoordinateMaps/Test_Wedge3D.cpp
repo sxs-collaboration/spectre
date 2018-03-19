@@ -15,28 +15,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 namespace {
-// Wedge OrientationMap in each of the six directions.
-std::array<OrientationMap<3>, 6> all_wedge_directions() {
-  const OrientationMap<3> upper_zeta_rotation{};
-  const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-       Direction<3>::lower_zeta()}});
-  const OrientationMap<3> upper_eta_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
-       Direction<3>::upper_xi()}});
-  const OrientationMap<3> lower_eta_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
-       Direction<3>::lower_xi()}});
-  const OrientationMap<3> upper_xi_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-       Direction<3>::upper_eta()}});
-  const OrientationMap<3> lower_xi_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-       Direction<3>::upper_eta()}});
-  return {{upper_zeta_rotation, lower_zeta_rotation, upper_eta_rotation,
-           lower_eta_rotation, upper_xi_rotation, lower_xi_rotation}};
-}
-
 void test_wedge3d_all_directions(const bool with_equiangular_map) {
   // Set up random number generator
   std::random_device rd;
