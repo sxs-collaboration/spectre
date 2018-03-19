@@ -44,15 +44,14 @@ struct EvolutionMetavars {
       CacheTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
-  using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
+  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
       tmpl::list<Actions::ComputeVolumeDuDt<Dim>,
                  dg::Actions::ComputeNonconservativeBoundaryFluxes,
-                 dg::Actions::SendDataForFluxes,
+                 dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
                  Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;

@@ -50,6 +50,9 @@ namespace Actions {
 /// \see SendDataForFluxes
 template <typename Metavariables>
 struct ReceiveDataForFluxes {
+  using const_global_cache_tags =
+      tmpl::list<typename Metavariables::normal_dot_numerical_flux>;
+
  private:
   using flux_comm_types = FluxCommunicationTypes<Metavariables>;
 
@@ -133,8 +136,12 @@ struct ReceiveDataForFluxes {
 /// - Modifies: FluxCommunicationTypes<Metavariables>::mortar_data_tag
 ///
 /// \see ReceiveDataForFluxes
+template <typename Metavariables>
 struct SendDataForFluxes {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
+  using const_global_cache_tags =
+      tmpl::list<typename Metavariables::normal_dot_numerical_flux>;
+
+  template <typename DbTags, typename... InboxTags,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,

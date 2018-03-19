@@ -28,6 +28,8 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 struct FinalTime {
+  using const_global_cache_tags = tmpl::list<CacheTags::FinalTime>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

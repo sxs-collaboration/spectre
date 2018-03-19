@@ -618,8 +618,9 @@ Each %Parallel Component struct must have the following type aliases:
    `Metavariables` struct. After being read in they are passed to the
    `initialize` function of the parallel component, which is described below.
 6. `using const_global_cache_tag_list` is set to a `tmpl::list` of CacheTags
-   that are required by the parallel component. Some examples are
-   `CacheTags::TimeStepper` for evolutions, or `CacheTags::FinalTime`.
+   that are required by the parallel component.   This is usually obtained from
+   the `action_list` using the `Parallel::get_const_global_cache_tags`
+   metafunction.
 
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component

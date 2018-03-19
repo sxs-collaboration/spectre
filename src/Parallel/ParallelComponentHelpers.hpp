@@ -6,7 +6,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \cond
 namespace Parallel {
 namespace Parallel_detail {
 template <class Action, class = cpp17::void_t<>>
@@ -37,6 +36,42 @@ template <class ActionsList>
 using get_inbox_tags = tmpl::remove_duplicates<tmpl::join<tmpl::transform<
     ActionsList, Parallel_detail::get_inbox_tags_from_action<tmpl::_1>>>>;
 
+namespace Parallel_detail {
+template <class Action, class = cpp17::void_t<>>
+struct get_const_global_cache_tags_from_action {
+  using type = tmpl::list<>;
+};
+
+template <class Action>
+struct get_const_global_cache_tags_from_action<
+    Action, cpp17::void_t<typename Action::const_global_cache_tags>> {
+  using type = typename Action::const_global_cache_tags;
+};
+}  // namespace Parallel_detail
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Given an Action returns the contents of the
+ * `const_global_cache_tags` alias for that action, or an empty list
+ * if no such alias exists.
+ */
+template <class Action>
+using get_const_global_cache_tags_from_action =
+    typename Parallel_detail::get_const_global_cache_tags_from_action<
+        Action>::type;
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Given a list of Actions, get a list of the unique tags
+ * specified in the actions' `const_global_cache_tags` aliases.
+ */
+template <class ActionsList>
+using get_const_global_cache_tags =
+    tmpl::remove_duplicates<tmpl::join<tmpl::transform<
+        ActionsList,
+        Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
+
+/// \cond
 namespace Algorithms {
 struct Singleton;
 struct Array;
@@ -103,5 +138,5 @@ struct charm_types_with_parameters {
   using ckindex = typename ParallelComponent::chare_type::template ckindex<
       ParallelComponent, Args...>;
 };
-}  // namespace Parallel
 /// \endcond
+}  // namespace Parallel

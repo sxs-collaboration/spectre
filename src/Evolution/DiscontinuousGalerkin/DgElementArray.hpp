@@ -21,6 +21,7 @@
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace Frame {
@@ -33,15 +34,16 @@ struct DgElementArray {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list =
-      tmpl::list<CacheTags::FinalTime, CacheTags::TimeStepper>;
   using metavariables = Metavariables;
   using action_list = ActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using initial_databox =
-      db::compute_databox_type<typename dg::Actions::InitializeElement<
-          volume_dim>::template return_tag_list<Metavariables>>;
+  using const_global_cache_tag_list =
+      Parallel::get_const_global_cache_tags<action_list>;
+
+  using initial_databox = db::compute_databox_type<
+      typename dg::Actions::InitializeElement<volume_dim>::
+          template return_tag_list<Metavariables>>;
 
   using options = tmpl::list<typename Metavariables::domain_creator_tag,
                              OptionTags::InitialTime, OptionTags::DeltaT>;

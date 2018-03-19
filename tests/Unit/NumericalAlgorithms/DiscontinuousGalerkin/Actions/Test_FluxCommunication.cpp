@@ -108,7 +108,7 @@ struct System {
 };
 
 struct Metavariables;
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes;
+using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables>;
 using receive_data_for_fluxes =
     dg::Actions::ReceiveDataForFluxes<Metavariables>;
 
