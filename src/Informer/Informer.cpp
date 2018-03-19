@@ -3,6 +3,9 @@
 
 #include "Informer/Informer.hpp"
 
+#include <charm++.h>
+#include <charm.h>
+
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
