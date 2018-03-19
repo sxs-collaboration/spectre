@@ -1,21 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <array>
 #include <boost/functional/hash.hpp>
-#include <catch.hpp>
+#include <deque>
+#include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
-#include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare boost::hash
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   std::list<int> my_list;
@@ -97,4 +102,3 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   CHECK("1.19e+01 10 test" ==
         formatted_string("%1.2e %d %s", 11.87, 10, "test"));
 }
-

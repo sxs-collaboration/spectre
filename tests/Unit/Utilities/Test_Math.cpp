@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-
 #include "Utilities/Math.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

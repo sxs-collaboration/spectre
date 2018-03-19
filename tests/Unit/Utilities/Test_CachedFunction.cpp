@@ -1,7 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <cstddef>
 #include <map>
 #include <string>
 

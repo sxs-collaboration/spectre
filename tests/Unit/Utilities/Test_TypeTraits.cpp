@@ -1,7 +1,23 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <deque>
+#include <forward_list>
+#include <functional>
+#include <future>
+#include <iosfwd>
+#include <list>
+#include <map>
+#include <memory>
+#include <queue>
+#include <set>
+#include <stack>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"

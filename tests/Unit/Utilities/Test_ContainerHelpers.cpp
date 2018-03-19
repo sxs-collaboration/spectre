@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <cstddef>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"

@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <type_traits>
-
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestingFramework.hpp"

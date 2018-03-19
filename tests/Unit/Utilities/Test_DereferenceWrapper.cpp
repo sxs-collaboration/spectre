@@ -1,6 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <functional>
+#include <type_traits>
+
 #include "Utilities/DereferenceWrapper.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

@@ -3,6 +3,7 @@
 
 #include "Utilities/PrettyType.hpp"
 
+#include <cstddef>
 #include <regex>
 
 namespace pretty_type {

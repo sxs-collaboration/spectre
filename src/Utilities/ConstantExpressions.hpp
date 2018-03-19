@@ -7,16 +7,20 @@
 #pragma once
 
 #include <algorithm>
-#include <blaze/math/typetraits/IsVector.h>
+#include <array>
+#include <blaze/math/typetraits/IsVector.h>  // IWYU pragma: keep
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
-#include <type_traits>
+#include <initializer_list>
+#include <utility>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
 /// \ingroup ConstantExpressionsGroup
 /// Compute 2 to the n for integral types.

@@ -2,11 +2,14 @@
 // See LICENSE.txt for details.
 
 #include <boost/rational.hpp>
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <set>
 #include <vector>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/FractionUtilities.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

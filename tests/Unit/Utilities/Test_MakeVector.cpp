@@ -1,7 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <type_traits>
+#include <vector>
 
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/TestHelpers.hpp"

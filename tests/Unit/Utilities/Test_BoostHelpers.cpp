@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Utilities/BoostHelpers.hpp"
+#include "Utilities/BoostHelpers.hpp"  // IWYU pragma: associated
 #include "Utilities/TMPL.hpp"
 
 static_assert(

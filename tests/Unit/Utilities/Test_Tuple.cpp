@@ -1,7 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <cstddef>
+#include <string>
+#include <tuple>
 
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Tuple.hpp"

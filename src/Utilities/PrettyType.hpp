@@ -7,8 +7,20 @@
 #pragma once
 
 #include <boost/core/demangle.hpp>
+#include <deque>
+#include <forward_list>
+#include <list>
+#include <map>
+#include <memory>
+#include <queue>
+#include <set>
 #include <sstream>
+#include <stack>
 #include <string>
+#include <typeinfo>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

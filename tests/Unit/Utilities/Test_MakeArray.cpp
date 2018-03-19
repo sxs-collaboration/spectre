@@ -1,8 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <memory>
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <initializer_list>
+#include <type_traits>
 #include <vector>
 
 #include "Utilities/Gsl.hpp"

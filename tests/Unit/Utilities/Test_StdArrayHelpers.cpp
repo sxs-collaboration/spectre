@@ -2,9 +2,10 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
 
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 // We wish to explicitly test implicit type conversion when adding std::arrays
 // of different fundamentals, so we supress -Wsign-conversion.
 #pragma GCC diagnostic push

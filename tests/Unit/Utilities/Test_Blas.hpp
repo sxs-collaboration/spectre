@@ -12,6 +12,8 @@
 #pragma GCC system_header
 #endif
 
+#include <cstddef>
+
 #include "Utilities/Blas.hpp"
 
 namespace test_blas_asserts_for_bad_char {
