@@ -29,6 +29,23 @@ void SPECTRE_TEST_REGISTER_FUNCTION() noexcept {} // NOLINT
 #endif // SPECTRE_TEST_REGISTER_FUNCTION
 /// \endcond
 
+namespace TestHelpers_detail {
+template <typename T>
+std::string format_capture_precise(const T& t) noexcept {
+  std::ostringstream os;
+  os << std::scientific << std::setprecision(18) << t;
+  return os.str();
+}
+}  // namespace TestHelpers_detail
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Alternative to Catch's CAPTURE that prints more digits.
+ */
+#define CAPTURE_PRECISE(variable)                                    \
+  INFO(#variable << ": "                                             \
+       << TestHelpers_detail::format_capture_precise(variable))
+
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief A replacement for Catch's TEST_CASE that silences clang-tidy warnings
@@ -117,6 +134,8 @@ template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+    CAPTURE_PRECISE(a);
+    CAPTURE_PRECISE(b);
     CHECK(a == appx(b));
   }
 };
@@ -231,20 +250,3 @@ struct check_iterable_approx<
     Parallel::abort("### No ASSERT tests in release mode ###"); \
   } while (false)
 #endif
-
-namespace TestHelpers_detail {
-template <typename T>
-std::string format_capture_precise(const T& t) noexcept {
-  std::ostringstream os;
-  os << std::scientific << std::setprecision(18) << t;
-  return os.str();
-}
-}  // namespace TestHelpers_detail
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief Alternative to Catch's CAPTURE that prints more digits.
- */
-#define CAPTURE_PRECISE(variable)                                    \
-  INFO(#variable << ": "                                             \
-       << TestHelpers_detail::format_capture_precise(variable))
