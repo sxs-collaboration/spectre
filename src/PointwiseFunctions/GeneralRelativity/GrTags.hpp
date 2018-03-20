@@ -31,6 +31,11 @@ struct InverseSpatialMetric : db::DataBoxTag {
   static constexpr db::DataBoxString label = "InverseSpatialMetric";
 };
 template <size_t Dim, typename Frame, typename DataType>
+struct SqrtDetSpatialMetric : db::DataBoxTag {
+  using type = Scalar<DataType>;
+  static constexpr db::DataBoxString label = "SqrtDetSpatialMetric";
+};
+template <size_t Dim, typename Frame, typename DataType>
 struct Shift : db::DataBoxTag {
   using type = tnsr::I<DataType, Dim, Frame>;
   static constexpr db::DataBoxString label = "Shift";
@@ -88,6 +93,11 @@ struct TraceSpatialChristoffelSecondKind : db::DataBoxTag {
   using type = tnsr::I<DataType, Dim, Frame>;
   static constexpr db::DataBoxString label =
       "TraceSpatialChristoffelSecondKind";
+};
+template <size_t Dim, typename Frame, typename DataType>
+struct ExtrinsicCurvature : db::DataBoxTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+  static constexpr db::DataBoxString label = "ExtrinsicCurvature";
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceExtrinsicCurvature : db::DataBoxTag {
