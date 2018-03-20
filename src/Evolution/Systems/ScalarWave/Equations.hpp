@@ -29,8 +29,6 @@ template <typename>
 struct dt;
 template <typename>
 struct NormalDotFlux;
-template <typename>
-struct NormalDotNumericalFlux;
 }  // namespace Tags
 
 namespace ScalarWave {
@@ -90,9 +88,6 @@ struct ComputeDuDt {
  */
 template <size_t Dim>
 struct ComputeNormalDotFluxes {
-  using return_tags =
-      tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>,
-                 Tags::NormalDotFlux<Psi>>;
   using argument_tags = tmpl::list<Pi, Phi<Dim>>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
                     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
@@ -137,10 +132,6 @@ struct UpwindFlux {
 
   // clang-tidy: non-const reference
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
-
-  using return_tags = tmpl::list<Tags::NormalDotNumericalFlux<Pi>,
-                                 Tags::NormalDotNumericalFlux<Phi<Dim>>,
-                                 Tags::NormalDotNumericalFlux<Psi>>;
 
   using package_tags =
       tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>, Pi,
