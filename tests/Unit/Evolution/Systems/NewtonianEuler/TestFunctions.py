@@ -34,3 +34,16 @@ def energy_density_flux(momentum_density, energy_density, velocity, pressure):
 
 
 # End functions for testing Fluxes.cpp
+
+
+# Functions for testing PrimitiveFromConservative.cpp
+def velocity(mass_density, momentum_density, energy_density = None):
+    return (momentum_density / mass_density)
+
+
+def specific_internal_energy(mass_density, momentum_density, energy_density):
+    veloc = velocity(mass_density, momentum_density, energy_density)
+    return (energy_density / mass_density - 0.5 * np.dot(veloc, veloc))
+
+
+# End functions for testing PrimitiveFromConservative.cpp
