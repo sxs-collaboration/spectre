@@ -13,6 +13,13 @@
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
+
+// These macros are required so that the NumPy API will work when used in
+// multiple cpp files.
+#ifndef PY_ARRAY_UNIQUE_SYMBOL
+#define PY_ARRAY_UNIQUE_SYMBOL SPECTRE_PY_API
+#endif
+#define NO_IMPORT_ARRAY
 // Disable compiler warnings. NumPy ensures API compatibility among different
 // 1.x versions, as features become deprecated in Numpy 1.x will still function
 // but cause a compiler warning
