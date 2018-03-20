@@ -175,11 +175,12 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
 
   auto result = make_with_value<tuples::TaggedTuple<
       gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      gr::Tags::DtLapse<3, Frame::Inertial, DataType>, DerivLapse<DataType>,
-      gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      gr::Tags::DtShift<3, Frame::Inertial, DataType>, DerivShift<DataType>,
+      Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>,
+      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
+      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataType>,
+      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>>>(x, 0.0);
 
   get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) =

@@ -62,8 +62,8 @@ FastFlow::Status do_iteration(
             get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
             get<EinsteinSolutions::KerrSchild::DerivShift<DataVector>>(vars),
             spatial_metric,
-            get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataVector>>(
-                vars),
+            get<Tags::dt<
+                gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(vars),
             deriv_spatial_metric),
         raise_or_lower_first_index(
             gr::christoffel_first_kind(deriv_spatial_metric),

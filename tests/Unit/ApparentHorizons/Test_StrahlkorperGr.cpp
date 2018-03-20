@@ -75,7 +75,8 @@ void test_expansion(const Solution& solution,
           get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                           tmpl::size_t<3>, Frame::Inertial>>(vars),
           spatial_metric,
-          get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataVector>>(vars),
+          get<Tags::dt<
+              gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(vars),
           deriv_spatial_metric));
 
   Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
@@ -99,9 +100,19 @@ void test_minkowski() {
   EinsteinSolutions::Minkowski<3> solution{};
 
   const auto deriv_spatial_metric =
-      solution.deriv_spatial_metric(cart_coords, t);
+      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                      tmpl::size_t<3>, Frame::Inertial>>(
+          solution.variables(
+              cart_coords, t,
+              tmpl::list<Tags::deriv<
+                  gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                  tmpl::size_t<3>, Frame::Inertial>>{}));
   const auto inverse_spatial_metric =
-      solution.inverse_spatial_metric(cart_coords, t);
+      get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+          solution.variables(
+              cart_coords, t,
+              tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
+                                                        DataVector>>{}));
 
   const DataVector one_over_one_form_magnitude =
       1.0 / get(magnitude(

@@ -47,22 +47,6 @@ struct Lapse : db::DataBoxTag {
 };
 
 template <size_t Dim, typename Frame, typename DataType>
-struct DtShift : db::DataBoxTag {
-  using type = tnsr::I<DataType, Dim, Frame>;
-  static constexpr db::DataBoxString label = "DtShift";
-};
-template <size_t Dim, typename Frame, typename DataType>
-struct DtLapse : db::DataBoxTag {
-  using type = Scalar<DataType>;
-  static constexpr db::DataBoxString label = "DtLapse";
-};
-template <size_t Dim, typename Frame, typename DataType>
-struct DtSpatialMetric : db::DataBoxTag {
-  using type = tnsr::ii<DataType, Dim, Frame>;
-  static constexpr db::DataBoxString label = "DtSpatialMetric";
-};
-
-template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeChristoffelFirstKind : db::DataBoxTag {
   using type = tnsr::abb<DataType, Dim, Frame>;
   static constexpr db::DataBoxString label = "SpacetimeChristoffelFirstKind";

@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
@@ -246,11 +247,12 @@ class KerrSchild {
   template <typename DataType>
   using tags = tmpl::list<
       gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      gr::Tags::DtLapse<3, Frame::Inertial, DataType>, DerivLapse<DataType>,
-      gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      gr::Tags::DtShift<3, Frame::Inertial, DataType>, DerivShift<DataType>,
+      Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>,
+      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
+      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataType>,
+      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>>;
 
   template <typename DataType>

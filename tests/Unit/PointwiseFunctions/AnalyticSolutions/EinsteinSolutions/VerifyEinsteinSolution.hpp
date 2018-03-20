@@ -68,15 +68,15 @@ void verify_time_independent_einstein_solution(
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
   const auto& lapse = get<gr::Tags::Lapse<3>>(vars);
-  const auto& dt_lapse = get<gr::Tags::DtLapse<3>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<3>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
   const auto& shift = get<gr::Tags::Shift<3>>(vars);
   const auto& d_shift =
       get<typename Solution::template DerivShift<DataVector>>(vars);
-  const auto& dt_shift = get<gr::Tags::DtShift<3>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
   const auto& g = get<gr::Tags::SpatialMetric<3>>(vars);
-  const auto& dt_g = get<gr::Tags::DtSpatialMetric<3>>(vars);
+  const auto& dt_g = get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
   const auto& d_g =
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
