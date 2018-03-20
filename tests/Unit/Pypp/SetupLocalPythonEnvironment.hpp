@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+
 /// Contains all functions for pypp
 namespace pypp {
 /// Enable calling of python in the local scope, and add directory(ies) to the
