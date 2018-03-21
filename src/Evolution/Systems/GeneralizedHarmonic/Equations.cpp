@@ -3,10 +3,13 @@
 
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 
+#include <array>
+
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace GeneralizedHarmonic {
 

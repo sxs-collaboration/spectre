@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "DataStructures/DataVector.hpp"
+#include <cstddef>
+
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 template <typename DataType>
 Scalar<DataType> make_pi(const DataType& used_for_size);

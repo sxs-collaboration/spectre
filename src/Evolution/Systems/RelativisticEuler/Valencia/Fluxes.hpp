@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 
 /// \cond
 namespace gsl {
@@ -15,6 +15,8 @@ class not_null;
 
 class DataVector;
 /// \endcond
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace RelativisticEuler {
 namespace Valencia {

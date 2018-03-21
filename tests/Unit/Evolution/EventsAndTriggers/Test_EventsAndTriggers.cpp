@@ -4,14 +4,18 @@
 // This file checks the Completion event and the basic logical
 // triggers (Always, And, Not, and Or).
 
-#include <catch.hpp>
+#include <algorithm>
 #include <memory>
+#include <pup.h>
+#include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/EventsAndTriggers/Completion.hpp"
 #include "Evolution/EventsAndTriggers/Event.hpp"
-#include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"
+#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"

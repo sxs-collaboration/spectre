@@ -3,10 +3,11 @@
 
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
 
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// \cond

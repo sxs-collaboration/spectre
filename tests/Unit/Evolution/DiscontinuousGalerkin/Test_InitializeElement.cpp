@@ -2,20 +2,23 @@
 // See LICENSE.txt for details.
 
 #include <cstddef>
-#include <deque>
 #include <memory>
-#include <tuple>
+#include <pup.h>
+#include <sys/types.h>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/CreateInitialElement.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
@@ -24,19 +27,24 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/Neighbors.hpp"
+#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare PUP::er
+// IWYU pragma: no_forward_declare ElementIndex
 
 namespace {
 struct Var : db::DataBoxTag {

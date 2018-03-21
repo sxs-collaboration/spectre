@@ -8,6 +8,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+// IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_include <array>
+
 /// \cond
 namespace RelativisticEuler {
 namespace Valencia {

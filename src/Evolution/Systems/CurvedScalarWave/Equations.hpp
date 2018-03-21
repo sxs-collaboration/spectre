@@ -11,23 +11,15 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <typename>
-class Variables;
-
 class DataVector;
-/// \endcond
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
 
 namespace Tags {
 template <typename, typename, typename>
 struct deriv;
 template <typename>
 struct dt;
-template <typename>
-struct NormalDotFlux;
-template <typename>
-struct NormalDotNumericalFlux;
-template <typename>
-struct Variables;
 }  // namespace Tags
 
 namespace CurvedScalarWave {
@@ -38,6 +30,7 @@ struct Phi;
 struct ConstraintGamma1;
 struct ConstraintGamma2;
 }  // namespace CurvedScalarWave
+/// \endcond
 
 namespace CurvedScalarWave {
 /*!

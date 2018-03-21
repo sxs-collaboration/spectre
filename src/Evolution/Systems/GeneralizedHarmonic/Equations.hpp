@@ -6,11 +6,14 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
+#include <cstddef>
 
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+/// \cond
 class DataVector;
 
 namespace Tags {
@@ -25,6 +28,7 @@ namespace gsl {
 template <class T>
 class not_null;
 }  // namespace gsl
+/// \endcond
 
 namespace GeneralizedHarmonic {
   /*!

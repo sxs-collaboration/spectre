@@ -3,12 +3,17 @@
 
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include <array>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"      // IWYU pragma: keep
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/TMPL.hpp"
+#include "Utilities/TMPL.hpp"  // IWYU pragma: keep
+
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
 
 namespace CurvedScalarWave {
 /// \cond
@@ -66,7 +71,7 @@ void ComputeDuDt<Dim>::apply(
 // Generate explicit instantiations of partial_derivatives function as well as
 // all other functions in Equations.cpp
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
 
 template <size_t Dim>
 using derivative_tags = typename CurvedScalarWave::System<Dim>::gradients_tags;

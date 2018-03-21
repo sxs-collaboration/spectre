@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

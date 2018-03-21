@@ -3,12 +3,19 @@
 
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 
+#include <algorithm>
+#include <array>
+
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/TMPL.hpp"
+#include "Utilities/Gsl.hpp"   // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"  // IWYU pragma: keep
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace ScalarWave {
 // Doxygen is not good at templates and so we have to hide the definition.
@@ -128,7 +135,7 @@ void UpwindFlux<Dim>::operator()(
 // Generate explicit instantiations of partial_derivatives function as well as
 // all other functions in Equations.cpp
 
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
 
 template <size_t Dim>
 using derivative_tags = typename ScalarWave::System<Dim>::gradients_tags;

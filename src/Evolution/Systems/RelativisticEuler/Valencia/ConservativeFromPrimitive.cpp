@@ -3,8 +3,9 @@
 
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
 
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

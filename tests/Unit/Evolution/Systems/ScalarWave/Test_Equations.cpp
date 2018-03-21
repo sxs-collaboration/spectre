@@ -1,21 +1,32 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare Variables
 
 namespace {
 template <size_t Dim>
