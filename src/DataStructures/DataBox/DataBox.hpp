@@ -1554,6 +1554,68 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags>& box,
       },
       db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
 }
+
+template <typename Func, typename... Args>
+constexpr void error_mutate_apply_not_callable() noexcept {
+  static_assert(cpp17::is_same_v<Func, void>,
+                "The function is not callable with the expected arguments.  "
+                "See the first template parameter for the function type and "
+                "the remaining arguments for the parameters that cannot be "
+                "passed.");
+}
+
+template <
+    typename... ReturnTags, typename... ArgumentTags, typename F,
+    typename BoxTags, typename... Args,
+    Requires<not(
+        is_apply_callable_v<
+            F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+            const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+            Args...> or
+        ::tt::is_callable_v<
+            F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+            const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+            Args...>)> = nullptr>
+inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& /*box*/,
+                                   tmpl::list<ReturnTags...> /*meta*/,
+                                   tmpl::list<ArgumentTags...> /*meta*/,
+                                   Args&&... /*args*/) noexcept {
+  error_mutate_apply_not_callable<
+      F, gsl::not_null<db::item_type<ReturnTags>*>...,
+      const db::item_type<ArgumentTags>&..., Args&&...>();
+}
+
+template <typename Tag, typename BoxTags>
+constexpr int check_mutate_apply_mutate_tag() noexcept {
+  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+                "A tag to mutate is not in the DataBox.  See the first "
+                "template argument for the missing tag, and the second for the "
+                "available tags.");
+  return 0;
+}
+
+template <typename BoxTags, typename... MutateTags>
+constexpr bool check_mutate_apply_mutate_tags(
+    BoxTags /*meta*/, tmpl::list<MutateTags...> /*meta*/) noexcept {
+  swallow(check_mutate_apply_mutate_tag<MutateTags, BoxTags>()...);
+  return true;
+}
+
+template <typename Tag, typename BoxTags>
+constexpr int check_mutate_apply_apply_tag() noexcept {
+  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+                "A tag to apply with is not in the DataBox.  See the first "
+                "template argument for the missing tag, and the second for the "
+                "available tags.");
+  return 0;
+}
+
+template <typename BoxTags, typename... ApplyTags>
+constexpr bool check_mutate_apply_argument_tags(
+    BoxTags /*meta*/, tmpl::list<ApplyTags...> /*meta*/) noexcept {
+  swallow(check_mutate_apply_apply_tag<ApplyTags, BoxTags>()...);
+  return true;
+}
 }  // namespace databox_detail
 
 /*!
@@ -1591,8 +1653,17 @@ template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 inline constexpr auto
 mutate_apply(F f, DataBox<BoxTags>& box, Args&&... args) noexcept(
+    databox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{}) and
+    databox_detail::check_mutate_apply_argument_tags(BoxTags{},
+                                                     ArgumentTags{}) and
     noexcept(databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
                                           std::forward<Args>(args)...))) {
+  // These checks are duplicated in the noexcept specification above
+  // because the noexcept(databox_detail::mutate_apply(...)) can cause
+  // a compilation error before the checks in the function body are
+  // performed.
+  databox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{});
+  databox_detail::check_mutate_apply_argument_tags(BoxTags{}, ArgumentTags{});
   return databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
                                       std::forward<Args>(args)...);
 }
