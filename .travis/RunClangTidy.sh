@@ -69,9 +69,12 @@ echo ''
 
 for FILENAME in $MODIFIED_FILES
 do
-    printf "\n\nRunning clang-tidy on file $FILENAME\n"
+    # need to output something so TravisCI knows we're not stalled
+    printf '.'
+    printf "\n\nRunning clang-tidy on file $FILENAME\n" >> ${CLANG_TIDY_OUTPUT}
     make clang-tidy FILE=/work/spectre/${FILENAME} >> ${CLANG_TIDY_OUTPUT} 2>&1
 done
+echo ''
 
 if [ -f "${CLANG_TIDY_OUTPUT}" ]; then
     sed -i'.bak' "s^warning: /usr/bin/clang++: 'linker' input unused.*^^g" ${CLANG_TIDY_OUTPUT}
