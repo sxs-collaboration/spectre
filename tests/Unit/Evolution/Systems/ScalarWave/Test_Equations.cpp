@@ -74,8 +74,10 @@ void check_du_dt(const size_t npts, const double time) {
         return d2psi_dxdx;
       }());
 
-  db::mutate_apply<typename ScalarWave::ComputeDuDt<Dim>::return_tags,
-                   typename ScalarWave::ComputeDuDt<Dim>::argument_tags>(
+  db::mutate_apply<
+      tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                 Tags::dt<ScalarWave::Psi>>,
+      typename ScalarWave::ComputeDuDt<Dim>::argument_tags>(
       ScalarWave::ComputeDuDt<Dim>{}, make_not_null(&box));
 
   CHECK_ITERABLE_APPROX(
