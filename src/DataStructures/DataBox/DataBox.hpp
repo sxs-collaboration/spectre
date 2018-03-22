@@ -1394,14 +1394,14 @@ struct Apply;
 
 template <template <typename...> class TagsList, typename... Tags>
 struct Apply<TagsList<Tags...>> {
-  template <typename F, typename... BoxTags, typename... Args>
-  static constexpr auto apply(F&& f, const DataBox<BoxTags...>& box,
+  template <typename F, typename BoxTags, typename... Args>
+  static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                               Args&&... args) {
     static_assert(
         tt::is_callable_v<
             std::remove_pointer_t<F>,
             tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
-                                const DataBox<BoxTags...>&, item_type<Tags>>...,
+                                const DataBox<BoxTags>&, item_type<Tags>>...,
             Args...>,
         "Cannot call the function f with the list of tags and "
         "arguments specified. Check that the Tags::type and the "
@@ -1410,14 +1410,14 @@ struct Apply<TagsList<Tags...>> {
                               std::forward<Args>(args)...);
   }
 
-  template <typename F, typename... BoxTags, typename... Args>
-  static constexpr auto apply_with_box(F&& f, const DataBox<BoxTags...>& box,
+  template <typename F, typename BoxTags, typename... Args>
+  static constexpr auto apply_with_box(F&& f, const DataBox<BoxTags>& box,
                                        Args&&... args) {
     static_assert(
         tt::is_callable_v<
-            F, DataBox<BoxTags...>,
+            F, DataBox<BoxTags>,
             tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
-                                const DataBox<BoxTags...>&, item_type<Tags>>...,
+                                const DataBox<BoxTags>&, item_type<Tags>>...,
             Args...>,
         "Cannot call the function f with the list of tags and "
         "arguments specified. Check that the Tags::type and the "
@@ -1467,8 +1467,8 @@ struct Apply<TagsList<Tags...>> {
  * \param args the arguments to pass to the function that are not in the
  * DataBox, `box`
  */
-template <typename TagsList, typename F, typename... BoxTags, typename... Args>
-inline constexpr auto apply(F&& f, const DataBox<BoxTags...>& box,
+template <typename TagsList, typename F, typename BoxTags, typename... Args>
+inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                             Args&&... args) {
   return detail::Apply<TagsList>::apply(std::forward<F>(f), box,
                                         std::forward<Args>(args)...);
@@ -1478,12 +1478,12 @@ namespace databox_detail {
 CREATE_IS_CALLABLE(apply)
 
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
-          typename... BoxTags, typename... Args,
+          typename BoxTags, typename... Args,
           Requires<is_apply_callable_v<
               F, const gsl::not_null<db::item_type<ReturnTags>*>...,
               const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags...>& box,
+inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& box,
                                    tmpl::list<ReturnTags...> /*meta*/,
                                    tmpl::list<ArgumentTags...> /*meta*/,
                                    Args&&... args)
@@ -1517,12 +1517,12 @@ inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags...>& box,
 }
 
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
-          typename... BoxTags, typename... Args,
+          typename BoxTags, typename... Args,
           Requires<::tt::is_callable_v<
               F, const gsl::not_null<db::item_type<ReturnTags>*>...,
               const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags...>& box,
+inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags>& box,
                                    tmpl::list<ReturnTags...> /*meta*/,
                                    tmpl::list<ArgumentTags...> /*meta*/,
                                    Args&&... args)
@@ -1553,6 +1553,68 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags...>& box,
                  std::forward<Args>(l_args)...);
       },
       db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+}
+
+template <typename Func, typename... Args>
+constexpr void error_mutate_apply_not_callable() noexcept {
+  static_assert(cpp17::is_same_v<Func, void>,
+                "The function is not callable with the expected arguments.  "
+                "See the first template parameter for the function type and "
+                "the remaining arguments for the parameters that cannot be "
+                "passed.");
+}
+
+template <
+    typename... ReturnTags, typename... ArgumentTags, typename F,
+    typename BoxTags, typename... Args,
+    Requires<not(
+        is_apply_callable_v<
+            F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+            const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+            Args...> or
+        ::tt::is_callable_v<
+            F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+            const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+            Args...>)> = nullptr>
+inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& /*box*/,
+                                   tmpl::list<ReturnTags...> /*meta*/,
+                                   tmpl::list<ArgumentTags...> /*meta*/,
+                                   Args&&... /*args*/) noexcept {
+  error_mutate_apply_not_callable<
+      F, gsl::not_null<db::item_type<ReturnTags>*>...,
+      const db::item_type<ArgumentTags>&..., Args&&...>();
+}
+
+template <typename Tag, typename BoxTags>
+constexpr int check_mutate_apply_mutate_tag() noexcept {
+  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+                "A tag to mutate is not in the DataBox.  See the first "
+                "template argument for the missing tag, and the second for the "
+                "available tags.");
+  return 0;
+}
+
+template <typename BoxTags, typename... MutateTags>
+constexpr bool check_mutate_apply_mutate_tags(
+    BoxTags /*meta*/, tmpl::list<MutateTags...> /*meta*/) noexcept {
+  swallow(check_mutate_apply_mutate_tag<MutateTags, BoxTags>()...);
+  return true;
+}
+
+template <typename Tag, typename BoxTags>
+constexpr int check_mutate_apply_apply_tag() noexcept {
+  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+                "A tag to apply with is not in the DataBox.  See the first "
+                "template argument for the missing tag, and the second for the "
+                "available tags.");
+  return 0;
+}
+
+template <typename BoxTags, typename... ApplyTags>
+constexpr bool check_mutate_apply_argument_tags(
+    BoxTags /*meta*/, tmpl::list<ApplyTags...> /*meta*/) noexcept {
+  swallow(check_mutate_apply_apply_tag<ApplyTags, BoxTags>()...);
+  return true;
 }
 }  // namespace databox_detail
 
@@ -1588,11 +1650,20 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags...>& box,
  * DataBox, `box`
  */
 template <typename MutateTags, typename ArgumentTags, typename F,
-          typename... BoxTags, typename... Args>
+          typename BoxTags, typename... Args>
 inline constexpr auto
-mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
+mutate_apply(F f, DataBox<BoxTags>& box, Args&&... args) noexcept(
+    databox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{}) and
+    databox_detail::check_mutate_apply_argument_tags(BoxTags{},
+                                                     ArgumentTags{}) and
     noexcept(databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
                                           std::forward<Args>(args)...))) {
+  // These checks are duplicated in the noexcept specification above
+  // because the noexcept(databox_detail::mutate_apply(...)) can cause
+  // a compilation error before the checks in the function body are
+  // performed.
+  databox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{});
+  databox_detail::check_mutate_apply_argument_tags(BoxTags{}, ArgumentTags{});
   return databox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
                                       std::forward<Args>(args)...);
 }
@@ -1603,12 +1674,13 @@ mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
  * and `box` as the first argument
  *
  * \details
- * Apply the function `f` with arguments that are of type `Tags::type` where
- * `Tags` is defined as `TagList<Tags...>`. The arguments to `f` are retrieved
- * from the DataBox `box` and the first argument passed to `f` is the DataBox.
+ * Apply the function `f` with arguments that are of type `Tags::type...` where
+ * `Tags` is defined by `TagList = tmpl::list<Tags...>`. The arguments to `f`
+ * are retrieved from the DataBox `box` and the first argument passed to `f` is
+ * the DataBox.
  *
  * \usage
- * Given a function `func` that takes arguments of types `DataBox<Tags...>`,
+ * Given a function `func` that takes arguments of types `DataBox<BoxTags>`,
  * `T1`, `T2`, `A1` and `A2`. Let the Tags for the quantities of types `T1`
  * and `T2` in the DataBox `box` be `Tag1` and `Tag2`, and objects `a1` of type
  * `A1` and `a2` of type `A2`, then
@@ -1638,8 +1710,8 @@ mutate_apply(F f, DataBox<BoxTags...>& box, Args&&... args) noexcept(
  * \param args the arguments to pass to the function that are not in the
  * DataBox, `box`
  */
-template <typename TagsList, typename F, typename... BoxTags, typename... Args>
-inline constexpr auto apply_with_box(F&& f, const DataBox<BoxTags...>& box,
+template <typename TagsList, typename F, typename BoxTags, typename... Args>
+inline constexpr auto apply_with_box(F&& f, const DataBox<BoxTags>& box,
                                      Args&&... args) {
   return detail::Apply<TagsList>::apply_with_box(std::forward<F>(f), box,
                                                  std::forward<Args>(args)...);
