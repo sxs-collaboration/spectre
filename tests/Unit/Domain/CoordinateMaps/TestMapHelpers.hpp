@@ -23,10 +23,9 @@
  * downcast fails.
  */
 template <typename Map>
-bool are_maps_equal(
-    const Map& map,
-    const CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
-        map_base) {
+bool are_maps_equal(const Map& map,
+                    const CoordinateMapBase<Frame::Logical, Frame::Inertial,
+                                            Map::dim>& map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }
@@ -157,43 +156,51 @@ void test_coordinate_map_implementation(const Map& map) {
  */
 template <bool CheckInverse = true, typename Map, typename... Args>
 void test_coordinate_map_argument_types(
-    const Map& map, const std::array<double, Map::dim>& test_point) {
-  const auto make_array_data_vector = [](const auto& double_array) {
+    const Map& map, const std::array<double, Map::dim>& test_point,
+    const Args&... args) {
+  const auto make_array_data_vector = [](const auto& double_array) noexcept {
     std::array<DataVector, Map::dim> result;
     std::transform(double_array.begin(), double_array.end(), result.begin(),
-                   [](const double x) { return DataVector{x, x}; });
+                   [](const double x) noexcept {
+                     return DataVector{x, x};
+                   });
     return result;
   };
-  const auto make_tensor_data_vector = [](const auto& double_tensor) {
+  const auto make_tensor_data_vector = [](const auto& double_tensor) noexcept {
     using Arg = std::decay_t<decltype(double_tensor)>;
     Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list> result;
     std::transform(double_tensor.begin(), double_tensor.end(), result.begin(),
-                   [](const double x) { return DataVector{x, x}; });
+                   [](const double x) noexcept {
+                     return DataVector{x, x};
+                   });
     return result;
   };
-  const auto add_reference_wrapper = [](const auto& unwrapped_array) {
+  const auto add_reference_wrapper = [](const auto& unwrapped_array) noexcept {
     using Arg = std::decay_t<decltype(unwrapped_array)>;
     return make_array<std::reference_wrapper<const typename Arg::value_type>,
                       Map::dim>(unwrapped_array);
   };
 
-  const auto mapped_point = map(test_point);
-  CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point)), mapped_point);
-  CHECK_ITERABLE_APPROX(map(make_array_data_vector(test_point)),
+  const auto mapped_point = map(test_point, args...);
+  CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point), args...),
+                        mapped_point);
+  CHECK_ITERABLE_APPROX(map(make_array_data_vector(test_point), args...),
                         make_array_data_vector(mapped_point));
   CHECK_ITERABLE_APPROX(
-      map(add_reference_wrapper(make_array_data_vector(test_point))),
+      map(add_reference_wrapper(make_array_data_vector(test_point)), args...),
       make_array_data_vector(mapped_point));
 
   if (CheckInverse) {
-    const auto expected = map.inverse(mapped_point);
-    CHECK_ITERABLE_APPROX(map.inverse(add_reference_wrapper(mapped_point)),
-                          expected);
-    CHECK_ITERABLE_APPROX(map.inverse(make_array_data_vector(mapped_point)),
-                          make_array_data_vector(expected));
-    CHECK_ITERABLE_APPROX(map.inverse(add_reference_wrapper(
-                              make_array_data_vector(mapped_point))),
-                          make_array_data_vector(expected));
+    const auto expected = map.inverse(mapped_point, args...);
+    CHECK_ITERABLE_APPROX(
+        map.inverse(add_reference_wrapper(mapped_point), args...), expected);
+    CHECK_ITERABLE_APPROX(
+        map.inverse(make_array_data_vector(mapped_point), args...),
+        make_array_data_vector(expected));
+    CHECK_ITERABLE_APPROX(
+        map.inverse(add_reference_wrapper(make_array_data_vector(mapped_point)),
+                    args...),
+        make_array_data_vector(expected));
   }
 
   {

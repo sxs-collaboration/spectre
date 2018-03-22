@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
     Equiangular.cpp
     Identity.cpp
     Rotation.cpp
+    Translation.cpp
     Wedge2D.cpp
     Wedge3D.cpp
     )

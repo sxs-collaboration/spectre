@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   CoordinateMaps/Test_Identity.cpp
   CoordinateMaps/Test_ProductMaps.cpp
   CoordinateMaps/Test_Rotation.cpp
+  CoordinateMaps/Test_Translation.cpp
   CoordinateMaps/Test_Wedge2D.cpp
   CoordinateMaps/Test_Wedge3D.cpp
   PARENT_SCOPE

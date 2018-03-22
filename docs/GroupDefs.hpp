@@ -59,6 +59,16 @@
  */
 
 /*!
+ * \defgroup CoordMapsTimeDependentGroup  Coordinate Maps, Time-dependent
+ * \brief Functions for mapping time-dependent coordinates between different
+ * frames
+ *
+ * Coordinate maps provide the maps themselves, the inverse maps, the Jacobian
+ * and inverse Jacobian of the maps, and the frame velocity (time derivative of
+ * the map)
+ */
+
+/*!
  * \defgroup DataBoxGroup DataBox
  * \brief Contains (meta)functions used for manipulating DataBoxes
  */
