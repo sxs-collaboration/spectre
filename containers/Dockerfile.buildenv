@@ -22,8 +22,9 @@ RUN apt-get update -y && \
     apt-get install -y gcc g++ gfortran gcc-6 g++-6 gfortran-6 git cmake \
                        libopenblas-dev liblapack-dev libhdf5-dev \
                        libgsl0-dev \
-                       clang clang-format clang-tidy \
-                       iwyu lcov cppcheck \
+                       clang-5.0 clang-format-5.0 clang-tidy-5.0 \
+                       libclang-5.0-dev wget libncurses-dev \
+                       lcov cppcheck \
                        libboost-all-dev
 
 # Update is needed to get libc++ correctly
@@ -88,10 +89,33 @@ RUN /work/spack/bin/spack install cmake@3.8.0%gcc@6.4.0
 RUN /work/spack/bin/spack install yaml-cpp@develop%gcc@6.4.0 ^cmake@3.8.0%gcc@6.4.0
 RUN /work/spack/bin/spack install benchmark%gcc@6.4.0 ^cmake@3.8.0%gcc@6.4.0
 
+# Install include-what-you-use
+# We patch it to allow cyclic includes in boost
+RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/clang_5.0.tar.gz \
+    && tar -xzf clang_5.0.tar.gz \
+    && rm clang_5.0.tar.gz \
+    && mkdir /work/include-what-you-use-clang_5.0/build \
+    && cd /work/include-what-you-use-clang_5.0/ \
+    && sed -i 's^\\\"third_party/^<boost/^' iwyu_include_picker.cc
+WORKDIR /work/include-what-you-use-clang_5.0/build
+RUN cmake -D CMAKE_CXX_COMPILER=clang++-5.0 \
+    -D CMAKE_C_COMPILER=clang-5.0 \
+    -D IWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 .. \
+    && make -j2 \
+    && make install \
+    && cd /work \
+    && rm -rf /work/include-what-you-use-clang_5.0
+
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
 # use the same build environment.
+WORKDIR /work
 ARG CHARM_GIT_TAG=v6.8.0
+# Charm doesn't support compiling with clang-5 without symbolic links
+RUN ln -s $(which clang++-5.0) /usr/local/bin/clang++ \
+    && ln -s $(which clang-5.0) /usr/local/bin/clang \
+    && ln -s $(which clang-format-5.0) /usr/local/bin/clang-format \
+    && ln -s $(which clang-tidy-5.0) /usr/local/bin/clang-tidy
 RUN git clone https://charm.cs.illinois.edu/gerrit/charm && \
     cd /work/charm && \
     git checkout ${CHARM_GIT_TAG}  && \
