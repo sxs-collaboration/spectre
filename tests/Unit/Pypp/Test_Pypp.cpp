@@ -2,17 +2,24 @@
 // See LICENSE.txt for detai
 
 #include <array>
+#include <cmath>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <vector>
 
-#include "DataStructures/Tensor/Expressions/AddSubtract.hpp"
-#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
+#include "tests/Unit/Pypp/PyppFundamentals.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 SPECTRE_TEST_CASE("Unit.Pypp.none", "[Pypp][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};

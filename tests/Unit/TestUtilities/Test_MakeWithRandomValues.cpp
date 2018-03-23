@@ -3,15 +3,22 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cstddef>
 #include <limits>
 #include <random>
 #include <unordered_set>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare Variables
 
 namespace {
 template <size_t Dim>

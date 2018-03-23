@@ -1,12 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   std::vector<double> vector{0, 1, 2, 3};

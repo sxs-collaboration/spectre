@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+#include <patchlevel.h>  // for PY_MAJOR_VERSION
 #include <string>
 
 /// Contains all functions for pypp
