@@ -467,8 +467,11 @@ struct Interface<
                   detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value and
         not tmpl::all<typename db::item_type<VariablesTag>::tags_list,
                       detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value>> {
-  static_assert(cpp17::is_same_v<VariablesTag, void> && false,
-                "Cannot compute a partially-sliced Variables");
+  // This static_assert should always trigger. We compare the VariablesTag to a
+  // very unusual type that in general will not appear as a tag.
+  static_assert(
+      cpp17::is_same_v<VariablesTag, void* volatile const* volatile const*>,
+      "Cannot compute a partially-sliced Variables");
 };
 /// \endcond
 }  // namespace Tags

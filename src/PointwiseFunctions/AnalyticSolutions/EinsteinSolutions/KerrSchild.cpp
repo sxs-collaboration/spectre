@@ -46,8 +46,9 @@ void KerrSchild::pup(PUP::er& p) noexcept {
 }
 
 template <typename DataType>
-tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
-    const tnsr::I<DataType, 3>& x, const double /*t*/) const noexcept {
+tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::variables(
+    const tnsr::I<DataType, 3>& x, const double /*t*/,
+    tags<DataType> /*meta*/) const noexcept {
   // Input spin is dimensionless spin.  But below we use `spin` = the
   // Kerr spin parameter `a`, which is `J/M` where `J` is the angular
   // momentum.  So compute `spin=a` here.
@@ -174,12 +175,13 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
 
   auto result = make_with_value<tuples::TaggedTuple<
       gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      gr::Tags::DtLapse<3, Frame::Inertial, DataType>, deriv_lapse<DataType>,
-      gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      gr::Tags::DtShift<3, Frame::Inertial, DataType>, deriv_shift<DataType>,
+      Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>,
+      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
+      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataType>,
-      deriv_spatial_metric<DataType>>>(x, 0.0);
+      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      DerivSpatialMetric<DataType>>>(x, 0.0);
 
   get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) =
       sqrt(lapse_squared);
@@ -190,7 +192,7 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
         get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) *
         lapse_squared;
     for (size_t i = 0; i < 3; ++i) {
-      get<deriv_lapse<DataType>>(result).get(i) = temp * deriv_H.get(i);
+      get<DerivLapse<DataType>>(result).get(i) = temp * deriv_H.get(i);
     }
   }
 
@@ -204,7 +206,7 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
 
   for (size_t m = 0; m < 3; ++m) {
     for (size_t i = 0; i < 3; ++i) {
-      get<deriv_shift<DataType>>(result).get(m, i) =
+      get<DerivShift<DataType>>(result).get(m, i) =
           4.0 * H * null_form.get(i) * square(lapse_squared) *
               cube(null_vector_0) * deriv_H.get(m) -
           2.0 * lapse_squared * null_vector_0 *
@@ -225,10 +227,11 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {  // Symmetry
       for (size_t m = 0; m < 3; ++m) {
-        get<deriv_spatial_metric<DataType>>(result).get(m, i, j) =
+        get<DerivSpatialMetric<DataType>>(result).get(m, i, j) =
             2.0 * null_form.get(i) * null_form.get(j) * deriv_H.get(m) +
-            2.0 * H * (null_form.get(i) * deriv_null_form.get(m, j) +
-                       null_form.get(j) * deriv_null_form.get(m, i));
+            2.0 * H *
+                (null_form.get(i) * deriv_null_form.get(m, j) +
+                 null_form.get(j) * deriv_null_form.get(m, i));
       }
     }
   }
@@ -239,9 +242,11 @@ tuples::TaggedTupleTypelist<KerrSchild::tags<DataType>> KerrSchild::solution(
 
 template tuples::TaggedTupleTypelist<
     EinsteinSolutions::KerrSchild::tags<DataVector>>
-EinsteinSolutions::KerrSchild::solution(const tnsr::I<DataVector, 3>& x,
-                                        const double /*t*/) const noexcept;
+EinsteinSolutions::KerrSchild::variables(
+    const tnsr::I<DataVector, 3>& x, const double /*t*/,
+    KerrSchild::tags<DataVector> /*meta*/) const noexcept;
 template tuples::TaggedTupleTypelist<
     EinsteinSolutions::KerrSchild::tags<double>>
-EinsteinSolutions::KerrSchild::solution(const tnsr::I<double, 3>& x,
-                                        const double /*t*/) const noexcept;
+EinsteinSolutions::KerrSchild::variables(
+    const tnsr::I<double, 3>& x, const double /*t*/,
+    KerrSchild::tags<double> /*meta*/) const noexcept;

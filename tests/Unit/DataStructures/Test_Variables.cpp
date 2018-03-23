@@ -382,60 +382,85 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.Serialization",
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.assign_subset",
                   "[DataStructures][Unit]") {
   constexpr size_t size = 3;
-  Variables<tmpl::list<VariablesTestTags_detail::vector>> vars_subset0(size,
-                                                                       8.0);
-  Variables<tmpl::list<VariablesTestTags_detail::scalar>> vars_subset1(size,
-                                                                       4.0);
+  const auto first_test = [&size](const auto& vars_subset0,
+                                  const auto& vars_subset1) noexcept {
+    Variables<tmpl::list<VariablesTestTags_detail::vector,
+                         VariablesTestTags_detail::scalar>>
+        vars_set0{size, 3.0};
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set0) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 3.0));
+    CHECK(get<VariablesTestTags_detail::scalar>(vars_set0) ==
+          db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
+    vars_set0.assign_subset(vars_subset0);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set0) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
+    CHECK(get<VariablesTestTags_detail::scalar>(vars_set0) ==
+          db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
+    vars_set0.assign_subset(vars_subset1);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set0) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
+    CHECK(get<VariablesTestTags_detail::scalar>(vars_set0) ==
+          db::item_type<VariablesTestTags_detail::scalar>(size, 4.0));
+  };
 
-  Variables<tmpl::list<VariablesTestTags_detail::vector,
-                       VariablesTestTags_detail::scalar>>
-      vars_set0(size, 3.0);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set0) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 3.0));
-  CHECK(get<VariablesTestTags_detail::scalar>(vars_set0) ==
-        db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
-  vars_set0.assign_subset(vars_subset0);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set0) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
-  CHECK(get<VariablesTestTags_detail::scalar>(vars_set0) ==
-        db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
-  vars_set0.assign_subset(vars_subset1);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set0) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
-  CHECK(get<VariablesTestTags_detail::scalar>(vars_set0) ==
-        db::item_type<VariablesTestTags_detail::scalar>(size, 4.0));
+  first_test(
+      Variables<tmpl::list<VariablesTestTags_detail::vector>>(size, 8.0),
+      Variables<tmpl::list<VariablesTestTags_detail::scalar>>(size, 4.0));
+  first_test(tuples::TaggedTuple<VariablesTestTags_detail::vector>(
+                 VariablesTestTags_detail::vector::type{size, 8.0}),
+             tuples::TaggedTuple<VariablesTestTags_detail::scalar>(
+                 VariablesTestTags_detail::scalar::type{size, 4.0}));
 
-  Variables<tmpl::list<VariablesTestTags_detail::vector,
-                       VariablesTestTags_detail::scalar,
-                       VariablesTestTags_detail::scalar2>>
-      vars_set1(size, 3.0);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 3.0));
-  CHECK(get<VariablesTestTags_detail::scalar>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
-  CHECK(get<VariablesTestTags_detail::scalar2>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::scalar2>(size, 3.0));
-  vars_set1.assign_subset(vars_subset0);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
-  CHECK(get<VariablesTestTags_detail::scalar>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
-  CHECK(get<VariablesTestTags_detail::scalar2>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::scalar2>(size, 3.0));
-  vars_set1.assign_subset(vars_subset1);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
-  CHECK(get<VariablesTestTags_detail::scalar>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::scalar>(size, 4.0));
-  CHECK(get<VariablesTestTags_detail::scalar2>(vars_set1) ==
-        db::item_type<VariablesTestTags_detail::scalar2>(size, 3.0));
+  const auto second_test = [&size](const auto& vars_subset0,
+                                   const auto& vars_subset1) noexcept {
+    Variables<tmpl::list<VariablesTestTags_detail::vector,
+                         VariablesTestTags_detail::scalar,
+                         VariablesTestTags_detail::scalar2>>
+        vars_set1(size, 3.0);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 3.0));
+    CHECK(get<VariablesTestTags_detail::scalar>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
+    CHECK(get<VariablesTestTags_detail::scalar2>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::scalar2>(size, 3.0));
+    vars_set1.assign_subset(vars_subset0);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
+    CHECK(get<VariablesTestTags_detail::scalar>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::scalar>(size, 3.0));
+    CHECK(get<VariablesTestTags_detail::scalar2>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::scalar2>(size, 3.0));
+    vars_set1.assign_subset(vars_subset1);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
+    CHECK(get<VariablesTestTags_detail::scalar>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::scalar>(size, 4.0));
+    CHECK(get<VariablesTestTags_detail::scalar2>(vars_set1) ==
+          db::item_type<VariablesTestTags_detail::scalar2>(size, 3.0));
+  };
 
-  Variables<tmpl::list<VariablesTestTags_detail::vector>> vars_set2(size, -7.0);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set2) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, -7.0));
-  vars_set2.assign_subset(vars_subset0);
-  CHECK(get<VariablesTestTags_detail::vector>(vars_set2) ==
-        db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
+  second_test(
+      Variables<tmpl::list<VariablesTestTags_detail::vector>>(size, 8.0),
+      Variables<tmpl::list<VariablesTestTags_detail::scalar>>(size, 4.0));
+  second_test(tuples::TaggedTuple<VariablesTestTags_detail::vector>(
+                  VariablesTestTags_detail::vector::type{size, 8.0}),
+              tuples::TaggedTuple<VariablesTestTags_detail::scalar>(
+                  VariablesTestTags_detail::scalar::type{size, 4.0}));
+
+  const auto third_test = [&size](const auto& vars_subset0) noexcept {
+    Variables<tmpl::list<VariablesTestTags_detail::vector>> vars_set2(size,
+                                                                      -7.0);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set2) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, -7.0));
+    vars_set2.assign_subset(vars_subset0);
+    CHECK(get<VariablesTestTags_detail::vector>(vars_set2) ==
+          db::item_type<VariablesTestTags_detail::vector>(size, 8.0));
+  };
+
+  third_test(
+      Variables<tmpl::list<VariablesTestTags_detail::vector>>(size, 8.0));
+  third_test(tuples::TaggedTuple<VariablesTestTags_detail::vector>(
+      VariablesTestTags_detail::vector::type{size, 8.0}));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.SliceVariables",

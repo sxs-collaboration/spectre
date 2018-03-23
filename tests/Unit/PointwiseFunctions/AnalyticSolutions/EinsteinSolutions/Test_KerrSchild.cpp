@@ -57,23 +57,25 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   // Evaluate solution
   EinsteinSolutions::KerrSchild solution(mass, spin, center);
 
-  const auto vars = solution.solution(x, t);
+  const auto vars =
+      solution.variables(x, t, EinsteinSolutions::KerrSchild::tags<DataType>{});
   const auto& lapse = get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(vars);
   const auto& dt_lapse =
-      get<gr::Tags::DtLapse<3, Frame::Inertial, DataType>>(vars);
+      get<Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>>(vars);
   const auto& d_lapse =
-      get<EinsteinSolutions::KerrSchild::deriv_lapse<DataType>>(vars);
+      get<EinsteinSolutions::KerrSchild::DerivLapse<DataType>>(vars);
   const auto& shift = get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(vars);
   const auto& d_shift =
-      get<EinsteinSolutions::KerrSchild::deriv_shift<DataType>>(vars);
+      get<EinsteinSolutions::KerrSchild::DerivShift<DataType>>(vars);
   const auto& dt_shift =
-      get<gr::Tags::DtShift<3, Frame::Inertial, DataType>>(vars);
+      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>>(vars);
   const auto& g =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(vars);
   const auto& dt_g =
-      get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataType>>(vars);
+      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>(
+          vars);
   const auto& d_g =
-      get<EinsteinSolutions::KerrSchild::deriv_spatial_metric<DataType>>(vars);
+      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataType>>(vars);
 
   // Check those quantities that should be zero.
   const auto zero = make_with_value<DataType>(x, 0.);
@@ -167,44 +169,46 @@ void test_double_vs_datavector() noexcept {
   const auto x1 = spatial_coords(0.0);
   const auto x2 = spatial_coords(DataVector{0.0, 0.0, 0.0});
 
-  const auto vars1 = solution.solution(x1, t);
+  const auto vars1 =
+      solution.variables(x1, t, EinsteinSolutions::KerrSchild::tags<double>{});
   const auto& lapse1 = get<gr::Tags::Lapse<3, Frame::Inertial, double>>(vars1);
   const auto& dt_lapse1 =
-      get<gr::Tags::DtLapse<3, Frame::Inertial, double>>(vars1);
+      get<Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, double>>>(vars1);
   const auto& d_lapse1 =
-      get<EinsteinSolutions::KerrSchild::deriv_lapse<double>>(vars1);
+      get<EinsteinSolutions::KerrSchild::DerivLapse<double>>(vars1);
   const auto& shift1 = get<gr::Tags::Shift<3, Frame::Inertial, double>>(vars1);
   const auto& d_shift1 =
-      get<EinsteinSolutions::KerrSchild::deriv_shift<double>>(vars1);
+      get<EinsteinSolutions::KerrSchild::DerivShift<double>>(vars1);
   const auto& dt_shift1 =
-      get<gr::Tags::DtShift<3, Frame::Inertial, double>>(vars1);
+      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, double>>>(vars1);
   const auto& g1 =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, double>>(vars1);
   const auto& dt_g1 =
-      get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, double>>(vars1);
+      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, double>>>(vars1);
   const auto& d_g1 =
-      get<EinsteinSolutions::KerrSchild::deriv_spatial_metric<double>>(vars1);
+      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<double>>(vars1);
 
-  const auto vars2 = solution.solution(x2, t);
+  const auto vars2 = solution.variables(
+      x2, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
   const auto& lapse2 =
       get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars2);
   const auto& dt_lapse2 =
-      get<gr::Tags::DtLapse<3, Frame::Inertial, DataVector>>(vars2);
+      get<Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>>(vars2);
   const auto& d_lapse2 =
-      get<EinsteinSolutions::KerrSchild::deriv_lapse<DataVector>>(vars2);
+      get<EinsteinSolutions::KerrSchild::DerivLapse<DataVector>>(vars2);
   const auto& shift2 =
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars2);
   const auto& d_shift2 =
-      get<EinsteinSolutions::KerrSchild::deriv_shift<DataVector>>(vars2);
+      get<EinsteinSolutions::KerrSchild::DerivShift<DataVector>>(vars2);
   const auto& dt_shift2 =
-      get<gr::Tags::DtShift<3, Frame::Inertial, DataVector>>(vars2);
+      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(vars2);
   const auto& g2 =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars2);
   const auto& dt_g2 =
-      get<gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataVector>>(vars2);
-  const auto& d_g2 =
-      get<EinsteinSolutions::KerrSchild::deriv_spatial_metric<DataVector>>(
+      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
           vars2);
+  const auto& d_g2 =
+      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars2);
 
   check_tensor_doubles_approx_equals_tensor_datavectors(lapse2, lapse1);
   check_tensor_doubles_approx_equals_tensor_datavectors(shift2, shift1);

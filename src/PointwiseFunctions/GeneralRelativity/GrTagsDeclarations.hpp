@@ -24,22 +24,14 @@ struct SpatialMetric;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct InverseSpatialMetric;
+template <size_t Dim, typename Frame, typename DataType>
+struct SqrtDetSpatialMetric;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct Shift;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct Lapse;
-
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct DtShift;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct DtLapse;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct DtSpatialMetric;
 
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
@@ -58,6 +50,8 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct TraceSpacetimeChristoffelFirstKind;
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpatialChristoffelSecondKind;
+template <size_t Dim, typename Frame, typename DataType>
+struct ExtrinsicCurvature;
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceExtrinsicCurvature;
 }  // namespace Tags

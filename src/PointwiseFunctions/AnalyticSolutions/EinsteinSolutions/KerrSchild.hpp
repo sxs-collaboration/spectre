@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
@@ -234,28 +235,30 @@ class KerrSchild {
   ~KerrSchild() = default;
 
   template <typename DataType>
-  using deriv_lapse = Tags::deriv<gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-                                  tmpl::size_t<3>, Frame::Inertial>;
+  using DerivLapse = Tags::deriv<gr::Tags::Lapse<3, Frame::Inertial, DataType>,
+                                 tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
-  using deriv_shift = Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                                  tmpl::size_t<3>, Frame::Inertial>;
+  using DerivShift = Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
+                                 tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
-  using deriv_spatial_metric =
+  using DerivSpatialMetric =
       Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
                   tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
   using tags = tmpl::list<
       gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      gr::Tags::DtLapse<3, Frame::Inertial, DataType>, deriv_lapse<DataType>,
-      gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      gr::Tags::DtShift<3, Frame::Inertial, DataType>, deriv_shift<DataType>,
+      Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>,
+      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
+      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      gr::Tags::DtSpatialMetric<3, Frame::Inertial, DataType>,
-      deriv_spatial_metric<DataType>>;
+      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      DerivSpatialMetric<DataType>>;
 
   template <typename DataType>
-  tuples::TaggedTupleTypelist<tags<DataType>> solution(
-      const tnsr::I<DataType, 3>& x, double t) const noexcept;
+  tuples::TaggedTupleTypelist<tags<DataType>> variables(
+      const tnsr::I<DataType, 3>& x, double t, tags<DataType> /*meta*/) const
+      noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
