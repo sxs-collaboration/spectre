@@ -6,6 +6,7 @@ set(LIBRARY CoordinateMaps)
 set(LIBRARY_SOURCES
     Affine.cpp
     BulgedCube.cpp
+    DiscreteRotation.cpp
     Equiangular.cpp
     Frustum.cpp
     Identity.cpp

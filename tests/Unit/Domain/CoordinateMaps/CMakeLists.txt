@@ -6,6 +6,7 @@ set(LIBRARY_SOURCES
   CoordinateMaps/Test_Affine.cpp
   CoordinateMaps/Test_BulgedCube.cpp
   CoordinateMaps/Test_CoordinateMap.cpp
+  CoordinateMaps/Test_DiscreteRotation.cpp
   CoordinateMaps/Test_Equiangular.cpp
   CoordinateMaps/Test_Frustum.cpp
   CoordinateMaps/Test_Identity.cpp
