@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Direction.cpp
   Test_Domain.cpp
   Test_DomainHelpers.cpp
+  Test_DomainTestHelpers.cpp
   Test_Element.cpp
   Test_ElementId.cpp
   Test_ElementIndex.cpp
