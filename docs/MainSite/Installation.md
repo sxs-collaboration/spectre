@@ -173,6 +173,11 @@ or (equivalently) use the `module load` command.
 it is recommended you read the [documentation](https://spack.readthedocs.io) if
 you require features such as packages installed with different compilers.
 
+**Note**: On a Mac, you may need to `spack install
+yaml-cpp@develop~shared` (note that is a tilde and not a dash in front
+of shared) in order to force the building of the static libraries in
+order to avoid dynamic linking errors.
+
 ### Building SpECTRE
 
 After the dependencies have been installed, Charm++ and SpECTRE can be compiled.
