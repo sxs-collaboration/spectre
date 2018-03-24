@@ -113,13 +113,13 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   nocopy_map_item.emplace(Direction<dim>::upper_xi(), NoCopy<2>{});
   nocopy_map_item.emplace(Direction<dim>::upper_zeta(), NoCopy<2>{});
   const auto box = db::create<
-      db::AddTags<Tags::Element<dim>,
-                  TestTags::Int,
-                  Tags::Interface<internal_directions, TestTags::Double>,
-                  TestTags::NoCopy<1>,
-                  Tags::Interface<internal_directions, TestTags::NoCopy<2>>,
-                  templated_directions,
-                  Tags::Interface<templated_directions, TestTags::Double>>,
+      db::AddSimpleTags<
+          Tags::Element<dim>, TestTags::Int,
+          Tags::Interface<internal_directions, TestTags::Double>,
+          TestTags::NoCopy<1>,
+          Tags::Interface<internal_directions, TestTags::NoCopy<2>>,
+          templated_directions,
+          Tags::Interface<templated_directions, TestTags::Double>>,
       db::AddComputeItemsTags<
           internal_directions,
           Tags::Interface<internal_directions, Tags::Direction<dim>>,
@@ -258,8 +258,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
   auto box = db::create<
-      db::AddTags<Tags::Extents<dim>,
-                  Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
+      db::AddSimpleTags<
+          Tags::Extents<dim>,
+          Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
       db::AddComputeItemsTags<Dirs, Tags::Interface<Dirs, Tags::Direction<dim>>,
                               Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
                               Tags::Interface<Dirs, Compute<1>>>>(
@@ -298,8 +299,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
   auto box = db::create<
-      db::AddTags<Tags::Extents<dim>, sliced_simple_item_tag,
-                  Tags::Interface<Dirs, simple_item_tag>>,
+      db::AddSimpleTags<Tags::Extents<dim>, sliced_simple_item_tag,
+                        Tags::Interface<Dirs, simple_item_tag>>,
       db::AddComputeItemsTags<Dirs, sliced_compute_item_tag,
                               Tags::Interface<Dirs, Tags::Direction<dim>>,
                               Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
@@ -372,7 +373,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.PartialSlice", "[Unit][Domain]") {
   }
 
   const auto box = db::create<
-      db::AddTags<Tags::Extents<dim>, partial_slice::volume_vars_tag>,
+      db::AddSimpleTags<Tags::Extents<dim>, partial_slice::volume_vars_tag>,
       db::AddComputeItemsTags<Dirs, partial_slice::ComputedVars<dim>,
                               Tags::Interface<Dirs, Tags::Direction<dim>>,
                               Tags::Interface<Dirs, Tags::Extents<dim - 1>>,

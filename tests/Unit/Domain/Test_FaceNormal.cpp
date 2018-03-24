@@ -130,7 +130,7 @@ struct Directions : db::DataBoxTag {
 }  // namespace
 SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
   const auto box = db::create<
-      db::AddTags<Directions, Tags::Extents<2>, Tags::ElementMap<2>>,
+      db::AddSimpleTags<Directions, Tags::Extents<2>, Tags::ElementMap<2>>,
       db::AddComputeItemsTags<
           Tags::Interface<Directions, Tags::Direction<2>>,
           Tags::Interface<Directions, Tags::Extents<1>>,

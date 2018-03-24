@@ -1256,7 +1256,7 @@ using RemoveTags = tmpl::flatten<tmpl::list<Tags...>>;
  * \brief List of Tags to add to the DataBox
  */
 template <typename... Tags>
-using AddTags = tmpl::flatten<tmpl::list<Tags...>>;
+using AddSimpleTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup

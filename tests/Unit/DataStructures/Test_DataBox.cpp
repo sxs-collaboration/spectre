@@ -149,14 +149,14 @@ static_assert(db::detail::tag_has_label<test_databox_tags::TagTensor>::value,
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   /// [create_databox]
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1,
-                                         test_databox_tags::ComputeLambda0,
-                                         test_databox_tags::ComputeLambda1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1,
+                              test_databox_tags::ComputeLambda0,
+                              test_databox_tags::ComputeLambda1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   /// [create_databox]
   static_assert(
       std::is_same<
@@ -196,9 +196,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   }
   {
     /// [create_from_add_item]
-    auto box =
-        db::create_from<db::RemoveTags<>, db::AddTags<test_databox_tags::Tag3>>(
-            original_box, "Yet another test string"s);
+    auto box = db::create_from<db::RemoveTags<>,
+                               db::AddSimpleTags<test_databox_tags::Tag3>>(
+        original_box, "Yet another test string"s);
     /// [create_from_add_item]
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -210,12 +210,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   }
   {
     /// [create_from_add_compute_item]
-    auto simple_box =
-        db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                               test_databox_tags::Tag2>>(
-            3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+    auto simple_box = db::create<
+        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                          test_databox_tags::Tag2>>(
+        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
     auto box = db::create_from<
-        db::RemoveTags<>, db::AddTags<>,
+        db::RemoveTags<>, db::AddSimpleTags<>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(simple_box);
     /// [create_from_add_compute_item]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -223,12 +223,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
   }
   {
-    auto simple_box =
-        db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                               test_databox_tags::Tag2>>(
-            3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+    auto simple_box = db::create<
+        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                          test_databox_tags::Tag2>>(
+        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
     auto box = db::create_from<
-        db::RemoveTags<>, db::AddTags<test_databox_tags::Tag3>,
+        db::RemoveTags<>, db::AddSimpleTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
@@ -237,13 +237,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
   }
   {
-    auto simple_box =
-        db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                               test_databox_tags::Tag2>>(
-            3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+    auto simple_box = db::create<
+        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                          test_databox_tags::Tag2>>(
+        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
     auto box = db::create_from<
         db::RemoveTags<test_databox_tags::Tag1>,
-        db::AddTags<test_databox_tags::Tag3>,
+        db::AddSimpleTags<test_databox_tags::Tag3>,
         db::AddComputeItemsTags<test_databox_tags::ComputeTag0>>(
         simple_box, "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
@@ -271,12 +271,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_argument_types",
   std::string move_string = "move";
   const std::string const_move_string = "const move";
   // clang-tidy: std::move of a const variable
-  auto box = db::create<
-      db::AddTags<ArgumentTypeTags::NonCopyable, ArgumentTypeTags::String<0>,
-                  ArgumentTypeTags::String<1>, ArgumentTypeTags::String<2>,
-                  ArgumentTypeTags::String<3>>>(
-      NonCopyable{}, mutable_string, const_string, std::move(move_string),
-      std::move(const_move_string));  // NOLINT
+  auto box = db::create<db::AddSimpleTags<
+      ArgumentTypeTags::NonCopyable, ArgumentTypeTags::String<0>,
+      ArgumentTypeTags::String<1>, ArgumentTypeTags::String<2>,
+      ArgumentTypeTags::String<3>>>(NonCopyable{}, mutable_string, const_string,
+                                    std::move(move_string),
+                                    std::move(const_move_string));  // NOLINT
   CHECK(mutable_string == "mutable");
   CHECK(const_string == "const");
   CHECK(db::get<ArgumentTypeTags::String<0>>(box) == "mutable");
@@ -287,12 +287,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_argument_types",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
                   "[Unit][DataStructures]") {
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
   /// [databox_self_tag_example]
@@ -312,12 +312,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
                   "[Unit][DataStructures]") {
   ERROR_TEST();
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
   db::mutate<test_databox_tags::Tag0>(
@@ -328,12 +328,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
                   "[Unit][DataStructures]") {
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
         3.14 * 2.0);
   /// [databox_mutate_example]
@@ -359,12 +359,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
                   "[Unit][DataStructures]") {
   ERROR_TEST();
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       original_box, [&original_box](double& tag0, std::vector<double>& tag1) {
         const auto& compute_tag0 =
@@ -381,12 +381,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get_lazy",
                   "[Unit][DataStructures]") {
   ERROR_TEST();
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       original_box,
       [&original_box](double& /*tag0*/, std::vector<double>& /*tag1*/) {
@@ -401,12 +401,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get_lazy",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
                   "[Unit][DataStructures]") {
   ERROR_TEST();
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0>(
       original_box, [&original_box](double& /*unused*/) {
         db::mutate<test_databox_tags::Tag1>(
@@ -418,9 +418,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
                   "[Unit][DataStructures]") {
   /// [get_item_from_box]
   auto original_box = db::create<
-      db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                  test_databox_tags::Tag2,
-                  test_databox_tags::TagPrefix<test_databox_tags::Tag0>>,
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2,
+                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>>,
       db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
                               test_databox_tags::ComputeTag1>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7);
@@ -440,12 +440,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
                   "[Unit][DataStructures]") {
   ERROR_TEST();
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   static_cast<void>(db::get_item_from_box<double>(original_box, "time__"));
 }
 
@@ -468,12 +468,12 @@ struct NonCopyableFunctor {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
                   "[Unit][DataStructures]") {
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   auto check_result_no_args = [](const std::string& sample_string,
                                  const auto& computed_string) {
     CHECK(sample_string == "My Sample String"s);
@@ -501,12 +501,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
                   "[Unit][DataStructures]") {
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
-                                         test_databox_tags::ComputeTag1>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   auto check_result_no_args = [](const auto& box,
                                  const std::string& sample_string,
                                  const auto& computed_string) {
@@ -541,11 +541,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
                   "[Unit][DataStructures]") {
   ERROR_TEST();
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::TagTensor>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::TagTensor>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
 
   std::pair<std::vector<std::string>, std::vector<double>> tag_tensor =
       get_tensor_from_box(original_box, "TagTensor__");
@@ -554,11 +554,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
                   "[Unit][DataStructures]") {
-  auto original_box =
-      db::create<db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                             test_databox_tags::Tag2>,
-                 db::AddComputeItemsTags<test_databox_tags::TagTensor>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  auto original_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
+      db::AddComputeItemsTags<test_databox_tags::TagTensor>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
 
   auto tag_tensor = get_tensor_from_box(original_box, "TagTensor");
   CHECK(tag_tensor.first == (std::vector<std::string>{"t"s, "x"s, "y"s, "z"s}));
@@ -755,8 +755,8 @@ struct MultiplyVariablesByTwo : db::ComputeItemTag {
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
                   "[Unit][DataStructures]") {
   auto box = db::create<
-      db::AddTags<Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                             test_databox_tags::VectorTag>>>,
+      db::AddSimpleTags<Tags::Variables<tmpl::list<
+          test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>,
       db::AddComputeItemsTags<test_databox_tags::MultiplyScalarByTwo,
                               test_databox_tags::MultiplyScalarByFour,
                               test_databox_tags::MultiplyScalarByThree,
@@ -918,8 +918,9 @@ struct Tag2 : db::DataBoxTag {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables2",
                   "[Unit][DataStructures]") {
-  auto box = db::create<db::AddTags<Tags::Variables<tmpl::list<Tag1, Tag2>>>>(
-      Variables<tmpl::list<Tag1, Tag2>>(1, 1.));
+  auto box =
+      db::create<db::AddSimpleTags<Tags::Variables<tmpl::list<Tag1, Tag2>>>>(
+          Variables<tmpl::list<Tag1, Tag2>>(1, 1.));
 
   db::mutate<Tags::Variables<tmpl::list<Tag1, Tag2>>>(
       box, [](auto& vars) { vars = Variables<tmpl::list<Tag1, Tag2>>(1, 2.); });
@@ -929,10 +930,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables2",
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
                   "[Unit][DataStructures]") {
   auto box = db::create<
-      db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                  test_databox_tags::Tag2,
-                  Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                             test_databox_tags::VectorTag>>>,
+      db::AddSimpleTags<
+          test_databox_tags::Tag0, test_databox_tags::Tag1,
+          test_databox_tags::Tag2,
+          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                     test_databox_tags::VectorTag>>>,
       db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
                               test_databox_tags::ComputeTag1,
                               test_databox_tags::MultiplyScalarByTwo,
@@ -965,9 +967,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
       db::RemoveTags<test_databox_tags::Tag0,
                      Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                                 test_databox_tags::VectorTag>>>,
-      db::AddTags<test_databox_tags::Tag0,
-                  Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                             test_databox_tags::VectorTag>>>>(
+      db::AddSimpleTags<
+          test_databox_tags::Tag0,
+          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                     test_databox_tags::VectorTag>>>>(
       box, 3.84,
       Variables<tmpl::list<test_databox_tags::ScalarTag,
                            test_databox_tags::VectorTag>>(4, 8.0));
@@ -1019,8 +1022,8 @@ struct CheckReset : db::ComputeItemTag {
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
                   "[Unit][DataStructures]") {
   auto box = db::create<
-      db::AddTags<ExtraResetTags::Int,
-                  Tags::Variables<tmpl::list<ExtraResetTags::Var>>>,
+      db::AddSimpleTags<ExtraResetTags::Int,
+                        Tags::Variables<tmpl::list<ExtraResetTags::Var>>>,
       db::AddComputeItemsTags<ExtraResetTags::CheckReset>>(
       1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
@@ -1047,10 +1050,11 @@ struct test_databox_mutate_apply {
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
                   "[Unit][DataStructures]") {
   auto box = db::create<
-      db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                  test_databox_tags::Tag2,
-                  Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                             test_databox_tags::VectorTag>>>,
+      db::AddSimpleTags<
+          test_databox_tags::Tag0, test_databox_tags::Tag1,
+          test_databox_tags::Tag2,
+          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                     test_databox_tags::VectorTag>>>,
       db::AddComputeItemsTags<test_databox_tags::ComputeTag0,
                               test_databox_tags::ComputeTag1,
                               test_databox_tags::MultiplyScalarByTwo>>(
@@ -1237,8 +1241,8 @@ struct MutateVariablesCompute : db::ComputeItemTag {
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
                   "[Unit][DataStructures]") {
   auto original_box = db::create<
-      db::AddTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                  test_databox_tags::Tag2>,
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>,
       db::AddComputeItemsTags<test_databox_tags::MutateComputeTag0,
                               test_databox_tags::NonMutateComputeTag0,
                               test_databox_tags::MutateVariablesCompute,
@@ -1362,7 +1366,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
   const size_t x_extents = 2, y_extents = 3, z_extents = 4,
                vec_size = DataBoxTest_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
-  auto box = db::create<db::AddTags<DataBoxTest_detail::vector>>([]() {
+  auto box = db::create<db::AddSimpleTags<DataBoxTest_detail::vector>>([]() {
     Variables<tmpl::list<DataBoxTest_detail::vector>> vars(24, 0.);
     for (size_t s = 0; s < vars.size(); ++s) {
       // clang-tidy: do not use pointer arithmetic
@@ -1421,8 +1425,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
                vec_size = DataBoxTest_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
   auto box = db::create<
-      db::AddTags<DataBoxTest_detail::vector, DataBoxTest_detail::scalar,
-                  DataBoxTest_detail::vector2>>(
+      db::AddSimpleTags<DataBoxTest_detail::vector, DataBoxTest_detail::scalar,
+                        DataBoxTest_detail::vector2>>(
       []() {
         Variables<tmpl::list<DataBoxTest_detail::vector>> vars(24, 0.);
         for (size_t s = 0; s < vars.size(); ++s) {
@@ -1617,7 +1621,7 @@ struct Subitems<test_subitems::Parent<N, Compute>> {
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
                   "[Unit][DataStructures]") {
   auto box =
-      db::create<db::AddTags<test_subitems::Parent<0>>,
+      db::create<db::AddSimpleTags<test_subitems::Parent<0>>,
                  db::AddComputeItemsTags<test_subitems::Parent<1, true>>>(
           std::make_pair(
               test_subitems::Boxed<int>(std::make_shared<int>(5)),

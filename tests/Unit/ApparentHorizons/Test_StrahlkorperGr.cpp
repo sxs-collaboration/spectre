@@ -37,11 +37,10 @@ void test_expansion(const Solution& solution,
                     const Strahlkorper<Fr>& strahlkorper,
                     const ExpectedLambda& expected) noexcept {
   // Make databox from surface
-  const auto box =
-      db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                 db::AddComputeItemsTags<
-                     StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          strahlkorper);
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeItemsTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -100,11 +99,11 @@ void test_expansion(const Solution& solution,
 namespace TestExtrinsicCurvature {
 void test_minkowski() {
   // Make surface of radius 2.
-  const auto box =
-      db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                 db::AddComputeItemsTags<
-                     StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeItemsTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
+      Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
 
   const double t = 0.0;
   const auto& cart_coords =
@@ -162,11 +161,11 @@ void test_ricci_scalar(const Solution& solution,
                        const SpatialRicciScalar& spatial_ricci_scalar,
                        const ExpectedLambda& expected) noexcept {
   // Make surface of radius 2.
-  const auto box =
-      db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                 db::AddComputeItemsTags<
-                     StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeItemsTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
+      Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
 
   const double t = 0.0;
   const auto& cart_coords =

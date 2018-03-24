@@ -236,9 +236,9 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     }
 
     return db::create<
-        db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
-                    Tags::ElementMap<2>, dt_variables_tag,
-                    normal_dot_fluxes_tag, other_data_tag>,
+        db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+                          Tags::ElementMap<2>, dt_variables_tag,
+                          normal_dot_fluxes_tag, other_data_tag>,
         compute_items>(time_id, extents, element, std::move(map),
                        std::move(dt_variables), std::move(normal_dot_fluxes),
                        std::move(other_data));
@@ -286,12 +286,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     other_data_map[direction].initialize(other_data.size());
     get(get<OtherData>(other_data_map[direction])) = other_data;
 
-    auto box = db::create<
-        db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
-                    Tags::ElementMap<2>, normal_dot_fluxes_tag, other_data_tag>,
-        compute_items>(time_id, extents, element, std::move(map),
-                       std::move(normal_dot_fluxes_map),
-                       std::move(other_data_map));
+    auto box =
+        db::create<db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>,
+                                     Tags::Element<2>, Tags::ElementMap<2>,
+                                     normal_dot_fluxes_tag, other_data_tag>,
+                   compute_items>(time_id, extents, element, std::move(map),
+                                  std::move(normal_dot_fluxes_map),
+                                  std::move(other_data_map));
 
     runner.apply<component, send_data_for_fluxes>(box, id);
   };
@@ -378,14 +379,13 @@ SPECTRE_TEST_CASE(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   db::item_type<dt_variables_tag> dt_variables(extents.product(), 3.0);
-  auto start_box =
-      db::create<db::AddTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
-                             Tags::ElementMap<2>, dt_variables_tag,
-                             normal_dot_fluxes_tag, other_data_tag>,
-                 compute_items>(time_id, extents, element, std::move(map),
-                                std::move(dt_variables),
-                                db::item_type<normal_dot_fluxes_tag>{},
-                                db::item_type<other_data_tag>{});
+  auto start_box = db::create<
+      db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+                        Tags::ElementMap<2>, dt_variables_tag,
+                        normal_dot_fluxes_tag, other_data_tag>,
+      compute_items>(
+      time_id, extents, element, std::move(map), std::move(dt_variables),
+      db::item_type<normal_dot_fluxes_tag>{}, db::item_type<other_data_tag>{});
 
   auto sent_box = std::get<0>(
       runner.apply<component, send_data_for_fluxes>(start_box, self_id));

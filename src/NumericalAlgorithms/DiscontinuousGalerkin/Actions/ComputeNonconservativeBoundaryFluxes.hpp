@@ -108,7 +108,8 @@ struct ComputeNonconservativeBoundaryFluxes {
         box);
 
     return std::make_tuple(
-        db::create_from<db::RemoveTags<>, db::AddTags<normal_dot_fluxes_tag>>(
+        db::create_from<db::RemoveTags<>,
+                        db::AddSimpleTags<normal_dot_fluxes_tag>>(
             box, std::move(boundary_fluxes_result)));
   }
 };
