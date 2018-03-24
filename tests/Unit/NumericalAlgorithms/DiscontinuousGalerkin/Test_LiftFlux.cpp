@@ -47,15 +47,21 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
 
   Variables<tmpl::list<Tags::NormalDotFlux<Var>>> local_flux(
       boundary_extents.product());
-  get<Tags::NormalDotFlux<Var>>(local_flux).get() = {1., 2., 3.};
+  get(get<Tags::NormalDotFlux<Var>>(local_flux)) = {1., 2., 3.};
   Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> numerical_flux(
       boundary_extents.product());
-  get<Tags::NormalDotNumericalFlux<Var>>(numerical_flux).get() = {2., 3., 5.};
+  get(get<Tags::NormalDotNumericalFlux<Var>>(numerical_flux)) = {2., 3., 5.};
 
-  const Variables<tmpl::list<Tags::dt<Var>>> expected =
+  const Variables<tmpl::list<Var>> expected =
       -2. / (element_length * weight) * (numerical_flux - local_flux);
 
-  CHECK(dg::lift_flux(local_flux, numerical_flux, perpendicular_extent,
-                      get(magnitude_of_face_normal)) ==
+  Variables<tmpl::list<Var, Tags::NormalDotFlux<Var>>> local_data(
+      boundary_extents.product());
+  get(get<Tags::NormalDotFlux<Var>>(local_data)) =
+      get(get<Tags::NormalDotFlux<Var>>(local_flux));
+  get(get<Var>(local_data)) = {123., 456., 789.};  // Should be ignored
+
+  CHECK(dg::lift_flux(local_data, numerical_flux, perpendicular_extent,
+                      magnitude_of_face_normal) ==
         expected);
 }

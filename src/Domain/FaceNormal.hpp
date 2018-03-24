@@ -6,8 +6,10 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
 template <typename, typename, size_t>
 class CoordinateMapBase;
 class DataVector;
@@ -17,6 +19,16 @@ template <size_t Dim, typename Frame>
 class ElementMap;
 template <size_t>
 class Index;
+
+namespace Tags {
+template <size_t>
+struct Direction;
+template <size_t, typename>
+struct ElementMap;
+template <size_t>
+struct Extents;
+}  // namespace Tags
+/// \endcond
 
 // @{
 /*!
@@ -45,3 +57,19 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept;
 // @}
+
+namespace Tags {
+/// \ingroup DataBoxTags
+/// \ingroup ComputationalDomain
+/// The unnormalized face normal one form
+template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+struct UnnormalizedFaceNormal : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "UnnormalizedFaceNormal";
+  static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
+      const ::Index<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
+      const ::Direction<VolumeDim>&) = unnormalized_face_normal;
+  using argument_tags = tmpl::list<
+    Extents<VolumeDim - 1>, ElementMap<VolumeDim, Frame>, Direction<VolumeDim>>;
+  using volume_tags = tmpl::list<ElementMap<VolumeDim, Frame>>;
+};
+}  // namespace Tags

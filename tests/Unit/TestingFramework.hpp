@@ -12,6 +12,7 @@
 #include <iomanip>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
@@ -105,9 +106,6 @@ static Approx approx =                                          // NOLINT
  * equality of entries in iterable containers.  For maplike
  * containers, keys are checked for strict equality and values are
  * checked for approximate equality.
- *
- * \note This compares elements in order, so it will not work reliably
- * on unordered containers.
  */
 #define CHECK_ITERABLE_APPROX(a, b)                                          \
   do {                                                                       \
@@ -142,7 +140,8 @@ struct check_iterable_approx {
 
 template <typename T>
 struct check_iterable_approx<
-    T, Requires<not tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
+    T, Requires<not tt::is_maplike_v<T> and tt::is_iterable_v<T> and
+                not tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
     auto a_it = a.begin();
@@ -167,28 +166,43 @@ struct check_iterable_approx<
 };
 
 template <typename T>
+struct check_iterable_approx<T, Requires<tt::is_a_v<std::unordered_set, T>>> {
+  // clang-tidy: non-const reference
+  static void apply(const T& a, const T& b,
+                    Approx& /*appx*/ = approx) {  // NOLINT
+    // Approximate comparison of unordered sets is difficult
+    CHECK(a == b);
+  }
+};
+
+template <typename T>
 struct check_iterable_approx<
     T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    auto a_it = a.begin();
-    auto b_it = b.begin();
-    CHECK(a_it != a.end());
-    CHECK(b_it != b.end());
-    while (a_it != a.end() and b_it != b.end()) {
-      CHECK(a_it->first == b_it->first);
-      check_iterable_approx<std::decay_t<decltype(a_it->second)>>::apply(
-          a_it->second, b_it->second, appx);
-      ++a_it;
-      ++b_it;
+    for (const auto& kv : a) {
+      const auto& key = kv.first;
+      try {
+        const auto& a_value = kv.second;
+        const auto& b_value = b.at(key);
+        CAPTURE(key);
+        check_iterable_approx<std::decay_t<decltype(a_value)>>::apply(
+            a_value, b_value, appx);
+      } catch (const std::out_of_range&) {
+        INFO("Missing key in second container: " << key);
+        CHECK(false);
+      }
     }
-    {
-      INFO("Iterable is longer in first argument than in second argument");
-      CHECK(a_it == a.end());
-    }
-    {
-      INFO("Iterable is shorter in first argument than in second argument");
-      CHECK(b_it == b.end());
+
+    for (const auto& kv : b) {
+      const auto& key = kv.first;
+      try {
+        a.at(key);
+        // We've checked that the values match above.
+      } catch (const std::out_of_range&) {
+        INFO("Missing key in first container: " << key);
+        CHECK(false);
+      }
     }
   }
 };

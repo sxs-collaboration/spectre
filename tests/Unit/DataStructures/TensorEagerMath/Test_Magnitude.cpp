@@ -3,7 +3,9 @@
 
 #include <catch.hpp>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanMagnitude",
@@ -120,4 +122,39 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
     }();
     CHECK(get(magnitude(three_d_covector, inv_g)) == sqrt(778.0));
   }
+}
+
+namespace {
+struct Vector : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Vector";
+  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+};
+struct Covector : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Covector";
+  using type = tnsr::i<DataVector, 2, Frame::Grid>;
+};
+}  // namespace
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
+                  "[DataStructures][Unit]") {
+  const auto box = db::create<
+      db::AddTags<Vector, Covector>,
+      db::AddComputeItemsTags<
+          Tags::EuclideanMagnitude<Vector>,
+          Tags::EuclideanMagnitude<Covector>,
+          Tags::Normalized<Vector, Tags::EuclideanMagnitude<Vector>>,
+          Tags::Normalized<Covector, Tags::EuclideanMagnitude<Covector>>>>(
+      db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
+      db::item_type<Covector>({{{3., 5.}, {4., 12.}}}));
+
+  CHECK(db::get<Tags::EuclideanMagnitude<Vector>>(box) ==
+        Scalar<DataVector>({{{3., 7.}}}));
+  CHECK(db::get<Tags::EuclideanMagnitude<Covector>>(box) ==
+        Scalar<DataVector>({{{5., 13.}}}));
+  CHECK(db::get<Tags::Normalized<Vector, Tags::EuclideanMagnitude<Vector>>>(
+            box) ==
+        db::item_type<Vector>(
+            {{{1. / 3., 2. / 7.}, {2. / 3., 3. / 7.}, {2. / 3., 6. / 7.}}}));
+  CHECK(db::get<Tags::Normalized<Covector, Tags::EuclideanMagnitude<Covector>>>(
+            box) ==
+        db::item_type<Covector>({{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
 }

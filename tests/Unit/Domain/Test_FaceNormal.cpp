@@ -3,7 +3,10 @@
 
 #include <catch.hpp>
 #include <cmath>
+#include <unordered_set>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -14,6 +17,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
@@ -103,4 +107,36 @@ void test_face_normal_element_map() {
 SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ElementMap", "[Unit][Domain]") {
   test_face_normal_element_map<Frame::Inertial>();
   test_face_normal_element_map<Frame::Grid>();
+}
+
+namespace {
+struct Directions : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "Directions";
+  using type = std::unordered_set<Direction<2>>;
+};
+}  // namespace
+SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
+  const auto box = db::create<
+      db::AddTags<Directions, Tags::Extents<2>, Tags::ElementMap<2>>,
+      db::AddComputeItemsTags<
+          Tags::Interface<Directions, Tags::Direction<2>>,
+          Tags::Interface<Directions, Tags::Extents<1>>,
+          Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<2>>>>(
+      std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
+                                       Direction<2>::lower_eta()},
+      Index<2>{{{2, 2}}},
+      ElementMap<2, Frame::Inertial>(
+          ElementId<2>(0),
+          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+              CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
+
+  std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>> expected;
+  expected[Direction<2>::upper_xi()] =
+      tnsr::i<DataVector, 2>{{{{0.6, 0.6}, {0.8, 0.8}}}};
+  expected[Direction<2>::lower_eta()] =
+      tnsr::i<DataVector, 2>{{{{0.8, 0.8}, {-0.6, -0.6}}}};
+
+  CHECK_ITERABLE_APPROX(
+      (get<Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<2>>>(box)),
+      expected);
 }

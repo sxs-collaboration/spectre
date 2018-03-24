@@ -1305,14 +1305,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
   // NOTE: This test depends on the implementation of serialize and Tensor,
   // but that is inevitable without making the test more complicated.
   /// [init_vector]
-  tnsr::I<DataVector, 3, Frame::Grid> tensor_std_vector{
-      std::array<DataVector, 3>{{DataVector{1., 2., 3.}, DataVector{4., 5., 6.},
-                                 DataVector{7., 8., 9.}}}};
+  tnsr::I<DataVector, 3, Frame::Grid> tensor_data_vector{
+      {{{1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}}};
+  Scalar<DataVector> scalar_data_vector{{{{1., 2., 3.}}}};
   /// [init_vector]
   CHECK(std::make_pair(std::vector<std::string>{"x", "y", "z"},
                        std::vector<DataVector>{
                            {1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}) ==
-        tensor_std_vector.get_vector_of_data());
+        tensor_data_vector.get_vector_of_data());
+  CHECK(std::make_pair(std::vector<std::string>{"Scalar"},
+                       std::vector<DataVector>{{1., 2., 3.}}) ==
+        scalar_data_vector.get_vector_of_data());
 
   tnsr::I<double, 3, Frame::Grid> tensor_double{{{1.0, 2.0, 3.0}}};
   CHECK(std::make_pair(std::vector<std::string>{"x", "y", "z"},

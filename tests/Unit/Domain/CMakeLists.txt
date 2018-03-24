@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_ElementIndex.cpp
   Test_ElementMap.cpp
   Test_FaceNormal.cpp
+  Test_IndexToSliceAt.cpp
   Test_InitialElementIds.cpp
   Test_InterfaceItems.cpp
   Test_LogicalCoordinates.cpp

@@ -53,7 +53,29 @@ SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   // Check that CAPTURE_PRECISE accepts an STL type (we cannot test
   // the output because that is only produced on a Catch failure,
   // which would fail the test.
-  CAPTURE_PRECISE((std::array<double, 1>{{1.5}}));
+  {
+    CAPTURE_PRECISE((std::array<double, 1>{{1.5}}));
+  }
+
+  // Check that CHECK_ITERABLE_APPROX works on various containers
+  {
+    const std::set<int> a{1, 2, 3};
+    CHECK_ITERABLE_APPROX(a, a);
+  }
+  {
+    // Iteration order is unspecified, but we create the containers
+    // differently so the order might differ between them.
+    const std::unordered_set<int> a{1, 2, 3};
+    const std::unordered_set<int> b{3, 2, 1};
+    CHECK_ITERABLE_APPROX(a, b);
+  }
+  {
+    // Iteration order is unspecified, but we create the containers
+    // differently so the order might differ between them.
+    const std::unordered_map<int, int> a{{1, 2}, {2, 3}, {3, 4}};
+    const std::unordered_map<int, int> b{{3, 4}, {2, 3}, {1, 2}};
+    CHECK_ITERABLE_APPROX(a, b);
+  }
 }
 
 SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {

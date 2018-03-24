@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -20,6 +21,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
@@ -37,6 +39,7 @@ namespace {
 struct Var : db::DataBoxTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Var";
+  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 struct SystemAnalyticSolution {
@@ -70,6 +73,8 @@ struct SystemAnalyticSolution {
 struct System {
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
   using gradients_tags = tmpl::list<Var>;
+  template <typename Tag>
+  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
 
 template <size_t Dim>
@@ -184,8 +189,17 @@ void test_initialize_element(const ElementId<Dim>& element_id,
   CHECK((db::get<db::add_tag_prefix<Tags::dt, typename System::variables_tag>>(
             box)) ==
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
-  CHECK(db::get<Tags::UnnormalizedFaceNormal<Dim>>(box) ==
-        Tags::UnnormalizedFaceNormal<Dim>::function(extents, map));
+  (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
+                                Tags::UnnormalizedFaceNormal<Dim>>>(box);
+  using magnitude_tag =
+      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>;
+  (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>, magnitude_tag>>(
+      box);
+  (void)db::get<Tags::Interface<
+      Tags::InternalDirections<Dim>,
+      Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>, magnitude_tag>>>(box);
+  (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
+                                typename System::variables_tag>>(box);
 }
 }  // namespace
 
