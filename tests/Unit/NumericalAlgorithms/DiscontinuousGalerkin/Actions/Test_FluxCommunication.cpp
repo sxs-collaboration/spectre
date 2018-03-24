@@ -144,9 +144,8 @@ using normal_dot_fluxes_tag = interface_tag<
     db::add_tag_prefix<Tags::NormalDotFlux, System::variables_tag>>;
 using other_data_tag = interface_tag<Tags::Variables<tmpl::list<OtherData>>>;
 
-using compute_items = db::AddComputeItemsTags<
-    Tags::InternalDirections<2>,
-    interface_tag<Tags::Direction<2>>,
+using compute_items = db::AddComputeTags<
+    Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
     interface_tag<Tags::Extents<1>>,
     interface_tag<Tags::UnnormalizedFaceNormal<2>>,
     interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,

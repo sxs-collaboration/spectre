@@ -39,7 +39,7 @@ void test_expansion(const Solution& solution,
   // Make databox from surface
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
 
   const double t = 0.0;
@@ -101,7 +101,7 @@ void test_minkowski() {
   // Make surface of radius 2.
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
       Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
 
@@ -163,7 +163,7 @@ void test_ricci_scalar(const Solution& solution,
   // Make surface of radius 2.
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
       Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}}));
 

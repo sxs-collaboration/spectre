@@ -47,7 +47,7 @@ FastFlow::Status do_iteration(
 
     const auto box = db::create<
         db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-        db::AddComputeItemsTags<
+        db::AddComputeTags<
             StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
         prolonged_strahlkorper);
 
@@ -206,7 +206,7 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
 
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
   const auto& rad = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
   const auto r_minmax = std::minmax_element(rad.begin(), rad.end());

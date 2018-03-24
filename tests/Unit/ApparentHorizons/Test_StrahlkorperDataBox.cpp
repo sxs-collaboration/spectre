@@ -70,7 +70,7 @@ void test_radius_and_derivs() {
   // Create DataBox
   auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
 
   // Test radius
@@ -199,7 +199,7 @@ void test_normals() {
   // Create DataBox
   auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
 
   const auto& surface_tangents =

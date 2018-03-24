@@ -30,9 +30,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
   const Slab slab(3., 6.);
   ActionTesting::ActionRunner<Metavariables> runner{{5.}};
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
-                 db::AddComputeItemsTags<Tags::Time>>(TimeId{}, TimeDelta{});
+  auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
+                        db::AddComputeTags<Tags::Time>>(TimeId{}, TimeDelta{});
 
   struct Test {
     Time time{};

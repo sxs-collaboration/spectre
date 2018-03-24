@@ -144,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
                   "[DataStructures][Unit]") {
   const auto box = db::create<
       db::AddSimpleTags<Vector, Covector>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           Tags::EuclideanMagnitude<Vector>, Tags::EuclideanMagnitude<Covector>,
           Tags::Normalized<Vector, Tags::EuclideanMagnitude<Vector>>,
           Tags::Normalized<Covector, Tags::EuclideanMagnitude<Covector>>>>(

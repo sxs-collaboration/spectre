@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
                                      const bool expected) noexcept {
     const auto box =
         db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
-                   db::AddComputeItemsTags<Tags::Time, Tags::TimeValue>>(
+                   db::AddComputeTags<Tags::Time, Tags::TimeValue>>(
             TimeId{0, time, 0}, step);
     CHECK(sent_trigger->is_triggered(box) == expected);
   };

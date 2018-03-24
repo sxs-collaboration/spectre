@@ -23,7 +23,7 @@ void test_coordinates_compute_item(Index<Dim> extents, T map) noexcept {
   using map_tag = Tags::ElementMap<Dim, Frame::Grid>;
   const auto box = db::create<
       db::AddSimpleTags<Tags::Extents<Dim>, map_tag>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           Tags::LogicalCoordinates<Dim>,
           Tags::Coordinates<map_tag, Tags::LogicalCoordinates<Dim>>>>(
       extents, ElementMap<Dim, Frame::Grid>(

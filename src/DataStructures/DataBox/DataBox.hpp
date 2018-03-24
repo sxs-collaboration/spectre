@@ -1263,7 +1263,7 @@ using AddSimpleTags = tmpl::flatten<tmpl::list<Tags...>>;
  * \brief List of Compute Item Tags to add to the DataBox
  */
 template <typename... Tags>
-using AddComputeItemsTags = tmpl::flatten<tmpl::list<Tags...>>;
+using AddComputeTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
@@ -1274,7 +1274,7 @@ using AddComputeItemsTags = tmpl::flatten<tmpl::list<Tags...>>;
  * passed to the function. Compute items must be added so that the dependencies
  * of a compute item are added before the compute item. For example, say you
  * have compute items `A` and `B` where `B` depends on `A`, then you must
- * add them using `db::AddComputeItemsTags<A, B>`.
+ * add them using `db::AddComputeTags<A, B>`.
  *
  * \example
  * \snippet Test_DataBox.cpp create_databox

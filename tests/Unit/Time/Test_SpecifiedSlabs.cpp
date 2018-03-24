@@ -37,7 +37,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedSlabs", "[Unit][Time]") {
 
   const Slab slab(0., 1.);
   auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
-                        db::AddComputeItemsTags<Tags::Time, Tags::TimeValue>>(
+                        db::AddComputeTags<Tags::Time, Tags::TimeValue>>(
       TimeId{0, slab.start(), 0}, slab.duration());
   for (const bool expected :
        {false, false, false, true, false, false, true, false, true, false}) {

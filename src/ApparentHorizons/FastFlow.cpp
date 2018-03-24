@@ -103,7 +103,7 @@ FastFlow::iterate_horizon_finder(
   // unit norms, etc in this DataBox? So far we do not.
   auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
-      db::AddComputeItemsTags<StrahlkorperTags::compute_items_tags<Frame>>>(
+      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
       strahlkorper);
 
   // Get minimum radius.

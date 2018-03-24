@@ -122,7 +122,7 @@ auto run_action(
       db::AddSimpleTags<Tags::Element<2>, Tags::Extents<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
                         interface_tag<OtherArg>>,
-      db::AddComputeItemsTags<
+      db::AddComputeTags<
           Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
           interface_tag<Tags::Extents<1>>,
           interface_tag<Tags::UnnormalizedFaceNormal<2>>,

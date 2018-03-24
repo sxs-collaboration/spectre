@@ -61,8 +61,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   auto box =
       db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep, variables_tag,
                                    dt_variables_tag, history_tag>,
-                 db::AddComputeItemsTags<Tags::Time>>(time_id, time_step, 1.,
-                                                      0., history_tag::type{});
+                 db::AddComputeTags<Tags::Time>>(time_id, time_step, 1., 0.,
+                                                 history_tag::type{});
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
