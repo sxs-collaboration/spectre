@@ -36,7 +36,7 @@ for file_s in file_list:
         continue
     stat = os.stat(file_s[3:])
     if stat.st_size > (max_file_size*1024):
-        print("File '"+file_s[3:]+"' is too large to be commited. The file "
+        print("File '"+file_s[3:]+"' is too large to be committed. The file "
                                   "is %s and the limit is %s" %
               (sizeof_fmt(stat.st_size), sizeof_fmt(max_file_size * 1024)))
         sys.exit(1)
