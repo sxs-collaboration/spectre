@@ -98,8 +98,8 @@ Variables<tmpl::list<TagsToSlice...>> data_on_slice(
                 interface_and_volume_tensor_components)[si.volume_offset()];
       }
     };
-    swallow((lambda(get<TagsToSlice>(interface_vars), tensors),
-             cpp17::void_type{})...);
+    expand_pack((lambda(get<TagsToSlice>(interface_vars), tensors),
+                 cpp17::void_type{})...);
   }
   return interface_vars;
 }

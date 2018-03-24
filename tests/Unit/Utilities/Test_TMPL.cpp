@@ -10,7 +10,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// [swallow_example]
+/// [expand_pack_example]
 namespace {
 template <typename... Elements, size_t... Is>
 void transform(const std::tuple<Elements...>& tupull,
@@ -20,11 +20,11 @@ void transform(const std::tuple<Elements...>& tupull,
     out = in * static_cast<decltype(in)>(2);
     return 0;
   };
-  swallow(func(std::get<Is>(tupull), std::get<Is>(out_tupull))...);
+  expand_pack(func(std::get<Is>(tupull), std::get<Is>(out_tupull))...);
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.swallow", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.Utilities.expand_pack", "[Utilities][Unit]") {
   std::tuple<int, double, float> my_tupull = std::make_tuple(3, 2.7, 8.2);
   std::tuple<int, double, float> my_tupull_output;
   transform(my_tupull, my_tupull_output, std::make_index_sequence<3>{});
@@ -32,7 +32,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.swallow", "[Utilities][Unit]") {
   CHECK(std::get<1>(my_tupull_output) == 5.4);
   CHECK(std::get<2>(my_tupull_output) == 16.4f);
 }
-/// [swallow_example]
+/// [expand_pack_example]
 
 namespace {
 template <typename>

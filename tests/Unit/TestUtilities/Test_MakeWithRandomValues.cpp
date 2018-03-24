@@ -63,9 +63,9 @@ void check_random_values(
     const gsl::not_null<size_t*> counter,
     const Variables<tmpl::list<Tags...>>& v, const double lower_bound,
     const double upper_bound) noexcept {
-  swallow((check_random_values<decltype(get<Tags>(v))>(
-               values, counter, get<Tags>(v), lower_bound, upper_bound),
-           cpp17::void_type{})...);
+  expand_pack((check_random_values<decltype(get<Tags>(v))>(
+                   values, counter, get<Tags>(v), lower_bound, upper_bound),
+               cpp17::void_type{})...);
 }
 
 template <typename T, typename U>

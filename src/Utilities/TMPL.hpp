@@ -534,12 +534,12 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
  * Expands a parameter pack, typically useful for runtime evaluation via a
  * Callable such as a lambda, function, or function object. For example,
  * an unordered transform of a std::tuple can be implemented as:
- * \snippet Utilities/Test_TMPL.cpp swallow_example
+ * \snippet Utilities/Test_TMPL.cpp expand_pack_example
  *
  * \see tuple_fold tuple_counted_fold tuple_transform std::tuple
  */
 template <typename... Ts>
-constexpr void swallow(Ts&&...) noexcept {}
+constexpr void expand_pack(Ts&&...) noexcept {}
 
 namespace brigand {
 /// Check if a typelist contains an item.
