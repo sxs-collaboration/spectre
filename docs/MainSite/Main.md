@@ -15,12 +15,73 @@ Table of Contents
 </ul>
 </div>
 
-Introduction {#intro_sec}
+
+\htmlonly
+<p>
+<a
+href="https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt"><img
+src="https://camo.githubusercontent.com/b0224997019dec4e51d692c722ea9bee2818c837/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f6c6963656e73652f6d6173686170652f6170697374617475732e737667"
+alt="license"
+data-canonical-src="https://img.shields.io/github/license/mashape/apistatus.svg"
+style="max-width:100%;"></a>
+
+<a href="https://en.wikipedia.org/wiki/C%2B%2B#Standardization"
+rel="nofollow"><img
+src="https://camo.githubusercontent.com/14eafa365535119df0dc48953fd71c5647cc6b90/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f632532422532422d31342d626c75652e737667"
+alt="Standard"
+data-canonical-src="https://img.shields.io/badge/c%2B%2B-14-blue.svg"
+style="max-width:100%;"></a>
+
+<a href="https://travis-ci.org/sxs-collaboration/spectre" rel="nofollow"><img
+src="https://camo.githubusercontent.com/3bd9cacc3b76fbedd84d71bd927a0e9c41e9bf2d/68747470733a2f2f7472617669732d63692e6f72672f7378732d636f6c6c61626f726174696f6e2f737065637472652e7376673f6272616e63683d646576656c6f70"
+alt="Build Status"
+data-canonical-src="https://travis-ci.org/sxs-collaboration/spectre.svg?branch=develop"
+style="max-width:100%;"></a>
+
+<a href="https://coveralls.io/github/sxs-collaboration/spectre?branch=develop"
+rel="nofollow"><img
+src="https://camo.githubusercontent.com/9ac925f8d36b285f98b8dbc9b977606a5148d9b5/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f7378732d636f6c6c61626f726174696f6e2f737065637472652f62616467652e7376673f6272616e63683d646576656c6f70"
+alt="Coverage Status"
+data-canonical-src="https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop"
+style="max-width:100%;"></a>
+
+<a href="https://codecov.io/gh/sxs-collaboration/spectre" rel="nofollow"><img
+src="https://camo.githubusercontent.com/ac504b33d403e271c9fb3831d1133118f1886317/68747470733a2f2f636f6465636f762e696f2f67682f7378732d636f6c6c61626f726174696f6e2f737065637472652f6272616e63682f646576656c6f702f67726170682f62616467652e737667"
+alt="codecov"
+data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg"
+style="max-width:100%;"></a>
+
+<a
+href="https://github.com/sxs-collaboration/spectre"><img
+src="https://img.shields.io/badge/View%20%20on%20%20GitHub--blue.svg?style=social"
+alt="View on GitHub"
+data-canonical-src="https://img.shields.io/badge/View%20%20on%20%20GitHub--blue.svg?style=social"
+style="max-width:100%;"></a>
+
+<a
+href="https://github.com/sxs-collaboration/spectre/fork"><img
+src="https://img.shields.io/badge/Fork%20%20on%20%20GitHub--blue.svg?style=social"
+alt="Fork on GitHub"
+data-canonical-src="https://img.shields.io/badge/Fork%20%20on%20%20GitHub--blue.svg?style=social"
+style="max-width:100%;"></a>
+
+</p>
+\endhtmlonly
+
+What is SpECTRE? {#intro_sec}
 ==============================================================================
 
-This is the introduction.
+SpECTRE is an open-source code for multi-scale, multi-physics problems
+in astrophysics and gravitational physics. In the future, we hope that
+it can be applied to problems across discipline boundaries in fluid
+dynamics, geoscience, plasma physics, nuclear physics, and
+engineering. It runs at petascale and is designed for future exascale
+computers.
 
-We need an introduction because we don't have one...
+SpECTRE is being developed in support of our collaborative Simulating
+eXtreme Spacetimes (SXS) research program into the multi-messenger
+astrophysics of neutron star mergers, core-collapse supernovae, and
+gamma-ray bursts.
 
 Navigating the Documentation {#navigate_documentation_sec}
 -----
