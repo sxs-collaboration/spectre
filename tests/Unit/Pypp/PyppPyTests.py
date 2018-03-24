@@ -162,12 +162,14 @@ def check_double_not_null1_result1(t0, t1):
     return 2.0 * t0 + t1
 
 
+# [python_two_not_null]
 def check_double_not_null2_result0(t0, t1):
     return np.sqrt(t0) + 1.0 / np.sqrt(-t1)
 
 
 def check_double_not_null2_result1(t0, t1):
     return 2.0 * t0 + t1
+    # [python_two_not_null]
 
 
 def check_by_value0(t0):
