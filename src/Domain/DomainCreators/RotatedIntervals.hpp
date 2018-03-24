@@ -9,10 +9,16 @@
 #include <array>
 #include <limits>
 #include <vector>
+#include <cstddef>
 
-#include "Domain/DomainCreators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+template <size_t Dim, typename Frame>
+class DomainCreator;  // IWYU pragma: keep
+/// \endcond
 
 namespace DomainCreators {
 

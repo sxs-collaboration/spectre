@@ -6,16 +6,27 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <iosfwd>
-#include <pup.h>
+#include <memory>
 #include <vector>
 
-#include "Domain/Block.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
+namespace Frame {
+struct Logical;
+}  // namespace Frame
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \cond
+template <size_t VolumeDim, typename TargetFrame>
+class Block;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+/// \endcond
 
 /*!
  *  \ingroup ComputationalDomainGroup

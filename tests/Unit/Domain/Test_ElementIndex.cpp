@@ -1,12 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
 #include <cstring>
+#include <functional>
+#include <new>
+#include <string>
 
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <boost/rational.hpp>
 #include <cstddef>
 #include <memory>
@@ -10,12 +11,12 @@
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/Direction.hpp"
+#include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
+/// \cond
 template <size_t VolumeDim, typename TargetFrame>
 class Block;
 template <size_t VolumeDim>
@@ -28,6 +29,11 @@ template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
 class ElementId;
+namespace Frame {
+struct Inertial;
+struct Logical;
+}  // namespace Frame
+/// \endcond
 
 // Iterates over the logical corners of a VolumeDim-dimensional cube.
 template <size_t VolumeDim>

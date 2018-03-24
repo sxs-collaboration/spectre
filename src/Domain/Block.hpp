@@ -6,15 +6,26 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <ostream>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/Direction.hpp"
-#include "Utilities/StdHelpers.hpp"
+namespace Frame {
+struct Logical;
+}  // namespace Frame
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \cond
+template <size_t VolumeDim>
+class BlockNeighbor;
+template <size_t VolumeDim>
+class Direction;
+template <typename SourceFrame, typename TargetFrame, size_t Dim>
+class CoordinateMapBase;
+/// \endcond
 
 /// \ingroup ComputationalDomainGroup
 /// A Block<VolumeDim> is a region of a VolumeDim-dimensional computational

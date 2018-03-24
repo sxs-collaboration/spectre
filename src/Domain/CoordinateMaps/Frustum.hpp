@@ -4,10 +4,10 @@
 #pragma once
 
 #include <array>
-#include <memory>
+#include <cstddef>
+#include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/TypeTraits.hpp"
 

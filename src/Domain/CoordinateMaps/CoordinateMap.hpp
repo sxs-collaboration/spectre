@@ -6,15 +6,29 @@
 
 #pragma once
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <initializer_list>
 #include <memory>
+#include <pup.h>
+#include <tuple>
+#include <type_traits>
+#include <typeinfo>
+#include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
 
 /// \cond
+class DataVector;
 class FunctionOfTime;
 /// \endcond
 

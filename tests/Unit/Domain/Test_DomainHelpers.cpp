@@ -1,12 +1,25 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <cstddef>
+#include <array>
+#include <unordered_map>
+#include <vector>
 
+#include "Domain/BlockNeighbor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+namespace Frame {
+struct Inertial;
+struct Logical;
+}  // namespace Frame
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
                   "[Domain][Unit]") {

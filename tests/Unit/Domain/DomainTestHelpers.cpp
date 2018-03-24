@@ -7,22 +7,25 @@
 #include <catch.hpp>
 #include <typeinfo>
 
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/Domain.hpp"
+#include "Domain/Domain.hpp"  // IWYU pragma: keep
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/InitialElementIds.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/OrientationMap.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+template <size_t VolumeDim>
+class Element;
 
 namespace {
 template <size_t VolumeDim>

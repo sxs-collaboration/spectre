@@ -1,10 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <functional>
+#include <memory>
+#include <pup.h>
 #include <unordered_map>
 
-#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -15,6 +17,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

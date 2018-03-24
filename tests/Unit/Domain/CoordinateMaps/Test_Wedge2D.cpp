@@ -1,12 +1,18 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <cmath>
+#include <memory>
+#include <pup.h>
 #include <random>
 
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Domain/Direction.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"

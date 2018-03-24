@@ -3,9 +3,14 @@
 
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 
+#include <pup.h>
+#include <cmath>
+
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 

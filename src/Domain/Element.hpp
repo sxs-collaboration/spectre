@@ -6,16 +6,22 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
 #include <unordered_map>
 #include <unordered_set>
 
 #include "Domain/ElementId.hpp"
-#include "Domain/Neighbors.hpp"
 
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \cond
+template <size_t VolumeDim>
+class Direction;
+template <size_t VolumeDim>
+class Neighbors;
+/// \endcond
 
 /// \ingroup ComputationalDomainGroup
 /// A spectral element with knowledge of its neighbors.

@@ -1,9 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <cstddef>
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <string>
 
 #include "Domain/Side.hpp"
 #include "tests/Unit/TestHelpers.hpp"

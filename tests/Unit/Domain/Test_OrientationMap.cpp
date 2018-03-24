@@ -1,16 +1,22 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <functional>
-#include <numeric>
+#include <string>
+#include <type_traits>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Domain/SegmentId.hpp"
+#include "Domain/Side.hpp"
+#include "ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
-#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

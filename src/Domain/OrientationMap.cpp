@@ -6,7 +6,9 @@
 #include <ostream>
 #include <set>
 
-#include "Domain/SegmentId.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "ErrorHandling/Assert.hpp"
+#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 
 namespace {
 template <size_t VolumeDim>
@@ -85,7 +87,7 @@ OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const
 }
 
 template <size_t VolumeDim>
-void OrientationMap<VolumeDim>::pup(PUP::er& p) {
+void OrientationMap<VolumeDim>::pup(PUP::er& p) noexcept {
   p | mapped_directions_;
   p | is_aligned_;
 }

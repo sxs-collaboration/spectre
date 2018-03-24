@@ -6,8 +6,11 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 template <typename, typename, size_t>
@@ -19,6 +22,7 @@ template <size_t Dim, typename Frame>
 class ElementMap;
 template <size_t>
 class Index;
+/// \endcond
 
 namespace Tags {
 template <size_t>

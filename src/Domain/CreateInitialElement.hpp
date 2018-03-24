@@ -3,14 +3,13 @@
 
 #pragma once
 
-#include <array>
+#include <cstddef>
 
 #include "Domain/Element.hpp"
 
 /// \cond
 template <size_t Dim, typename TargetFrame>
 class Block;
-
 template <size_t Dim>
 class ElementId;
 /// \endcond

@@ -7,12 +7,16 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <functional>
 #include <iosfwd>
 
 #include "Utilities/ConstantExpressions.hpp"
 
+/// \cond
 template <size_t>
 struct ElementId;
+/// \endcond
 struct SegmentId;
 
 namespace ElementIndex_detail {
@@ -42,9 +46,6 @@ class SegmentIndex {
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& s, const SegmentIndex& index) noexcept;
-
-template <size_t>
-class ElementIndex;
 
 /// \ingroup ParallelGroup
 /// A class for indexing a Charm array by Element.

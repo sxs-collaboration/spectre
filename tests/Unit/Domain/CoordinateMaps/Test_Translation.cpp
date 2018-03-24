@@ -1,13 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
+#include <string>
 #include <unordered_map>
 
+#include "ControlSystem/FunctionOfTime.hpp"
 #include "ControlSystem/PiecewisePolynomial.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Translation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

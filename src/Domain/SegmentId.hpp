@@ -6,13 +6,17 @@
 
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
 #include <iosfwd>
-#include <pup.h>
+#include <limits>
 
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 /// \ingroup ComputationalDomainGroup
 /// A SegmentId labels a segment of the interval [-1,1].
@@ -56,7 +60,7 @@ class SegmentId {
   bool overlaps(const SegmentId& other) const noexcept;
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   size_t refinement_level_ = std::numeric_limits<size_t>::max();

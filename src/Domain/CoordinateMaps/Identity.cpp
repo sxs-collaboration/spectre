@@ -4,11 +4,9 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 
 #include "DataStructures/Tensor/Identity.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace CoordinateMaps {
 

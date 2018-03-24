@@ -2,9 +2,12 @@
 // See LICENSE.txt for details.
 
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"

@@ -3,16 +3,25 @@
 
 #include "Domain/CreateInitialElement.hpp"
 
-#include <array>
+#include <utility>
 
-#include "Domain/Block.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"
+#include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+
+namespace Frame {
+struct Grid;      // IWYU pragma: keep
+struct Inertial;  // IWYU pragma: keep
+}  // namespace Frame
 
 template <size_t VolumeDim, typename TargetFrame>
 Element<VolumeDim> create_initial_element(

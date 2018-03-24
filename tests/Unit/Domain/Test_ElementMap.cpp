@@ -1,6 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <memory>
+#include <pup.h>
+
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -8,8 +15,11 @@
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

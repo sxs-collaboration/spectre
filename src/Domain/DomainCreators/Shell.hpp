@@ -4,10 +4,17 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <vector>
 
-#include "Domain/DomainCreators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+template <size_t, class>
+class DomainCreator;  // IWYU pragma: keep
+/// \endcond
 
 namespace DomainCreators {
 

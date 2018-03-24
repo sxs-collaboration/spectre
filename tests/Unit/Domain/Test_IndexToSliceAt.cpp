@@ -3,6 +3,8 @@
 
 #include <catch.hpp>
 
+#include "DataStructures/Index.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/IndexToSliceAt.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

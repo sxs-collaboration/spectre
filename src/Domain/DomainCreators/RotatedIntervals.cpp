@@ -3,17 +3,21 @@
 
 #include "Domain/DomainCreators/RotatedIntervals.hpp"
 
-#include <utility>
-
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
-#include "Options/Options.hpp"
-#include "Utilities/MakeVector.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/DomainHelpers.hpp"
+
+/// \cond
+namespace Frame {
+struct Grid;
+struct Inertial;
+struct Logical;
+}  // namespace Frame
+/// \endcond
 
 namespace DomainCreators {
 template <typename TargetFrame>

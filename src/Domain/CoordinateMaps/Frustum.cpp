@@ -3,14 +3,14 @@
 
 #include "Domain/CoordinateMaps/Frustum.hpp"
 
+#include <algorithm>
 #include <pup.h>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"

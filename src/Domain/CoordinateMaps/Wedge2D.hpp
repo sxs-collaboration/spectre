@@ -7,12 +7,15 @@
 #pragma once
 
 #include <array>
-#include <memory>
-#include <pup.h>
+#include <stddef.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace CoordinateMaps {
 

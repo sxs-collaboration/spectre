@@ -4,8 +4,8 @@
 #include "Domain/SegmentId.hpp"
 
 #include <boost/functional/hash.hpp>
-#include <limits>
 #include <ostream>
+#include <pup.h>
 
 SegmentId::SegmentId(const size_t refinement_level, const size_t index)
     : refinement_level_(refinement_level), index_(index) {
@@ -13,7 +13,7 @@ SegmentId::SegmentId(const size_t refinement_level, const size_t index)
          "index = " << index << ", refinement_level = " << refinement_level);
 }
 
-void SegmentId::pup(PUP::er& p) {
+void SegmentId::pup(PUP::er& p) noexcept {
   p | refinement_level_;
   p | index_;
 }

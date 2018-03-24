@@ -1,9 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <array>
+#include <string>
+#include <type_traits>
 
 #include "Domain/BlockNeighbor.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

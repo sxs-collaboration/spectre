@@ -3,6 +3,11 @@
 
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
 
+#include <cmath>
+#include <exception>
+#include <functional>  // for std::reference_wrapper
+#include <limits>
+#include <ostream>
 #include <pup.h>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -15,6 +20,7 @@
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace {
 template <typename DType>

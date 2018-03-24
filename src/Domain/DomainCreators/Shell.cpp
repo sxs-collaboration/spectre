@@ -3,14 +3,24 @@
 
 #include "Domain/DomainCreators/Shell.hpp"
 
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
-#include "Domain/Direction.hpp"
+#include <memory>
+#include <utility>
+
+#include "Domain/Block.hpp"                         // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
-#include "Options/Options.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/DomainHelpers.hpp"
 #include "Utilities/MakeArray.hpp"
+
+/// \cond
+namespace Frame {
+struct Grid;
+struct Inertial;
+struct Logical;
+}  // namespace Frame
+/// \endcond
 
 namespace DomainCreators {
 

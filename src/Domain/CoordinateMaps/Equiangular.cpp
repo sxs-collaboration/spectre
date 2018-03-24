@@ -3,10 +3,12 @@
 
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 
+#include <cmath>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"

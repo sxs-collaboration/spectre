@@ -2,21 +2,31 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/RotatedIntervals.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Utilities/MakeVector.hpp"
-#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+/// \cond
+namespace Frame {
+struct Inertial;
+struct Logical;
+}  // namespace Frame
+/// \endcond
 
 namespace {
 void test_rotated_intervals_construction(
