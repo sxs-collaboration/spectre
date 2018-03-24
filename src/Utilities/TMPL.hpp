@@ -541,6 +541,15 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
 template <typename... Ts>
 constexpr void expand_pack(Ts&&...) noexcept {}
 
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Returns the first argument of a parameter pack
+ */
+template <typename T, typename... Ts>
+constexpr decltype(auto) get_first_argument(T&& t, Ts&&... /*rest*/) noexcept {
+  return t;
+}
+
 namespace brigand {
 /// Check if a typelist contains an item.
 template <typename Sequence, typename Item>

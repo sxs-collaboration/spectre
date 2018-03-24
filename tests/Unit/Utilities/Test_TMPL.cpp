@@ -62,3 +62,14 @@ static_assert(cpp17::is_same_v<
                       tmpl::list<Templated<double>>>,
                   tmpl::list<Templated<int>>>,
               "Failed testing list_difference");
+
+SPECTRE_TEST_CASE("Unit.Utilities.get_first_argument", "[Unit][Utilities]") {
+  const long a0 = 5;
+  const long a1 = 6;
+  const int a2 = -5;
+  const char a3 = '7';
+  CHECK(5 == get_first_argument(a0, a1, a2, a3));
+  CHECK(5 == get_first_argument(a0));
+  CHECK(6 == get_first_argument(a1, a0, a2, a3));
+  CHECK('7' == get_first_argument(a3, a1, a2, a0));
+}
