@@ -3,11 +3,11 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
-#include "tests/Unit/DataStructures/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace {
 

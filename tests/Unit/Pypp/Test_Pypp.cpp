@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "tests/Unit/DataStructures/TestHelpers.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 SPECTRE_TEST_CASE("Unit.Pypp.none", "[Pypp][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};

@@ -6,8 +6,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
-#include "tests/Unit/DataStructures/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace {
 

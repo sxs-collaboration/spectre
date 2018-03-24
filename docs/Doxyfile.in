@@ -77,14 +77,14 @@ STRIP_CODE_COMMENTS    = NO
 
 INPUT = @SPECTRE_DOXYGEN_GROUPS@ \
         @PROJECT_SOURCE_DIR@/docs/MainSite/Main.md \
-        @PROJECT_SOURCE_DIR@/src
+        @PROJECT_SOURCE_DIR@/src \
+        @PROJECT_SOURCE_DIR@/tests/Utilities/
 
 # Add tutorials directory
 INPUT += @PROJECT_SOURCE_DIR@/docs
 
 # Add files to scan that explain testing framework
 INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/DataStructures/TestHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/Pypp.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppFundamentals.hpp  \
