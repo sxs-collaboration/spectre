@@ -6,13 +6,19 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <functional>
+#include <numeric>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
@@ -234,4 +240,117 @@ template <typename Map, typename T>
 void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) {
   CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)));
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Given a 3D Map `map`, tests the map functions, including map inverse,
+ * jacobian, and inverse jacobian, for a series of points.
+ */
+template <typename Map>
+void test_map3d(const Map& map) {
+  // Set up random number generator
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> real_dis(-1.0, 1.0);
+  const double xi = real_dis(gen);
+  CAPTURE_PRECISE(xi);
+  const double eta = real_dis(gen);
+  CAPTURE_PRECISE(eta);
+  const double zeta = real_dis(gen);
+  CAPTURE_PRECISE(zeta);
+
+  const std::array<std::array<double, 3>, 13> test_points{{{{0.0, 0.0, 0.0}},
+                                                          {{-1.0, -1.0, -1.0}},
+                                                          {{1.0, -1.0, -1.0}},
+                                                          {{-1.0, 1.0, -1.0}},
+                                                          {{1.0, 1.0, -1.0}},
+                                                          {{-1.0, -1.0, 1.0}},
+                                                          {{1.0, -1.0, 1.0}},
+                                                          {{-1.0, 1.0, 1.0}},
+                                                          {{1.0, 1.0, 1.0}},
+                                                          {{-0.1, 0.3, 0.1}},
+                                                          {{0.5, 0.7, -0.5}},
+                                                          {{0.9, -1.0, 0.4}},
+                                                          {{xi, eta, zeta}}}};
+  test_serialization(map);
+  CHECK_FALSE(map != map);
+  test_coordinate_map_argument_types(map, test_points[0]);
+  for (const auto& point : test_points) {
+    test_jacobian(map, point);
+    test_inv_jacobian(map, point);
+    test_inverse_map(map, point);
+  }
+  const auto map2 = serialize_and_deserialize(map);
+  CHECK(map2 == map);
+  for (const auto& point : test_points) {
+    test_jacobian(map2, point);
+    test_inv_jacobian(map2, point);
+    test_inverse_map(map2, point);
+  }
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief An iterator for looping through all possible orientations
+ * of the n-dim cube.
+ */
+template <size_t VolumeDim>
+class OrientationMapIterator {
+ public:
+  OrientationMapIterator() noexcept {
+    std::iota(dims_.begin(), dims_.end(), 0);
+    set_map();
+  }
+  void operator++() noexcept {
+    ++vci_;
+    if (not vci_) {
+      not_at_end_ = std::next_permutation(dims_.begin(), dims_.end());
+      vci_ = VolumeCornerIterator<VolumeDim>{};
+    }
+    set_map();
+  }
+  explicit operator bool() const noexcept { return not_at_end_; }
+  const OrientationMap<VolumeDim>& operator()() const noexcept { return map_; }
+  const OrientationMap<VolumeDim>& operator*() const noexcept { return map_; }
+  void set_map() noexcept {
+    for (size_t i = 0; i < VolumeDim; i++) {
+      gsl::at(directions_, i) =
+          Direction<VolumeDim>{gsl::at(dims_, i), gsl::at(vci_(), i)};
+    }
+    map_ = OrientationMap<VolumeDim>{directions_};
+  }
+
+ private:
+  bool not_at_end_ = true;
+  std::array<size_t, VolumeDim> dims_{};
+  std::array<Direction<VolumeDim>, VolumeDim> directions_{};
+  VolumeCornerIterator<VolumeDim> vci_{};
+  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>{};
+};
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Wedge OrientationMap in each of the six directions used in the
+ * Shell and Sphere domain creators.
+ */
+inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
+  const OrientationMap<3> upper_zeta_rotation{};
+  const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+       Direction<3>::lower_zeta()}});
+  const OrientationMap<3> upper_eta_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
+       Direction<3>::upper_xi()}});
+  const OrientationMap<3> lower_eta_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+       Direction<3>::lower_xi()}});
+  const OrientationMap<3> upper_xi_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+       Direction<3>::upper_eta()}});
+  const OrientationMap<3> lower_xi_rotation(std::array<Direction<3>, 3>{
+      {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+       Direction<3>::upper_eta()}});
+  return {{upper_zeta_rotation, lower_zeta_rotation, upper_eta_rotation,
+           lower_eta_rotation, upper_xi_rotation, lower_xi_rotation}};
 }

@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     Affine.cpp
     BulgedCube.cpp
     Equiangular.cpp
+    Frustum.cpp
     Identity.cpp
     Rotation.cpp
     Translation.cpp
