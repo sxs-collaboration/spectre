@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -21,7 +23,6 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // IWYU pragma: no_forward_declare MathFunction
 // IWYU pragma: no_forward_declare Tensor

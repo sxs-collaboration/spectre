@@ -3,6 +3,8 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <tuple>
@@ -22,7 +24,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 static constexpr int number_of_1d_array_elements_per_core = 10;
 

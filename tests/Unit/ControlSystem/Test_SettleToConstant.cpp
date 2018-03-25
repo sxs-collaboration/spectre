@@ -1,13 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 
 #include "ControlSystem/FunctionOfTime.hpp"
 #include "ControlSystem/SettleToConstant.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.SettleToConstant",
                   "[ControlSystem][Unit]") {

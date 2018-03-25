@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -25,7 +27,6 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeVector.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 class DataVector;
 template <size_t VolumeDim>

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <boost/rational.hpp>
 #include <functional>
@@ -10,7 +12,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   using rational_t = Time::rational_t;

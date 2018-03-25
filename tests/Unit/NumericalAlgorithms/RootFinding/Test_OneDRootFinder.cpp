@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cmath>
 #include <cstddef>
 #include <limits>
@@ -8,7 +10,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/RootFinder.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 double f_free(double x) { return 2.0 - x * x; }

@@ -1,8 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <functional>
 #include <list>
@@ -17,7 +18,6 @@
 #include "Options/ParseOptions.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
   Options<tmpl::list<>> opts("");

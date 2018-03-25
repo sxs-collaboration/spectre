@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cstddef>
 #include <memory>
@@ -30,7 +32,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 /// \cond
 template <typename X, typename Symm, typename IndexList>

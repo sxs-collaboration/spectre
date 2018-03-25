@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cmath>
 #include <pup.h>
 #include <cstddef>
@@ -26,7 +28,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_disk_construction(

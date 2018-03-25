@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cstddef>
 #include <random>
@@ -9,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <boost/rational.hpp>
 #include <limits>
 
@@ -12,7 +14,6 @@
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/Time.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 class StepController;
 

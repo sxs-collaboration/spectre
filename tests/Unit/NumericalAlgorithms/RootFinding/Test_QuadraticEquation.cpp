@@ -1,11 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // [[OutputRegex, Assumes that there are two real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(

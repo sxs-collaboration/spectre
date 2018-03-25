@@ -3,12 +3,13 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
 void register_pupables();
 
 #include "tests/Unit/Parallel/Test_ConstGlobalCache.hpp"
 
 #include <algorithm>
-#include <catch.hpp>
 #include <charm++.h>
 #include <cstddef>
 #include <exception>
@@ -30,7 +31,6 @@ void register_pupables();
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace Parallel {
 namespace charmxx {

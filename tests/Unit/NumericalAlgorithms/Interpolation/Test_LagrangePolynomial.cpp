@@ -1,13 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cstddef>
 #include <sys/types.h>
 
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.LagrangePolynomial",
                   "[Unit][NumericalAlgorithms]") {

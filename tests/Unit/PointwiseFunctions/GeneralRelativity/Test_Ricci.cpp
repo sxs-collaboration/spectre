@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <limits>
 
@@ -9,7 +11,6 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename DataType>

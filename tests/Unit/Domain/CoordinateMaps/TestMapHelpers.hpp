@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -20,7 +22,6 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 /*!
  * \ingroup TestingFrameworkGroup

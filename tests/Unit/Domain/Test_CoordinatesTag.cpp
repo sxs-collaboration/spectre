@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -14,7 +16,6 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Tags.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim, typename T>

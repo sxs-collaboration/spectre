@@ -4,7 +4,8 @@
 // Need CATCH_CONFIG_RUNNER to avoid linking errors with Catch2
 #define CATCH_CONFIG_RUNNER
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <functional>
 #include <pup.h>
@@ -25,7 +26,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace db {
 template <typename TagsList>

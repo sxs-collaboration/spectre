@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <array>
 #include <unordered_map>
@@ -14,7 +16,6 @@
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace Frame {
 struct Inertial;

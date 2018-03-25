@@ -5,7 +5,8 @@
 
 #include "tests/Unit/RunTests.hpp"
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <charm++.h>
 #include <cstddef>
 #include <exception>

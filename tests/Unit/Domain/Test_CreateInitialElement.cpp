@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <functional>
 #include <memory>
 #include <pup.h>
@@ -19,7 +21,6 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_create_initial_element(

@@ -1,11 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <functional>
 #include <type_traits>
 
 #include "Utilities/DereferenceWrapper.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 static_assert(
     std::is_same<decltype(dereference_wrapper(std::declval<double>())),

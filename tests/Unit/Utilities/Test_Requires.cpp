@@ -1,12 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <list>
 #include <string>
 #include <vector>
 
 #include "Utilities/Requires.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [function_definitions]

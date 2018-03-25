@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -19,7 +21,6 @@
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 template <size_t Dim>
 void test_block() {

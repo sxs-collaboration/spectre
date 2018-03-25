@@ -1,11 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cmath>
 #include <limits>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // [[OutputRegex, Floating point exception!]]
 SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <map>
@@ -8,7 +10,6 @@
 
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.CachedFunction", "[Unit][Utilities]") {
   size_t call_count = 0;

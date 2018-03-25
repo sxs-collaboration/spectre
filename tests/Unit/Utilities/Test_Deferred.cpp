@@ -1,13 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <vector>
 
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Deferred.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [functions_used]

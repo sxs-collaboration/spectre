@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for detai
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -16,7 +18,6 @@
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor

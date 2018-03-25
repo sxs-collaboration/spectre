@@ -3,6 +3,8 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -22,7 +24,6 @@
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 static constexpr int number_of_1d_array_elements = 14;
 

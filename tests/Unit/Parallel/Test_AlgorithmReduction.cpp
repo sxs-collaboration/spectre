@@ -3,6 +3,8 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <string>
 #include <tuple>
@@ -23,7 +25,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace db {
 template <typename TagsList>

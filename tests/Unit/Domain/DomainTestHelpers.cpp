@@ -3,8 +3,9 @@
 
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
-#include <catch.hpp>
 #include <typeinfo>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"

@@ -1,9 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [overloader_example]

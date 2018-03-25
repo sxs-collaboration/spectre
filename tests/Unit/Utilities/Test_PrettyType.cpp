@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <deque>
 #include <forward_list>
@@ -16,7 +18,6 @@
 #include <vector>
 
 #include "Utilities/PrettyType.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.Fundamental",
                   "[Utilities][Unit]") {

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
@@ -8,7 +10,6 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim, IndexType Index, typename DataType>

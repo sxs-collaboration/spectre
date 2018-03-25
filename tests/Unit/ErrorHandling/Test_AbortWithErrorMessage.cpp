@@ -1,8 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ErrorHandling/AbortWithErrorMessage.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+#include "ErrorHandling/AbortWithErrorMessage.hpp"
 
 // [[OutputRegex, 'a == b' violated!]]
 [[noreturn]] SPECTRE_TEST_CASE(

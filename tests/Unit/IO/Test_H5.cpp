@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -30,7 +32,6 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.File.h5");

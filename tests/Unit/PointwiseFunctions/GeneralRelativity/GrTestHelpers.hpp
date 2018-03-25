@@ -6,12 +6,13 @@
 
 #pragma once
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <boost/range/combine.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 /// \cond
 class DataVector;

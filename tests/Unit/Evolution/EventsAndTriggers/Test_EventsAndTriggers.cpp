@@ -4,6 +4,8 @@
 // This file checks the Completion event and the basic logical
 // triggers (Always, And, Not, and Or).
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <memory>
 #include <pup.h>
@@ -23,7 +25,6 @@
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct DefaultClasses {

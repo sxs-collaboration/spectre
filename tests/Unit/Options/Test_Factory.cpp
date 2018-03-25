@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <map>
 #include <memory>
 #include <string>
@@ -10,7 +12,6 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 
