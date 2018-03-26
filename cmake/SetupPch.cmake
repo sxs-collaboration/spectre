@@ -75,18 +75,7 @@ if (USE_PCH)
     ${CHARM_INCLUDE_ARGUMENT}
     ${PCH_PATH}
     -o ${PCH_PATH}.gch
-    DEPENDS
-    ${CMAKE_SOURCE_DIR}/src/ErrorHandling/AbortWithErrorMessage.hpp
-    ${CMAKE_SOURCE_DIR}/src/ErrorHandling/Assert.hpp
-    ${CMAKE_SOURCE_DIR}/src/Parallel/Abort.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Blaze.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Digraph.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/ForceInline.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Literals.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/PointerVector.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Requires.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/TMPL.hpp
-    ${PCH_PATH}
+    IMPLICIT_DEPENDS CXX ${PCH_PATH}
     )
 
   add_custom_target(
