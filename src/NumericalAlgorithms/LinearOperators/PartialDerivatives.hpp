@@ -7,10 +7,15 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
+/// \cond
 template <size_t Dim>
 class Index;
 
@@ -25,6 +30,7 @@ template <typename T, typename S, typename U,
           typename = std::nullptr_t>
 struct deriv_impl;
 }  // namespace Tags_detail
+/// \endcond
 
 /*!
  * \ingroup DataBoxTagsGroup

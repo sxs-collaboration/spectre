@@ -1,28 +1,38 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <pup.h>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Index.hpp"
-#include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
-#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+template <size_t VolumeDim>
+class MathFunction;
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
 
 namespace {
 using Affine = CoordinateMaps::Affine;
@@ -252,6 +262,3 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence.ComputeItem",
     }
   }
 }
-
-#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

@@ -3,6 +3,8 @@
 
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 
+#include <ostream>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "ErrorHandling/Assert.hpp"

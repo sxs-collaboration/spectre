@@ -1,28 +1,34 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <memory>
+#include <pup.h>
+#include <type_traits>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestingFramework.hpp"
-
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/Tags.hpp"
-
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 
 namespace {
 

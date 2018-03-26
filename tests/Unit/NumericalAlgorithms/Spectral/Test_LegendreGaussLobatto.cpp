@@ -2,13 +2,14 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "Parallel/Printf.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 namespace {

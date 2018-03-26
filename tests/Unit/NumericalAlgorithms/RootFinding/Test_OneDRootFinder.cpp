@@ -1,8 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
+#include <limits>
 
+#include "DataStructures/DataVector.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/RootFinder.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

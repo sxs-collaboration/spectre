@@ -1,8 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <array>
 
+#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 

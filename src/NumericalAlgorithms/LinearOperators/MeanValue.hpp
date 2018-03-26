@@ -6,9 +6,17 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+
+/// \cond
+class DataVector;
+template <size_t>
+class Index;
+/// \endcond
 
 /*!
  * \ingroup NumericalAlgorithmsGroup

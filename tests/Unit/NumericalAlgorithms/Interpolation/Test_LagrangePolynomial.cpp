@@ -2,7 +2,8 @@
 // See LICENSE.txt for details.
 
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
+#include <sys/types.h>
 
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Utilities/Gsl.hpp"

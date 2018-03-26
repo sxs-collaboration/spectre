@@ -3,7 +3,11 @@
 
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
+#include <ostream>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"

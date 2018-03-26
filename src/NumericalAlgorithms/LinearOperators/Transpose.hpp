@@ -10,6 +10,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 // @{
 /// \ingroup NumericalAlgorithmsGroup
