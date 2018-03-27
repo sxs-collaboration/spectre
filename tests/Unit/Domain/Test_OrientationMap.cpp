@@ -9,6 +9,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
@@ -313,56 +314,30 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
 #endif
 }
 
-namespace {
-template <size_t VolumeDim>
-OrientationMap<VolumeDim> generate_orientation_map(
-    const VolumeCornerIterator<VolumeDim>& vci,
-    const std::array<size_t, VolumeDim>& dimensions) {
-  std::array<Direction<VolumeDim>, VolumeDim> array_of_directions{};
-  for (size_t i = 0; i < VolumeDim; i++) {
-    gsl::at(array_of_directions, i) =
-        Direction<VolumeDim>{gsl::at(dimensions, i), gsl::at(vci(), i)};
-  }
-  return OrientationMap<VolumeDim>{array_of_directions};
-}
-}  // namespace
-
 SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.AllOrientations",
                   "[Domain][Unit]") {
-  std::array<size_t, 2> dimensions_2d{};
-  std::iota(dimensions_2d.begin(), dimensions_2d.end(), 0);
-  do {
-    for (VolumeCornerIterator<2> vci{}; vci; ++vci) {
-      const OrientationMap<2> map_2d =
-          generate_orientation_map<2>(vci, dimensions_2d);
-      const std::array<double, 2> original_point{{0.5, -2.0}};
-      const std::array<double, 2> new_point =
-          discrete_rotation(map_2d, original_point);
-      for (size_t d = 0; d < 2; d++) {
-        CHECK(gsl::at(new_point, d) ==
-              (map_2d(Direction<2>{d, Side::Upper}).side() == Side::Upper
-                   ? gsl::at(original_point, map_2d(d))
-                   : -1.0 * gsl::at(original_point, map_2d(d))));
-      }
+  for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
+    const std::array<double, 2> original_point{{0.5, -2.0}};
+    const std::array<double, 2> new_point =
+        discrete_rotation(map_i(), original_point);
+    for (size_t d = 0; d < 2; d++) {
+      CHECK(gsl::at(new_point, d) ==
+            (map_i()(Direction<2>{d, Side::Upper}).side() == Side::Upper
+                 ? gsl::at(original_point, map_i()(d))
+                 : -1.0 * gsl::at(original_point, map_i()(d))));
     }
-  } while (std::next_permutation(dimensions_2d.begin(), dimensions_2d.end()));
-  std::array<size_t, 3> dimensions_3d{};
-  std::iota(dimensions_3d.begin(), dimensions_3d.end(), 0);
-  do {
-    for (VolumeCornerIterator<3> vci{}; vci; ++vci) {
-      const OrientationMap<3> map_3d =
-          generate_orientation_map<3>(vci, dimensions_3d);
+    }
+    for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
       const std::array<double, 3> original_point{{0.5, -2.0, 1.5}};
       const std::array<double, 3> new_point =
-          discrete_rotation(map_3d, original_point);
+          discrete_rotation(map_i(), original_point);
       for (size_t d = 0; d < 3; d++) {
         CHECK(gsl::at(new_point, d) ==
-              (map_3d(Direction<3>{d, Side::Upper}).side() == Side::Upper
-                   ? gsl::at(original_point, map_3d(d))
-                   : -1.0 * gsl::at(original_point, map_3d(d))));
+              (map_i()(Direction<3>{d, Side::Upper}).side() == Side::Upper
+                   ? gsl::at(original_point, map_i()(d))
+                   : -1.0 * gsl::at(original_point, map_i()(d))));
       }
     }
-  } while (std::next_permutation(dimensions_3d.begin(), dimensions_3d.end()));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.Rotation", "[Domain][Unit]") {
