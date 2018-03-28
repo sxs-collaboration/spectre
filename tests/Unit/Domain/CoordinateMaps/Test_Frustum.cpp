@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
          {{upper_x_upper_base, upper_y_upper_base}}}};
     const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0,
                                               map_i());
-    test_map3d(frustum_map);
+    test_suite_for_map(frustum_map);
   }
 }
 
