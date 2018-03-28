@@ -43,7 +43,9 @@ def test_string(a):
         raise RuntimeError('Failed string test')
     return "back test string"
 
-# These are used to check that converting to a DataVectors throws
+
+# These are used to check that converting to a DataVector throws
+
 
 def two_dim_ndarray():
     import numpy as np
@@ -54,7 +56,9 @@ def ndarray_of_floats():
     import numpy as np
     return np.array([1., 2.], dtype='float32')
 
+
 # These are used to check converting to a Tensor works
+
 
 def scalar():
     return 0.8
@@ -88,6 +92,7 @@ def tnsr_aBcc():
                        for k in range(4)] for j in range(4)]
                      for i in range(4)])
 
+
 # Test conversion from Tensor to numpy array works
 
 
@@ -118,9 +123,60 @@ def convert_tnsr_aia_successful(a):
 def convert_tnsr_aBcc_successful(a):
     return bool(np.all(a == tnsr_aBcc()))
 
+
 # Used to test tensor of datavectors
 def identity(a):
     return a
 
+
 def test_einsum(scalar, t_A, t_ia, t_AA, t_iaa):
-    return scalar * np.einsum("a,ia->i", t_A, t_ia) + np.einsum("ab, iab->i", t_AA, t_iaa)
+    return scalar * np.einsum("a,ia->i", t_A, t_ia) + np.einsum(
+        "ab, iab->i", t_AA, t_iaa)
+
+
+def check_single_not_null0(t0):
+    return t0 + 5.0
+
+
+def check_single_not_null1(t0, t1):
+    return t0 + t1
+
+
+def check_single_not_null2(t0, t1):
+    return np.sqrt(t0) + 1.0 / np.sqrt(-t1)
+
+
+def check_double_not_null0_result0(t0):
+    return t0 + 5.0
+
+
+def check_double_not_null0_result1(t0):
+    return 2.0 * t0 + 5.0
+
+
+def check_double_not_null1_result0(t0, t1):
+    return t0 + t1
+
+
+def check_double_not_null1_result1(t0, t1):
+    return 2.0 * t0 + t1
+
+
+def check_double_not_null2_result0(t0, t1):
+    return np.sqrt(t0) + 1.0 / np.sqrt(-t1)
+
+
+def check_double_not_null2_result1(t0, t1):
+    return 2.0 * t0 + t1
+
+
+def check_by_value0(t0):
+    return t0 + 5.0
+
+
+def check_by_value1(t0, t1):
+    return t0 + t1
+
+
+def check_by_value2(t0, t1):
+    return np.sqrt(t0) + 1.0 / np.sqrt(-t1)
