@@ -28,6 +28,40 @@ if (USE_PCH)
     ${CMAKE_SOURCE_DIR}/tools/SpectrePch.hpp
     ${CMAKE_BINARY_DIR}/SpectrePch.hpp
     )
+  # We create a second copy of the PCH and also a simple source file that
+  # includes the second copy, which we compile into an unused library. The
+  # library will be a dependency of the real PCH so that way if anything
+  # changes that the PCH depends on the PCH will be updated. While this means
+  # we technically compile the PCH twice, it is a generator-independent way of
+  # handling the dependencies. The other methods available in CMake 3.3 are
+  # generator dependent, even all the ones in CMake 3.11 are. We always add
+  # the PCH library as a static lib so we know the generated libs name.
+  set(PCH_LIB_NAME "PCH_SPECTRE_DEPENDENCIES")
+  set(PCH_LIB_DIR "${CMAKE_BINARY_DIR}/tmp/")
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/tools/SpectrePch.hpp
+    ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.hpp
+    )
+  # We write a temp file and use configure_file so we don't trigger
+  # a rebuild of the PCH every time CMake is run.
+  file(WRITE
+    ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.cpp.out
+    "#include \"${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.hpp\"\n"
+    )
+  configure_file(
+    ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.cpp.out
+    ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.cpp
+    )
+  add_library(
+    ${PCH_LIB_NAME} STATIC
+    ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.cpp
+    )
+  set_target_properties(
+    PCH_SPECTRE_DEPENDENCIES
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${PCH_LIB_DIR}
+    )
+  set(PCH_LIB_PATH "${PCH_LIB_DIR}/lib${PCH_LIB_NAME}.a")
 
   # The compiler flags need to be turned into a CMake list
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -76,33 +110,28 @@ if (USE_PCH)
     ${PCH_PATH}
     -o ${PCH_PATH}.gch
     DEPENDS
-    ${CMAKE_SOURCE_DIR}/src/ErrorHandling/AbortWithErrorMessage.hpp
-    ${CMAKE_SOURCE_DIR}/src/ErrorHandling/Assert.hpp
-    ${CMAKE_SOURCE_DIR}/src/Parallel/Abort.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Blaze.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Digraph.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/ForceInline.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Literals.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/PointerVector.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/Requires.hpp
-    ${CMAKE_SOURCE_DIR}/src/Utilities/TMPL.hpp
-    ${PCH_PATH}
+    ${PCH_LIB_PATH}
     )
 
   add_custom_target(
     pch
     DEPENDS
-    ${PCH_PATH}
     ${PCH_PATH}.gch
+    ${PCH_LIB_PATH}
+    )
+
+  add_dependencies(
+    pch
+    ${PCH_LIB_NAME}
     )
 
   # Prepend the compiler-dependent flags needed to use precompiled headers
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-include ${PCH_PATH} ${CMAKE_CXX_FLAGS}")
+    set(PCH_FLAG "-include;${PCH_PATH}")
   elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "-include-pch ${PCH_PATH}.gch ${CMAKE_CXX_FLAGS}")
+    set(PCH_FLAG "-include-pch;${PCH_PATH}.gch")
   elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    set(CMAKE_CXX_FLAGS "-include-pch ${PCH_PATH}.gch ${CMAKE_CXX_FLAGS}")
+    set(PCH_FLAG "-include-pch;${PCH_PATH}.gch")
   else()
     message(
       STATUS "Precompiled headers have not been configured for"
@@ -119,11 +148,24 @@ if (USE_PCH)
   # depend on the precompiled header.
   function(add_library TARGET_NAME)
     _add_library(${TARGET_NAME} ${ARGN})
-    add_dependencies(${TARGET_NAME} pch)
-    set_source_files_properties(
-      ${ARGN}
-      OBJECT_DEPENDS "${PCH_PATH};${PCH_PATH}.gch"
+    get_target_property(
+      TARGET_IS_IMPORTED
+      ${TARGET_NAME}
+      IMPORTED
       )
+    if (NOT "${TARGET_NAME}" MATCHES "^PCH"
+        AND NOT ${TARGET_IS_IMPORTED})
+      add_dependencies(${TARGET_NAME} pch)
+      set_source_files_properties(
+        ${ARGN}
+        OBJECT_DEPENDS "${PCH_PATH};${PCH_PATH}.gch"
+        )
+      target_compile_options(
+        ${TARGET_NAME}
+        PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:${PCH_FLAG}>
+        )
+    endif()
   endfunction()
 
   function(add_executable TARGET_NAME)
@@ -133,6 +175,18 @@ if (USE_PCH)
       ${ARGN}
       OBJECT_DEPENDS "${PCH_PATH};${PCH_PATH}.gch"
       )
+    get_target_property(
+      TARGET_IS_IMPORTED
+      ${TARGET_NAME}
+      IMPORTED
+      )
+    if(NOT ${TARGET_IS_IMPORTED})
+      target_compile_options(
+        ${TARGET_NAME}
+        PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:${PCH_FLAG}>
+        )
+    endif()
   endfunction()
 
 endif (USE_PCH)
