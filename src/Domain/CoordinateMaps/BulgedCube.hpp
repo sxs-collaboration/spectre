@@ -7,11 +7,8 @@
 
 #include <array>
 #include <cstddef>
-#include <cstdint>
-#include <type_traits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace PUP {

@@ -6,16 +6,29 @@
 
 #pragma once
 
-#include <algorithm>
 #include <array>
-#include <numeric>
+#include <cstddef>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockNeighbor.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+
+/// \cond
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
+template <size_t VolumeDim>
+class BlockNeighbor;
+template <typename SourceFrame, typename TargetFrame, size_t Dim>
+class CoordinateMapBase;
+template <size_t VolumeDim>
+class Direction;
+namespace Frame {
+struct Logical;
+}  // namespace Frame
+/// \endcond
 
 /// \ingroup ComputationalDomainGroup
 /// Each member in `PairOfFaces` holds the global corner ids of a block face.

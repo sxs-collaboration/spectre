@@ -4,13 +4,22 @@
 #pragma once
 
 #include <array>
-#include <charm++.h>
+#include <cstddef>
+#include <limits>
 #include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/ElementId.hpp"
-#include "Parallel/PupStlCpp11.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \cond
+template <typename SourceFrame, typename TargetFrame, size_t Dim>
+class CoordinateMapBase;
+/// \endcond
 
 /*!
  * \ingroup ComputationalDomainGroup

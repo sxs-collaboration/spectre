@@ -1,11 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cstddef>
+#include <cmath>  // IWYU pragma: keep
 
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename T>

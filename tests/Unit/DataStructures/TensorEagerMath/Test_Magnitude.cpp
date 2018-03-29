@@ -1,12 +1,18 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cstddef>
+#include <math.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/TMPL.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanMagnitude",
                   "[DataStructures][Unit]") {

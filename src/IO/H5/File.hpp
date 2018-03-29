@@ -6,23 +6,30 @@
 
 #pragma once
 
+#include <algorithm>
+#include <exception>
 #include <hdf5.h>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <vector>
 
 #include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
-#include "IO/H5/Header.hpp"
-#include "IO/H5/Helpers.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/PrettyType.hpp"
-#include "Utilities/StdHelpers.hpp"
+
+/// \cond
+namespace h5 {
+class Header;
+}  // namespace h5
+/// \endcond
 
 namespace h5 {
 /*!

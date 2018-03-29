@@ -5,7 +5,6 @@
 
 #include <array>
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
@@ -14,9 +13,17 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+/// \cond
 namespace PUP {
-class er;
+class er;  // IWYU pragma: keep
 }  // namespace PUP
+namespace Tags {
+template <typename Tag>
+struct dt;
+}  // namespace Tags
+/// \endcond
+
+// IWYU pragma: no_include <pup.h>
 
 namespace EinsteinSolutions {
 

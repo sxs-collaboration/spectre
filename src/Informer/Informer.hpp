@@ -6,7 +6,9 @@
 
 #pragma once
 
-#include <charm++.h>
+/// \cond
+class CkArgMsg;
+/// \endcond
 
 /// \ingroup UtilitiesGroup
 /// The Informer manages textual output regarding the status of a simulation.

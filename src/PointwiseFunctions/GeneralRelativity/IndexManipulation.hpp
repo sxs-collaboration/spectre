@@ -3,7 +3,15 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include <cstddef>
+
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
+/// \endcond
 
 /*!
  * \ingroup GeneralRelativityGroup

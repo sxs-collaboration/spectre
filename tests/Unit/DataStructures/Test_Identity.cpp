@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
 #include <limits>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Identity.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim, typename DataType>

@@ -43,6 +43,8 @@ ARG GH_PAGES_SOURCE_BRANCH
 ARG COVERALLS_TOKEN
 ARG RUN_CLANG_TIDY
 ARG RUN_CPPCHECK
+ARG RUN_IWYU
+ARG USE_PCH
 ARG UPSTREAM_REPO
 ARG UPSTREAM_BRANCH
 ARG CHARM_PATCH
@@ -89,6 +91,7 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
           -D CMAKE_Fortran_COMPILER=${FC} \
           -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC} \
           -D USE_CCACHE=ON \
+          -D USE_PCH=${USE_PCH} \
           -D COVERAGE=${COVERAGE} \
           ../spectre/"
 
@@ -100,9 +103,14 @@ RUN if [ ${RUN_CLANG_TIDY} ]; then \
       /work/spectre/.travis/RunClangTidy.sh; \
     fi
 
+RUN if [ ${RUN_IWYU} ]; then \
+      /work/spectre/.travis/RunIncludeWhatYouUse.sh; \
+    fi
+
 # TravisCI currently has 2 cores for a job, so we build on 2.
 RUN if [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+    && [ -z "${RUN_CLANG_TIDY}" ] \
+    && [ -z "${RUN_IWYU}" ]; then \
       bash -c ". /etc/profile.d/lmod.sh; \
                export PATH=$PATH:/work/spack/bin; \
                . /work/spack/share/spack/setup-env.sh; \
@@ -127,7 +135,8 @@ RUN if [ -z "${RUN_CPPCHECK}" ] \
 RUN if [ "${CC}" = "gcc" ] \
     && [ $BUILD_TYPE = Debug ] \
     && [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+    && [ -z "${RUN_CLANG_TIDY}" ] \
+    && [ -z "${RUN_IWYU}" ]; then \
       make doc | tee doxygen.log; \
       ! grep 'warning' ./doxygen.log; \
     fi
@@ -135,6 +144,7 @@ RUN if [ "${CC}" = "gcc" ] \
 RUN if [ "${CHARM_CC}" = "gcc" ] \
     && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
+    && [ -z "${RUN_IWYU}" ] \
     && [ ${COVERAGE} = ON ]; then \
     bash -c ". /etc/profile.d/lmod.sh; \
                export PATH=$PATH:/work/spack/bin; \
@@ -162,6 +172,7 @@ RUN if [ "${CHARM_CC}" = "gcc" ] \
 RUN if [ ${CC} = gcc ] \
     && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
+    && [ -z "${RUN_IWYU}" ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
     && [ ${COVERAGE} ] \
     && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
@@ -184,6 +195,7 @@ RUN if [ ${CC} = gcc ] \
 
 # push documentation to GitHub pages
 RUN if  [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ]; then \
+    && [ -z "${RUN_CLANG_TIDY}" ] \
+    && [ -z "${RUN_IWYU}" ]; then \
       /work/spectre/.travis/TravisPushDocumentation.sh; \
     fi

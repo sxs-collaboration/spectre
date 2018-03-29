@@ -7,21 +7,26 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <functional>
 #include <iosfwd>
-#include <pup.h>
+#include <limits>
 
 #include "Domain/SegmentId.hpp"
-#include "ErrorHandling/Assert.hpp"
-#include "Utilities/ConstantExpressions.hpp"
+#include "Domain/Side.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/StdHelpers.hpp"
 
+/// \cond
 template <size_t>
 class ElementIndex;
 namespace Parallel {
 template <class>
 class ArrayIndex;
 }  // namespace Parallel
+/// \endcond
+namespace PUP {
+class er;
+}  // namespace PUP
 
 /// \ingroup ComputationalDomainGroup
 /// An ElementId uniquely labels an Element.

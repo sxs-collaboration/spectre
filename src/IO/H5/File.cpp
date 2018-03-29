@@ -3,9 +3,16 @@
 
 #include "IO/H5/File.hpp"
 
+#include <algorithm>
+#include <hdf5.h>
+#include <string>
+
+#include "ErrorHandling/Error.hpp"
+#include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
-#include "IO/H5/Helpers.hpp"
-#include "Utilities/Literals.hpp"
+#include "IO/H5/Header.hpp"  // IWYU pragma: keep
+#include "IO/H5/Object.hpp"
+#include "Utilities/FileSystem.hpp"
 
 namespace h5 {
 template <AccessType Access_t>

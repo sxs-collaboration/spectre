@@ -1,13 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <numeric>
+#include <string>
 
 #include "DataStructures/Index.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   Index<0> index_0d;

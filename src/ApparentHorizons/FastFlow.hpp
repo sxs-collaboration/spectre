@@ -5,20 +5,26 @@
 
 #include <cstddef>
 #include <limits>
-#include <memory>
 #include <ostream>
+#include <utility>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
+/// \cond
+class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
-
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
 template <typename>
 class Strahlkorper;
+/// \endcond
 
 /// \ingroup SurfacesGroup
 /// \brief Fast flow method for finding apparent horizons.

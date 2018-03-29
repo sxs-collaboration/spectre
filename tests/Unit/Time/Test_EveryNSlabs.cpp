@@ -1,18 +1,23 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
+#include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct TimeTriggers {

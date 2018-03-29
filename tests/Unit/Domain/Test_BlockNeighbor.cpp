@@ -1,11 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
+#include <string>
 
 #include "Domain/BlockNeighbor.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK

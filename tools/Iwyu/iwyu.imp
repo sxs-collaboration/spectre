@@ -1,0 +1,86 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+[
+  { ref: "stl.imp" },
+  { ref: "boost-all.imp" },
+
+  { include: ["@<brigand/.*>", private,
+              "\"Utilities/TMPL.hpp\"", public]},
+
+  { include: ["@<blaze/.*>", private,
+              "\"Utilities/PointerVector.hpp\"", private]},
+
+  { include: ["<ckmessage.h>", private,
+              "<charm++.h>", public]},
+  { include: ["<ckreduction.h>", private,
+              "\"Parallel/Reduction.hpp\"", public]},
+  { include: ["<pup.h>", public,
+              "<charm.h>", public]},
+  { symbol: ["PUP::er", private, "<pup.h>", public]},
+
+  { include: ["<catch.hpp>", public,
+              "\"tests/Unit/TestingFramework.hpp\"", public]},
+
+  { include: ["<type_traits>", public,
+              "\"Utilities/TypeTraits.hpp\"", public]},
+
+  { include: ["@<H5.*public.h>", private,
+              "<hdf5.h>", public]},
+
+  { include: ["<numpy/__multiarray_api.h>", private,
+              "<numpy/arrayobject.h>", public]},
+  { include: ["<numpy/numpyconfig.h>", private,
+              "<numpy/arrayobject.h>", public]},
+  { include: ["<pylifecycle.h>", private,
+              "<Python.h>", public]},
+  { include: ["<object.h>", private,
+              "<Python.h>", public]},
+  { include: ["<sysmodule.h>", private,
+              "<Python.h>", public]},
+
+  { symbol: ["db::DataBox", private,
+             "\"DataStructures/DataBox/DataBox.hpp\"", public]},
+  { symbol: ["Tensor", private,
+             "\"DataStructures/Tensor/Tensor.hpp\"", public]},
+  { symbol: ["Tensor", private,
+             "\"DataStructures/Tensor/TypeAliases.hpp\"", public]},
+
+  { include: ["\"DataStructures/Tensor/TypeAliases.hpp\"", public,
+              "\"DataStructures/Tensor/Tensor.hpp\"", public]},
+  { include: ["\"DataStructures/Tensor/IndexType.hpp\"", public,
+              "\"DataStructures/Tensor/Tensor.hpp\"", public]},
+  { include: ["\"DataStructures/Tensor/IndexType.hpp\"", public,
+              "\"DataStructures/Tensor/TypeAliases.hpp\"", public]},
+  { include: ["\"DataStructures/Tensor/Metafunctions.hpp\"", public,
+              "\"DataStructures/Tensor/Tensor.hpp\"", public]},
+  { include: ["\"DataStructures/Tensor/Structure.hpp\"", private,
+              "\"DataStructures/Tensor/Tensor.hpp\"", public]},
+
+  { include: ["\"NumericalAlgorithms/LinearOperators/Divergence.hpp\"",
+              public,
+              "\"NumericalAlgorithms/LinearOperators/Divergence.tpp\"",
+              public]},
+  { include: ["\"NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp\"",
+              public,
+              "\"NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp\"",
+              public]},
+
+
+
+  { include: ["<ConstGlobalCache.decl.h>", private,
+              "\"Parallel/ConstGlobalCache.hpp\"", public]},
+  { include: ["\"AlgorithmArray.decl.h\"", private,
+              "\"AlgorithmArray.hpp\"", public]},
+  { include: ["\"AlgorithmGroup.decl.h\"", private,
+              "\"AlgorithmGroup.hpp\"", public]},
+  { include: ["\"AlgorithmNodegroup.decl.h\"", private,
+              "\"AlgorithmNodegroup.hpp\"", public]},
+  { include: ["\"AlgorithmSingleton.decl.h\"", private,
+              "\"AlgorithmSingleton.hpp\"", public]},
+  { include: ["\"ParallelInfo.decl.h\"", private,
+              "\"Executables/ParallelInfo/ParallelInfo.decl.h\"", public]},
+
+  { include: ["\"Utilities/PointerVector.hpp\"", private,
+              "\"DataStructures/DataVector.hpp\"", public]},
+]

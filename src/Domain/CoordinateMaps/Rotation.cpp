@@ -3,6 +3,9 @@
 
 #include "Domain/CoordinateMaps/Rotation.hpp"
 
+#include <cmath>
+#include <pup.h>
+
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"

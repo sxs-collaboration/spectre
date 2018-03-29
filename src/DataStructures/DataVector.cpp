@@ -3,6 +3,8 @@
 
 #include "DataStructures/DataVector.hpp"
 
+#include <algorithm>
+#include <pup.h>
 #include <pup_stl.h>
 
 #include "Utilities/StdHelpers.hpp"

@@ -1,12 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/GeneralIndexIterator.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.GeneralIndexIterator",
                   "[Unit][DataStructures]") {

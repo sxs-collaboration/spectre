@@ -12,7 +12,8 @@
 
 template <>
 std::vector<ElementId<1>> initial_element_ids<1>(
-    const size_t block_id, const std::array<size_t, 1> initial_ref_levs) {
+    const size_t block_id,
+    const std::array<size_t, 1> initial_ref_levs) noexcept {
   std::vector<ElementId<1>> ids;
   ids.reserve(two_to_the(initial_ref_levs[0]));
   for (size_t x_i = 0; x_i < two_to_the(initial_ref_levs[0]); ++x_i) {
@@ -24,7 +25,8 @@ std::vector<ElementId<1>> initial_element_ids<1>(
 
 template <>
 std::vector<ElementId<2>> initial_element_ids<2>(
-    const size_t block_id, const std::array<size_t, 2> initial_ref_levs) {
+    const size_t block_id,
+    const std::array<size_t, 2> initial_ref_levs) noexcept {
   std::vector<ElementId<2>> ids;
   ids.reserve(two_to_the(initial_ref_levs[0]) *
               two_to_the(initial_ref_levs[1]));
@@ -40,7 +42,8 @@ std::vector<ElementId<2>> initial_element_ids<2>(
 
 template <>
 std::vector<ElementId<3>> initial_element_ids<3>(
-    const size_t block_id, const std::array<size_t, 3> initial_ref_levs) {
+    const size_t block_id,
+    const std::array<size_t, 3> initial_ref_levs) noexcept {
   std::vector<ElementId<3>> ids;
   ids.reserve(two_to_the(initial_ref_levs[0]) *
               two_to_the(initial_ref_levs[1]) *

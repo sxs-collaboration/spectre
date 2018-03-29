@@ -1,17 +1,24 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
 #include <cmath>
+#include <cstddef>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperDataBox.hpp"
+#include "ApparentHorizons/StrahlkorperDataBox.hpp"  // IWYU pragma: keep
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

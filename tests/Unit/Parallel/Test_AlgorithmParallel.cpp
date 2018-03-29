@@ -3,10 +3,19 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
 #include "AlgorithmArray.hpp"
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -14,9 +23,14 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 static constexpr int number_of_1d_array_elements = 14;
+
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 
 namespace Tags {
 struct Int0 : db::DataBoxTag {

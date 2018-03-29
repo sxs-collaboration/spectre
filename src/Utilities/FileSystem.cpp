@@ -3,22 +3,28 @@
 
 #include "Utilities/FileSystem.hpp"
 
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <dirent.h>
 #include <libgen.h>
+#include <memory>
 #include <regex>
 #include <sstream>
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <sys/types.h>  // IWYU pragma: keep
 #include <thread>
 #include <unistd.h>
 
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/Printf.hpp"
-#include "Utilities/Literals.hpp"
+
+// IWYU asks to add <fcntl.h> when it's not there and remove it when it's there.
+// IWYU pragma: no_include <fcntl.h>
 
 namespace file_system {
 

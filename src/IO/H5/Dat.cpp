@@ -5,14 +5,19 @@
 
 #include <algorithm>
 #include <hdf5.h>
+#include <iosfwd>
+#include <memory>
+#include <ostream>
 
 #include "DataStructures/Matrix.hpp"
-#include "ErrorHandling/ExpectsAndEnsures.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
+#include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
-#include "Utilities/Literals.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 /*!

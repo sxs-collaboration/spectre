@@ -1,13 +1,20 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
 #include <cstddef>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 

@@ -6,7 +6,10 @@
 
 #pragma once
 
-#include "ErrorHandling/Assert.hpp"
+#include <array>
+#include <cstddef>
+
+#include "ErrorHandling/Assert.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"

@@ -6,14 +6,22 @@
 
 #pragma once
 
-#include <memory>
+#include <array>
+#include <cstddef>
+#include <functional>
+#include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
 
 namespace CoordinateMaps {
 

@@ -13,17 +13,18 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeArray.hpp"
 
+/// \cond
 template <size_t, typename>
 class Block;
-
 template <typename, typename, size_t>
 class CoordinateMapBase;
-
 template <size_t, typename>
 class Domain;
+/// \endcond
 
 /// Defines classes that create Domains.
 namespace DomainCreators {
+/// \cond
 template <typename TargetFrame>
 class Brick;
 template <typename TargetFrame>
@@ -38,6 +39,7 @@ template <typename TargetFrame>
 class Shell;
 template <typename TargetFrame>
 class Sphere;
+/// \endcond
 }  // namespace DomainCreators
 
 namespace DomainCreators_detail {

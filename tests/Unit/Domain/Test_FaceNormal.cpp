@@ -1,12 +1,20 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
 #include <cmath>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <pup.h>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -17,30 +25,35 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare CoordinateMaps::Rotation
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
-template <typename Map>
-void check(const Map& map,
-           const std::array<std::array<double, Map::dim>, Map::dim>& expected) {
-  const Index<Map::dim - 1> extents(3);
-  for (size_t d = 0; d < Map::dim; ++d) {
-    const auto upper_normal = unnormalized_face_normal(
-        extents, map, Direction<Map::dim>(d, Side::Upper));
-    const auto lower_normal = unnormalized_face_normal(
-        extents, map, Direction<Map::dim>(d, Side::Lower));
-    for (size_t i = 0; i < 2; ++i) {
-      CHECK_ITERABLE_APPROX(upper_normal.get(i),
-                            DataVector(extents.product(),
-                                       gsl::at(gsl::at(expected, d), i)));
-      CHECK_ITERABLE_APPROX(lower_normal.get(i),
-                            DataVector(extents.product(),
-                                       -gsl::at(gsl::at(expected, d), i)));
+  template <typename Map>
+  void check(
+      const Map& map,
+      const std::array<std::array<double, Map::dim>, Map::dim>& expected) {
+    const Index<Map::dim - 1> extents(3);
+    for (size_t d = 0; d < Map::dim; ++d) {
+      const auto upper_normal = unnormalized_face_normal(
+          extents, map, Direction<Map::dim>(d, Side::Upper));
+      const auto lower_normal = unnormalized_face_normal(
+          extents, map, Direction<Map::dim>(d, Side::Lower));
+      for (size_t i = 0; i < 2; ++i) {
+        CHECK_ITERABLE_APPROX(
+            upper_normal.get(i),
+            DataVector(extents.product(), gsl::at(gsl::at(expected, d), i)));
+        CHECK_ITERABLE_APPROX(
+            lower_normal.get(i),
+            DataVector(extents.product(), -gsl::at(gsl::at(expected, d), i)));
+      }
     }
   }
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {

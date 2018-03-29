@@ -1,11 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // [[OutputRegex, Testing assert]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.Assert",

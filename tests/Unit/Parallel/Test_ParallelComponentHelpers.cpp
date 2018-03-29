@@ -1,7 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace {
 struct Tag0 {};

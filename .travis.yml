@@ -76,6 +76,10 @@ matrix:
     compiler: clang
   - os: linux
     dist: trusty
+    env: RUN_IWYU=true BUILD_TYPE=Debug
+    compiler: clang
+  - os: linux
+    dist: trusty
     env: RUN_CPPCHECK=true BUILD_TYPE=Release
     compiler: clang
   - os: linux
@@ -145,6 +149,11 @@ before_install:
       else
           CXX=clang++-${BASH_REMATCH[2]};
       fi
+    fi
+  - if [ ${RUN_IWYU} ]; then
+        export USE_PCH=OFF;
+    else
+        export USE_PCH=ON;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       export CHARM_VERSION=6.8.0;
@@ -275,6 +284,8 @@ script:
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
         --build-arg RUN_CLANG_TIDY=${RUN_CLANG_TIDY}
         --build-arg RUN_CPPCHECK=${RUN_CPPCHECK}
+        --build-arg RUN_IWYU=${RUN_IWYU}
+        --build-arg USE_PCH=${USE_PCH}
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
         --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
         --build-arg CHARM_PATCH=${CHARM_PATCH}

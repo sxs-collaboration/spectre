@@ -6,11 +6,19 @@
 
 #pragma once
 
-#include <boost/range/combine.hpp>
-
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+#include <boost/range/combine.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <cstddef>
+
+#include "DataStructures/Tensor/TypeAliases.hpp"
+
+/// \cond
+class DataVector;
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
+/// \endcond
 
 template <typename Symmetry, typename IndexList>
 void check_tensor_doubles_equals_tensor_datavectors(

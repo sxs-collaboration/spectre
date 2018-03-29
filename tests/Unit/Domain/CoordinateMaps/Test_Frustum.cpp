@@ -1,15 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
 #include <random>
 
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
-#include "Utilities/ConstantExpressions.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "ErrorHandling/Error.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   // Set up random number generator

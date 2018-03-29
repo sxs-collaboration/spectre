@@ -7,6 +7,8 @@
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/BlockNeighbor.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"

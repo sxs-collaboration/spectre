@@ -6,12 +6,16 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <pup.h>
 
 #include "Domain/Side.hpp"
-#include "Parallel/PupStlCpp11.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 /// \ingroup ComputationalDomainGroup
 /// A particular Side along a particular coordinate Axis.
@@ -64,7 +68,7 @@ class Direction {
   // @}
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   Axis axis_{Axis::Xi};
@@ -167,12 +171,6 @@ inline const std::array<Direction<3>, 6>& Direction<3>::all_directions()
   return directions;
 }
 /// \endcond
-
-template <size_t VolumeDim>
-void Direction<VolumeDim>::pup(PUP::er& p) {
-  p | axis_;
-  p | side_;
-}
 
 template <size_t VolumeDim>
 inline bool operator==(const Direction<VolumeDim>& lhs,

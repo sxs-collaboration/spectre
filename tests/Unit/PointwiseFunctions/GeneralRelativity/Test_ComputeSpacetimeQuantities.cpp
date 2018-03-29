@@ -1,13 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <boost/range/combine.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_compute_1d_spacetime_metric(const DataVector& used_for_size) {

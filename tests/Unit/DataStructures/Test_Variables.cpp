@@ -1,16 +1,33 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
+#include <array>
+#include <boost/range/combine.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <cstddef>
+#include <string>
+#include <tuple>
+#include <type_traits>
+
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare Variables
 
 namespace VariablesTestTags_detail {
 /// [simple_variables_tag]

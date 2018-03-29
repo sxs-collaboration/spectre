@@ -1,13 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
+
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 template <size_t Dim>

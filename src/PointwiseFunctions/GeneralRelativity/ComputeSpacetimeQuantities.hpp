@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \ingroup GeneralRelativityGroup

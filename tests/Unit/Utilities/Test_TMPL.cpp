@@ -1,12 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
 #include <tuple>
 #include <utility>
 
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// [swallow_example]
 namespace {

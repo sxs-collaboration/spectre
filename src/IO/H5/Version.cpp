@@ -3,9 +3,9 @@
 
 #include "IO/H5/Version.hpp"
 
-#include "ErrorHandling/Error.hpp"
+#include <algorithm>
+
 #include "Helpers.hpp"
-#include "IO/H5/CheckH5.hpp"
 
 namespace h5 {
 /// \cond HIDDEN_SYMOLS

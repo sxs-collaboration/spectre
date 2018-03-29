@@ -1,12 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
+#include <limits>
+#include <string>
 
 #include "Domain/SegmentId.hpp"
+#include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
   // Test default constructor:

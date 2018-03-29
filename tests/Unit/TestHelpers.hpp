@@ -6,8 +6,9 @@
 
 #pragma once
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
 #include <iterator>
 #include <memory>
 

@@ -1,18 +1,29 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <math.h>
+#include <memory>
+#include <pup.h>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/Direction.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 template <typename Map1, typename Map2, typename DataType, size_t Dim>

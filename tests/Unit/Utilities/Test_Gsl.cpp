@@ -1,8 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+#include "Utilities/Gsl.hpp"
 
 namespace {
 template <typename T>

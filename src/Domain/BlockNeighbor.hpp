@@ -6,11 +6,14 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
-#include <pup.h>
 
-#include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
+
+namespace PUP {
+class er;
+}  // namespace PUP
 
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbor of a Block in a particular direction.

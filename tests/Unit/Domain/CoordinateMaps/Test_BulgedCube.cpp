@@ -1,16 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <array>
-#include <catch.hpp>
-#include <random>
-
-#include "Domain/CoordinateMaps/BulgedCube.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cmath>
+#include <memory>
+#include <pup.h>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/BulgedCube.hpp"
+#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Identity",
                   "[Domain][Unit]") {

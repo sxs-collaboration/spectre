@@ -3,14 +3,15 @@
 
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 
-#include <array>
+#include <array>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Index.hpp"  // IWYU pragma: keep
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 template <size_t Dim>

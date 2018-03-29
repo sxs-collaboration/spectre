@@ -10,11 +10,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
 template<size_t Dim>
 class Index;
 class DataVector;
 template<size_t Dim>
 class Direction;
+/// \endcond
 
 /*!
  * \ingroup ComputationalDomainGroup
@@ -27,7 +29,7 @@ class Direction;
  */
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
-    const Index<VolumeDim>& extents);
+    const Index<VolumeDim>& extents) noexcept;
 
 /*!
  * \ingroup ComputationalDomainGroup
@@ -40,4 +42,5 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
  */
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
-    const Index<VolumeDim - 1>& extents, const Direction<VolumeDim>& direction);
+    const Index<VolumeDim - 1>& extents,
+    const Direction<VolumeDim>& direction) noexcept;

@@ -1,13 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <algorithm>
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <string>
 #include <fstream>
 
 #include "Utilities/FileSystem.hpp"
-#include "Utilities/Literals.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_parent_path",
                   "[Unit][Utilities]") {

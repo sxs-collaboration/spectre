@@ -5,7 +5,13 @@
 
 #include "tests/Unit/RunTests.hpp"
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <charm++.h>
+#include <cstddef>
+#include <exception>
+#include <memory>
+#include <string>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
@@ -27,7 +33,7 @@ RunTests::RunTests(CkArgMsg* msg) {
   Parallel::abort("A catch test has failed.");
 }
 
-#include "tests/Unit/RunTests.def.h"
+#include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep
 
 // Needed for tests that use the ConstGlobalCache since it registers itself with
 // Charm++. However, since Parallel/CharmMain.cpp isn't included in the RunTests

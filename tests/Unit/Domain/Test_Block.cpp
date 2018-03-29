@@ -1,13 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <pup.h>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 template <size_t Dim>
 void test_block() {

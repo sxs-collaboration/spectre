@@ -7,13 +7,18 @@
 #pragma once
 
 #include <array>
-#include <iosfwd>
+#include <cstddef>
+#include <cstdint>
+#include <hdf5.h>
+#include <string>
 #include <vector>
 
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 
+/// \cond
 class Matrix;
+/// \endcond
 
 namespace h5 {
 /*!

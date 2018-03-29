@@ -1,23 +1,36 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
 #include <cmath>
+#include <memory>
+#include <pup.h>
+#include <stddef.h>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
-#include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BlockNeighbor.cpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeVector.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+
+class DataVector;
+template <size_t VolumeDim>
+class OrientationMap;
 
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;

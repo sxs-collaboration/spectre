@@ -5,14 +5,25 @@
 
 #include <cmath>
 
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Utilities/MakeArray.hpp"
+
+/// \cond
+namespace Frame {
+struct Grid;
+struct Inertial;
+struct Logical;
+}  // namespace Frame
+/// \endcond
 
 namespace DomainCreators {
 

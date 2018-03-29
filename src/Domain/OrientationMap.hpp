@@ -4,11 +4,19 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <iosfwd>
-#include <memory>
+
 
 #include "Domain/Direction.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/Side.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+class SegmentId;
+namespace PUP {
+class er;
+}  // namespace PUP
 
 /*!
  * \ingroup DomainCreatorsGroup
@@ -59,7 +67,7 @@ class OrientationMap {
   OrientationMap<VolumeDim> inverse_map() const noexcept;
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   friend bool operator==(const OrientationMap& lhs,

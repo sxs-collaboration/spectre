@@ -1,15 +1,24 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
 #include <array>
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
+#include <string>
+#include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperDataBox.hpp"
-#include "ApparentHorizons/StrahlkorperGr.hpp"
+#include "ApparentHorizons/StrahlkorperDataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
@@ -18,9 +27,10 @@
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

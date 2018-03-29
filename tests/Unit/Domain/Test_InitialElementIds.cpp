@@ -1,16 +1,18 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <boost/rational.hpp>
-#include <catch.hpp>
+#include <cstddef>
 #include <vector>
 
-#include "Domain/ElementId.hpp"
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/InitialElementIds.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t VolumeDim>

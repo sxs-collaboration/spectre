@@ -6,15 +6,24 @@
 
 #pragma once
 
-#include <cstddef>
 #include <cstdio>
+#include <hdf5.h>
+#include <ostream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include "DataStructures/Index.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "IO/H5/AccessType.hpp"
 #include "IO/H5/Helpers.hpp"
+#include "IO/H5/OpenGroup.hpp"
+
+/// \cond
+class DataVector;
+template <size_t Dim>
+class Index;
+/// \endcond
 
 namespace vis {
 

@@ -2,14 +2,15 @@
 // See LICENSE.txt for details.
 
 #include <algorithm>
-#include <catch.hpp>
 #include <cmath>
+#include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "Utilities/Literals.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 namespace {

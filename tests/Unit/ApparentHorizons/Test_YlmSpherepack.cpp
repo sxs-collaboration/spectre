@@ -1,15 +1,24 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <memory>
 #include <random>
+#include <utility>
+#include <vector>
 
 #include "ApparentHorizons/YlmSpherepack.hpp"
+#include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 

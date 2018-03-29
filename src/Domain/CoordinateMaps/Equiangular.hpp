@@ -7,6 +7,8 @@
 #pragma once
 
 #include <array>
+#include <cmath>
+#include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits.hpp"

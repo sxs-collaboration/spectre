@@ -1,15 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "Parallel/Printf.hpp"
 #include "Utilities/Blas.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 
 namespace {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.Points",

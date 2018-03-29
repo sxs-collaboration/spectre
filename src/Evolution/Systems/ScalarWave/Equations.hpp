@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -30,8 +31,6 @@ template <typename>
 struct NormalDotFlux;
 template <typename>
 struct NormalDotNumericalFlux;
-template <typename>
-struct Variables;
 }  // namespace Tags
 
 namespace ScalarWave {
@@ -40,7 +39,13 @@ struct Pi;
 template <size_t Dim>
 struct Phi;
 }  // namespace ScalarWave
+
+namespace PUP {
+class er;
+}  // namespace PUP
 /// \endcond
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace ScalarWave {
 /*!

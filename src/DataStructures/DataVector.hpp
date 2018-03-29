@@ -6,12 +6,13 @@
 
 #pragma once
 
-#include <blaze/math/typetraits/IsVector.h>
+#include <array>
+#include <cmath>
 #include <cstddef>
 #include <initializer_list>
-#include <iosfwd>
 #include <limits>
-#include <memory>
+#include <ostream>
+#include <type_traits>
 #include <vector>
 
 #include "ErrorHandling/Assert.hpp"
@@ -21,9 +22,9 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PointerVector.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 /// \cond HIDDEN_SYMBOLS
+// IWYU pragma: no_forward_declare ConstantExpressions_detail::pow
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -32,6 +33,24 @@ class er;
 //             We want the std::abs to be used
 using std::abs;  // NOLINT
 /// \endcond
+
+// IWYU doesn't like that we want PointerVector.hpp to expose Blaze and also
+// have DataVector.hpp to expose PointerVector.hpp without including Blaze
+// directly in DataVector.hpp
+//
+// IWYU pragma: no_include <blaze/math/dense/DenseVector.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecAddExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecDivExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecMultExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecSubExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecScalarDivExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecScalarMultExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DenseVector.h>
+// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
+// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
+// IWYU pragma: no_include <blaze/math/expressions/Forward.h>
+// IWYU pragma: no_forward_declare blaze::Vector
 
 /*!
  * \ingroup DataStructuresGroup

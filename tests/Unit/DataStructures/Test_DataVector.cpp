@@ -1,14 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <numeric>
+#include <stddef.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   DataVector a{2};

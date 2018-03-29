@@ -6,16 +6,23 @@
 
 #pragma once
 
+#include <algorithm>
 #include <boost/rational.hpp>
+#include <cstddef>
+#include <functional>
 #include <iosfwd>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Time/Slab.hpp"
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
 class TimeDelta;
+/// \endcond
+
+// IWYU pragma: no_include <sys/types.h>
 
 /// \ingroup TimeGroup
 ///

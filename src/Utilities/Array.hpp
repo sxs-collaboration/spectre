@@ -5,8 +5,11 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
+#include <ostream>
 #include <utility>
 
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 

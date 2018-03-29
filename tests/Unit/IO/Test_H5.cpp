@@ -1,20 +1,37 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <regex>
+#include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <hdf5.h>
+#include <memory>
+#include <regex>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "IO/Connectivity.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/Header.hpp"
+#include "IO/H5/Helpers.hpp"
+#include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Version.hpp"
 #include "IO/VolumeDataFile.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
-#include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.File.h5");

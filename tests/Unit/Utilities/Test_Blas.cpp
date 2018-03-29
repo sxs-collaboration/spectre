@@ -1,10 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-
 #include "tests/Unit/TestingFramework.hpp"
+
 #include "tests/Unit/Utilities/Test_Blas.hpp"
+
+#include "ErrorHandling/Error.hpp"
 
 // [[OutputRegex, TRANSA must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]

@@ -5,7 +5,11 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
 class DataVector;
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
+/// \endcond
 
 /// \ingroup SurfacesGroup
 /// Contains functions that depend both on a Strahlkorper and a metric.

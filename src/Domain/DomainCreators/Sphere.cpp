@@ -3,16 +3,27 @@
 
 #include "Domain/DomainCreators/Sphere.hpp"
 
-#include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
+#include <cmath>
+#include <memory>
+
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/Wedge3D.hpp"
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/DomainHelpers.hpp"
 #include "Utilities/MakeArray.hpp"
+
+/// \cond
+namespace Frame {
+struct Grid;      // IWYU pragma: keep
+struct Inertial;  // IWYU pragma: keep
+struct Logical;   // IWYU pragma: keep
+}  // namespace Frame
+/// \endcond
 
 namespace DomainCreators {
 

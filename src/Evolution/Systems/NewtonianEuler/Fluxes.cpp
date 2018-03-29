@@ -3,10 +3,14 @@
 
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
 
+#include <array>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Gsl.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 namespace NewtonianEuler {

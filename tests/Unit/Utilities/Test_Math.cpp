@@ -1,10 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
 #include "Utilities/Math.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
   // Test number_of_digits

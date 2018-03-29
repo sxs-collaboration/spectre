@@ -6,16 +6,31 @@
 
 #pragma once
 
-#include <array>
 #include <boost/range/combine.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <cstddef>
+#include <vector>
 
-#include "DataStructures/Index.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+/// \cond
+template <size_t VolumeDim>
+class OrientationMap;
+template <size_t>
+class Index;
+template <typename TagsList>
+class Variables;
+
+template <typename Tag, typename TagList>
+constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;
+template <typename Tag, typename TagList>
+constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept;
+/// \endcond
 
 /*!
  * \ingroup DataStructuresGroup

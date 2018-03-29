@@ -1,26 +1,33 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <algorithm>
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
+#include <cmath>
+#include <cstddef>
+#include <memory>
+#include <pup.h>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
-#include "Domain/Block.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/Sphere.hpp"
-#include "Domain/DomainHelpers.hpp"
-#include "Utilities/ConstantExpressions.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/MakeVector.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_sphere_construction(

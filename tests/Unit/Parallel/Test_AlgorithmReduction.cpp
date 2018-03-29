@@ -3,22 +3,33 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
+#include <string>
+#include <tuple>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "AlgorithmArray.hpp"
-#include "AlgorithmGroup.hpp"
-#include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Parallel/Abort.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
-#include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 struct TestMetavariables;
 template <class Metavariables>
 struct SingletonParallelComponent;

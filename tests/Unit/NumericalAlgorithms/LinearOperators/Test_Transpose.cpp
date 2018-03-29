@@ -1,12 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <algorithm>
+#include <cstddef>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestingFramework.hpp"
+
+template <typename TagsList>
+class Variables;
 
 namespace {
 

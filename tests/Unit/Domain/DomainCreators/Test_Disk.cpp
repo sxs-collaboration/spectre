@@ -1,19 +1,33 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
+#include <cmath>
+#include <pup.h>
+#include <cstddef>
+#include <array>
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"          // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Disk.hpp"
-#include "Utilities/MakeVector.hpp"
-#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_disk_construction(

@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <memory>
-#include <vector>
+#include "tests/Unit/TestingFramework.hpp"
 
-#include "Utilities/Array.hpp"
+#include <initializer_list>
+#include <string>
+
+#include "Utilities/Array.hpp"  // IWYU pragma: associated
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // AppleClang does not correctly compute noexcept
 #ifndef __APPLE__

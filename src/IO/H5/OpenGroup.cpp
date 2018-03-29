@@ -3,9 +3,14 @@
 
 #include "IO/H5/OpenGroup.hpp"
 
+#include <H5version.h>
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <regex>
 #include <sstream>
 
+#include "ErrorHandling/Error.hpp"
 #include "IO/H5/CheckH5.hpp"
 
 namespace {

@@ -2,7 +2,9 @@
 // See LICENSE.txt for details.
 
 #include <codecvt>
+#include <locale>
 #include <string>
+#include <vector>
 
 #ifndef PY_ARRAY_UNIQUE_SYMBOL
 #define PY_ARRAY_UNIQUE_SYMBOL SPECTRE_PY_API
@@ -10,7 +12,7 @@
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
-#include <numpy/arrayobject.h>
+#include <numpy/arrayobject.h>  // IWYU pragma: keep
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"

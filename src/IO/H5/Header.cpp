@@ -3,10 +3,11 @@
 
 #include "IO/H5/Header.hpp"
 
+#include <algorithm>
 #include <regex>
 #include <sstream>
+#include <vector>
 
-#include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/StdHelpers.hpp"

@@ -1,13 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <list>
+#include <string>
 #include <vector>
 
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 /// [function_definitions]

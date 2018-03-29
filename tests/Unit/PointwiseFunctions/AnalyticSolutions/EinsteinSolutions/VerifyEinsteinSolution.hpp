@@ -3,13 +3,17 @@
 
 #pragma once
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -23,8 +27,16 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+/// \cond
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
+/// \endcond
 
 /// \ingroup TestingFrameworkGroup
 /// Determines if the given `solution` is a time-independent solution

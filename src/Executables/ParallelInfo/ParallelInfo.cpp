@@ -3,7 +3,10 @@
 
 #include "Executables/ParallelInfo/ParallelInfo.hpp"
 
-#include <cmath>
+#include <charm++.h>
+#include <ckcallback.h>
+#include <ostream>
+#include <string>
 
 #include "ErrorHandling/Error.hpp"
 #include "Informer/InfoFromBuild.hpp"

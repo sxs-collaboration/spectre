@@ -1,9 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <boost/rational.hpp>
 #include <limits>
 
+#include "ErrorHandling/Error.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/StepControllers/FullSlab.hpp"
@@ -11,8 +14,8 @@
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/Time.hpp"
 #include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+
+class StepController;
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
   const StepControllers::BinaryFraction bf{};

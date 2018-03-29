@@ -3,22 +3,36 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <cstddef>
+#include <tuple>
+#include <vector>
+
 #include "AlgorithmArray.hpp"
-#include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
-#include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Parallel/Algorithm.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 static constexpr int number_of_1d_array_elements_per_core = 10;
 
 struct TestMetavariables;
+
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
 
 template <class Metavariables>
 struct ArrayParallelComponent;

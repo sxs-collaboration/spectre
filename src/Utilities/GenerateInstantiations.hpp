@@ -3,14 +3,30 @@
 
 #pragma once
 
+// IWYU pragma: begin_exports
+#include <boost/parameter/name.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
+#include <boost/preprocessor/control/expr_iif.hpp>
+#include <boost/preprocessor/control/iif.hpp>
+#include <boost/preprocessor/control/while.hpp>
+#include <boost/preprocessor/detail/check.hpp>
+#include <boost/preprocessor/list/fold_left.hpp>
+#include <boost/preprocessor/list/fold_right.hpp>
 #include <boost/preprocessor/list/for_each_product.hpp>
 #include <boost/preprocessor/list/size.hpp>
 #include <boost/preprocessor/list/to_tuple.hpp>
 #include <boost/preprocessor/list/transform.hpp>
+#include <boost/preprocessor/logical/bitand.hpp>
+#include <boost/preprocessor/logical/bool.hpp>
+#include <boost/preprocessor/logical/compl.hpp>
+#include <boost/preprocessor/repetition/for.hpp>
 #include <boost/preprocessor/tuple/elem.hpp>
+#include <boost/preprocessor/tuple/reverse.hpp>
 #include <boost/preprocessor/tuple/size.hpp>
 #include <boost/preprocessor/tuple/to_list.hpp>
+#include <boost/preprocessor/variadic/elem.hpp>
 #include <boost/preprocessor/variadic/to_list.hpp>
+// IWYU pragma: end_exports
 
 /// \cond
 #define GENERATE_INSTANTIATIONS_DO_PRODUCT(INSTANTIATION_MACRO, LIST_OF_LISTS) \

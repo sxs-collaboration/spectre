@@ -6,16 +6,20 @@
 
 #include "Domain/LogicalCoordinates.hpp"
 
+#include <array>
+
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Index.hpp"  // IWYU pragma: keep
 #include "DataStructures/IndexIterator.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Direction.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Domain/Direction.hpp"              // IWYU pragma: keep
+#include "Domain/Side.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "Utilities/Gsl.hpp"
 
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
-    const Index<VolumeDim>& extents) {
+    const Index<VolumeDim>& extents) noexcept {
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
   for (size_t d = 0; d < VolumeDim; ++d) {
     const auto& collocation_points_in_this_dim =
@@ -31,7 +35,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
     const Index<VolumeDim - 1>& extents,
-    const Direction<VolumeDim>& direction) {
+    const Direction<VolumeDim>& direction) noexcept {
   const size_t sliced_away_dim = direction.dimension();
   tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(extents.product());
 
@@ -59,18 +63,18 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
 
 // Explicit instantiations
 template tnsr::I<DataVector, 1, Frame::Logical> logical_coordinates(
-    const Index<1>& extents);
+    const Index<1>& extents) noexcept;
 template tnsr::I<DataVector, 2, Frame::Logical> logical_coordinates(
-    const Index<2>& extents);
+    const Index<2>& extents) noexcept;
 template tnsr::I<DataVector, 3, Frame::Logical> logical_coordinates(
-    const Index<3>& extents);
+    const Index<3>& extents) noexcept;
 
 template tnsr::I<DataVector, 1, Frame::Logical> interface_logical_coordinates(
     const Index<0>& extents,
-    const Direction<1>& direction);
+    const Direction<1>& direction) noexcept;
 template tnsr::I<DataVector, 2, Frame::Logical> interface_logical_coordinates(
     const Index<1>& extents,
-    const Direction<2>& direction);
+    const Direction<2>& direction) noexcept;
 template tnsr::I<DataVector, 3, Frame::Logical> interface_logical_coordinates(
     const Index<2>& extents,
-    const Direction<3>& direction);
+    const Direction<3>& direction) noexcept;

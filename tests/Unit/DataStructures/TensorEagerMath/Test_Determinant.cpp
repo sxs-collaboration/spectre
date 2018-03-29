@@ -1,11 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
                   "[DataStructures][Unit]") {

@@ -1,13 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include <array>
+#include <cstddef>
+
+#include "Utilities/MakeArray.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 template <size_t Dim>
 void test_identity() {

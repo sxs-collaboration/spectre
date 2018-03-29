@@ -1,8 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include <cmath>
 
+#include "Parallel/Abort.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {

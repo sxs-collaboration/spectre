@@ -4,7 +4,8 @@
 #pragma once
 
 #include <array>
-#include <vector>
+#include <cstddef>
+#include <limits>
 
 #include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"

@@ -4,23 +4,30 @@
 #include "ApparentHorizons/FastFlow.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <pup.h>
+#include <string>
 #include <utility>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/StrahlkorperDataBox.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
-#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/ParseOptions.hpp"
-#include "Parallel/Abort.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
+// IWYU pragma: no_forward_declare Tensor
 
 FastFlow::FastFlow(FastFlow::Flow::type flow, FastFlow::Alpha::type alpha,
                    FastFlow::Beta::type beta, FastFlow::AbsTol::type abs_tol,

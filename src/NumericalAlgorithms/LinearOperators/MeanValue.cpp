@@ -3,6 +3,8 @@
 
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 
+#include <ostream>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"

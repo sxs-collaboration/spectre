@@ -3,10 +3,22 @@
 
 #include "Domain/DomainHelpers.hpp"
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <numeric>
+#include <utility>
+
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/Side.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace {
 

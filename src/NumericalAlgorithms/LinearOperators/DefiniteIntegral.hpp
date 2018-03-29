@@ -8,9 +8,11 @@
 
 #include <cstddef>
 
+/// \cond
 class DataVector;
 template <size_t>
 class Index;
+/// \endcond
 
 /*!
  * \ingroup NumericalAlgorithmsGroup

@@ -1,15 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <memory>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <initializer_list>
+#include <type_traits>
 #include <vector>
 
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <typename T>

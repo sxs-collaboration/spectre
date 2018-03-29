@@ -6,12 +6,19 @@
 
 #pragma once
 
+#include <cstddef>
 #include <iosfwd>
-#include <pup.h>
 #include <unordered_set>
 
-#include "Domain/ElementId.hpp"
 #include "Domain/OrientationMap.hpp"
+
+namespace PUP {
+class er;
+}
+/// \cond
+template <size_t VolumeDim>
+class ElementId;
+/// \endcond
 
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbors of an Element in a particular direction.
@@ -54,7 +61,7 @@ class Neighbors {
   void add_ids(const std::unordered_set<ElementId<VolumeDim>>& additional_ids);
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
   /// The number of neighbors
   size_t size() const noexcept { return ids_.size(); }

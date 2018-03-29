@@ -8,13 +8,19 @@
 
 #include <cstddef>
 #include <functional>
-#include <type_traits>
+#include <initializer_list>
+#include <ostream>
 #include <utility>
 
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Overloader.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+#include <initializer_list>
+#include <ostream>
+#include <stack>
+#include <string>
+namespace PUP { class er; }
 
 namespace tuples {
 

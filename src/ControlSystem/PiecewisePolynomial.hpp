@@ -4,10 +4,11 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <vector>
 
 #include "ControlSystem/FunctionOfTime.hpp"
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 
 /// \ingroup ControlSystemGroup
 /// Contains functions of time to support the dual frame system.

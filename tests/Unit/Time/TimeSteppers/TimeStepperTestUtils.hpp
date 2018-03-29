@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cmath>
 #include <deque>
 #include <tuple>

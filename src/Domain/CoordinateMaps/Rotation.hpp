@@ -7,7 +7,8 @@
 #pragma once
 
 #include <array>
-#include <memory>
+#include <cstddef>
+#include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/TypeTraits.hpp"

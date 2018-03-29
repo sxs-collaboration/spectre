@@ -10,15 +10,14 @@
 #include <cstddef>
 #include <limits>
 #include <ostream>
-#include <pup.h>
 
-#include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/StdHelpers.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+namespace PUP {
+class er;
+}  // namespace PUP
 
 /// \ingroup DataStructuresGroup
 /// An integer multi-index.
@@ -33,7 +32,8 @@ class Index {
 
   /// Construct specifying value in each dimension
   template <typename... I, Requires<(sizeof...(I) > 1)> = nullptr>
-  explicit Index(I... i) : indices_(make_array(static_cast<size_t>(i)...)) {
+  explicit Index(I... i) noexcept
+      : indices_(make_array(static_cast<size_t>(i)...)) {
     static_assert(cpp17::conjunction_v<tt::is_integer<I>...>,
                   "You must pass in a set of size_t's to Index.");
     static_assert(Dim == sizeof...(I),
@@ -41,7 +41,7 @@ class Index {
                   "the dimensionality of the Index.");
   }
 
-  explicit Index(std::array<size_t, Dim> i) : indices_(std::move(i)) {}
+  explicit Index(std::array<size_t, Dim> i) noexcept : indices_(std::move(i)) {}
 
   size_t operator[](const size_t d) const noexcept {
     return gsl::at(indices_, d);
@@ -80,7 +80,7 @@ class Index {
   ///
   /// \param d the element to remove.
   template <size_t N = Dim, Requires<(N > 0)> = nullptr>
-  Index<Dim - 1> slice_away(const size_t d) const {
+  Index<Dim - 1> slice_away(const size_t d) const noexcept {
     std::array<size_t, Dim - 1> t{};
     for (size_t i = 0; i < Dim; ++i) {
       if (i < d) {
@@ -94,9 +94,7 @@ class Index {
 
   /// \cond
   // clang-tidy: runtime-references
-  void pup(PUP::er& p) {  // NOLINT
-    p | indices_;
-  }
+  void pup(PUP::er& p) noexcept;  // NOLINT
   /// \endcond
 
   template <size_t N>
@@ -113,9 +111,7 @@ class Index {
 };
 
 template <size_t N>
-std::ostream& operator<<(std::ostream& os, const Index<N>& i) {
-  return os << i.indices_;
-}
+std::ostream& operator<<(std::ostream& os, const Index<N>& i);
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t N>

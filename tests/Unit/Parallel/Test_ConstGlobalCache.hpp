@@ -3,12 +3,15 @@
 
 #pragma once
 
-#include <charm++.h>
 #include <limits>
+#include <pup.h>
 
 #include "src/Parallel/Info.hpp"
-
 #include "tests/Unit/Parallel/Test_ConstGlobalCache.decl.h"
+
+/// \cond
+class CkArgMsg;
+/// \endcond
 
 class TestArrayChare : public CBase_TestArrayChare {
  public:

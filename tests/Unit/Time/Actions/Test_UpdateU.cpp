@@ -1,8 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cstddef>
 #include <memory>
+#include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -16,7 +20,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 struct Var : db::DataBoxTag {

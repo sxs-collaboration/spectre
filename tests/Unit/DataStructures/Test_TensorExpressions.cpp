@@ -1,15 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
+#include <iterator>
 #include <numeric>
 
 #include "DataStructures/Tensor/Expressions/AddSubtract.hpp"
-#include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TMPL.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                   "[DataStructures][Unit]") {

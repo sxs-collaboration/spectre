@@ -1,11 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/StripeIterator.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void check_stripe_iterator_helper(StripeIterator s) {

@@ -6,8 +6,19 @@
 
 #pragma once
 
-#include "Domain/DomainCreators/DomainCreator.hpp"
+#include <array>
+#include <cstddef>
+#include <vector>
+
+#include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+template <size_t Dim, typename Frame>
+class DomainCreator;  // IWYU pragma: keep
+/// \endcond
 
 namespace DomainCreators {
 

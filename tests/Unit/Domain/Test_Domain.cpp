@@ -1,16 +1,31 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <memory>
+#include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <pup.h>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainHelpers.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_1d_domains() {

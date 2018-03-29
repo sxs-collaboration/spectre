@@ -7,9 +7,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <pup.h>
-
-#include "Parallel/PupStlCpp11.hpp"
 
 /// \ingroup ComputationalDomainGroup
 /// A label for the side of a manifold.

@@ -7,6 +7,12 @@
 #pragma once
 
 #include "Executables/ParallelInfo/ParallelInfo.decl.h"
+#include "Parallel/Reduction.hpp"
+
+/// \cond
+class CkArgMsg;
+class CkCallback;
+/// \endcond
 
 /*!
  * \page ParallelInfoExecutablePage ParallelInfo Executable

@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <cstddef>
 #include <functional>
+#include <iosfwd>
 #include <limits>
 
 #include "ErrorHandling/Assert.hpp"

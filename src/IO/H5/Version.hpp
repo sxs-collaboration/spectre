@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <numeric>
+#include <cstdint>
+#include <hdf5.h>
 #include <string>
 
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
-#include "IO/H5/Type.hpp"
 
 namespace h5 {
 /*!

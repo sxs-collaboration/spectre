@@ -1,17 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Tags.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t Dim, typename T>

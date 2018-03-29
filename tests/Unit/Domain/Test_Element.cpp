@@ -1,8 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
-#include <unordered_map>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <cstddef>
 #include <unordered_set>
 
 #include "Domain/Direction.hpp"
@@ -10,8 +11,8 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 template <size_t VolumeDim>

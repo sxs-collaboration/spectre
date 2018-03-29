@@ -3,6 +3,10 @@
 
 #include "Domain/ElementMap.hpp"
 
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
+#include "Domain/Side.hpp"
+#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+
 /// \cond
 template <size_t Dim, typename TargetFrame>
 ElementMap<Dim, TargetFrame>::ElementMap(

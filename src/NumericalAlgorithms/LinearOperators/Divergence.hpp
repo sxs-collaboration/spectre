@@ -11,8 +11,11 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Metafunctions.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 template <size_t Dim>
@@ -21,7 +24,6 @@ template <typename DataType, typename Symm, typename IndexList>
 class Tensor;
 template <typename TagsList>
 class Variables;
-/// \endcond
 
 namespace Tags {
 template <size_t Dim>
@@ -33,6 +35,7 @@ namespace Tags_detail {
 template <typename T, typename S, typename = std::nullptr_t>
 struct div_impl;
 }  // namespace Tags_detail
+/// \endcond
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating the divergence

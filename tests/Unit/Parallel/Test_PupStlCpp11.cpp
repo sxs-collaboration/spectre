@@ -1,14 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
+#include <deque>
+#include <memory>
+#include <pup.h>
+#include <pup_stl.h>
+#include <stddef.h>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace Test_Classes {
 struct DerivedInPupStlCpp11;

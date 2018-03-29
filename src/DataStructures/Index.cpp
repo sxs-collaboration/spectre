@@ -3,9 +3,23 @@
 
 #include "DataStructures/Index.hpp"
 
+#include <pup.h>  // IWYU pragma: keep
+
+#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 /// \cond HIDDEN_SYMBOLS
+template <size_t Dim>
+void Index<Dim>::pup(PUP::er& p) noexcept {
+  p | indices_;
+}
+
+template <size_t N>
+std::ostream& operator<<(std::ostream& os, const Index<N>& i) {
+  return os << i.indices_;
+}
+
 template <size_t Dim>
 bool operator==(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
   return std::equal(lhs.begin(), lhs.end(), rhs.begin());
@@ -20,10 +34,12 @@ bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
 #define GEN_OP(op, dim)                            \
   template bool operator op(const Index<dim>& lhs, \
                             const Index<dim>& rhs) noexcept;
-#define INSTANTIATE(_, data)       \
-  template class Index<DIM(data)>; \
-  GEN_OP(==, DIM(data))            \
-  GEN_OP(!=, DIM(data))
+#define INSTANTIATE(_, data)                          \
+  template class Index<DIM(data)>;                    \
+  GEN_OP(==, DIM(data))                               \
+  GEN_OP(!=, DIM(data))                               \
+  template std::ostream& operator<<(std::ostream& os, \
+                                    const Index<DIM(data)>& i);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 

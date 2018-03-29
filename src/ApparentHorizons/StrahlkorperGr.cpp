@@ -3,9 +3,12 @@
 
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 
+#include <cstddef>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 
 namespace StrahlkorperGr {
 

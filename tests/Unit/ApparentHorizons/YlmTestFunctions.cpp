@@ -4,6 +4,7 @@
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 
 namespace YlmTestFunctions {
 

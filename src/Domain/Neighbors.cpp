@@ -3,12 +3,12 @@
 
 #include "Domain/Neighbors.hpp"
 
-#include <charm.h>
 #include <ostream>
+#include <pup.h>  // IWYU pragma: keep
 
-#include "Domain/ElementId.hpp"
-#include "Parallel/PupStlCpp11.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Domain/ElementId.hpp"      // IWYU pragma: keep
+#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
@@ -42,7 +42,7 @@ bool operator!=(const Neighbors<VolumeDim>& lhs,
 }
 
 template <size_t VolumeDim>
-void Neighbors<VolumeDim>::pup(PUP::er& p) {
+void Neighbors<VolumeDim>::pup(PUP::er& p) noexcept {
   p | ids_;
   p | orientation_;
 }
@@ -56,10 +56,10 @@ template std::ostream& operator<<(std::ostream&, const Neighbors<1>&);
 template std::ostream& operator<<(std::ostream&, const Neighbors<2>&);
 template std::ostream& operator<<(std::ostream&, const Neighbors<3>&);
 
-template bool operator==(const Neighbors<1>&, const Neighbors<1>&);
-template bool operator==(const Neighbors<2>&, const Neighbors<2>&);
-template bool operator==(const Neighbors<3>&, const Neighbors<3>&);
+template bool operator==(const Neighbors<1>&, const Neighbors<1>&) noexcept;
+template bool operator==(const Neighbors<2>&, const Neighbors<2>&) noexcept;
+template bool operator==(const Neighbors<3>&, const Neighbors<3>&) noexcept;
 
-template bool operator!=(const Neighbors<1>&, const Neighbors<1>&);
-template bool operator!=(const Neighbors<2>&, const Neighbors<2>&);
-template bool operator!=(const Neighbors<3>&, const Neighbors<3>&);
+template bool operator!=(const Neighbors<1>&, const Neighbors<1>&) noexcept;
+template bool operator!=(const Neighbors<2>&, const Neighbors<2>&) noexcept;
+template bool operator!=(const Neighbors<3>&, const Neighbors<3>&) noexcept;

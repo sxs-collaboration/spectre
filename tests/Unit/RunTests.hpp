@@ -3,9 +3,11 @@
 
 #pragma once
 
-#include <charm++.h>
-
 #include "tests/Unit/RunTests.decl.h"
+
+/// \cond
+class CkArgMsg;
+/// \endcond
 
 /// Main executable for running the unit tests.
 class RunTests : public CBase_RunTests {

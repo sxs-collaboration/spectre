@@ -3,10 +3,7 @@
 
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 
-#include <cmath>
-
 #include "DataStructures/DataVector.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace MathFunctions {

@@ -25,6 +25,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+/// \cond
 class DataVector;
 template <size_t Dim>
 class Element;
@@ -36,6 +37,7 @@ namespace Frame {
 struct Logical;
 struct Inertial;
 }  // namespace Frame
+/// \endcond
 
 namespace OptionTags {
 /// \ingroup OptionTagsGroup

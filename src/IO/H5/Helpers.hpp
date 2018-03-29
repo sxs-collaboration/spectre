@@ -6,15 +6,14 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <hdf5.h>
-#include <list>
 #include <string>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
-#include "IO/H5/AccessType.hpp"
-#include "IO/H5/OpenGroup.hpp"
 
 namespace h5 {
 /*!

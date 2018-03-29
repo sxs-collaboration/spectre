@@ -1,30 +1,36 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
-#include <catch.hpp>
+#include <cstddef>
 #include <memory>
+#include <pup.h>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+#include "Utilities/TMPL.hpp"
+
+class DataVector;
+template <size_t VolumeDim>
+class MathFunction;
 
 namespace {
 using Affine = CoordinateMaps::Affine;
@@ -228,5 +234,3 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
   test_with_numerical_derivatives(Index<3>{8, 8, 8}, 1.5,
                                   std::move(generic_3d));
 }
-
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"

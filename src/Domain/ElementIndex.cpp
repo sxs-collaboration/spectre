@@ -8,7 +8,7 @@
 #include <ostream>
 #include <type_traits>
 
-#include "Domain/ElementId.hpp"
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"

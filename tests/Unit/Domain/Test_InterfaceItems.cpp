@@ -1,7 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <catch.hpp>
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <array>
+#include <cstddef>
+#include <functional>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -9,14 +13,19 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
+#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 template <size_t N>

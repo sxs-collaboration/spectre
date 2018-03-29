@@ -5,9 +5,10 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 namespace gsl {

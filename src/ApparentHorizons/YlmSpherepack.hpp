@@ -3,13 +3,18 @@
 
 #pragma once
 
+#include <array>
+#include <cmath>
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \ingroup SpectralGroup
 /// \brief C++ interface to SPHEREPACK.

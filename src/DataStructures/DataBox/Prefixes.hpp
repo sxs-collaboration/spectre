@@ -6,13 +6,19 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+
+/// \cond
+template <class>
+class Variables;  // IWYU pragma: keep
+/// \endcond
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
