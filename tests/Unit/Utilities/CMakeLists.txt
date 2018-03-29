@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_Gsl.cpp
   Test_MakeArray.cpp
   Test_MakeVector.cpp
+  Test_MakeWithValue.cpp
   Test_Math.cpp
   Test_Overloader.cpp
   Test_PrettyType.cpp
