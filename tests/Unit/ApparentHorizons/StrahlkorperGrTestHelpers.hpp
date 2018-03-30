@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -22,7 +23,7 @@ namespace Schwarzschild {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
     const tnsr::I<DataType, SpatialDim, Frame>& x, const double& mass) noexcept;
-} //namespace Schwarzschild
+}  // namespace Schwarzschild
 
 namespace Minkowski {
 /*!
@@ -38,5 +39,25 @@ namespace Minkowski {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature_sphere(
     const tnsr::I<DataType, SpatialDim, Frame>& x) noexcept;
-} //namespace Minkowski
-} //namespace TestHelpers
+}  // namespace Minkowski
+
+namespace Kerr {
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Radius of Kerr horizon in Kerr-Schild coordinates
+ *
+ * \details
+ * Computes the radius of a Kerr black hole with mass `mass`
+ * and dimensionless spin `spin`. The input
+ * argument `theta_phi` is the output of the
+ * `theta_phi_points()` method of a `YlmSpherepack` object;
+ * i.e., it is typically a std::array of two DataVectors containing
+ * the values of theta and phi at each point on a Strahlkorper.
+ */
+template <typename DataType>
+Scalar<DataType> horizon_radius(const std::array<DataType, 2>& theta_phi,
+                                const double& mass,
+                                const std::array<double, 3>& spin) noexcept;
+
+}  // namespace Kerr
+}  // namespace TestHelpers
