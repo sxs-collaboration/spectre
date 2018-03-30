@@ -86,6 +86,7 @@ INPUT += @PROJECT_SOURCE_DIR@/docs
 # Add files to scan that explain testing framework
 INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/EquationsOfState/TestHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/CheckWithRandomValues.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/Pypp.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppFundamentals.hpp  \
