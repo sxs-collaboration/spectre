@@ -12,10 +12,10 @@
 
 #include "Domain/OrientationMap.hpp"
 
+/// \cond
 namespace PUP {
 class er;
-}
-/// \cond
+}  // namespace PUP
 template <size_t VolumeDim>
 class ElementId;
 /// \endcond

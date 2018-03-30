@@ -7,9 +7,9 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <limits>
 #include <vector>
-#include <cstddef>
 
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"

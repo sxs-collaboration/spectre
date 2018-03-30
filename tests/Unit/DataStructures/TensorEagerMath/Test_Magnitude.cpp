@@ -4,8 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
-#include <math.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
