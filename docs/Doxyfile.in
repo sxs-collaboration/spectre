@@ -89,6 +89,7 @@ INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/CheckWithRandomValues.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/Pypp.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppFundamentals.hpp  \
+         @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppPyTests.py  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/TestCreation.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/TestHelpers.hpp \

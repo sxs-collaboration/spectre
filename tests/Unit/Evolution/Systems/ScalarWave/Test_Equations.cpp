@@ -45,7 +45,7 @@ void check_du_dt(const size_t npts, const double time) {
     return coords;
   }();
 
-  auto box = db::create<db::AddTags<
+  auto box = db::create<db::AddSimpleTags<
       Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
       Tags::dt<ScalarWave::Psi>, ScalarWave::Pi,
       Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,

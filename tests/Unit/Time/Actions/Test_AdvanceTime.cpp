@@ -33,7 +33,7 @@ void do_check(const Time& start, const TimeDelta& time_step) {
   ActionTesting::ActionRunner<Metavariables> runner{
     {std::make_unique<TimeSteppers::RungeKutta3>()}};
 
-  auto box = db::create<db::AddTags<Tags::TimeId, Tags::TimeStep>>(
+  auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>>(
       TimeId{8, start, 0}, time_step);
 
   std::array<TimeDelta, 3> substep_offsets{

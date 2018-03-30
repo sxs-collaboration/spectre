@@ -109,7 +109,7 @@ template <class T, class S>
 struct is_nothrow_swappable_with<T, S, false> : std::false_type {};
 
 template <typename... Ts>
-constexpr char swallow(Ts&&... /*unused*/) noexcept {
+constexpr char expand_pack(Ts&&... /*unused*/) noexcept {
   return '0';
 }
 }  // namespace tuples_detail
@@ -437,7 +437,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
                                 tuples_detail::no_such_type>::type const&
           t) noexcept(is_nothrow_copy_assignable::value) {
     static_cast<void>(
-        tuples_detail::swallow((get<Tags>(*this) = get<Tags>(t))...));
+        tuples_detail::expand_pack((get<Tags>(*this) = get<Tags>(t))...));
     return *this;
   }
 
@@ -445,7 +445,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
       typename std::conditional<is_move_assignable::value, TaggedTuple,
                                 tuples_detail::no_such_type>::type&&
           t) noexcept(is_nothrow_move_assignable::value) {
-    static_cast<void>(tuples_detail::swallow(
+    static_cast<void>(tuples_detail::expand_pack(
         (get<Tags>(*this) =
              tuples_detail::forward<tag_type<Tags>>(get<Tags>(t)))...));
     return *this;
@@ -461,7 +461,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
       tuples_detail::all<std::is_nothrow_assignable<
           tag_type<Tags>&, tag_type<UTags> const&>::value...>::value) {
     static_cast<void>(
-        tuples_detail::swallow((get<Tags>(*this) = get<UTags>(t))...));
+        tuples_detail::expand_pack((get<Tags>(*this) = get<UTags>(t))...));
     return *this;
   }
 
@@ -475,7 +475,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
   TaggedTuple& operator=(TaggedTuple<UTags...>&& t) noexcept(
       tuples_detail::all<std::is_nothrow_assignable<
           tag_type<Tags>&, tag_type<UTags>&&>::value...>::value) {
-    static_cast<void>(tuples_detail::swallow(
+    static_cast<void>(tuples_detail::expand_pack(
         (get<Tags>(*this) =
              tuples_detail::forward<tag_type<UTags>>(get<UTags>(t)))...));
     return *this;
@@ -486,7 +486,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
       tuples_detail::all<tuples_detail::is_nothrow_swappable_with<
           tuples_detail::TaggedTupleLeaf<Tags>,
           tuples_detail::TaggedTupleLeaf<Tags>>::value...>::value) {
-    tuples_detail::swallow(tuples_detail::TaggedTupleLeaf<Tags>::swap(
+    tuples_detail::expand_pack(tuples_detail::TaggedTupleLeaf<Tags>::swap(
         static_cast<tuples_detail::TaggedTupleLeaf<Tags>&>(t))...);
   }
 };

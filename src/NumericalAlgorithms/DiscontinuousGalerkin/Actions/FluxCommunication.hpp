@@ -341,7 +341,7 @@ struct SendDataForFluxes {
     return std::make_tuple(
         db::create_from<
             db::RemoveTags<interface_normal_dot_fluxes_tag>,
-            db::AddTags<typename ReceiverAction::mortars_local_data_tag>>(
+            db::AddSimpleTags<typename ReceiverAction::mortars_local_data_tag>>(
             box, std::move(mortars_local_data)));
   }
 };

@@ -54,7 +54,7 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   ActionTesting::ActionRunner<Metavariables> runner{{
     serialize_and_deserialize(events_and_triggers)}};
 
-  const auto box = db::create<db::AddTags<>>();
+  const auto box = db::create<db::AddSimpleTags<>>();
 
   runner.apply<component, Actions::RunEventsAndTriggers>(box, 0);
 

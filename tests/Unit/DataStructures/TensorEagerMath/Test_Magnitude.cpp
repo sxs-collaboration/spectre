@@ -4,8 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
-#include <math.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -143,10 +143,9 @@ struct Covector : db::DataBoxTag {
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
                   "[DataStructures][Unit]") {
   const auto box = db::create<
-      db::AddTags<Vector, Covector>,
-      db::AddComputeItemsTags<
-          Tags::EuclideanMagnitude<Vector>,
-          Tags::EuclideanMagnitude<Covector>,
+      db::AddSimpleTags<Vector, Covector>,
+      db::AddComputeTags<
+          Tags::EuclideanMagnitude<Vector>, Tags::EuclideanMagnitude<Covector>,
           Tags::Normalized<Vector, Tags::EuclideanMagnitude<Vector>>,
           Tags::Normalized<Covector, Tags::EuclideanMagnitude<Covector>>>>(
       db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),

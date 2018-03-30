@@ -418,8 +418,8 @@ class TaggedDeferredTuple  // NOLINT
     if (&t == this) {
       return *this;
     }
-    swallow((::db::databox_detail::get<Tags>(*this) =
-                 ::db::databox_detail::get<Tags>(t))...);
+    expand_pack((::db::databox_detail::get<Tags>(*this) =
+                     ::db::databox_detail::get<Tags>(t))...);
     return *this;
   }
 
@@ -430,9 +430,9 @@ class TaggedDeferredTuple  // NOLINT
     if (&t == this) {
       return *this;
     }
-    swallow((::db::databox_detail::get<Tags>(*this) =
-                 std::forward<Deferred<item_type<Tags>>>(
-                     ::db::databox_detail::get<Tags>(t)))...);
+    expand_pack((::db::databox_detail::get<Tags>(*this) =
+                     std::forward<Deferred<item_type<Tags>>>(
+                         ::db::databox_detail::get<Tags>(t)))...);
     return *this;
   }
 
@@ -445,7 +445,7 @@ class TaggedDeferredTuple  // NOLINT
   operator=(TaggedDeferredTuple<UTags...> const& t) noexcept(
       tmpl2::flat_all_v<cpp17::is_nothrow_assignable_v<
           Deferred<item_type<Tags>>&, Deferred<item_type<UTags>> const&>...>) {
-    swallow((get<Tags>(*this) = get<UTags>(t))...);
+    expand_pack((get<Tags>(*this) = get<UTags>(t))...);
     return *this;
   }
 
@@ -458,8 +458,8 @@ class TaggedDeferredTuple  // NOLINT
   operator=(TaggedDeferredTuple<UTags...>&& t) noexcept(
       tmpl2::flat_all_v<cpp17::is_nothrow_assignable_v<
           Deferred<item_type<Tags>>&, Deferred<item_type<UTags>>&&>...>) {
-    swallow((get<Tags>(*this) =
-                 std::forward<Deferred<item_type<UTags>>>(get<UTags>(t)))...);
+    expand_pack((get<Tags>(*this) = std::forward<Deferred<item_type<UTags>>>(
+                     get<UTags>(t)))...);
     return *this;
   }
 };
@@ -855,7 +855,7 @@ add_compute_item_to_box_impl(
   static_assert(not tmpl2::flat_any_v<
                     cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
                 "A ComputeItem cannot take its own Tag as an argument.");
-  swallow(
+  expand_pack(
       check_compute_item_argument_exists<ComputeItem, ComputeItemArgumentsTags,
                                          FullTagList>()...);
 
@@ -888,7 +888,7 @@ SPECTRE_ALWAYS_INLINE void add_items_to_box(
     databox_detail::TaggedDeferredTuple<Tags...>& data,
     tmpl::list<AddItemTags...> /*meta*/, std::index_sequence<Is...> /*meta*/,
     tmpl::list<AddComputeItemTags...> /*meta*/) {
-  swallow(add_item_to_box<Is, AddItemTags>(tupull, data)...);
+  expand_pack(add_item_to_box<Is, AddItemTags>(tupull, data)...);
   static_cast<void>(std::initializer_list<char>{(
       add_compute_item_to_box<AddComputeItemTags, FullTagList>(data), '0')...});
 }
@@ -1115,9 +1115,10 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
       "Must pass in as many (compute) items as there are Tags.");
   static_assert(sizeof...(TagsInArgsOrder) == sizeof...(Args),
                 "Must pass in as many arguments as AddTags");
-  swallow(DataBox_detail::check_argument_type<TagsInArgsOrder,
-                                              typename TagsInArgsOrder::type,
-                                              std::decay_t<Args>>()...);
+  expand_pack(
+      DataBox_detail::check_argument_type<TagsInArgsOrder,
+                                          typename TagsInArgsOrder::type,
+                                          std::decay_t<Args>>()...);
 
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
   databox_detail::add_items_to_box<
@@ -1138,8 +1139,9 @@ constexpr DataBox<TagsList<Tags...>>::DataBox(
     Args&&... args) {
   static_assert(sizeof...(NewTags) == sizeof...(Args),
                 "Must pass in as many arguments as AddTags");
-  swallow(DataBox_detail::check_argument_type<NewTags, typename NewTags::type,
-                                              std::decay_t<Args>>()...);
+  expand_pack(
+      DataBox_detail::check_argument_type<NewTags, typename NewTags::type,
+                                          std::decay_t<Args>>()...);
 
   check_tags();
   // Merge old tags, including all ComputeItems even though they might be
@@ -1254,14 +1256,14 @@ using RemoveTags = tmpl::flatten<tmpl::list<Tags...>>;
  * \brief List of Tags to add to the DataBox
  */
 template <typename... Tags>
-using AddTags = tmpl::flatten<tmpl::list<Tags...>>;
+using AddSimpleTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
  * \brief List of Compute Item Tags to add to the DataBox
  */
 template <typename... Tags>
-using AddComputeItemsTags = tmpl::flatten<tmpl::list<Tags...>>;
+using AddComputeTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
@@ -1272,7 +1274,7 @@ using AddComputeItemsTags = tmpl::flatten<tmpl::list<Tags...>>;
  * passed to the function. Compute items must be added so that the dependencies
  * of a compute item are added before the compute item. For example, say you
  * have compute items `A` and `B` where `B` depends on `A`, then you must
- * add them using `db::AddComputeItemsTags<A, B>`.
+ * add them using `db::AddComputeTags<A, B>`.
  *
  * \example
  * \snippet Test_DataBox.cpp create_databox
@@ -1597,7 +1599,7 @@ constexpr int check_mutate_apply_mutate_tag() noexcept {
 template <typename BoxTags, typename... MutateTags>
 constexpr bool check_mutate_apply_mutate_tags(
     BoxTags /*meta*/, tmpl::list<MutateTags...> /*meta*/) noexcept {
-  swallow(check_mutate_apply_mutate_tag<MutateTags, BoxTags>()...);
+  expand_pack(check_mutate_apply_mutate_tag<MutateTags, BoxTags>()...);
   return true;
 }
 
@@ -1613,7 +1615,7 @@ constexpr int check_mutate_apply_apply_tag() noexcept {
 template <typename BoxTags, typename... ApplyTags>
 constexpr bool check_mutate_apply_argument_tags(
     BoxTags /*meta*/, tmpl::list<ApplyTags...> /*meta*/) noexcept {
-  swallow(check_mutate_apply_apply_tag<ApplyTags, BoxTags>()...);
+  expand_pack(check_mutate_apply_apply_tag<ApplyTags, BoxTags>()...);
   return true;
 }
 }  // namespace databox_detail

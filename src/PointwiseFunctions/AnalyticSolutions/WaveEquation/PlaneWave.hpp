@@ -24,11 +24,11 @@ struct Pi;
 struct Psi;
 template <size_t Dim>
 struct Phi;
-}
+}  // namespace ScalarWave
 namespace Tags {
 template <typename Tag>
 struct dt;
-}
+}  // namespace Tags
 template <size_t VolumeDim>
 class MathFunction;
 

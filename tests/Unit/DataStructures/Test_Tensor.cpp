@@ -1342,6 +1342,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
         scalar.get_vector_of_data());
 }
 
+/// [example_spectre_test_case]
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
   CHECK("Logical" == get_output(Frame::Logical{}));
@@ -1350,3 +1351,4 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
   CHECK("Distorted" == get_output(Frame::Distorted{}));
   CHECK("NoFrame" == get_output(Frame::NoFrame{}));
 }
+/// [example_spectre_test_case]

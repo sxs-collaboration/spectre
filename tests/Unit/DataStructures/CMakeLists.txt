@@ -11,7 +11,6 @@ set(LIBRARY_SOURCES
   Test_Identity.cpp
   Test_Index.cpp
   Test_IndexIterator.cpp
-  Test_MakeWithValue.cpp
   Test_Matrix.cpp
   Test_OrientVariablesOnSlice.cpp
   Test_SliceIterator.cpp

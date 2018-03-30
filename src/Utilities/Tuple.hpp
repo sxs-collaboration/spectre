@@ -105,7 +105,7 @@ constexpr inline void tuple_transform_impl(
  * `tuple_counted_fold` because you cannot pass a pointer to a function
  * template, only a function.
  *
- * \see swallow tuple_transform tuple_fold tuple_counted_fold std::tuple
+ * \see expand_pack tuple_transform tuple_fold tuple_counted_fold std::tuple
  */
 template <bool ReverseIteration = false, typename... Elements, typename N_aryOp,
           typename... Args>
@@ -157,7 +157,7 @@ constexpr inline void tuple_counted_fold(
  * Using `tuple_transform` with a generic lambda goes as follows,
  * \snippet Utilities/Test_Tuple.cpp tuple_transform
  *
- * \see swallow tuple_fold tuple_counted_fold std::tuple
+ * \see expand_pack tuple_fold tuple_counted_fold std::tuple
  */
 template <bool ReverseIteration = false, typename... Elements, typename N_aryOp,
           typename... Args>

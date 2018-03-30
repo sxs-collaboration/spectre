@@ -45,11 +45,11 @@ FastFlow::Status do_iteration(
     const auto prolonged_strahlkorper =
         Strahlkorper<Frame::Inertial>(l_mesh, l_mesh, *strahlkorper);
 
-    const auto box =
-        db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                   db::AddComputeItemsTags<
-                       StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-            prolonged_strahlkorper);
+    const auto box = db::create<
+        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+        db::AddComputeTags<
+            StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
+        prolonged_strahlkorper);
 
     const double t = 0.0;
     const auto& cart_coords =
@@ -204,11 +204,10 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
   const auto status = do_iteration(&strahlkorper, &flow, solution);
   CHECK(converged(status));
 
-  const auto box =
-      db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                 db::AddComputeItemsTags<
-                     StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          strahlkorper);
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
   const auto& rad = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
   const auto r_minmax = std::minmax_element(rad.begin(), rad.end());
   Approx custom_approx = Approx::custom().epsilon(1.e-11);

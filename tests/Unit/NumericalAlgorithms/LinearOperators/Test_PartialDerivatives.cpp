@@ -410,9 +410,8 @@ void test_logical_derivatives_compute_item(
   });
 
   auto box = db::create<
-      db::AddTags<Tags::Extents<Dim>, Tags::Variables<vars_tags>>,
-      db::AddComputeItemsTags<Tags::LogicalCoordinates<Dim>, deriv_tag>>(
-      extents, u);
+      db::AddSimpleTags<Tags::Extents<Dim>, Tags::Variables<vars_tags>>,
+      db::AddComputeTags<Tags::LogicalCoordinates<Dim>, deriv_tag>>(extents, u);
 
   const auto& du = db::get<deriv_tag>(box);
 
@@ -472,10 +471,11 @@ void test_partial_derivatives_compute_item(
         get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
       });
 
-  auto box = db::create<
-      db::AddTags<Tags::Extents<Dim>, Tags::Variables<vars_tags>, map_tag>,
-      db::AddComputeItemsTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                              deriv_tag>>(extents, u, map);
+  auto box =
+      db::create<db::AddSimpleTags<Tags::Extents<Dim>,
+                                   Tags::Variables<vars_tags>, map_tag>,
+                 db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                                    deriv_tag>>(extents, u, map);
 
   const auto& du = db::get<deriv_tag>(box);
 

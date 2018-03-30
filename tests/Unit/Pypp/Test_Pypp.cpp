@@ -331,7 +331,8 @@ void test_einsum(const T& used_for_size) {
   const auto tensor_from_python = pypp::call<tnsr::i<T, 3>>(
       "PyppPyTests", "test_einsum", scalar, vector, tnsr_ia, tnsr_AA, tnsr_iaa);
   /// [einsum_example]
-  CHECK_ITERABLE_APPROX(expected, tensor_from_python);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected, tensor_from_python,
+                               approx.epsilon(2.0e-13));
 }
 }  // namespace
 
@@ -546,10 +547,12 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
       &check_double_not_null2_scalar<Scalar<double>>, "PyppPyTests",
       {"check_double_not_null2_result0", "check_double_not_null2_result1"},
       {{{0.0, 10.0}, {-10.0, 0.0}}}, scalar_double);
+  /// [cxx_two_not_null]
   pypp::check_with_random_values<2>(
       &check_double_not_null2_scalar<Scalar<DataVector>>, "PyppPyTests",
       {"check_double_not_null2_result0", "check_double_not_null2_result1"},
       {{{0.0, 10.0}, {-10.0, 0.0}}}, scalar_dv);
+  /// [cxx_two_not_null]
 
   pypp::check_with_random_values<1>(&check_by_value0<double>, "PyppPyTests",
                                     "check_by_value0", {{{-10.0, 10.0}}}, doub);

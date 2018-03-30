@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
                   "[Unit][Evolution][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
-  auto start_box = db::create<db::AddTags<var_tag, dt_var_tag>>(3, -100);
+  auto start_box = db::create<db::AddSimpleTags<var_tag, dt_var_tag>>(3, -100);
 
   CHECK(db::get<var_tag>(start_box) == 3);
   CHECK(db::get<dt_var_tag>(start_box) == -100);

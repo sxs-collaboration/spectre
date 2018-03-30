@@ -26,10 +26,12 @@ class Index;
 template <typename TagsList>
 class Variables;
 
+// clang-tidy: redundant declarations
 template <typename Tag, typename TagList>
-constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;
+constexpr typename Tag::type& get(Variables<TagList>& v) noexcept;  // NOLINT
 template <typename Tag, typename TagList>
-constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept;
+constexpr const typename Tag::type& get(  // NOLINT
+    const Variables<TagList>& v) noexcept;
 /// \endcond
 
 /*!
@@ -98,8 +100,8 @@ Variables<tmpl::list<TagsToSlice...>> data_on_slice(
                 interface_and_volume_tensor_components)[si.volume_offset()];
       }
     };
-    swallow((lambda(get<TagsToSlice>(interface_vars), tensors),
-             cpp17::void_type{})...);
+    expand_pack((lambda(get<TagsToSlice>(interface_vars), tensors),
+                 cpp17::void_type{})...);
   }
   return interface_vars;
 }

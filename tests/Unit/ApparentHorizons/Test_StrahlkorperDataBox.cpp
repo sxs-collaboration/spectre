@@ -68,11 +68,10 @@ void test_radius_and_derivs() {
   }
 
   // Create DataBox
-  auto box =
-      db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                 db::AddComputeItemsTags<
-                     StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          strahlkorper);
+  auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
 
   // Test radius
   const auto& strahlkorper_radius =
@@ -198,11 +197,10 @@ void test_normals() {
   expected_surface_tangents.get(2, 1) = amp * cos_phi * cos_theta;
 
   // Create DataBox
-  auto box =
-      db::create<db::AddTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-                 db::AddComputeItemsTags<
-                     StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-          strahlkorper);
+  auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
 
   const auto& surface_tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);

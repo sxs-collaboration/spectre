@@ -119,12 +119,11 @@ auto run_action(
                             xi_map, eta_map)));
 
   auto start_box = db::create<
-      db::AddTags<Tags::Element<2>, Tags::Extents<2>, Tags::ElementMap<2>,
-                  interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
-                  interface_tag<OtherArg>>,
-      db::AddComputeItemsTags<
-          Tags::InternalDirections<2>,
-          interface_tag<Tags::Direction<2>>,
+      db::AddSimpleTags<Tags::Element<2>, Tags::Extents<2>, Tags::ElementMap<2>,
+                        interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
+                        interface_tag<OtherArg>>,
+      db::AddComputeTags<
+          Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
           interface_tag<Tags::Extents<1>>,
           interface_tag<Tags::UnnormalizedFaceNormal<2>>,
           interface_tag<

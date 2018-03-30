@@ -102,8 +102,8 @@ FastFlow::iterate_horizon_finder(
   // Do we want to define ComputeItems for expansion, normalized
   // unit norms, etc in this DataBox? So far we do not.
   auto box = db::create<
-      db::AddTags<StrahlkorperTags::items_tags<Frame>>,
-      db::AddComputeItemsTags<StrahlkorperTags::compute_items_tags<Frame>>>(
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
+      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
       strahlkorper);
 
   // Get minimum radius.

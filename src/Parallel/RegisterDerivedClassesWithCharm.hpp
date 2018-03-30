@@ -24,7 +24,7 @@ SPECTRE_ALWAYS_INLINE void make_type_pupable() noexcept {
 template <typename... Types>
 SPECTRE_ALWAYS_INLINE void make_list_pupable(
     const tmpl::list<Types...> /*meta*/) noexcept {
-  swallow((make_type_pupable<Types>(), 0)...);
+  expand_pack((make_type_pupable<Types>(), 0)...);
 }
 }  // namespace register_derived_classes_with_charm_detail
 

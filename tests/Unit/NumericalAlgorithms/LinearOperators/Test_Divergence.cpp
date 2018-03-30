@@ -218,9 +218,10 @@ void test_divergence_compute_item(
   });
 
   auto box = db::create<
-      db::AddTags<Tags::Extents<Dim>, Tags::Variables<flux_tags>, map_tag>,
-      db::AddComputeItemsTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                              div_tag>>(extents, fluxes, coordinate_map);
+      db::AddSimpleTags<Tags::Extents<Dim>, Tags::Variables<flux_tags>,
+                        map_tag>,
+      db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag, div_tag>>(
+      extents, fluxes, coordinate_map);
 
   const auto& div_fluxes = db::get<div_tag>(box);
 

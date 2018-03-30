@@ -32,7 +32,7 @@ template <typename Symm, typename Index0, typename Index1>
 struct DetAndInverseImpl<Symm, Index0, Index1, Requires<Index0::dim == 1>> {
   template <typename T>
   static determinant_inverse_pair<T, Symm, Index0, Index1> apply(
-      const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
+      const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept {
     const T& t00 = get<0, 0>(tensor);
     // inv is non-const so that it can be moved into the std::pair:
     Tensor<T, Symm, inverse_indices<Index0, Index1>> inv{
@@ -47,7 +47,8 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
                          Requires<Index0::dim == 2>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
-      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>&
+          tensor) noexcept {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t10 = get<1, 0>(tensor);
@@ -69,7 +70,8 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
                          Requires<Index0::dim == 2>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
-      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>&
+          tensor) noexcept {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t11 = get<1, 1>(tensor);
@@ -91,7 +93,8 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
                          Requires<Index0::dim == 3>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
-      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>&
+          tensor) noexcept {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t02 = get<0, 2>(tensor);
@@ -126,7 +129,8 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
                          Requires<Index0::dim == 3>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
-      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>&
+          tensor) noexcept {
     const T& t00 = get<0, 0>(tensor);
     const T& t01 = get<0, 1>(tensor);
     const T& t02 = get<0, 2>(tensor);
@@ -171,7 +175,8 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
                          Requires<Index0::dim == 4>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<2, 1>, Index0, Index1> apply(
-      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>& tensor) {
+      const Tensor<T, Symmetry<2, 1>, tmpl::list<Index0, Index1>>&
+          tensor) noexcept {
     const T& p00 = get<0, 0>(tensor);
     const T& p01 = get<0, 1>(tensor);
     const T& p10 = get<1, 0>(tensor);
@@ -230,8 +235,7 @@ struct DetAndInverseImpl<Symmetry<2, 1>, Index0, Index1,
     const T inv_x11 = s11 - (r_inv_p10 * q01 + r_inv_p11 * q11);
 
     const T det_inv_x = inv_x00 * inv_x11 - inv_x01 * inv_x10;
-    const T one_over_det_inv_x =
-        make_with_value<T>(det_inv_x, 1.0) / det_inv_x;
+    const T one_over_det_inv_x = make_with_value<T>(det_inv_x, 1.0) / det_inv_x;
     x00 = inv_x11 * one_over_det_inv_x;
     x01 = -inv_x01 * one_over_det_inv_x;
     x10 = -inv_x10 * one_over_det_inv_x;
@@ -263,7 +267,8 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
                          Requires<Index0::dim == 4>> {
   template <typename T>
   static determinant_inverse_pair<T, Symmetry<1, 1>, Index0, Index0> apply(
-      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>& tensor) {
+      const Tensor<T, Symmetry<1, 1>, tmpl::list<Index0, Index0>>&
+          tensor) noexcept {
     const T& p00 = get<0, 0>(tensor);
     const T& p01 = get<0, 1>(tensor);
     const T& p11 = get<1, 1>(tensor);
@@ -303,8 +308,7 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
     const T inv_x11 = s11 - (r_inv_p10 * q01 + r_inv_p11 * q11);
 
     const T det_inv_x = inv_x00 * inv_x11 - inv_x01 * inv_x01;
-    const T one_over_det_inv_x =
-        make_with_value<T>(det_inv_x, 1.0) / det_inv_x;
+    const T one_over_det_inv_x = make_with_value<T>(det_inv_x, 1.0) / det_inv_x;
     x00 = inv_x11 * one_over_det_inv_x;
     x01 = -inv_x01 * one_over_det_inv_x;
     x11 = inv_x00 * one_over_det_inv_x;
@@ -349,12 +353,11 @@ struct DetAndInverseImpl<Symmetry<1, 1>, Index0, Index0,
  * 3-metric, in which only the spatial 3-metric needs to be inverted.
  */
 template <typename T, typename Symm, typename Index0, typename Index1>
-std::pair<
-    Scalar<T>,
-    Tensor<T, Symm,
-           tmpl::list<change_index_up_lo<Index1>, change_index_up_lo<Index0>>>>
-determinant_and_inverse(
-    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) {
+auto determinant_and_inverse(
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept
+    -> std::pair<Scalar<T>, Tensor<T, Symm,
+                                   tmpl::list<change_index_up_lo<Index1>,
+                                              change_index_up_lo<Index0>>>> {
   static_assert(Index0::dim == Index1::dim,
                 "Cannot take the inverse of a Tensor whose Indices are not "
                 "of the same dimensionality.");
