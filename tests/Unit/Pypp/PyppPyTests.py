@@ -182,3 +182,28 @@ def check_by_value1(t0, t1):
 
 def check_by_value2(t0, t1):
     return np.sqrt(t0) + 1.0 / np.sqrt(-t1)
+
+
+# the below are used both by value and by not_null checks
+def check_by_value1_class(t0, a):
+    return t0 + 5.0 * a
+
+
+def check_by_value2_class(t0, a, b):
+    return t0 + 5.0 * a + b
+
+
+def check2_by_value1_class(t0, t1, a):
+    return t0 + t1 + 5.0 * a
+
+
+def check2_by_value2_class(t0, t1, a, b):
+    return t0 + 5.0 * a + t1 * b
+
+
+def check2_by_value1_class1(t0, t1, a):
+    return 2.0 * t0 + t1 + 5.0 * a
+
+
+def check2_by_value2_class1(t0, t1, a, b):
+    return 2.0 * t0 + 5.0 * a + t1 * b
