@@ -95,6 +95,9 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
           -D COVERAGE=${COVERAGE} \
           ../spectre/"
 
+# Build all Charm++ modules
+RUN make module_All
+
 RUN if [ ${RUN_CPPCHECK} ]; then \
       make cppcheck; \
     fi
