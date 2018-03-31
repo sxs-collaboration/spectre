@@ -4,6 +4,41 @@
 import numpy as np
 
 
+# Functions for testing IdealFluid.cpp
+def ideal_fluid_pressure_from_density(
+        rest_mass_density, specific_internal_energy, adiabatic_index):
+    return rest_mass_density * specific_internal_energy * (
+        adiabatic_index - 1.0)
+
+
+def ideal_fluid_rel_specific_enthalpy_from_density(
+        rest_mass_density, specific_internal_energy, adiabatic_index):
+    return 1.0 + adiabatic_index * specific_internal_energy
+
+
+def ideal_fluid_newt_specific_enthalpy_from_density(
+        rest_mass_density, specific_internal_energy, adiabatic_index):
+    return adiabatic_index * specific_internal_energy
+
+
+def ideal_fluid_specific_internal_energy_from_density(
+        rest_mass_density, pressure, adiabatic_index):
+    return pressure / (adiabatic_index - 1.0) / rest_mass_density
+
+
+def ideal_fluid_chi_from_density(rest_mass_density, specific_internal_energy,
+                                 adiabatic_index):
+    return specific_internal_energy * (adiabatic_index - 1.0)
+
+
+def ideal_fluid_kappa_times_p_over_rho_squared_from_density(
+        rest_mass_density, specific_internal_energy, adiabatic_index):
+    return specific_internal_energy * (adiabatic_index - 1.0)**2
+
+
+# End functions for testing IdealFluid.cpp
+
+
 # Functions for testing PolytropicFluid.cpp
 def polytropic_pressure_from_density(rest_mass_density, polytropic_constant,
                                      polytropic_exponent):

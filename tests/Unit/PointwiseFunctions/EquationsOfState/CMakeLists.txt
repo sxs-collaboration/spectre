@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EquationsOfState")
 
 set(LIBRARY_SOURCES
+  Test_IdealFluid.cpp
   Test_PolytropicFluid.cpp
   )
 
