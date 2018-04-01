@@ -3,12 +3,15 @@
 
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 
+#include <cmath>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace StrahlkorperGr {
 
@@ -150,6 +153,36 @@ Scalar<DataVector> ricci_scalar(
 
   return ricci_scalar;
 }
+
+template <typename Frame>
+Scalar<DataVector> area_element(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& jacobian,
+    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+    const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept {
+  auto cap_theta = make_with_value<tnsr::I<DataVector, 3, Frame>>(r_hat, 0.0);
+  auto cap_phi = make_with_value<tnsr::I<DataVector, 3, Frame>>(r_hat, 0.0);
+
+  for (size_t i = 0; i < 3; ++i) {
+    cap_theta.get(i) = jacobian.get(i, 0);
+    cap_phi.get(i) = jacobian.get(i, 1);
+    for (size_t j = 0; j < 3; ++j) {
+      cap_theta.get(i) += r_hat.get(i) *
+                          (r_hat.get(j) - normal_one_form.get(j)) *
+                          jacobian.get(j, 0);
+      cap_phi.get(i) += r_hat.get(i) * (r_hat.get(j) - normal_one_form.get(j)) *
+                        jacobian.get(j, 1);
+    }
+  }
+
+  auto area_element = Scalar<DataVector>{square(radius)};
+  get(area_element) *=
+      sqrt(get(dot_product(cap_theta, cap_theta, spatial_metric)) *
+               get(dot_product(cap_phi, cap_phi, spatial_metric)) -
+           square(get(dot_product(cap_theta, cap_phi, spatial_metric))));
+  return area_element;
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
@@ -191,3 +224,11 @@ template Scalar<DataVector> StrahlkorperGr::ricci_scalar<Frame::Inertial>(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const tnsr::II<DataVector, 3, Frame::Inertial>&
         upper_spatial_metric) noexcept;
+
+template Scalar<DataVector> StrahlkorperGr::area_element<Frame::Inertial>(
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
+        jacobian,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
+    const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat) noexcept;

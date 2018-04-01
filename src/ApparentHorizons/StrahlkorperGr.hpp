@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "ApparentHorizons/StrahlkorperDataBox.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
@@ -128,4 +129,33 @@ Scalar<DataVector> ricci_scalar(
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Area element of a 2D `Strahlkorper`.
+ *
+ * \details Implements Eq. (D.13), using Eqs. (D.4) and (D.5),
+ * of https://arxiv.org/abs/gr-qc/9606010.
+ * Specifically, computes
+ * \f$\sqrt{(\Theta^i\Theta_i)(\Phi^j\Phi_j)-(\Theta^i\Phi_i)^2}\f$,
+ * \f$\Theta^i=\left(n^i(n_j-s_j) r J^j_\theta + r J^i_\theta\right)\f$,
+ * \f$\Phi^i=\left(n^i(n_j-s_j)r J^j_\phi + r J^i_\phi\right)\f$,
+ * and \f$\Theta^i\f$ and \f$\Phi^i\f$ are lowered by the
+ * 3D spatial metric \f$g_{ij}\f$. Here \f$J^i_\alpha\f$, \f$s_j\f$,
+ * \f$r\f$, and \f$n^i=n_i\f$ correspond to the input arguments
+ * `jacobian`, `normal_one_form`, `radius`, and `r_hat`, respectively;
+ * these input arguments depend only on the Strahlkorper, not on the
+ * metric, and can be computed from a Strahlkorper using ComputeItems
+ * in `StrahlkorperTags`. Note that this does not include the factor
+ * of \f$\sin\theta\f$, i.e., this returns \f$r^2\f$ for flat space.
+ * This choice makes the area element returned here compatible with
+ * `definite_integral` defined in `YlmSpherePack.hpp`.
+ */
+template <typename Frame>
+Scalar<DataVector> area_element(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& jacobian,
+    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+    const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
 }  // namespace StrahlkorperGr

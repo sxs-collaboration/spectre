@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
@@ -14,7 +15,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"   // IWYU prgma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
@@ -25,6 +27,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
@@ -94,7 +97,6 @@ void test_expansion(const Solution& solution,
   CHECK_ITERABLE_CUSTOM_APPROX(get(residual), expected(get(residual).size()),
                                custom_approx);
 }
-} // namespace
 
 namespace TestExtrinsicCurvature {
 void test_minkowski() {
@@ -209,7 +211,73 @@ void test_ricci_scalar(const Solution& solution,
       inverse_spatial_metric);
 
   CHECK_ITERABLE_APPROX(get(ricci_scalar), expected(get(ricci_scalar).size()));
-}  // namespace
+}
+
+template <typename Solution, typename ExpectedLambda>
+void test_area_element(const Solution& solution, const double& surface_radius,
+                       const ExpectedLambda& expected) noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
+      Strahlkorper<Frame::Inertial>(8, 8, surface_radius, {{0.0, 0.0, 0.0}}));
+
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+  const auto& jacobian =
+      db::get<StrahlkorperTags::Jacobian<Frame::Inertial>>(box);
+
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+
+  CHECK_ITERABLE_APPROX(get(area_element), expected(get(area_element).size()));
+}
+
+template <typename Solution, typename Fr>
+void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
+               const double expected) noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+  const auto& jacobian =
+      db::get<StrahlkorperTags::Jacobian<Frame::Inertial>>(box);
+
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+
+  const double area =
+      strahlkorper.ylm_spherepack().definite_integral(get(area_element).data());
+
+  CHECK_ITERABLE_APPROX(area, expected);
+}
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
                   "[ApparentHorizons][Unit]") {
@@ -271,4 +339,39 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RicciScalar",
             cartesian_coords, 0.0);
       },
       [](const size_t size) noexcept { return DataVector(size, 0.5); });
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
+                  "[ApparentHorizons][Unit]") {
+  // Check value of dA for a Schwarzschild horizon and a sphere in flat space
+  test_area_element(
+      EinsteinSolutions::KerrSchild{4.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
+      8.0, [](const size_t size) noexcept { return DataVector(size, 64.0); });
+  test_area_element(
+      EinsteinSolutions::Minkowski<3>{},
+      2.0, [](const size_t size) noexcept { return DataVector(size, 4.0); });
+
+  // Check the area of a Kerr horizon
+  constexpr int l_max = 20;
+  const double mass = 4.444;
+  const std::array<double, 3> spin{{0.4, 0.33, 0.22}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+
+  const double kerr_horizon_radius =
+      mass * (1.0 + sqrt(1.0 - square(magnitude(spin))));
+  // Eq. (26.84a) of Thorne and Blandford
+  const double expected_area = 8.0 * M_PI * mass * kerr_horizon_radius;
+
+  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+          .ylm_spherepack()
+          .theta_phi_points(),
+      mass, spin);
+
+  const auto kerr_horizon =
+      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+
+  test_area(EinsteinSolutions::KerrSchild{mass, spin, center}, kerr_horizon,
+            expected_area);
 }
