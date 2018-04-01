@@ -15,6 +15,8 @@
 class DataVector;
 namespace EquationsOfState {
 template <bool IsRelativistic>
+class DarkEnergyFluid;
+template <bool IsRelativistic>
 class IdealFluid;
 template <bool IsRelativistic>
 class PolytropicFluid;
@@ -33,9 +35,14 @@ struct DerivedClasses<IsRelativistic, 1> {
   using type = tmpl::list<PolytropicFluid<IsRelativistic>>;
 };
 
-template <bool IsRelativistic>
-struct DerivedClasses<IsRelativistic, 2> {
-  using type = tmpl::list<IdealFluid<IsRelativistic>>;
+template <>
+struct DerivedClasses<true, 2> {
+  using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>>;
+};
+
+template <>
+struct DerivedClasses<false, 2> {
+  using type = tmpl::list<IdealFluid<false>>;
 };
 }  // namespace detail
 
@@ -312,5 +319,6 @@ class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(    \
       DIM, kappa_times_p_over_rho_squared_from_density_impl)
 
+#include "PointwiseFunctions/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/EquationsOfState/PolytropicFluid.hpp"

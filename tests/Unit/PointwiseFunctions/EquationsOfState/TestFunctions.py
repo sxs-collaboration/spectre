@@ -4,6 +4,35 @@
 import numpy as np
 
 
+# Functions for testing DarkEnergyFluid.cpp
+def dark_energy_fluid_pressure_from_density(
+        rest_mass_density, specific_internal_energy, parameter_w):
+    return parameter_w * rest_mass_density * (1.0 + specific_internal_energy)
+
+
+def dark_energy_fluid_rel_specific_enthalpy_from_density(
+        rest_mass_density, specific_internal_energy, parameter_w):
+    return (parameter_w + 1.0) * (1.0 + specific_internal_energy)
+
+
+def dark_energy_fluid_specific_internal_energy_from_density(
+        rest_mass_density, pressure, parameter_w):
+    return pressure / (parameter_w * rest_mass_density) - 1.0
+
+
+def dark_energy_fluid_chi_from_density(rest_mass_density,
+                                       specific_internal_energy, parameter_w):
+    return parameter_w * (1.0 + specific_internal_energy)
+
+
+def dark_energy_fluid_kappa_times_p_over_rho_squared_from_density(
+        rest_mass_density, specific_internal_energy, parameter_w):
+    return parameter_w**2 * (1.0 + specific_internal_energy)
+
+
+# End functions for testing DarkEnergyFluid.cpp
+
+
 # Functions for testing IdealFluid.cpp
 def ideal_fluid_pressure_from_density(
         rest_mass_density, specific_internal_energy, adiabatic_index):
