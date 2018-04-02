@@ -52,7 +52,7 @@ Domain<3, TargetFrame> Shell<TargetFrame>::create_domain() const noexcept {
   std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
       coord_maps = wedge_coordinate_maps<TargetFrame>(
-          inner_radius_, outer_radius_, 1.0, use_equiangular_map_);
+          inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_);
   return Domain<3, TargetFrame>{std::move(coord_maps), corners};
 }
 

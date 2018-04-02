@@ -20,18 +20,22 @@ namespace CoordinateMaps {
 
 Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
                  const OrientationMap<3> orientation_of_wedge,
-                 const double sphericity_inner, const bool with_equiangular_map,
+                 const double sphericity_inner, const double sphericity_outer,
+                 const bool with_equiangular_map,
                  const WedgeHalves halves_to_use) noexcept
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       orientation_of_wedge_(orientation_of_wedge),
       sphericity_inner_(sphericity_inner),
+      sphericity_outer_(sphericity_outer),
       with_equiangular_map_(with_equiangular_map),
       halves_to_use_(halves_to_use) {
   ASSERT(radius_inner > 0.0,
          "The radius of the inner surface must be greater than zero.");
   ASSERT(sphericity_inner >= 0.0 and sphericity_inner <= 1.0,
          "Sphericity of the inner surface must be between 0 and 1");
+  ASSERT(sphericity_outer >= 0.0 and sphericity_outer <= 1.0,
+         "Sphericity of the outer surface must be between 0 and 1");
   ASSERT(radius_outer > radius_inner,
          "The radius of the outer surface must be greater than the radius of "
          "the inner surface.");
