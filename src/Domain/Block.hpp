@@ -12,19 +12,17 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
+#include "Domain/Direction.hpp"  // IWYU pragma: keep
+
+/// \cond
 namespace Frame {
 struct Logical;
 }  // namespace Frame
 namespace PUP {
 class er;
 }  // namespace PUP
-/// \cond
-template <size_t VolumeDim>
-class BlockNeighbor;
-template <size_t VolumeDim>
-class Direction;
-template <typename SourceFrame, typename TargetFrame, size_t Dim>
-class CoordinateMapBase;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
