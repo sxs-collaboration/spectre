@@ -4,9 +4,9 @@
 #include "Domain/Domain.hpp"
 
 #include <ostream>
+#include <pup.h>  // IWYU pragma: keep
 #include <unordered_map>
 
-#include "Domain/Block.hpp"                         // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"                     // IWYU pragma: keep
@@ -18,9 +18,6 @@ struct Grid;
 struct Inertial;
 struct Logical;
 }  // namespace Frame
-namespace PUP {
-class er;
-}  // namespace PUP
 
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>::Domain(
