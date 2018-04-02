@@ -3,18 +3,15 @@
 
 #include "Domain/Block.hpp"
 
-#include "Domain/Direction.hpp"
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
+#include <pup.h>  // IWYU pragma: keep
+
+#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 
 namespace Frame {
 struct Grid;
 struct Inertial;
 struct Logical;
 }  // namespace Frame
-namespace PUP {
-class er;
-}  // namespace PUP
 
 template <size_t VolumeDim, typename TargetFrame>
 Block<VolumeDim, TargetFrame>::Block(

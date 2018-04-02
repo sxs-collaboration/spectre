@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma once
+
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 
 #include "DataStructures/Index.hpp"

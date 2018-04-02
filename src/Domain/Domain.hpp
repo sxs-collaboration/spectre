@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
@@ -22,8 +23,6 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \cond
-template <size_t VolumeDim, typename TargetFrame>
-class Block;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
 /// \endcond
