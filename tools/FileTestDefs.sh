@@ -33,7 +33,7 @@ pretty_grep() {
 }
 
 # Utility functions for checks classifying a file based on its name
-is_hpp() { [[ $1 =~ \.hpp$ ]] ; }
+is_includible() { [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
 is_c++() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
 
 # Utility function for checks that returns false if the first argument
@@ -299,7 +299,7 @@ standard_checks+=(ls_list)
 
 # Check for pragma once in all header files
 pragma_once() {
-    is_hpp "$1" && \
+    is_includible "$1" && \
         whitelist "$1" \
                   'tools/SpectrePch.hpp$' && \
         ! grep -q -x '#pragma once' "$1"
@@ -311,6 +311,7 @@ pragma_once_report() {
 pragma_once_test() {
     test_check pass foo.cpp ''
     test_check fail foo.hpp ''
+    test_check fail foo.tpp ''
     test_check pass foo.hpp '#pragma once'$'\n'
     test_check fail foo.hpp '//#pragma once'$'\n'
     test_check pass foo.hpp $'\n''#pragma once'$'\n\n'
