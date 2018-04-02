@@ -15,7 +15,9 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 // IWYU pragma: no_include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
@@ -57,9 +59,6 @@ namespace Actions {
 /// - DataBox:
 ///   Tags::Element<volume_dim>,
 ///   Tags::Extents<volume_dim>,
-///   Tags::Interface<Tags::InternalDirections<volume_dim>,
-///                   typename System::template magnitude_tag<
-///                       Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   Tags::Mortars<implementation_defined_local_data>,
 ///   Tags::TimeId,
 ///   db::add_tag_prefix<Tags::dt, variables_tag>
@@ -79,9 +78,13 @@ struct ComputeBoundaryFlux {
       db::add_tag_prefix<Tags::NormalDotFlux, typename system::variables_tag>;
   using NormalDotFluxesType = db::item_type<normal_dot_fluxes_tag>;
 
-  using LocalData = Variables<tmpl::remove_duplicates<
-      tmpl::append<typename NormalDotFluxesType::tags_list,
-                   typename PackagedData::tags_list>>>;
+  struct MagnitudeOfFaceNormal {
+    using type = Scalar<DataVector>;
+  };
+
+  using LocalData = Variables<tmpl::remove_duplicates<tmpl::append<
+      typename NormalDotFluxesType::tags_list, typename PackagedData::tags_list,
+      tmpl::list<MagnitudeOfFaceNormal>>>>;
 
   using mortars_local_data_tag =
       Tags::Mortars<Tags::Variables<typename LocalData::tags_list>, volume_dim>;
@@ -161,17 +164,10 @@ struct ComputeBoundaryFlux {
 
       // All of this needs to be fixed for hp-adaptivity to handle
       // projections correctly
-      const auto& magnitude_of_face_normal =
-          db::get<
-              Tags::Interface<Tags::InternalDirections<volume_dim>,
-                              typename system::template magnitude_tag<
-                                  Tags::UnnormalizedFaceNormal<volume_dim>>>>(
-              box)
-              .at(direction);
 
       // Compute numerical flux
       db::item_type<normal_dot_numerical_flux_tag> normal_dot_numerical_fluxes(
-          magnitude_of_face_normal.begin()->size(), 0.0);
+          extents.slice_away(dimension).product(), 0.0);
       apply_normal_dot_numerical_flux(
           make_not_null(&normal_dot_numerical_fluxes),
           normal_dot_numerical_flux_computer, local_mortar_data,
@@ -179,7 +175,7 @@ struct ComputeBoundaryFlux {
 
       db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
           local_mortar_data, std::move(normal_dot_numerical_fluxes),
-          extents[dimension], magnitude_of_face_normal));
+          extents[dimension], get<MagnitudeOfFaceNormal>(local_mortar_data)));
 
       db::mutate<dt_variables_tag>(
           make_not_null(&box),
@@ -297,12 +293,12 @@ struct SendDataForFluxes {
       // We store one copy of the Variables and send another, since we need
       // the data on both sides of the mortar.
       using normal_tag = Tags::UnnormalizedFaceNormal<volume_dim>;
+      using magnitude_of_normal_tag =
+          typename system::template magnitude_tag<normal_tag>;
       using package_arguments = tmpl::append<
           typename db::item_type<normal_dot_fluxes_tag>::tags_list,
           typename Metavariables::normal_dot_numerical_flux::type::slice_tags,
-          tmpl::list<Tags::Normalized<
-              normal_tag,
-              typename system::template magnitude_tag<normal_tag>>>>;
+          tmpl::list<Tags::Normalized<normal_tag, magnitude_of_normal_tag>>>;
       const auto packaged_data = db::apply<tmpl::transform<
           package_arguments,
           tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
@@ -321,6 +317,10 @@ struct SendDataForFluxes {
       local_data.assign_subset(
           db::get<interface_normal_dot_fluxes_tag>(box).at(direction));
       local_data.assign_subset(packaged_data);
+      get<typename ReceiverAction::MagnitudeOfFaceNormal>(local_data) =
+          db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
+                                  magnitude_of_normal_tag>>(box)
+              .at(direction);
 
       const auto direction_from_neighbor = orientation(direction.opposite());
 
