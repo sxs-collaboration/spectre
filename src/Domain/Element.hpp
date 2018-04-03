@@ -11,16 +11,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"
+#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
-/// \cond
-template <size_t VolumeDim>
-class Direction;
-template <size_t VolumeDim>
-class Neighbors;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup

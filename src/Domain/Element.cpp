@@ -6,8 +6,6 @@
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "Domain/Direction.hpp"
-#include "Domain/Neighbors.hpp"      // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
