@@ -84,9 +84,31 @@ function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
     message(FATAL_ERROR "Failed to parse test files")
   endif()
 
+  set_property(GLOBAL PROPERTY SPECTRE_FAILURE_TESTS_PROPERTY "")
+
   foreach (SOURCE_FILE ${ABSOLUTE_SOURCE_FILES})
     spectre_parse_file(${SOURCE_FILE} ${TEST_TARGET})
   endforeach ()
+
+  get_property(
+    SPECTRE_FAILURE_TESTS
+    GLOBAL
+    PROPERTY
+    SPECTRE_FAILURE_TESTS_PROPERTY)
+  set_property(GLOBAL PROPERTY SPECTRE_FAILURE_TESTS_PROPERTY "")
+
+  # Generate shell script that runs all non-failure tests manually
+  string(REPLACE ";" " " SPECTRE_FAILURE_TESTS "${SPECTRE_FAILURE_TESTS}")
+  file(WRITE
+    "${CMAKE_BINARY_DIR}/tmp/NonFailureTests${TEST_TARGET}.sh"
+    "#!/bin/bash -e\n"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} ${SPECTRE_FAILURE_TESTS}")
+  file(COPY
+    "${CMAKE_BINARY_DIR}/tmp/NonFailureTests${TEST_TARGET}.sh"
+    DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    )
+  file(REMOVE "${CMAKE_BINARY_DIR}/tmp/NonFailureTests${TEST_TARGET}.sh")
 endfunction()
 
 # Parses the cpp file and extracts the tests specified in it. Each test is then
@@ -112,6 +134,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     TESTS
     "${CONTENTS}")
 
+  set(FAILURE_TESTS "")
   foreach (TEST_NAME ${TESTS})
     # Get test type and fixture if applicable
     string(REGEX MATCH "(CATCH_)?(SPECTRE_TEST_CASE_METHOD|SCENARIO|SPECTRE_TEST_CASE)"
@@ -176,7 +199,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
 
     # Check if the test is supposed to fail. If so then let ctest know
     # that a failed test is actually a pass.
-    if (NOT "${OUTPUT_REGEX}" STREQUAL "None")
+    if (NOT "${OUTPUT_REGEX}" STREQUAL "")
       if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(OUTPUT_REGEX
           "${OUTPUT_REGEX}|### No ASSERT tests in release mode ###")
@@ -188,6 +211,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         PASS_REGULAR_EXPRESSION "${OUTPUT_REGEX}"
         LABELS "${TAGS}"
         ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+      set(FAILURE_TESTS "\"~${CTEST_NAME}\";${FAILURE_TESTS}")
     else ()
       set_tests_properties(
         "\"${CTEST_NAME}\"" PROPERTIES
@@ -197,4 +221,16 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
     endif ()
   endforeach ()
+  set_property(GLOBAL PROPERTY SPECTRE_FAILURE_TESTS ${FAILURE_TESTS})
+  get_property(
+    SPECTRE_FAILURE_TESTS
+    GLOBAL
+    PROPERTY
+    SPECTRE_FAILURE_TESTS_PROPERTY)
+  set(SPECTRE_FAILURE_TESTS
+    "${SPECTRE_FAILURE_TESTS};${FAILURE_TESTS}")
+  set_property(GLOBAL
+    PROPERTY
+    SPECTRE_FAILURE_TESTS_PROPERTY
+    ${SPECTRE_FAILURE_TESTS})
 endfunction()
