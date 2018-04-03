@@ -55,6 +55,16 @@ void check_if_maps_are_equal(
     }
     CAPTURE_PRECISE(source_point);
     CHECK_ITERABLE_APPROX(map_one(source_point), map_two(source_point));
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      for (size_t j = 0; j < VolumeDim; ++j) {
+        INFO("i: " << i << " j: " << j);
+        CHECK(map_one.jacobian(source_point).get(j, i) ==
+              map_two.jacobian(source_point).get(j, i));
+
+        CHECK(map_one.inv_jacobian(source_point).get(j, i) ==
+              map_two.inv_jacobian(source_point).get(j, i));
+      }
+    }
   }
 }
 
@@ -245,50 +255,50 @@ void test_inverse_map(const Map& map,
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Given a 3D Map `map`, tests the map functions, including map inverse,
+ * \brief Given a Map `map`, tests the map functions, including map inverse,
  * jacobian, and inverse jacobian, for a series of points.
  */
 template <typename Map>
-void test_map3d(const Map& map) {
+void test_suite_for_map(const Map& map) {
   // Set up random number generator
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  const auto seed = std::random_device{}();
+  std::mt19937 gen(seed);
+  INFO("seed = " << seed);
   std::uniform_real_distribution<> real_dis(-1.0, 1.0);
-  const double xi = real_dis(gen);
-  CAPTURE_PRECISE(xi);
-  const double eta = real_dis(gen);
-  CAPTURE_PRECISE(eta);
-  const double zeta = real_dis(gen);
-  CAPTURE_PRECISE(zeta);
 
-  const std::array<std::array<double, 3>, 13> test_points{{{{0.0, 0.0, 0.0}},
-                                                          {{-1.0, -1.0, -1.0}},
-                                                          {{1.0, -1.0, -1.0}},
-                                                          {{-1.0, 1.0, -1.0}},
-                                                          {{1.0, 1.0, -1.0}},
-                                                          {{-1.0, -1.0, 1.0}},
-                                                          {{1.0, -1.0, 1.0}},
-                                                          {{-1.0, 1.0, 1.0}},
-                                                          {{1.0, 1.0, 1.0}},
-                                                          {{-0.1, 0.3, 0.1}},
-                                                          {{0.5, 0.7, -0.5}},
-                                                          {{0.9, -1.0, 0.4}},
-                                                          {{xi, eta, zeta}}}};
-  test_serialization(map);
-  CHECK_FALSE(map != map);
-  test_coordinate_map_argument_types(map, test_points[0]);
-  for (const auto& point : test_points) {
-    test_jacobian(map, point);
-    test_inv_jacobian(map, point);
-    test_inverse_map(map, point);
+  std::array<double, Map::dim> origin{};
+  std::array<double, Map::dim> random_point{};
+  for (size_t i = 0; i < Map::dim; i++) {
+    gsl::at(origin, i) = 0.0;
+    gsl::at(random_point, i) = real_dis(gen);
   }
+
+  const auto test_helper =
+      [&origin, &random_point ](const auto& map_to_test) noexcept {
+    test_serialization(map_to_test);
+    CHECK_FALSE(map_to_test != map_to_test);
+    test_coordinate_map_argument_types(map_to_test, origin);
+
+    test_jacobian(map_to_test, origin);
+    test_inv_jacobian(map_to_test, origin);
+    test_inverse_map(map_to_test, origin);
+
+    for (VolumeCornerIterator<Map::dim> vci{}; vci; ++vci) {
+      test_jacobian(map_to_test, vci.coords_of_corner());
+      test_inv_jacobian(map_to_test, vci.coords_of_corner());
+      test_inverse_map(map_to_test, vci.coords_of_corner());
+    }
+
+    test_jacobian(map_to_test, random_point);
+    test_inv_jacobian(map_to_test, random_point);
+    test_inverse_map(map_to_test, random_point);
+  };
+  test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
-  CHECK(map2 == map);
-  for (const auto& point : test_points) {
-    test_jacobian(map2, point);
-    test_inv_jacobian(map2, point);
-    test_inverse_map(map2, point);
-  }
+  check_if_maps_are_equal(
+      make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+  test_helper(map2);
 }
 
 /*!
