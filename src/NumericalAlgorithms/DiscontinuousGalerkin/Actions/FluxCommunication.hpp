@@ -6,39 +6,42 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
+#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <cstddef>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Index.hpp"
-#include "DataStructures/SliceIterator.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Variables.hpp"
+// IWYU pragma: no_include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
+#include "Domain/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/FaceNormal.hpp"
 #include "Domain/IndexToSliceAt.hpp"
-#include "Domain/Neighbors.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Time/Tags.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits.hpp"
+
+/// \cond
+// IWYU pragma: no_forward_declare Variables
+// IWYU pragma: no_forward_declare db::DataBox
+namespace Tags {
+struct TimeId;
+template <typename Tag, typename MagnitudeTag>
+struct Normalized;
+}  // namespace Tags
+/// \endcond
 
 namespace dg {
 namespace Actions {
