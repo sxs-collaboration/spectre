@@ -4,20 +4,22 @@
 #pragma once
 
 #include <array>
-#include <utility>
+#include <cstddef>
+#include <tuple>
+#include <utility>  // IWYU pragma: keep
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -25,11 +27,24 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+// IWYU pragma: no_include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/Tuple.hpp"
+
+/// \cond
+// IWYU pragma: no_forward_declare db::DataBox
+template <size_t VolumeDim>
+class ElementIndex;
+namespace Frame {
+struct Inertial;
+}  // namespace Frame
+namespace tuples {
+template <typename... Tags>
+class TaggedTuple;  // IWYU pragma: keep
+}  // namespace tuples
+/// \endcond
 
 namespace dg {
 namespace Actions {
