@@ -11,7 +11,10 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockNeighbor.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -19,6 +22,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeVector.hpp"
 
 namespace {
 
@@ -323,41 +327,106 @@ void set_periodic_boundaries(
   }
 }
 
+// A Block or Blocks can be wrapped in an outer layer of Blocks surrounding
+// the original Block(s). In the BBH Domain, this occurs several times, using
+// both Wedges and Frustums. The simplest example in which wrapping is used is
+// Sphere, where the central Block is wrapped with six Wedge3Ds.
+std::array<OrientationMap<3>, 6> orientations_for_wrappings() noexcept {
+  return {{
+      // Upper Z
+      OrientationMap<3>{},
+      // Lower Z
+      OrientationMap<3>{std::array<Direction<3>, 3>{
+          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+           Direction<3>::lower_zeta()}}},
+      // Upper Y
+      OrientationMap<3>(std::array<Direction<3>, 3>{
+          {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+           Direction<3>::lower_eta()}}),
+      // Lower Y
+      OrientationMap<3>(std::array<Direction<3>, 3>{
+          {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+           Direction<3>::upper_eta()}}),
+      // Upper X
+      OrientationMap<3>(std::array<Direction<3>, 3>{
+          {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+           Direction<3>::upper_eta()}}),
+      // Lower X
+      OrientationMap<3>(std::array<Direction<3>, 3>{
+          {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+           Direction<3>::upper_eta()}}),
+  }};
+}
+
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double inner_sphericity,
                       const double outer_sphericity,
-                      const bool use_equiangular_map) noexcept {
+                      const bool use_equiangular_map,
+                      const double x_coord_of_shell_center,
+                      const bool use_half_wedges) noexcept {
+  const auto wedge_orientations = orientations_for_wrappings();
+
   using Wedge3DMap = CoordinateMaps::Wedge3D;
+  std::vector<Wedge3DMap> wedges{};
+  for (size_t i = 0; i < 6; i++) {
+    wedges.emplace_back(inner_radius, outer_radius,
+                        gsl::at(wedge_orientations, i), inner_sphericity,
+                        outer_sphericity, use_equiangular_map);
+  }
+
+  if (use_half_wedges) {
+    using Halves = Wedge3DMap::WedgeHalves;
+    std::vector<Wedge3DMap> half_wedges{};
+    for (size_t i = 0; i < 4; i++) {
+      half_wedges.emplace_back(inner_radius, outer_radius,
+                               gsl::at(wedge_orientations, i), inner_sphericity,
+                               outer_sphericity, use_equiangular_map,
+                               Halves::LowerOnly);
+      half_wedges.emplace_back(inner_radius, outer_radius,
+                               gsl::at(wedge_orientations, i), inner_sphericity,
+                               outer_sphericity, use_equiangular_map,
+                               Halves::UpperOnly);
+    }
+    // clang-tidy: trivially copyable
+    return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+        std::move(half_wedges[0]), std::move(half_wedges[1]),  // NOLINT
+        std::move(half_wedges[2]), std::move(half_wedges[3]),  // NOLINT
+        std::move(half_wedges[4]), std::move(half_wedges[5]),  // NOLINT
+        std::move(half_wedges[6]), std::move(half_wedges[7]),  // NOLINT
+        std::move(wedges[4]), std::move(wedges[5]));           // NOLINT
+  }
+
+  if (x_coord_of_shell_center != 0.0) {
+    using Identity2D = CoordinateMaps::Identity<2>;
+    using Affine = CoordinateMaps::Affine;
+    auto shift_1d = Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
+                           1.0 + x_coord_of_shell_center};
+    // clang-tidy: trivially copyable
+    const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
+        std::move(shift_1d), Identity2D{});  // NOLINT
+    return make_vector(make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           std::move(wedges[0]), translation),  // NOLINT
+                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           std::move(wedges[1]), translation),  // NOLINT
+                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           std::move(wedges[2]), translation),  // NOLINT
+                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           std::move(wedges[3]), translation),  // NOLINT
+                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           std::move(wedges[4]), translation),  // NOLINT
+                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
+                           std::move(wedges[5]), translation));  // NOLINT
+  }
+  // clang-tidy: trivially copyable
   return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-      Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
-                 inner_sphericity, outer_sphericity, use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                      Direction<3>::lower_zeta()}}),
-                 inner_sphericity, outer_sphericity, use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                      Direction<3>::lower_eta()}}),
-                 inner_sphericity, outer_sphericity, use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                      Direction<3>::upper_eta()}}),
-                 inner_sphericity, outer_sphericity, use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                      Direction<3>::upper_eta()}}),
-                 inner_sphericity, outer_sphericity, use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                      Direction<3>::upper_eta()}}),
-                 inner_sphericity, outer_sphericity, use_equiangular_map});
+      std::move(wedges[0]),   // NOLINT
+      std::move(wedges[1]),   // NOLINT
+      std::move(wedges[2]),   // NOLINT
+      std::move(wedges[3]),   // NOLINT
+      std::move(wedges[4]),   // NOLINT
+      std::move(wedges[5]));  // NOLINT
 }
 
 template void set_internal_boundaries(
@@ -399,10 +468,14 @@ template std::vector<
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double inner_sphericity,
                       const double outer_sphericity,
-                      const bool use_equiangular_map) noexcept;
+                      const bool use_equiangular_map,
+                      const double x_coord_of_shell_center,
+                      const bool use_wedge_halves) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double inner_sphericity,
                       const double outer_sphericity,
-                      const bool use_equiangular_map) noexcept;
+                      const bool use_equiangular_map,
+                      const double x_coord_of_shell_center,
+                      const bool use_wedge_halves) noexcept;

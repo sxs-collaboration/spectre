@@ -66,9 +66,19 @@ void set_periodic_boundaries(
         neighbors_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup
-/// These are the six Wedge3Ds used in the DomainCreators for Sphere and Shell.
+/// These are the CoordinateMaps of the Wedge3Ds used in the Sphere, Shell, and
+/// binary compact object DomainCreators. This function can also be used to
+/// wrap the Sphere or Shell in a cube made of six Wedge3Ds.
+/// The argument `x_coord_of_shell_center` specifies a translation of the Shell
+/// in the x-direction in the TargetFrame. For example, the BBH DomainCreator
+/// uses this to set the position of each BH.
+/// When the argument `use_half_wedges` is set to `true`, the wedges in the
+/// +z,-z,+y,-y directions are cut in half along their xi-axes. The resulting
+/// ten CoordinateMaps are used for the outermost Blocks of the BBH Domain.
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(double inner_radius, double outer_radius,
                       double inner_sphericity, double outer_sphericity,
-                      bool use_equiangular_map) noexcept;
+                      bool use_equiangular_map,
+                      double x_coord_of_shell_center = 0.0,
+                      bool use_half_wedges = false) noexcept;
