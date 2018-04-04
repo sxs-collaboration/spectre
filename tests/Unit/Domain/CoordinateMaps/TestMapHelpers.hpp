@@ -55,16 +55,10 @@ void check_if_maps_are_equal(
     }
     CAPTURE_PRECISE(source_point);
     CHECK_ITERABLE_APPROX(map_one(source_point), map_two(source_point));
-    for (size_t i = 0; i < VolumeDim; ++i) {
-      for (size_t j = 0; j < VolumeDim; ++j) {
-        INFO("i: " << i << " j: " << j);
-        CHECK(map_one.jacobian(source_point).get(j, i) ==
-              map_two.jacobian(source_point).get(j, i));
-
-        CHECK(map_one.inv_jacobian(source_point).get(j, i) ==
-              map_two.inv_jacobian(source_point).get(j, i));
-      }
-    }
+    CHECK_ITERABLE_APPROX(map_one.jacobian(source_point),
+                          map_two.jacobian(source_point));
+    CHECK_ITERABLE_APPROX(map_one.inv_jacobian(source_point),
+                          map_two.inv_jacobian(source_point));
   }
 }
 
