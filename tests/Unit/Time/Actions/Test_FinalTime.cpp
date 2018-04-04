@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
   for (const auto& test : tests) {
     db::mutate<Tags::TimeId, Tags::TimeStep>(
         make_not_null(&box), [&test](const auto time_id, const auto time_step) {
-          time_id->time = test.time;
+          *time_id = TimeId(time_step->is_positive(), 0, test.time);
           *time_step = test.time_step;
         });
 

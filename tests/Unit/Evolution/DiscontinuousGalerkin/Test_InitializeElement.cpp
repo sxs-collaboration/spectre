@@ -130,11 +130,7 @@ void test_initialize_element(const ElementId<Dim>& element_id,
           .template apply<component<Dim>, dg::Actions::InitializeElement<Dim>>(
               empty_box, element_id, domain_creator.initial_extents(),
               domain_creator.create_domain(), slab.start(), slab.duration()));
-  CHECK(db::get<Tags::TimeId>(box) == [&slab]() {
-    TimeId time_id{};
-    time_id.time = slab.start();
-    return time_id;
-  }());
+  CHECK(db::get<Tags::TimeId>(box) == TimeId(true, 0, slab.start()));
   CHECK(db::get<Tags::Time>(box) == slab.start());
   CHECK(db::get<Tags::TimeStep>(box) == slab.duration());
 

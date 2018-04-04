@@ -41,7 +41,7 @@ class SpecifiedSlabs : public Trigger<KnownTriggers> {
   using argument_tags = tmpl::list<Tags::TimeId>;
 
   bool operator()(const TimeId& time_id) const noexcept {
-    return slabs_.count(time_id.slab_number) == 1;
+    return slabs_.count(time_id.slab_number()) == 1;
   }
 
   // clang-tidy: google-runtime-references

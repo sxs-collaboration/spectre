@@ -10,6 +10,7 @@
 #include <functional>
 #include <iosfwd>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Time/Time.hpp"
 
 namespace PUP {
@@ -20,28 +21,59 @@ class er;
 ///
 /// A unique identifier for the temporal state of an integrated
 /// system.
-struct TimeId {
-  size_t slab_number{0};
-  Time time{};
-  size_t substep{0};
+class TimeId {
+ public:
+  TimeId() = default;
+  /// Create a TimeId at the start of a step
+  TimeId(const bool time_runs_forward, const size_t slab_number,
+         const Time& time) noexcept
+      : time_runs_forward_(time_runs_forward),
+        slab_number_(slab_number),
+        step_time_(time),
+        substep_(0),
+        time_(time) {}
+  /// Create a TimeId at a substep at time `time` in a step starting
+  /// at time `step_time`.
+  TimeId(const bool time_runs_forward, const size_t slab_number,
+         const Time& step_time, const size_t substep, const Time& time) noexcept
+      : time_runs_forward_(time_runs_forward),
+        slab_number_(slab_number),
+        step_time_(step_time),
+        substep_(substep),
+        time_(time) {
+    ASSERT(substep_ != 0 or step_time_ == time_,
+           "Initial substep must align with the step.");
+  }
+
+  bool time_runs_forward() const noexcept { return time_runs_forward_; }
+  size_t slab_number() const noexcept { return slab_number_; }
+  /// Time at the start of the current step
+  const Time& step_time() const noexcept { return step_time_; }
+  size_t substep() const noexcept { return substep_; }
+  /// Time of the current substep
+  const Time& time() const noexcept { return time_; }
 
   bool is_at_slab_boundary() const noexcept {
-    return substep == 0 and time.is_at_slab_boundary();
+    return substep_ == 0 and time_.is_at_slab_boundary();
   }
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
+
+ private:
+  bool time_runs_forward_{false};
+  size_t slab_number_{0};
+  Time step_time_{};
+  size_t substep_{0};
+  Time time_{};
 };
 
-inline bool operator==(const TimeId& a, const TimeId& b) noexcept {
-  return a.slab_number == b.slab_number
-      and a.time == b.time
-      and a.substep == b.substep;
-}
-
-inline bool operator!=(const TimeId& a, const TimeId& b) noexcept {
-  return not (a == b);
-}
+bool operator==(const TimeId& a, const TimeId& b) noexcept;
+bool operator!=(const TimeId& a, const TimeId& b) noexcept;
+bool operator<(const TimeId& a, const TimeId& b) noexcept;
+bool operator<=(const TimeId& a, const TimeId& b) noexcept;
+bool operator>(const TimeId& a, const TimeId& b) noexcept;
+bool operator>=(const TimeId& a, const TimeId& b) noexcept;
 
 std::ostream& operator<<(std::ostream& s, const TimeId& id) noexcept;
 

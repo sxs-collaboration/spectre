@@ -39,12 +39,13 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedSlabs", "[Unit][Time]") {
   const Slab slab(0., 1.);
   auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
                         db::AddComputeTags<Tags::Time, Tags::TimeValue>>(
-      TimeId{0, slab.start(), 0}, slab.duration());
+      TimeId(true, 0, slab.start()), slab.duration());
   for (const bool expected :
        {false, false, false, true, false, false, true, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);
     db::mutate<Tags::TimeId>(
-        make_not_null(&box),
-        [](const gsl::not_null<TimeId*> time_id) { ++time_id->slab_number; });
+        make_not_null(&box), [](const gsl::not_null<TimeId*> time_id) noexcept {
+          *time_id = TimeId(true, time_id->slab_number() + 1, time_id->time());
+        });
   }
 }

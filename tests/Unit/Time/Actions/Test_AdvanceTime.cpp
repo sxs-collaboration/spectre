@@ -35,7 +35,7 @@ void do_check(const Time& start, const TimeDelta& time_step) {
     {std::make_unique<TimeSteppers::RungeKutta3>()}};
 
   auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>>(
-      TimeId{8, start, 0}, time_step);
+      TimeId(time_step.is_positive(), 8, start), time_step);
 
   std::array<TimeDelta, 3> substep_offsets{
     {time_step * 0, time_step, time_step / 2}};
@@ -43,8 +43,8 @@ void do_check(const Time& start, const TimeDelta& time_step) {
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
       CHECK(db::get<Tags::TimeId>(box) ==
-            (TimeId{
-              8, step_start + gsl::at(substep_offsets, substep), substep}));
+            TimeId(time_step.is_positive(), 8, step_start, substep,
+                   step_start + gsl::at(substep_offsets, substep)));
       CHECK(db::get<Tags::TimeStep>(box) == time_step);
       box = std::get<0>(runner.apply<component, Actions::AdvanceTime>(box, 0));
     }
@@ -52,8 +52,9 @@ void do_check(const Time& start, const TimeDelta& time_step) {
 
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto& expected_slab = start.slab().advance_towards(time_step);
-  CHECK(final_time_id.time.slab() == expected_slab);
-  CHECK(final_time_id == (TimeId{9, start + 2 * time_step, 0}));
+  CHECK(final_time_id.time().slab() == expected_slab);
+  CHECK(final_time_id ==
+        TimeId(time_step.is_positive(), 9, start + 2 * time_step));
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
 }
 }  // namespace

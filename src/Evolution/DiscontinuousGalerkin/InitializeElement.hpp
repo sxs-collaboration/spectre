@@ -180,8 +180,7 @@ struct InitializeElement {
     }
 
     // Set up initial time
-    TimeId time_id{};
-    time_id.time = initial_time;
+    const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
 
     // Set up boundary information
     db::item_type<

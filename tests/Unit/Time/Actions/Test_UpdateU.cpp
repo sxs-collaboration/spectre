@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
 
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
-  TimeId time_id{8, slab.start(), 0};
+  const TimeId time_id(true, 8, slab.start());
 
   using history_tag =
       Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
@@ -79,10 +79,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
             const gsl::not_null<double*> dt_vars,
             const gsl::not_null<TimeId*> local_time_id,
             const double& vars) noexcept {
-          local_time_id->time = gsl::at(substep_times, substep);
-          local_time_id->substep = substep;
+          *local_time_id = TimeId(true, 8, substep_times[0], substep,
+                                  gsl::at(substep_times, substep));
 
-          *dt_vars = rhs(local_time_id->time.value(), vars);
+          *dt_vars = rhs(local_time_id->time().value(), vars);
         },
         db::get<variables_tag>(box));
 

@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
     const auto box =
         db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
                    db::AddComputeTags<Tags::Time, Tags::TimeValue>>(
-            TimeId{0, time, 0}, step);
+            TimeId(step.is_positive(), 0, time), step);
     CHECK(sent_trigger->is_triggered(box) == expected);
   };
   check(slab.start(), slab.duration(), false);
