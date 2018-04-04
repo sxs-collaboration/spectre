@@ -9,6 +9,7 @@
 
 
 #include "Domain/Direction.hpp"
+#include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits.hpp"
