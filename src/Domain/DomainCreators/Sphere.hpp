@@ -25,7 +25,8 @@ namespace DomainCreators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain in the shape of a sphere consisting of six wedges
-/// and a central cube.
+/// and a central cube. For an image showing how the wedges are aligned in
+/// this Domain, see the documentation for Shell.
 template <typename TargetFrame>
 class Sphere : public DomainCreator<3, TargetFrame> {
  public:

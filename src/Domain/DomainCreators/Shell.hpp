@@ -18,9 +18,15 @@ class DomainCreator;  // IWYU pragma: keep
 
 namespace DomainCreators {
 
-/// \ingroup DomainCreatorsGroup
-/// Create a 3D Domain in the shape of a hollow spherical shell consisting of
-/// six wedges.
+/*!
+ * \ingroup DomainCreatorsGroup
+ *
+ * \brief Creates a 3D Domain in the shape of a hollow spherical shell
+ * consisting of six wedges.
+ *
+ * \image html WedgeOrientations.png "The orientation of each wedge in Shell."
+ */
+
 template <typename TargetFrame>
 class Shell : public DomainCreator<3, TargetFrame> {
  public:
