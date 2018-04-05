@@ -48,6 +48,55 @@
 /*!
  * \defgroup ControlSystemGroup Control System
  * \brief Contains control system elements
+ *
+ * The control system manages the time-dependent mapping between frames, such as
+ * the fixed computational frame (grid frame) and the inertial frame. The
+ * time-dependent parameters of the mapping are adjusted by a feedback control
+ * system in order to follow the dynamical evolution of objects such as horizons
+ * of black holes or surfaces of neutron stars. For example, in binary black
+ * hole simulations the map is typically a composition of maps that include
+ * translation, rotation, scaling, shape, etc.
+ * Each map under the governance of the control system has an associated
+ * time-dependent map parameter \f$\lambda(t)\f$ that is a piecewise Nth order
+ * polynomial. At discrete times (called reset times), the control system resets
+ * the Nth time derivative of \f$\lambda(t)\f$ to a new constant value, in order
+ * to minimize an error function \f$Q(t)\f$ that is specific to each map. At
+ * each reset time, the Nth derivative of \f$\lambda(t)\f$ is set to a function
+ * \f$U(t)\f$, called the control signal, that is determined by \f$Q(t)\f$ and
+ * its time derivatives and time integral. Note that \f$\lambda(t)\f$,
+ * \f$U(t)\f$, and \f$Q(t)\f$ can be vectors.
+ *
+ * The key components of the control system are:
+ * - FunctionsOfTime: each map has an associated FunctionOfTime that represents
+ *   the map parameter \f$\lambda(t)\f$ and relevant time derivatives.
+ * - ControlError: each map has an associated ControlError that computes
+ *   the error, \f$Q(t)\f$. Note that for each map, \f$Q(t)\f$ is defined to
+ *   follow the convention that \f$dQ = -d \lambda\f$ as \f$Q \rightarrow 0\f$.
+ * - Averager: an averager can be used to average out the noise in the 'raw'
+ *   \f$Q(t)\f$ returned by the ControlError.
+ * - Controller: the map controller computes the control signal \f$U(t)\f$ from
+ *   \f$Q(t)\f$ and its time integral and time derivatives.
+ *   The control is accomplished by setting the Nth derivative of
+ *   \f$\lambda(t)\f$ to \f$U(t)\f$. Two common controllers are PID
+ *   (proportional/integral/derivative)
+ *   \f[U(t) = a_{0}\int_{t_{0}}^{t} Q(t') dt'+a_{1}Q(t)+a_{2}\frac{dQ}{dt}\f]
+ *   or
+ *   PND (proportional/N derivatives)
+ *   \f[ U(t) = \sum_{k=0}^{N} a_{k} \frac{d^kQ}{dt^k} \f]
+ *   The coefficients \f$ a_{k} \f$ in the computation of \f$U(t)\f$ are chosen
+ *   at each time such that the error \f$Q(t)\f$ will be critically damped
+ *   on a timescale of \f$\tau\f$ (the damping time),
+ *   i.e. \f$Q(t) \propto e^{-t/\tau}\f$.
+ * - TimescaleTuner: each map has a TimescaleTuner that dynamically adjusts
+ *   the damping timescale \f$\tau\f$ appropriately to keep the error \f$Q(t)\f$
+ *   within some specified error bounds. Note that the reset time interval,
+ *   \f$\Delta t\f$, is a constant fraction of this damping timescale,
+ *   i.e. \f$\Delta t = \alpha \tau\f$ (empirically, we have found
+ *   \f$\alpha=0.3\f$ to be a good choice).
+ *
+ *
+ * For additional details describing our control system approach, see Hemberger
+ * et al. 2012 (https://arxiv.org/abs/1211.6079).
  */
 
 /*!
