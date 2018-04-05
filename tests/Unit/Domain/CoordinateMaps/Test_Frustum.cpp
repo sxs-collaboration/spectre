@@ -12,7 +12,8 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
+namespace {
+void test_suite_for_frustum(const bool with_equiangular_map) {
   // Set up random number generator
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -42,10 +43,21 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
          {{upper_x_lower_base, upper_y_lower_base}},
          {{lower_x_upper_base, lower_y_upper_base}},
          {{upper_x_upper_base, upper_y_upper_base}}}};
-    const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0,
-                                              map_i());
+    const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
+                                              with_equiangular_map);
     test_suite_for_map(frustum_map);
   }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equidistant",
+                  "[Domain][Unit]") {
+  test_suite_for_frustum(false);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equiangular",
+                  "[Domain][Unit]") {
+  test_suite_for_frustum(true);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
