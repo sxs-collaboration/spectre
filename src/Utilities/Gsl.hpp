@@ -28,6 +28,8 @@
 // circumstances that cannot be guaranteed to be caught and so all throw's
 // are replaced by hard errors (ERROR).
 
+#include <type_traits>
+
 #include "ErrorHandling/ExpectsAndEnsures.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Literals.hpp"
@@ -130,6 +132,28 @@ SPECTRE_ALWAYS_INLINE constexpr const T& at(std::initializer_list<T> cont,
   return *(cont.begin() + index);
 }
 // @}
+
+namespace detail {
+template <class T>
+struct owner_impl {
+  static_assert(std::is_same<T, const owner_impl<int*>&>::value,
+                "You should not have an owning raw pointer, instead you should "
+                "use std::unique_ptr or, sparingly, std::shared_ptr. If "
+                "clang-tidy told you to use gsl::owner, then you should still "
+                "use std::unique_ptr instead.");
+  using type = T;
+};
+}  // namespace detail
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Mark a raw pointer as owning its data
+ *
+ * \warning You should never actually use `gsl::owner`. Instead you should use
+ * `std::unique_ptr`, and if shared ownership is required, `std::shared_ptr`.
+ */
+template <class T, Requires<std::is_pointer<T>::value> = nullptr>
+using owner = typename detail::owner_impl<T>::type;
 
 /*!
  * \ingroup UtilitiesGroup
