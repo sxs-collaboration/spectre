@@ -62,6 +62,13 @@ add_dependencies(
   module_Main
   )
 
+target_include_directories(
+  ${executable}
+  SYSTEM
+  PUBLIC ${NUMPY_INCLUDE_DIRS}
+  PUBLIC ${PYTHON_INCLUDE_DIRS}
+  )
+
 add_dependencies(test-executables ${executable})
 
 spectre_add_catch_tests(${executable} "${SPECTRE_TESTS_LIBRARIES}")
