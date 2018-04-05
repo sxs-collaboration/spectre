@@ -4,8 +4,9 @@
 set(LIBRARY "Test_RootFinding")
 
 set(LIBRARY_SOURCES
-  Test_OneDRootFinder.cpp
+  Test_NewtonRaphson.cpp
   Test_QuadraticEquation.cpp
+  Test_TOMS748.cpp
   )
 
 add_test_library(
