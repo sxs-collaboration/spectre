@@ -13,6 +13,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
@@ -429,6 +430,68 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
       std::move(wedges[5]));  // NOLINT
 }
 
+template <typename TargetFrame>
+std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+frustum_coordinate_maps(const double length_inner_cube,
+                        const double length_outer_cube,
+                        const bool use_equiangular_map) noexcept {
+  const auto frustum_orientations = orientations_for_wrappings();
+  const double lower = 0.5 * length_inner_cube;
+  const double top = 0.5 * length_outer_cube;
+
+  using FrustumMap = CoordinateMaps::Frustum;
+  // Binary compact object Domains use 10 Frustums, 4 around each Shell in the
+  //+z,-z,+y,-y directions, and 1 Frustum capping each end in +x, -x.
+  std::vector<FrustumMap> frustums{};
+  for (size_t i = 0; i < 4; i++) {
+    // frustums on the left
+    frustums.push_back(FrustumMap{{{{{-2.0 * lower, -lower}},
+                                    {{0.0, lower}},
+                                    {{-top, -top}},
+                                    {{0.0, top}}}},
+                                  lower,
+                                  top,
+                                  gsl::at(frustum_orientations, i),
+                                  use_equiangular_map});
+    // frustums on the right
+    frustums.push_back(FrustumMap{{{{{0.0, -lower}},
+                                    {{2.0 * lower, lower}},
+                                    {{0.0, -top}},
+                                    {{top, top}}}},
+                                  lower,
+                                  top,
+                                  gsl::at(frustum_orientations, i),
+                                  use_equiangular_map});
+  }
+  // frustum on the left
+  frustums.push_back(FrustumMap{
+      {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
+      2.0 * lower,
+      top,
+      frustum_orientations[5],
+      use_equiangular_map});
+  // frustum on the right
+  frustums.push_back(FrustumMap{
+      {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
+      2.0 * lower,
+      top,
+      frustum_orientations[4],
+      use_equiangular_map});
+
+  // clang-tidy: trivially copyable
+  return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      std::move(frustums[0]),   // NOLINT
+      std::move(frustums[1]),   // NOLINT
+      std::move(frustums[2]),   // NOLINT
+      std::move(frustums[3]),   // NOLINT
+      std::move(frustums[4]),   // NOLINT
+      std::move(frustums[5]),   // NOLINT
+      std::move(frustums[6]),   // NOLINT
+      std::move(frustums[7]),   // NOLINT
+      std::move(frustums[9]),   // NOLINT
+      std::move(frustums[8]));  // NOLINT
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
@@ -479,3 +542,13 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
                       const bool use_wedge_halves) noexcept;
+template std::vector<
+    std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+frustum_coordinate_maps(const double length_inner_cube,
+                        const double length_outer_cube,
+                        const bool use_equiangular_map) noexcept;
+template std::vector<
+    std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+frustum_coordinate_maps(const double length_inner_cube,
+                        const double length_outer_cube,
+                        const bool use_equiangular_map) noexcept;

@@ -82,3 +82,13 @@ wedge_coordinate_maps(double inner_radius, double outer_radius,
                       bool use_equiangular_map,
                       double x_coord_of_shell_center = 0.0,
                       bool use_half_wedges = false) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// These are the ten Frustums used in the DomainCreators for binary compact
+/// objects. The cubes enveloping the two Shells each have a side length of
+/// `length_inner_cube`. The ten frustums also make up a cube of their own,
+/// of side length `length_outer_cube`.
+template <typename TargetFrame>
+std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
+                        bool use_equiangular_map) noexcept;

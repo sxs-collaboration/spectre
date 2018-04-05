@@ -5,12 +5,16 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
@@ -20,11 +24,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
-
-namespace Frame {
-struct Inertial;
-struct Logical;
-}  // namespace Frame
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
                   "[Domain][Unit]") {
@@ -320,4 +319,121 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.TenWedgeDirections.Equidistant",
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, 0.0, use_half_wedges);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
+                  "[Domain][Unit]") {
+  using FrustumMap = CoordinateMaps::Frustum;
+  // half of the length of the inner cube in the binary compact object domain:
+  const double lower = 1.7;
+  // half of the length of the outer cube in the binary compact object domain:
+  const double top = 5.2;
+  for (const bool use_equiangular_map : {true, false}) {
+    const auto expected_coord_maps = make_vector_coordinate_map_base<
+        Frame::Logical, Frame::Inertial>(
+        FrustumMap{{{{{-2.0 * lower, -lower}},
+                     {{0.0, lower}},
+                     {{-top, -top}},
+                     {{0.0, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{},
+                   use_equiangular_map},
+        FrustumMap{{{{{0.0, -lower}},
+                     {{2.0 * lower, lower}},
+                     {{0.0, -top}},
+                     {{top, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{},
+                   use_equiangular_map},
+        FrustumMap{{{{{-2.0 * lower, -lower}},
+                     {{0.0, lower}},
+                     {{-top, -top}},
+                     {{0.0, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                        Direction<3>::lower_zeta()}}},
+                   use_equiangular_map},
+        FrustumMap{{{{{0.0, -lower}},
+                     {{2.0 * lower, lower}},
+                     {{0.0, -top}},
+                     {{top, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                        Direction<3>::lower_zeta()}}},
+                   use_equiangular_map},
+        FrustumMap{{{{{-2.0 * lower, -lower}},
+                     {{0.0, lower}},
+                     {{-top, -top}},
+                     {{0.0, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                        Direction<3>::lower_eta()}}},
+                   use_equiangular_map},
+        FrustumMap{{{{{0.0, -lower}},
+                     {{2.0 * lower, lower}},
+                     {{0.0, -top}},
+                     {{top, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                        Direction<3>::lower_eta()}}},
+                   use_equiangular_map},
+        FrustumMap{{{{{-2.0 * lower, -lower}},
+                     {{0.0, lower}},
+                     {{-top, -top}},
+                     {{0.0, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        FrustumMap{{{{{0.0, -lower}},
+                     {{2.0 * lower, lower}},
+                     {{0.0, -top}},
+                     {{top, top}}}},
+                   lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        // Frustum on right half in the +x direction
+        FrustumMap{{{{{-lower, -lower}},
+                     {{lower, lower}},
+                     {{-top, -top}},
+                     {{top, top}}}},
+                   2.0 * lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        // Frustum on left half in the -x direction
+        FrustumMap{{{{{-lower, -lower}},
+                     {{lower, lower}},
+                     {{-top, -top}},
+                     {{top, top}}}},
+                   2.0 * lower,
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map});
+
+    const auto maps = frustum_coordinate_maps<Frame::Inertial>(
+        2.0 * lower, 2.0 * top, use_equiangular_map);
+    for (size_t i = 0; i < maps.size(); i++) {
+      CHECK(*expected_coord_maps[i] == *maps[i]);
+    }
+  }
 }
