@@ -67,8 +67,6 @@ true:
 * RUN_CLANG_TIDY runs the script `.travis/RunClangTidy.sh` which runs
 `clang-tidy` on all files which were modified.  This is done for both `Release`
 and `Debug` builds.
-* RUN_CPPCHECK runs `make cppcheck`.  This is done for both `Release` and
-`Debug` builds.
 * TEST_CHECK_FILES runs `tools/CheckFiles.sh --test` which tests the checks
 performed in the CHECK_FILES build.
 * The other builds compile the code and run the tests for both
