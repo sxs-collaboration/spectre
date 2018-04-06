@@ -92,3 +92,37 @@ template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
                         bool use_equiangular_map) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief The corners for a domain with radial layers.
+///
+/// Generates the corners for a Domain which is made of one or more layers
+/// of Blocks fully enveloping an interior volume, e.g. Shell or Sphere. The
+/// `number_of_layers` specifies how many of these layers of Blocks to have
+/// in the final domain.
+/// `include_central_block` is set to `true` in Sphere, where the interior
+/// volume is filled with a central Block, and `false` in Shell, where the
+/// interior volume is left empty.
+/// The `central_block_corners` are used as seed values to generate the corners
+/// for the surrounding Blocks.
+std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
+    size_t number_of_layers, bool include_central_block,
+    const std::array<size_t, 8>& central_block_corners = {
+        {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief The corners for a domain with biradial layers.
+///
+/// Generates the corners for a BBH-like Domain which is made of one or more
+/// layers of Blocks fully enveloping two interior volumes. The
+/// `number_of_radial_layers` gives the number of layers that fully envelop
+/// each interior volume with six Blocks each. The `number_of_biradial_layers`
+/// gives the number of layers that fully envelop both volumes at once, using
+/// ten Blocks per layer as opposed to six. The `central_block_corners_lhs`
+/// are used as seed values to generate the corners for the surrounding
+/// Blocks.
+std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
+    size_t number_of_radial_layers, size_t number_of_biradial_layers,
+    bool include_central_block_lhs, bool include_central_block_rhs,
+    const std::array<size_t, 8>& central_block_corners_lhs = {
+        {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;

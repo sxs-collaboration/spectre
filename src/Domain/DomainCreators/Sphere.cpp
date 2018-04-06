@@ -50,15 +50,8 @@ Domain<3, TargetFrame> Sphere<TargetFrame>::create_domain() const noexcept {
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
-
-  std::vector<std::array<size_t, 8>> corners{
-      {{7, 5, 8, 6, 15, 13, 16, 14}},  // Upper z
-      {{4, 2, 3, 1, 12, 10, 11, 9}},   // Lower z
-      {{8, 6, 4, 2, 16, 14, 12, 10}},  // Upper y
-      {{3, 1, 7, 5, 11, 9, 15, 13}},   // Lower y
-      {{1, 2, 5, 6, 9, 10, 13, 14}},   // Upper x
-      {{4, 3, 8, 7, 12, 11, 16, 15}},  // Lower x
-      {{3, 1, 4, 2, 7, 5, 8, 6}}};     // center cube
+  std::vector<std::array<size_t, 8>> corners =
+      corners_for_radially_layered_domains(1, true);
 
   std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
