@@ -71,3 +71,12 @@ template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(double inner_radius, double outer_radius,
                       double sphericity, bool use_equiangular_map) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// Generates the corners for a Domain which is made of one or more layers
+/// of Blocks surrounding an interior volume, e.g. Shell or Sphere. The
+/// `number_of_partial_layers` parameter is used when constructing a BBH-like
+/// Domain where there are layers of blocks which surround the interior volume
+/// using only 5 blocks as opposed to 6.
+std::vector<std::array<size_t, 8>> corners_for_layered_domains(
+    size_t number_of_full_layers, size_t number_of_partial_layers = 0) noexcept;

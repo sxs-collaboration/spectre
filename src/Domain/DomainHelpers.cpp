@@ -359,6 +359,131 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                  sphericity, use_equiangular_map});
 }
 
+std::array<size_t, 8> concatenate_faces(
+    const std::array<size_t, 4>& face1,
+    const std::array<size_t, 4>& face2) noexcept {
+  return {{face1[0], face1[1], face1[2], face1[3], face2[0], face2[1], face2[2],
+           face2[3]}};
+}
+
+std::array<size_t, 4> next_face_in_radial_direction(
+    std::array<size_t, 4>& face) noexcept {
+  return {{face[0] + 8, face[1] + 8, face[2] + 8, face[3] + 8}};
+}
+
+std::array<std::array<size_t, 4>, 6> next_layer_in_radial_direction(
+    std::array<std::array<size_t, 4>, 6>& layer) noexcept {
+  return {{next_face_in_radial_direction(layer[0]),
+           next_face_in_radial_direction(layer[1]),
+           next_face_in_radial_direction(layer[2]),
+           next_face_in_radial_direction(layer[3]),
+           next_face_in_radial_direction(layer[4]),
+           next_face_in_radial_direction(layer[5])}};
+}
+
+void hard_identify_corners_with_each_other(
+    size_t corner_1, size_t corner_2,
+    std::vector<std::array<size_t, 8>>& corners) noexcept {
+  for (auto& block_corners : corners) {
+    for (size_t i = 0; i < 8; i++) {
+      if (gsl::at(block_corners, i) == corner_2) {
+        gsl::at(block_corners, i) = corner_1;
+      }
+    }
+  }
+}
+
+std::array<size_t, 4> corresponding_face_on_other_side(
+    std::array<size_t, 4>& face,
+    const size_t total_number_of_layers_of_blocks) noexcept {
+  const size_t offset = 8 * (total_number_of_layers_of_blocks + 1);
+  return {
+      {face[0] + offset, face[1] + offset, face[2] + offset, face[3] + offset}};
+}
+
+std::array<std::array<size_t, 4>, 6> corresponding_layer_on_other_side(
+    std::array<std::array<size_t, 4>, 6> faces_lhs,
+    const size_t total_number_of_layers_of_blocks) {
+  return {{
+      corresponding_face_on_other_side(faces_lhs[0],
+                                       total_number_of_layers_of_blocks),
+      corresponding_face_on_other_side(faces_lhs[1],
+                                       total_number_of_layers_of_blocks),
+      corresponding_face_on_other_side(faces_lhs[2],
+                                       total_number_of_layers_of_blocks),
+      corresponding_face_on_other_side(faces_lhs[3],
+                                       total_number_of_layers_of_blocks),
+      corresponding_face_on_other_side(faces_lhs[4],
+                                       total_number_of_layers_of_blocks),
+      corresponding_face_on_other_side(faces_lhs[5],
+                                       total_number_of_layers_of_blocks),
+  }};
+}
+
+std::vector<std::array<size_t, 8>> corners_for_layered_domains(
+    const size_t number_of_full_layers,
+    const size_t number_of_partial_layers) noexcept {
+  const size_t number_of_layers =
+      number_of_full_layers + number_of_partial_layers;
+
+  const std::array<std::array<size_t, 4>, 6> faces_layer_zero_lhs{
+      {{{5, 6, 7, 8}},    // Upper z
+       {{3, 4, 1, 2}},    // Lower z
+       {{7, 8, 3, 4}},    // Upper y
+       {{1, 2, 5, 6}},    // Lower y
+       {{2, 4, 6, 8}},    // Upper x
+       {{3, 1, 7, 5}}}};  // Lower x
+
+  const std::array<std::array<size_t, 4>, 6> faces_layer_zero_rhs =
+      corresponding_layer_on_other_side(faces_layer_zero_lhs, number_of_layers);
+
+  std::vector<std::array<std::array<size_t, 4>, 6>> faces_in_each_layer_lhs{};
+  std::vector<std::array<std::array<size_t, 4>, 6>> faces_in_each_layer_rhs{};
+  faces_in_each_layer_lhs.push_back(faces_layer_zero_lhs);
+  faces_in_each_layer_rhs.push_back(faces_layer_zero_rhs);
+  for (size_t layer_j = 0; layer_j < number_of_layers; layer_j++) {
+    faces_in_each_layer_lhs.push_back(
+        next_layer_in_radial_direction(faces_in_each_layer_lhs[layer_j]));
+    faces_in_each_layer_rhs.push_back(
+        next_layer_in_radial_direction(faces_in_each_layer_rhs[layer_j]));
+  }
+
+  std::vector<std::array<size_t, 8>> corners{};
+  for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      // Face number 4 is the face in the +x direction.
+      if (layer_i < number_of_full_layers or face_j != 4) {
+        corners.push_back(concatenate_faces(
+            gsl::at(gsl::at(faces_in_each_layer_lhs, layer_i), face_j),
+            gsl::at(gsl::at(faces_in_each_layer_lhs, layer_i + 1), face_j)));
+      }
+      // If there are partial layers then we are dealing with a BBH-like domain.
+      if (number_of_partial_layers > 0) {
+        // Face number 5 is the face in the -x direction.
+        if (layer_i < number_of_full_layers or face_j != 5) {
+          corners.push_back(concatenate_faces(
+              gsl::at(gsl::at(faces_in_each_layer_rhs, layer_i), face_j),
+              gsl::at(gsl::at(faces_in_each_layer_rhs, layer_i + 1), face_j)));
+        }
+      }
+    }
+  }
+
+  // The first corner to identify is on the last full layer.
+  const size_t first_corner_to_identify = 2 + number_of_full_layers * 8;
+  const size_t corner_to_identify_with =
+      first_corner_to_identify - 1 + (8 * (number_of_layers + 1));
+  for (size_t j = 0; j < number_of_partial_layers + 1; j++) {
+    for (size_t i = 0; i < 4; i++) {
+      const size_t offset = 2 * i + 8 * j;
+      hard_identify_corners_with_each_other(first_corner_to_identify + offset,
+                                            corner_to_identify_with + offset,
+                                            corners);
+    }
+  }
+  return corners;
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
