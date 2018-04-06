@@ -131,6 +131,16 @@ void test_initialize_element(const ElementId<Dim>& element_id,
               empty_box, element_id, domain_creator.initial_extents(),
               domain_creator.create_domain(), slab.start(), slab.duration()));
   CHECK(db::get<Tags::TimeId>(box) == TimeId(true, 0, slab.start()));
+  const auto expected_next_time_id =
+      get<CacheTags::TimeStepper>(runner.cache())
+          .next_time_id(TimeId(true, 0, slab.start()), slab.duration());
+  // The slab can differ from the expected value if the first substep
+  // crosses the entire slab.
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).substep() ==
+        expected_next_time_id.substep());
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time() ==
+        expected_next_time_id.time());
+  CHECK_FALSE(db::get<Tags::Next<Tags::TimeId>>(box).time().is_at_slab_end());
   CHECK(db::get<Tags::Time>(box) == slab.start());
   CHECK(db::get<Tags::TimeStep>(box) == slab.duration());
 

@@ -90,8 +90,9 @@ struct InitializeElement {
   template <class Metavariables>
   using return_tag_list = tmpl::list<
       // Simple items
-      Tags::TimeId, Tags::TimeStep, Tags::Extents<Dim>, Tags::Element<Dim>,
-      Tags::ElementMap<Dim>, typename Metavariables::system::variables_tag,
+      Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
+      Tags::Extents<Dim>, Tags::Element<Dim>, Tags::ElementMap<Dim>,
+      typename Metavariables::system::variables_tag,
       Tags::HistoryEvolvedVariables<
           typename Metavariables::system::variables_tag,
           db::add_tag_prefix<Tags::dt,
@@ -149,6 +150,17 @@ struct InitializeElement {
     auto logical_coords = logical_coordinates(mesh);
     auto inertial_coords = map(logical_coords);
 
+    // Set up initial time
+    const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
+    const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
+    TimeId next_time_id = time_stepper.next_time_id(time_id, initial_dt);
+    if (next_time_id.is_at_slab_boundary()) {
+      const auto next_time = next_time_id.step_time();
+      next_time_id = TimeId(
+          initial_dt.is_positive(), 1,
+          next_time.with_slab(next_time.slab().advance_towards(initial_dt)));
+    }
+
     // Set initial data from analytic solution
     Variables<variables_tags> vars{num_grid_points};
     vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
@@ -158,7 +170,6 @@ struct InitializeElement {
         Tags::Variables<variables_tags>,
         Tags::dt<Tags::Variables<db::wrap_tags_in<Tags::dt, variables_tags>>>>::
         type history_dt_vars;
-    const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
     if (not time_stepper.is_self_starting()) {
       // We currently just put initial points at past slab boundaries.
       Time past_t = initial_time;
@@ -179,9 +190,6 @@ struct InitializeElement {
       }
     }
 
-    // Set up initial time
-    const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
-
     // Set up boundary information
     db::item_type<
         typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag>
@@ -198,8 +206,9 @@ struct InitializeElement {
     db::compute_databox_type<return_tag_list<Metavariables>> outbox =
         db::create<db::get_items<return_tag_list<Metavariables>>,
                    db::get_compute_items<return_tag_list<Metavariables>>>(
-            time_id, initial_dt, std::move(mesh), std::move(element),
-            std::move(map), std::move(vars), std::move(history_dt_vars),
+            time_id, next_time_id, initial_dt, std::move(mesh),
+            std::move(element), std::move(map), std::move(vars),
+            std::move(history_dt_vars),
             Variables<db::wrap_tags_in<Tags::dt, variables_tags>>{
                 num_grid_points, 0.0},
             std::move(boundary_data));
