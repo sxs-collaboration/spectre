@@ -134,12 +134,12 @@ class ActionRunner {
   ActionRunner& operator=(ActionRunner&&) = delete;
   ~ActionRunner() = default;
 
-  using ConstGlobalCache_t = Parallel::ConstGlobalCache<Metavariables>;
-  using CacheTuple_t =
-      tuples::TaggedTupleTypelist<typename ConstGlobalCache_t::tag_list>;
+  using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
+  using CacheTuple =
+      tuples::TaggedTupleTypelist<typename GlobalCache::tag_list>;
 
   /// Construct from the tuple of ConstGlobalCache objects.
-  explicit ActionRunner(CacheTuple_t cache_contents)
+  explicit ActionRunner(CacheTuple cache_contents)
       : cache_(std::move(cache_contents)) {
     tmpl::for_each<typename Metavariables::component_list>(
         [this](auto component) {
@@ -216,6 +216,8 @@ class ActionRunner {
     return tuples::get<LocalAlgorithms<Component>>(local_algorithms_);
   }
 
+  const GlobalCache& cache() noexcept { return cache_; }
+
  private:
   template <typename Component>
   struct Inboxes {
@@ -232,7 +234,7 @@ class ActionRunner {
       ActionTesting_detail::MockLocalAlgorithm<Component>>;
   };
 
-  ConstGlobalCache_t cache_;
+  GlobalCache cache_;
   tuples::TaggedTupleTypelist<tmpl::transform<
       typename Metavariables::component_list, tmpl::bind<Inboxes, tmpl::_1>>>
       inboxes_;
