@@ -3,8 +3,6 @@
 
 find_package(NumPy REQUIRED)
 
-include_directories(SYSTEM ${NUMPY_INCLUDE_DIRS})
-
 message(STATUS "NumPy incl: " ${NUMPY_INCLUDE_DIRS})
 message(STATUS "NumPy vers: " ${NUMPY_VERSION})
 

@@ -18,6 +18,7 @@
 #include "Parallel/Abort.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
+#include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/RunTestsRegister.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
@@ -26,7 +27,13 @@ RunTests::RunTests(CkArgMsg* msg) {
   register_run_tests_libs();
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
-  int result = Catch::Session().run(msg->argc, msg->argv);
+  const int result = Catch::Session().run(msg->argc, msg->argv);
+  // In the case where we run all the non-failure tests at once we must ensure
+  // that we only initialize and finalize the python env once. Initialization is
+  // done in the constructor of SetupLocalPythonEnvironment, while finalization
+  // is done in the constructor of RunTests by constructing a
+  // SetupLocalPythonEnvironment object and calling finalize_env on it.
+  pypp::SetupLocalPythonEnvironment("").finalize_env();
   if (0 == result) {
     Parallel::exit();
   }

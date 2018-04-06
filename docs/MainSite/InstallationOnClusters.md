@@ -4,6 +4,54 @@ See LICENSE.txt for details.
 \endcond
 # Installation on Clusters {#installation_on_clusters}
 
+## BlueWaters at the National Centre for Supercomputing Applications
+
+1. Run `export SPECTRE_HOME=/path/to/where/you/want/to/clone`
+2. Clone SpECTRE using `git clone SPECTRE_URL $SPECTRE_HOME`
+3. Run `cd $SPECTRE_HOME && mkdir build && cd build`
+4. Run `module load bwpy && bwpy-environ` followed by `module unload bwpy` (you
+   cannot join the unload with the first two)
+5. Run `. $SPECTRE_HOME/support/Environments/bluewaters_gcc.sh`
+6. If you haven't already, choose where you want to install the dependencies,
+   e.g. into `SPECTRE_DEPS` and run `spectre_setup_modules SPECTRE_DEPS`. This
+   will take a while to finish. Near the end the command will tell you how to
+   load make the modules available by providing a `module use` command.
+7. Run `module use SPECTRE_DEPS/modules`
+8. Run `spectre_run_cmake`, if you get module loading errors run
+   `spectre_unload_modules` and try again. CMake should set up successfully.
+9. Build the targets you are interested in by running, e.g.
+   `make -j4 EvolveScalarWave3D`
+
+#### Running tests on BlueWaters
+
+You cannot just run `make test` or `ctest` on BlueWaters. The python and Boost
+modules on BlueWaters do not work together at all (you get segmentation faults).
+You must build a separate version of SpECTRE that links in the python module.
+If you haven't set up the dependencies, do so now. After which you can:
+1. Run `cd $SPECTRE_HOME && mkdir build && cd build`
+2. Run `module load bwpy && bwpy-environ` followed by `module unload bwpy` (you
+   cannot join the unload with the first two)
+3. Uncomment the lines `module load bwpy` and `module unload bwpy` in
+   `$SPECTRE_HOME/support/Environments/bluewaters_gcc.sh` and run
+   `. $SPECTRE_HOME/support/Environments/bluewaters_gcc.sh`
+4. Run `spectre_run_cmake`, if you get module loading errors run
+   `spectre_unload_modules` and try again. CMake should set up successfully.
+5. Run `make -j4`
+
+To run the tests:
+1. Get an interactive node using, e.g. `qsub -q debug -I -l nodes=1:ppn=16:xe -l
+   walltime=00:30:00` or see the [BlueWaters documentation]
+   (https://bluewaters.ncsa.illinois.edu/interactive-jobs)
+2. Setup the bwpy environment `module load bwpy && bwpy-environ` followed by
+   `module unload bwpy` (you cannot join the unload with the first two)
+3. Run the `module use` command you did earlier
+4. Load the module using the `spectre_load_modules` command
+5. Run
+   ```
+   aprun -n1 -d1 -- bwpy-environ -- \
+     $SPECTRE_HOME/build/bin/NonFailureTestsRunTests.sh
+   ```
+
 ## Wheeler at Caltech
 
 1. Clone SpECTRE into `$SPECTRE_HOME`

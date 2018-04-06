@@ -38,6 +38,8 @@
               "<Python.h>", public]},
   { include: ["<sysmodule.h>", private,
               "<Python.h>", public]},
+  { include: ["<pythonrun.h>", private,
+              "<Python.h>", public]},
 
   { symbol: ["db::DataBox", private,
              "\"DataStructures/DataBox/DataBox.hpp\"", public]},

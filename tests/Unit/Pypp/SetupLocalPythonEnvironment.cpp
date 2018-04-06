@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <codecvt>
-#include <locale>
 #include <string>
 #include <vector>
 
@@ -22,10 +20,20 @@
 namespace pypp {
 SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
     const std::string &cur_dir_relative_to_unit_test_path) {
-  Py_Initialize();
-  disable_floating_point_exceptions();
-  init_numpy();
-  enable_floating_point_exceptions();
+  // In the case where we run all the non-failure tests at once we must ensure
+  // that we only initialize and finalize the python env once. Initialization is
+  // done in the constructor of SetupLocalPythonEnvironment, while finalization
+  // is done in the constructor of RunTests by constructing a
+  // SetupLocalPythonEnvironment object and calling finalize_env on it.
+  if (not initialized) {
+    Py_Initialize();
+    // On some python versions init_numpy() can throw an FPE, this occurred at
+    // least with python 3.6, numpy 1.14.2.
+    disable_floating_point_exceptions();
+    init_numpy();
+    enable_floating_point_exceptions();
+  }
+  initialized = true;
   // clang-tidy: Do not use const-cast
   PyObject *pyob_old_paths =
       PySys_GetObject(const_cast<char *>("path"));  // NOLINT
@@ -37,7 +45,6 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
     new_path += p;
   }
 
-
 #if PY_MAJOR_VERSION == 3
   PySys_SetPath(std::wstring_convert<std::codecvt_utf8<wchar_t>>()
                     .from_bytes(new_path)
@@ -48,8 +55,6 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
 #endif
 }
 
-SetupLocalPythonEnvironment::~SetupLocalPythonEnvironment() { Py_Finalize(); }
-
 #if PY_MAJOR_VERSION == 3
 std::nullptr_t SetupLocalPythonEnvironment::init_numpy() {
   import_array();
@@ -58,4 +63,14 @@ std::nullptr_t SetupLocalPythonEnvironment::init_numpy() {
 #else
 void SetupLocalPythonEnvironment::init_numpy() { import_array(); }
 #endif
+
+void SetupLocalPythonEnvironment::finalize_env() {
+  if (not finalized and initialized) {
+    Py_Finalize();
+  }
+  finalized = true;
+}
+
+bool SetupLocalPythonEnvironment::initialized = false;
+bool SetupLocalPythonEnvironment::finalized = false;
 }  // namespace pypp

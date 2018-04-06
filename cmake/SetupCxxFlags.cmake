@@ -13,3 +13,7 @@ set(CMAKE_CXX_FLAGS "-g ${CMAKE_CXX_FLAGS}")
 # Always compile only for the current architecture. This can be overridden
 # by passing `-D CMAKE_CXX_FLAGS="-march=THE_ARCHITECTURE"` to CMake
 set(CMAKE_CXX_FLAGS "-march=native ${CMAKE_CXX_FLAGS}")
+
+# We always want a detailed backtrace of template errors to make debugging them
+# easier
+set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0 ${CMAKE_CXX_FLAGS}")

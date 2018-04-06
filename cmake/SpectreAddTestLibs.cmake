@@ -93,12 +93,21 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
     ${LIBRARY}
     INTERFACE
     ${LINK_LIBS}
+    INTERFACE
+    ${PYTHON_LIBRARIES}
     )
 
   set_target_properties(
     ${LIBRARY}
     PROPERTIES
     FOLDER "${FOLDER}/"
+    )
+
+  target_include_directories(
+    ${LIBRARY}
+    SYSTEM
+    PUBLIC ${NUMPY_INCLUDE_DIRS}
+    PUBLIC ${PYTHON_INCLUDE_DIRS}
     )
 
   # We use a global variable to also make a list of all the
