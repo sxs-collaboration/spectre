@@ -42,18 +42,12 @@ Shell<TargetFrame>::Shell(
 
 template <typename TargetFrame>
 Domain<3, TargetFrame> Shell<TargetFrame>::create_domain() const noexcept {
-  std::vector<std::array<size_t, 8>> corners{
-      {{7, 5, 8, 6, 15, 13, 16, 14}},   // Upper z
-      {{4, 2, 3, 1, 12, 10, 11, 9}},    // Lower z
-      {{4, 8, 2, 6, 12, 16, 10, 14}},   // Upper y
-      {{7, 3, 5, 1, 15, 11, 13, 9}},    // Lower y
-      {{1, 2, 5, 6, 9, 10, 13, 14}},    // Upper x
-      {{4, 3, 8, 7, 12, 11, 16, 15}}};  // Lower x
   std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
       coord_maps = wedge_coordinate_maps<TargetFrame>(
-          inner_radius_, outer_radius_, 1.0, use_equiangular_map_);
-  return Domain<3, TargetFrame>{std::move(coord_maps), corners};
+          inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_);
+  return Domain<3, TargetFrame>{std::move(coord_maps),
+                                corners_for_layered_domains(1)};
 }
 
 template <typename TargetFrame>
