@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>       // IWYU pragma: keep
 #include <patchlevel.h>  // for PY_MAJOR_VERSION
 #include <string>
 

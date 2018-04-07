@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <codecvt>  // IWYU pragma: keep
+#include <locale>   // IWYU pragma: keep
 #include <string>
 #include <vector>
 
