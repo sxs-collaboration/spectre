@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 #include <array>
+#include <cstddef>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -17,6 +18,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "Utilities/TMPL.hpp"
@@ -1076,4 +1078,18 @@ struct TestFunctions {
   }
 };
 TestFunctions test_functions{};
+
+static_assert(cpp17::is_same_v<tt::identity_t<double>, double>,
+              "Failed testing tt::identity_t");
+static_assert(cpp17::is_same_v<tt::identity_t<double, 10>, double>,
+              "Failed testing tt::identity_t");
+template <typename = std::make_index_sequence<3>, typename...>
+struct IdentityPackExample;
+
+/// [example_identity_t]
+template <size_t... Is>
+struct IdentityPackExample<std::index_sequence<Is...>> {
+  using type = std::tuple<tt::identity_t<double, Is>...>;
+};
+/// [example_identity_t]
 }  // namespace

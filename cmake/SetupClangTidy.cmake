@@ -17,7 +17,7 @@
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp,-google-default-arguments")
+set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor")
 
 if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   string(

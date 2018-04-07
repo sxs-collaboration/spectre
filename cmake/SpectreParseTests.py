@@ -13,6 +13,7 @@ allowed_tags = [
                 "ControlSystem",
                 "DataStructures",
                 "Domain",
+                "EquationsOfState",
                 "ErrorHandling",
                 "Evolution",
                 "GeneralizedHarmonic",

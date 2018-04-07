@@ -51,7 +51,7 @@ services:
 # We also have separate targets for running shell scripts that enforce what
 # would normally be done as pre-push hooks, CHECK_COMMITS and CHECK_FILES
 #
-# We run two static analyzers, cppcheck and clang-tidy.
+# We run two static analyzers, and clang-tidy.
 #
 # NOTE: The static analysis targets are run first since these are typically
 #       fast to run and provide the most useful feedback.
@@ -77,14 +77,6 @@ matrix:
   - os: linux
     dist: trusty
     env: RUN_IWYU=true BUILD_TYPE=Debug
-    compiler: clang
-  - os: linux
-    dist: trusty
-    env: RUN_CPPCHECK=true BUILD_TYPE=Release
-    compiler: clang
-  - os: linux
-    dist: trusty
-    env: RUN_CPPCHECK=true BUILD_TYPE=Debug
     compiler: clang
   - os: linux
     dist: trusty

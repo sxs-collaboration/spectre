@@ -101,6 +101,11 @@
  */
 
 /*!
+ * \defgroup EquationsOfStateGroup Equations of State
+ * \brief The various available equations of state
+ */
+
+/*!
  * \defgroup ErrorHandlingGroup Error Handling
  * Macros and functions used for handling errors
  */
