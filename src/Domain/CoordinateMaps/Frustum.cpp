@@ -4,13 +4,16 @@
 #include "Domain/CoordinateMaps/Frustum.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <pup.h>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -18,9 +21,11 @@
 namespace CoordinateMaps {
 Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  const double lower_bound, const double upper_bound,
-                 OrientationMap<3> orientation_of_frustum) noexcept
+                 OrientationMap<3> orientation_of_frustum,
+                 const bool with_equiangular_map) noexcept
     // clang-tidy: trivially copyable
-    : orientation_of_frustum_(std::move(orientation_of_frustum)) {  // NOLINT
+    : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
+      with_equiangular_map_(with_equiangular_map) {
   const double& lower_x_lower_base = face_vertices[0][0];
   const double& lower_y_lower_base = face_vertices[0][1];
   const double& upper_x_lower_base = face_vertices[1][0];
@@ -72,13 +77,15 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
   const ReturnType& xi = source_coords[0];
   const ReturnType& eta = source_coords[1];
   const ReturnType& zeta = source_coords[2];
+  const ReturnType cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
 
   ReturnType physical_x =
-      0.5 * ((sum_midpoint_x_ + sum_half_length_x_ * xi) +
-             (dif_midpoint_x_ + dif_half_length_x_ * xi) * zeta);
+      0.5 * ((sum_midpoint_x_ + sum_half_length_x_ * cap_xi) +
+             (dif_midpoint_x_ + dif_half_length_x_ * cap_xi) * zeta);
   ReturnType physical_y =
-      0.5 * ((sum_midpoint_y_ + sum_half_length_y_ * eta) +
-             (dif_midpoint_y_ + dif_half_length_y_ * eta) * zeta);
+      0.5 * ((sum_midpoint_y_ + sum_half_length_y_ * cap_eta) +
+             (dif_midpoint_y_ + dif_half_length_y_ * cap_eta) * zeta);
   ReturnType physical_z = midpoint_z_ + half_length_z_ * zeta;
 
   std::array<ReturnType, 3> physical_coords{
@@ -104,6 +111,10 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::inverse(
   coords[1] =
       (2.0 * coords[1] - sum_midpoint_y_ - dif_midpoint_y_ * coords[2]) /
       (sum_half_length_y_ + dif_half_length_y_ * coords[2]);
+  if (with_equiangular_map_) {
+    coords[0] = atan(coords[0]) / M_PI_4;
+    coords[1] = atan(coords[1]) / M_PI_4;
+  }
   return coords;
 }
 
@@ -114,41 +125,55 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   const ReturnType& xi = source_coords[0];
   const ReturnType& eta = source_coords[1];
   const ReturnType& zeta = source_coords[2];
-  const auto zero = make_with_value<ReturnType>(xi, 0.0);
-
+  const ReturnType& cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType cap_xi_deriv = with_equiangular_map_
+                                      ? M_PI_4 * (1.0 + square(cap_xi))
+                                      : make_with_value<ReturnType>(xi, 1.0);
+  const ReturnType cap_eta_deriv = with_equiangular_map_
+                                       ? M_PI_4 * (1.0 + square(cap_eta))
+                                       : make_with_value<ReturnType>(eta, 1.0);
   auto jacobian_matrix =
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
           dereference_wrapper(source_coords[0]), 0.0);
 
   // dX_dxi
-  std::array<ReturnType, 3> dX_dlogical = discrete_rotation(
-      orientation_of_frustum_,
-      std::array<ReturnType, 3>{
-          {0.5 * (sum_half_length_x_ + dif_half_length_x_ * zeta), zero,
-           zero}});
-  get<0, 0>(jacobian_matrix) = dX_dlogical[0];
-  get<1, 0>(jacobian_matrix) = dX_dlogical[1];
-  get<2, 0>(jacobian_matrix) = dX_dlogical[2];
+  const auto mapped_xi =
+      orientation_of_frustum_.inverse_map()(Direction<3>::upper_xi());
+  const size_t mapped_dim_0 = orientation_of_frustum_.inverse_map()(0);
+  jacobian_matrix.get(mapped_dim_0, 0) =
+      0.5 * (sum_half_length_x_ + dif_half_length_x_ * zeta);
+  if (with_equiangular_map_) {
+    jacobian_matrix.get(mapped_dim_0, 0) *= cap_xi_deriv;
+  }
+  if (mapped_xi.side() == Side::Lower) {
+    jacobian_matrix.get(mapped_dim_0, 0) *= -1.0;
+  }
 
   // dX_deta
-  dX_dlogical = discrete_rotation(
-      orientation_of_frustum_,
-      std::array<ReturnType, 3>{
-          {zero, 0.5 * (sum_half_length_y_ + dif_half_length_y_ * zeta),
-           zero}});
-  get<0, 1>(jacobian_matrix) = dX_dlogical[0];
-  get<1, 1>(jacobian_matrix) = dX_dlogical[1];
-  get<2, 1>(jacobian_matrix) = dX_dlogical[2];
+  const auto mapped_eta =
+      orientation_of_frustum_.inverse_map()(Direction<3>::upper_eta());
+  const size_t mapped_dim_1 = orientation_of_frustum_.inverse_map()(1);
+  jacobian_matrix.get(mapped_dim_1, 1) =
+      0.5 * (sum_half_length_y_ + dif_half_length_y_ * zeta);
+  if (with_equiangular_map_) {
+    jacobian_matrix.get(mapped_dim_1, 1) *= cap_eta_deriv;
+  }
+  if (mapped_eta.side() == Side::Lower) {
+    jacobian_matrix.get(mapped_dim_1, 1) *= -1.0;
+  }
 
   // dX_dzeta
-  dX_dlogical[0] = 0.5 * (dif_midpoint_x_ + dif_half_length_x_ * xi);
-  dX_dlogical[1] = 0.5 * (dif_midpoint_y_ + dif_half_length_y_ * eta);
-  dX_dlogical[2] = make_with_value<ReturnType>(xi, half_length_z_);
-  dX_dlogical =
-      discrete_rotation(orientation_of_frustum_, std::move(dX_dlogical));
-  get<0, 2>(jacobian_matrix) = dX_dlogical[0];
-  get<1, 2>(jacobian_matrix) = dX_dlogical[1];
-  get<2, 2>(jacobian_matrix) = dX_dlogical[2];
+  std::array<ReturnType, 3> dX_dzeta = discrete_rotation(
+      orientation_of_frustum_,
+      std::array<ReturnType, 3>{
+          {0.5 * (dif_midpoint_x_ + dif_half_length_x_ * cap_xi),
+           0.5 * (dif_midpoint_y_ + dif_half_length_y_ * cap_eta),
+           make_with_value<ReturnType>(xi, half_length_z_)}});
+
+  get<0, 2>(jacobian_matrix) = dX_dzeta[0];
+  get<1, 2>(jacobian_matrix) = dX_dzeta[1];
+  get<2, 2>(jacobian_matrix) = dX_dzeta[2];
   return jacobian_matrix;
 }
 
@@ -171,6 +196,7 @@ void Frustum::pup(PUP::er& p) noexcept {
   p | dif_half_length_y_;
   p | midpoint_z_;
   p | half_length_z_;
+  p | with_equiangular_map_;
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept {
@@ -184,7 +210,8 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept {
          lhs.sum_half_length_y_ == lhs.sum_half_length_y_ and
          lhs.dif_half_length_y_ == lhs.dif_half_length_y_ and
          lhs.midpoint_z_ == rhs.midpoint_z_ and
-         lhs.half_length_z_ == rhs.half_length_z_;
+         lhs.half_length_z_ == rhs.half_length_z_ and
+         lhs.with_equiangular_map_ == rhs.with_equiangular_map_;
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept {

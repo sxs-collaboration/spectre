@@ -30,13 +30,16 @@ namespace CoordinateMaps {
 /// (2.0,5.0), and with the upper base extending from (0.0,1.0) to (1.0,3.0),
 /// the corresponding value for `face_vertices` is `{{{{-2.0,3.0}}, {{2.0,5.0}},
 /// {{0.0,1.0}}, {{1.0,3.0}}}}`. The user may reorient the frustum by passing
-/// an `OrientationMap` to the constructor.
+/// an `OrientationMap` to the constructor. If `with_equiangular_map` is true,
+/// then this coordinate map applies a tangent function mapping to the logical
+/// xi and eta coordinates.
 class Frustum {
  public:
   static constexpr size_t dim = 3;
   Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
           double lower_bound, double upper_bound,
-          OrientationMap<3> orientation_of_frustum) noexcept;
+          OrientationMap<3> orientation_of_frustum,
+          bool with_equiangular_map = false) noexcept;
   Frustum() = default;
   ~Frustum() = default;
   Frustum(Frustum&&) = default;
@@ -77,6 +80,7 @@ class Frustum {
   double dif_half_length_y_{std::numeric_limits<double>::signaling_NaN()};
   double midpoint_z_{std::numeric_limits<double>::signaling_NaN()};
   double half_length_z_{std::numeric_limits<double>::signaling_NaN()};
+  bool with_equiangular_map_{false};
 };
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept;
