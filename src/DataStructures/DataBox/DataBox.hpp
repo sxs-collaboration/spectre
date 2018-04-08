@@ -792,6 +792,28 @@ SPECTRE_ALWAYS_INLINE constexpr void add_subitem_tags_to_box(
       (static_cast<void>(helper(Subtags{})), '0')...});
 }
 
+template <typename ParentTag, typename... Subtags, typename... Tags,
+          Requires<not has_subitems<ParentTag>::value> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr void mutate_subitem_tags_in_box(
+    databox_detail::TaggedDeferredTuple<Tags...>& /*data*/,
+    tmpl::list<Subtags...> /*meta*/) {}
+
+template <typename ParentTag, typename... Subtags, typename... Tags,
+          Requires<has_subitems<ParentTag>::value> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr void mutate_subitem_tags_in_box(
+    databox_detail::TaggedDeferredTuple<Tags...>& data,
+    tmpl::list<Subtags...> /*meta*/) {
+  const auto helper = [&data](auto tag_v) {
+    using tag = decltype(tag_v);
+    Subitems<ParentTag>::template create_item<tag>(
+        &::db::databox_detail::get<ParentTag>(data).mutate(),
+        &::db::databox_detail::get<tag>(data).mutate());
+  };
+
+  static_cast<void>(std::initializer_list<char>{
+      (static_cast<void>(helper(Subtags{})), '0')...});
+}
+
 template <size_t ArgsIndex, typename Tag, typename... Tags, typename... Ts>
 SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type add_item_to_box(
     std::tuple<Ts...>& tupull,
@@ -1031,7 +1053,7 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
                                               tmpl::get_source<tmpl::_1>>>,
                       tmpl::get_destination<tmpl::_1>>;
   (void)std::initializer_list<char>{
-      ((void)databox_detail::add_subitem_tags_to_box<MutateTags>(
+      ((void)databox_detail::mutate_subitem_tags_in_box<MutateTags>(
            box.data_, typename Subitems<MutateTags>::type{}),
        '0')...};
   databox_detail::reset_compute_items_after_mutate<
