@@ -63,7 +63,7 @@ Domain<3, TargetFrame> Sphere<TargetFrame>::create_domain() const noexcept {
   std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
       coord_maps = wedge_coordinate_maps<TargetFrame>(
-          inner_radius_, outer_radius_, 0.0, use_equiangular_map_);
+          inner_radius_, outer_radius_, 0.0, 1.0, use_equiangular_map_);
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::Logical, TargetFrame>(Equiangular3D{

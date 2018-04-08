@@ -8,6 +8,8 @@
 #include <random>
 
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
@@ -15,26 +17,29 @@
 namespace {
 void test_wedge3d_all_directions(const bool with_equiangular_map) {
   // Set up random number generator
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  const auto seed = std::random_device{}();
+  std::mt19937 gen(seed);
+  INFO("seed = " << seed);
   std::uniform_real_distribution<> unit_dis(0, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
-  std::uniform_real_distribution<> outer_dis(4, 7);
+  std::uniform_real_distribution<> outer_dis(5.2, 7);
   const double inner_radius = inner_dis(gen);
   CAPTURE_PRECISE(inner_radius);
   const double outer_radius = outer_dis(gen);
   CAPTURE_PRECISE(outer_radius);
-  const double sphericity = unit_dis(gen);
-  CAPTURE_PRECISE(sphericity);
+  const double inner_sphericity = unit_dis(gen);
+  CAPTURE_PRECISE(inner_sphericity);
+  const double outer_sphericity = unit_dis(gen);
+  CAPTURE_PRECISE(outer_sphericity);
 
   using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
   const std::array<WedgeHalves, 3> halves_array = {
       {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
   for (const auto& halves : halves_array) {
     for (const auto& direction : all_wedge_directions()) {
-      const CoordinateMaps::Wedge3D wedge_map(inner_radius, outer_radius,
-                                              direction, sphericity,
-                                              with_equiangular_map, halves);
+      const CoordinateMaps::Wedge3D wedge_map(
+          inner_radius, outer_radius, direction, inner_sphericity,
+          outer_sphericity, with_equiangular_map, halves);
       test_suite_for_map(wedge_map);
     }
   }
@@ -49,22 +54,22 @@ void test_wedge3d_alignment(const bool with_equiangular_map) {
 
   const auto wedge_directions = all_wedge_directions();
   const CoordinateMaps::Wedge3D map_upper_zeta(
-      inner_r, outer_r, wedge_directions[0], 0,
+      inner_r, outer_r, wedge_directions[0], 0.0, 1.0,
       with_equiangular_map);  // Upper Z wedge
   const CoordinateMaps::Wedge3D map_upper_eta(
-      inner_r, outer_r, wedge_directions[2], 0,
+      inner_r, outer_r, wedge_directions[2], 0.0, 1.0,
       with_equiangular_map);  // Upper Y wedge
   const CoordinateMaps::Wedge3D map_upper_xi(
-      inner_r, outer_r, wedge_directions[4], 0,
+      inner_r, outer_r, wedge_directions[4], 0.0, 1.0,
       with_equiangular_map);  // Upper X Wedge
   const CoordinateMaps::Wedge3D map_lower_zeta(
-      inner_r, outer_r, wedge_directions[1], 0,
+      inner_r, outer_r, wedge_directions[1], 0.0, 1.0,
       with_equiangular_map);  // Lower Z wedge
   const CoordinateMaps::Wedge3D map_lower_eta(
-      inner_r, outer_r, wedge_directions[3], 0,
+      inner_r, outer_r, wedge_directions[3], 0.0, 1.0,
       with_equiangular_map);  // Lower Y wedge
   const CoordinateMaps::Wedge3D map_lower_xi(
-      inner_r, outer_r, wedge_directions[5], 0,
+      inner_r, outer_r, wedge_directions[5], 0.0, 1.0,
       with_equiangular_map);  // Lower X wedge
   const std::array<double, 3> lowest_corner{{-1.0, -1.0, -1.0}};
   const std::array<double, 3> along_xi{{1.0, -1.0, -1.0}};
@@ -129,8 +134,9 @@ void test_wedge3d_alignment(const bool with_equiangular_map) {
 
 void test_wedge3d_random_radii(const bool with_equiangular_map) {
   // Set up random number generator:
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  const auto seed = std::random_device{}();
+  std::mt19937 gen(seed);
+  INFO("seed = " << seed);
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(4, 7);
@@ -168,22 +174,22 @@ void test_wedge3d_random_radii(const bool with_equiangular_map) {
   const auto wedge_directions = all_wedge_directions();
   const CoordinateMaps::Wedge3D map_lower_xi(
       random_inner_radius_lower_xi, random_outer_radius_lower_xi,
-      wedge_directions[5], 0, with_equiangular_map);
+      wedge_directions[5], 0.0, 1.0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_lower_eta(
       random_inner_radius_lower_eta, random_outer_radius_lower_eta,
-      wedge_directions[3], 0, with_equiangular_map);
+      wedge_directions[3], 0.0, 1.0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_lower_zeta(
       random_inner_radius_lower_zeta, random_outer_radius_lower_zeta,
-      wedge_directions[1], 0, with_equiangular_map);
+      wedge_directions[1], 0.0, 1.0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_upper_xi(
       random_inner_radius_upper_xi, random_outer_radius_upper_xi,
-      wedge_directions[4], 0, with_equiangular_map);
+      wedge_directions[4], 0.0, 1.0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_upper_eta(
       random_inner_radius_upper_eta, random_outer_radius_upper_eta,
-      wedge_directions[2], 0, with_equiangular_map);
+      wedge_directions[2], 0.0, 1.0, with_equiangular_map);
   const CoordinateMaps::Wedge3D map_upper_zeta(
       random_inner_radius_upper_zeta, random_outer_radius_upper_zeta,
-      wedge_directions[0], 0, with_equiangular_map);
+      wedge_directions[0], 0.0, 1.0, with_equiangular_map);
   CHECK(map_lower_xi(outer_corner)[0] ==
         approx(-random_outer_radius_lower_xi / sqrt(3.0)));
   CHECK(map_lower_eta(outer_corner)[1] ==
@@ -255,4 +261,66 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.RandomRadii.Equiangular",
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.RandomRadii.Equidistant",
                   "[Domain][Unit]") {
   test_wedge3d_random_radii(false);
+}
+
+// [[OutputRegex, The radius of the inner surface must be greater than zero.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RadiusInner",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_wedge3d =
+      CoordinateMaps::Wedge3D(-0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true);
+  static_cast<void>(failed_wedge3d);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Sphericity of the inner surface must be between 0 and 1]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericityInner",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_wedge3d =
+      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, -0.2, 1.0, true);
+  static_cast<void>(failed_wedge3d);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Sphericity of the outer surface must be between 0 and 1]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericityOuter",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_wedge3d =
+      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, -0.2, true);
+  static_cast<void>(failed_wedge3d);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The radius of the outer surface must be greater than the
+// radius of the inner surface.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RadiusOuter",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_wedge3d =
+      CoordinateMaps::Wedge3D(4.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true);
+  static_cast<void>(failed_wedge3d);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The arguments passed into the constructor for Wedge3D result
+// in an object where the outer surface is pierced by the inner surface.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.PiercedSurface",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_wedge3d =
+      CoordinateMaps::Wedge3D(3.0, 4.0, OrientationMap<3>{}, 1.0, 0.0, true);
+  static_cast<void>(failed_wedge3d);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }

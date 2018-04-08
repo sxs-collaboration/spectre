@@ -25,17 +25,15 @@ namespace CoordinateMaps {
  *
  * \details The mapping that goes from a reference cube to a three-dimensional
  *  wedge centered on a coordinate axis covering a volume between an inner
- *  surface and outer surface. The inner surface can be given a curvature
+ *  surface and outer surface. Each surface can be given a curvature
  *  between flat (a sphericity of 0) or spherical (a sphericity of 1).
- *  The sphericity of the outer surface is currently constrained to have a
- *  value of 1.
  *
  *  The first two logical coordinates correspond to the two angular coordinates,
  *  and the third to the radial coordinate.
  *
  *  The Wedge3D map is constructed by linearly interpolating between a bulged
- *  face of radius `radius_of_inner_surface` to a spherical face of
- *  radius `radius_of_outer_surface`, where the radius of the bulged face
+ *  face of radius `radius_of_inner_surface` to a bulged face of
+ *  radius `radius_of_outer_surface`, where the radius of each bulged face
  *  is defined to be the radius of the sphere circumscribing the bulge.
  *
  *  We make a choice here as to whether we wish to use the logical coordinates
@@ -201,16 +199,19 @@ class Wedge3D {
 
   /*!
    * Constructs a 3D wedge.
-   * \param radius_outer Radius of the spherical surface
    * \param radius_inner Distance from the origin to one of the
-   * corners which lie on the inner surface, which may be anything between flat
-   * and spherical.
+   * corners which lie on the inner surface.
+   * \param radius_outer Distance from the origin to one of the
+   * corners which lie on the outer surface.
    * \param orientation_of_wedge The orientation of the desired wedge relative
    * to the orientation of the default wedge which is a wedge that has its
    * curved surfaces pierced by the upper-z axis. The logical xi and eta
    * coordinates point in the cartesian x and y directions, respectively.
    * \param sphericity_inner Value between 0 and 1 which determines
    * whether the inner surface is flat (value of 0), spherical (value of 1) or
+   * somewhere in between
+   * \param sphericity_outer Value between 0 and 1 which determines
+   * whether the outer surface is flat (value of 0), spherical (value of 1) or
    * somewhere in between
    * \param with_equiangular_map Determines whether to apply a tangent function
    * mapping to the logical coordinates (for `true`) or not (for `false`).
@@ -222,7 +223,7 @@ class Wedge3D {
    */
   Wedge3D(double radius_inner, double radius_outer,
           OrientationMap<3> orientation_of_wedge, double sphericity_inner,
-          bool with_equiangular_map,
+          double sphericity_outer, bool with_equiangular_map,
           WedgeHalves halves_to_use = WedgeHalves::Both) noexcept;
 
   Wedge3D() = default;
@@ -263,7 +264,7 @@ class Wedge3D {
   double radius_outer_{std::numeric_limits<double>::signaling_NaN()};
   OrientationMap<3> orientation_of_wedge_{};
   double sphericity_inner_{std::numeric_limits<double>::signaling_NaN()};
-  double sphericity_outer_{1.0};
+  double sphericity_outer_{std::numeric_limits<double>::signaling_NaN()};
   bool with_equiangular_map_ = false;
   WedgeHalves halves_to_use_ = WedgeHalves::Both;
   double scaled_frustum_zero_{std::numeric_limits<double>::signaling_NaN()};

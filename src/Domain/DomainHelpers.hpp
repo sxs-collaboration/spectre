@@ -70,4 +70,5 @@ void set_periodic_boundaries(
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(double inner_radius, double outer_radius,
-                      double sphericity, bool use_equiangular_map) noexcept;
+                      double inner_sphericity, double outer_sphericity,
+                      bool use_equiangular_map) noexcept;

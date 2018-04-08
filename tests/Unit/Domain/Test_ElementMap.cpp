@@ -176,7 +176,7 @@ void test_element_map<3>() {
   // test with rotation and wedge
   test_element_impl(
       true, element_id, affine_map, first_map,
-      CoordinateMaps::Wedge3D{3.0, 7.0, OrientationMap<3>{}, 0.8, true},
+      CoordinateMaps::Wedge3D{3.0, 7.0, OrientationMap<3>{}, 0.8, 0.9, true},
       logical_point_double, logical_point_dv);
 }
 }  // namespace

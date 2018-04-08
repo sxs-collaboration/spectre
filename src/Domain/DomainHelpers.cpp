@@ -326,37 +326,38 @@ void set_periodic_boundaries(
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                      const double sphericity,
+                      const double inner_sphericity,
+                      const double outer_sphericity,
                       const bool use_equiangular_map) noexcept {
   using Wedge3DMap = CoordinateMaps::Wedge3D;
   return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-      Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, sphericity,
-                 use_equiangular_map},
+      Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+                 inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
                      {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                       Direction<3>::lower_zeta()}}),
-                 sphericity, use_equiangular_map},
+                 inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
                      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
                       Direction<3>::upper_xi()}}),
-                 sphericity, use_equiangular_map},
+                 inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
                      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
                       Direction<3>::lower_xi()}}),
-                 sphericity, use_equiangular_map},
+                 inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
                      {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                       Direction<3>::upper_eta()}}),
-                 sphericity, use_equiangular_map},
+                 inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
                      {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                       Direction<3>::upper_eta()}}),
-                 sphericity, use_equiangular_map});
+                 inner_sphericity, outer_sphericity, use_equiangular_map});
 }
 
 template void set_internal_boundaries(
@@ -396,10 +397,12 @@ template void set_periodic_boundaries(
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                      const double sphericity,
+                      const double inner_sphericity,
+                      const double outer_sphericity,
                       const bool use_equiangular_map) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                      const double sphericity,
+                      const double inner_sphericity,
+                      const double outer_sphericity,
                       const bool use_equiangular_map) noexcept;
