@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
 #include <memory>
 #include <tuple>
 #include <type_traits>
@@ -149,7 +151,7 @@ class Deferred {
  public:
   Deferred() = default;
   explicit Deferred(Rt t)
-      : state_(std::make_shared<Deferred_detail::simple_assoc_state<Rt>>(
+      : state_(boost::make_shared<Deferred_detail::simple_assoc_state<Rt>>(
             std::move(t))) {}
 
   constexpr const Rt& get() const { return state_->get(); }
@@ -157,9 +159,9 @@ class Deferred {
   constexpr Rt& mutate() { return state_->mutate(); }
 
  private:
-  std::shared_ptr<Deferred_detail::assoc_state<Rt>> state_;
+  boost::shared_ptr<Deferred_detail::assoc_state<Rt>> state_;
 
-  explicit Deferred(std::shared_ptr<Deferred_detail::assoc_state<Rt>>&& state)
+  explicit Deferred(boost::shared_ptr<Deferred_detail::assoc_state<Rt>>&& state)
       : state_(std::move(state)) {}
 
   // clang-tidy: redundant declaration
@@ -212,7 +214,7 @@ class Deferred {
  */
 template <typename Rt, typename Fp, typename... Args>
 Deferred<Rt> make_deferred(Fp f, Args&&... args) {
-  return Deferred<Rt>(std::make_shared<Deferred_detail::deferred_assoc_state<
+  return Deferred<Rt>(boost::make_shared<Deferred_detail::deferred_assoc_state<
                           Rt, std::decay_t<Fp>, std::decay_t<Args>...>>(
       f, std::forward<Args>(args)...));
 }
