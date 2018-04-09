@@ -682,10 +682,10 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     using this_databox =
         tmpl::at_c<databox_types,
                    iter == 0 ? tmpl::size<databox_types>::value - 1 : iter>;
-    this_databox box{};
+    this_databox* box{};
 
     try {
-      box = boost::get<this_databox>(box_);
+      box = &boost::get<this_databox>(box_);
     } catch (std::exception& e) {
       ERROR(
           "\nFailed to retrieve Databox in take_next_action:\nCaught "
@@ -698,7 +698,7 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     const auto check_if_ready = make_overloader(
         [this, &box](std::true_type /*has_is_ready*/, auto t) {
           return decltype(t)::is_ready(
-              static_cast<const this_databox&>(box),
+              static_cast<const this_databox&>(*box),
               static_cast<const tuples::TaggedTupleTypelist<inbox_tags_list>&>(
                   inboxes_),
               *const_global_cache_,
@@ -745,10 +745,10 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                   static_cast<const array_index&>(array_index_), actions_list{},
                   std::add_pointer_t<ParallelComponent>{});
             })(
-        box, typename std::tuple_size<decltype(this_action::apply(
-                 box, inboxes_, *const_global_cache_,
-                 static_cast<const array_index&>(array_index_), actions_list{},
-                 std::add_pointer_t<ParallelComponent>{}))>::type{});
+        *box, typename std::tuple_size<decltype(this_action::apply(
+                  *box, inboxes_, *const_global_cache_,
+                  static_cast<const array_index&>(array_index_), actions_list{},
+                  std::add_pointer_t<ParallelComponent>{}))>::type{});
 
     performing_action_ = false;
 #ifdef SPECTRE_CHARM_PROJECTIONS
