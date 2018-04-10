@@ -2,16 +2,21 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-\mainpage Documentation Overview
+\mainpage Introduction
 
 <div class="toc">
 Table of Contents
 <ul>
-<li class="level1"><a href="#intro_sec">Introduction </a></li>
-<li class="level1"><a href="installation.html">Installation </a></li>
-<li class="level1"><a href="installation_on_clusters.html">Installation On Clusters</a></li>
-<li class="level1"><a href="doc_coverage/index.html">Documentation Coverage </a></li>
-<li class="level1"><a href="unit-test-coverage/index.html">Unit Test Coverage </a></li>
+<li class="level1"><a href="#intro_sec">Introduction</a></li>
+<li class="level1"><a href="installation.html">Installation</a></li>
+<li class="level1"><a href="installation_on_clusters.html">Installation on clusters</a></li>
+<li class="level1"><a href="tutorials.html">User tutorials</a></li>
+<li class="level1"><a href="dev_guide.html">Dev guide</a></li>
+</ul>
+Further links
+<ul>
+<li class="level1"><a href="doc_coverage/index.html">Documentation coverage</a></li>
+<li class="level1"><a href="unit-test-coverage/index.html">Unit test coverage</a></li>
 </ul>
 </div>
 
@@ -51,20 +56,6 @@ alt="codecov"
 data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg"
 style="max-width:100%;"></a>
 
-<a
-href="https://github.com/sxs-collaboration/spectre"><img
-src="https://img.shields.io/badge/View%20%20on%20%20GitHub--blue.svg?style=social"
-alt="View on GitHub"
-data-canonical-src="https://img.shields.io/badge/View%20%20on%20%20GitHub--blue.svg?style=social"
-style="max-width:100%;"></a>
-
-<a
-href="https://github.com/sxs-collaboration/spectre/fork"><img
-src="https://img.shields.io/badge/Fork%20%20on%20%20GitHub--blue.svg?style=social"
-alt="Fork on GitHub"
-data-canonical-src="https://img.shields.io/badge/Fork%20%20on%20%20GitHub--blue.svg?style=social"
-style="max-width:100%;"></a>
-
 </p>
 \endhtmlonly
 
@@ -87,25 +78,31 @@ Navigating the Documentation {#navigate_documentation_sec}
 -----
 
 The SpECTRE documentation is organized into tutorials, developer guides, groups
-of related code, namespaces, and by files for easier navigation. For someone
-looking to run simulations with SpECTRE we recommend starting with the
-\ref tutorials "tutorials", which are located under the `Documentation` menu
-item at the top. The tutorials are designed to get users up and running with a
-simulation, and analyzing and visualizing the output. For people looking to
-contribute to SpECTRE there are tutorials under the \ref dev_guide "Dev Guide"
-part of the `Documentation` menu. The dev guide includes things such as
-\ref code_review_guide "code review guidelines", how to \ref writing_unit_tests
-"write unit tests", how to \ref writing_good_dox "write documentation", as well
-as some information about C++ and the philosophy behind SpECTRE development. The
-[Reference](modules.html) sections contains groups (managed through doxygen
-groups) of related code. For example, there is a
-group for all the data structures we use, a group for utility functions and
-classes, as well as groups for coordinate maps, domain creation, and many
-others. The [Reference](modules.html) is designed to help developers discover
-existing functionality so that things are not re-implemented several times. You
-can also get an overview of the code base by namespace by visiting the
-[Namespaces](namespaces.html) section under the `Reference` menu item. Finally,
-it is also possible to browse the repository by files under the
-[Files](files.html) menu item, though it is recommended that in that case you
-browse the [GitHub repository](https://github.com/sxs-collaboration/spectre)
-directly.
+of related code, namespaces, and files for easier navigation. These can all be
+accessed by links in the menu bar at the top.
+
+- For instructions on **installing SpECTRE** on personal computers and clusters
+  consult the \ref installation "Installation" and \ref installation_on_clusters
+  "Installation on clusters" pages, respectively.
+- If you are looking to **run simulations with SpECTRE** we recommend starting
+  with the \ref tutorials "User Tutorials". The tutorials are designed to get
+  users up and running with a simulation, as well as analyzing and visualizing
+  the output.
+- For people looking to **contribute to SpECTRE** there are tutorials on the
+  \ref dev_guide "Dev Guide" page. For instance, the dev guide details the \ref
+  code_review_guide "code review guidelines", how to \ref writing_unit_tests
+  "write unit tests", how to \ref writing_good_dox "write documentation", and
+  also provides information about C++ and the philosophy behind SpECTRE
+  development.
+- The [Topics](modules.html) section under the _Reference_ menu item contains
+  groups of related code (managed through doxygen groups). For example, there is
+  a group for all the data structures we use, a group for utility functions and
+  classes, as well as groups for coordinate maps, domain creation, and many
+  others. The [Topics](modules.html) are designed to help developers discover
+  existing functionality so that things are not re-implemented several times.
+- You can also get an overview of the code base by namespace by visiting the
+  [Namespaces](namespaces.html) section under the _Reference_ menu item.
+- Finally, it is also possible to browse the repository by files under the
+  [Files](files.html) menu item, though it is recommended that in that case you
+  browse the [GitHub repository](https://github.com/sxs-collaboration/spectre)
+  directly.

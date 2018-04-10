@@ -4,14 +4,14 @@
   <navindex>
     <tab type="mainpage" visible="no" title="Documentation"/>
     <tab type="pages" visible="no" title="" intro=""/>
-    <tab type="modules" visible="no" title="Reference" intro=""/>
+    <tab type="modules" visible="no" title="Topics" intro=""/>
     <tab type="namespaces" visible="no" title="">
       <tab type="namespacelist" visible="no" title="" intro=""/>
       <tab type="namespacemembers" visible="no" title="" intro=""/>
     </tab>
     <tab type="classes" visible="no" title="">
       <tab type="classlist" visible="yes" title="" intro=""/>
-      <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> 
+      <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/>
       <tab type="hierarchy" visible="yes" title="" intro=""/>
       <tab type="classmembers" visible="yes" title="" intro=""/>
     </tab>
