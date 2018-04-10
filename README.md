@@ -1,7 +1,7 @@
 [//]: # (Distributed under the MIT License.)
 [//]: # (See LICENSE.txt for details.)
 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt)
 [![Standard](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![Build Status](https://travis-ci.org/sxs-collaboration/spectre.svg?branch=develop)](https://travis-ci.org/sxs-collaboration/spectre)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
