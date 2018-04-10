@@ -219,9 +219,7 @@ spectre_unload_modules() {
     module unload craype-hugepages8M
     module unload gsl
     module unload cray-hdf5/1.8.16
-    # uncomment the bwpy load line to run tests
     module unload bwpy
-    module unload cmake/3.9.4
     export -n SPECTRE_BOOST_ROOT
     export -n BOOST_ROOT
 
@@ -256,9 +254,7 @@ spectre_load_modules() {
     module load craype-hugepages8M
     module load gsl
     module load cray-hdf5/1.8.16
-    # uncomment the bwpy load line to run tests
-    # module load bwpy
-    module load cmake/3.9.4
+    module load bwpy
 
     # Load user modules
     module load blaze
@@ -287,7 +283,9 @@ spectre_run_cmake() {
           -D CMAKE_Fortran_COMPILER=ftn \
           -D Boost_USE_STATIC_LIBS=ON \
           -D Boost_USE_STATIC_RUNTIME=ON \
-          -D CMAKE_EXE_LINKER_FLAGS="-isystem$BOOST_ROOT/include" \
+          -D USE_SYSTEM_INCLUDE=OFF \
+          -D ENABLE_WARNINGS=OFF \
+          -D CMAKE_EXE_LINKER_FLAGS="-I$BOOST_ROOT/include" \
           -D USE_PCH=OFF \
           $SPECTRE_HOME
 }
