@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 find_package(YAMLCPP REQUIRED)
-include_directories(SYSTEM ${YAMLCPP_INCLUDE_DIRS})
+spectre_include_directories(${YAMLCPP_INCLUDE_DIRS})
 list(APPEND SPECTRE_LIBRARIES ${YAMLCPP_LIBRARIES})
 
 message(STATUS "yaml-cpp libs: " ${YAMLCPP_LIBRARIES})

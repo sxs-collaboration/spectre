@@ -6,7 +6,7 @@ find_package(HDF5 REQUIRED C)
 message(STATUS "HDF5 libs: " ${HDF5_LIBRARIES})
 message(STATUS "HDF5 incl: " ${HDF5_INCLUDE_DIRS})
 message(STATUS "HDF5 vers: " ${HDF5_VERSION})
-include_directories(SYSTEM ${HDF5_INCLUDE_DIRS})
+spectre_include_directories(${HDF5_INCLUDE_DIRS})
 list(APPEND SPECTRE_LIBRARIES ${HDF5_LIBRARIES})
 
 file(APPEND

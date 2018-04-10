@@ -3,7 +3,7 @@
 
 find_package(Blaze 3.2 REQUIRED)
 
-include_directories(SYSTEM "${BLAZE_INCLUDE_DIR}")
+spectre_include_directories("${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze incl: ${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze vers: ${BLAZE_VERSION}")
 
