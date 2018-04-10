@@ -231,7 +231,7 @@ struct reduce_threaded_method {
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
-    local_nodegroup.template threaded_single_action<nodegroup_threaded_receive>(
+    local_nodegroup.template threaded_action<nodegroup_threaded_receive>(
         array_index);
     return std::forward_as_tuple(std::move(box));
   }
