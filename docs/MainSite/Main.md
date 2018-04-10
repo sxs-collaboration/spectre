@@ -20,9 +20,9 @@ Table of Contents
 <p>
 <a
 href="https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt"><img
-src="https://camo.githubusercontent.com/b0224997019dec4e51d692c722ea9bee2818c837/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f6c6963656e73652f6d6173686170652f6170697374617475732e737667"
+src="https://img.shields.io/badge/license-MIT-blue.svg"
 alt="license"
-data-canonical-src="https://img.shields.io/github/license/mashape/apistatus.svg"
+data-canonical-src="https://img.shields.io/badge/license-MIT-blue.svg"
 style="max-width:100%;"></a>
 
 <a href="https://en.wikipedia.org/wiki/C%2B%2B#Standardization"
