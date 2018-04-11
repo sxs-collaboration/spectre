@@ -5626,6 +5626,8 @@
     { include: ["<boost/iterator/iterator_facade.hpp>", public, "<boost/iterator/transform_iterator.hpp>", public ] },
     { include: ["<boost/range/detail/combine_cxx11.hpp>", "private", "<boost/range/combine.hpp>", "public"]},
     { include: ["<boost/variant/variant.hpp>", "public", "<boost/variant.hpp>", "public"]},
+    { include: ["<boost/variant/get.hpp>", "public",
+                "<boost/variant.hpp>", "public"]},
     { include: ["<boost/parameter/name.hpp>", public,
                 "<boost/preprocessor/repetition/repeat.hpp>", public]},
     { include: ["<boost/preprocessor/control/iif.hpp>", public,

@@ -7,6 +7,9 @@
 #pragma once
 
 #include <boost/variant.hpp>
+#include <initializer_list>
+#include <pup.h>
+#include <utility>
 
 #include "Utilities/TypeTraits.hpp"
 
@@ -33,3 +36,36 @@ struct make_boost_variant_over_impl<Sequence<Ts...>> {
 template <typename Sequence>
 using make_boost_variant_over =
     typename detail::make_boost_variant_over_impl<Sequence>::type;
+
+namespace BoostVariant_detail {
+// clang-tidy: do not use non-const references
+template <class T, class... Ts>
+char pup_helper(int& index, PUP::er& p, boost::variant<Ts...>& var,  // NOLINT
+                const int send_index) {
+  if (index == send_index) {
+    if (p.isUnpacking()) {
+      T t{};
+      p | t;
+      var = std::move(t);
+    } else {
+      p | boost::get<T>(var);
+    }
+  }
+  index++;
+  return '0';
+}
+}  // namespace BoostVariant_detail
+
+template <class... Ts>
+void pup(PUP::er& p, boost::variant<Ts...>& var) {  // NOLINT
+  int index = 0;
+  int send_index = var.which();
+  p | send_index;
+  (void)std::initializer_list<char>{
+      BoostVariant_detail::pup_helper<Ts>(index, p, var, send_index)...};
+}
+
+template <typename... Ts>
+inline void operator|(PUP::er& p, boost::variant<Ts...>& d) {  // NOLINT
+  pup(p, d);
+}
