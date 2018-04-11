@@ -15,42 +15,38 @@
 
 namespace DomainCreators {
 namespace DomainCreators_detail {
+using Affine = CoordinateMaps::Affine;
+using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Equiangular = CoordinateMaps::Equiangular;
+using Equiangular2D = CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
+using Equiangular3D =
+    CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+
 template <size_t Dim>
 void register_with_charm();
 
 template <>
 void register_with_charm<1>() {
-  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::Affine>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine>));
 }
 
 template <>
 void register_with_charm<2>() {
-  PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial,
-                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                     CoordinateMaps::Affine>>));
   PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<
-                 Frame::Logical, Frame::Inertial,
-                 CoordinateMaps::ProductOf2Maps<CoordinateMaps::Equiangular,
-                                                CoordinateMaps::Equiangular>>));
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+  PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Wedge2D>));
 }
 template <>
 void register_with_charm<3>() {
-  PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial,
-                      CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
-                                                     CoordinateMaps::Affine,
-                                                     CoordinateMaps::Affine>>));
   PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<
-                 Frame::Logical, Frame::Inertial,
-                 CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
-                                                CoordinateMaps::Equiangular,
-                                                CoordinateMaps::Equiangular>>));
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
+  PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
 
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Wedge3D>));
