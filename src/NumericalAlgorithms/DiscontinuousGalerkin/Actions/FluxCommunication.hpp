@@ -27,6 +27,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/Invoke.hpp"
+#include "Time/Tags.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -329,12 +331,12 @@ struct SendDataForFluxes {
           packaged_data, boundary_extents, dimension, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
-        receiver_proxy[neighbor]
-            .template receive_data<
-                typename ComputeBoundaryFlux<Metavariables>::FluxesTag>(
-                time_id, std::make_pair(std::make_pair(direction_from_neighbor,
-                                                       element.id()),
-                                        neighbor_packaged_data));
+        Parallel::receive_data<
+            typename ComputeBoundaryFlux<Metavariables>::FluxesTag>(
+            receiver_proxy[neighbor], time_id,
+            std::make_pair(
+                std::make_pair(direction_from_neighbor, element.id()),
+                neighbor_packaged_data));
 
         mortars_local_data.emplace(std::make_pair(direction, neighbor),
                                    local_data);

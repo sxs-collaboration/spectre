@@ -19,6 +19,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Requires.hpp"
@@ -208,8 +209,7 @@ struct reduce_to_nodegroup {
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
     /// [simple_action_with_args]
-    local_nodegroup.template simple_action<nodegroup_receive>(
-        std::make_tuple(array_index));
+    Parallel::simple_action<nodegroup_receive>(local_nodegroup, array_index);
     /// [simple_action_with_args]
     return std::forward_as_tuple(std::move(box));
   }
@@ -231,8 +231,8 @@ struct reduce_threaded_method {
         *(Parallel::get_parallel_component<
               NodegroupParallelComponent<Metavariables>>(cache)
               .ckLocalBranch());
-    local_nodegroup.template threaded_action<nodegroup_threaded_receive>(
-        array_index);
+    Parallel::threaded_action<nodegroup_threaded_receive>(local_nodegroup,
+                                                          array_index);
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -271,10 +271,10 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
     if (next_phase == Metavariables::Phase::ArrayToNodegroup) {
-      array_proxy.template simple_action<reduce_to_nodegroup>();
+      Parallel::simple_action<reduce_to_nodegroup>(array_proxy);
     }
     if (next_phase == Metavariables::Phase::TestThreadedMethod) {
-      array_proxy.template simple_action<reduce_threaded_method>();
+      Parallel::simple_action<reduce_threaded_method>(array_proxy);
     }
   }
 };
@@ -292,8 +292,9 @@ struct NodegroupParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
-        .template simple_action<nodegroup_initialize>();
+    Parallel::simple_action<nodegroup_initialize>(
+        Parallel::get_parallel_component<NodegroupParallelComponent>(
+            local_cache));
   }
 
   static void execute_next_global_actions(
@@ -304,10 +305,10 @@ struct NodegroupParallelComponent {
         Parallel::get_parallel_component<NodegroupParallelComponent>(
             local_cache);
     if (next_phase == Metavariables::Phase::CheckFirstResult) {
-      nodegroup_proxy.template simple_action<nodegroup_check_first_result>();
+      Parallel::simple_action<nodegroup_check_first_result>(nodegroup_proxy);
     }
     if (next_phase == Metavariables::Phase::CheckThreadedResult) {
-      nodegroup_proxy.template simple_action<nodegroup_check_threaded_result>();
+      Parallel::simple_action<nodegroup_check_threaded_result>(nodegroup_proxy);
     }
   }
 };

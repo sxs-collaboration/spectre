@@ -20,6 +20,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -282,8 +283,9 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
-      Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
-          .template simple_action<ArrayReduce>();
+      Parallel::simple_action<ArrayReduce>(
+          Parallel::get_parallel_component<ArrayParallelComponent>(
+              local_cache));
     }
   }
 };

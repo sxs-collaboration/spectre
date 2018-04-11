@@ -9,6 +9,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -44,8 +45,8 @@ struct Component {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<Component>(local_cache)
-        .template simple_action<error_size_zero>();
+    Parallel::simple_action<error_size_zero>(
+        Parallel::get_parallel_component<Component>(local_cache));
   }
 
   static void execute_next_global_actions(

@@ -48,7 +48,8 @@ void simple_action(Proxy&& proxy) noexcept {
 template <typename Action, typename Proxy, typename Arg0, typename... Args>
 void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
   proxy.template simple_action<Action>(
-      std::make_tuple(std::forward<Arg0>(arg0), std::forward<Args>(args)...));
+      std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
+          std::forward<Arg0>(arg0), std::forward<Args>(args)...));
 }
 // @}
 

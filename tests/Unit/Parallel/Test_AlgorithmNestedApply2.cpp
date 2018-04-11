@@ -9,6 +9,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -40,9 +41,8 @@ struct error_call_single_action_from_action {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    Parallel::get_parallel_component<ParallelComponent>(cache)
-        .ckLocal()
-        ->template simple_action<another_action>();
+    Parallel::simple_action<another_action>(*(
+        Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal()));
   }
 };
 
@@ -58,9 +58,8 @@ struct Component {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<Component>(local_cache)
-        .ckLocal()
-        ->template simple_action<error_call_single_action_from_action>();
+    Parallel::simple_action<error_call_single_action_from_action>(
+        *(Parallel::get_parallel_component<Component>(local_cache).ckLocal()));
   }
 
   static void execute_next_global_actions(

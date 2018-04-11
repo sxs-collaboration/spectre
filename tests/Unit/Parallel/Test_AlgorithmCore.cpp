@@ -22,6 +22,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -187,8 +188,8 @@ struct NoOpsComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<NoOpsComponent>(local_cache)
-        .template simple_action<no_op_test::initialize>();
+    Parallel::simple_action<no_op_test::initialize>(
+        Parallel::get_parallel_component<NoOpsComponent>(local_cache));
   }
 
   static void execute_next_global_actions(
@@ -201,8 +202,8 @@ struct NoOpsComponent {
           .perform_algorithm();
       /// [perform_algorithm]
     } else if (next_phase == Metavariables::Phase::NoOpsFinish) {
-      Parallel::get_parallel_component<NoOpsComponent>(local_cache)
-          .template simple_action<no_op_test::finalize>();
+      Parallel::simple_action<no_op_test::finalize>(
+          Parallel::get_parallel_component<NoOpsComponent>(local_cache));
     }
   }
 };
@@ -335,8 +336,8 @@ struct MutateComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& cache = *(global_cache.ckLocalBranch());
     /// [simple_action_call]
-    Parallel::get_parallel_component<MutateComponent>(cache)
-        .template simple_action<add_remove_test::initialize>();
+    Parallel::simple_action<add_remove_test::initialize>(
+        Parallel::get_parallel_component<MutateComponent>(cache));
     /// [simple_action_call]
   }
 
@@ -348,11 +349,11 @@ struct MutateComponent {
       Parallel::get_parallel_component<MutateComponent>(local_cache)
           .perform_algorithm();
     } else if (next_phase == Metavariables::Phase::MutateFinish) {
-      Parallel::get_parallel_component<MutateComponent>(local_cache)
-          .template simple_action<add_remove_test::test_args>(
-              std::make_tuple(4.82937, std::vector<double>{3.2, -8.4, 7.5}));
-      Parallel::get_parallel_component<MutateComponent>(local_cache)
-          .template simple_action<add_remove_test::finalize>();
+      Parallel::simple_action<add_remove_test::test_args>(
+          Parallel::get_parallel_component<MutateComponent>(local_cache),
+          4.82937, std::vector<double>{3.2, -8.4, 7.5});
+      Parallel::simple_action<add_remove_test::finalize>(
+          Parallel::get_parallel_component<MutateComponent>(local_cache));
     }
   }
 };
@@ -482,8 +483,8 @@ struct ReceiveComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<ReceiveComponent>(local_cache)
-        .template simple_action<receive_data_test::initialize>();
+    Parallel::simple_action<receive_data_test::initialize>(
+        Parallel::get_parallel_component<ReceiveComponent>(local_cache));
   }
 
   static void execute_next_global_actions(
@@ -497,13 +498,13 @@ struct ReceiveComponent {
       for (TestAlgorithmArrayInstance instance{0};
            not(instance == TestAlgorithmArrayInstance{5}); ++instance) {
         int dummy_int = 10;
-        Parallel::get_parallel_component<ReceiveComponent>(local_cache)
-            .template receive_data<receive_data_test::IntReceiveTag>(instance,
-                                                                     dummy_int);
+        Parallel::receive_data<receive_data_test::IntReceiveTag>(
+            Parallel::get_parallel_component<ReceiveComponent>(local_cache),
+            instance, dummy_int);
       }
     } else if (next_phase == Metavariables::Phase::ReceiveFinish) {
-      Parallel::get_parallel_component<ReceiveComponent>(local_cache)
-          .template simple_action<receive_data_test::finalize>();
+      Parallel::simple_action<receive_data_test::finalize>(
+          Parallel::get_parallel_component<ReceiveComponent>(local_cache));
     }
   }
 };
@@ -594,8 +595,8 @@ struct AnyOrderComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
-        .template simple_action<add_remove_test::initialize>();
+    Parallel::simple_action<add_remove_test::initialize>(
+        Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
   }
 
   static void execute_next_global_actions(
@@ -606,8 +607,8 @@ struct AnyOrderComponent {
       Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
           .perform_algorithm();
     } else if (next_phase == Metavariables::Phase::AnyOrderFinish) {
-      Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
-          .template simple_action<any_order::finalize>();
+      Parallel::simple_action<any_order::finalize>(
+          Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
     }
   }
 };
