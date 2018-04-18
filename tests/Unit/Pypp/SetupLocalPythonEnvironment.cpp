@@ -25,8 +25,7 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
   // In the case where we run all the non-failure tests at once we must ensure
   // that we only initialize and finalize the python env once. Initialization is
   // done in the constructor of SetupLocalPythonEnvironment, while finalization
-  // is done in the constructor of RunTests by constructing a
-  // SetupLocalPythonEnvironment object and calling finalize_env on it.
+  // is done in the constructor of RunTests.
   if (not initialized) {
     Py_Initialize();
     // On some python versions init_numpy() can throw an FPE, this occurred at
