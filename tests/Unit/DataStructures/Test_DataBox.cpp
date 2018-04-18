@@ -1554,6 +1554,17 @@ class Boxed {
   T& operator*() noexcept { return *data_; }
   const T& operator*() const noexcept { return *data_; }
 
+  // clang-tidy: no non-const references
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    if (p.isUnpacking()) {
+      T t{};
+      p | t;
+      data_ = std::make_shared<T>(std::move(t));
+    } else {
+      p | *data_;
+    }
+  }
+
  private:
   std::shared_ptr<T> data_;
 };

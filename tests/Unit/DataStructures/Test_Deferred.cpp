@@ -4,6 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 #include <vector>
 
 #include "DataStructures/DataBox/Deferred.hpp"
@@ -137,6 +139,132 @@ void update_deferred() {
         (std::vector<double>{213., 1478., 1898.}));
   CHECK(initial_pointer == mutate_deferred_evil.get().data());
 }
+
+struct counting_func {
+  double operator()(double a = 1.0) const {
+    count++;
+    return 8.2 * a;
+  }
+  static int count;
+};
+
+int counting_func::count = 0;
+
+template <typename T, typename Lambda>
+Deferred<T> serialize_and_deserialize_deferred(Deferred<T>& deferred,
+                                               Lambda make_def) {
+  PUP::sizer sizer;
+  deferred.pack_unpack_lazy_function(sizer);
+  std::vector<char> data(sizer.size());
+  PUP::toMem writer(data.data());
+  deferred.pack_unpack_lazy_function(writer);
+
+  PUP::fromMem reader(data.data());
+  Deferred<T> return_deferred = make_def();
+  return_deferred.pack_unpack_lazy_function(reader);
+  return return_deferred;
+}
+
+void serialization() {
+  INFO("Testing unevaluated Deferred serialization...");
+  {
+    auto counting_func_deferred = make_deferred<double>(counting_func{});
+    CHECK(counting_func::count == 0);
+    auto counting_func_deferred_sent = serialize_and_deserialize_deferred(
+        counting_func_deferred,
+        []() { return make_deferred<double>(counting_func{}); });
+    CHECK(counting_func::count == 0);
+    CHECK(counting_func_deferred.get() == 8.2);
+    CHECK(counting_func::count == 1);
+    CHECK(counting_func_deferred_sent.get() == 8.2);
+    CHECK(counting_func::count == 2);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+    counting_func::count = 0;
+  }
+  {
+    auto counting_func_deferred = make_deferred<double>(counting_func{}, 2.0);
+    CHECK(counting_func::count == 0);
+    auto counting_func_deferred_sent = serialize_and_deserialize_deferred(
+        counting_func_deferred,
+        []() { return make_deferred<double>(counting_func{}, 2.0); });
+    CHECK(counting_func::count == 0);
+    CHECK(counting_func_deferred.get() == 16.4);
+    CHECK(counting_func::count == 1);
+    CHECK(counting_func_deferred_sent.get() == 16.4);
+    CHECK(counting_func::count == 2);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+
+    update_deferred_args(make_not_null(&counting_func_deferred),
+                         counting_func{}, 3.0);
+    CHECK(counting_func::count == 2);
+    CHECK(approx(counting_func_deferred.get()) == 24.6);
+    CHECK(counting_func::count == 3);
+    CHECK(counting_func_deferred_sent.get() == 16.4);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+    CHECK(counting_func::count == 3);
+
+    update_deferred_args(make_not_null(&counting_func_deferred_sent),
+                         counting_func{}, 4.0);
+    CHECK(counting_func::count == 3);
+    CHECK(approx(counting_func_deferred.get()) == 24.6);
+    CHECK(counting_func::count == 3);
+    CHECK(counting_func_deferred_sent.get() == 32.8);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+    CHECK(counting_func::count == 4);
+    counting_func::count = 0;
+  }
+  INFO("Testing evaluated Deferred serialization...");
+  {
+    CHECK(counting_func::count == 0);
+    auto counting_func_deferred = make_deferred<double>(counting_func{});
+    CHECK(counting_func::count == 0);
+    CHECK(counting_func_deferred.get() == 8.2);
+    CHECK(counting_func::count == 1);
+    auto counting_func_deferred_sent = serialize_and_deserialize_deferred(
+        counting_func_deferred,
+        []() { return make_deferred<double>(counting_func{}); });
+    CHECK(counting_func_deferred.get() == 8.2);
+    CHECK(counting_func::count == 1);
+    CHECK(counting_func_deferred_sent.get() == 8.2);
+    CHECK(counting_func::count == 1);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+    counting_func::count = 0;
+  }
+  {
+    CHECK(counting_func::count == 0);
+    auto counting_func_deferred = make_deferred<double>(counting_func{}, 2.0);
+    CHECK(counting_func::count == 0);
+    CHECK(counting_func_deferred.get() == 16.4);
+    CHECK(counting_func::count == 1);
+    auto counting_func_deferred_sent = serialize_and_deserialize_deferred(
+        counting_func_deferred,
+        []() { return make_deferred<double>(counting_func{}, 2.0); });
+    CHECK(counting_func_deferred.get() == 16.4);
+    CHECK(counting_func::count == 1);
+    CHECK(counting_func_deferred_sent.get() == 16.4);
+    CHECK(counting_func::count == 1);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+
+    update_deferred_args(make_not_null(&counting_func_deferred),
+                         counting_func{}, 3.0);
+    CHECK(counting_func::count == 1);
+    CHECK(approx(counting_func_deferred.get()) == 24.6);
+    CHECK(counting_func::count == 2);
+    CHECK(counting_func_deferred_sent.get() == 16.4);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+    CHECK(counting_func::count == 2);
+
+    update_deferred_args(make_not_null(&counting_func_deferred_sent),
+                         counting_func{}, 4.0);
+    CHECK(counting_func::count == 2);
+    CHECK(approx(counting_func_deferred.get()) == 24.6);
+    CHECK(counting_func::count == 2);
+    CHECK(counting_func_deferred_sent.get() == 32.8);
+    CHECK(&counting_func_deferred_sent.get() != &counting_func_deferred.get());
+    CHECK(counting_func::count == 3);
+    counting_func::count = 0;
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred",
@@ -146,6 +274,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred",
   deferred_as_argument_to_deferred();
   mutating_deferred();
   update_deferred();
+  serialization();
 }
 
 // [[OutputRegex, Cannot cast the Deferred class to:
@@ -184,4 +313,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.UpdateArgsError2",
   auto& mutate = def.mutate();
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+// [[OutputRegex, Cannot send a Deferred that's not a lazily evaluated
+// function]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.PupNonfunction",
+                  "[Utilities][Unit]") {
+  ERROR_TEST();
+  Deferred<double> deferred{3.89};
+  auto data = std::make_unique<char[]>(10);
+  PUP::fromMem p{static_cast<const void* const>(data.get())};
+  deferred.pack_unpack_lazy_function(p);
 }
