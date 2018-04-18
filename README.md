@@ -23,4 +23,4 @@ gamma-ray bursts.
 
 ## Viewing Documentation
 
-The documentation can be viewed at https://github.com/sxs-collaboration/spectre.
+The documentation can be viewed at https://spectre-code.org/.
