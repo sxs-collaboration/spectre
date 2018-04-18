@@ -10,7 +10,6 @@ set(LIBRARY_SOURCES
   Test_CachedFunction.cpp
   Test_ConstantExpressions.cpp
   Test_ContainerHelpers.cpp
-  Test_Deferred.cpp
   Test_DereferenceWrapper.cpp
   Test_EqualWithinRoundoff.cpp
   Test_FakeVirtual.cpp

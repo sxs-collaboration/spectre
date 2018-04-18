@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/DataBox/Deferred.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Utilities/Deferred.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
@@ -139,7 +139,8 @@ void update_deferred() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.Deferred", "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred",
+                  "[DataStructures][Unit]") {
   simple_deferred();
   single_call_deferred();
   deferred_as_argument_to_deferred();
@@ -149,8 +150,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.Deferred", "[Utilities][Unit]") {
 
 // [[OutputRegex, Cannot cast the Deferred class to:
 // Deferred_detail::deferred_assoc_state]]
-SPECTRE_TEST_CASE("Unit.Utilities.Deferred.UpdateArgsError0",
-                  "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.UpdateArgsError0",
+                  "[DataStructures][Unit]") {
   ERROR_TEST();
   auto lazy_deferred = make_deferred<double>(lazy_function, 3.4);
   update_deferred_args<double>(&lazy_deferred, lazy_function, 5);
@@ -158,8 +159,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.Deferred.UpdateArgsError0",
 
 // [[OutputRegex, Cannot cast the Deferred class to:
 // Deferred_detail::deferred_assoc_state]]
-SPECTRE_TEST_CASE("Unit.Utilities.Deferred.UpdateArgsError1",
-                  "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.UpdateArgsError1",
+                  "[DataStructures][Unit]") {
   ERROR_TEST();
   auto lazy_deferred = make_deferred<double>(lazy_function, 3.4);
   update_deferred_args<double, decltype(lazy_function)>(&lazy_deferred, 5);
@@ -167,16 +168,16 @@ SPECTRE_TEST_CASE("Unit.Utilities.Deferred.UpdateArgsError1",
 
 // [[OutputRegex, Cannot cast the Deferred class to:
 // Deferred_detail::deferred_assoc_state]]
-SPECTRE_TEST_CASE("Unit.Utilities.Deferred.UpdateArgsError2",
-                  "[Utilities][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.UpdateArgsError2",
+                  "[DataStructures][Unit]") {
   ERROR_TEST();
   auto lazy_deferred = make_deferred<double>(lazy_function, 3.4);
   update_deferred_args<double, decltype(mutate_function)>(&lazy_deferred, 5.5);
 }
 
 // [[OutputRegex, Cannot mutate a computed Deferred]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Deferred.FailAlter",
-                               "[Utilities][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.FailAlter",
+                               "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto def = make_deferred<double>(func{});

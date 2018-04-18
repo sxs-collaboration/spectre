@@ -13,9 +13,9 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Deferred.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Utilities/Deferred.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
