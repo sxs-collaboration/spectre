@@ -29,9 +29,8 @@ struct SetupLocalPythonEnvironment {
   // In the case where we run all the non-failure tests at once we must ensure
   // that we only initialize and finalize the python env once. Initialization is
   // done in the constructor of SetupLocalPythonEnvironment, while finalization
-  // is done in the constructor of RunTests by constructing a
-  // SetupLocalPythonEnvironment object and calling finalize_env on it.
-  void finalize_env();
+  // is done in the constructor of RunTests.
+  static void finalize_env();
   /// \endcond
 
  private:
