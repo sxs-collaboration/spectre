@@ -3,7 +3,7 @@
 
 find_package(Charm 6.8.0 EXACT REQUIRED)
 
-include_directories(SYSTEM "${CHARM_INCLUDE_DIRS}")
+spectre_include_directories("${CHARM_INCLUDE_DIRS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -L${CHARM_LIBRARIES}")
 
 # SpECTRE must be linked with Charm++'s script charmc. In turn, charmc

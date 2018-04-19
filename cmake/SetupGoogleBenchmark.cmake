@@ -4,7 +4,7 @@
 find_package(GoogleBenchmark QUIET)
 
 if (${GOOGLE_BENCHMARK_FOUND})
-  include_directories(SYSTEM ${GOOGLE_BENCHMARK_INCLUDE_DIRS})
+  spectre_include_directories(${GOOGLE_BENCHMARK_INCLUDE_DIRS})
   set(SPECTRE_LIBRARIES "${SPECTRE_LIBRARIES};${GOOGLE_BENCHMARK_LIBRARIES}")
 
   message(STATUS "Google Benchmark libs: " ${GOOGLE_BENCHMARK_LIBRARIES})

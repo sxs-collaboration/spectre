@@ -3,5 +3,5 @@
 
 find_package(Brigand REQUIRED)
 
-include_directories(SYSTEM "${BRIGAND_INCLUDE_DIR}")
+spectre_include_directories("${BRIGAND_INCLUDE_DIR}")
 message(STATUS "Brigand include: ${BRIGAND_INCLUDE_DIR}")

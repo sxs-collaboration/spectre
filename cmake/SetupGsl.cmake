@@ -3,7 +3,7 @@
 
 find_package(GSL REQUIRED)
 
-include_directories(SYSTEM ${GSL_INCLUDE_DIR})
+spectre_include_directories(${GSL_INCLUDE_DIR})
 list(APPEND SPECTRE_LIBRARIES ${GSL_LIBRARIES})
 # Extract the path where the shared libraries are and point the linker to
 # that directory

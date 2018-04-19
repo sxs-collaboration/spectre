@@ -3,7 +3,7 @@
 
 find_package(Catch 2.1.0 REQUIRED)
 
-include_directories(SYSTEM "${CATCH_INCLUDE_DIR}")
+spectre_include_directories("${CATCH_INCLUDE_DIR}")
 message(STATUS "Catch include: ${CATCH_INCLUDE_DIR}")
 message(STATUS "Catch version: ${CATCH_VERSION}")
 
