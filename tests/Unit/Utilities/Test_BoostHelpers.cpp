@@ -35,3 +35,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Pup", "[Unit][Utilities]") {
   var2 = serialize_and_deserialize(var);
   CHECK(boost::get<double>(var) == boost::get<double>(var2));
 }
+
+SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.VariantNames",
+                  "[Unit][Utilities]") {
+  boost::variant<int, double, char, std::string> var{"aoeu"};
+  CHECK(type_of_current_state(var) == "std::string");
+  CHECK(type_of_current_state(var = 1) == "int");
+  CHECK(type_of_current_state(var = 'A') == "char");
+  CHECK(type_of_current_state(var = 2.8) == "double");
+}

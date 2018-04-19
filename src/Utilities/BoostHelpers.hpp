@@ -6,11 +6,15 @@
 
 #pragma once
 
+#include <array>
 #include <boost/variant.hpp>
+#include <cstddef>
 #include <initializer_list>
 #include <pup.h>
+#include <string>
 #include <utility>
 
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace detail {
@@ -68,4 +72,19 @@ void pup(PUP::er& p, boost::variant<Ts...>& var) {  // NOLINT
 template <typename... Ts>
 inline void operator|(PUP::er& p, boost::variant<Ts...>& d) {  // NOLINT
   pup(p, d);
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Get the type name of the current state of the boost::variant
+ */
+template <typename... Ts>
+std::string type_of_current_state(
+    const boost::variant<Ts...>& variant) noexcept {
+  // clang-format off
+  // clang-tidy: use gsl::at (we know it'll be in bounds and want fewer
+  // includes) clang-format moves the comment to the wrong line
+  return std::array<std::string, sizeof...(Ts)>{  // NOLINT
+      {pretty_type::get_name<Ts>()...}}[static_cast<size_t>(variant.which())];
+  // clang-format on
 }
