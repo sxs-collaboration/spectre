@@ -6,7 +6,10 @@
 
 #pragma once
 
+#include <array>
+
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \ingroup DataStructuresGroup
@@ -40,6 +43,16 @@ SPECTRE_ALWAYS_INLINE double MakeWithValueImpl<double, double>::apply(
     const double& /* input */, const double value) {
   return value;
 }
+
+/// \brief Makes a `std::array`; each element of the `std::array`
+/// must be `make_with_value`-creatable from a `T`.
+template <size_t Size, typename T>
+struct MakeWithValueImpl<std::array<T, Size>, T> {
+  static SPECTRE_ALWAYS_INLINE std::array<T, Size> apply(const T& input,
+                                                         const double value) {
+    return make_array<Size>(make_with_value<T>(input, value));
+  }
+};
 
 /// \brief Makes a `TaggedTuple`; each element of the `TaggedTuple`
 /// must be `make_with_value`-creatable from a `T`.

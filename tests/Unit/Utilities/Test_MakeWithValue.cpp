@@ -3,11 +3,13 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -70,9 +72,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
   check_make_with_value(8.3, tnsr::I<double, 3, Frame::Grid>(1.3), 8.3);
   check_make_with_value(tnsr::Ij<double, 3, Frame::Grid>(8.3),
                         tnsr::aB<double, 1, Frame::Inertial>(1.3), 8.3);
+  check_make_with_value(make_array<4>(8.3), 1.3, 8.3);
 
   for (size_t n_pts = 1; n_pts < 4; ++n_pts) {
     // create DataVector from DataVector
+    check_make_with_value(make_array<3>(DataVector(n_pts, 8.3)),
+                          DataVector(n_pts, 4.5), 8.3);
     check_make_with_value(DataVector(n_pts, -2.3), DataVector(n_pts, 4.5),
                           -2.3);
     check_make_with_value(Scalar<DataVector>(n_pts, -2.3),
