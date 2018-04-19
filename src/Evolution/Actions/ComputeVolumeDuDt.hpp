@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Utilities/Requires.hpp"
 
+/// \cond
 namespace tuples {
 template <typename...>
 class TaggedTuple;
@@ -18,6 +19,7 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
+/// \endcond
 
 namespace Actions {
 /// \ingroup ActionsGroup

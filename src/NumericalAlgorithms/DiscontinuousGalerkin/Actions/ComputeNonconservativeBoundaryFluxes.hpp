@@ -80,9 +80,9 @@ struct ComputeNonconservativeBoundaryFluxes {
         internal_directions_tag,
         Tags::Normalized<normal_tag,
                          typename system::template magnitude_tag<normal_tag>>>;
-    using normal_dot_fluxes_tag = Tags::Interface<
-        internal_directions_tag,
-        db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
+    using interface_normal_dot_fluxes_tag =
+        Tags::Interface<internal_directions_tag,
+                        db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
 
     auto boundary_fluxes_result = db::apply<tmpl::push_front<
         tmpl::transform<
@@ -92,7 +92,7 @@ struct ComputeNonconservativeBoundaryFluxes {
         [](const db::item_type<internal_directions_tag>& internal_directions,
            const db::item_type<unit_normal_tag>& unit_face_normals,
            const auto&... tensors) noexcept {
-          db::item_type<normal_dot_fluxes_tag> boundary_fluxes;
+          db::item_type<interface_normal_dot_fluxes_tag> boundary_fluxes;
 
           for (const auto& direction : internal_directions) {
             const auto& side_unit_face_normal = unit_face_normals.at(direction);
@@ -109,7 +109,7 @@ struct ComputeNonconservativeBoundaryFluxes {
 
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<normal_dot_fluxes_tag>>(
+                        db::AddSimpleTags<interface_normal_dot_fluxes_tag>>(
             box, std::move(boundary_fluxes_result)));
   }
 };

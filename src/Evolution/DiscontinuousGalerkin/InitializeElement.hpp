@@ -88,12 +88,15 @@ struct InitializeElement {
 
   template <class System>
   using return_tag_list = tmpl::list<
-      Tags::TimeId, Tags::Time, Tags::TimeStep, Tags::LogicalCoordinates<Dim>,
-      Tags::Extents<Dim>, Tags::Element<Dim>, Tags::ElementMap<Dim>,
-      typename System::variables_tag,
+      // Simple items
+      Tags::TimeId, Tags::TimeStep, Tags::Extents<Dim>, Tags::Element<Dim>,
+      Tags::ElementMap<Dim>, typename System::variables_tag,
       Tags::HistoryEvolvedVariables<
           typename System::variables_tag,
           db::add_tag_prefix<Tags::dt, typename System::variables_tag>>,
+      db::add_tag_prefix<Tags::dt, typename System::variables_tag>,
+      // Compute items
+      Tags::Time, Tags::LogicalCoordinates<Dim>,
       Tags::Coordinates<Tags::ElementMap<Dim>, Tags::LogicalCoordinates<Dim>>,
       Tags::InverseJacobian<Tags::ElementMap<Dim>,
                             Tags::LogicalCoordinates<Dim>>,
@@ -101,9 +104,7 @@ struct InitializeElement {
                   typename System::gradients_tags,
                   Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                         Tags::LogicalCoordinates<Dim>>>,
-      db::add_tag_prefix<Tags::dt, typename System::variables_tag>,
-      Tags::InternalDirections<Dim>,
-      interface_tag<Tags::Direction<Dim>>,
+      Tags::InternalDirections<Dim>, interface_tag<Tags::Direction<Dim>>,
       interface_tag<Tags::Extents<Dim - 1>>,
       interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       interface_tag<typename System::template magnitude_tag<

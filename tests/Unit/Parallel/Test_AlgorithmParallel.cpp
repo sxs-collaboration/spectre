@@ -358,7 +358,7 @@ struct SingletonParallelComponent {
   using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<SingletonActions::CountReceives>;
-  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
+  using initial_databox = db::compute_databox_type<tmpl::list<>>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -392,7 +392,7 @@ struct ArrayParallelComponent {
                  ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>;
   using array_index = int;
   using initial_databox =
-      db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
+      db::compute_databox_type<tmpl::list<Tags::CountActionsCalled>>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -431,7 +431,7 @@ struct GroupParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
-      db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
+      db::compute_databox_type<tmpl::list<Tags::CountActionsCalled>>;
   using options = tmpl::list<>;
 
   static void initialize(
@@ -453,7 +453,7 @@ struct NodegroupParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<GroupActions::PrintSomething>;
   using initial_databox =
-      db::DataBox<db::get_databox_list<tmpl::list<Tags::CountActionsCalled>>>;
+      db::compute_databox_type<tmpl::list<Tags::CountActionsCalled>>;
   using options = tmpl::list<>;
 
   static void initialize(

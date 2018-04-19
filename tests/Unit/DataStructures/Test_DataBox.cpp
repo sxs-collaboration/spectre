@@ -111,30 +111,31 @@ struct TagPrefix : db::DataBoxPrefix {
 }  // namespace test_databox_tags
 
 namespace {
-using Box_t = db::DataBox<db::get_databox_list<tmpl::list<
+using Box_t = db::DataBox<tmpl::list<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
     test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-    test_databox_tags::ComputeTag0, test_databox_tags::ComputeTag1>>>;
+    test_databox_tags::ComputeTag0, test_databox_tags::ComputeTag1>>;
 
 static_assert(
     std::is_same<
         decltype(
             db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(Box_t{})),
-        db::DataBox<db::get_databox_list<tmpl::list<
-            test_databox_tags::Tag0, test_databox_tags::Tag2,
-            test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-            test_databox_tags::ComputeTag0, test_databox_tags::ComputeTag1>>>>::
-        value,
+        db::DataBox<
+            tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag2,
+                       test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
+                       test_databox_tags::ComputeTag0,
+                       test_databox_tags::ComputeTag1>>>::value,
     "Failed testing removal of item");
 
 static_assert(
     std::is_same<
         decltype(db::create_from<
                  db::RemoveTags<test_databox_tags::ComputeTag1>>(Box_t{})),
-        db::DataBox<db::get_databox_list<tmpl::list<
-            test_databox_tags::Tag0, test_databox_tags::Tag1,
-            test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-            test_databox_tags::Tag2, test_databox_tags::ComputeTag0>>>>::value,
+        db::DataBox<
+            tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                       test_databox_tags::Tag2,
+                       test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
+                       test_databox_tags::ComputeTag0>>>::value,
     "Failed testing removal of compute item");
 
 static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
@@ -161,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   static_assert(
       std::is_same<
           decltype(original_box),
-          db::DataBox<db::get_databox_list<tmpl::list<
+          db::DataBox<db::databox_detail::dependent_items<tmpl::list<
               test_databox_tags::Tag0, test_databox_tags::Tag1,
               test_databox_tags::Tag2, test_databox_tags::ComputeTag0,
               test_databox_tags::ComputeTag1, test_databox_tags::ComputeLambda0,
@@ -1166,19 +1167,19 @@ static_assert(
 static_assert(
     cpp17::is_same_v<
         db::compute_databox_type<tmpl::list<
-            test_databox_tags::Tag0,
+            test_databox_tags::Tag0, test_databox_tags::Tag1,
             Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                        test_databox_tags::VectorTag>>,
-            test_databox_tags::ComputeTag0, test_databox_tags::Tag1,
+            test_databox_tags::ComputeTag0,
             test_databox_tags::MultiplyScalarByTwo>>,
-        db::DataBox<db::get_databox_list<tmpl::list<
+        db::DataBox<tmpl::list<
             test_databox_tags::Tag0, test_databox_tags::Tag1,
-            test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
             Tags::Variables<brigand::list<test_databox_tags::ScalarTag,
                                           test_databox_tags::VectorTag>>,
-            test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2,
+            test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
+            test_databox_tags::ComputeTag0,
             test_databox_tags::MultiplyScalarByTwo,
-            test_databox_tags::ComputeTag0>>>>,
+            test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>>,
     "Failed testing db::compute_databox_type");
 }  // namespace
 
@@ -1569,13 +1570,13 @@ class Boxed {
   std::shared_ptr<T> data_;
 };
 
-template <size_t N, bool Compute = false>
+template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
 struct Parent : db::DataBoxTag {
   static constexpr db::DataBoxString label = "Parent";
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
-template <size_t N>
-struct Parent<N, true> : db::ComputeItemTag {
+template <size_t N, bool DependsOnComputeItem>
+struct Parent<N, true, DependsOnComputeItem> : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Parent";
   static auto function(
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
@@ -1583,7 +1584,7 @@ struct Parent<N, true> : db::ComputeItemTag {
         Boxed<int>(std::make_shared<int>(*arg.first + 1)),
         Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
   }
-  using argument_tags = tmpl::list<Parent<N - 1>>;
+  using argument_tags = tmpl::list<Parent<N - 1, DependsOnComputeItem>>;
 };
 
 template <size_t N>
@@ -1651,4 +1652,29 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
   CHECK(*db::get<test_subitems::First<1>>(box) == 6);
   CHECK(*db::get<test_subitems::Second<0>>(box) == 12.);
   CHECK(*db::get<test_subitems::Second<1>>(box) == 24.);
+
+  static_assert(
+      cpp17::is_same_v<
+          decltype(box),
+          decltype(db::create_from<db::RemoveTags<test_subitems::Parent<2>>>(
+              db::create_from<db::RemoveTags<>,
+                              db::AddSimpleTags<test_subitems::Parent<2>>>(
+                  box, std::make_pair(
+                           test_subitems::Boxed<int>(std::make_shared<int>(5)),
+                           test_subitems::Boxed<double>(
+                               std::make_shared<double>(3.5))))))>,
+      "Failed testing that adding and removing a simple subitem does "
+      "not change the type of the DataBox");
+
+  static_assert(
+      cpp17::is_same_v<
+          decltype(box),
+          decltype(db::create_from<
+                   db::RemoveTags<test_subitems::Parent<2, true, true>>>(
+              db::create_from<
+                  db::RemoveTags<>, db::AddSimpleTags<>,
+                  db::AddComputeTags<test_subitems::Parent<2, true, true>>>(
+                  box)))>,
+      "Failed testing that adding and removing a compute subitem does "
+      "not change the type of the DataBox");
 }

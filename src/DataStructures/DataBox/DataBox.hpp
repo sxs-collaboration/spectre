@@ -28,19 +28,6 @@
  */
 namespace db {
 
-/*!
- * \ingroup DataBoxGroup
- * \brief Compute the canonical typelist used in the DataBox
- * \note The result is architecture-dependent.
- *
- * \requires `tt::is_a<typelist, List>::``value` is true
- * \metareturns `typelist` of all elements in `List` but ordered for the
- * db::DataBox
- */
-template <typename List>
-using get_databox_list =
-    tmpl::sort<List, db::detail::databox_tag_less<tmpl::_1, tmpl::_2>>;
-
 // Forward declarations
 /// \cond
 template <typename TagsList>
@@ -518,8 +505,7 @@ inline constexpr Deferred<::db::item_type<Tag>>&& get(
 
 template <typename Element>
 struct extract_dependent_items {
-  using type =
-      tmpl::append<tmpl::list<Element>, typename Subitems<Element>::type>;
+  using type = tmpl::push_front<typename Subitems<Element>::type, Element>;
 };
 
 // Given a typelist of items List, returns a new typelist containing
@@ -564,7 +550,7 @@ struct create_dependency_graph<Caller, Callee, List,
  * db::create_from depends on implementation-defined behavior, and
  * therefore should not be specified in source files. If explicitly
  * naming a DataBox type is necessary they should be generated using
- * db::get_databox_list.
+ * db::compute_databox_type.
  *
  * \see db::create db::create_from
  *
@@ -593,10 +579,16 @@ class DataBox<TagsList<Tags...>> {
    */
   using tags_list = tmpl::list<Tags...>;
 
-  using compute_item_tags =
-      tmpl::filter<tags_list, db::is_compute_item<tmpl::_1>>;
+  /// A list of all the compute items, including subitems from the compute items
+  using compute_item_tags = databox_detail::dependent_items<
+      tmpl::filter<tags_list, db::is_compute_item<tmpl::_1>>>;
 
-  using item_tags = tmpl::remove_if<tags_list, db::is_compute_item<tmpl::_1>>;
+  /// A list of all the simple items, including subitems from the simple items
+  using simple_item_tags = tmpl::list_difference<tags_list, compute_item_tags>;
+
+  /// A list of the subitems of the simple items
+  using simple_subitems_tags =
+      tmpl::flatten<tmpl::transform<simple_item_tags, db::Subitems<tmpl::_1>>>;
 
  private:
   using edge_list =
@@ -1219,11 +1211,9 @@ constexpr auto DataBox<TagsList<Tags...>>::create(Args&&... args) {
                 "AddTags list.");
   using full_items = databox_detail::dependent_items<AddTags>;
   using full_compute_items = databox_detail::dependent_items<AddComputeItems>;
-  using sorted_tags =
-      ::db::get_databox_list<tmpl::append<full_items, full_compute_items>>;
-  return DataBox<sorted_tags>(AddTags{}, full_items{}, AddComputeItems{},
-                              full_compute_items{},
-                              std::forward<Args>(args)...);
+  return DataBox<tmpl::append<full_items, full_compute_items>>(
+      AddTags{}, full_items{}, AddComputeItems{}, full_compute_items{},
+      std::forward<Args>(args)...);
 }
 
 template <template <typename...> class TagsList, typename... Tags>
@@ -1244,25 +1234,21 @@ constexpr auto DataBox<TagsList<Tags...>>::create_from(const Box& box,
       "AddComputeItems list.");
   using old_tags_list = typename Box::tags_list;
 
+  using full_remove_tags = databox_detail::dependent_items<RemoveTags>;
   // Build list of compute items in Box::tags_list that are not in RemoveTags
   using compute_items_to_keep =
-      tmpl::list_difference<typename Box::compute_item_tags, RemoveTags>;
+      tmpl::list_difference<typename Box::compute_item_tags, full_remove_tags>;
   // Build list of tags where we expand subtags of the contained
   // objects. This is needed since we actually want those tags to be
   // part of the DataBox type as well
-  using full_remove_tags = databox_detail::dependent_items<RemoveTags>;
-  using full_items = databox_detail::dependent_items<AddTags>;
-  using full_compute_items = databox_detail::dependent_items<AddComputeItems>;
   using remaining_tags = tmpl::list_difference<old_tags_list, full_remove_tags>;
-  using new_tags = tmpl::append<remaining_tags, full_items, full_compute_items>;
-  using sorted_tags = ::db::get_databox_list<new_tags>;
   // List of tags that were both removed and added, and therefore were mutated
   using mutated_tags =
       tmpl::filter<AddTags, tmpl::bind<tmpl::list_contains,
                                        tmpl::pin<RemoveTags>, tmpl::_1>>;
-  return DataBox<sorted_tags>(box, remaining_tags{}, AddTags{},
-                              AddComputeItems{}, compute_items_to_keep{},
-                              mutated_tags{}, std::forward<Args>(args)...);
+  return DataBox<TagsList<Tags...>>(
+      box, remaining_tags{}, AddTags{}, AddComputeItems{},
+      compute_items_to_keep{}, mutated_tags{}, std::forward<Args>(args)...);
 }
 /// \endcond
 
@@ -1311,8 +1297,8 @@ using AddComputeTags = tmpl::flatten<tmpl::list<Tags...>>;
 template <typename AddTags, typename AddComputeItems = tmpl::list<>,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
-  return DataBox<::db::get_databox_list<databox_detail::dependent_items<
-      tmpl::append<AddTags, AddComputeItems>>>>::
+  return DataBox<
+      databox_detail::dependent_items<tmpl::append<AddTags, AddComputeItems>>>::
       template create<AddTags, AddComputeItems>(std::forward<Args>(args)...);
 }
 
@@ -1345,11 +1331,13 @@ template <typename RemoveTags, typename AddTags = tmpl::list<>,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
                                                  Args&&... args) {
-  return DataBox<::db::get_databox_list<tmpl::append<
-      tmpl::list_difference<typename Box::tags_list,
+  return DataBox<tmpl::append<
+      tmpl::list_difference<typename Box::simple_item_tags,
                             databox_detail::dependent_items<RemoveTags>>,
-      databox_detail::dependent_items<
-          tmpl::append<AddTags, AddComputeItems>>>>>::
+      databox_detail::dependent_items<AddTags>,
+      tmpl::list_difference<typename Box::compute_item_tags,
+                            databox_detail::dependent_items<RemoveTags>>,
+      databox_detail::dependent_items<AddComputeItems>>>::
       template create_from<RemoveTags, AddTags, AddComputeItems>(
           box, std::forward<Args>(args)...);
 }
