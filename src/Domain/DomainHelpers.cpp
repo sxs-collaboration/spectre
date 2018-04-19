@@ -340,13 +340,13 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
-                      Direction<3>::upper_xi()}}),
+                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                      Direction<3>::lower_eta()}}),
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
-                      Direction<3>::lower_xi()}}),
+                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                      Direction<3>::upper_eta()}}),
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
                  OrientationMap<3>(std::array<Direction<3>, 3>{
