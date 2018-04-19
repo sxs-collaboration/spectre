@@ -432,7 +432,8 @@ T* get_ptr_to_elem(PyObj* npy_array, const std::array<size_t, Size>& idx) {
 }
 
 template <typename T>
-struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0>> {
+struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
+                                cpp17::is_same_v<typename T::type, double>>> {
   static T convert(PyObject* p) {
     if (p == nullptr) {
       throw std::runtime_error{"Received null PyObject."};
@@ -474,7 +475,8 @@ struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0>> {
 };
 
 template <typename T>
-struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0>> {
+struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
+                              cpp17::is_same_v<typename T::type, double>>> {
   static PyObject* convert(const T& t) {
     std::array<long, T::rank()> dims =
         convert_array_of_size_t_to_array_of_long(T::index_dims());
