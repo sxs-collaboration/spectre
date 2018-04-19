@@ -207,3 +207,6 @@ def check2_by_value1_class1(t0, t1, a):
 
 def check2_by_value2_class1(t0, t1, a, b):
     return 2.0 * t0 + 5.0 * a + t1 * b
+
+def permute_array(a):
+    return [a[2], a[0], a[1]]
