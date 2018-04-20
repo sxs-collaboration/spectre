@@ -7,13 +7,13 @@
 #pragma once
 
 #include <algorithm>
-#include <boost/rational.hpp>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Time/Slab.hpp"
+#include "Utilities/Rational.hpp"
 
 /// \cond
 namespace PUP {
@@ -31,7 +31,7 @@ class TimeDelta;
 /// slabs.
 class Time {
  public:
-  using rational_t = boost::rational<ssize_t>;
+  using rational_t = Rational;
 
   /// Default constructor gives an invalid Time.
   Time() noexcept : fraction_(0) {}
@@ -123,8 +123,7 @@ class TimeDelta {
 
   /// Approximate numerical length of the interval.
   double value() const noexcept {
-    return (slab_.end_ - slab_.start_) *
-           boost::rational_cast<double>(fraction_);
+    return (slab_.end_ - slab_.start_) * fraction_.value();
   }
 
   /// Test if the interval is oriented towards larger time.
@@ -207,8 +206,7 @@ inline Time operator+(const TimeDelta& a, Time b) noexcept {
 }
 
 inline Time operator-(Time a, const TimeDelta& b) noexcept {
-  // clang-tidy misfeature: warns about boost internals here
-  a -= b;  // NOLINT
+  a -= b;
   return a;
 }
 
@@ -260,8 +258,7 @@ inline Time& Time::operator+=(const TimeDelta& delta) noexcept {
 
 inline Time& Time::operator-=(const TimeDelta& delta) noexcept {
   *this = this->with_slab(delta.slab_);
-  // clang-tidy misfeature: warns about boost internals here
-  fraction_ -= delta.fraction_;  // NOLINT
+  fraction_ -= delta.fraction_;
   range_check();
   return *this;
 }

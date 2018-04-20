@@ -4,13 +4,13 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-#include <boost/rational.hpp>
 #include <functional>
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+// IWYU pragma: no_include "Utilities/Rational.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {

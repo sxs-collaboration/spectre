@@ -16,6 +16,7 @@
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+// IWYU pragma: no_include "Utilities/Rational.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace StepControllers {
@@ -44,8 +45,9 @@ class BinaryFraction : public StepController {
 
     // Ensure we will hit the slab boundary if we continue taking
     // constant-sized steps.
-    const ssize_t step_count =
-        std::max(static_cast<ssize_t>(two_to_the(desired_step_power)),
+    const auto step_count =
+        std::max(static_cast<decltype(time.fraction().denominator())>(
+                     two_to_the(desired_step_power)),
                  time.fraction().denominator());
 
     return full_slab / step_count;
