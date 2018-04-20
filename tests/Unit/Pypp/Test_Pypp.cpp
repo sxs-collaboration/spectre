@@ -106,6 +106,21 @@ SPECTRE_TEST_CASE("Unit.Pypp.std::array", "[Pypp][Unit]") {
   CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_vector",
                                   std::array<double, 2>{{1.3, 4.9}},
                                   std::array<double, 2>{{4.2, 6.8}}));
+
+  std::array<DataVector, 3> expected_array{
+      {DataVector{2, 3.}, DataVector{2, 1.}, DataVector{2, 2.}}};
+
+  CHECK(expected_array ==
+        (pypp::call<std::array<DataVector, 3>>(
+            "PyppPyTests", "permute_array",
+            tnsr::i<DataVector, 3>{{{DataVector{2, 1.}, DataVector{2, 2.},
+                                   DataVector{2, 3.}}}})));
+
+  CHECK(expected_array ==
+        (pypp::call<std::array<DataVector, 3>>(
+            "PyppPyTests", "permute_array",
+            std::array<DataVector, 3>{
+                {DataVector{2, 1.}, DataVector{2, 2.}, DataVector{2, 3.}}})));
 }
 
 SPECTRE_TEST_CASE("Unit.Pypp.DataVector", "[Pypp][Unit]") {

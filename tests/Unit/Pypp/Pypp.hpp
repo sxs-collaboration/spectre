@@ -28,17 +28,17 @@ struct CallImpl {
     if (module == nullptr) {
       PyErr_Print();
       throw std::runtime_error{std::string("Could not find python module.\n") +
-          module_name};
+                               module_name};
     }
-    PyObject *func = PyObject_GetAttrString(module, function_name.c_str());
+    PyObject* func = PyObject_GetAttrString(module, function_name.c_str());
     if (func == nullptr or not PyCallable_Check(func)) {
       if (PyErr_Occurred()) {
         PyErr_Print();
       }
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
-    PyObject *args = pypp::make_py_tuple(t...);
-    PyObject *value = PyObject_CallObject(func, args);
+    PyObject* args = pypp::make_py_tuple(t...);
+    PyObject* value = PyObject_CallObject(func, args);
     Py_DECREF(args);  // NOLINT
     if (value == nullptr) {
       Py_DECREF(func);    // NOLINT
@@ -54,9 +54,27 @@ struct CallImpl {
   }
 };
 
+template <typename T>
+struct convert_to_container_of_doubles {};
+
+template <template <class, class...> class Container, class... Ts>
+struct convert_to_container_of_doubles<Container<DataVector, Ts...>> {
+  using type = Container<double, Ts...>;
+};
+
+template <size_t Dim>
+struct convert_to_container_of_doubles<std::array<DataVector, Dim>> {
+  using type = std::array<double, Dim>;
+};
+
+template <typename T>
+using convert_to_container_of_doubles_t =
+    typename convert_to_container_of_doubles<T>::type;
+
 template <typename R>
-struct CallImpl<R, Requires<tt::is_a_v<Tensor, R> and
-                            cpp17::is_same_v<typename R::type, DataVector>>> {
+struct CallImpl<
+    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>) and
+                 cpp17::is_same_v<typename R::value_type, DataVector>>> {
   template <typename... Args>
   static R call(const std::string& module_name,
                 const std::string& function_name, const Args&... t) {
@@ -78,30 +96,31 @@ struct CallImpl<R, Requires<tt::is_a_v<Tensor, R> and
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
 
-    const auto slice_tensor_of_datavectors_to_tensor_of_doubles = [](
-        const auto& tnsr_dv, const size_t slice_idx) noexcept {
-      Tensor<double, typename std::decay_t<decltype(tnsr_dv)>::symmetry,
-             typename std::decay_t<decltype(tnsr_dv)>::index_list>
-          tnsr_double{};
-      ASSERT(slice_idx < tnsr_dv.begin()->size(),
+    const auto slice_container_of_datavectors_to_container_of_doubles = [](
+        const auto& container_dv, const size_t slice_idx) noexcept {
+      convert_to_container_of_doubles_t<std::decay_t<decltype(container_dv)>>
+          container_double{};
+      ASSERT(slice_idx < container_dv.begin()->size(),
              "Trying to slice DataVector of size "
-                 << tnsr_dv.begin()->size() << "with slice_idx " << slice_idx);
+                 << container_dv.begin()->size() << "with slice_idx "
+                 << slice_idx);
       for (decltype(auto) double_and_datavector_components :
-           boost::combine(tnsr_double, tnsr_dv)) {
+           boost::combine(container_double, container_dv)) {
         boost::get<0>(double_and_datavector_components) =
             boost::get<1>(double_and_datavector_components)[slice_idx];
       }
-      return tnsr_double;
+      return container_double;
     };
 
-    const auto put_tensor_of_doubles_into_tensor_of_datavector = [](
-        auto& tnsr_dv, const auto& tnsr_double,
+    const auto put_container_of_doubles_into_container_of_datavector = [](
+        auto& container_dv, const auto& container_double,
         const size_t slice_idx) noexcept {
-      ASSERT(slice_idx < tnsr_dv.begin()->size(),
+      ASSERT(slice_idx < container_dv.begin()->size(),
              "Trying to slice DataVector of size "
-                 << tnsr_dv.begin()->size() << "with slice_idx " << slice_idx);
+                 << container_dv.begin()->size() << "with slice_idx "
+                 << slice_idx);
       for (decltype(auto) datavector_and_double_components :
-           boost::combine(tnsr_dv, tnsr_double)) {
+           boost::combine(container_dv, container_double)) {
         boost::get<0>(datavector_and_double_components)[slice_idx] =
             boost::get<1>(datavector_and_double_components);
       }
@@ -109,18 +128,19 @@ struct CallImpl<R, Requires<tt::is_a_v<Tensor, R> and
 
     // It's a GCC bug that rest_of_args needs to be given a name in order to
     // compile, and as such it needs to be used to prevent a compiler warning.
-    const size_t npts = [](const auto& first_tensor,
+    const size_t npts = [](const auto& first_container,
                            const auto&... rest_of_args) noexcept {
       (void)std::make_tuple(rest_of_args...);
-      return first_tensor.begin()->size();
-    }(t...);
+      return first_container.begin()->size();
+    }
+    (t...);
 
-    auto return_tensor = make_with_value<R>(
+    auto return_container = make_with_value<R>(
         DataVector{npts, 0.}, std::numeric_limits<double>::signaling_NaN());
 
     for (size_t s = 0; s < npts; ++s) {
       PyObject* args = pypp::make_py_tuple(
-          slice_tensor_of_datavectors_to_tensor_of_doubles(t, s)...);
+          slice_container_of_datavectors_to_container_of_doubles(t, s)...);
       PyObject* value = PyObject_CallObject(func, args);
       Py_DECREF(args);  // NOLINT
       if (value == nullptr) {
@@ -129,14 +149,16 @@ struct CallImpl<R, Requires<tt::is_a_v<Tensor, R> and
         PyErr_Print();
         throw std::runtime_error{"Function returned null"};
       }
-      const auto ret = from_py_object<
-          Tensor<double, typename R::symmetry, typename R::index_list>>(value);
+
+      const auto ret =
+          from_py_object<convert_to_container_of_doubles_t<R>>(value);
       Py_DECREF(value);  // NOLINT
-      put_tensor_of_doubles_into_tensor_of_datavector(return_tensor, ret, s);
+      put_container_of_doubles_into_container_of_datavector(return_container,
+                                                            ret, s);
     }
     Py_DECREF(func);    // NOLINT
     Py_DECREF(module);  // NOLINT
-    return return_tensor;
+    return return_container;
   }
 };
 }  // namespace detail
@@ -182,14 +204,18 @@ struct CallImpl<R, Requires<tt::is_a_v<Tensor, R> and
 /// We call this function through C++ as:
 /// \snippet Test_Pypp.cpp einsum_example
 /// for type `T` either a `double` or `DataVector`.
-//
+///
+/// Pypp will also support testing of functions which return and operate on
+/// `std::array`s of `DataVectors`s. To return a `std::array` of DataVectors,
+/// the python function should return a python list of doubles.
+///
 /// \note In order to return a
 /// `Tensor<DataVector...>` from `pypp::call`, at least one
 /// `Tensor<DataVector...>` must be taken as an argument, as the size of the
 /// returned tensor needs to be deduced.
-template<typename R, typename... Args>
-R call(const std::string &module_name, const std::string &function_name,
-       const Args &... t) {
+template <typename R, typename... Args>
+R call(const std::string& module_name, const std::string& function_name,
+       const Args&... t) {
   return detail::CallImpl<R>::call(module_name, function_name, t...);
 }
 }  // namespace pypp
