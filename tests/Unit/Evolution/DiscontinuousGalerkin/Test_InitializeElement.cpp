@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <pup.h>
 #include <sys/types.h>
 #include <vector>
 
@@ -17,8 +16,6 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
@@ -26,14 +23,13 @@
 #include "Domain/DomainCreators/Rectangle.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
+#include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -44,8 +40,10 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
-// IWYU pragma: no_forward_declare PUP::er
 // IWYU pragma: no_forward_declare ElementIndex
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace {
 struct Var : db::DataBoxTag {
