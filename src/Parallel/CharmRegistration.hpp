@@ -423,14 +423,18 @@ struct RegisterReductionAction : RegistrationHelper {
 template <typename Derived>
 bool register_func_with_charm() noexcept {
   if (charm_register_list_size >= charm_register_list_capacity) {
-    auto* const t =
+    // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
+    // necessary)
+    auto* const t =  // NOLINT
         new std::unique_ptr<RegistrationHelper>[charm_register_list_capacity +
                                                 10];
     for (size_t i = 0; i < charm_register_list_capacity; ++i) {
       // clang-tidy: do not use pointer arithmetic
       t[i] = std::move(charm_register_list[i]);  // NOLINT
     }
-    delete[] charm_register_list;
+    // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
+    // necessary)
+    delete[] charm_register_list;  // NOLINT
     charm_register_list = t;
     charm_register_list_capacity += 10;
   }
@@ -536,12 +540,17 @@ struct RegisterReducerFunction {
 template <ReducerFunctions F>
 bool register_reducer_function() noexcept {
   if (charm_reducer_functions_size >= charm_reducer_functions_capacity) {
-    auto* const t = new ReducerFunctions[charm_reducer_functions_capacity + 10];
+    // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
+    // necessary)
+    auto* const t =  // NOLINT
+        new ReducerFunctions[charm_reducer_functions_capacity + 10];
     for (size_t i = 0; i < charm_reducer_functions_capacity; ++i) {
       // clang-tidy: do not use pointer arithmetic
       t[i] = std::move(charm_reducer_functions_list[i]);  // NOLINT
     }
-    delete[] charm_reducer_functions_list;
+    // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
+    // necessary)
+    delete[] charm_reducer_functions_list;  // NOLINT
     charm_reducer_functions_list = t;
     charm_reducer_functions_capacity += 10;
   }
