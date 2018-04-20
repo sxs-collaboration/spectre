@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Index.cpp
   Test_IndexIterator.cpp
   Test_Matrix.cpp
+  Test_Mesh.cpp
   Test_OrientVariablesOnSlice.cpp
   Test_SliceIterator.cpp
   Test_StripeIterator.cpp

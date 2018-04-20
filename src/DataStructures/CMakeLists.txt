@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     Index.cpp
     IndexIterator.cpp
     Matrix.cpp
+    Mesh.cpp
     SliceIterator.cpp
     StripeIterator.cpp
     VariablesHelpers.cpp

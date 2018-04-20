@@ -27,7 +27,7 @@ template <size_t Dim>
 class Index {
  public:
   /// Construct with each element set to the same value.
-  explicit Index(const size_t i0 = std::numeric_limits<size_t>::max())
+  explicit Index(const size_t i0 = std::numeric_limits<size_t>::max()) noexcept
       : indices_(make_array<Dim>(i0)) {}
 
   /// Construct specifying value in each dimension
@@ -76,7 +76,7 @@ class Index {
   }
   /// \endcond
 
-  /// Return a smaller Index with the d-th elmenent removed.
+  /// Return a smaller Index with the d-th element removed.
   ///
   /// \param d the element to remove.
   template <size_t N = Dim, Requires<(N > 0)> = nullptr>
