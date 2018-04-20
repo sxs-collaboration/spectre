@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <pup.h>
 #include <type_traits>
 #include <unordered_map>
 
@@ -16,6 +17,7 @@
 #include "DataStructures/DataBox/Deferred.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/BoostHelpers.hpp"  // for pup variant
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -695,6 +697,17 @@ class DataBox<TagsList<Tags...>> {
   friend void mutate(DataBox<TagList>& box,                            // NOLINT
                      Invokable&& invokable, Args&&... args) noexcept;  // NOLINT
 
+  // clang-tidy: no non-const references
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    using non_subitems_tags =
+        tmpl::list_difference<simple_item_tags, simple_subitems_tags>;
+
+    // We do not send subitems for both simple items and compute items since
+    // they can be reconstructed very cheaply.
+    pup_impl(p, non_subitems_tags{},
+             tmpl::filter<tags_list, db::is_compute_item<tmpl::_1>>{});
+  }
+
  private:
   template <typename Tag,
             Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
@@ -730,6 +743,11 @@ class DataBox<TagsList<Tags...>> {
     tmpl::for_each<tags_list>(detail::check_tag_labels{});
 #endif
   }
+
+  // clang-tidy: no non-const references
+  template <typename... NonSubitemsTags, typename... ComputeItemTags>
+  void pup_impl(PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,  // NOLINT
+                tmpl::list<ComputeItemTags...> /*meta*/) noexcept;
 
   bool mutate_locked_box_{false};
   databox_detail::TaggedDeferredTuple<Tags...> data_;
@@ -984,6 +1002,59 @@ struct reset_compute_items_after_mutate<true, full_edge_list, F<>> {
       databox_detail::TaggedDeferredTuple<Tags...>& /*data*/) noexcept {}
 };
 }  // namespace databox_detail
+
+namespace databox_detail {
+// Function used to expand the parameter pack ComputeItemArgumentsTags
+template <typename Tag, typename... ComputeItemArgumentsTags, typename Tuple>
+Deferred<db::item_type<Tag>> make_deferred_helper(
+    const gsl::not_null<Tuple*> data,
+    tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
+  (void)data;  // When there are no ComputeItemArgumentsTags GCC warns
+  return make_deferred<db::item_type<Tag>>(
+      Tag::function,
+      ::db::databox_detail::get<ComputeItemArgumentsTags>(*data)...);
+}
+}  // namespace databox_detail
+
+template <template <typename...> class TagsList, typename... Tags>
+template <typename... NonSubitemsTags, typename... ComputeItemTags>
+void DataBox<TagsList<Tags...>>::pup_impl(
+    PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,
+    tmpl::list<ComputeItemTags...> /*meta*/) noexcept {
+  const auto pup_simple_item = [&p, this](auto current_tag) {
+    using tag = decltype(current_tag);
+    if (p.isUnpacking()) {
+      db::item_type<tag> t{};
+      p | t;
+      ::db::databox_detail::get<tag>(data_) =
+          Deferred<db::item_type<tag>>(std::move(t));
+      databox_detail::add_subitem_tags_to_box<tag>(
+          data_, typename Subitems<tag>::type{});
+    } else {
+      p | ::db::databox_detail::get<tag>(data_).mutate();
+    }
+    return '0';
+  };
+  (void)pup_simple_item;  // Silence GCC warning about unused variable
+  (void)std::initializer_list<char>{pup_simple_item(NonSubitemsTags{})...};
+
+  const auto pup_compute_item = [&p, this](auto current_tag) {
+    using tag = decltype(current_tag);
+    if (p.isUnpacking()) {
+      ::db::databox_detail::get<tag>(data_) =
+          databox_detail::make_deferred_helper<tag>(
+              make_not_null(&data_), typename tag::argument_tags{});
+    }
+    ::db::databox_detail::get<tag>(data_).pack_unpack_lazy_function(p);
+    if (p.isUnpacking()) {
+      databox_detail::add_sub_compute_item_tags_to_box<tag>(
+          data_, typename Subitems<tag>::type{});
+    }
+    return '0';
+  };
+  (void)pup_compute_item;  // Silence GCC warning about unused variable
+  (void)std::initializer_list<char>{pup_compute_item(ComputeItemTags{})...};
+}
 
 /*!
  * \ingroup DataBoxGroup

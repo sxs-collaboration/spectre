@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <ostream>
+#include <pup.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -1580,12 +1581,17 @@ struct Parent<N, true, DependsOnComputeItem> : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Parent";
   static auto function(
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
+    count++;
     return std::make_pair(
         Boxed<int>(std::make_shared<int>(*arg.first + 1)),
         Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
   }
   using argument_tags = tmpl::list<Parent<N - 1, DependsOnComputeItem>>;
+  static int count;
 };
+
+template <size_t N, bool DependsOnComputeItem>
+int Parent<N, true, DependsOnComputeItem>::count = 0;
 
 template <size_t N>
 struct First : db::DataBoxTag {
@@ -1604,8 +1610,8 @@ struct Second : db::DataBoxTag {
 }  // namespace test_subitems
 
 namespace db {
-template <size_t N, bool Compute>
-struct Subitems<test_subitems::Parent<N, Compute>> {
+template <size_t N, bool Compute, bool DependsOnComputeItem>
+struct Subitems<test_subitems::Parent<N, Compute, DependsOnComputeItem>> {
   using type = tmpl::list<test_subitems::First<N>, test_subitems::Second<N>>;
   using tag = test_subitems::Parent<N, Compute>;
 
@@ -1677,4 +1683,537 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
                   box)))>,
       "Failed testing that adding and removing a compute subitem does "
       "not change the type of the DataBox");
+}
+
+namespace {
+// Test serialization of a DataBox with non-Subitem simple items only.
+void serialization_non_subitem_simple_items() noexcept {
+  auto serialization_test_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                        test_databox_tags::Tag2>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+  const double* before_0 =
+      &db::get<test_databox_tags::Tag0>(serialization_test_box);
+  const std::vector<double>* before_1 =
+      &db::get<test_databox_tags::Tag1>(serialization_test_box);
+  const std::string* before_2 =
+      &db::get<test_databox_tags::Tag2>(serialization_test_box);
+
+  auto deserialized_serialization_test_box =
+      serialize_and_deserialize(serialization_test_box);
+  CHECK(db::get<test_databox_tags::Tag0>(serialization_test_box) == 3.14);
+  CHECK(db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box) ==
+        3.14);
+  CHECK(before_0 == &db::get<test_databox_tags::Tag0>(serialization_test_box));
+  CHECK(before_0 !=
+        &db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box));
+  CHECK(db::get<test_databox_tags::Tag1>(serialization_test_box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(before_1 == &db::get<test_databox_tags::Tag1>(serialization_test_box));
+  CHECK(before_1 !=
+        &db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box));
+  CHECK(db::get<test_databox_tags::Tag2>(serialization_test_box) ==
+        "My Sample String"s);
+  CHECK(db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box) ==
+        "My Sample String"s);
+  CHECK(before_2 == &db::get<test_databox_tags::Tag2>(serialization_test_box));
+  CHECK(before_2 !=
+        &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
+}
+
+// Test serialization of a DataBox with Subitem and non-Subitem simple items.
+void serialization_subitems_simple_items() noexcept {
+  auto serialization_test_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_subitems::Parent<0>,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2,
+                        test_subitems::Parent<1>>>(
+      3.14,
+      std::make_pair(
+          test_subitems::Boxed<int>(std::make_shared<int>(5)),
+          test_subitems::Boxed<double>(std::make_shared<double>(3.5))),
+      std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      std::make_pair(
+          test_subitems::Boxed<int>(std::make_shared<int>(9)),
+          test_subitems::Boxed<double>(std::make_shared<double>(-4.5))));
+  const double* before_0 =
+      &db::get<test_databox_tags::Tag0>(serialization_test_box);
+  const std::vector<double>* before_1 =
+      &db::get<test_databox_tags::Tag1>(serialization_test_box);
+  const std::string* before_2 =
+      &db::get<test_databox_tags::Tag2>(serialization_test_box);
+  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
+      before_parent0 =
+          &db::get<test_subitems::Parent<0>>(serialization_test_box);
+  const test_subitems::Boxed<int>* before_parent0f =
+      &db::get<test_subitems::First<0>>(serialization_test_box);
+  const test_subitems::Boxed<double>* before_parent0s =
+      &db::get<test_subitems::Second<0>>(serialization_test_box);
+  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
+      before_parent1 =
+          &db::get<test_subitems::Parent<1>>(serialization_test_box);
+  const test_subitems::Boxed<int>* before_parent1f =
+      &db::get<test_subitems::First<1>>(serialization_test_box);
+  const test_subitems::Boxed<double>* before_parent1s =
+      &db::get<test_subitems::Second<1>>(serialization_test_box);
+
+  auto deserialized_serialization_test_box =
+      serialize_and_deserialize(serialization_test_box);
+  CHECK(db::get<test_databox_tags::Tag0>(serialization_test_box) == 3.14);
+  CHECK(db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box) ==
+        3.14);
+  CHECK(before_0 == &db::get<test_databox_tags::Tag0>(serialization_test_box));
+  CHECK(before_0 !=
+        &db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box));
+  CHECK(*db::get<test_subitems::First<0>>(serialization_test_box) == 5);
+  CHECK(*db::get<test_subitems::Second<0>>(serialization_test_box) == 3.5);
+  CHECK(*db::get<test_subitems::First<0>>(
+            deserialized_serialization_test_box) == 5);
+  CHECK(*db::get<test_subitems::Second<0>>(
+            deserialized_serialization_test_box) == 3.5);
+  CHECK(before_parent0 ==
+        &db::get<test_subitems::Parent<0>>(serialization_test_box));
+  CHECK(before_parent0 != &db::get<test_subitems::Parent<0>>(
+                              deserialized_serialization_test_box));
+  CHECK(before_parent0f ==
+        &db::get<test_subitems::First<0>>(serialization_test_box));
+  CHECK(before_parent0f !=
+        &db::get<test_subitems::First<0>>(deserialized_serialization_test_box));
+  CHECK(before_parent0s ==
+        &db::get<test_subitems::Second<0>>(serialization_test_box));
+  CHECK(before_parent0s != &db::get<test_subitems::Second<0>>(
+                               deserialized_serialization_test_box));
+  CHECK(db::get<test_databox_tags::Tag1>(serialization_test_box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(before_1 == &db::get<test_databox_tags::Tag1>(serialization_test_box));
+  CHECK(before_1 !=
+        &db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box));
+  CHECK(db::get<test_databox_tags::Tag2>(serialization_test_box) ==
+        "My Sample String"s);
+  CHECK(db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box) ==
+        "My Sample String"s);
+  CHECK(before_2 == &db::get<test_databox_tags::Tag2>(serialization_test_box));
+  CHECK(before_2 !=
+        &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
+  CHECK(*db::get<test_subitems::First<1>>(serialization_test_box) == 9);
+  CHECK(*db::get<test_subitems::Second<1>>(serialization_test_box) == -4.5);
+  CHECK(*db::get<test_subitems::First<1>>(
+            deserialized_serialization_test_box) == 9);
+  CHECK(*db::get<test_subitems::Second<1>>(
+            deserialized_serialization_test_box) == -4.5);
+  CHECK(before_parent1 ==
+        &db::get<test_subitems::Parent<1>>(serialization_test_box));
+  CHECK(before_parent1 != &db::get<test_subitems::Parent<1>>(
+                              deserialized_serialization_test_box));
+  CHECK(before_parent1f ==
+        &db::get<test_subitems::First<1>>(serialization_test_box));
+  CHECK(before_parent1f !=
+        &db::get<test_subitems::First<1>>(deserialized_serialization_test_box));
+  CHECK(before_parent1s ==
+        &db::get<test_subitems::Second<1>>(serialization_test_box));
+  CHECK(before_parent1s != &db::get<test_subitems::Second<1>>(
+                               deserialized_serialization_test_box));
+}
+
+template <int Id>
+struct CountingFunc {
+  static double apply() {
+    count++;
+    return 8.2;
+  }
+  static int count;
+};
+
+template <int Id>
+int CountingFunc<Id>::count = 0;
+
+template <int Id>
+struct CountingTag : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "CountingTag";
+  static constexpr auto function = CountingFunc<Id>::apply;
+  using argument_tags = tmpl::list<>;
+};
+
+template <size_t SecondId>
+struct CountingTagDouble : db::ComputeItemTag {
+  static constexpr db::DataBoxString label = "CountingTag";
+  static double function(const test_subitems::Boxed<double>& t) {
+    count++;
+    return *t * 6.0;
+  }
+  using argument_tags = tmpl::list<test_subitems::Second<SecondId>>;
+  static int count;
+};
+
+template <size_t SecondId>
+int CountingTagDouble<SecondId>::count = 0;
+
+// Test serialization of a DataBox with Subitem compute items, one is
+// evaluated before serialization, one is after.
+// clang-tidy: this function is too long. Yes, well we need to check lots
+void serialization_subitem_compute_items() noexcept {  // NOLINT
+  auto serialization_test_box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_subitems::Parent<0>,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2,
+                        test_subitems::Parent<1>>,
+      db::AddComputeTags<CountingTag<1>, test_databox_tags::ComputeTag0,
+                         test_subitems::Parent<2, true>,
+                         test_databox_tags::ComputeTag1,
+                         test_subitems::Parent<3, true, true>, CountingTag<0>,
+                         CountingTagDouble<2>, CountingTagDouble<3>>>(
+      3.14,
+      std::make_pair(
+          test_subitems::Boxed<int>(std::make_shared<int>(5)),
+          test_subitems::Boxed<double>(std::make_shared<double>(3.5))),
+      std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      std::make_pair(
+          test_subitems::Boxed<int>(std::make_shared<int>(9)),
+          test_subitems::Boxed<double>(std::make_shared<double>(-4.5))));
+  const double* before_0 =
+      &db::get<test_databox_tags::Tag0>(serialization_test_box);
+  const std::vector<double>* before_1 =
+      &db::get<test_databox_tags::Tag1>(serialization_test_box);
+  const std::string* before_2 =
+      &db::get<test_databox_tags::Tag2>(serialization_test_box);
+  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
+      before_parent0 =
+          &db::get<test_subitems::Parent<0>>(serialization_test_box);
+  const test_subitems::Boxed<int>* before_parent0f =
+      &db::get<test_subitems::First<0>>(serialization_test_box);
+  const test_subitems::Boxed<double>* before_parent0s =
+      &db::get<test_subitems::Second<0>>(serialization_test_box);
+  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
+      before_parent1 =
+          &db::get<test_subitems::Parent<1>>(serialization_test_box);
+  const test_subitems::Boxed<int>* before_parent1f =
+      &db::get<test_subitems::First<1>>(serialization_test_box);
+  const test_subitems::Boxed<double>* before_parent1s =
+      &db::get<test_subitems::Second<1>>(serialization_test_box);
+  CHECK(db::get<test_databox_tags::ComputeTag0>(serialization_test_box) ==
+        6.28);
+  const double* before_compute_tag0 =
+      &db::get<test_databox_tags::ComputeTag0>(serialization_test_box);
+  CHECK(CountingFunc<0>::count == 0);
+  CHECK(CountingFunc<1>::count == 0);
+  CHECK(db::get<CountingTag<0>>(serialization_test_box) == 8.2);
+  const double* before_counting_tag0 =
+      &db::get<CountingTag<0>>(serialization_test_box);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 0);
+
+  CHECK(test_subitems::Parent<2, true>::count == 0);
+  CHECK(test_subitems::Parent<3, true, true>::count == 0);
+  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
+      before_parent2 =
+          &db::get<test_subitems::Parent<2, true>>(serialization_test_box);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 0);
+  const test_subitems::Boxed<int>* before_parent2_first =
+      &db::get<test_subitems::First<2>>(serialization_test_box);
+  const test_subitems::Boxed<double>* before_parent2_second =
+      &db::get<test_subitems::Second<2>>(serialization_test_box);
+
+  // Check we are correctly pointing into parent
+  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+               .first) ==
+        &*db::get<test_subitems::First<2>>(serialization_test_box));
+  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+               .second) ==
+        &*db::get<test_subitems::Second<2>>(serialization_test_box));
+
+  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+              .first) == 10);
+  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+              .second) == -9.0);
+
+  CHECK(*db::get<test_subitems::First<2>>(serialization_test_box) == 10);
+  CHECK(*db::get<test_subitems::Second<2>>(serialization_test_box) == -9.0);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 0);
+
+  // Check compute items that take subitems
+  CHECK(CountingTagDouble<2>::count == 0);
+  CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == -9.0 * 6.0);
+  CHECK(CountingTagDouble<2>::count == 1);
+  const double* const before_compute_tag2 =
+      &db::get<CountingTagDouble<2>>(serialization_test_box);
+
+  auto deserialized_serialization_test_box =
+      serialize_and_deserialize(serialization_test_box);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 0);
+  CHECK(db::get<test_databox_tags::Tag0>(serialization_test_box) == 3.14);
+  CHECK(db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box) ==
+        3.14);
+  CHECK(before_0 == &db::get<test_databox_tags::Tag0>(serialization_test_box));
+  CHECK(before_0 !=
+        &db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box));
+  CHECK(*db::get<test_subitems::First<0>>(serialization_test_box) == 5);
+  CHECK(*db::get<test_subitems::Second<0>>(serialization_test_box) == 3.5);
+  CHECK(*db::get<test_subitems::First<0>>(
+            deserialized_serialization_test_box) == 5);
+  CHECK(*db::get<test_subitems::Second<0>>(
+            deserialized_serialization_test_box) == 3.5);
+  CHECK(before_parent0 ==
+        &db::get<test_subitems::Parent<0>>(serialization_test_box));
+  CHECK(before_parent0 != &db::get<test_subitems::Parent<0>>(
+                              deserialized_serialization_test_box));
+  CHECK(before_parent0f ==
+        &db::get<test_subitems::First<0>>(serialization_test_box));
+  CHECK(before_parent0f !=
+        &db::get<test_subitems::First<0>>(deserialized_serialization_test_box));
+  CHECK(before_parent0s ==
+        &db::get<test_subitems::Second<0>>(serialization_test_box));
+  CHECK(before_parent0s != &db::get<test_subitems::Second<0>>(
+                               deserialized_serialization_test_box));
+  CHECK(db::get<test_databox_tags::Tag1>(serialization_test_box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box) ==
+        std::vector<double>{8.7, 93.2, 84.7});
+  CHECK(before_1 == &db::get<test_databox_tags::Tag1>(serialization_test_box));
+  CHECK(before_1 !=
+        &db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box));
+  CHECK(db::get<test_databox_tags::Tag2>(serialization_test_box) ==
+        "My Sample String"s);
+  CHECK(db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box) ==
+        "My Sample String"s);
+  CHECK(before_2 == &db::get<test_databox_tags::Tag2>(serialization_test_box));
+  CHECK(before_2 !=
+        &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
+  CHECK(*db::get<test_subitems::First<1>>(serialization_test_box) == 9);
+  CHECK(*db::get<test_subitems::Second<1>>(serialization_test_box) == -4.5);
+  CHECK(*db::get<test_subitems::First<1>>(
+            deserialized_serialization_test_box) == 9);
+  CHECK(*db::get<test_subitems::Second<1>>(
+            deserialized_serialization_test_box) == -4.5);
+  CHECK(before_parent1 ==
+        &db::get<test_subitems::Parent<1>>(serialization_test_box));
+  CHECK(before_parent1 != &db::get<test_subitems::Parent<1>>(
+                              deserialized_serialization_test_box));
+  CHECK(before_parent1f ==
+        &db::get<test_subitems::First<1>>(serialization_test_box));
+  CHECK(before_parent1f !=
+        &db::get<test_subitems::First<1>>(deserialized_serialization_test_box));
+  CHECK(before_parent1s ==
+        &db::get<test_subitems::Second<1>>(serialization_test_box));
+  CHECK(before_parent1s != &db::get<test_subitems::Second<1>>(
+                               deserialized_serialization_test_box));
+  // Check compute items
+  CHECK(db::get<test_databox_tags::ComputeTag0>(
+            deserialized_serialization_test_box) == 6.28);
+  CHECK(&db::get<test_databox_tags::ComputeTag0>(
+            deserialized_serialization_test_box) != before_compute_tag0);
+  CHECK(db::get<test_databox_tags::ComputeTag1>(
+            deserialized_serialization_test_box) == "My Sample String6.28"s);
+
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 0);
+  CHECK(db::get<CountingTag<0>>(serialization_test_box) == 8.2);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 0);
+  CHECK(&db::get<CountingTag<0>>(serialization_test_box) ==
+        before_counting_tag0);
+
+  CHECK(db::get<CountingTag<0>>(deserialized_serialization_test_box) == 8.2);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 0);
+  CHECK(&db::get<CountingTag<0>>(deserialized_serialization_test_box) !=
+        before_counting_tag0);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 0);
+  CHECK(db::get<CountingTag<1>>(deserialized_serialization_test_box) == 8.2);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 1);
+  CHECK(db::get<CountingTag<1>>(serialization_test_box) == 8.2);
+  CHECK(CountingFunc<0>::count == 1);
+  CHECK(CountingFunc<1>::count == 2);
+  CHECK(&db::get<CountingTag<1>>(serialization_test_box) !=
+        &db::get<CountingTag<1>>(deserialized_serialization_test_box));
+
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 0);
+  CHECK(&db::get<test_subitems::Parent<2, true>>(serialization_test_box) ==
+        before_parent2);
+  // Check we are correctly pointing into parent
+  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+               .first) ==
+        &*db::get<test_subitems::First<2>>(serialization_test_box));
+  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+               .second) ==
+        &*db::get<test_subitems::Second<2>>(serialization_test_box));
+  // Check that we did not reset the subitems items in the initial DataBox
+  CHECK(&db::get<test_subitems::First<2>>(serialization_test_box) ==
+        before_parent2_first);
+  CHECK(&db::get<test_subitems::Second<2>>(serialization_test_box) ==
+        before_parent2_second);
+  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+              .first) == 10);
+  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
+              .second) == -9.0);
+  CHECK(*(db::get<test_subitems::Parent<2, true>>(
+              deserialized_serialization_test_box)
+              .first) == 10);
+  CHECK(&db::get<test_subitems::Parent<2, true>>(
+            deserialized_serialization_test_box) != before_parent2);
+  CHECK(*(db::get<test_subitems::Parent<2, true>>(
+              deserialized_serialization_test_box)
+              .second) == -9.0);
+  CHECK(*db::get<test_subitems::First<2>>(
+            deserialized_serialization_test_box) == 10);
+  CHECK(*db::get<test_subitems::Second<2>>(
+            deserialized_serialization_test_box) == -9.0);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 0);
+  CHECK(&db::get<test_subitems::Parent<2, true>>(
+            deserialized_serialization_test_box) != before_parent2);
+  // Check pointers in deserialized box
+  CHECK(&db::get<test_subitems::First<2>>(
+            deserialized_serialization_test_box) != before_parent2_first);
+  CHECK(&db::get<test_subitems::Second<2>>(
+            deserialized_serialization_test_box) != before_parent2_second);
+  // Check we are correctly pointing into new parent and not old
+  CHECK(
+      &*(db::get<test_subitems::Parent<2, true>>(
+             deserialized_serialization_test_box)
+             .first) ==
+      &*db::get<test_subitems::First<2>>(deserialized_serialization_test_box));
+  CHECK(
+      &*(db::get<test_subitems::Parent<2, true>>(
+             deserialized_serialization_test_box)
+             .second) ==
+      &*db::get<test_subitems::Second<2>>(deserialized_serialization_test_box));
+  CHECK(&*(db::get<test_subitems::Parent<2, true>>(
+               deserialized_serialization_test_box)
+               .first) !=
+        &*db::get<test_subitems::First<2>>(serialization_test_box));
+  CHECK(&*(db::get<test_subitems::Parent<2, true>>(
+               deserialized_serialization_test_box)
+               .second) !=
+        &*db::get<test_subitems::Second<2>>(serialization_test_box));
+
+  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+              .first) == 11);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 1);
+  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+              .second) == -18.0);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 1);
+  CHECK(*db::get<test_subitems::First<3>>(serialization_test_box) == 11);
+  CHECK(*db::get<test_subitems::Second<3>>(serialization_test_box) == -18.0);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 1);
+  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(
+              deserialized_serialization_test_box)
+              .first) == 11);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 2);
+  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(
+              deserialized_serialization_test_box)
+              .second) == -18.0);
+  CHECK(*db::get<test_subitems::First<3>>(
+            deserialized_serialization_test_box) == 11);
+  CHECK(*db::get<test_subitems::Second<3>>(
+            deserialized_serialization_test_box) == -18.0);
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(test_subitems::Parent<3, true, true>::count == 2);
+
+  // Check that all the Parent<3> related objects point to the right place
+  CHECK(
+      &*(db::get<test_subitems::Parent<3, true, true>>(
+             deserialized_serialization_test_box)
+             .first) ==
+      &*db::get<test_subitems::First<3>>(deserialized_serialization_test_box));
+  CHECK(
+      &*(db::get<test_subitems::Parent<3, true, true>>(
+             deserialized_serialization_test_box)
+             .second) ==
+      &*db::get<test_subitems::Second<3>>(deserialized_serialization_test_box));
+  CHECK(&*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+               .first) ==
+        &*db::get<test_subitems::First<3>>(serialization_test_box));
+  CHECK(&*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+               .second) ==
+        &*db::get<test_subitems::Second<3>>(serialization_test_box));
+  CHECK(
+      &*db::get<test_subitems::First<3>>(deserialized_serialization_test_box) !=
+      &*db::get<test_subitems::First<3>>(serialization_test_box));
+  CHECK(&*db::get<test_subitems::Second<3>>(
+            deserialized_serialization_test_box) !=
+        &*db::get<test_subitems::Second<3>>(serialization_test_box));
+
+  // Check compute items that depend on the subitems
+  CHECK(CountingTagDouble<2>::count == 1);
+  CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == -9.0 * 6.0);
+  CHECK(before_compute_tag2 ==
+        &db::get<CountingTagDouble<2>>(serialization_test_box));
+  CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
+        -9.0 * 6.0);
+  CHECK(before_compute_tag2 !=
+        &db::get<CountingTagDouble<2>>(deserialized_serialization_test_box));
+  CHECK(CountingTagDouble<2>::count == 1);
+
+  CHECK(CountingTagDouble<3>::count == 0);
+  CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == -18.0 * 6.0);
+  CHECK(db::get<CountingTagDouble<3>>(deserialized_serialization_test_box) ==
+        -18.0 * 6.0);
+  CHECK(&db::get<CountingTagDouble<3>>(serialization_test_box) !=
+        &db::get<CountingTagDouble<3>>(deserialized_serialization_test_box));
+  CHECK(CountingTagDouble<3>::count == 2);
+
+  // Mutate subitems 1 in deserialized to see that changes propagate correctly
+  db::mutate<test_subitems::Second<1>>(
+      serialization_test_box, [](test_subitems::Boxed<double> & x) noexcept {
+        *x = 12.;
+      });
+  CHECK(test_subitems::Parent<2, true>::count == 1);
+  CHECK(CountingTagDouble<2>::count == 1);
+  CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
+  CHECK(test_subitems::Parent<2, true>::count == 2);
+  CHECK(CountingTagDouble<2>::count == 2);
+  CHECK(CountingTagDouble<3>::count == 2);
+  CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
+  CHECK(CountingTagDouble<3>::count == 3);
+
+  db::mutate<test_subitems::Second<1>>(
+      deserialized_serialization_test_box, [](test_subitems::Boxed<double> &
+                                              x) noexcept { *x = -7.; });
+  CHECK(test_subitems::Parent<2, true>::count == 2);
+  CHECK(CountingTagDouble<2>::count == 2);
+  CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
+        -14.0 * 6.0);
+  CHECK(test_subitems::Parent<2, true>::count == 3);
+  CHECK(CountingTagDouble<2>::count == 3);
+  CHECK(CountingTagDouble<3>::count == 3);
+  CHECK(db::get<CountingTagDouble<3>>(deserialized_serialization_test_box) ==
+        -28.0 * 6.0);
+  CHECK(CountingTagDouble<3>::count == 4);
+
+  // Check things didn't get modified in the original DataBox
+  CHECK(test_subitems::Parent<2, true>::count == 3);
+  CHECK(CountingTagDouble<2>::count == 3);
+  CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
+  CHECK(test_subitems::Parent<2, true>::count == 3);
+  CHECK(CountingTagDouble<2>::count == 3);
+  CHECK(CountingTagDouble<3>::count == 4);
+  CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
+  CHECK(CountingTagDouble<3>::count == 4);
+
+  CountingFunc<0>::count = 0;
+  CountingFunc<1>::count = 0;
+  CountingTagDouble<2>::count = 0;
+  CountingTagDouble<3>::count = 0;
+  test_subitems::Parent<2, true>::count = 0;
+  test_subitems::Parent<3, true, true>::count = 0;
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
+                  "[Unit][DataStructures]") {
+  serialization_non_subitem_simple_items();
+  serialization_subitems_simple_items();
+  serialization_subitem_compute_items();
 }
