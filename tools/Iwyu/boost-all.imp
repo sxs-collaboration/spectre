@@ -5646,4 +5646,6 @@
                 "<boost/preprocessor/repetition/repeat.hpp>", public]},
     { include: ["<boost/preprocessor/arithmetic/dec.hpp>", public,
                 "<boost/preprocessor/arithmetic/sub.hpp>", public]},
+    { include: ["<boost/smart_ptr/make_shared_object.hpp>", public,
+                "<boost/make_shared.hpp>", public]},
 ]
