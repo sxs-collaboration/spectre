@@ -139,7 +139,7 @@ T Option::parse_as() const {
 /// \snippet Test_Options.cpp options_example_scalar_struct
 /// \snippet Test_Options.cpp options_example_scalar_parse
 ///
-/// \see the \ref tutorial_option_parsing tutorial
+/// \see the \ref dev_guide_option_parsing tutorial
 ///
 /// \tparam OptionList the list of option structs to parse
 template <typename OptionList>

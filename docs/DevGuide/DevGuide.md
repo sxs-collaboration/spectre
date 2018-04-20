@@ -18,3 +18,4 @@ See LICENSE.txt for details.
 - \ref writing_unit_tests "Writing Unit Tests"
 - \ref travis_guide "Travis CI"
 - \ref ParallelGroup "Parallelization infrastructure" components and usage
+- \ref dev_guide_option_parsing "Option parsing" to get options from input files

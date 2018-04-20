@@ -4,6 +4,10 @@ See LICENSE.txt for details.
 \endcond
 # Installation {#installation}
 
+This page details the installation procedure for SpECTRE on personal computers.
+For instructions on installing SpECTRE on clusters please refer to the \ref
+installation_on_clusters "Installation on clusters" page.
+
 ### Dependencies
 
 #### Required:

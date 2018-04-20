@@ -213,6 +213,8 @@ license() {
               'cmake/Findcppcheck.cmake$' \
               'cmake/Findcppcheck.cpp$' \
               'docs/config/footer.html' \
+              'docs/config/header.html' \
+              'docs/config/layout.xml' \
               'LICENSE' \
               'tools/Iwyu/boost-all.imp$' \
               '.github/ISSUE_TEMPLATE.md' \
