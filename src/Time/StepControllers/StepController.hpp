@@ -13,10 +13,10 @@
 ///
 /// Holds all the StepControllers
 namespace StepControllers {
-class BinaryFraction;
-class FullSlab;
-class SimpleTimes;
-class SplitRemaining;
+class BinaryFraction;  // IWYU pragma: keep
+class FullSlab;  // IWYU pragma: keep
+class SimpleTimes;  // IWYU pragma: keep
+class SplitRemaining;  // IWYU pragma: keep
 }  // namespace StepControllers
 
 /// \ingroup TimeSteppersGroup
@@ -45,7 +45,7 @@ class StepController {
                                 double desired_step) const noexcept = 0;
 };
 
-#include "Time/StepControllers/BinaryFraction.hpp"
-#include "Time/StepControllers/FullSlab.hpp"
-#include "Time/StepControllers/SimpleTimes.hpp"
-#include "Time/StepControllers/SplitRemaining.hpp"
+#include "Time/StepControllers/BinaryFraction.hpp"  // IWYU pragma: keep
+#include "Time/StepControllers/FullSlab.hpp"  // IWYU pragma: keep
+#include "Time/StepControllers/SimpleTimes.hpp"  // IWYU pragma: keep
+#include "Time/StepControllers/SplitRemaining.hpp"  // IWYU pragma: keep

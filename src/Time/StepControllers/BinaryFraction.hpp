@@ -6,13 +6,17 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Time/Slab.hpp"
-#include "Time/StepControllers/StepController.hpp"
+#include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace StepControllers {
 
