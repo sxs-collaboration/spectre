@@ -17,6 +17,7 @@ add_executable(
 
 add_dependencies(
   ${EXECUTABLE}
+  module_ConstGlobalCache
   module_ParallelInfo
   )
 
