@@ -90,7 +90,8 @@ To build with the docker image:
    `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT`
    then
    `make -jN`
-   to compile the code, and `ctest` to run the tests.
+   to compile the code, `make test-executables -jN` to compile the test
+   executables, and `ctest` to run the tests.
 
 Notes:
   * Everything in your build directory is owned by root, and is
@@ -137,9 +138,12 @@ SpECTRE's dependencies can be installed with
 Install Spack by cloning it into `SPACK_DIR` (a directory of your choice),
 then add `SPACK_DIR/bin` to your `PATH`.
 
-For security, it is good practice to make Spack use the system's OpenSLL
+For security, it is good practice to make Spack use the system's OpenSSL
 rather than allow it to install a new copy — see Spack's documentation for
 [instructions](https://spack.readthedocs.io/en/latest/getting_started.html#openssl).
+You may need to install the development version of OpenSSL:
+* On Ubuntu (16.04), run `sudo apt-get install libssl-dev`
+* On Fedora (27), run `sudo dnf install openssl-devel`
 
 Spack works well with a module environment. We recommend
 [LMod](https://github.com/TACC/Lmod), which is available on many systems:
@@ -226,7 +230,7 @@ Follow these steps:
     `make -jN`
     to compile the code.
 5.  Run the tests with
-    `make %RunTests && ctest`.
+    `make test-executables && ctest`.
 
 **Notes**:
 * For more details on building Charm++, see the directions
