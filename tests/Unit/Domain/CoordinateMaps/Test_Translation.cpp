@@ -40,26 +40,25 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
   const auto trans_map_deserialized = serialize_and_deserialize(trans_map);
 
   const std::array<double, 1> point_xi{{3.2}};
-  const std::array<double, 1> point_x{{3.2}};
 
   while (t < final_time) {
     const std::array<double, 1> trans_x{{square(t)}};
     const std::array<double, 1> frame_vel{{f_of_t.func_and_deriv(t)[1][0]}};
 
     CHECK_ITERABLE_APPROX(trans_map(point_xi, t, f_of_t_list),
-                          point_x + trans_x);
-    CHECK_ITERABLE_APPROX(trans_map.inverse(point_x + trans_x, t, f_of_t_list),
+                          point_xi + trans_x);
+    CHECK_ITERABLE_APPROX(trans_map.inverse(point_xi + trans_x, t, f_of_t_list),
                           point_xi);
-    CHECK_ITERABLE_APPROX(
-        trans_map.frame_velocity(point_x + trans_x, t, f_of_t_list), frame_vel);
+    CHECK_ITERABLE_APPROX(trans_map.frame_velocity(point_xi, t, f_of_t_list),
+                          frame_vel);
 
     CHECK_ITERABLE_APPROX(trans_map_deserialized(point_xi, t, f_of_t_list),
-                          point_x + trans_x);
+                          point_xi + trans_x);
     CHECK_ITERABLE_APPROX(
-        trans_map_deserialized.inverse(point_x + trans_x, t, f_of_t_list),
+        trans_map_deserialized.inverse(point_xi + trans_x, t, f_of_t_list),
         point_xi);
     CHECK_ITERABLE_APPROX(trans_map_deserialized.frame_velocity(
-                              point_x + trans_x, t, f_of_t_list),
+                              point_xi + trans_x, t, f_of_t_list),
                           frame_vel);
 
     t += dt;
