@@ -15,6 +15,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -62,16 +63,24 @@ Domain<2, TargetFrame> Disk<TargetFrame>::create_domain() const noexcept {
                                              block2_corners, block3_corners,
                                              block4_corners};
 
-  auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          Wedge2DMap{inner_radius_, outer_radius_, Direction<2>::upper_xi(),
-                     use_equiangular_map_},
-          Wedge2DMap{inner_radius_, outer_radius_, Direction<2>::upper_eta(),
-                     use_equiangular_map_},
-          Wedge2DMap{inner_radius_, outer_radius_, Direction<2>::lower_xi(),
-                     use_equiangular_map_},
-          Wedge2DMap{inner_radius_, outer_radius_, Direction<2>::lower_eta(),
-                     use_equiangular_map_});
+  auto coord_maps = make_vector_coordinate_map_base<Frame::Logical,
+                                                    TargetFrame>(
+      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+                 use_equiangular_map_},
+      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+                 use_equiangular_map_},
+      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+                 use_equiangular_map_},
+      Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+                 use_equiangular_map_});
 
   if (use_equiangular_map_) {
     coord_maps.emplace_back(

@@ -3,11 +3,11 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <cmath>
-#include <pup.h>
-#include <cstddef>
 #include <array>
+#include <cmath>
+#include <cstddef>
 #include <memory>
+#include <pup.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -86,16 +86,24 @@ void test_disk_construction(
   using Equiangular2D =
       CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
 
-  auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          Wedge2DMap{inner_radius, outer_radius, Direction<2>::upper_xi(),
-                     use_equiangular_map},
-          Wedge2DMap{inner_radius, outer_radius, Direction<2>::upper_eta(),
-                     use_equiangular_map},
-          Wedge2DMap{inner_radius, outer_radius, Direction<2>::lower_xi(),
-                     use_equiangular_map},
-          Wedge2DMap{inner_radius, outer_radius, Direction<2>::lower_eta(),
-                     use_equiangular_map});
+  auto coord_maps = make_vector_coordinate_map_base<Frame::Logical,
+                                                    TargetFrame>(
+      Wedge2DMap{inner_radius, outer_radius, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+                 use_equiangular_map},
+      Wedge2DMap{inner_radius, outer_radius, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+                 use_equiangular_map},
+      Wedge2DMap{inner_radius, outer_radius, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+                 use_equiangular_map},
+      Wedge2DMap{inner_radius, outer_radius, 0.0, 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+                 use_equiangular_map});
 
   if (use_equiangular_map) {
     coord_maps.emplace_back(
