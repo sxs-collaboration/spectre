@@ -70,24 +70,24 @@ bool operator==(const Time& a, const Time& b) noexcept {
 
 TimeDelta operator-(const Time& a, const Time& b) noexcept {
   if (a.slab() == b.slab()) {
-    return TimeDelta(a.slab(), a.fraction() - b.fraction());
+    return {a.slab(), a.fraction() - b.fraction()};
   } else if (a.slab().is_followed_by(b.slab())) {
     if (a.is_at_slab_end()) {
-      return TimeDelta(b.slab(), -b.fraction());
+      return {b.slab(), -b.fraction()};
     } else {
       ASSERT(b.is_at_slab_start(),
              "Can't subtract times from different slabs");
-      return TimeDelta(a.slab(), a.fraction() - 1);
+      return {a.slab(), a.fraction() - 1};
     }
   } else {
     ASSERT(a.slab().is_preceeded_by(b.slab()),
            "Can't subtract times from different slabs");
     if (a.is_at_slab_start()) {
-      return TimeDelta(b.slab(), 1 - b.fraction());
+      return {b.slab(), 1 - b.fraction()};
     } else {
       ASSERT(b.is_at_slab_end(),
              "Can't subtract times from different slabs");
-      return TimeDelta(a.slab(), a.fraction());
+      return {a.slab(), a.fraction()};
     }
   }
 }
@@ -128,7 +128,8 @@ size_t hash_value(const Time& t) noexcept {
   }
 }
 
-namespace std {
+// clang-tidy: do not modify std namespace (okay for hash)
+namespace std {  // NOLINT
 size_t hash<Time>::operator()(const Time& t) const noexcept {
   return boost::hash<Time>{}(t);
 }
