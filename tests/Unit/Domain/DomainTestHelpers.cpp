@@ -8,9 +8,10 @@
 #include <algorithm>
 #include <typeinfo>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"                  // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"  // IWYU pragma: keep
@@ -22,6 +23,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -334,8 +336,9 @@ void test_domain_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<std::unique_ptr<CoordinateMapBase<
-        Frame::Logical, Frame::Inertial, VolumeDim>>>& expected_maps) noexcept {
+    const std::vector<std::unique_ptr<
+        CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+        expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
   CHECK(blocks.size() == expected_block_neighbors.size());
@@ -395,6 +398,20 @@ void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
   test_refinement_levels_of_neighbors<0>(elements);
 }
 
+template <size_t SpatialDim, typename SpatialFrame>
+tnsr::I<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
+    const Direction<SpatialDim>& direction,
+    const DataVector& used_for_size) noexcept {
+  auto basis_vector =
+      make_with_value<tnsr::I<DataVector, SpatialDim, SpatialFrame>>(
+          used_for_size, 0.0);
+
+  basis_vector.get(direction.axis()) =
+      make_with_value<DataVector>(used_for_size, direction.sign());
+
+  return basis_vector;
+}
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -417,9 +434,12 @@ void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
       const std::vector<std::array<size_t, DIM(data)>>&                        \
           initial_refinement_levels) noexcept;
 
-#define INSTANTIATE2(_, data)             \
-  template void test_physical_separation( \
-      const std::vector<Block<DIM(data), FRAME(data)>>& blocks) noexcept;
+#define INSTANTIATE2(_, data)                                                  \
+  template void test_physical_separation(                                      \
+      const std::vector<Block<DIM(data), FRAME(data)>>& blocks) noexcept;      \
+  template tnsr::I<DataVector, DIM(data), FRAME(data)> euclidean_basis_vector( \
+      const Direction<DIM(data)>& direction,                                   \
+      const DataVector& used_for_size) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE1, (1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (Frame::Grid, Frame::Inertial))

@@ -4,6 +4,7 @@
 set(LIBRARY NewtonianEuler)
 
 set(LIBRARY_SOURCES
+    Characteristics.cpp
     Fluxes.cpp
     PrimitiveFromConservative.cpp
     )

@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -23,16 +24,13 @@ template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+class DataVector;
 template <size_t VolumeDim>
 class Direction;
 template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
 class ElementId;
-namespace Frame {
-struct Inertial;
-struct Logical;
-}  // namespace Frame
 /// \endcond
 
 // Iterates over the logical corners of a VolumeDim-dimensional cube.
@@ -99,3 +97,9 @@ template <size_t VolumeDim>
 void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
                          const std::vector<std::array<size_t, VolumeDim>>&
                              initial_refinement_levels) noexcept;
+
+// Euclidean basis vector along the given `Direction` and in the given `Frame`.
+template <size_t SpatialDim, typename SpatialFrame = Frame::Inertial>
+tnsr::I<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
+    const Direction<SpatialDim>& direction,
+    const DataVector& used_for_size) noexcept;

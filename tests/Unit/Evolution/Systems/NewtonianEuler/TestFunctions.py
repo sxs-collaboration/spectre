@@ -4,6 +4,21 @@
 import numpy as np
 
 
+# Functions for testing Characteristics.cpp
+def characteristic_speeds(velocity, sound_speed_squared, normal):
+    normal_velocity = np.dot(velocity, normal)
+    sound_speed = np.sqrt(sound_speed_squared)
+    result = [normal_velocity - sound_speed]
+    for i in range(0, velocity.size):
+        result.append(normal_velocity)
+    result.append(normal_velocity + sound_speed)
+    return result
+
+
+# End functions for testing Characteristics.cpp
+
+
+# Functions for testing Fluxes.cpp
 def mass_density_flux(momentum_density, energy_density, velocity, pressure):
     return momentum_density
 
@@ -16,3 +31,6 @@ def momentum_density_flux(momentum_density, energy_density, velocity, pressure):
 
 def energy_density_flux(momentum_density, energy_density, velocity, pressure):
     return (energy_density + pressure) * velocity
+
+
+# End functions for testing Fluxes.cpp
