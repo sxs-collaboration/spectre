@@ -16,8 +16,6 @@ void register_pupables();
 #include <memory>
 #include <string>
 
-#include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
 #include "AlgorithmArray.hpp"
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
@@ -30,7 +28,9 @@ void register_pupables();
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
 namespace charmxx {
