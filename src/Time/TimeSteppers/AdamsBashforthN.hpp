@@ -464,7 +464,7 @@ AdamsBashforthN::compute_boundary_delta(
                                                   remote_interpolation_start);
         }
         integrated_cardinal_function *=
-            (*union_time - *std::prev(union_time)).value();
+            union_time->value() - std::prev(union_time)->value();
 
         deriv_coef += integrated_cardinal_function;
       }  // for union_time
