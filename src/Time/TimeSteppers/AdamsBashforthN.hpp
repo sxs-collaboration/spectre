@@ -317,25 +317,18 @@ AdamsBashforthN::compute_boundary_delta(
 
   const SimulationLess simulation_less(time_step.is_positive());
 
-  // Time::value is fairly slow, so cache values.
-  auto time_value =
-      make_cached_function<Time, std::map, Time::StructuralCompare>(
-          [](const Time& t) noexcept { return t.value(); });
-
   // Evaluate the cardinal function for a grid of points at a point on
   // the diagonal.
   const auto grid_cardinal_function =
-      [target_order_s, &time_value, &history](
-          const double evaluation_time,
-          const auto& local_index,
-          const auto& remote_index,
-          const auto& remote_times_start) noexcept {
+      [target_order_s, &history](const double evaluation_time,
+                                 const auto& local_index,
+                                 const auto& remote_index,
+                                 const auto& remote_times_start) noexcept {
     // Makes an iterator with a map to give time as a double.
-    const auto make_lagrange_iterator =
-        [&time_value](const auto& it) noexcept {
+    const auto make_lagrange_iterator = [](const auto& it) noexcept {
       return boost::make_transform_iterator(
-          it, [&time_value](const Time& t) noexcept {
-            return time_value(t);
+          it, [](const Time& t) noexcept {
+            return t.value();
           });
     };
 
@@ -465,7 +458,7 @@ AdamsBashforthN::compute_boundary_delta(
         double integrated_cardinal_function = 0.;
         for (; method_it != method_coefs.end(); ++method_it, ++recent_time) {
           integrated_cardinal_function +=
-              *method_it * grid_cardinal_function(time_value(*recent_time),
+              *method_it * grid_cardinal_function(recent_time->value(),
                                                   local_evaluation_step,
                                                   remote_evaluation_step,
                                                   remote_interpolation_start);
