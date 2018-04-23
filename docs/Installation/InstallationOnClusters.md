@@ -57,11 +57,7 @@ Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
 
 ## Wheeler at Caltech
 
-1. Clone SpECTRE into `$SPECTRE_HOME`
-2. Run
-   `mkdir $SPECTRE_HOME/build_[gcc|clang] && cd $SPECTRE_HOME/build_[gcc|clang]`
-3. Run `. $SPECTRE_HOME/support/Environments/wheeler_[gcc|llvm].env` to load
-   the GCC or LLVM/Clang environment
-4. Run `cmake -D CMAKE_BUILD_TYPE=[Release|Debug]
-   -D CMAKE_Fortran_COMPILER=gfortran $SPECTRE_HOME`
-5. Run `make -j4`
+Follow the general instructions using `wheeler` for `SYSTEM_TO_RUN_ON`, except
+you do not need to install any dependencies, so you can skip steps 5 and 6. You
+can optionally compile using LLVM/Clang by sourcing `wheeler_clang.sh` instead
+of `wheeler_gcc.sh`
