@@ -375,19 +375,12 @@ AdamsBashforthN::compute_boundary_delta(
   // Calculating the Adams-Bashforth coefficients is somewhat
   // expensive, so we cache them.  ab_coefs(it) returns the
   // coefficients used to step from *(it - 1) to *it.
-  auto ab_coefs = [target_order_s]() noexcept {
-    using Iter = decltype(union_times.cbegin());
-    auto compare = [](const Iter& a, const Iter& b) noexcept {
-      return Time::StructuralCompare{}(*a, *b);
-    };
-    return make_cached_function<Iter, std::map, decltype(compare)>(
-        [target_order_s](const Iter& times_end) noexcept {
-          return get_coefficients(std::prev(times_end, target_order_s),
-                                  times_end,
-                                  *times_end - *std::prev(times_end));
-        },
-        std::move(compare));
-  }();
+  auto ab_coefs = make_cached_function<decltype(union_times.cbegin()),
+                                       std::map>([target_order_s](
+      const decltype(union_times.cbegin())& times_end) noexcept {
+    return get_coefficients(std::prev(times_end, target_order_s), times_end,
+                            *times_end - *std::prev(times_end));
+  });
 
   // Result variable.  We evaluate the coupling only for the
   // structure.  This evaluation may be expensive, but by choosing the
