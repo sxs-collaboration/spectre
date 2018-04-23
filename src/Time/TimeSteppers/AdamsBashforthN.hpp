@@ -13,7 +13,6 @@
 #include <map>
 #include <ostream>
 #include <pup.h>
-#include <set>
 #include <type_traits>
 #include <vector>
 
@@ -364,9 +363,12 @@ AdamsBashforthN::compute_boundary_delta(
 
   // Union of times of all step boundaries on any side.
   const auto union_times = [&end_time, &history, &simulation_less]() noexcept {
-    std::set<Time, SimulationLess> ret({end_time}, simulation_less);
-    ret.insert(history->local_begin(), history->local_end());
-    ret.insert(history->remote_begin(), history->remote_end());
+    std::vector<Time> ret;
+    ret.reserve(history->local_size() + history->remote_size() + 1);
+    std::set_union(history->local_begin(), history->local_end(),
+                   history->remote_begin(), history->remote_end(),
+                   std::back_inserter(ret), simulation_less);
+    ret.push_back(end_time);
     return ret;
   }();
 
