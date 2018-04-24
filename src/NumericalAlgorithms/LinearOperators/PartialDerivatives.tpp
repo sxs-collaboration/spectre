@@ -79,11 +79,11 @@ struct LogicalImpl<1, VariableTags, DerivativeTags> {
         Variables<DerivativeTags>(u.number_of_grid_points(), 0.0));
     const Matrix& differentiation_matrix_xi =
         Basis::lgl::differentiation_matrix(extents[0]);
-    dgemm_('N', 'N', extents[0],
-           logical_partial_derivatives_of_u[0].size() / extents[0], extents[0],
-           1.0, differentiation_matrix_xi.data(), extents[0], u.data(),
-           extents[0], 0.0, logical_partial_derivatives_of_u[0].data(),
-           extents[0]);
+    dgemm_<true>('N', 'N', extents[0],
+                 logical_partial_derivatives_of_u[0].size() / extents[0],
+                 extents[0], 1.0, differentiation_matrix_xi.data(), extents[0],
+                 u.data(), extents[0], 0.0,
+                 logical_partial_derivatives_of_u[0].data(), extents[0]);
 
     return logical_partial_derivatives_of_u;
   }
@@ -100,10 +100,10 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
         Basis::lgl::differentiation_matrix(extents[0]);
     const size_t num_components_times_xi_slices =
         logical_partial_derivatives_of_u[0].size() / extents[0];
-    dgemm_('N', 'N', extents[0], num_components_times_xi_slices, extents[0],
-           1.0, differentiation_matrix_xi.data(), extents[0], u.data(),
-           extents[0], 0.0, logical_partial_derivatives_of_u[0].data(),
-           extents[0]);
+    dgemm_<true>('N', 'N', extents[0], num_components_times_xi_slices,
+                 extents[0], 1.0, differentiation_matrix_xi.data(), extents[0],
+                 u.data(), extents[0], 0.0,
+                 logical_partial_derivatives_of_u[0].data(), extents[0]);
 
     const auto u_eta_fastest =
         transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
@@ -113,10 +113,10 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
         Basis::lgl::differentiation_matrix(extents[1]);
     const size_t num_components_times_eta_slices =
         logical_partial_derivatives_of_u[1].size() / extents[1];
-    dgemm_('N', 'N', extents[1], num_components_times_eta_slices, extents[1],
-           1.0, differentiation_matrix_eta.data(), extents[1],
-           u_eta_fastest.data(), extents[1], 0.0, partial_u_wrt_eta.data(),
-           extents[1]);
+    dgemm_<true>('N', 'N', extents[1], num_components_times_eta_slices,
+                 extents[1], 1.0, differentiation_matrix_eta.data(), extents[1],
+                 u_eta_fastest.data(), extents[1], 0.0,
+                 partial_u_wrt_eta.data(), extents[1]);
     transpose(partial_u_wrt_eta, num_components_times_xi_slices, extents[0],
               make_not_null(&logical_partial_derivatives_of_u[1]));
 
@@ -135,10 +135,10 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
         Basis::lgl::differentiation_matrix(extents[0]);
     const size_t num_components_times_xi_slices =
         logical_partial_derivatives_of_u[0].size() / extents[0];
-    dgemm_('N', 'N', extents[0], num_components_times_xi_slices, extents[0],
-           1.0, differentiation_matrix_xi.data(), extents[0], u.data(),
-           extents[0], 0.0, logical_partial_derivatives_of_u[0].data(),
-           extents[0]);
+    dgemm_<true>('N', 'N', extents[0], num_components_times_xi_slices,
+                 extents[0], 1.0, differentiation_matrix_xi.data(), extents[0],
+                 u.data(), extents[0], 0.0,
+                 logical_partial_derivatives_of_u[0].data(), extents[0]);
 
     auto u_eta_or_zeta_fastest =
         transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
@@ -149,10 +149,10 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
         Basis::lgl::differentiation_matrix(extents[1]);
     const size_t num_components_times_eta_slices =
         logical_partial_derivatives_of_u[1].size() / extents[1];
-    dgemm_('N', 'N', extents[1], num_components_times_eta_slices, extents[1],
-           1.0, differentiation_matrix_eta.data(), extents[1],
-           u_eta_or_zeta_fastest.data(), extents[1], 0.0,
-           partial_u_wrt_eta_or_zeta.data(), extents[1]);
+    dgemm_<true>('N', 'N', extents[1], num_components_times_eta_slices,
+                 extents[1], 1.0, differentiation_matrix_eta.data(), extents[1],
+                 u_eta_or_zeta_fastest.data(), extents[1], 0.0,
+                 partial_u_wrt_eta_or_zeta.data(), extents[1]);
     transpose(partial_u_wrt_eta_or_zeta, num_components_times_xi_slices,
               extents[0], make_not_null(&logical_partial_derivatives_of_u[1]));
 
@@ -165,10 +165,10 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
         Basis::lgl::differentiation_matrix(extents[2]);
     const size_t num_components_times_zeta_slices =
         logical_partial_derivatives_of_u[2].size() / extents[2];
-    dgemm_('N', 'N', extents[2], num_components_times_zeta_slices, extents[2],
-           1.0, differentiation_matrix_zeta.data(), extents[2],
-           u_eta_or_zeta_fastest.data(), extents[2], 0.0,
-           partial_u_wrt_eta_or_zeta.data(), extents[2]);
+    dgemm_<true>('N', 'N', extents[2], num_components_times_zeta_slices,
+                 extents[2], 1.0, differentiation_matrix_zeta.data(),
+                 extents[2], u_eta_or_zeta_fastest.data(), extents[2], 0.0,
+                 partial_u_wrt_eta_or_zeta.data(), extents[2]);
     transpose(partial_u_wrt_eta_or_zeta, number_of_chunks, chunk_size,
               make_not_null(&logical_partial_derivatives_of_u[2]));
 
