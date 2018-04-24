@@ -47,6 +47,7 @@ class SliceIterator {
  private:
   size_t size_ = std::numeric_limits<size_t>::max();
   size_t stride_ = std::numeric_limits<size_t>::max();
+  size_t stride_count_ = std::numeric_limits<size_t>::max();
   size_t jump_ = std::numeric_limits<size_t>::max();
   size_t initial_offset_ = std::numeric_limits<size_t>::max();
   size_t volume_offset_ = std::numeric_limits<size_t>::max();
