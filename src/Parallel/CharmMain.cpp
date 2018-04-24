@@ -67,7 +67,9 @@ void register_parallel_components() noexcept {
       charm_register_list[i]->register_with_charm();           // NOLINT
     }
   }
-  delete[] charm_register_list;
+  // clang-tidy: use gsl::owner (we don't use raw owning pointers unless
+  // necessary)
+  delete[] charm_register_list;  // NOLINT
 }
 
 /*!

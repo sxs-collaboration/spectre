@@ -692,7 +692,10 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
           "exception: '"
           << e.what() << "'\nDataBox type: '"
           << pretty_type::get_name<this_databox>() << "'\nIteration: " << iter
-          << "\nAction: '" << pretty_type::get_name<this_action>() << "'\n\n");
+          << "\nAction: '" << pretty_type::get_name<this_action>()
+          << "'\nBoost::Variant id: " << box_.which()
+          << "\nBoost::Variant type is: '" << type_of_current_state(box_)
+          << "'\n\n");
     }
 
     const auto check_if_ready = make_overloader(

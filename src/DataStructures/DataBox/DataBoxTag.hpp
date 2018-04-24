@@ -283,23 +283,6 @@ struct hash_databox_tag<Tag,
 };
 /// \endcond
 // @}
-
-/*!
- * \ingroup DataBoxGroup
- *
- * \details
- * Predicate that inherits from std::true_type if
- * `hash_databox_tag<DataBoxTag1>::value <
- * hash_databox_tag<DataBoxTag2>::value` otherwise inherits from
- * std::false_type.
- *
- * \tparam DataBoxTag1 the left operand
- * \tparam DataBoxTag2 the right operand
- */
-template <typename DataBoxTag1, typename DataBoxTag2>
-struct databox_tag_less : tmpl::bool_<(hash_databox_tag<DataBoxTag1>::value <
-                                       hash_databox_tag<DataBoxTag2>::value)> {
-};
 }  // namespace detail
 
 /*!

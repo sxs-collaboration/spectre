@@ -55,6 +55,8 @@ class assoc_state {
   assoc_state& operator=(assoc_state&& /*rhs*/) = delete;
   virtual const Rt& get() const = 0;
   virtual Rt& mutate() = 0;
+  // clang-tidy: no non-const references
+  virtual void pack_unpack_lazy_function(PUP::er& p) noexcept = 0;  // NOLINT
   virtual ~assoc_state() = default;
 };
 
@@ -66,6 +68,11 @@ class simple_assoc_state : public assoc_state<Rt> {
   const Rt& get() const override { return t_; }
 
   Rt& mutate() override { return t_; }
+
+  // clang-tidy: no non-const references
+  void pack_unpack_lazy_function(PUP::er& /*p*/) noexcept override {  // NOLINT
+    ERROR("Cannot send a Deferred that's not a lazily evaluated function");
+  }
 
  private:
   Rt t_;
@@ -98,6 +105,14 @@ class deferred_assoc_state : public assoc_state<Rt> {
   void update_args(std::decay_t<Args>... args) noexcept {
     evaluated_ = false;
     args_ = std::tuple<std::decay_t<Args>...>{std::move(args)...};
+  }
+
+  // clang-tidy: no non-const references
+  void pack_unpack_lazy_function(PUP::er& p) noexcept override {  // NOLINT
+    p | evaluated_;
+    if (evaluated_) {
+      p | t_;
+    }
   }
 
  private:
@@ -157,6 +172,11 @@ class Deferred {
   constexpr const Rt& get() const { return state_->get(); }
 
   constexpr Rt& mutate() { return state_->mutate(); }
+
+  // clang-tidy: no non-const references
+  void pack_unpack_lazy_function(PUP::er& p) noexcept {  // NOLINT
+    state_->pack_unpack_lazy_function(p);
+  }
 
  private:
   boost::shared_ptr<Deferred_detail::assoc_state<Rt>> state_;

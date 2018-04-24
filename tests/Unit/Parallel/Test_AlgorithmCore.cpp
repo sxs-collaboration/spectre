@@ -179,8 +179,8 @@ struct NoOpsComponent {
   using metavariables = Metavariables;
   using action_list =
       tmpl::list<no_op_test::increment_count_actions_called, no_op_test::no_op>;
-  using initial_databox = db::DataBox<
-      db::get_databox_list<tmpl::list<CountActionsCalled, Int0, Int1>>>;
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<CountActionsCalled, Int0, Int1>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
@@ -326,8 +326,8 @@ struct MutateComponent {
   using action_list =
       tmpl::list<add_remove_test::add_int_value_10,
                  add_remove_test::increment_int0, add_remove_test::remove_int0>;
-  using initial_databox = db::DataBox<
-      db::get_databox_list<tmpl::list<CountActionsCalled, TemporalId>>>;
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<CountActionsCalled, TemporalId>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
@@ -474,8 +474,8 @@ struct ReceiveComponent {
       tmpl::list<receive_data_test::add_int0_from_receive,
                  add_remove_test::increment_int0, add_remove_test::remove_int0,
                  receive_data_test::update_instance>;
-  using initial_databox = db::DataBox<
-      db::get_databox_list<tmpl::list<CountActionsCalled, Int1, TemporalId>>>;
+  using initial_databox = db::compute_databox_type<
+      tmpl::list<CountActionsCalled, Int1, TemporalId>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
@@ -586,8 +586,8 @@ struct AnyOrderComponent {
       add_remove_test::add_int_value_10, add_remove_test::increment_int0,
       any_order::iterate_increment_int0, add_remove_test::remove_int0,
       receive_data_test::update_instance>;
-  using initial_databox = db::DataBox<
-      db::get_databox_list<tmpl::list<CountActionsCalled, TemporalId>>>;
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<CountActionsCalled, TemporalId>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 

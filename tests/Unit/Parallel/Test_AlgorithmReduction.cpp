@@ -167,7 +167,7 @@ struct SingletonParallelComponent {
   using options = tmpl::list<>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
+  using initial_databox = db::compute_databox_type<tmpl::list<>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -260,7 +260,7 @@ struct ArrayParallelComponent {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using array_index = int;
-  using initial_databox = db::DataBox<db::get_databox_list<tmpl::list<>>>;
+  using initial_databox = db::compute_databox_type<tmpl::list<>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
