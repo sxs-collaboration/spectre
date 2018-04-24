@@ -3,7 +3,6 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <boost/rational.hpp>
 #include <limits>
 
 #include "ErrorHandling/Error.hpp"
@@ -13,6 +12,7 @@
 #include "Time/StepControllers/SimpleTimes.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/Time.hpp"
+// IWYU pragma: no_include "Utilities/Rational.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
 class StepController;

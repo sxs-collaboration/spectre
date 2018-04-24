@@ -23,6 +23,7 @@ set(LIBRARY_SOURCES
   Test_Math.cpp
   Test_Overloader.cpp
   Test_PrettyType.cpp
+  Test_Rational.cpp
   Test_Requires.cpp
   Test_StdArrayHelpers.cpp
   Test_StdHelpers.cpp

@@ -11,17 +11,7 @@
 
 void Time::pup(PUP::er& p) noexcept {
   p | slab_;
-  if (p.isUnpacking()) {
-    rational_t::int_type n, d;
-    p | n;
-    p | d;
-    fraction_.assign(n, d);
-  } else {
-    rational_t::int_type n = fraction_.numerator();
-    rational_t::int_type d = fraction_.denominator();
-    p | n;
-    p | d;
-  }
+  p | fraction_;
 }
 
 Time Time::with_slab(const Slab& new_slab) const noexcept {
@@ -80,24 +70,24 @@ bool operator==(const Time& a, const Time& b) noexcept {
 
 TimeDelta operator-(const Time& a, const Time& b) noexcept {
   if (a.slab() == b.slab()) {
-    return TimeDelta(a.slab(), a.fraction() - b.fraction());
+    return {a.slab(), a.fraction() - b.fraction()};
   } else if (a.slab().is_followed_by(b.slab())) {
     if (a.is_at_slab_end()) {
-      return TimeDelta(b.slab(), -b.fraction());
+      return {b.slab(), -b.fraction()};
     } else {
       ASSERT(b.is_at_slab_start(),
              "Can't subtract times from different slabs");
-      return TimeDelta(a.slab(), a.fraction() - 1);
+      return {a.slab(), a.fraction() - 1};
     }
   } else {
     ASSERT(a.slab().is_preceeded_by(b.slab()),
            "Can't subtract times from different slabs");
     if (a.is_at_slab_start()) {
-      return TimeDelta(b.slab(), 1 - b.fraction());
+      return {b.slab(), 1 - b.fraction()};
     } else {
       ASSERT(b.is_at_slab_end(),
              "Can't subtract times from different slabs");
-      return TimeDelta(a.slab(), a.fraction());
+      return {a.slab(), a.fraction()};
     }
   }
 }
@@ -110,23 +100,13 @@ std::ostream& operator<<(std::ostream& os, const Time& t) noexcept {
 
 void TimeDelta::pup(PUP::er& p) noexcept {
   p | slab_;
-  if (p.isUnpacking()) {
-    rational_t::int_type n, d;
-    p | n;
-    p | d;
-    fraction_.assign(n, d);
-  } else {
-    rational_t::int_type n = fraction_.numerator();
-    rational_t::int_type d = fraction_.denominator();
-    p | n;
-    p | d;
-  }
+  p | fraction_;
 }
 
 double operator/(const TimeDelta& a, const TimeDelta& b) noexcept {
   // We need to use double/double here because this is the
   // implementation of TimeDelta/TimeDelta.
-  return boost::rational_cast<double>(a.fraction() / b.fraction()) *
+  return (a.fraction() / b.fraction()).value() *
          (a.slab().duration().value() / b.slab().duration().value());
 }
 
@@ -143,13 +123,13 @@ size_t hash_value(const Time& t) noexcept {
   } else {
     size_t h = 0;
     boost::hash_combine(h, t.slab());
-    boost::hash_combine(h, t.fraction().numerator());
-    boost::hash_combine(h, t.fraction().denominator());
+    boost::hash_combine(h, t.fraction());
     return h;
   }
 }
 
-namespace std {
+// clang-tidy: do not modify std namespace (okay for hash)
+namespace std {  // NOLINT
 size_t hash<Time>::operator()(const Time& t) const noexcept {
   return boost::hash<Time>{}(t);
 }
