@@ -17,12 +17,15 @@ StripeIterator::StripeIterator(const Index<Dim>& extents,
       size_(extents.product()),
       stride_(std::accumulate(extents.begin(), extents.begin() + stripe_dim,
                               1_st, std::multiplies<size_t>())),
+      stride_count_(0),
       jump_((extents[stripe_dim] - 1) * stride_) {}
 
 StripeIterator& StripeIterator::operator++() {
   ++offset_;
-  if (UNLIKELY(0 == (offset_ % stride_))) {
+  ++stride_count_;
+  if (UNLIKELY(stride_count_ == stride_)) {
     offset_ += jump_;
+    stride_count_ = 0;
   }
   return *this;
 }
