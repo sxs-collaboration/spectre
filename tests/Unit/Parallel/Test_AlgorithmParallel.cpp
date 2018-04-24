@@ -20,6 +20,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
@@ -126,8 +127,8 @@ struct CountReceives {
         Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(
             cache);
     for (int i = 0; i < number_of_1d_array_elements; ++i) {
-      array_parallel_component[i].template receive_data<Tags::IntReceiveTag>(
-          0, 101, true);
+      Parallel::receive_data<Tags::IntReceiveTag>(array_parallel_component[i],
+                                                  0, 101, true);
     }
     /// [call_on_indexed_array]
     /// [return_with_termination]
@@ -187,7 +188,8 @@ struct AddIntValue10 {
       /// [broadcast_to_group]
       auto& group_parallel_component = Parallel::get_parallel_component<
           GroupParallelComponent<Metavariables>>(cache);
-      group_parallel_component.template receive_data<Tags::IntReceiveTag>(
+      Parallel::receive_data<Tags::IntReceiveTag>(
+          group_parallel_component,
           db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
           db::get<Tags::CountActionsCalled>(box));
       /// [broadcast_to_group]
@@ -262,7 +264,8 @@ struct SendToSingleton {
         SingletonParallelComponent<Metavariables>>(cache);
     // Send CountActionsCalled to the SingletonParallelComponent several times
     /// [receive_broadcast]
-    singleton_parallel_component.template receive_data<Tags::IntReceiveTag>(
+    Parallel::receive_data<Tags::IntReceiveTag>(
+        singleton_parallel_component,
         db::get<Tags::CountActionsCalled>(box) + 100 * array_index,
         db::get<Tags::CountActionsCalled>(box), true);
     /// [receive_broadcast]
@@ -364,8 +367,9 @@ struct SingletonParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
-        .template simple_action<SingletonActions::Initialize>();
+    Parallel::simple_action<SingletonActions::Initialize>(
+        Parallel::get_parallel_component<SingletonParallelComponent>(
+            local_cache));
   }
 
   static void execute_next_global_actions(
@@ -409,7 +413,7 @@ struct ArrayParallelComponent {
     }
     array_proxy.doneInserting();
 
-    array_proxy.template simple_action<ArrayActions::Initialize>();
+    Parallel::simple_action<ArrayActions::Initialize>(array_proxy);
   }
 
   static void execute_next_global_actions(
@@ -437,8 +441,8 @@ struct GroupParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<GroupParallelComponent>(local_cache)
-        .template simple_action<GroupActions::Initialize>();
+    Parallel::simple_action<GroupActions::Initialize>(
+        Parallel::get_parallel_component<GroupParallelComponent>(local_cache));
   }
 
   static void execute_next_global_actions(
@@ -459,8 +463,9 @@ struct NodegroupParallelComponent {
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<NodegroupParallelComponent>(local_cache)
-        .template simple_action<NodegroupActions::Initialize>();
+    Parallel::simple_action<NodegroupActions::Initialize>(
+        Parallel::get_parallel_component<NodegroupParallelComponent>(
+            local_cache));
   }
 
   static void execute_next_global_actions(

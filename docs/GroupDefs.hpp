@@ -320,7 +320,7 @@ Each %Parallel Component struct must have the following type aliases:
       equivalent. We ensure that all entry method calls done through the
       Algorithm's `simple_action` and `receive_data` functions are
       threadsafe. User controlled threading is possible by calling the non-entry
-      method member function `threaded_simple_action`.
+      method member function `threaded_action`.
 2. `using metavariables` is set to the Metavariables struct that stores the
    global metavariables. It is often easiest to have the %Parallel
    Component struct have a template parameter `Metavariables` that is the

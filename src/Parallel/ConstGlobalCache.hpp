@@ -93,13 +93,15 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
-  friend Parallel::proxy_from_parallel_component<ParallelComponentTag>&
-  get_parallel_component(ConstGlobalCache<MV>& cache) noexcept;  // NOLINT
+  friend auto get_parallel_component(  // NOLINT
+      ConstGlobalCache<MV>& cache) noexcept
+      -> Parallel::proxy_from_parallel_component<ParallelComponentTag>&;
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
-  friend const Parallel::proxy_from_parallel_component<ParallelComponentTag>&
-  get_parallel_component(const ConstGlobalCache<MV>& cache) noexcept;  // NOLINT
+  friend auto get_parallel_component(  // NOLINT
+      const ConstGlobalCache<MV>& cache) noexcept -> const
+      Parallel::proxy_from_parallel_component<ParallelComponentTag>&;  // NOLINT
 
   tuples::TaggedTupleTypelist<tag_list> const_global_cache_;
   tuples::TaggedTupleTypelist<parallel_component_tag_list> parallel_components_;
@@ -127,16 +129,17 @@ void ConstGlobalCache<Metavariables>::set_parallel_components(
 /// \returns a Charm++ proxy that can be used to call an entry method on the
 /// chare(s)
 template <typename ParallelComponentTag, typename Metavariables>
-Parallel::proxy_from_parallel_component<ParallelComponentTag>&
-get_parallel_component(ConstGlobalCache<Metavariables>& cache) noexcept {
+auto get_parallel_component(ConstGlobalCache<Metavariables>& cache) noexcept
+    -> Parallel::proxy_from_parallel_component<ParallelComponentTag>& {
   return tuples::get<tmpl::type_<
       Parallel::proxy_from_parallel_component<ParallelComponentTag>>>(
       cache.parallel_components_);
 }
 
 template <typename ParallelComponentTag, typename Metavariables>
-const Parallel::proxy_from_parallel_component<ParallelComponentTag>&
-get_parallel_component(const ConstGlobalCache<Metavariables>& cache) noexcept {
+auto get_parallel_component(
+    const ConstGlobalCache<Metavariables>& cache) noexcept
+    -> const Parallel::proxy_from_parallel_component<ParallelComponentTag>& {
   return tuples::get<tmpl::type_<
       Parallel::proxy_from_parallel_component<ParallelComponentTag>>>(
       cache.parallel_components_);

@@ -152,49 +152,42 @@ constexpr bool is_custom_reduction_type_v = is_custom_reduction_type<T>::value;
 
 /*!
  * \ingroup ParallelGroup
- * \brief Perform a reduction from the current ParallelComponent to the
- * `TargetParallelComponent`, performing the `Action` upon receiving the
- * reduction.
+ * \brief Perform a reduction from the `sender_component` (typically your own
+ * parallel component) to the `target_component`, performing the `Action` upon
+ * receiving the reduction.
  *
- * The function must receive a `ConstGlobalCache` and `ArrayIndex` of
- * the sending ParallelComponent. A Charm++ reducer specifying what type of
- * reduction is to be done must also be passed (see
- * [here](http://charm.cs.illinois.edu/manuals/html/charm++/manual.html)),
- * as well as the data that is to be reduced.
+ * A Charm++ reducer specifying what type of reduction is to be done must also
+ * be passed (see
+ * [here](http://charm.cs.illinois.edu/manuals/html/charm++/manual.html)).
  *
  * \example
  * Built-in Charm++ reductions are supported as:
  * \snippet Test_AlgorithmReduction.cpp contribute_to_reduction_example
  */
 template <
-    class SenderParallelComponent, class TargetParallelComponent, class Action,
-    class Metavariables, class ArrayIndex, class ReductionType,
+    class Action, class ReductionType, class SenderProxy, class TargetProxy,
     Requires<not Parallel_detail::is_custom_reduction_type_v<ReductionType>> =
         nullptr>
-void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
-                             const ArrayIndex& array_index,
-                             CkReduction::reducerType reducer,
-                             const ReductionType& reduction_data) noexcept {
+void contribute_to_reduction(const ReductionType& reduction_data,
+                             const SenderProxy& sender_component,
+                             const TargetProxy& target_component,
+                             CkReduction::reducerType reducer) noexcept {
   CkCallback callback(
-      Parallel::index_from_parallel_component<TargetParallelComponent>::
-          template redn_wrapper_reduction_action<Action,
-                                                 std::decay_t<ReductionType>>(
-              nullptr),
-      Parallel::get_parallel_component<TargetParallelComponent>(cache));
-  Parallel::get_parallel_component<SenderParallelComponent>(cache)[array_index]
-      .ckLocal()
-      ->contribute(sizeof(reduction_data), &reduction_data, reducer, callback);
+      TargetProxy::index_t::template redn_wrapper_reduction_action<
+          Action, std::decay_t<ReductionType>>(nullptr),
+      target_component);
+  sender_component.ckLocal()->contribute(sizeof(reduction_data),
+                                         &reduction_data, reducer, callback);
 }
 
 /*!
  * \ingroup ParallelGroup
- * \brief Perform a reduction from the current ParallelComponent to the
- * `TargetParallelComponent`, performing the `Action` upon receiving the
- * reduction.
+ * \brief Perform a reduction from the `sender_component` (typically your own
+ * parallel component) to the `target_component`, performing the `Action` upon
+ * receiving the reduction.
  *
- * The function must receive a `ConstGlobalCache` and `ArrayIndex` of
- * the sending ParallelComponent. The template parameter `F` is a function
- * pointer to the custom reduction function.
+ * The template parameter `F` is a function pointer to the custom reduction
+ * function.
  *
  * \example
  * Let's say you want to perform a custom reduction on an
@@ -208,26 +201,21 @@ void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
  * \note Registration of the reduction function with Charm++ will be handled
  * automatically so ignore that portion of the Charm++ manual.
  */
-template <Parallel::charmxx::ReducerFunctions F, class SenderParallelComponent,
-          class TargetParallelComponent, class Action, class Metavariables,
-          class ArrayIndex, class ReductionType>
-void contribute_to_reduction(const ConstGlobalCache<Metavariables>& cache,
-                             const ArrayIndex& array_index,
-                             ReductionType&& reduction_data) noexcept {
+template <Parallel::charmxx::ReducerFunctions F, class Action,
+          class ReductionType, class SenderProxy, class TargetProxy>
+void contribute_to_reduction(ReductionType&& reduction_data,
+                             const SenderProxy& sender_component,
+                             const TargetProxy& target_component) noexcept {
   (void)Parallel::charmxx::RegisterReducerFunction<F>::registrar;
   CkCallback callback(
-      Parallel::index_from_parallel_component<TargetParallelComponent>::
-          template redn_wrapper_reduction_action<Action,
-                                                 std::decay_t<ReductionType>>(
-              nullptr),
-      Parallel::get_parallel_component<TargetParallelComponent>(cache));
-  Parallel::get_parallel_component<SenderParallelComponent>(cache)[array_index]
-      .ckLocal()
-      ->contribute(static_cast<int>(reduction_data.size()),
-                   reduction_data.packed().get(),
-                   Parallel::charmxx::charm_reducer_functions.at(
-                       std::hash<Parallel::charmxx::ReducerFunctions>{}(F)),
-                   callback);
+      TargetProxy::index_t::template redn_wrapper_reduction_action<
+          Action, std::decay_t<ReductionType>>(nullptr),
+      target_component);
+  sender_component.ckLocal()->contribute(
+      static_cast<int>(reduction_data.size()), reduction_data.packed().get(),
+      Parallel::charmxx::charm_reducer_functions.at(
+          std::hash<Parallel::charmxx::ReducerFunctions>{}(F)),
+      callback);
 }
 
 /*!

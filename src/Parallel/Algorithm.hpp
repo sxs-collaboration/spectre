@@ -366,7 +366,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       Requires<(sizeof...(Args),
                 cpp17::is_same_v<Parallel::Algorithms::Nodegroup, ChareType>)> =
           nullptr>
-  void threaded_single_action(Args&&... args) noexcept;
+  void threaded_action(Args&&... args) noexcept;
 
   /// \brief Receive data and store it in the Inbox, and try to continue
   /// executing the algorithm
@@ -606,8 +606,8 @@ template <
     Requires<(sizeof...(Args),
               cpp17::is_same_v<Parallel::Algorithms::Nodegroup, ChareType>)>>
 void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
-    threaded_single_action(Args&&... args) noexcept {
+                   tmpl::list<ActionsPack...>, ArrayIndex,
+                   InitialDataBox>::threaded_action(Args&&... args) noexcept {
   const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
   Algorithm_detail::apply_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,

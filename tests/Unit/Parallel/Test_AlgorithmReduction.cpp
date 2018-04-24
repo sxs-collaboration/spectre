@@ -20,6 +20,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -200,29 +201,29 @@ struct ArrayReduce {
                                    ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     int my_send_int = array_index;
+    const auto& my_proxy =
+        Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(
+            cache)[array_index];
+    const auto& array_proxy =
+        Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(
+            cache);
+    const auto& singleton_proxy = Parallel::get_parallel_component<
+        SingletonParallelComponent<Metavariables>>(cache);
     /// [contribute_to_reduction_example]
-    Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
-                                      SingletonParallelComponent<Metavariables>,
-                                      ProcessReducedSumOfInts>(
-        cache, array_index, CkReduction::sum_int, my_send_int);
+    Parallel::contribute_to_reduction<ProcessReducedSumOfInts>(
+        my_send_int, my_proxy, singleton_proxy, CkReduction::sum_int);
     /// [contribute_to_reduction_example]
     /// [contribute_to_broadcast_reduction]
-    Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
-                                      ArrayParallelComponent<Metavariables>,
-                                      ProcessReducedSumOfInts>(
-        cache, array_index, CkReduction::sum_int, my_send_int);
+    Parallel::contribute_to_reduction<ProcessReducedSumOfInts>(
+        my_send_int, my_proxy, array_proxy, CkReduction::sum_int);
     /// [contribute_to_broadcast_reduction]
 
     double my_send_double = 13.4;
-    Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
-                                      SingletonParallelComponent<Metavariables>,
-                                      ProcessReducedSumOfDoubles>(
-        cache, array_index, CkReduction::sum_double, my_send_double);
+    Parallel::contribute_to_reduction<ProcessReducedSumOfDoubles>(
+        my_send_double, my_proxy, singleton_proxy, CkReduction::sum_double);
 
-    Parallel::contribute_to_reduction<ArrayParallelComponent<Metavariables>,
-                                      SingletonParallelComponent<Metavariables>,
-                                      ProcessReducedProductOfDoubles>(
-        cache, array_index, CkReduction::product_double, my_send_double);
+    Parallel::contribute_to_reduction<ProcessReducedProductOfDoubles>(
+        my_send_double, my_proxy, singleton_proxy, CkReduction::product_double);
 
     /// [custom_contribute_to_reduction_example]
     std::unordered_map<std::string, int> my_send_map;
@@ -230,22 +231,19 @@ struct ArrayReduce {
     my_send_map["double"] = 2 * array_index;
     my_send_map["negative"] = -array_index;
     Parallel::contribute_to_reduction<&reduce_reduction_data,
-                                      ArrayParallelComponent<Metavariables>,
-                                      SingletonParallelComponent<Metavariables>,
                                       ProcessCustomReductionAction>(
-        cache, array_index,
         Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                                 std::vector<int>>{
-            10, my_send_map, std::vector<int>{array_index, 10, -8}});
+            10, my_send_map, std::vector<int>{array_index, 10, -8}},
+        my_proxy, singleton_proxy);
     /// [custom_contribute_to_reduction_example]
     /// [custom_contribute_to_broadcast_reduction]
-    Parallel::contribute_to_reduction<
-        &reduce_reduction_data, ArrayParallelComponent<Metavariables>,
-        ArrayParallelComponent<Metavariables>, ProcessCustomReductionAction>(
-        cache, array_index,
+    Parallel::contribute_to_reduction<&reduce_reduction_data,
+                                      ProcessCustomReductionAction>(
         Parallel::ReductionData<int, std::unordered_map<std::string, int>,
                                 std::vector<int>>{
-            10, my_send_map, std::vector<int>{array_index, 10, -8}});
+            10, my_send_map, std::vector<int>{array_index, 10, -8}},
+        my_proxy, array_proxy);
     /// [custom_contribute_to_broadcast_reduction]
 
     return std::forward_as_tuple(std::move(box));
@@ -282,8 +280,9 @@ struct ArrayParallelComponent {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
-      Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
-          .template simple_action<ArrayReduce>();
+      Parallel::simple_action<ArrayReduce>(
+          Parallel::get_parallel_component<ArrayParallelComponent>(
+              local_cache));
     }
   }
 };

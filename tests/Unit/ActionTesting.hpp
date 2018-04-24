@@ -34,8 +34,11 @@ class MockArrayElementProxy {
       : local_algorithm_(local_algorithm), inbox_(inbox) {}
 
   template <typename InboxTag, typename Data>
-  void receive_data(const typename InboxTag::temporal_id& id,
-                    const Data& data) {
+  void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
+                    const bool enable_if_disabled = false) {
+    // Might be useful in the future, not needed now but required by the
+    // interface to be compliant with the Algorithm invocations.
+    (void)enable_if_disabled;
     tuples::get<InboxTag>(inbox_)[id].emplace(data);
   }
 

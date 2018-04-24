@@ -9,6 +9,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Parallel/Info.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -81,8 +82,7 @@ void DgElementArray<Metavariables, ActionList>::initialize(
   const Time time = time_reversed ? slab.end() : slab.start();
   const TimeDelta dt = time_reversed ? -slab.duration() : slab.duration();
 
-  dg_element_array
-      .template simple_action<dg::Actions::InitializeElement<volume_dim>>(
-          std::make_tuple(domain_creator->initial_extents(), std::move(domain),
-                          time, dt));
+  Parallel::simple_action<dg::Actions::InitializeElement<volume_dim>>(
+      dg_element_array, domain_creator->initial_extents(), std::move(domain),
+      time, dt);
 }
