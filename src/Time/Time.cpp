@@ -12,6 +12,7 @@
 void Time::pup(PUP::er& p) noexcept {
   p | slab_;
   p | fraction_;
+  p | value_;
 }
 
 Time Time::with_slab(const Slab& new_slab) const noexcept {
@@ -40,12 +41,12 @@ Time Time::with_slab(const Slab& new_slab) const noexcept {
   }
 }
 
-double Time::value() const noexcept {
+void Time::compute_value() noexcept {
   if (is_at_slab_end()) {
     // Protection against rounding error.
-    return slab_.end_;
+    value_ = slab_.end_;
   } else {
-    return slab_.start_ + (slab_.duration() * fraction_).value();
+    value_ = slab_.start_ + (slab_.duration() * fraction_).value();
   }
 }
 

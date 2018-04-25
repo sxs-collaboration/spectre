@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
+#include <limits>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Time/Slab.hpp"
@@ -41,6 +42,7 @@ class Time {
       // clang-tidy: move trivially copyable type
       : slab_(std::move(slab)), fraction_(std::move(fraction)) {  // NOLINT
     range_check();
+    compute_value();
   }
 
   /// Move the time to a different slab.  The time must be at an end
@@ -48,7 +50,7 @@ class Time {
   Time with_slab(const Slab& new_slab) const noexcept;
 
   /// Approximate numerical value of the Time.
-  double value() const noexcept;
+  double value() const noexcept { return value_; }
   const Slab& slab() const noexcept { return slab_; }
   const rational_t& fraction() const noexcept { return fraction_; }
 
@@ -87,6 +89,12 @@ class Time {
  private:
   Slab slab_;
   rational_t fraction_;
+  double value_ = std::numeric_limits<double>::signaling_NaN();
+
+  // The value is precomputed so that we can avoid doing the rational
+  // math repeatedly.  The value of a Time should almost always be
+  // needed at some point.
+  void compute_value() noexcept;
 
   inline void range_check() const noexcept {
     ASSERT(fraction_ >= 0 and fraction_ <= 1,
@@ -253,6 +261,7 @@ inline Time& Time::operator+=(const TimeDelta& delta) noexcept {
   *this = this->with_slab(delta.slab_);
   fraction_ += delta.fraction_;
   range_check();
+  compute_value();
   return *this;
 }
 
@@ -260,6 +269,7 @@ inline Time& Time::operator-=(const TimeDelta& delta) noexcept {
   *this = this->with_slab(delta.slab_);
   fraction_ -= delta.fraction_;
   range_check();
+  compute_value();
   return *this;
 }
 
