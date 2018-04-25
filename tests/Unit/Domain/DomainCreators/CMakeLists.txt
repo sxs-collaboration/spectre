@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   DomainCreators/Test_Interval.cpp
   DomainCreators/Test_Rectangle.cpp
   DomainCreators/Test_RotatedIntervals.cpp
+  DomainCreators/Test_RotatedRectangles.cpp
   DomainCreators/Test_Shell.cpp
   DomainCreators/Test_Sphere.cpp
   PARENT_SCOPE
