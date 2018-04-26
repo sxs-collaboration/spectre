@@ -5,6 +5,7 @@ set(LIBRARY Spectral)
 
 set(LIBRARY_SOURCES
     Legendre.cpp
+    Projection.cpp
     Spectral.cpp
     )
 
