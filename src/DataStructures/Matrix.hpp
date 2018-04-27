@@ -25,16 +25,20 @@ class Matrix {
  public:
   /// Create and set each element to value
   Matrix(size_t number_of_rows, size_t number_of_colums,
-         double value = std::numeric_limits<double>::signaling_NaN());
+         double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
+
+  /// Create a matrix from a two-dimensional vector of rows x columns. Requires
+  /// that all rows have the same size.
+  explicit Matrix(const std::vector<std::vector<double>>& rows) noexcept;
 
   /// Default constructor needed for serialization
-  Matrix() = default;
+  Matrix() noexcept = default;
 
-  double& operator()(size_t i, size_t j) noexcept {
-    return data_[i + j * number_of_rows_];
+  double& operator()(size_t row, size_t column) noexcept {
+    return data_[row + column * number_of_rows_];
   }
-  const double& operator()(size_t i, size_t j) const noexcept {
-    return data_[i + j * number_of_rows_];
+  const double& operator()(size_t row, size_t column) const noexcept {
+    return data_[row + column * number_of_rows_];
   }
 
   double* data() noexcept { return data_.data(); }

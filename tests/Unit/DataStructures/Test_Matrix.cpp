@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "DataStructures/Matrix.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -15,6 +16,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Matrix", "[DataStructures][Unit]") {
   Matrix matrix(3, 5, 1.0);
   CHECK(matrix.rows() == 3);
   CHECK(matrix.columns() == 5);
+  Matrix matrix_vectinit({{1.0, 2.0}, {3.0, 4.0}, {5.0, 6.0}});
+  CHECK(matrix_vectinit.rows() == 3);
+  CHECK(matrix_vectinit.columns() == 2);
+  CHECK(matrix_vectinit(0, 0) == 1.0);
+  CHECK(matrix_vectinit(0, 1) == 2.0);
+  CHECK(matrix_vectinit(1, 0) == 3.0);
+  CHECK(matrix_vectinit(1, 1) == 4.0);
+  CHECK(matrix_vectinit(2, 0) == 5.0);
+  CHECK(matrix_vectinit(2, 1) == 6.0);
+  Matrix matrix_empty(std::vector<std::vector<double>>{});
+  CHECK(matrix_empty.rows() == 0);
+  CHECK(matrix_empty.columns() == 0);
+  CHECK(matrix_empty == Matrix(0, 0, 1.0));
   const double* a_ptr = matrix.data();
   std::stringstream ss;
   for (size_t i = 0; i < matrix.rows(); ++i) {
