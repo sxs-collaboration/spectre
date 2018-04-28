@@ -4,8 +4,9 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-#include <cstddef>
 #include <cmath>  // IWYU pragma: keep
+#include <cstddef>
+#include <functional>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/TMPL.hpp"
@@ -101,10 +102,8 @@ static_assert(max_by_magnitude(-2, -1) == -2,
               "Failed testing max_by_magnitude");
 static_assert(max_by_magnitude({-2, -1, -3}) == -3,
               "Failed testing max_by_magnitude");
-static_assert(max_by_magnitude(1, -1) == 1,
-              "Failed testing max_by_magnitude");
-static_assert(max_by_magnitude(-1, 1) == -1,
-              "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(1, -1) == 1, "Failed testing max_by_magnitude");
+static_assert(max_by_magnitude(-1, 1) == -1, "Failed testing max_by_magnitude");
 static_assert(max_by_magnitude({1, -1}) == 1,
               "Failed testing max_by_magnitude");
 static_assert(max_by_magnitude({-1, 1}) == -1,
@@ -123,25 +122,37 @@ static_assert(min_by_magnitude(-2, -1) == -1,
               "Failed testing min_by_magnitude");
 static_assert(min_by_magnitude({-2, -1, -3}) == -1,
               "Failed testing min_by_magnitude");
-static_assert(min_by_magnitude(1, -1) == 1,
-              "Failed testing min_by_magnitude");
-static_assert(min_by_magnitude(-1, 1) == -1,
-              "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(1, -1) == 1, "Failed testing min_by_magnitude");
+static_assert(min_by_magnitude(-1, 1) == -1, "Failed testing min_by_magnitude");
 static_assert(min_by_magnitude({1, -1}) == 1,
               "Failed testing min_by_magnitude");
 static_assert(min_by_magnitude({-1, 1}) == -1,
               "Failed testing min_by_magnitude");
 
+// Test clamp
+static_assert(cpp17::clamp(10, 0, 9) == 9, "Failed testing clamp");
+static_assert(cpp17::clamp(-1, 0, 9) == 0, "Failed testing clamp");
+static_assert(cpp17::clamp(5, 0, 9) == 5, "Failed testing clamp");
+static_assert(cpp17::clamp(9, 0, 9) == 9, "Failed testing clamp");
+static_assert(cpp17::clamp(0, 0, 9) == 0, "Failed testing clamp");
+static_assert(cpp17::clamp(10.0, 0.0, 9.0) == 9.0, "Failed testing clamp");
+static_assert(cpp17::clamp(-1.0, 0.0, 9.0) == 0.0, "Failed testing clamp");
+static_assert(cpp17::clamp(5.0, 0.0, 9.0) == 5.0, "Failed testing clamp");
+static_assert(cpp17::clamp(9.0, 0.0, 9.0) == 9.0, "Failed testing clamp");
+static_assert(cpp17::clamp(0.0, 0.0, 9.0) == 0.0, "Failed testing clamp");
+
 struct TwoN {
   template <typename T>
-  constexpr size_t operator()(T n) noexcept { return 2 * n; }
+  constexpr size_t operator()(T n) noexcept {
+    return 2 * n;
+  }
 };
 static_assert(constexpr_sum<5>(TwoN{}) == 20, "Failed testing constexpr_sum");
 
 // Test string manipulation
-constexpr const char *const dummy_string1 = "test 1";
-constexpr const char *const dummy_string2 = "test 1";
-constexpr const char *const dummy_string3 = "test blah";
+constexpr const char* const dummy_string1 = "test 1";
+constexpr const char* const dummy_string2 = "test 1";
+constexpr const char* const dummy_string3 = "test blah";
 static_assert(6 == cstring_length(dummy_string1),
               "Failed testing cstring_length");
 static_assert(cstring_hash(dummy_string1) == cstring_hash(dummy_string2),
