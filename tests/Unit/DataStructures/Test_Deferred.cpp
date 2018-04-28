@@ -310,7 +310,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.UpdateArgsError2",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto def = make_deferred<double>(func{});
-  auto& mutate = def.mutate();
+  def.mutate();
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

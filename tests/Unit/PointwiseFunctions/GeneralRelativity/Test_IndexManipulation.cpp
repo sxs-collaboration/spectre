@@ -448,7 +448,6 @@ void test_3d_spacetime_trace_tensor_type_aa(const DataVector& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
                   "[PointwiseFunctions][Unit]") {
-  const size_t dim = 3;
   const DataVector dv(2);
 
   test_1d_spatial_raise(dv);

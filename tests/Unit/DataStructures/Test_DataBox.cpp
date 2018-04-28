@@ -371,8 +371,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       original_box, [&original_box](double& tag0, std::vector<double>& tag1) {
-        const auto& compute_tag0 =
-            db::get<test_databox_tags::ComputeTag0>(original_box);
+        db::get<test_databox_tags::ComputeTag0>(original_box);
         tag0 = 10.32;
         tag1[0] = 837.2;
       });
@@ -394,8 +393,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get_lazy",
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       original_box,
       [&original_box](double& /*tag0*/, std::vector<double>& /*tag1*/) {
-        const auto& compute_tag0 =
-            original_box.template get_lazy<test_databox_tags::ComputeTag0>();
+        original_box.template get_lazy<test_databox_tags::ComputeTag0>();
       });
 }
 
@@ -835,7 +833,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
       box, [](auto& vars) {
-        const auto size = vars.number_of_grid_points();
         get<test_databox_tags::ScalarTag>(vars).get() = 6.0;
       });
 
@@ -872,7 +869,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
       box, [](auto& vars) {
-        const auto size = vars.number_of_grid_points();
         get<test_databox_tags::ScalarTag>(vars).get() = 4.0;
         get<test_databox_tags::VectorTag>(vars) =
             tnsr::I<DataVector, 3>(DataVector(2, 6.));
