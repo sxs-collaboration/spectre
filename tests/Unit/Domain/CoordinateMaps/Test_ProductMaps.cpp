@@ -49,9 +49,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
 
   CHECK(affine_map_xy(point_A) == point_a);
   CHECK(affine_map_xy(point_B) == point_b);
+  CHECK(affine_map_xy(point_xi) == point_x);
 
   CHECK(affine_map_xy.inverse(point_a) == point_A);
   CHECK(affine_map_xy.inverse(point_b) == point_B);
+  CHECK(affine_map_xy.inverse(point_x) == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
   const double inv_jacobian_11 = (yB - yA) / (yb - ya);
@@ -161,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   const double eta = 0.5 * (yA + yB);
   const double y = yb * (eta - yA) / (yB - yA) + ya * (yB - eta) / (yB - yA);
   const double zeta = 0.5 * (zA + zB);
-  const double z = zb * (eta - zA) / (zB - zA) + za * (zB - eta) / (zB - zA);
+  const double z = zb * (zeta - zA) / (zB - zA) + za * (zB - zeta) / (zB - zA);
 
   const std::array<double, 3> point_A{{xA, yA, zA}};
   const std::array<double, 3> point_B{{xB, yB, zB}};
@@ -172,9 +174,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
 
   CHECK(affine_map_xyz(point_A) == point_a);
   CHECK(affine_map_xyz(point_B) == point_b);
+  CHECK(affine_map_xyz(point_xi) == point_x);
 
   CHECK(affine_map_xyz.inverse(point_a) == point_A);
   CHECK(affine_map_xyz.inverse(point_b) == point_B);
+  CHECK(affine_map_xyz.inverse(point_x) == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
   const double inv_jacobian_11 = (yB - yA) / (yb - ya);
