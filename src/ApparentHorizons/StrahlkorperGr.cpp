@@ -3,9 +3,11 @@
 
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -183,6 +185,57 @@ Scalar<DataVector> area_element(
            square(get(dot_product(cap_theta, cap_phi, spatial_metric))));
   return area_element;
 }
+
+template <typename Frame>
+Scalar<DataVector> spin_function(
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const YlmSpherepack& ylm,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const Scalar<DataVector>& area_element,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept {
+  auto temp = make_with_value<Scalar<DataVector>>(area_element, 0.0);
+  auto extrinsic_curvature_theta_normal_sin_theta =
+      make_with_value<Scalar<DataVector>>(area_element, 0.0);
+  auto extrinsic_curvature_phi_normal =
+      make_with_value<Scalar<DataVector>>(area_element, 0.0);
+
+  DataVector& extrinsic_curvature_dot_normal = get(temp);
+  for (size_t i = 0; i < 3; ++i) {
+    extrinsic_curvature_dot_normal =
+        extrinsic_curvature.get(i, 0) * get<0>(unit_normal_vector);
+    for (size_t j = 1; j < 3; ++j) {
+      extrinsic_curvature_dot_normal +=
+          extrinsic_curvature.get(i, j) * unit_normal_vector.get(j);
+    }
+
+    // Note: I must multiply by sin_theta because
+    // I take the phi derivative of this term by using
+    // the spherepack gradient, which includes a
+    // sin_theta in the denominator of the phi derivative.
+    // Will do this outside the i,j loops.
+    get(extrinsic_curvature_theta_normal_sin_theta) +=
+        extrinsic_curvature_dot_normal * tangents.get(i, 0);
+
+    // Note: I must multiply by sin_theta because tangents.get(i,1)
+    // actually contains \partial_\phi / sin(theta), but I want just
+    //\partial_\phi. Will do this outside the i,j loops.
+    get(extrinsic_curvature_phi_normal) +=
+        extrinsic_curvature_dot_normal * tangents.get(i, 1);
+  }
+
+  DataVector& sin_theta = get(temp);
+  sin_theta = sin(ylm.theta_phi_points()[0]);
+  get(extrinsic_curvature_theta_normal_sin_theta) *= sin_theta;
+  get(extrinsic_curvature_phi_normal) *= sin_theta;
+
+  Scalar<DataVector>& spin_function = temp;
+  get(spin_function) =
+      (get<0>(ylm.gradient(get(extrinsic_curvature_phi_normal))) -
+       get<1>(ylm.gradient(get(extrinsic_curvature_theta_normal_sin_theta)))) /
+      (sin_theta * get(area_element));
+
+  return temp;
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
@@ -232,3 +285,12 @@ template Scalar<DataVector> StrahlkorperGr::area_element<Frame::Inertial>(
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat) noexcept;
+
+template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
+        tangents,
+    const YlmSpherepack& ylm,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
+    const Scalar<DataVector>& area_element,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>&
+        extrinsic_curvature) noexcept;

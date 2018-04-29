@@ -8,6 +8,7 @@
 
 /// \cond
 class DataVector;
+class YlmSpherepack;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
@@ -158,4 +159,46 @@ Scalar<DataVector> area_element(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Spin function of a 2D `Strahlkorper`.
+ *
+ * \details See Eqs. (2) and (10)
+ * of https://arxiv.org/abs/1708.07325. This function computes the
+ * "spin function," which is an ingredient for horizon surface integrals that
+ * measure quasilocal spin. This function is proportional to the imaginary part
+ * of the horizon's complex scalar curvature. For Kerr black holes, the spin
+ * function is proportional to the horizon vorticity. It is also useful for
+ * visualizing the direction of a black hole's spin.
+ * Specifically, this function computes
+ * \f$\Omega = \epsilon^{AB}\nabla_A\omega_B\f$,
+ * where capital indices index the tangent bundle of the surface and
+ * where \f$\omega_\mu=(K_{\rho\nu}-K g_{\rho\nu})h_\mu^\rho s^\nu\f$ is
+ * the curl of the angular momentum density of the surface,
+ * \f$h^\rho_\mu = \delta_\mu^\rho + u_\mu u^\rho - s_\mu s^\rho\f$
+ * is the projector tangent to the 2-surface,
+ * \f$g_{\rho\nu} = \psi_{\rho\nu} + u_\rho u_\nu\f$ is the spatial
+ * metric of the spatial slice, \f$u^\rho\f$ is the unit normal to the
+ * spatial slice, and \f$s^\nu\f$ is the unit normal vector to the surface.
+ * Because the tangent basis vectors \f$e_A^\mu\f$ are
+ * orthogonal to both \f$u^\mu\f$ and \f$s^\mu\f$, it is straightforward
+ * to show that \f$\Omega = \epsilon^{AB} \nabla_A K_{B\mu}s^\mu\f$.
+ * This function uses the tangent vectors of the `Strahlkorper` to
+ * compute \f$K_{B\mu}s^\mu\f$ and then numerically computes the
+ * components of its gradient. The argument `area_element`
+ * can be computed via `StrahlkorperGr::area_element`.
+ * The argument `unit_normal_vector` can be found by raising the
+ * index of the one-form returned by `StrahlkorperGr::unit_normal_oneform`.
+ * The argument `tangents` is a Tangents that can be obtained from the
+ * StrahlkorperDataBox using the "Tangents" tag.
+ */
+template <typename Frame>
+Scalar<DataVector> spin_function(
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const YlmSpherepack& ylm,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const Scalar<DataVector>& area_element,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
+
 }  // namespace StrahlkorperGr
