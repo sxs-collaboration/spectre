@@ -3,10 +3,10 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <cstddef>
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
 

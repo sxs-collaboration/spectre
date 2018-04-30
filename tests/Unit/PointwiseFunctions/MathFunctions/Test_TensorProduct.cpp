@@ -20,7 +20,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"

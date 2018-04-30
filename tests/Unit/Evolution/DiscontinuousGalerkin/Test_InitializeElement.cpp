@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <sys/types.h>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
