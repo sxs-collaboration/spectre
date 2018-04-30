@@ -62,7 +62,7 @@ struct ThetaPhi : db::ComputeItemTag {
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 
-/// \f$x_i/\sqrt{x^2+y^2+z^2}\f$ on the grid.
+/// `Rhat(i)` is \f$\hat{r}^i = x_i/\sqrt{x^2+y^2+z^2}\f$ on the grid.
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
 struct Rhat : db::ComputeItemTag {
@@ -109,7 +109,7 @@ struct InvHessian : db::ComputeItemTag {
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
 
-/// (Euclidean) distance \f$r(\theta,\phi)\f$ from the center to each
+/// (Euclidean) distance \f$r_{\rm surf}(\theta,\phi)\f$ from the center to each
 /// point of the surface.
 template <typename Frame>
 struct Radius : db::ComputeItemTag {
@@ -122,7 +122,9 @@ struct Radius : db::ComputeItemTag {
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
 
-/// \f$(x,y,z)\f$ of each point on the surface.
+/// `CartesianCoords(i)` is \f$x_{\rm surf}^i\f$,
+/// the vector of \f$(x,y,z)\f$ coordinates of each point
+/// on the surface.
 template <typename Frame>
 struct CartesianCoords : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "CartesianCoords";
@@ -133,9 +135,11 @@ struct CartesianCoords : db::ComputeItemTag {
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, Rhat<Frame>>;
 };
 
-/// `DxRadius(i)` is \f$\partial r/\partial x^i\f$.
-/// Here \f$r=r(\theta,\phi)\f$ is the surface, which is considered a
-/// function of Cartesian coordinates \f$r=r(\theta(x,y,z),\phi(x,y,z))\f$
+/// `DxRadius(i)` is \f$\partial r_{\rm surf}/\partial x^i\f$.  Here
+/// \f$r_{\rm surf}=r_{\rm surf}(\theta,\phi)\f$ is the function
+/// describing the surface, which is considered a function of
+/// Cartesian coordinates
+/// \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$
 /// for this operation.
 template <typename Frame>
 struct DxRadius : db::ComputeItemTag {
@@ -147,9 +151,12 @@ struct DxRadius : db::ComputeItemTag {
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, InvJacobian<Frame>>;
 };
 
-/// `D2xRadius(i,j)` is \f$\partial^2 r/\partial x^i\partial x^j\f$.
-/// Here \f$r=r(\theta,\phi)\f$ is the surface, which is considered a
-/// function of Cartesian coordinates \f$r=r(\theta(x,y,z),\phi(x,y,z))\f$
+/// `D2xRadius(i,j)` is
+/// \f$\partial^2 r_{\rm surf}/\partial x^i\partial x^j\f$. Here
+/// \f$r_{\rm surf}=r_{\rm surf}(\theta,\phi)\f$ is the function
+/// describing the surface, which is considered a function of
+/// Cartesian coordinates
+/// \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$
 /// for this operation.
 template <typename Frame>
 struct D2xRadius : db::ComputeItemTag {
@@ -162,9 +169,9 @@ struct D2xRadius : db::ComputeItemTag {
                                    InvJacobian<Frame>, InvHessian<Frame>>;
 };
 
-/// \f$\nabla^2 r\f$, the flat Laplacian of the surface.
-/// This is \f$\eta^{ij}\partial^2 r/\partial x^i\partial x^j\f$,
-/// where \f$r=r(\theta(x,y,z),\phi(x,y,z))\f$.
+/// \f$\nabla^2 r_{\rm surf}\f$, the flat Laplacian of the surface.
+/// This is \f$\eta^{ij}\partial^2 r_{\rm surf}/\partial x^i\partial x^j\f$,
+/// where \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$.
 template <typename Frame>
 struct LaplacianRadius : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "LaplacianRadius";
@@ -175,11 +182,15 @@ struct LaplacianRadius : db::ComputeItemTag {
       tmpl::list<Strahlkorper<Frame>, Radius<Frame>, ThetaPhi<Frame>>;
 };
 
-/// Cartesian components of (unnormalized) one-form defining the surface.
-/// This is computed by \f$x_i/r-\partial r/\partial x^i\f$,
+/// `NormalOneForm(i)` is \f$s_i\f$, the (unnormalized) normal one-form
+/// to the surface, expressed in Cartesian components.
+/// This is computed by \f$x_i/r-\partial r_{\rm surf}/\partial x^i\f$,
 /// where \f$x_i/r\f$ is `Rhat` and
-/// \f$\partial r/\partial x^i\f$ is `DxRadius`.
-/// See Eq. (8) of [arXiv:gr-qc/9606010] (https://arxiv.org/abs/gr-qc/9606010)
+/// \f$\partial r_{\rm surf}/\partial x^i\f$ is `DxRadius`.
+/// See Eq. (8) of [arXiv:gr-qc/9606010] (https://arxiv.org/abs/gr-qc/9606010).
+/// Note on the word "normal": \f$s_i\f$ points in the correct direction
+/// (it is "normal" to the surface), but it does not have unit length
+/// (it is not "normalized"; normalization requires a metric).
 template <typename Frame>
 struct NormalOneForm : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "NormalOneForm";
@@ -189,13 +200,21 @@ struct NormalOneForm : db::ComputeItemTag {
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
 };
 
-/// `Tangents(j,i)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
-/// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the surface
-/// (i.e. `CartesianCoords`)
-/// and are considered functions of \f$(\theta,\phi)\f$;
-/// \f$\partial/\partial q^0\f$ means \f$\partial/\partial\theta\f$;
-/// and \f$\partial/\partial q^1\f$ means
-/// \f$\csc\theta\,\,\partial/\partial\phi\f$.
+/// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
+/// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
+/// surface (i.e. `CartesianCoords`) and are considered functions of
+/// \f$(\theta,\phi)\f$.
+///
+/// \f$\partial/\partial q^0\f$ means
+/// \f$\partial/\partial\theta\f$; and \f$\partial/\partial q^1\f$
+/// means \f$\csc\theta\,\,\partial/\partial\phi\f$.  Note that the
+/// vectors `Tangents(i,0)` and `Tangents(i,1)` are orthogonal to the
+/// `NormalOneForm` \f$s_i\f$, i.e.
+/// \f$s_i \partial x_{\rm surf}^i/\partial q^j = 0\f$; this statement
+/// is independent of a metric.  Also, `Tangents(i,0)` and
+/// `Tangents(i,1)` are not necessarily orthogonal to each other,
+/// since orthogonality between 2 vectors (as opposed to a vector and
+/// a one-form) is metric-dependent.
 template <typename Frame>
 struct Tangents : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Tangents";
