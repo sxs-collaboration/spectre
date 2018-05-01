@@ -146,7 +146,6 @@ void test_refinement_levels_of_neighbors(
     const auto& element_id = key_value.first;
     const auto& element = key_value.second;
     for (const auto& direction_neighbors : element.neighbors()) {
-      const auto& direction = direction_neighbors.first;
       const auto& neighbors = direction_neighbors.second;
       const auto& orientation = neighbors.orientation();
       for (size_t d = 0; d < VolumeDim; ++d) {

@@ -3,10 +3,10 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <cstddef>
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
 
@@ -107,6 +107,14 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   get(expected_lapse) = 1.0 / sqrt(1.0 + 2.0 * mass / r);
   CHECK_ITERABLE_APPROX(lapse, expected_lapse);
 
+  auto expected_d_lapse =
+      make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    expected_d_lapse.get(i) =
+        mass * x.get(i) * one_over_r_cubed * cube(get(lapse));
+  }
+  CHECK_ITERABLE_APPROX(d_lapse, expected_d_lapse);
+
   auto expected_shift =
       make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
@@ -115,13 +123,18 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   }
   CHECK_ITERABLE_APPROX(shift, expected_shift);
 
-  auto expected_d_lapse =
-      make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.0);
-  for (size_t i = 0; i < 3; ++i) {
-    expected_d_lapse.get(i) =
-        mass * x.get(i) * one_over_r_cubed * cube(get(lapse));
+  auto expected_d_shift =
+      make_with_value<tnsr::iJ<DataType, 3, Frame::Inertial>>(x, 0.0);
+  for (size_t j = 0; j < 3; ++j) {
+    expected_d_shift.get(j, j) =
+        2.0 * mass * one_over_r_squared * square(get(lapse));
+    for (size_t i = 0; i < 3; ++i) {
+      expected_d_shift.get(j, i) -=
+          4.0 * mass * x.get(j) * x.get(i) * square(one_over_r_squared) *
+          square(get(lapse)) * (1 - mass / r * square(get(lapse)));
+    }
   }
-  CHECK_ITERABLE_APPROX(d_lapse, expected_d_lapse);
+  CHECK_ITERABLE_APPROX(d_shift, expected_d_shift);
 
   auto expected_g =
       make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0);

@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <sys/types.h>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -133,7 +132,6 @@ void test_initialize_element(const ElementId<Dim>& element_id,
                                        my_block.coordinate_map().get_clone()};
   Element<Dim> element = create_initial_element(element_id, my_block);
   Index<Dim> extents{domain_creator.initial_extents()[element_id.block_id()]};
-  const auto num_grid_points = extents.product();
   auto logical_coords = logical_coordinates(extents);
   auto inertial_coords = map(logical_coords);
   CHECK(db::get<Tags::LogicalCoordinates<Dim>>(box) == logical_coords);

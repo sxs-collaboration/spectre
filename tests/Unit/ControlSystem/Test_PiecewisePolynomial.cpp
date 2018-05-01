@@ -17,7 +17,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
   const double dt = 0.6;
   const double final_time = 4.0;
   const constexpr size_t deriv_order = 3;
-  const constexpr size_t ret_deriv_order = 1;
 
   // test two component system (x**3 and x**2)
   const std::array<DataVector, deriv_order + 1> init_func{
@@ -92,7 +91,6 @@ SPECTRE_TEST_CASE(
     "Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial.WithinRoundoff",
     "[ControlSystem][Unit]") {
   const constexpr size_t deriv_order = 3;
-  const size_t n_derivs = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);
@@ -151,7 +149,6 @@ SPECTRE_TEST_CASE(
   ERROR_TEST();
   // two component system (x**3 and x**2)
   const constexpr size_t deriv_order = 3;
-  const size_t n_derivs = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);

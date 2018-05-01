@@ -20,7 +20,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
@@ -131,7 +131,6 @@ void test_tensor_product(
     std::array<std::unique_ptr<MathFunction<1>>, VolumeDim>&& functions,
     const std::array<size_t, VolumeDim>& powers) noexcept {
   const auto coordinate_map = make_affine_map<VolumeDim>();
-  const size_t number_of_grid_points = extents.product();
   const auto x = coordinate_map(logical_coordinates(extents));
   MathFunctions::TensorProduct<VolumeDim> f(scale, std::move(functions));
   CHECK_ITERABLE_APPROX(f(x), expected_value(x, powers, scale));

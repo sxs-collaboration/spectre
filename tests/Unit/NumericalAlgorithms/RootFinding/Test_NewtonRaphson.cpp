@@ -110,8 +110,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.DataVector",
     return std::make_pair(2. - square(x), -2. * x);
   };
 
-  auto root = RootFinder::newton_raphson(func_and_deriv_lambda, guess, lower,
-                                         upper, digits);
+  RootFinder::newton_raphson(func_and_deriv_lambda, guess, lower, upper,
+                             digits);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

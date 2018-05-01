@@ -100,8 +100,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equidistant",
   CHECK(map_lower_eta(random_left_edge)[1] ==
         approx(-random_inner_radius_lower_eta / sqrt(2.0)));
 
-  const double dxi = 1e-5;
-  const double deta = 1e-5;
   const double xi = real_dis(gen);
   CAPTURE_PRECISE(xi);
   const double eta = real_dis(gen);
@@ -211,8 +209,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equiangular",
   CHECK(map_lower_eta(random_left_edge)[1] ==
         approx(-random_inner_radius_lower_eta / sqrt(2.0)));
 
-  const double dxi = 1e-5;
-  const double deta = 1e-5;
   const double xi = real_dis(gen);
   CAPTURE_PRECISE(xi);
   const double eta = real_dis(gen);

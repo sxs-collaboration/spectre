@@ -65,7 +65,6 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
 SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.FileMove.h5");
   const std::string h5_file_name2("Unit.IO.H5.FileMove2.h5");
-  const uint32_t version_number = 4;
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
@@ -95,7 +94,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectNotExist", "[Unit][IO][H5]") {
     file_system::rm(file_name, true);
   }
   h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-  const std::string& header = my_file.get<h5::Header>("/Dummy").get_header();
+  my_file.get<h5::Header>("/Dummy").get_header();
 }
 
 // [[OutputRegex, All HDF5 file names must end in '.h5'. The path and file name
@@ -166,7 +165,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectNotExistConst", "[Unit][IO][H5]") {
     file_system::rm(file_name, true);
   }
   const h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-  const std::string& header = my_file.get<h5::Header>("/Dummy").get_header();
+  my_file.get<h5::Header>("/Dummy").get_header();
 }
 
 // [[OutputRegex, Cannot insert an Object that already exists. Failed to add
@@ -186,8 +185,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectAlreadyExists", "[Unit][IO][H5]") {
     error_file.append(std::vector<double>{0, 0.1, 0.2, 0.3});
   }
   {
-    auto& error_file =
-        my_file.insert<h5::Dat>("/L2_errors//", legend, version_number);
+    my_file.insert<h5::Dat>("/L2_errors//", legend, version_number);
   }
 }
 

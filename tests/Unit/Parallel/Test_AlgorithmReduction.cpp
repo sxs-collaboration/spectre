@@ -171,18 +171,12 @@ struct SingletonParallelComponent {
   using initial_databox = db::compute_databox_type<tmpl::list<>>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-  }
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_global_actions(
-      const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    if (next_phase == Metavariables::Phase::CallArrayReduce) {
-      auto& local_cache = *(global_cache.ckLocalBranch());
-      return;
-    }
-  }
+      const typename Metavariables::Phase /*next_phase*/,
+      const Parallel::CProxy_ConstGlobalCache<
+          Metavariables>& /*global_cache*/) {}
 };
 
 template <class Metavariables>
