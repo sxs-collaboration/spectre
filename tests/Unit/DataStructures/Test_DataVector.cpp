@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <numeric>
-#include <stddef.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -474,7 +474,40 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   dvectors1 -= dvectors2;
   CHECK_ITERABLE_APPROX(dvectors1, expected4);
 
-  // Test calculation of magnitude of DataVector
+  // Test dot product between DataVectors
+  CHECK_ITERABLE_APPROX(dot_product(t1, t2), -2.0);
+  CHECK_ITERABLE_APPROX(dot_product(t2, t1), -2.0);
+  CHECK_ITERABLE_APPROX(dot_product(t1, t3), 16.0);
+  CHECK_ITERABLE_APPROX(dot_product(t3, t1), 16.0);
+  CHECK_ITERABLE_APPROX(dot_product(t2, t3), -3.0);
+  CHECK_ITERABLE_APPROX(dot_product(t3, t2), -3.0);
+
+  // Test dot product between DataVectors and expressions
+  CHECK_ITERABLE_APPROX(dot_product(t1 * t2, t3), -5.0);
+  CHECK_ITERABLE_APPROX(dot_product(t1, t2 * t3), -5.0);
+  CHECK_ITERABLE_APPROX(dot_product(t1 + t2, t3), 13.0);
+  CHECK_ITERABLE_APPROX(dot_product(t1, t2 + t3), 14.0);
+  CHECK_ITERABLE_APPROX(dot_product(2.0 * t1, t3), 32.0);
+  CHECK_ITERABLE_APPROX(dot_product(t1, 2.0 * t3), 32.0);
+  CHECK_ITERABLE_APPROX(dot_product(t1 + t2, t1 + t3), 25.0);
+
+  // Test magnitude of DataVectors
+  CHECK_ITERABLE_APPROX(magnitude_square(t1), 14.0);
+  CHECK_ITERABLE_APPROX(magnitude(t1), sqrt(14.0));
+  CHECK_ITERABLE_APPROX(magnitude_square(t2), 0.3);
+  CHECK_ITERABLE_APPROX(magnitude(t2), sqrt(0.3));
+  CHECK_ITERABLE_APPROX(magnitude_square(t3), 54.0);
+  CHECK_ITERABLE_APPROX(magnitude(t3), sqrt(54.0));
+
+  // Test magnitude of expressions
+  CHECK_ITERABLE_APPROX(magnitude_square(t1 + t2), 10.3);
+  CHECK_ITERABLE_APPROX(magnitude(t1 + t2), sqrt(10.3));
+  CHECK_ITERABLE_APPROX(magnitude_square(t1 * t3), 88.0);
+  CHECK_ITERABLE_APPROX(magnitude(t1 * t3), sqrt(88.0));
+  CHECK_ITERABLE_APPROX(magnitude_square(2.0 * t1), 56.0);
+  CHECK_ITERABLE_APPROX(magnitude(2.0 * t1), sqrt(56.0));
+
+  // Test magnitude of arrays of DataVectors
   const std::array<DataVector, 1> d1{{DataVector{-2.5, 3.4}}};
   const DataVector expected_d1{2.5, 3.4};
   const auto magnitude_d1 = magnitude(d1);

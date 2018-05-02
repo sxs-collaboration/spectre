@@ -56,13 +56,14 @@ using std::abs;  // NOLINT
  * \ingroup DataStructuresGroup
  * \brief A class for storing data on a mesh.
  *
- * A Data holds an array of contiguous data and can be either owning (the array
- * is deleted when the Data goes out of scope) or non-owning, meaning it just
- * has a pointer to an array.
+ * A `DataVector` holds an array of contiguous data and can be either owning
+ * (the array is deleted when the `DataVector` goes out of scope) or non-owning,
+ * meaning it just has a pointer to an array.
  *
- * A variety of mathematical operations are supported with DataVectors. In
- * addition to the addition, subtraction, multiplication, division, etc. there
- * are the following element-wise operations:
+ * A variety of mathematical operations are supported with `DataVector`s. In
+ * addition to element-wise addition, subtraction, multiplication and division
+ * `DataVector`s support multiplication and division with `double`s and the
+ * following element-wise operations:
  *
  * - abs
  * - acos
@@ -95,6 +96,9 @@ using std::abs;  // NOLINT
  * - step_function: if less than zero returns zero, otherwise returns one
  * - tan
  * - tanh
+ *
+ * `DataVector`s also support a `dot_product` as well as a `magnitude`, which is
+ * the square root of the dot product with itself.
  */
 class DataVector {
   /// \cond HIDDEN_SYMBOLS
@@ -527,6 +531,32 @@ class DataVector {
       const DataVector& t) noexcept {
     return erfc(t.data_);
   }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) dot_product(
+      const DataVector& lhs, const DataVector& rhs) {
+    return dot(lhs.data_, rhs.data_);
+  }
+
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) dot_product(
+      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) {
+    return dot(lhs, rhs.data_);
+  }
+
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) dot_product(
+      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) {
+    return dot(lhs.data_, rhs);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) magnitude_square(
+      const DataVector& t) {
+    return sqrLength(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) magnitude(const DataVector& t) {
+    return length(t.data_);
+  }
   // @}
 
   /// If less than zero returns zero, otherwise returns one
@@ -646,6 +676,24 @@ DataVector& DataVector::operator=(const blaze::Vector<VT, VF>& expression) {
   }
   data_ = expression;
   return *this;
+}
+
+template <typename VT, bool VF>
+SPECTRE_ALWAYS_INLINE decltype(auto) dot_product(
+    const blaze::Vector<VT, VF>& lhs, const blaze::Vector<VT, VF>& rhs) {
+  return dot(lhs, rhs);
+}
+
+template <typename VT, bool VF>
+SPECTRE_ALWAYS_INLINE decltype(auto) magnitude_square(
+    const blaze::DenseVector<VT, VF>& expression) {
+  return sqrLength(expression);
+}
+
+template <typename VT, bool VF>
+SPECTRE_ALWAYS_INLINE decltype(auto) magnitude(
+    const blaze::DenseVector<VT, VF>& expression) {
+  return length(expression);
 }
 /// \endcond
 
