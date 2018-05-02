@@ -398,11 +398,11 @@ void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
 }
 
 template <size_t SpatialDim, typename SpatialFrame>
-tnsr::I<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
+tnsr::i<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept {
   auto basis_vector =
-      make_with_value<tnsr::I<DataVector, SpatialDim, SpatialFrame>>(
+      make_with_value<tnsr::i<DataVector, SpatialDim, SpatialFrame>>(
           used_for_size, 0.0);
 
   basis_vector.get(direction.axis()) =
@@ -436,7 +436,7 @@ tnsr::I<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
 #define INSTANTIATE2(_, data)                                                  \
   template void test_physical_separation(                                      \
       const std::vector<Block<DIM(data), FRAME(data)>>& blocks) noexcept;      \
-  template tnsr::I<DataVector, DIM(data), FRAME(data)> euclidean_basis_vector( \
+  template tnsr::i<DataVector, DIM(data), FRAME(data)> euclidean_basis_vector( \
       const Direction<DIM(data)>& direction,                                   \
       const DataVector& used_for_size) noexcept;
 
