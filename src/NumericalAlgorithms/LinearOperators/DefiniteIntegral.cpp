@@ -44,7 +44,7 @@ double definite_integral<1>(const DataVector& integrand,
   ASSERT(num_points == extents.product(),
          "num_points = " << num_points << ", product = " << extents.product());
   const DataVector& weights = Basis::lgl::quadrature_weights(num_points);
-  return ddot_(num_points, weights.data(), 1, integrand.data(), 1);
+  return dot_product(weights, integrand);
 }
 
 /// \cond
