@@ -10,6 +10,8 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
@@ -37,11 +39,13 @@ template <>
 void register_with_charm<2>() {
   PUPable_reg(
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
-  PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
   PUPable_reg(
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D,
                                  CoordinateMaps::DiscreteRotation<2>>));
+  PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
+  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                         CoordinateMaps::Identity<2>>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Wedge2D>));
 }
@@ -51,7 +55,8 @@ void register_with_charm<3>() {
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
-
+  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                         CoordinateMaps::Frustum>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Wedge3D>));
 }
