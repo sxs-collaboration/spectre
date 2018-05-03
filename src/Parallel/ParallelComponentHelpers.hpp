@@ -92,12 +92,6 @@ using index_from_parallel_component =
             template f<ParallelComponent>,
         typename ParallelComponent::initial_databox>;
 
-template <class Metavariables>
-struct ConstGlobalCache;
-
-template <class Metavariables>
-struct CProxy_ConstGlobalCache;
-
 template <class ParallelComponent, class... Args>
 struct charm_types_with_parameters {
   using cproxy =

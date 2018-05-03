@@ -3,23 +3,51 @@
 
 #pragma once
 
-#include <functional>
+// <array> wanted for tuple_size
+// IWYU pragma: no_include <array>
+#include <boost/variant/variant.hpp>
+#include <cstddef>
+#include <exception>
+#include <initializer_list>
+#include <lrtslock.h>
+#include <ostream>
+#include <pup.h>
+#include <tuple>
+#include <unordered_set>
+#include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/ArrayIndex.hpp"
+// Include... ourself?
+// IWYU pragma: no_include "Parallel/Algorithm.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
-#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+namespace Parallel {
+template <class Metavariables>
+class CProxy_ConstGlobalCache;
+template <class Metavariables>
+class ConstGlobalCache;
+namespace Algorithms {
+struct Nodegroup;
+struct Singleton;
+}  // namespace Algorithms
+}  // namespace Parallel
+// IWYU pragma: no_forward_declare db::DataBox
+/// \endcond
 
 namespace Parallel {
 /*!
