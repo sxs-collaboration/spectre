@@ -18,7 +18,7 @@ template <size_t Dim>
 std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed_squared,
-    const tnsr::I<DataVector, Dim>& normal) noexcept {
+    const tnsr::i<DataVector, Dim>& normal) noexcept {
   const DataVector sound_speed = sqrt(get(sound_speed_squared));
 
   auto characteristic_speeds =
@@ -38,7 +38,7 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
   NewtonianEuler::characteristic_speeds(              \
       const tnsr::I<DataVector, DIM(data)>& velocity, \
       const Scalar<DataVector>& sound_speed_squared,  \
-      const tnsr::I<DataVector, DIM(data)>& normal) noexcept;
+      const tnsr::i<DataVector, DIM(data)>& normal) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
