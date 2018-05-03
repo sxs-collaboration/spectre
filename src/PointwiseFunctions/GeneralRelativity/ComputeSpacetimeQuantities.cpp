@@ -3,6 +3,8 @@
 
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 
+#include <cmath>
+
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -37,6 +39,19 @@ tnsr::aa<DataType, Dim, Frame> spacetime_metric(
   return spacetime_metric;
 }
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
+  auto spatial_metric = make_with_value<tnsr::ii<DataType, SpatialDim, Frame>>(
+      spacetime_metric, 0.);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = i; j < SpatialDim; ++j) {
+      spatial_metric.get(i, j) = spacetime_metric.get(i + 1, j + 1);
+    }
+  }
+  return spatial_metric;
+}
+
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
@@ -61,6 +76,36 @@ tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
     }
   }
   return inverse_spacetime_metric;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::I<DataType, SpatialDim, Frame> shift(
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>&
+        inverse_spatial_metric) noexcept {
+  auto shift = make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(
+      spacetime_metric, 0.);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = 0; j < SpatialDim; ++j) {
+      shift.get(i) +=
+          inverse_spatial_metric.get(i, j) * spacetime_metric.get(j + 1, 0);
+    }
+  }
+  return shift;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+Scalar<DataType> lapse(
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
+  auto lapse = make_with_value<Scalar<DataType>>(shift, 0.);
+  get(lapse) = -get<0, 0>(spacetime_metric);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    get(lapse) += shift.get(i) * spacetime_metric.get(i + 1, 0);
+  }
+  get(lapse) = sqrt(get(lapse));
+
+  return lapse;
 }
 
 template <size_t Dim, typename Frame, typename DataType>
@@ -191,12 +236,23 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>&                     \
           spatial_metric) noexcept;                                            \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)> gr::spatial_metric(   \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_metric) noexcept;                                          \
   template tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>                       \
   gr::inverse_spacetime_metric(                                                \
       const Scalar<DTYPE(data)>& lapse,                                        \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
           inverse_spatial_metric) noexcept;                                    \
+  template tnsr::I<DTYPE(data), DIM(data), FRAME(data)> gr::shift(             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric,   \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric) noexcept;                                    \
+  template Scalar<DTYPE(data)> gr::lapse(                                      \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_metric) noexcept;                                          \
   template tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>                      \
   gr::derivatives_of_spacetime_metric(                                         \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \

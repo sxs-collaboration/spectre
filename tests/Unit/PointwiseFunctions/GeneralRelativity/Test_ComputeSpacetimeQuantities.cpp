@@ -4,11 +4,15 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace {
 void test_compute_1d_spacetime_metric(const DataVector& used_for_size) {
@@ -380,6 +384,50 @@ void test_compute_3d_extrinsic_curvature(const DataVector& used_for_size) {
       extrinsic_curvature);
 }
 
+template <size_t Dim, typename T>
+void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
+  // Set up random values for lapse, shift, and spatial_metric.
+  std::random_device r;
+  const auto seed = r();
+  std::mt19937 generator(seed);
+  INFO("seed" << seed);
+  std::uniform_real_distribution<> dist(-1., 1.);
+  std::uniform_real_distribution<> dist_positive(1., 2.);
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_dist = make_not_null(&dist);
+  const auto nn_dist_positive = make_not_null(&dist_positive);
+
+  const auto lapse = make_with_random_values<Scalar<T>>(
+      nn_generator, nn_dist_positive, used_for_size);
+  const auto shift = make_with_random_values<tnsr::I<T, Dim>>(
+      nn_generator, nn_dist, used_for_size);
+  const auto spatial_metric = [&]() {
+    auto spatial_metric_l = make_with_random_values<tnsr::ii<T, Dim>>(
+        nn_generator, nn_dist, used_for_size);
+    // Make sure spatial_metric isn't singular by adding
+    // large enough positive diagonal values.
+    for (size_t i = 0; i < Dim; ++i) {
+      spatial_metric_l.get(i, i) += 4.0;
+    }
+    return spatial_metric_l;
+  }();
+
+  // Make spacetime metric from spatial metric, lapse, and shift.
+  // Then go backwards and compute the spatial metric, lapse, and shift
+  // and make sure we get back the original values.
+  const auto psi = gr::spacetime_metric(lapse, shift, spatial_metric);
+
+  // Here are the functions we are testing.
+  const auto spatial_metric_test = gr::spatial_metric(psi);
+  const auto shift_test =
+      gr::shift(psi, determinant_and_inverse(spatial_metric).second);
+  const auto lapse_test = gr::lapse(shift, psi);
+
+  CHECK_ITERABLE_APPROX(spatial_metric, spatial_metric_test);
+  CHECK_ITERABLE_APPROX(shift, shift_test);
+  CHECK_ITERABLE_APPROX(lapse, lapse_test);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -403,4 +451,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   test_compute_1d_extrinsic_curvature(dv);
   test_compute_2d_extrinsic_curvature(dv);
   test_compute_3d_extrinsic_curvature(dv);
+  test_compute_spatial_metric_lapse_shift<1>(0.0);
+  test_compute_spatial_metric_lapse_shift<2>(0.0);
+  test_compute_spatial_metric_lapse_shift<3>(0.0);
+  test_compute_spatial_metric_lapse_shift<1>(dv);
+  test_compute_spatial_metric_lapse_shift<2>(dv);
+  test_compute_spatial_metric_lapse_shift<3>(dv);
 }

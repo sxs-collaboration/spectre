@@ -35,6 +35,15 @@ tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
 
 /*!
  * \ingroup GeneralRelativityGroup
+ * \brief Compute spatial metric from spacetime metric.
+ * \details Simply pull out the spatial components.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
  * \brief Compute inverse spacetime metric from inverse spatial metric, lapse
  * and shift
  *
@@ -53,6 +62,41 @@ tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Compute shift from spacetime metric and inverse spatial metric.
+ *
+ * \details Computes
+ * \f{align}
+ *    N^i &= g^{ij} \psi_{jt}
+ * \f}
+ * where \f$ N^i\f$, \f$ g^{ij}\f$, and \f$\psi_{ab}\f$ are the shift, inverse
+ * spatial metric, and spacetime metric.
+ * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::I<DataType, SpatialDim, Frame> shift(
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>&
+        inverse_spatial_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Compute lapse from shift and spacetime metric
+ *
+ * \details Computes
+ * \f{align}
+ *    N &= \sqrt{N^i \psi_{it}-\psi_{tt}}
+ * \f}
+ * where \f$ N \f$, \f$ N^i\f$, and \f$\psi_{ab}\f$ are the lapse, shift,
+ * and spacetime metric.
+ * This can be derived, e.g., from Eqs. 2.121--2.122 of Baumgarte & Shapiro.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+Scalar<DataType> lapse(
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
 
 /*!
  * \ingroup GeneralRelativityGroup
