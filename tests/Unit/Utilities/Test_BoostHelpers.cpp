@@ -3,6 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <string>
 
 #include "Utilities/BoostHelpers.hpp"  // IWYU pragma: associated
@@ -14,7 +16,8 @@ static_assert(
                      make_boost_variant_over<tmpl::list<double, int, char>>>,
     "Failed testing make_variant_over");
 
-SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Pup", "[Unit][Utilities]") {
+SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Variant.Pup",
+                  "[Unit][Utilities]") {
   // The order of checks is arbitrary but jumps around to make sure that it is
   // general enough to catch bugs.
   boost::variant<int, double, char, std::string> var{"aoeu"};
@@ -36,11 +39,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Pup", "[Unit][Utilities]") {
   CHECK(boost::get<double>(var) == boost::get<double>(var2));
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.VariantNames",
+SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Variant.Names",
                   "[Unit][Utilities]") {
   boost::variant<int, double, char, std::string> var{"aoeu"};
   CHECK(type_of_current_state(var) == "std::string");
   CHECK(type_of_current_state(var = 1) == "int");
   CHECK(type_of_current_state(var = 'A') == "char");
   CHECK(type_of_current_state(var = 2.8) == "double");
+}
+
+SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Optional.Pup",
+                  "[Unit][Utilities]") {
+  test_serialization(boost::optional<double>{});
+  test_serialization(boost::optional<double>{1.2});
 }
