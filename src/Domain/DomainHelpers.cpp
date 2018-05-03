@@ -9,6 +9,7 @@
 #include <numeric>
 #include <utility>
 
+#include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -632,6 +633,37 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
   return corners;
 }
 
+template <size_t VolumeDim>
+std::vector<std::array<size_t, two_to_the(VolumeDim)>>
+corners_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude) noexcept {
+  std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners{};
+
+  // The number of blocks is one less than
+  // the number of corners in each dimension:
+  std::array<size_t, VolumeDim> number_of_corners{};
+  for (size_t d = 0; d < VolumeDim; d++) {
+    gsl::at(number_of_corners, d) = domain_extents[d] + 1;
+  }
+
+  Index<VolumeDim> global_corner_extents{number_of_corners};
+  for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
+    std::array<size_t, two_to_the(VolumeDim)> corners_for_single_block{};
+    for (VolumeCornerIterator<VolumeDim> vci(*ii, global_corner_extents); vci;
+         ++vci) {
+      gsl::at(corners_for_single_block, vci.local_corner_number()) =
+          vci.global_corner_number();
+    }
+    if (std::find(block_indices_to_exclude.begin(),
+                  block_indices_to_exclude.end(),
+                  *ii) == block_indices_to_exclude.end()) {
+      corners.push_back(corners_for_single_block);
+    }
+  }
+  return corners;
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
@@ -666,6 +698,15 @@ template void set_periodic_boundaries(
     gsl::not_null<
         std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks);
+template std::vector<std::array<size_t, 2>> corners_for_rectilinear_domains(
+    const Index<1>& domain_extents,
+    const std::vector<Index<1>>& block_indices_to_exclude);
+template std::vector<std::array<size_t, 4>> corners_for_rectilinear_domains(
+    const Index<2>& domain_extents,
+    const std::vector<Index<2>>& block_indices_to_exclude);
+template std::vector<std::array<size_t, 8>> corners_for_rectilinear_domains(
+    const Index<3>& domain_extents,
+    const std::vector<Index<3>>& block_indices_to_exclude);
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,

@@ -67,6 +67,20 @@ void set_periodic_boundaries(
         neighbors_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup
+/// \brief The corners for a rectilinear domain made of n-cubes.
+///
+/// The `domain_extents` argument holds the number of blocks to have
+/// in each dimension. The blocks all have aligned orientations by
+/// construction. The `block_indices_to_exclude` argument allows the user
+/// to selectively exclude blocks from the resulting domain. This allows
+/// for the creation of non-trivial shapes such as the net for a tesseract.
+template <size_t VolumeDim>
+std::vector<std::array<size_t, two_to_the(VolumeDim)>>
+corners_for_rectilinear_domains(const Index<VolumeDim>& domain_extents,
+                                const std::vector<Index<VolumeDim>>&
+                                    block_indices_to_exclude = {}) noexcept;
+
+/// \ingroup ComputationalDomainGroup
 /// These are the CoordinateMaps of the Wedge3Ds used in the Sphere, Shell, and
 /// binary compact object DomainCreators. This function can also be used to
 /// wrap the Sphere or Shell in a cube made of six Wedge3Ds.
