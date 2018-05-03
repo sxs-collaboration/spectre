@@ -93,4 +93,40 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const tnsr::i<DataType, SpatialDim, Frame>&
         trace_christoffel_last_indices) noexcept;
 
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes extrinsic curvature from generalized harmonic variables
+ *        and the spacetime normal vector.
+ *
+ * \details If \f$ \Pi_{ab} \f$ and \f$ \phi_{iab} \f$ are the generalized
+ * harmonic conjugate momentum and spatial derivative variables, and if
+ * \f$n^a\f$ is the spacetime normal vector, then the extrinsic curvature
+ * is computed as
+ * \f{align}
+ *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \phi_{(ij)a} n^a
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes spatial derivatives of the spatial metric from
+ *        the generalized harmonic spatial derivative variable.
+ *
+ * \details If \f$ \phi_{kab} \f$ is the generalized
+ * harmonic spatial derivative variable, then the derivatives of the
+ * spatial metric are
+ * \f{align}
+ *      \partial_k g_{ij} &= \phi_{kij}
+ * \f}
+ *
+ * This quantity is needed for computing spatial Christoffel symbols.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 }  // namespace GeneralizedHarmonic
