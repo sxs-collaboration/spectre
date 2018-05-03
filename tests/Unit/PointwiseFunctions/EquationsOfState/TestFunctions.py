@@ -76,13 +76,13 @@ def polytropic_pressure_from_density(rest_mass_density, polytropic_constant,
 
 def polytropic_rel_rest_mass_density_from_enthalpy(
         specific_enthalpy, polytropic_constant, polytropic_exponent):
-    return ((polytropic_exponent - 1.0) / polytropic_exponent *
+    return ((polytropic_exponent - 1.0) / (polytropic_constant*polytropic_exponent) *
             (specific_enthalpy - 1.0))**(1.0 / (polytropic_exponent - 1.0))
 
 
 def polytropic_newt_rest_mass_density_from_enthalpy(
         specific_enthalpy, polytropic_constant, polytropic_exponent):
-    return ((polytropic_exponent - 1.0) / polytropic_exponent *
+    return ((polytropic_exponent - 1.0) / (polytropic_constant*polytropic_exponent) *
             (specific_enthalpy))**(1.0 / (polytropic_exponent - 1.0))
 
 

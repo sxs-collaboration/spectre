@@ -59,18 +59,20 @@ template <>
 template <class DataType>
 Scalar<DataType> PolytropicFluid<true>::rest_mass_density_from_enthalpy_impl(
     const Scalar<DataType>& specific_enthalpy) const noexcept {
-  return Scalar<DataType>{
-      pow((1.0 - 1.0 / polytropic_exponent_) * (get(specific_enthalpy) - 1.0),
-          1.0 / (polytropic_exponent_ - 1.0))};
+  return Scalar<DataType>{pow(((polytropic_exponent_ - 1.0) /
+                               (polytropic_constant_ * polytropic_exponent_)) *
+                                  (get(specific_enthalpy) - 1.0),
+                              1.0 / (polytropic_exponent_ - 1.0))};
 }
 
 template <>
 template <class DataType>
 Scalar<DataType> PolytropicFluid<false>::rest_mass_density_from_enthalpy_impl(
     const Scalar<DataType>& specific_enthalpy) const noexcept {
-  return Scalar<DataType>{
-      pow((1.0 - 1.0 / polytropic_exponent_) * get(specific_enthalpy),
-          1.0 / (polytropic_exponent_ - 1.0))};
+  return Scalar<DataType>{pow(((polytropic_exponent_ - 1.0) /
+                               (polytropic_constant_ * polytropic_exponent_)) *
+                                  (get(specific_enthalpy)),
+                              1.0 / (polytropic_exponent_ - 1.0))};
 }
 
 template <>
@@ -78,9 +80,10 @@ template <class DataType>
 Scalar<DataType> PolytropicFluid<true>::specific_enthalpy_from_density_impl(
     const Scalar<DataType>& rest_mass_density) const noexcept {
   return Scalar<DataType>{
-      1.0 + polytropic_exponent_ / (polytropic_exponent_ - 1.0) *
-                polytropic_constant_ *
-                pow(get(rest_mass_density), polytropic_exponent_ - 1.0)};
+      1.0 +
+      polytropic_exponent_ / (polytropic_exponent_ - 1.0) *
+          polytropic_constant_ *
+          pow(get(rest_mass_density), polytropic_exponent_ - 1.0)};
 }
 
 template <>
