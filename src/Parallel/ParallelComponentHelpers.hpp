@@ -34,11 +34,8 @@ using get_inbox_tags_from_action =
  * \brief Given a list of Actions, get a list of the unique inbox tags
  */
 template <class ActionsList>
-using get_inbox_tags = tmpl::remove_duplicates<tmpl::flatten<
-    tmpl::fold<ActionsList, tmpl::list<>,
-               tmpl::lazy::append<tmpl::_state,
-                                  Parallel_detail::get_inbox_tags_from_action<
-                                      tmpl::_element>>>>>;
+using get_inbox_tags = tmpl::remove_duplicates<tmpl::join<tmpl::transform<
+    ActionsList, Parallel_detail::get_inbox_tags_from_action<tmpl::_1>>>>;
 
 namespace Algorithms {
 struct Singleton;
