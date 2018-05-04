@@ -48,13 +48,14 @@ class IndexIterator {
   /// currently represents
   const Index<Dim>& operator()() const noexcept { return index_; }
 
-  /// Get the offset into a 1D array whose first dimension is assumed to vary
-  /// fastest
-  size_t offset() const noexcept { return offset_; }
+  /// Get the collapsed index into a 1D array of the data corresponding to the
+  /// current Index of the IndexIterator. Note that the first dimension of the
+  /// Index varies fastest when computing the collapsed index.
+  size_t collapsed_index() const noexcept { return collapsed_index_; }
 
  private:
   const Index<Dim> extents_{};
   Index<Dim> index_{};
-  size_t offset_{0};
+  size_t collapsed_index_{0};
   bool valid_{false};
 };

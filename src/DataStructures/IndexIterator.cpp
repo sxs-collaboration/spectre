@@ -7,7 +7,10 @@
 
 template <size_t Dim>
 IndexIterator<Dim>::IndexIterator(Index<Dim> extents)
-    : extents_(std::move(extents)), index_(0), offset_(0), valid_(true) {}
+    : extents_(std::move(extents)),
+      index_(0),
+      collapsed_index_(0),
+      valid_(true) {}
 
 template <size_t Dim>
 IndexIterator<Dim>& IndexIterator<Dim>::operator++() {
@@ -22,7 +25,7 @@ IndexIterator<Dim>& IndexIterator<Dim>::operator++() {
       break;
     }
   }
-  ++offset_;
+  ++collapsed_index_;
   return *this;
 }
 

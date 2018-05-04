@@ -149,7 +149,7 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
   const size_t b = extents[1] - 1;
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
     for (IndexIterator<2> ii(extents); ii; ++ii) {
-      u.data()[ii.offset() + n * number_of_grid_points] =  // NOLINT
+      u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
           (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b);
     }
   }
@@ -166,9 +166,11 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
       const double expected_deta = (0 == b ? 0.0
                                            : b * (n + 1) * pow(xi[ii()[0]], a) *
                                                  pow(eta[ii()[1]], b - 1));
-      CHECK(du[0].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
+      CHECK(du[0].data()[ii.collapsed_index() +
+                         n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
-      CHECK(du[1].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
+      CHECK(du[1].data()[ii.collapsed_index() +
+                         n * number_of_grid_points] ==  // NOLINT
             approx(expected_deta));
     }
   }
@@ -186,7 +188,7 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
   const size_t c = extents[2] - 1;
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
     for (IndexIterator<3> ii(extents); ii; ++ii) {
-      u.data()[ii.offset() + n * number_of_grid_points] =  // NOLINT
+      u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
           (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
           pow(zeta[ii()[2]], c);
     }
@@ -209,11 +211,14 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
           (0 == c ? 0.0
                   : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
                         pow(zeta[ii()[2]], c - 1));
-      CHECK(du[0].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
+      CHECK(du[0].data()[ii.collapsed_index() +
+                         n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
-      CHECK(du[1].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
+      CHECK(du[1].data()[ii.collapsed_index() +
+                         n * number_of_grid_points] ==  // NOLINT
             approx(expected_deta));
-      CHECK(du[2].data()[ii.offset() + n * number_of_grid_points] ==  // NOLINT
+      CHECK(du[2].data()[ii.collapsed_index() +
+                         n * number_of_grid_points] ==  // NOLINT
             approx(expected_dzeta));
     }
   }
