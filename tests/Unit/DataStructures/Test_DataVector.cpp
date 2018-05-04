@@ -488,6 +488,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   const DataVector expected_d3(2, 13.);
   const auto magnitude_d3 = magnitude(d3);
   CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
+
+  // Test Matrix-Vector multiplication
+  const Matrix A{{2., 1.}, {-3., 4.}};
+  const DataVector a{0.5, 1.};
+  CHECK_ITERABLE_APPROX(apply_matrix(A, a), DataVector({2., 2.5}));
+  CHECK_ITERABLE_APPROX(apply_matrix(a, A), DataVector({-2., 4.5}));
 }
 
 // [[OutputRegex, Must copy into same size]]
