@@ -342,9 +342,10 @@ struct Interface<DirectionsTag, Extents<InterfaceDim>>
 }  // namespace Tags
 
 namespace db {
-template <typename DirectionsTag, typename VariablesTag>
-struct Subitems<Tags::Interface<DirectionsTag, VariablesTag>,
-                Requires<tt::is_a_v<Variables, item_type<VariablesTag>>>> {
+template <typename TagList, typename DirectionsTag, typename VariablesTag>
+struct Subitems<
+    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
+    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>> {
   using type = tmpl::transform<
       typename item_type<VariablesTag>::tags_list,
       tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;

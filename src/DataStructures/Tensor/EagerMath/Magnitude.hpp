@@ -61,8 +61,10 @@ template <typename Tag, typename MagnitudeTag>
 struct Normalized : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Normalized";
   static constexpr auto function(
-      db::item_type<Tag> vector,
+      const db::item_type<Tag>&
+          vector_in,  // Compute items need to take const references
       const db::item_type<MagnitudeTag>& magnitude) noexcept {
+    auto vector = vector_in;
     for (size_t d = 0; d < vector.index_dim(0); ++d) {
       vector.get(d) /= get(magnitude);
     }

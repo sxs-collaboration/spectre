@@ -704,8 +704,9 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
 }  // namespace MakeWithValueImpls
 
 namespace db {
-template <typename Tag>
-struct Subitems<Tag, Requires<tt::is_a_v<Variables, item_type<Tag>>>> {
+template <typename TagList, typename Tag>
+struct Subitems<TagList, Tag,
+                Requires<tt::is_a_v<Variables, item_type<Tag, TagList>>>> {
   using type = typename item_type<Tag>::tags_list;
 
   template <typename Subtag>

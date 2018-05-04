@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DataStructures")
 
 set(LIBRARY_SOURCES
+  Test_BaseTags.cpp
   Test_DataBox.cpp
   Test_DataBoxTag.cpp
   Test_DataVector.cpp

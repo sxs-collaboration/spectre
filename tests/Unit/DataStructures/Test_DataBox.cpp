@@ -37,8 +37,8 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 namespace {
-double multiply_by_two(const double value) { return 2.0 * value; }
-std::string append_word(const std::string& text, const double value) {
+double multiply_by_two(const double& value) { return 2.0 * value; }
+std::string append_word(const std::string& text, const double& value) {
   std::stringstream ss;
   ss << value;
   return text + ss.str();
@@ -73,6 +73,7 @@ struct ComputeTag0 : db::ComputeItemTag {
   static constexpr auto function = multiply_by_two;
   using argument_tags = tmpl::list<Tag0>;
 };
+
 /// [databox_compute_item_tag_example]
 struct ComputeTag1 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ComputeTag1";
@@ -89,7 +90,7 @@ struct TagTensor : db::ComputeItemTag {
 /// [compute_item_tag_function]
 struct ComputeLambda0 : db::ComputeItemTag {
   static constexpr db::DataBoxString label = "ComputeLambda0";
-  static constexpr double function(const double a) { return 3.0 * a; }
+  static constexpr double function(const double& a) { return 3.0 * a; }
   using argument_tags = tmpl::list<Tag0>;
 };
 /// [compute_item_tag_function]
@@ -144,9 +145,9 @@ static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
                            Box_t>::value,
               "Failed testing no-op create_from");
 
-static_assert(db::detail::tag_has_label<test_databox_tags::Tag0>::value,
+static_assert(db::DataBox_detail::tag_has_label_v<test_databox_tags::Tag0>,
               "Failed testing db::tag_has_label");
-static_assert(db::detail::tag_has_label<test_databox_tags::TagTensor>::value,
+static_assert(db::DataBox_detail::tag_has_label_v<test_databox_tags::TagTensor>,
               "Failed testing db::tag_has_label");
 }  // namespace
 
@@ -164,11 +165,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   static_assert(
       std::is_same<
           decltype(original_box),
-          db::DataBox<db::databox_detail::dependent_items<tmpl::list<
-              test_databox_tags::Tag0, test_databox_tags::Tag1,
-              test_databox_tags::Tag2, test_databox_tags::ComputeTag0,
-              test_databox_tags::ComputeTag1, test_databox_tags::ComputeLambda0,
-              test_databox_tags::ComputeLambda1>>>>::value,
+          db::DataBox<db::databox_detail::expand_subitems<
+              tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                         test_databox_tags::Tag2>,
+              tmpl::list<test_databox_tags::ComputeTag0,
+                         test_databox_tags::ComputeTag1,
+                         test_databox_tags::ComputeLambda0,
+                         test_databox_tags::ComputeLambda1>,
+              true>>>::value,
       "Failed to create original_box");
 
   CHECK(db::get<test_databox_tags::Tag0>(original_box) == 3.14);
@@ -833,9 +837,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
 
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
-      box, [](auto& vars) {
-        get<test_databox_tags::ScalarTag>(vars).get() = 6.0;
-      });
+      box,
+      [](auto& vars) { get<test_databox_tags::ScalarTag>(vars).get() = 6.0; });
 
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 6.)));
@@ -963,39 +966,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
   }
-
-  auto box2 = db::create_from<
-      db::RemoveTags<test_databox_tags::Tag0,
-                     Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                                test_databox_tags::VectorTag>>>,
-      db::AddSimpleTags<
-          test_databox_tags::Tag0,
-          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                     test_databox_tags::VectorTag>>>>(
-      box, 3.84,
-      Variables<tmpl::list<test_databox_tags::ScalarTag,
-                           test_databox_tags::VectorTag>>(4, 8.0));
-
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box2)) == 3.84 * 2.0);
-  CHECK(db::get<test_databox_tags::ScalarTag>(box2) ==
-        Scalar<DataVector>(DataVector(4, 8.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(box2) ==
-        (tnsr::I<DataVector, 3>(DataVector(4, 8.))));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(box2) ==
-        Scalar<DataVector>(DataVector(4, 16.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(box2) ==
-        (tnsr::I<DataVector, 3>(DataVector(4, 2.))));
-  CHECK(db::get<test_databox_tags::ScalarTag4>(box2) ==
-        Scalar<DataVector>(DataVector(4, 16.)));
-  CHECK(db::get<test_databox_tags::VectorTag4>(box2) ==
-        (tnsr::I<DataVector, 3>(DataVector(4, 16.))));
-  {
-    const auto& vars = db::get<test_databox_tags::MultiplyVariablesByTwo>(box2);
-    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
-          Scalar<DataVector>(DataVector(4, 16.)));
-    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
-          (tnsr::I<DataVector, 3>(DataVector(4, 16.))));
-  }
 }
 
 namespace ExtraResetTags {
@@ -1028,7 +998,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
       db::AddComputeTags<ExtraResetTags::CheckReset>>(
       1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
-  db::mutate<ExtraResetTags::Int>(box, [](int&){});
+  db::mutate<ExtraResetTags::Int>(box, [](int&) {});
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
 }
 
@@ -1183,7 +1153,7 @@ static_assert(
 
 namespace {
 void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
-                            const double value) {
+                            const double& value) {
   if (t->empty()) {
     t->resize(10);
   }
@@ -1191,7 +1161,7 @@ void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
     p = 2.0 * value;
   }
 }
-std::vector<double> multiply_by_two_non_mutate(const double value) {
+std::vector<double> multiply_by_two_non_mutate(const double& value) {
   return std::vector<double>(10, 2.0 * value);
 }
 
@@ -1200,7 +1170,7 @@ void mutate_variables(
     const gsl::not_null<Variables<tmpl::list<test_databox_tags::ScalarTag,
                                              test_databox_tags::VectorTag>>*>
         t,
-    const double value) {
+    const double& value) {
   if (t->number_of_grid_points() != 10) {
     *t = Variables<
         tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>(
@@ -1607,8 +1577,9 @@ struct Second : db::DataBoxTag {
 }  // namespace test_subitems
 
 namespace db {
-template <size_t N, bool Compute, bool DependsOnComputeItem>
-struct Subitems<test_subitems::Parent<N, Compute, DependsOnComputeItem>> {
+template <typename TagList, size_t N, bool Compute, bool DependsOnComputeItem>
+struct Subitems<TagList,
+                test_subitems::Parent<N, Compute, DependsOnComputeItem>> {
   using type = tmpl::list<test_subitems::First<N>, test_subitems::Second<N>>;
   using tag = test_subitems::Parent<N, Compute>;
 
