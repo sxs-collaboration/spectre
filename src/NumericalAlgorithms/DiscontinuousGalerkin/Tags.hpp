@@ -3,16 +3,28 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
+#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <cstddef>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/ElementId.hpp"
+#include "Domain/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "Options/Options.hpp"
 
 namespace Tags {
+/// \ingroup DataBoxTags
+/// \ingroup DiscontinuousGalerkinGroup
+/// \brief Simple boundary communication data
+template <typename LocalData, typename RemoteData>
+struct SimpleBoundaryData : db::SimpleTag {
+  static std::string name() noexcept { return "SimpleBoundaryData"; }
+  using type = dg::SimpleBoundaryData<LocalData, RemoteData>;
+};
+
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DiscontinuousGalerkinGroup
 /// Data on mortars, indexed by (Direction, ElementId) pairs
