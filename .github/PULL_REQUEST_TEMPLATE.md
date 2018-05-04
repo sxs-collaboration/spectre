@@ -23,8 +23,8 @@ At a high level, describe what this PR does.
 - Private member variables have a trailing underscore
 - Do not use [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation), e.g. `double* pd_blah` is bad
 - Header order:
-  1. hpp corresponding to cpp (only in cpp files)
-  2. Blank line (only in cpp files)
+  1. hpp corresponding to cpp (only in cpp files) or `tests/Unit/TestingFramework.hpp` (only in tests)
+  2. Blank line (only in cpp files and tests)
   3. STL and externals (in alphabetical order)
   4. Blank line
   5. SpECTRE includes (in alphabetical order)
