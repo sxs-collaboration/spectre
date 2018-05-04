@@ -33,39 +33,6 @@ template <size_t VolumeDim>
 class ElementId;
 /// \endcond
 
-// Iterates over the logical corners of a VolumeDim-dimensional cube.
-template <size_t VolumeDim>
-class VolumeCornerIterator {
- public:
-  VolumeCornerIterator() noexcept = default;
-  explicit VolumeCornerIterator(size_t index) noexcept : index_(index) {}
-  void operator++() noexcept {
-    ++index_;
-    for (size_t i = 0; i < VolumeDim; i++) {
-      gsl::at(coords_of_corner_, i) = 2.0 * get_nth_bit(index_, i) - 1.0;
-      gsl::at(array_sides_, i) =
-          2 * get_nth_bit(index_, i) - 1 == 1 ? Side::Upper : Side::Lower;
-    }
-  }
-  explicit operator bool() const noexcept {
-    return index_ < two_to_the(VolumeDim);
-  }
-  const std::array<Side, VolumeDim>& operator()() const noexcept {
-    return array_sides_;
-  }
-  const std::array<Side, VolumeDim>& operator*() const noexcept {
-    return array_sides_;
-  }
-  const std::array<double, VolumeDim>& coords_of_corner() const noexcept {
-    return coords_of_corner_;
-  }
-
- private:
-  size_t index_ = 0;
-  std::array<Side, VolumeDim> array_sides_ = make_array<VolumeDim>(Side::Lower);
-  std::array<double, VolumeDim> coords_of_corner_ = make_array<VolumeDim>(-1.0);
-};
-
 // Test that the Blocks in the Domain are constructed correctly.
 template <size_t VolumeDim>
 void test_domain_construction(
