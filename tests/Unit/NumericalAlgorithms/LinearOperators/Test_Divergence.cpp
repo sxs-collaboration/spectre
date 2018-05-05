@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -27,7 +29,6 @@
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 template <size_t VolumeDim>
 class MathFunction;

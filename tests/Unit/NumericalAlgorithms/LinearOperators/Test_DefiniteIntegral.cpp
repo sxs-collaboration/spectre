@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -11,7 +13,6 @@
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
 #include "Utilities/Literals.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 namespace {
 void test_definite_integral_1d(const Index<1>& extents) {
