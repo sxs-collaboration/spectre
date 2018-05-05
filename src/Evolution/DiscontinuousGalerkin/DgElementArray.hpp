@@ -3,15 +3,30 @@
 
 #pragma once
 
+#include <cstddef>
+#include <memory>
+#include <vector>
+
 #include "AlgorithmArray.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
-#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags.hpp"  // IWYU pragma: keep
+#include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Frame {
+struct Inertial;
+}  // namespace Frame
+/// \endcond
 
 template <class Metavariables, class ActionList>
 struct DgElementArray {
@@ -25,9 +40,9 @@ struct DgElementArray {
   using action_list = ActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using initial_databox = db::compute_databox_type<
-      typename dg::Actions::InitializeElement<volume_dim>::
-          template return_tag_list<typename Metavariables::system>>;
+  using initial_databox =
+      db::compute_databox_type<typename dg::Actions::InitializeElement<
+          volume_dim>::template return_tag_list<Metavariables>>;
 
   using options = tmpl::list<typename Metavariables::domain_creator_tag,
                              OptionTags::InitialTime, OptionTags::DeltaT>;

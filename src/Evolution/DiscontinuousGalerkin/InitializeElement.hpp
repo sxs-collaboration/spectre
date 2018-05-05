@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
@@ -24,6 +24,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -86,37 +87,41 @@ struct InitializeElement {
   template <typename Tag>
   using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 
-  template <class System>
+  template <class Metavariables>
   using return_tag_list = tmpl::list<
       // Simple items
       Tags::TimeId, Tags::TimeStep, Tags::Extents<Dim>, Tags::Element<Dim>,
-      Tags::ElementMap<Dim>, typename System::variables_tag,
+      Tags::ElementMap<Dim>, typename Metavariables::system::variables_tag,
       Tags::HistoryEvolvedVariables<
-          typename System::variables_tag,
-          db::add_tag_prefix<Tags::dt, typename System::variables_tag>>,
-      db::add_tag_prefix<Tags::dt, typename System::variables_tag>,
+          typename Metavariables::system::variables_tag,
+          db::add_tag_prefix<Tags::dt,
+                             typename Metavariables::system::variables_tag>>,
+      db::add_tag_prefix<Tags::dt,
+                         typename Metavariables::system::variables_tag>,
+      typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag,
       // Compute items
       Tags::Time, Tags::LogicalCoordinates<Dim>,
       Tags::Coordinates<Tags::ElementMap<Dim>, Tags::LogicalCoordinates<Dim>>,
       Tags::InverseJacobian<Tags::ElementMap<Dim>,
                             Tags::LogicalCoordinates<Dim>>,
-      Tags::deriv<typename System::variables_tag::tags_list,
-                  typename System::gradients_tags,
+      Tags::deriv<typename Metavariables::system::variables_tag::tags_list,
+                  typename Metavariables::system::gradients_tags,
                   Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                         Tags::LogicalCoordinates<Dim>>>,
       Tags::InternalDirections<Dim>, interface_tag<Tags::Direction<Dim>>,
       interface_tag<Tags::Extents<Dim - 1>>,
       interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
-      interface_tag<typename System::template magnitude_tag<
+      interface_tag<typename Metavariables::system::template magnitude_tag<
           Tags::UnnormalizedFaceNormal<Dim>>>,
-      interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>,
-                                     typename System::template magnitude_tag<
-                                         Tags::UnnormalizedFaceNormal<Dim>>>>,
+      interface_tag<Tags::Normalized<
+          Tags::UnnormalizedFaceNormal<Dim>,
+          typename Metavariables::system::template magnitude_tag<
+              Tags::UnnormalizedFaceNormal<Dim>>>>,
       // This should be the boundary forms of
       // System::normal_dot_fluxes::argument_tags, but it is not clear
       // how to get that.  System::variables_tag should generally be a
       // superset.
-      interface_tag<typename System::variables_tag>>;
+      interface_tag<typename Metavariables::system::variables_tag>>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>
@@ -181,15 +186,27 @@ struct InitializeElement {
     TimeId time_id{};
     time_id.time = initial_time;
 
-    db::compute_databox_type<return_tag_list<typename Metavariables::system>>
-        outbox = db::create<
-            db::get_items<return_tag_list<typename Metavariables::system>>,
-            db::get_compute_items<
-                return_tag_list<typename Metavariables::system>>>(
+    // Set up boundary information
+    db::item_type<
+        typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag>
+        boundary_data{};
+    for (const auto& direction_neighbors : element.neighbors()) {
+      const auto& direction = direction_neighbors.first;
+      const auto& neighbors = direction_neighbors.second;
+      for (const auto& neighbor : neighbors) {
+        const auto mortar_id = std::make_pair(direction, neighbor);
+        boundary_data.insert({mortar_id, {}});
+      }
+    }
+
+    db::compute_databox_type<return_tag_list<Metavariables>> outbox =
+        db::create<db::get_items<return_tag_list<Metavariables>>,
+                   db::get_compute_items<return_tag_list<Metavariables>>>(
             time_id, initial_dt, std::move(mesh), std::move(element),
             std::move(map), std::move(vars), std::move(history_dt_vars),
             Variables<db::wrap_tags_in<Tags::dt, variables_tags>>{
-                num_grid_points, 0.0});
+                num_grid_points, 0.0},
+            std::move(boundary_data));
 
     return std::make_tuple(std::move(outbox));
   }

@@ -15,6 +15,7 @@
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -50,7 +51,8 @@ struct EvolutionMetavars {
       tmpl::list<Actions::ComputeVolumeDuDt<Dim>,
                  dg::Actions::ComputeNonconservativeBoundaryFluxes,
                  dg::Actions::SendDataForFluxes,
-                 dg::Actions::ComputeBoundaryFlux<EvolutionMetavars>,
+                 dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
+                 dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
                  Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;
 
   static constexpr OptionString help{
