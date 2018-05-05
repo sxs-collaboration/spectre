@@ -8,20 +8,18 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/Index.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
-namespace gsl {
-template <class T>
-class not_null;
-}  // namespace gsl
 template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
@@ -130,22 +128,48 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
     const std::array<size_t, 8>& central_block_corners_lhs = {
         {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
 
-/// Iterates over the logical corners of a VolumeDim-dimensional cube.
+/// \ingroup ComputationalDomainGroup
+/// Iterates over the corners of a VolumeDim-dimensional cube.
 template <size_t VolumeDim>
 class VolumeCornerIterator {
  public:
   VolumeCornerIterator() noexcept = default;
-  explicit VolumeCornerIterator(size_t index) noexcept : index_(index) {}
+  explicit VolumeCornerIterator(size_t initial_local_corner_number) noexcept
+      : local_corner_number_(initial_local_corner_number) {}
+  VolumeCornerIterator(
+      // The block index is also global corner
+      // index of the lowest corner of the block.
+      Index<VolumeDim> block_index,
+      Index<VolumeDim> global_corner_extents) noexcept
+      : global_corner_number_(
+            collapsed_index(block_index, global_corner_extents)),
+        global_corner_index_(block_index),
+        global_corner_extents_(global_corner_extents) {}
   void operator++() noexcept {
-    ++index_;
+    ++local_corner_number_;
     for (size_t i = 0; i < VolumeDim; i++) {
-      gsl::at(coords_of_corner_, i) = 2.0 * get_nth_bit(index_, i) - 1.0;
+      gsl::at(coords_of_corner_, i) =
+          2.0 * get_nth_bit(local_corner_number_, i) - 1.0;
       gsl::at(array_sides_, i) =
-          2 * get_nth_bit(index_, i) - 1 == 1 ? Side::Upper : Side::Lower;
+          2 * get_nth_bit(local_corner_number_, i) - 1 == 1 ? Side::Upper
+                                                            : Side::Lower;
     }
   }
   explicit operator bool() const noexcept {
-    return index_ < two_to_the(VolumeDim);
+    return local_corner_number_ < two_to_the(VolumeDim);
+  }
+  const size_t& local_corner_number() const noexcept {
+    return local_corner_number_;
+  }
+  size_t global_corner_number() const noexcept {
+    std::array<size_t, VolumeDim> new_indices{};
+    for (size_t i = 0; i < VolumeDim; i++) {
+      gsl::at(new_indices, i) =
+          global_corner_index_[i] +
+          (gsl::at(array_sides_, i) == Side::Upper ? 1 : 0);
+    }
+    const Index<VolumeDim> interior_multi_index(new_indices);
+    return collapsed_index(interior_multi_index, global_corner_extents_);
   }
   const std::array<Side, VolumeDim>& operator()() const noexcept {
     return array_sides_;
@@ -158,7 +182,10 @@ class VolumeCornerIterator {
   }
 
  private:
-  size_t index_ = 0;
+  size_t local_corner_number_ = 0;
+  size_t global_corner_number_{std::numeric_limits<size_t>::max()};
+  Index<VolumeDim> global_corner_index_{};
+  Index<VolumeDim> global_corner_extents_{};
   std::array<Side, VolumeDim> array_sides_ = make_array<VolumeDim>(Side::Lower);
   std::array<double, VolumeDim> coords_of_corner_ = make_array<VolumeDim>(-1.0);
 };

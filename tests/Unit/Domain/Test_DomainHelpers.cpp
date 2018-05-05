@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -21,6 +22,8 @@
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/Side.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -588,6 +591,14 @@ void test_vci_1d() {
   CHECK(vci.coords_of_corner() == std::array<double, 1>{{1.0}});
   ++vci;
   CHECK(not vci);
+
+  VolumeCornerIterator<1> vci2{Index<1>{2}, Index<1>{7}};
+  CHECK(vci2);
+  CHECK(vci2.global_corner_number() == 2);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 3);
+  ++vci2;
+  CHECK(not vci2);
 }
 
 void test_vci_2d() {
@@ -606,6 +617,18 @@ void test_vci_2d() {
   CHECK(vci.coords_of_corner() == std::array<double, 2>{{1.0, 1.0}});
   ++vci;
   CHECK(not vci);
+
+  VolumeCornerIterator<2> vci2{Index<2>{1, 2}, Index<2>{3, 4}};
+  CHECK(vci2);
+  CHECK(vci2.global_corner_number() == 7);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 8);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 10);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 11);
+  ++vci2;
+  CHECK(not vci2);
 }
 
 void test_vci_3d() {
@@ -636,6 +659,26 @@ void test_vci_3d() {
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, 1.0, 1.0}});
   ++vci;
   CHECK(not vci);
+
+  VolumeCornerIterator<3> vci2{Index<3>{1, 1, 1}, Index<3>{4, 4, 4}};
+  CHECK(vci2);
+  CHECK(vci2.global_corner_number() == 21);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 22);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 25);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 26);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 37);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 38);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 41);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 42);
+  ++vci2;
+  CHECK(not vci2);
 }
 }  // namespace
 
@@ -644,4 +687,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
   test_vci_1d();
   test_vci_2d();
   test_vci_3d();
+}
+
+// [[OutputRegex, Index out of range.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.DomainHelpers.VolumeCornerIterator.Assert", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto extents = Index<3>{4, 4, 4};
+  auto failed_index_with = Index<3>{2, 3, 4};
+  static_cast<void>(VolumeCornerIterator<3>{failed_index_with, extents});
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
