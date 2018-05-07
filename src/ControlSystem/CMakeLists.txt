@@ -6,6 +6,7 @@ set(LIBRARY ControlSystem)
 set(LIBRARY_SOURCES
     PiecewisePolynomial.cpp
     SettleToConstant.cpp
+    TimescaleTuner.cpp
    )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

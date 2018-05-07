@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <initializer_list>
 #include <utility>
 
@@ -66,8 +67,8 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) cube(const T& x) {
  * \note The largest representable factorial is 20!. It is up to the user to
  * ensure this is satisfied
  */
-constexpr uint64_t falling_factorial(
-    const uint64_t x, const uint64_t n) noexcept {
+constexpr uint64_t falling_factorial(const uint64_t x,
+                                     const uint64_t n) noexcept {
   // clang-tidy: don't warn about STL internals, I can't fix them
   assert(n <= x);  // NOLINT
   uint64_t r = 1;
@@ -207,6 +208,26 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
 }
 //@}
 
+namespace cpp17 {
+/// \ingroup ConstantExpressionsGroup
+/// \brief Clamps the value between lo and hi
+///
+/// If v compares less than lo, returns lo; otherwise if hi compares less than
+///  v, returns hi; otherwise returns v.
+template <class T, class Compare = std::less<>>
+constexpr const T& clamp(const T& v, const T& lo, const T& hi,
+                         Compare comp = Compare()) {
+  // reason for NOLINT: the warning below occurs despite no instances of an
+  // array in the clamp calls. This warning occurs sometime during the assert
+  // macro expansion rather than being due to an implementation error.
+  // "warning: do not implicitly decay an array into a pointer; consider using
+  //  gsl::array_view or an explicit cast instead
+  //  [cppcoreguidelines-pro-bounds-array-to-pointer-decay]"
+  return assert(!comp(hi, lo)),  // NOLINT
+         comp(v, lo) ? lo : comp(hi, v) ? hi : v;
+}
+}  // namespace cpp17
+
 /// \ingroup ConstantExpressionsGroup
 /// \brief Returns `f(ic<0>{}) + f(ic<1>{}) + ... + f(ic<NumTerms-1>{})`
 /// where `ic<N>` stands for `std::integral_constant<size_t, N>`.
@@ -214,8 +235,7 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
 /// different, and so works efficiently with expression templates.
 /// \note When summing expression templates one must be careful of
 /// referring to temporaries in `f`.
-template <size_t NumTerms, typename Function,
-          Requires<NumTerms == 1> = nullptr>
+template <size_t NumTerms, typename Function, Requires<NumTerms == 1> = nullptr>
 constexpr decltype(auto) constexpr_sum(Function&& f) noexcept {
   return f(std::integral_constant<size_t, 0>{});
 }
@@ -225,7 +245,7 @@ template <size_t NumTerms, typename Function,
           Requires<(NumTerms > 1)> = nullptr>
 constexpr decltype(auto) constexpr_sum(Function&& f) noexcept {
   return constexpr_sum<NumTerms - 1>(f) +
-      f(std::integral_constant<size_t, NumTerms - 1>{});
+         f(std::integral_constant<size_t, NumTerms - 1>{});
 }
 /// \endcond
 
@@ -234,8 +254,8 @@ template <typename List, size_t... indices,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
 inline constexpr std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                             tmpl::size<List>::value>
-make_array_from_list_helper(
-    std::integer_sequence<size_t, indices...> /*meta*/) {
+    make_array_from_list_helper(
+        std::integer_sequence<size_t, indices...> /*meta*/) {
   return std::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                     tmpl::size<List>::value>{
       {tmpl::at<List, tmpl::size_t<indices>>::value...}};
@@ -271,8 +291,8 @@ inline constexpr std::array<
     std::decay_t<
         decltype(make_array_from_list<tmpl::at<List, tmpl::size_t<0>>>())>,
     tmpl::size<List>::value>
-make_array_from_list_helper(
-    std::integer_sequence<size_t, indices...> /*unused*/) {
+    make_array_from_list_helper(
+        std::integer_sequence<size_t, indices...> /*unused*/) {
   return std::array<std::decay_t<decltype(make_array_from_list<
                                           tmpl::at<List, tmpl::size_t<0>>>())>,
                     tmpl::size<List>::value>{
@@ -356,5 +376,7 @@ namespace cpp17 {
 /// \ingroup ConstantExpressionsGroup
 /// \brief Returns a const reference to its argument.
 template <typename T>
-constexpr const T& as_const(const T& t) noexcept { return t; }
+constexpr const T& as_const(const T& t) noexcept {
+  return t;
+}
 }  // namespace cpp17
