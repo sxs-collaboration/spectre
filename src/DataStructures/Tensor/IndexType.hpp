@@ -6,15 +6,13 @@
 
 #pragma once
 
+#include <cstddef>
 #include <ostream>
+#include <string>
 #include <type_traits>
 
-#include "Utilities/Literals.hpp"
-
-namespace brigand {
-template <class...>
-struct list;
-}  // namespace brigand
+#include "Utilities/Literals.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
 
 /// \ingroup TensorGroup
 /// Whether a \ref SpacetimeIndex "TensorIndexType" is covariant or
@@ -202,4 +200,4 @@ using change_index_up_lo = Tensor_detail::TensorIndexType<
     Index::index_type>;
 
 template <typename... Ts>
-using index_list = brigand::list<Ts...>;
+using index_list = tmpl::list<Ts...>;

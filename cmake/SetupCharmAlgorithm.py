@@ -91,7 +91,8 @@ def create_header_file(args):
                  "#endif\n" \
                  "\n#pragma once\n" \
                  "\n" \
-                 "#include \"Parallel/Algorithm.hpp\"\n\n" \
+                 "#include \"Parallel/Algorithm.hpp\"\n" \
+                 "#include \"Parallel/ArrayIndex.hpp\"\n\n" \
                  "#include \"Algorithms/Algorithm%s.decl.h\"\n\n" % \
                  args['algorithm_name']
     # Write "ChareType" struct

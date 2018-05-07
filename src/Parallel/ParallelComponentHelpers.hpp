@@ -34,11 +34,8 @@ using get_inbox_tags_from_action =
  * \brief Given a list of Actions, get a list of the unique inbox tags
  */
 template <class ActionsList>
-using get_inbox_tags = tmpl::remove_duplicates<tmpl::flatten<
-    tmpl::fold<ActionsList, tmpl::list<>,
-               tmpl::lazy::append<tmpl::_state,
-                                  Parallel_detail::get_inbox_tags_from_action<
-                                      tmpl::_element>>>>>;
+using get_inbox_tags = tmpl::remove_duplicates<tmpl::join<tmpl::transform<
+    ActionsList, Parallel_detail::get_inbox_tags_from_action<tmpl::_1>>>>;
 
 namespace Algorithms {
 struct Singleton;
@@ -91,12 +88,6 @@ using index_from_parallel_component =
         typename get_array_index<typename ParallelComponent::chare_type>::
             template f<ParallelComponent>,
         typename ParallelComponent::initial_databox>;
-
-template <class Metavariables>
-struct ConstGlobalCache;
-
-template <class Metavariables>
-struct CProxy_ConstGlobalCache;
 
 template <class ParallelComponent, class... Args>
 struct charm_types_with_parameters {
