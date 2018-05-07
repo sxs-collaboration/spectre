@@ -492,6 +492,146 @@ frustum_coordinate_maps(const double length_inner_cube,
       std::move(frustums[8]));  // NOLINT
 }
 
+namespace {
+std::array<size_t, 8> concatenate_faces(
+    const std::array<size_t, 4>& face1,
+    const std::array<size_t, 4>& face2) noexcept {
+  return {{face1[0], face1[1], face1[2], face1[3], face2[0], face2[1], face2[2],
+           face2[3]}};
+}
+
+std::array<size_t, 4> next_face_in_radial_direction(
+    const std::array<size_t, 4>& face) noexcept {
+  return {{face[0] + 8, face[1] + 8, face[2] + 8, face[3] + 8}};
+}
+
+std::array<std::array<size_t, 4>, 6> next_layer_in_radial_direction(
+    const std::array<std::array<size_t, 4>, 6>& layer) noexcept {
+  return {{next_face_in_radial_direction(layer[0]),
+           next_face_in_radial_direction(layer[1]),
+           next_face_in_radial_direction(layer[2]),
+           next_face_in_radial_direction(layer[3]),
+           next_face_in_radial_direction(layer[4]),
+           next_face_in_radial_direction(layer[5])}};
+}
+
+void identify_corners_with_each_other(
+    const gsl::not_null<std::vector<std::array<size_t, 8>>*> corners,
+    const size_t corner_1, const size_t corner_2) noexcept {
+  for (auto& block_corners : *corners) {
+    for (auto& corner : block_corners) {
+      if (corner == corner_2) {
+        corner = corner_1;
+      }
+    }
+  }
+}
+}  // namespace
+
+std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
+    const size_t number_of_layers, const bool include_central_block,
+    const std::array<size_t, 8>& central_block_corners) noexcept {
+  const std::array<size_t, 8>& c = central_block_corners;
+  std::array<std::array<size_t, 4>, 6> faces_layer_zero{
+      {{{c[4], c[5], c[6], c[7]}},    // Upper z
+       {{c[2], c[3], c[0], c[1]}},    // Lower z
+       {{c[6], c[7], c[2], c[3]}},    // Upper y
+       {{c[0], c[1], c[4], c[5]}},    // Lower y
+       {{c[1], c[3], c[5], c[7]}},    // Upper x
+       {{c[2], c[0], c[6], c[4]}}}};  // Lower x
+  std::vector<std::array<std::array<size_t, 4>, 6>> faces_in_each_layer{
+      faces_layer_zero};
+  for (size_t layer_j = 0; layer_j < number_of_layers; layer_j++) {
+    faces_in_each_layer.push_back(
+        next_layer_in_radial_direction(faces_in_each_layer[layer_j]));
+  }
+  std::vector<std::array<size_t, 8>> corners{};
+  for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      corners.push_back(concatenate_faces(
+          gsl::at(gsl::at(faces_in_each_layer, layer_i), face_j),
+          gsl::at(gsl::at(faces_in_each_layer, layer_i + 1), face_j)));
+    }
+  }
+  if (include_central_block) {
+    corners.push_back(central_block_corners);
+  }
+  return corners;
+}
+
+std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
+    const size_t number_of_radial_layers,
+    const size_t number_of_biradial_layers,
+    const bool include_central_block_lhs, const bool include_central_block_rhs,
+    const std::array<size_t, 8>& central_block_corners_lhs) noexcept {
+  const size_t total_number_of_layers =
+      number_of_radial_layers + number_of_biradial_layers;
+  const std::array<size_t, 8> central_block_corners_rhs = [&]() {
+    std::array<size_t, 8> local_central_block_corners_rhs{};
+    std::transform(
+        central_block_corners_lhs.begin(), central_block_corners_lhs.end(),
+        local_central_block_corners_rhs.begin(), [&](const size_t corner) {
+          return corner + 8 * (total_number_of_layers + 1);
+        });
+    return local_central_block_corners_rhs;
+  }();
+
+  const auto layers_lhs = corners_for_radially_layered_domains(
+      total_number_of_layers, include_central_block_lhs,
+      central_block_corners_lhs);
+  const auto layers_rhs = corners_for_radially_layered_domains(
+      total_number_of_layers, include_central_block_rhs,
+      central_block_corners_rhs);
+  std::vector<std::array<size_t, 8>> corners{};
+  // Fill six-block layers on the left-hand side first,
+  // then fill six-block layers on the right-hand side.
+  for (size_t layer_i = 0; layer_i < number_of_radial_layers; layer_i++) {
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      corners.push_back(layers_lhs[face_j + 6 * layer_i]);
+    }
+  }
+  for (size_t layer_i = 0; layer_i < number_of_radial_layers; layer_i++) {
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      corners.push_back(layers_rhs[face_j + 6 * layer_i]);
+    }
+  }
+  // Then fill ten-block layers which wrap both sides.
+  for (size_t layer_i = number_of_radial_layers;
+       layer_i < total_number_of_layers; layer_i++) {
+    for (size_t face_j = 0; face_j < 6; face_j++) {
+      // Face number 4 is the face in the +x direction,
+      // which is the block to be skipped on the left-hand side.
+      if (face_j != 4) {
+        corners.push_back(layers_lhs[face_j + 6 * layer_i]);
+      }
+      // Face number 5 is the face in the -x direction,
+      // which is the block to be skipped on the right-hand side.
+      if (face_j != 5) {
+        corners.push_back(layers_rhs[face_j + 6 * layer_i]);
+      }
+    }
+  }
+  if (include_central_block_lhs) {
+    corners.push_back(central_block_corners_lhs);
+  }
+  if (include_central_block_rhs) {
+    corners.push_back(central_block_corners_rhs);
+  }
+  // The first corner to identify is on the last full layer.
+  const size_t first_corner_to_identify = 2 + number_of_radial_layers * 8;
+  const size_t corner_to_identify_with =
+      first_corner_to_identify - 1 + (8 * (total_number_of_layers + 1));
+  for (size_t j = 0; j < number_of_biradial_layers + 1; j++) {
+    for (size_t i = 0; i < 4; i++) {
+      const size_t offset = 2 * i + 8 * j;
+      identify_corners_with_each_other(&corners,
+                                       first_corner_to_identify + offset,
+                                       corner_to_identify_with + offset);
+    }
+  }
+  return corners;
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<

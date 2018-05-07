@@ -437,3 +437,142 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
     }
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.ShellGraph", "[Domain][Unit]") {
+  std::vector<std::array<size_t, 8>> expected_corners = {
+      // Shell on left-hand side:
+      {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
+      {{3, 4, 1, 2, 11, 12, 9, 10}} /*-z*/,
+      {{7, 8, 3, 4, 15, 16, 11, 12}} /*+y*/,
+      {{1, 2, 5, 6, 9, 10, 13, 14}} /*-y*/,
+      {{2, 4, 6, 8, 10, 12, 14, 16}} /*+x*/,
+      {{3, 1, 7, 5, 11, 9, 15, 13}} /*-x*/};
+  const auto generated_corners = corners_for_radially_layered_domains(1, false);
+  for (size_t i = 0; i < expected_corners.size(); i++) {
+    INFO(i);
+    CHECK(generated_corners[i] == expected_corners[i]);
+  }
+  CHECK(generated_corners == expected_corners);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SphereGraph", "[Domain][Unit]") {
+  std::vector<std::array<size_t, 8>> expected_corners = {
+      // Shell on left-hand side:
+      {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
+      {{3, 4, 1, 2, 11, 12, 9, 10}} /*-z*/,
+      {{7, 8, 3, 4, 15, 16, 11, 12}} /*+y*/,
+      {{1, 2, 5, 6, 9, 10, 13, 14}} /*-y*/,
+      {{2, 4, 6, 8, 10, 12, 14, 16}} /*+x*/,
+      {{3, 1, 7, 5, 11, 9, 15, 13}} /*-x*/,
+      {{1, 2, 3, 4, 5, 6, 7, 8}} /*central block*/};
+  const auto generated_corners = corners_for_radially_layered_domains(1, true);
+  for (size_t i = 0; i < expected_corners.size(); i++) {
+    INFO(i);
+    CHECK(generated_corners[i] == expected_corners[i]);
+  }
+  CHECK(generated_corners == expected_corners);
+}
+
+namespace {
+std::vector<std::array<size_t, 8>> expected_bbh_corners() {
+  return {// Shell on left-hand side:
+          {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
+          {{3, 4, 1, 2, 11, 12, 9, 10}} /*-z*/,
+          {{7, 8, 3, 4, 15, 16, 11, 12}} /*+y*/,
+          {{1, 2, 5, 6, 9, 10, 13, 14}} /*-y*/,
+          {{2, 4, 6, 8, 10, 12, 14, 16}} /*+x*/,
+          {{3, 1, 7, 5, 11, 9, 15, 13}} /*-x*/,
+          // Cube on left-hand side:
+          {{13, 14, 15, 16, 21, 22, 23, 24}} /*+z*/,
+          {{11, 12, 9, 10, 19, 20, 17, 18}} /*-z*/,
+          {{15, 16, 11, 12, 23, 24, 19, 20}} /*+y*/,
+          {{9, 10, 13, 14, 17, 18, 21, 22}} /*-y*/,
+          {{10, 12, 14, 16, 18, 20, 22, 24}} /*+x*/,
+          {{11, 9, 15, 13, 19, 17, 23, 21}} /*-x*/,
+          // Shell on right-hand side:
+          {{45, 46, 47, 48, 53, 54, 55, 56}} /*+z*/,
+          {{43, 44, 41, 42, 51, 52, 49, 50}} /*-z*/,
+          {{47, 48, 43, 44, 55, 56, 51, 52}} /*+y*/,
+          {{41, 42, 45, 46, 49, 50, 53, 54}} /*-y*/,
+          {{42, 44, 46, 48, 50, 52, 54, 56}} /*+x*/,
+          {{43, 41, 47, 45, 51, 49, 55, 53}} /*-x*/,
+          // Cube on right-hand side:
+          {{53, 54, 55, 56, 22, 62, 24, 64}} /*+z*/,
+          {{51, 52, 49, 50, 20, 60, 18, 58}} /*-z*/,
+          {{55, 56, 51, 52, 24, 64, 20, 60}} /*+y*/,
+          {{49, 50, 53, 54, 18, 58, 22, 62}} /*-y*/,
+          {{50, 52, 54, 56, 58, 60, 62, 64}} /*+x*/,
+          {{51, 49, 55, 53, 20, 18, 24, 22}} /*-x*/,
+          // Frustums on both sides:
+          {{21, 22, 23, 24, 29, 30, 31, 32}} /*+zL*/,
+          {{22, 62, 24, 64, 30, 70, 32, 72}} /*+zR*/,
+          {{19, 20, 17, 18, 27, 28, 25, 26}} /*-zL*/,
+          {{20, 60, 18, 58, 28, 68, 26, 66}} /*-zR*/,
+          {{23, 24, 19, 20, 31, 32, 27, 28}} /*+yL*/,
+          {{24, 64, 20, 60, 32, 72, 28, 68}} /*+yR*/,
+          {{17, 18, 21, 22, 25, 26, 29, 30}} /*-yL*/,
+          {{18, 58, 22, 62, 26, 66, 30, 70}} /*-yR*/,
+          {{58, 60, 62, 64, 66, 68, 70, 72}} /*+xR*/,
+          {{19, 17, 23, 21, 27, 25, 31, 29}} /*-xL*/,
+          // Outermost Shell in the wave-zone:
+          {{29, 30, 31, 32, 37, 38, 39, 40}} /*+zL*/,
+          {{30, 70, 32, 72, 38, 78, 40, 80}} /*+zR*/,
+          {{27, 28, 25, 26, 35, 36, 33, 34}} /*-zL*/,
+          {{28, 68, 26, 66, 36, 76, 34, 74}} /*-zR*/,
+          {{31, 32, 27, 28, 39, 40, 35, 36}} /*+yL*/,
+          {{32, 72, 28, 68, 40, 80, 36, 76}} /*+yR*/,
+          {{25, 26, 29, 30, 33, 34, 37, 38}} /*-yL*/,
+          {{26, 66, 30, 70, 34, 74, 38, 78}} /*-yR*/,
+          {{66, 68, 70, 72, 74, 76, 78, 80}} /*+xR*/,
+          {{27, 25, 31, 29, 35, 33, 39, 37}} /*-xL*/};
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BBHCorners", "[Domain][Unit]") {
+  const auto generated_corners =
+      corners_for_biradially_layered_domains(2, 2, false, false);
+  for (size_t i = 0; i < expected_bbh_corners().size(); i++) {
+    INFO(i);
+    CHECK(generated_corners[i] == expected_bbh_corners()[i]);
+  }
+  CHECK(generated_corners == expected_bbh_corners());
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.NSBHCorners", "[Domain][Unit]") {
+  std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
+  expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
+  const auto generated_corners =
+      corners_for_biradially_layered_domains(2, 2, true, false);
+  for (size_t i = 0; i < expected_corners.size(); i++) {
+    INFO(i);
+    CHECK(generated_corners[i] == expected_corners[i]);
+  }
+  CHECK(generated_corners == expected_corners);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BHNSCorners", "[Domain][Unit]") {
+  std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
+  expected_corners.push_back(
+      std::array<size_t, 8>{{41, 42, 43, 44, 45, 46, 47, 48}});
+  const auto generated_corners =
+      corners_for_biradially_layered_domains(2, 2, false, true);
+  for (size_t i = 0; i < expected_corners.size(); i++) {
+    INFO(i);
+    CHECK(generated_corners[i] == expected_corners[i]);
+  }
+  CHECK(generated_corners == expected_corners);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BNSCorners", "[Domain][Unit]") {
+  std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
+  expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
+  expected_corners.push_back(
+      std::array<size_t, 8>{{41, 42, 43, 44, 45, 46, 47, 48}});
+  const auto generated_corners =
+      corners_for_biradially_layered_domains(2, 2, true, true);
+  for (size_t i = 0; i < expected_corners.size(); i++) {
+    INFO(i);
+    CHECK(generated_corners[i] == expected_corners[i]);
+  }
+  CHECK(generated_corners == expected_corners);
+}
