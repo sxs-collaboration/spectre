@@ -13,9 +13,12 @@
 #include "Options/Options.hpp"
 
 namespace Tags {
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DiscontinuousGalerkinGroup
+/// Data on mortars, indexed by (Direction, ElementId) pairs
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "Mortar"; }
+  static std::string name() noexcept { return "Mortars"; }
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;
