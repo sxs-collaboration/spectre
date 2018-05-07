@@ -165,7 +165,7 @@ void test_coordinate_map_implementation(const Map& map) {
  * \brief Checks that the CoordinateMap `map` functions as expected when used
  * with different argument types.
  */
-template <bool CheckInverse = true, typename Map, typename... Args>
+template <typename Map, typename... Args>
 void test_coordinate_map_argument_types(
     const Map& map, const std::array<double, Map::dim>& test_point,
     const Args&... args) {
@@ -200,8 +200,7 @@ void test_coordinate_map_argument_types(
   CHECK_ITERABLE_APPROX(
       map(add_reference_wrapper(make_array_data_vector(test_point)), args...),
       make_array_data_vector(mapped_point));
-
-  if (CheckInverse) {
+  {
     const auto expected = map.inverse(mapped_point, args...);
     CHECK_ITERABLE_APPROX(
         map.inverse(add_reference_wrapper(mapped_point), args...), expected);

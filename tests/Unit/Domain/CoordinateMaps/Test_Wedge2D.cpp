@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equidistant",
 
     test_coordinate_map_implementation(map);
 
-    test_coordinate_map_argument_types<true>(map, test_point);
+    test_coordinate_map_argument_types(map, test_point);
 
     test_inverse_map(map, test_point);
   }
@@ -230,7 +230,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equiangular",
 
     test_coordinate_map_implementation(map);
 
-    test_coordinate_map_argument_types<true>(map, test_point);
+    test_coordinate_map_argument_types(map, test_point);
 
     test_inverse_map(map, test_point);
   }

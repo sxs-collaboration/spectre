@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Identity",
   CHECK(serialize_and_deserialize(map) == map);
   CHECK_FALSE(serialize_and_deserialize(map) != map);
 
-  test_coordinate_map_argument_types<true>(map, test_point1);
+  test_coordinate_map_argument_types(map, test_point1);
 }
 
 void test_bulged_cube(bool with_equiangular_map) {
@@ -87,7 +87,7 @@ void test_bulged_cube(bool with_equiangular_map) {
   CHECK(serialize_and_deserialize(map) == map);
   CHECK_FALSE(serialize_and_deserialize(map) != map);
 
-  test_coordinate_map_argument_types<true>(map, test_point1);
+  test_coordinate_map_argument_types(map, test_point1);
 
   test_inverse_map(map, test_point1);
   test_inverse_map(map, test_point2);
