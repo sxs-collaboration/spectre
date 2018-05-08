@@ -22,6 +22,20 @@ namespace Spectral {
 
 /// \cond
 /*!
+ * \brief Computes the function value of the basis function \f$\Phi_k(x)\f$
+ * (zero-indexed).
+ */
+template <Basis BasisType>
+double compute_basis_function_value(size_t k, double x) noexcept;
+
+/*!
+ * \brief Computes the normalization square of the basis function \f$\Phi_k\f$
+ * (zero-indexed), i.e. the definite integral over its square.
+ */
+template <Basis BasisType>
+double compute_basis_function_normalization_square(size_t k) noexcept;
+
+/*!
  * \brief Computes the collocation points and integral weights associated to the
  * basis and quadrature.
  */

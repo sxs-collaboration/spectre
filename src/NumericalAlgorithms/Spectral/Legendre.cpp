@@ -15,7 +15,42 @@
 
 namespace Spectral {
 
+// Algorithms to compute Legendre basis functions
+// These functions specialize the templates declared in `Spectral.cpp`.
+
 /// \cond
+template <Basis>
+double compute_basis_function_value(size_t, double) noexcept;
+template <>
+double compute_basis_function_value<Basis::Legendre>(const size_t k,
+                                                     const double x) noexcept {
+  // Algorithm 20 from Kopriva's book, p. 60
+  switch (k) {
+    case 0:
+      return 1.;
+    case 1:
+      return x;
+    default:
+      double L_k_minus_2 = 1.;
+      double L_k_minus_1 = x;
+      double L_k = std::numeric_limits<double>::signaling_NaN();
+      for (size_t j = 2; j <= k; j++) {
+        L_k = ((2. * j - 1.) * x * L_k_minus_1 - (j - 1.) * L_k_minus_2) / j;
+        L_k_minus_2 = L_k_minus_1;
+        L_k_minus_1 = L_k;
+      }
+      return L_k;
+  }
+}
+
+template <Basis>
+double compute_basis_function_normalization_square(size_t) noexcept;
+template <>
+double compute_basis_function_normalization_square<Basis::Legendre>(
+    const size_t k) noexcept {
+  return 2. / (2. * k + 1.);
+}
+
 template <Basis, Quadrature>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
     size_t) noexcept;
