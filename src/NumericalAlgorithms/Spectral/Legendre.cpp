@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Spectral {
@@ -24,49 +25,38 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
 
 namespace {
 
-class LglQp {
- public:
-  /// See Algorithm 24 from Kopriva's book, p. 65 and the surrounding discussion
-  /// for details
-  LglQp(size_t poly_degree, double x);
-
-  double q() const noexcept { return q_; }
-  double q_prime() const noexcept { return q_prime_; }
-  double p() const noexcept { return p_; }
-
- private:
-  double q_;
-  double q_prime_;
-  double p_;
+struct EvaluateQandL {
+  EvaluateQandL(size_t poly_degree, double x) noexcept;
+  double q;
+  double q_prime;
+  double L;
 };
 
-LglQp::LglQp(const size_t poly_degree, const double x) {
+EvaluateQandL::EvaluateQandL(const size_t poly_degree,
+                             const double x) noexcept {
   // Algorithm 24 from Kopriva's book, p. 65
-  // Note: Book has errors in last 4 lines. Corrected in errata on website
-  ASSERT(poly_degree > 1, "polynomial degree must be greater than one");
-
-  // Evaluate P_n(x), q(x) = P_(n+1) - P_(n-1), and q'(x) for n >= 2
-  double p_n_minus_2 = 1.0;
-  double p_n_minus_1 = x;
-  double p_prime_n_minus_2 = 0.0;
-  double p_prime_n_minus_1 = 1.0;
-  double p_n = std::numeric_limits<double>::signaling_NaN();
+  // Note: Book has errors in last 4 lines, corrected in errata on website
+  // https://www.math.fsu.edu/~kopriva/publications/errata.pdf
+  ASSERT(poly_degree >= 2, "Polynomial degree must be at least two.");
+  double L_n_minus_2 = 1.;
+  double L_n_minus_1 = x;
+  double L_prime_n_minus_2 = 0.;
+  double L_prime_n_minus_1 = 1.;
+  double L_n = std::numeric_limits<double>::signaling_NaN();
   for (size_t k = 2; k <= poly_degree; k++) {
-    // recurrence relation
-    p_n = ((2 * k - 1) * x * p_n_minus_1 - (k - 1) * p_n_minus_2) / k;
-    const double p_prime_n = p_prime_n_minus_2 + (2 * k - 1) * p_n_minus_1;
-    p_n_minus_2 = p_n_minus_1;
-    p_n_minus_1 = p_n;
-    p_prime_n_minus_2 = p_prime_n_minus_1;
-    p_prime_n_minus_1 = p_prime_n;
+    L_n = ((2 * k - 1) * x * L_n_minus_1 - (k - 1) * L_n_minus_2) / k;
+    const double L_prime_n = L_prime_n_minus_2 + (2 * k - 1) * L_n_minus_1;
+    L_n_minus_2 = L_n_minus_1;
+    L_n_minus_1 = L_n;
+    L_prime_n_minus_2 = L_prime_n_minus_1;
+    L_prime_n_minus_1 = L_prime_n;
   }
   const size_t k = poly_degree + 1;
-  const double p_n_plus_1 = ((2 * k - 1) * x * p_n - (k - 1) * p_n_minus_2) / k;
-  const double p_prime_n_plus_1 = p_prime_n_minus_2 + (2 * k - 1) * p_n_minus_1;
-
-  q_ = p_n_plus_1 - p_n_minus_2;
-  q_prime_ = p_prime_n_plus_1 - p_prime_n_minus_2;
-  p_ = p_n;
+  const double L_n_plus_1 = ((2 * k - 1) * x * L_n - (k - 1) * L_n_minus_2) / k;
+  const double L_prime_n_plus_1 = L_prime_n_minus_2 + (2 * k - 1) * L_n_minus_1;
+  q = L_n_plus_1 - L_n_minus_2;
+  q_prime = L_prime_n_plus_1 - L_prime_n_minus_2;
+  L = L_n;
 }
 
 }  // namespace
@@ -76,55 +66,50 @@ template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     Basis::Legendre, Quadrature::GaussLobatto>(
     const size_t num_points) noexcept {
-  DataVector collocation_pts(num_points);
-  DataVector weights(num_points);
-
-  // Algorithm 25 from Kopriva's book, p.66
-  ASSERT(num_points > 1, "Must have more than one collocation point");
-  size_t poly_degree = num_points - 1;
-
-  collocation_pts[0] = -1.0;
-  collocation_pts[poly_degree] = 1.0;
-  weights[0] = weights[poly_degree] = 2.0 / (poly_degree * (poly_degree + 1));
-  const size_t maxit = 50;
-  constexpr double tolerance = 4.0 * std::numeric_limits<double>::epsilon();
-  for (size_t j = 1; j < (poly_degree + 1) / 2; j++) {
-    // initial guess for Newton-Raphson iteration:
-    double logical_coord = -cos((j + 0.25) * M_PI / poly_degree -
-                                0.375 / (poly_degree * M_PI * (j + 0.25)));
-    size_t iteration = 0;
-    double delta;
-    do {
-      const LglQp q_and_p(poly_degree, logical_coord);
-      delta = -q_and_p.q() / q_and_p.q_prime();
-      logical_coord += delta;
-      iteration++;
-      if (iteration > maxit) {
-        // LCOV_EXCL_START
-        ERROR(
-            "Legendre-Gauss-Lobatto computing collocation points exceeded "
-            "maximum number of iterations ("
-            << maxit << ") \n");
-        // LCOV_EXCL_STOP
+  // Algorithm 25 from Kopriva's book, p. 66
+  ASSERT(num_points >= 2,
+         "Legendre-Gauss-Lobatto quadrature requires at least two collocation "
+         "points.");
+  const size_t poly_degree = num_points - 1;
+  DataVector x(num_points);
+  DataVector w(num_points);
+  switch (poly_degree) {
+    case 1:
+      x[0] = -1.;
+      x[1] = 1.;
+      w[0] = w[1] = 1.;
+      break;
+    default:
+      x[0] = -1.;
+      x[poly_degree] = 1.;
+      w[0] = w[poly_degree] = 2. / (poly_degree * (poly_degree + 1));
+      auto newton_raphson_step = [poly_degree](double logical_coord) noexcept {
+        const EvaluateQandL q_and_L(poly_degree, logical_coord);
+        return std::make_pair(q_and_L.q, q_and_L.q_prime);
+      };
+      for (size_t j = 1; j < (poly_degree + 1) / 2; j++) {
+        double logical_coord = RootFinder::newton_raphson(
+            newton_raphson_step,
+            // Initial guess
+            -cos((j + 0.25) * M_PI / poly_degree -
+                 0.375 / (poly_degree * M_PI * (j + 0.25))),
+            // Lower and upper bound, and number of desired base-10 digits
+            -1., 1., 14);
+        const EvaluateQandL q_and_L(poly_degree, logical_coord);
+        x[j] = logical_coord;
+        x[poly_degree - j] = -logical_coord;
+        w[j] = w[poly_degree - j] =
+            2. / (poly_degree * (poly_degree + 1) * square(q_and_L.L));
       }
-    } while (std::abs(delta) > tolerance * std::abs(logical_coord));
-
-    const LglQp q_and_p(poly_degree, logical_coord);
-    collocation_pts[j] = logical_coord;
-    collocation_pts[poly_degree - j] = -logical_coord;
-    weights[j] = weights[poly_degree - j] =
-        2.0 / (poly_degree * (poly_degree + 1) * q_and_p.p() * q_and_p.p());
+      if (poly_degree % 2 == 0) {
+        const EvaluateQandL q_and_L(poly_degree, 0.);
+        x[poly_degree / 2] = 0.;
+        w[poly_degree / 2] =
+            2. / (poly_degree * (poly_degree + 1) * square(q_and_L.L));
+      }
+      break;
   }
-
-  if (poly_degree % 2 == 0) {
-    // The origin (0.0) is a collocation point if poly_degree (N) is even
-    const LglQp q_and_p(poly_degree, 0.0);
-    collocation_pts[poly_degree / 2] = 0.0;
-    weights[poly_degree / 2] =
-        2.0 / (poly_degree * (poly_degree + 1) * q_and_p.p() * q_and_p.p());
-  }
-
-  return std::make_pair(collocation_pts, weights);
+  return std::make_pair(std::move(x), std::move(w));
 }
 /// \endcond
 
