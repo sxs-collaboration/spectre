@@ -407,8 +407,8 @@ class TaggedDeferredTuple  // NOLINT
     if (&t == this) {
       return *this;
     }
-    expand_pack((::db::databox_detail::get<Tags>(*this) =
-                     ::db::databox_detail::get<Tags>(t))...);
+    ::expand_pack((::db::databox_detail::get<Tags>(*this) =
+                       ::db::databox_detail::get<Tags>(t))...);
     return *this;
   }
 
@@ -419,9 +419,9 @@ class TaggedDeferredTuple  // NOLINT
     if (&t == this) {
       return *this;
     }
-    expand_pack((::db::databox_detail::get<Tags>(*this) =
-                     std::forward<Deferred<item_type<Tags>>>(
-                         ::db::databox_detail::get<Tags>(t)))...);
+    ::expand_pack((::db::databox_detail::get<Tags>(*this) =
+                       std::forward<Deferred<item_type<Tags>>>(
+                           ::db::databox_detail::get<Tags>(t)))...);
     return *this;
   }
 
@@ -434,7 +434,7 @@ class TaggedDeferredTuple  // NOLINT
   operator=(TaggedDeferredTuple<UTags...> const& t) noexcept(
       tmpl2::flat_all_v<cpp17::is_nothrow_assignable_v<
           Deferred<item_type<Tags>>&, Deferred<item_type<UTags>> const&>...>) {
-    expand_pack((get<Tags>(*this) = get<UTags>(t))...);
+    ::expand_pack((get<Tags>(*this) = get<UTags>(t))...);
     return *this;
   }
 
@@ -447,8 +447,8 @@ class TaggedDeferredTuple  // NOLINT
   operator=(TaggedDeferredTuple<UTags...>&& t) noexcept(
       tmpl2::flat_all_v<cpp17::is_nothrow_assignable_v<
           Deferred<item_type<Tags>>&, Deferred<item_type<UTags>>&&>...>) {
-    expand_pack((get<Tags>(*this) = std::forward<Deferred<item_type<UTags>>>(
-                     get<UTags>(t)))...);
+    ::expand_pack((get<Tags>(*this) = std::forward<Deferred<item_type<UTags>>>(
+                       get<UTags>(t)))...);
     return *this;
   }
 };

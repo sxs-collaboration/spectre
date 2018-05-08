@@ -23,6 +23,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -1679,6 +1680,49 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
                   box)))>,
       "Failed testing that adding and removing a compute subitem does "
       "not change the type of the DataBox");
+}
+
+namespace TestTags {
+namespace {
+struct MyTag0 {
+  using type = int;
+};
+
+struct MyTag1 {
+  using type = double;
+};
+
+struct TupleTag : db::DataBoxTag {
+  static constexpr db::DataBoxString label = "TupleTag";
+  using type = tuples::TaggedTuple<MyTag0, MyTag1>;
+};
+}  // namespace
+}  // namespace TestTags
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TaggedTuple",
+                  "[Unit][DataStructures]") {
+  {
+    // Test that having a TaggedTuple inside a DataBox works properly
+    auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
+        tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
+    auto box2 = box;
+    box2 = std::move(box);
+    CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
+          123);
+    CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==
+          2.3);
+  }
+  {
+    // Test that having a TaggedTuple inside a DataBox works properly
+    auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
+        tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
+    auto box2 = box;
+    box2 = box;
+    CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
+          123);
+    CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==
+          2.3);
+  }
 }
 
 namespace {
