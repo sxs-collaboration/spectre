@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -35,6 +36,63 @@ struct RemoveNotNull<gsl::not_null<T>> {
   using type = std::remove_pointer_t<T>;
 };
 
+template <typename MemberArg, typename UsedForSize, typename = std::nullptr_t>
+struct ConvertToTensorImpl;
+
+template <typename UsedForSize>
+struct ConvertToTensorImpl<double, UsedForSize> {
+  static auto apply(const double& value,
+                    const UsedForSize& used_for_size) noexcept {
+    return make_with_value<Scalar<DataVector>>(used_for_size, value);
+  }
+};
+
+template <size_t Dim, typename UsedForSize>
+struct ConvertToTensorImpl<std::array<double, Dim>, UsedForSize> {
+  static auto apply(const std::array<double, Dim>& arr,
+                    const UsedForSize& used_for_size) noexcept {
+    auto array_as_tensor =
+        make_with_value<tnsr::i<DataVector, Dim>>(used_for_size, 0.);
+    for (size_t i = 0; i < Dim; ++i) {
+      array_as_tensor.get(i) = gsl::at(arr, i);
+    }
+    return array_as_tensor;
+  }
+};
+
+template <typename ReturnType, typename = std::nullptr_t>
+struct ForwardToPyppImpl {
+  template <typename MemberArg, typename UsedForSize>
+  static decltype(auto) apply(const MemberArg& member_arg,
+                    const UsedForSize& /*used_for_size*/) noexcept {
+    return member_arg;
+  }
+};
+
+template <typename ReturnType>
+struct ForwardToPyppImpl<
+    ReturnType,
+    Requires<(tt::is_a_v<Tensor, ReturnType> or
+              tt::is_std_array_v<ReturnType>)and cpp17::
+                 is_same_v<typename ReturnType::value_type, DataVector>>> {
+  template <typename MemberArg, typename UsedForSize>
+  static decltype(auto) apply(const MemberArg& member_arg,
+                    const UsedForSize& used_for_size) noexcept {
+    return ConvertToTensorImpl<MemberArg, UsedForSize>::apply(member_arg,
+                                                              used_for_size);
+  }
+};
+
+// Given the member variable of type MemberArg (either a double or array of
+// doubles), performs a conversion so that it can be correctly forwarded to
+// Pypp. If ReturnType is not a Tensor or array of DataVectors,
+// member_arg is simply forwarded, otherwise it is converted to a Tensor of
+// DataVectors.
+template <typename PyppReturn, typename MemberArg, typename UsedForSize>
+decltype(auto) forward_to_pypp(const MemberArg& member_arg,
+                               const UsedForSize& used_for_size) noexcept {
+  return ForwardToPyppImpl<PyppReturn>::apply(member_arg, used_for_size);
+}
 template <class F, class T, class Klass, class... ArgumentTypes,
           class... MemberArgs, size_t... ArgumentIs, size_t... MemberArgsIs>
 void check_with_random_values_impl(
@@ -70,9 +128,10 @@ void check_with_random_values_impl(
           bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
   CHECK_ITERABLE_APPROX(
-      result, pypp::call<ResultType>(module_name, function_name,
-                                     std::get<ArgumentIs>(args)...,
-                                     std::get<MemberArgsIs>(member_args)...));
+      result, pypp::call<ResultType>(
+                  module_name, function_name, std::get<ArgumentIs>(args)...,
+                  forward_to_pypp<ResultType>(
+                      std::get<MemberArgsIs>(member_args), used_for_size)...));
 }
 
 template <class F, class T, class Klass, class... ReturnTypes,
@@ -123,14 +182,16 @@ void check_with_random_values_impl(
           bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
   const auto helper = [&module_name, &function_names, &args, &results,
-                       &member_args](auto result_i) {
+                       &member_args, &used_for_size](auto result_i) {
     (void)member_args;  // avoid compiler warning
     constexpr size_t iter = decltype(result_i)::value;
     CHECK_ITERABLE_APPROX(
         std::get<iter>(results),
         (pypp::call<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
             module_name, function_names[iter], std::get<ArgumentIs>(args)...,
-            std::get<MemberArgsIs>(member_args)...)));
+            forward_to_pypp<
+                std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
+                std::get<MemberArgsIs>(member_args), used_for_size)...)));
     return '0';
   };
   (void)std::initializer_list<char>{

@@ -197,12 +197,20 @@ def check_by_value2_class(t0, a, b):
     return t0 + 5.0 * a + b
 
 
+def check_by_value3_class(t0, a, b, c):
+    return t0 + 5.0 * a + b + c[0] - 2.0 * c[1] - c[2]
+
+
 def check2_by_value1_class(t0, t1, a):
     return t0 + t1 + 5.0 * a
 
 
 def check2_by_value2_class(t0, t1, a, b):
     return t0 + 5.0 * a + t1 * b
+
+
+def check2_by_value3_class(t0, t1, a, b, c):
+    return t0 * c[0] + 5.0 * a + t1 * b + c[1] - c[2]
 
 
 def check2_by_value1_class1(t0, t1, a):
