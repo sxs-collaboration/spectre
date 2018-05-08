@@ -45,7 +45,7 @@ void check_with_random_values_impl(
     const std::tuple<MemberArgs...>& member_args, const T& used_for_size,
     tmpl::list<ArgumentTypes...> /*argument_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
-    std::index_sequence<MemberArgsIs...> /*index_member_args*/) noexcept {
+    std::index_sequence<MemberArgsIs...> /*index_member_args*/) {
   // Note: generator and distributions cannot be const.
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using ResultType = typename f_info::return_type;
@@ -88,7 +88,7 @@ void check_with_random_values_impl(
     tmpl::list<ArgumentTypes...> /*argument_types*/,
     std::index_sequence<ResultIs...> /*index_return_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
-    std::index_sequence<MemberArgsIs...> /*index_member_args*/) noexcept {
+    std::index_sequence<MemberArgsIs...> /*index_member_args*/) {
   // Note: generator and distributions cannot be const.
   std::tuple<ReturnTypes...> results{
       make_with_value<ReturnTypes>(used_for_size, 0.0)...};
@@ -180,7 +180,7 @@ void check_with_random_values(
         lower_and_upper_bounds,
     const T& used_for_size,
     const typename std::random_device::result_type seed =
-        std::random_device{}()) noexcept {
+        std::random_device{}()) {
   INFO("seed: " << seed);
   std::mt19937 generator(seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
@@ -261,7 +261,7 @@ void check_with_random_values(
         lower_and_upper_bounds,
     const T& used_for_size,
     const typename std::random_device::result_type seed =
-        std::random_device{}()) noexcept {
+        std::random_device{}()) {
   INFO("seed: " << seed);
   std::mt19937 generator(seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
@@ -368,7 +368,7 @@ void check_with_random_values(
         lower_and_upper_bounds,
     const std::tuple<MemberArgs...>& member_args, const T& used_for_size,
     const typename std::random_device::result_type seed =
-        std::random_device{}()) noexcept {
+        std::random_device{}()) {
   INFO("seed: " << seed);
   std::mt19937 generator(seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
@@ -460,7 +460,7 @@ void check_with_random_values(
         lower_and_upper_bounds,
     const std::tuple<MemberArgs...>& member_args, const T& used_for_size,
     const typename std::random_device::result_type seed =
-        std::random_device{}()) noexcept {
+        std::random_device{}()) {
   INFO("seed: " << seed);
   std::mt19937 generator(seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
