@@ -359,6 +359,22 @@ SPECTRE_TEST_CASE("Unit.Pypp.EinSum", "[Pypp][Unit]") {
   test_einsum<DataVector>(DataVector(5));
 }
 
+SPECTRE_TEST_CASE("Unit.Pypp.FunctionsOfTime", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  const tnsr::i<double, 3> x_d{{{3.4, 4.2, 5.8}}};
+  const tnsr::i<DataVector, 3> x_dv{
+      {{DataVector(8, 3.4), DataVector(8, 4.2), DataVector(8, 5.8)}}};
+  const double t = -9.2;
+  const auto check = [](const auto& x, const double time) {
+    CHECK((2 * x.get(0) + x.get(1) - x.get(2) - time) ==
+          (pypp::call<Scalar<typename std::decay_t<decltype(x)>::value_type>>(
+               "PyppPyTests", "test_function_of_time", x, time)
+               .get()));
+  };
+  check(x_d, t);
+  check(x_dv, t);
+}
+
 namespace {
 template <typename T>
 void check_single_not_null0(const gsl::not_null<T*> result,

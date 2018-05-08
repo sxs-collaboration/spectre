@@ -124,6 +124,10 @@ def convert_tnsr_aBcc_successful(a):
     return bool(np.all(a == tnsr_aBcc()))
 
 
+def test_function_of_time(x, t):
+    return 2 * x[0] + x[1] - x[2] - t
+
+
 # Used to test tensor of datavectors
 def identity(a):
     return a
