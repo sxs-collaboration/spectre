@@ -8,6 +8,7 @@
 
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 
 namespace PUP {
@@ -19,12 +20,38 @@ class er;
 template <typename Frame>
 class Strahlkorper {
  public:
+  struct Lmax {
+    using type = size_t;
+    static constexpr OptionString help = {
+        "Strahlkorper is expanded in Ylms up to l=Lmax"};
+  };
+  struct Radius {
+    using type = double;
+    static constexpr OptionString help = {"Radius of spherical Strahlkorper"};
+  };
+  struct Center {
+    using type = std::array<double, 3>;
+    static constexpr OptionString help = {"Center of spherical Strahlkorper"};
+  };
+  using options = tmpl::list<Lmax, Radius, Center>;
+
+  static constexpr OptionString help{
+      "A star-shaped surface expressed as an expansion in spherical "
+      "harmonics.\n"
+      "Currently only a spherical Strahlkorper can be constructed from\n"
+      "Options.  To do this, specify parameters Center, Radius, and Lmax."};
+
   // Pup needs default constructor
   Strahlkorper() = default;
 
   /// Construct a sphere of radius `radius` with a given center.
   Strahlkorper(size_t l_max, size_t m_max, double radius,
                std::array<double, 3> center) noexcept;
+
+  /// Construct a sphere of radius `radius`, setting `m_max`=`l_max`.
+  Strahlkorper(size_t l_max, double radius,
+               std::array<double, 3> center) noexcept
+      : Strahlkorper(l_max, l_max, radius, center) {}
 
   /// Construct a Strahlkorper from a DataVector containing the radius
   /// at the collocation points.
@@ -123,6 +150,17 @@ class Strahlkorper {
   std::array<double, 3> center_{{0.0, 0.0, 0.0}};
   DataVector strahlkorper_coefs_ = DataVector(ylm_.spectral_size(), 0.0);
 };
+
+namespace OptionTags {
+/// \ingroup OptionTagsGroup
+/// \ingroup SurfacesGroup
+/// The input file tag for a Strahlkorper.
+template <typename Frame>
+struct Strahlkorper {
+  using type = ::Strahlkorper<Frame>;
+  static constexpr OptionString help{"A star-shaped surface"};
+};
+} // namespace OptionTags
 
 template <typename Frame>
 bool operator==(const Strahlkorper<Frame>& lhs,
