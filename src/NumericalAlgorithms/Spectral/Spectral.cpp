@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -16,8 +16,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Basis {
-namespace lgl {
+namespace Spectral {
 namespace detail {
 class LglQp {
  public:
@@ -145,12 +144,14 @@ CollocationPointsAndWeights::CollocationPointsAndWeights(
 const CollocationPointsAndWeights& collocation_points_and_weights(
     const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   static const auto collo_pts_and_weights = []() {
     std::vector<CollocationPointsAndWeights> local_collo_pts;
-    local_collo_pts.reserve(::Basis::lgl::maximum_number_of_pts - 1);
-    for (size_t n = 2; n <= Basis::lgl::maximum_number_of_pts; ++n) {
+    local_collo_pts.reserve(
+        Spectral::maximum_number_of_points<Basis::Legendre> - 1);
+    for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
+         ++n) {
       local_collo_pts.emplace_back(n);
     }
     return local_collo_pts;
@@ -236,24 +237,32 @@ Matrix grid_points_to_spectral_matrix(const size_t number_of_pts) {
 }
 }  // namespace detail
 
-const DataVector& collocation_points(const size_t number_of_pts) {
+template <>
+const DataVector& collocation_points<Basis::Legendre, Quadrature::GaussLobatto>(
+    const size_t number_of_pts) noexcept {
   return detail::collocation_points_and_weights(number_of_pts)
       .collocation_pts();
 }
 
-const DataVector& quadrature_weights(const size_t number_of_pts) {
+template <>
+const DataVector& quadrature_weights<Basis::Legendre, Quadrature::GaussLobatto>(
+    const size_t number_of_pts) noexcept {
   return detail::collocation_points_and_weights(number_of_pts)
       .quadrature_weights();
 }
 
-const Matrix& differentiation_matrix(const size_t number_of_pts) {
+template <>
+const Matrix& differentiation_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
+    const size_t number_of_pts) noexcept {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   static const auto differentiation_matrices = []() {
     std::vector<Matrix> local_diff_matrices;
-    local_diff_matrices.reserve(::Basis::lgl::maximum_number_of_pts - 1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_diff_matrices.reserve(
+        Spectral::maximum_number_of_points<Basis::Legendre> - 1);
+    for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
+         ++n) {
       local_diff_matrices.emplace_back(detail::differentiation_matrix(n));
     }
     return local_diff_matrices;
@@ -261,15 +270,19 @@ const Matrix& differentiation_matrix(const size_t number_of_pts) {
   return differentiation_matrices[number_of_pts - 2];
 }
 
-const Matrix& grid_points_to_spectral_matrix(const size_t number_of_pts) {
+template <>
+const Matrix&
+grid_points_to_spectral_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
+    const size_t number_of_pts) noexcept {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   static const auto grid_points_to_spectral_matrices = []() {
     std::vector<Matrix> local_grid_to_spec_matrices;
-    local_grid_to_spec_matrices.reserve(::Basis::lgl::maximum_number_of_pts -
-                                        1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_grid_to_spec_matrices.reserve(
+        Spectral::maximum_number_of_points<Basis::Legendre> - 1);
+    for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
+         ++n) {
       local_grid_to_spec_matrices.emplace_back(
           detail::grid_points_to_spectral_matrix(n));
     }
@@ -278,15 +291,19 @@ const Matrix& grid_points_to_spectral_matrix(const size_t number_of_pts) {
   return grid_points_to_spectral_matrices[number_of_pts - 2];
 }
 
-const Matrix& spectral_to_grid_points_matrix(const size_t number_of_pts) {
+template <>
+const Matrix&
+spectral_to_grid_points_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
+    const size_t number_of_pts) noexcept {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   static const auto spectral_to_grid_matrices = []() {
     std::vector<Matrix> local_spec_to_grid_matrices;
-    local_spec_to_grid_matrices.reserve(::Basis::lgl::maximum_number_of_pts -
-                                        1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_spec_to_grid_matrices.reserve(
+        Spectral::maximum_number_of_points<Basis::Legendre> - 1);
+    for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
+         ++n) {
       local_spec_to_grid_matrices.emplace_back(
           detail::spectral_to_grid_points_matrix(n));
     }
@@ -295,23 +312,32 @@ const Matrix& spectral_to_grid_points_matrix(const size_t number_of_pts) {
   return spectral_to_grid_matrices[number_of_pts - 2];
 }
 
-const Matrix& linear_filter_matrix(const size_t number_of_pts) {
+template <>
+const Matrix& linear_filter_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
+    const size_t number_of_pts) noexcept {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   static const auto linear_filter_matrices = []() {
     std::vector<Matrix> local_linear_filter_matrices;
-    local_linear_filter_matrices.reserve(::Basis::lgl::maximum_number_of_pts -
-                                         1);
-    for (size_t n = 2; n <= ::Basis::lgl::maximum_number_of_pts; ++n) {
+    local_linear_filter_matrices.reserve(
+        Spectral::maximum_number_of_points<Basis::Legendre> - 1);
+    for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
+         ++n) {
       Matrix filter_matrix(n, n);
       // Linear filter is
       // grid_to_spectral_matrix * diag(1,1,0,0,....) * spectral_to_grid_matrix,
       // which multiplies first two columns of g2s with the first two rows of
       // spectral_to_grid_matrix
-      dgemm_('N', 'N', n, n, 2, 1.0, spectral_to_grid_points_matrix(n).data(),
-             n, grid_points_to_spectral_matrix(n).data(), n, 0.0,
-             filter_matrix.data(), n);
+      dgemm_('N', 'N', n, n, 2, 1.0,
+             spectral_to_grid_points_matrix<Basis::Legendre,
+                                            Quadrature::GaussLobatto>(n)
+                 .data(),
+             n,
+             grid_points_to_spectral_matrix<Basis::Legendre,
+                                            Quadrature::GaussLobatto>(n)
+                 .data(),
+             n, 0.0, filter_matrix.data(), n);
       local_linear_filter_matrices.emplace_back(std::move(filter_matrix));
     }
     return local_linear_filter_matrices;
@@ -319,11 +345,11 @@ const Matrix& linear_filter_matrix(const size_t number_of_pts) {
   return linear_filter_matrices[number_of_pts - 2];
 }
 
-template <typename T>
+template <Basis BasisType, Quadrature QuadratureType, typename T>
 Matrix interpolation_matrix(const size_t number_of_pts,
-                            const T& target_points) {
+                            const T& target_points) noexcept {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
-  ASSERT(number_of_pts <= ::Basis::lgl::maximum_number_of_pts,
+  ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   const DataVector& collocation_pts =
       detail::collocation_points_and_weights(number_of_pts).collocation_pts();
@@ -364,13 +390,15 @@ Matrix interpolation_matrix(const size_t number_of_pts,
   return interp_matrix;
 }
 
-}  // namespace lgl
-}  // namespace Basis
+}  // namespace Spectral
 
 /// \cond
-template Matrix Basis::lgl::interpolation_matrix(
-    const size_t num_collocation_points, const DataVector& target_points);
-template Matrix Basis::lgl::interpolation_matrix(
+template Matrix Spectral::interpolation_matrix<
+    Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
     const size_t num_collocation_points,
-    const std::vector<double>& target_points);
+    const DataVector& target_points) noexcept;
+template Matrix Spectral::interpolation_matrix<
+    Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
+    const size_t num_collocation_points,
+    const std::vector<double>& target_points) noexcept;
 /// \endcond
