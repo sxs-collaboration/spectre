@@ -17,155 +17,64 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Spectral {
-namespace detail {
-class LglQp {
- public:
-  /// See Algorithm 24 from Kopriva's book, p. 65 and the surrounding discussion
-  /// for details
-  LglQp(size_t poly_degree, double x);
 
-  double q() const noexcept { return q_; }
-  double q_prime() const noexcept { return q_prime_; }
-  double p() const noexcept { return p_; }
+// Forward declarations with basis-specific implementations
 
- private:
-  double q_;
-  double q_prime_;
-  double p_;
-};
+/// \cond
+/*!
+ * \brief Computes the collocation points and integral weights associated to the
+ * basis and quadrature.
+ */
+template <Basis BasisType, Quadrature QuadratureType>
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
+    size_t num_points) noexcept;
+/// \endcond
 
-LglQp::LglQp(const size_t poly_degree, const double x) {
-  // Algorithm 24 from Kopriva's book, p. 65
-  // Note: Book has errors in last 4 lines. Corrected in errata on website
-  ASSERT(poly_degree > 1, "polynomial degree must be greater than one");
+namespace {
 
-  // Evaluate P_n(x), q(x) = P_(n+1) - P_(n-1), and q'(x) for n >= 2
-  double p_n_minus_2 = 1.0;
-  double p_n_minus_1 = x;
-  double p_prime_n_minus_2 = 0.0;
-  double p_prime_n_minus_1 = 1.0;
-  double p_n = std::numeric_limits<double>::signaling_NaN();
-  for (size_t k = 2; k <= poly_degree; k++) {
-    // recurrence relation
-    p_n = ((2 * k - 1) * x * p_n_minus_1 - (k - 1) * p_n_minus_2) / k;
-    const double p_prime_n = p_prime_n_minus_2 + (2 * k - 1) * p_n_minus_1;
-    p_n_minus_2 = p_n_minus_1;
-    p_n_minus_1 = p_n;
-    p_prime_n_minus_2 = p_prime_n_minus_1;
-    p_prime_n_minus_1 = p_prime_n;
-  }
-  const size_t k = poly_degree + 1;
-  const double p_n_plus_1 = ((2 * k - 1) * x * p_n - (k - 1) * p_n_minus_2) / k;
-  const double p_prime_n_plus_1 = p_prime_n_minus_2 + (2 * k - 1) * p_n_minus_1;
-
-  q_ = p_n_plus_1 - p_n_minus_2;
-  q_prime_ = p_prime_n_plus_1 - p_prime_n_minus_2;
-  p_ = p_n;
-}
-
-class CollocationPointsAndWeights {
- public:
-  explicit CollocationPointsAndWeights(size_t number_of_pts);
-
-  const DataVector& collocation_pts() const noexcept {
-    return collocation_pts_;
-  }
-  const DataVector& quadrature_weights() const noexcept {
-    return quadrature_weights_;
-  }
-  const DataVector& barycentric_weights() const noexcept {
-    return barycentric_weights_;
-  }
-
- private:
-  DataVector collocation_pts_;
-  DataVector quadrature_weights_;
-  DataVector barycentric_weights_;
-};
-
-CollocationPointsAndWeights::CollocationPointsAndWeights(
-    const size_t number_of_pts)
-    : collocation_pts_(number_of_pts),
-      quadrature_weights_(number_of_pts),
-      barycentric_weights_(number_of_pts) {
-  // Algorithm 25 from Kopriva's book, p.66
-  ASSERT(number_of_pts > 1, "Must have more than one collocation point");
-  size_t poly_degree = number_of_pts - 1;
-
-  collocation_pts_[0] = -1.0;
-  collocation_pts_[poly_degree] = 1.0;
-  quadrature_weights_[0] = quadrature_weights_[poly_degree] =
-      2.0 / (poly_degree * (poly_degree + 1));
-  const size_t maxit = 50;
-  constexpr double tolerance = 4.0 * std::numeric_limits<double>::epsilon();
-  for (size_t j = 1; j < (poly_degree + 1) / 2; j++) {
-    // initial guess for Newton-Raphson iteration:
-    double logical_coord = -cos((j + 0.25) * M_PI / poly_degree -
-                                0.375 / (poly_degree * M_PI * (j + 0.25)));
-    size_t iteration = 0;
-    double delta;
-    do {
-      const LglQp q_and_p(poly_degree, logical_coord);
-      delta = -q_and_p.q() / q_and_p.q_prime();
-      logical_coord += delta;
-      iteration++;
-      if (iteration > maxit) {
-        // LCOV_EXCL_START
-        ERROR(
-            "Legendre-Gauss-Lobatto computing collocation points exceeded "
-            "maximum number of iterations ("
-            << maxit << ") \n");
-        // LCOV_EXCL_STOP
-      }
-    } while (std::abs(delta) > tolerance * std::abs(logical_coord));
-
-    const LglQp q_and_p(poly_degree, logical_coord);
-    collocation_pts_[j] = logical_coord;
-    collocation_pts_[poly_degree - j] = -logical_coord;
-    quadrature_weights_[j] = quadrature_weights_[poly_degree - j] =
-        2.0 / (poly_degree * (poly_degree + 1) * q_and_p.p() * q_and_p.p());
-  }
-
-  if (poly_degree % 2 == 0) {
-    // The origin (0.0) is a collocation point if poly_degree (N) is even
-    const LglQp q_and_p(poly_degree, 0.0);
-    collocation_pts_[poly_degree / 2] = 0.0;
-    quadrature_weights_[poly_degree / 2] =
-        2.0 / (poly_degree * (poly_degree + 1) * q_and_p.p() * q_and_p.p());
-  }
-
-  // use closed form expression for Legendre-Gauss-Lobatto barycentric weights
-  for (size_t i = 0; i < number_of_pts; i++) {
-    barycentric_weights_[i] = i % 2 == 0 ? sqrt(quadrature_weights_[i])
-                                         : -sqrt(quadrature_weights_[i]);
-  }
-}
-
-const CollocationPointsAndWeights& collocation_points_and_weights(
+const std::pair<DataVector, DataVector>& collocation_points_and_weights(
     const size_t number_of_pts) {
   ASSERT(number_of_pts > 1, "Must have at least two collocation points");
   ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   static const auto collo_pts_and_weights = []() {
-    std::vector<CollocationPointsAndWeights> local_collo_pts;
+    std::vector<std::pair<DataVector, DataVector>> local_collo_pts;
     local_collo_pts.reserve(
         Spectral::maximum_number_of_points<Basis::Legendre> - 1);
     for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
          ++n) {
-      local_collo_pts.emplace_back(n);
+      local_collo_pts.emplace_back(
+          compute_collocation_points_and_weights<Basis::Legendre,
+                                                 Quadrature::GaussLobatto>(n));
     }
     return local_collo_pts;
   }();
   return collo_pts_and_weights[number_of_pts - 2];
 }
 
-Matrix differentiation_matrix(const size_t number_of_pts) {
+DataVector compute_barycentric_weights(const DataVector& x) noexcept {
+  const size_t num_points = x.size();
+  // This implements algorithm 30 on p. 75 of Kopriva's book.
+  // It is valid for any collocation points.
+  DataVector bary_weights(num_points, 1.);
+  for (size_t j = 1; j < num_points; j++) {
+    for (size_t k = 0; k < j; k++) {
+      bary_weights[k] *= x[k] - x[j];
+      bary_weights[j] *= x[j] - x[k];
+    }
+  }
+  for (size_t j = 0; j < num_points; j++) {
+    bary_weights[j] = 1. / bary_weights[j];
+  }
+  return bary_weights;
+}
+
+Matrix compute_differentiation_matrix(const size_t number_of_pts) {
   // This implements algorithm 37 on p.82 of Kopriva's book. It is valid for any
   // collocation points and barycentricx weights
   const DataVector& collocation_pts =
-      collocation_points_and_weights(number_of_pts).collocation_pts();
-  const DataVector& bary_weights =
-      collocation_points_and_weights(number_of_pts).barycentric_weights();
+      collocation_points_and_weights(number_of_pts).first;
+  DataVector bary_weights = compute_barycentric_weights(collocation_pts);
 
   Matrix diff_matrix(number_of_pts, number_of_pts);
   for (size_t i = 0; i < number_of_pts; ++i) {
@@ -183,10 +92,10 @@ Matrix differentiation_matrix(const size_t number_of_pts) {
   return diff_matrix;
 }
 
-Matrix spectral_to_grid_points_matrix(const size_t number_of_pts) {
+Matrix compute_spectral_to_grid_points_matrix(const size_t number_of_pts) {
   // Since u(x) = sum a_k P_k(x), matrix for u(x_j) is just P_k(x_j) transposed
   const DataVector& collocation_pts =
-      collocation_points_and_weights(number_of_pts).collocation_pts();
+      collocation_points_and_weights(number_of_pts).first;
   Matrix spec_to_grid(number_of_pts, number_of_pts);
   // number_of_pts >=2 ASSERT'd elsewhere
   for (size_t j = 0; j < number_of_pts; ++j) {
@@ -209,11 +118,9 @@ Matrix spectral_to_grid_points_matrix(const size_t number_of_pts) {
 // GridPointsToSpectral is inverse matrix to above. Can compute numerically
 // or use analytic expressions P_k(x_j) w_j/gamma_k where w_j=weight,
 // gamma_k = normalization = 2/(2k+1), except = 2/N for k=N (for GLL)
-Matrix grid_points_to_spectral_matrix(const size_t number_of_pts) {
-  const DataVector& x =
-      collocation_points_and_weights(number_of_pts).collocation_pts();
-  const DataVector& w =
-      collocation_points_and_weights(number_of_pts).quadrature_weights();
+Matrix compute_grid_points_to_spectral_matrix(const size_t number_of_pts) {
+  const DataVector& x = collocation_points_and_weights(number_of_pts).first;
+  const DataVector& w = collocation_points_and_weights(number_of_pts).second;
   Matrix g_to_s_matrix(number_of_pts, number_of_pts);
   for (size_t j = 0; j < number_of_pts; ++j) {
     g_to_s_matrix(0, j) = 0.5 * w[j];  // P_0 = 1
@@ -235,20 +142,18 @@ Matrix grid_points_to_spectral_matrix(const size_t number_of_pts) {
   }
   return g_to_s_matrix;
 }
-}  // namespace detail
+}  // namespace
 
 template <>
 const DataVector& collocation_points<Basis::Legendre, Quadrature::GaussLobatto>(
     const size_t number_of_pts) noexcept {
-  return detail::collocation_points_and_weights(number_of_pts)
-      .collocation_pts();
+  return collocation_points_and_weights(number_of_pts).first;
 }
 
 template <>
 const DataVector& quadrature_weights<Basis::Legendre, Quadrature::GaussLobatto>(
     const size_t number_of_pts) noexcept {
-  return detail::collocation_points_and_weights(number_of_pts)
-      .quadrature_weights();
+  return collocation_points_and_weights(number_of_pts).second;
 }
 
 template <>
@@ -263,7 +168,7 @@ const Matrix& differentiation_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
         Spectral::maximum_number_of_points<Basis::Legendre> - 1);
     for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
          ++n) {
-      local_diff_matrices.emplace_back(detail::differentiation_matrix(n));
+      local_diff_matrices.emplace_back(compute_differentiation_matrix(n));
     }
     return local_diff_matrices;
   }();
@@ -284,7 +189,7 @@ grid_points_to_spectral_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
     for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
          ++n) {
       local_grid_to_spec_matrices.emplace_back(
-          detail::grid_points_to_spectral_matrix(n));
+          compute_grid_points_to_spectral_matrix(n));
     }
     return local_grid_to_spec_matrices;
   }();
@@ -305,7 +210,7 @@ spectral_to_grid_points_matrix<Basis::Legendre, Quadrature::GaussLobatto>(
     for (size_t n = 2; n <= Spectral::maximum_number_of_points<Basis::Legendre>;
          ++n) {
       local_spec_to_grid_matrices.emplace_back(
-          detail::spectral_to_grid_points_matrix(n));
+          compute_spectral_to_grid_points_matrix(n));
     }
     return local_spec_to_grid_matrices;
   }();
@@ -352,10 +257,8 @@ Matrix interpolation_matrix(const size_t number_of_pts,
   ASSERT(number_of_pts <= Spectral::maximum_number_of_points<Basis::Legendre>,
          "Exceeded maximum number of collocation points.");
   const DataVector& collocation_pts =
-      detail::collocation_points_and_weights(number_of_pts).collocation_pts();
-  const DataVector& barycentric_weights =
-      detail::collocation_points_and_weights(number_of_pts)
-          .barycentric_weights();
+      collocation_points_and_weights(number_of_pts).first;
+  DataVector barycentric_weights = compute_barycentric_weights(collocation_pts);
 
   const size_t num_target_points = target_points.size();
   Matrix interp_matrix(num_target_points, number_of_pts);
