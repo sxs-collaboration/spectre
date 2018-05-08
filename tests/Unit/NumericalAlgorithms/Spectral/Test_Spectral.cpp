@@ -42,6 +42,16 @@ void test_linear_filter(const size_t num_points) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearFilter",
                   "[NumericalAlgorithms][Spectral][Unit]") {
+  SECTION("Legendre-Gauss") {
+    for (size_t n =
+             Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                                Spectral::Quadrature::Gauss>;
+         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         ++n) {
+      test_linear_filter<Spectral::Basis::Legendre,
+                         Spectral::Quadrature::Gauss>(n);
+    }
+  }
   SECTION("Legendre-Gauss-Lobatto") {
     for (size_t n = Spectral::minimum_number_of_points<
              Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
@@ -82,6 +92,20 @@ void test_exact_interpolation(size_t num_pts, int poly_deg) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactInterpolation",
                   "[NumericalAlgorithms][Spectral][Unit]") {
+  SECTION(
+      "Legendre-Gauss interpolation is exact to polynomial order "
+      "num_points-1") {
+    for (size_t n =
+             Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                                Spectral::Quadrature::Gauss>;
+         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         n++) {
+      for (size_t p = 0; p <= n - 1; p++) {
+        test_exact_interpolation<Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::Gauss>(n, p);
+      }
+    }
+  }
   SECTION(
       "Legendre-Gauss-Lobatto interpolation is exact to polynomial "
       "order num_points-1") {
@@ -131,6 +155,19 @@ void test_exact_quadrature(size_t num_pts, int poly_deg) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactQuadrature",
                   "[NumericalAlgorithms][Spectral][Unit]") {
+  SECTION(
+      "Legendre-Gauss quadrature is exact to polynomial order 2*num_points-1") {
+    for (size_t n =
+             Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                                Spectral::Quadrature::Gauss>;
+         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         n++) {
+      for (size_t p = 0; p <= 2 * n - 1; p++) {
+        test_exact_quadrature<Spectral::Basis::Legendre,
+                              Spectral::Quadrature::Gauss>(n, p);
+      }
+    }
+  }
   SECTION(
       "Legendre-Gauss-Lobatto quadrature is exact to polynomial order "
       "2*num_points-3") {

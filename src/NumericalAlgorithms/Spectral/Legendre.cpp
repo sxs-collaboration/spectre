@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -54,6 +55,93 @@ double compute_basis_function_normalization_square<Basis::Legendre>(
 template <Basis, Quadrature>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
     size_t) noexcept;
+/// \endcond
+
+// Algorithms to compute Legendre-Gauss quadrature
+
+namespace {
+
+struct LegendrePolynomialAndDerivative {
+  LegendrePolynomialAndDerivative(size_t poly_degree, double x) noexcept;
+  double L;
+  double dL;
+};
+
+LegendrePolynomialAndDerivative::LegendrePolynomialAndDerivative(
+    const size_t poly_degree, const double x) noexcept {
+  // Algorithm 22 from Kopriva's book, p. 63
+  // The cases where `poly_degree` is `0` or `1` are omitted because they are
+  // never used.
+  double L_N_minus_2 = 1.;
+  double L_N_minus_1 = x;
+  double dL_N_minus_2 = 0.;
+  double dL_N_minus_1 = 1.;
+  double L_N = std::numeric_limits<double>::signaling_NaN();
+  double dL_N = std::numeric_limits<double>::signaling_NaN();
+  for (size_t k = 2; k <= poly_degree; k++) {
+    L_N = ((2. * k - 1.) * x * L_N_minus_1 - (k - 1.) * L_N_minus_2) / k;
+    dL_N = dL_N_minus_2 + (2. * k - 1.) * L_N_minus_1;
+    L_N_minus_2 = L_N_minus_1;
+    L_N_minus_1 = L_N;
+    dL_N_minus_2 = dL_N_minus_1;
+    dL_N_minus_1 = dL_N;
+  }
+  L = L_N;
+  dL = dL_N;
+}
+
+}  // namespace
+
+/// \cond
+template <>
+std::pair<DataVector, DataVector>
+compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
+    const size_t num_points) noexcept {
+  // Algorithm 23 from Kopriva's book, p.64
+  ASSERT(num_points >= 1,
+         "Legendre-Gauss quadrature requires at least one collocation point.");
+  const size_t poly_degree = num_points - 1;
+  DataVector x(num_points);
+  DataVector w(num_points);
+  switch (poly_degree) {
+    case 0:
+      x[0] = 0.;
+      w[0] = 2.;
+      break;
+    case 1:
+      x[0] = -sqrt(1. / 3.);
+      x[1] = -x[0];
+      w[0] = w[1] = 1.;
+      break;
+    default:
+      auto newton_raphson_step = [poly_degree](double logical_coord) noexcept {
+        const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
+                                                       logical_coord);
+        return std::make_pair(L_and_dL.L, L_and_dL.dL);
+      };
+      for (size_t j = 0; j <= (poly_degree + 1) / 2 - 1; j++) {
+        double logical_coord = RootFinder::newton_raphson(
+            newton_raphson_step,
+            // Initial guess
+            -cos((2. * j + 1.) * M_PI / (2. * poly_degree + 2.)),
+            // Lower and upper bound, and number of desired base-10 digits
+            -1., 1., 14);
+        const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
+                                                       logical_coord);
+        x[j] = logical_coord;
+        x[poly_degree - j] = -logical_coord;
+        w[j] = w[poly_degree - j] =
+            2. / (1. - square(logical_coord)) / square(L_and_dL.dL);
+      }
+      if (poly_degree % 2 == 0) {
+        const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1, 0.);
+        x[poly_degree / 2] = 0.;
+        w[poly_degree / 2] = 2. / square(L_and_dL.dL);
+      }
+      break;
+  }
+  return std::make_pair(std::move(x), std::move(w));
+}
 /// \endcond
 
 // Algorithms to compute Legendre-Gauss-Lobatto quadrature

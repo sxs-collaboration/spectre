@@ -58,6 +58,8 @@ template <Basis, Quadrature>
 constexpr size_t minimum_number_of_points(std::numeric_limits<size_t>::max());
 /// \cond
 template <Basis BasisType>
+constexpr size_t minimum_number_of_points<BasisType, Quadrature::Gauss> = 1;
+template <Basis BasisType>
 constexpr size_t minimum_number_of_points<BasisType, Quadrature::GaussLobatto> =
     2;
 /// \endcond

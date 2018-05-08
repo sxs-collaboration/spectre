@@ -174,6 +174,31 @@ struct GridPointsToSpectralMatrixGenerator {
   }
 };
 
+template <Basis BasisType>
+struct GridPointsToSpectralMatrixGenerator<BasisType, Quadrature::Gauss> {
+  using data_type = Matrix;
+  Matrix operator()(const size_t num_points) const noexcept {
+    // For Gauss quadrature we implement the analytic expression
+    // \f$\mathcal{V}^{-1}_{ij}=\mathcal{V}_{ji}\frac{w_j}{\gamma_i}\f$
+    // (see description of `grid_points_to_spectral_matrix`).
+    const DataVector& weights =
+        quadrature_weights<BasisType, Quadrature::Gauss>(num_points);
+    const Matrix& vandermonde_matrix =
+        spectral_to_grid_points_matrix<BasisType, Quadrature::Gauss>(
+            num_points);
+    Matrix vandermonde_inverse(num_points, num_points);
+    // This should be vectorized when the functionality is implemented.
+    for (size_t i = 0; i < num_points; i++) {
+      for (size_t j = 0; j < num_points; j++) {
+        vandermonde_inverse(i, j) =
+            vandermonde_matrix(j, i) * weights[j] /
+            compute_basis_function_normalization_square<BasisType>(i);
+      }
+    }
+    return vandermonde_inverse;
+  }
+};
+
 template <Basis BasisType, Quadrature QuadratureType>
 struct LinearFilterMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
@@ -324,7 +349,8 @@ const Matrix& linear_filter_matrix(const size_t num_points) noexcept {
       size_t, const std::vector<double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Spectral::Basis::Legendre),
-                        (Spectral::Quadrature::GaussLobatto))
+                        (Spectral::Quadrature::Gauss,
+                         Spectral::Quadrature::GaussLobatto))
 
 #undef BASIS
 #undef QUAD
