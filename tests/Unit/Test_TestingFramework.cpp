@@ -1,12 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cmath>
 
 #include "Parallel/Abort.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
-SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {
+SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
   /// [approx_test]
   CHECK(1.0 == approx(1.0 + 1e-15));
   CHECK(1.0 != approx(1.0 + 1e-13));
@@ -26,7 +27,7 @@ SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {
   CHECK(1.0 == approx(1.0 + 5e-13).epsilon(1e-12));
   /// [approx_single_custom]
   /// [approx_new_custom]
-  // The checks in this test need tolerance 1d-12 for X reason.
+  // The checks in this test need tolerance 1e-12 for X reason.
   Approx my_approx = Approx::custom().epsilon(1e-12);
   CHECK(1.0 == my_approx(1.0 + 5e-13));
   CHECK(1.0 != my_approx(1.0 + 5e-12));
@@ -35,7 +36,7 @@ SPECTRE_TEST_CASE("TestFramework.Approx", "[Unit]") {
 
 /// [error_test]
 // [[OutputRegex, I failed]]
-[[noreturn]] SPECTRE_TEST_CASE("TestFramework.Abort", "[Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.TestingFramework.Abort", "[Unit]") {
   ERROR_TEST();
   /// [error_test]
   Parallel::abort("I failed");

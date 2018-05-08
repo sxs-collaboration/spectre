@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <cmath>
 #include <cstddef>
 #include <numeric>
@@ -12,7 +14,6 @@
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {

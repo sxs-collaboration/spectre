@@ -798,19 +798,19 @@ then typically look as follows:
  * \f$10^{-14}\f$ (i.e. `std::numeric_limits<double>::%epsilon()*100`).
  * When possible, we recommend using `approx` for fuzzy comparisons as follows:
  * \example
- * \snippet TestFramework.cpp approx_default
+ * \snippet Test_TestingFramework.cpp approx_default
  *
  * For checks that need more control over the precision (e.g. an algorithm in
  * which round-off errors accumulate to a higher level), we recommend using
  * the `approx` helper with a one-time tolerance adjustment. A comment
  * should explain the reason for the adjustment:
  * \example
- * \snippet TestFramework.cpp approx_single_custom
+ * \snippet Test_TestingFramework.cpp approx_single_custom
  *
  * For tests in which the same precision adjustment is re-used many times, a new
  * helper object can be created from Catch's `Approx` with a custom precision:
  * \example
- * \snippet TestFramework.cpp approx_new_custom
+ * \snippet Test_TestingFramework.cpp approx_new_custom
  *
  * Note: We provide the `approx` object because Catch's `Approx` defaults to a
  * very loose tolerance (`std::numeric_limits<float>::%epsilon()*100`, or

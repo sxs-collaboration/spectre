@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <algorithm>
 #include <cstddef>
 
@@ -10,7 +12,6 @@
 #include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 template <typename TagsList>
 class Variables;

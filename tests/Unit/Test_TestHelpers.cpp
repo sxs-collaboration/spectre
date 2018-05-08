@@ -17,7 +17,7 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
+SPECTRE_TEST_CASE("Unit.TestHelpers", "[Unit]") {
   std::vector<double> vector{0, 1, 2, 3};
   test_iterators(vector);
   test_reverse_iterators(vector);
@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Test.TestHelpers", "[Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Test.TestHelpers.Derivative", "[Unit]") {
+SPECTRE_TEST_CASE("Unit.TestHelpers.Derivative", "[Unit]") {
   {  // 3D Test
     const std::array<double, 3> x{{1.2, -3.4, 1.3}};
     const double delta = 1.e-2;
