@@ -13,18 +13,20 @@
 
 SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   /// [static_cache]
-  const static StaticCache<size_t, CacheRange<0, 3>, CacheRange<3, 5>> cache(
-      [](const size_t a, const size_t b) noexcept { return a + b; });
+  const static auto cache =
+      make_static_cache<CacheRange<0, 3>, CacheRange<3, 5>>([](
+          const size_t a, const size_t b) noexcept { return a + b; });
   CHECK(cache(0, 3) == 3);  // smallest entry
   CHECK(cache(2, 4) == 6);  // largest entry
   /// [static_cache]
 
   std::vector<std::pair<size_t, size_t>> calls;
-  const StaticCache<size_t, CacheRange<0, 3>, CacheRange<3, 5>> cache2([&calls](
-      const size_t a, const size_t b) noexcept {
-    calls.emplace_back(a, b);
-    return a + b;
-  });
+  const auto cache2 =
+      make_static_cache<CacheRange<0, 3>, CacheRange<3, 5>>([&calls](
+          const size_t a, const size_t b) noexcept {
+        calls.emplace_back(a, b);
+        return a + b;
+      });
   CHECK(calls.size() == 6);
   // Creation order is not specified.
   std::sort(calls.begin(), calls.end());
@@ -37,7 +39,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   CHECK(calls == expected_calls);
 
   size_t small_calls = 0;
-  const StaticCache<size_t> small_cache([&small_calls]() noexcept {
+  const auto small_cache = make_static_cache([&small_calls]() noexcept {
     ++small_calls;
     return size_t{5};
   });
@@ -51,9 +53,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
                                "[Utilities][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  StaticCache<size_t, CacheRange<3, 5>> cache([](const size_t x) noexcept {
-    return x;
-  });
+  const auto cache = make_static_cache<CacheRange<3, 5>>([](
+      const size_t x) noexcept { return x; });
   cache(2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -64,9 +65,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
                                "[Utilities][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  StaticCache<size_t, CacheRange<3, 5>> cache([](const size_t x) noexcept {
-    return x;
-  });
+  const auto cache = make_static_cache<CacheRange<3, 5>>([](
+      const size_t x) noexcept { return x; });
   cache(5);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

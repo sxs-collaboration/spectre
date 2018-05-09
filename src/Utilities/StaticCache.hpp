@@ -82,6 +82,8 @@ class StaticCacheImpl<T> {
 /// \example
 /// \snippet Test_StaticCache.cpp static_cache
 ///
+/// \see make_static_cache
+///
 /// \tparam T type held in the cache
 /// \tparam Ranges ranges of valid indices
 template <typename T, typename... Ranges>
@@ -107,6 +109,14 @@ class StaticCache {
  private:
   StaticCache_detail::StaticCacheImpl<T, Ranges...> data_;
 };
+
+/// \ingroup UtilitiesGroup
+/// Create a StaticCache, inferring the cached type from the generator.
+template <typename... Ranges, typename Generator>
+auto make_static_cache(Generator&& generator) noexcept {
+  using CachedType = std::decay_t<decltype(generator((Ranges{}, size_t{})...))>;
+  return StaticCache<CachedType, Ranges...>(generator);
+}
 
 /// \ingroup UtilitiesGroup
 /// Range of values for StaticCache indices.  The `Start` is inclusive
