@@ -13,19 +13,19 @@
 namespace GeneralizedHarmonic {
 /*!
  * \ingroup GeneralRelativityGroup
- * \brief Computes the auxiliary variable \f$\phi_{iab}\f$ used by the
+ * \brief Computes the auxiliary variable \f$\Phi_{iab}\f$ used by the
  * generalized harmonic formulation of Einstein's equations.
  *
  * \details If \f$ N, N^i\f$ and \f$ g_{ij} \f$ are the lapse, shift and spatial
- * metric respectively, then \f$\phi_{iab} \f$ is computed as
+ * metric respectively, then \f$\Phi_{iab} \f$ is computed as
  *
  * \f{align}
- *     \phi_{ktt} &= - 2 N \partial_k N
+ *     \Phi_{ktt} &= - 2 N \partial_k N
  *                 + 2 g_{mn} N^m \partial_k N^n
  *                 + N^m N^n \partial_k g_{mn} \\
- *     \phi_{kti} &= g_{mi} \partial_k N^m
+ *     \Phi_{kti} &= g_{mi} \partial_k N^m
  *                 + N^m \partial_k g_{mi} \\
- *     \phi_{kij} &= \partial_k g_{ij}
+ *     \Phi_{kij} &= \partial_k g_{ij}
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -44,9 +44,9 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
  * \f$ \psi_{ab} \f$.
  *
  * \details If \f$ N, N^i\f$ are the lapse and shift
- * respectively, and \f$ \phi_{iab} = \partial_i \psi_{ab} \f$ then
+ * respectively, and \f$ \Phi_{iab} = \partial_i \psi_{ab} \f$ then
  * \f$\Pi_{\mu\nu} = -(1/N) ( \partial_t \psi_{\mu\nu}  -
- *      N^m \phi_{m\mu\nu}) \f$ where \f$ \partial_t \psi_{ab} \f$ is computed
+ *      N^m \Phi_{m\mu\nu}) \f$ where \f$ \partial_t \psi_{ab} \f$ is computed
  * as
  *
  * \f{align}
@@ -98,12 +98,12 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
  * \brief Computes extrinsic curvature from generalized harmonic variables
  *        and the spacetime normal vector.
  *
- * \details If \f$ \Pi_{ab} \f$ and \f$ \phi_{iab} \f$ are the generalized
+ * \details If \f$ \Pi_{ab} \f$ and \f$ \Phi_{iab} \f$ are the generalized
  * harmonic conjugate momentum and spatial derivative variables, and if
  * \f$n^a\f$ is the spacetime normal vector, then the extrinsic curvature
  * is computed as
  * \f{align}
- *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \phi_{(ij)a} n^a
+ *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \Phi_{(ij)a} n^a
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -117,11 +117,11 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
  * \brief Computes spatial derivatives of the spatial metric from
  *        the generalized harmonic spatial derivative variable.
  *
- * \details If \f$ \phi_{kab} \f$ is the generalized
+ * \details If \f$ \Phi_{kab} \f$ is the generalized
  * harmonic spatial derivative variable, then the derivatives of the
  * spatial metric are
  * \f{align}
- *      \partial_k g_{ij} &= \phi_{kij}
+ *      \partial_k g_{ij} &= \Phi_{kij}
  * \f}
  *
  * This quantity is needed for computing spatial Christoffel symbols.
