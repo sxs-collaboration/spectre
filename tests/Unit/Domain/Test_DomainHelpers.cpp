@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -21,6 +22,8 @@
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/Side.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -575,4 +578,195 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BNSCorners", "[Domain][Unit]") {
     CHECK(generated_corners[i] == expected_corners[i]);
   }
   CHECK(generated_corners == expected_corners);
+}
+
+namespace {
+void test_vci_1d() {
+  VolumeCornerIterator<1> vci{};
+  CHECK(vci);
+  CHECK(vci() == std::array<Side, 1>{{Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 1>{{-1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 1>{{Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 1>{{1.0}});
+  ++vci;
+  CHECK(not vci);
+
+  VolumeCornerIterator<1> vci2{Index<1>{2}, Index<1>{7}};
+  CHECK(vci2);
+  CHECK(vci2.global_corner_number() == 2);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 3);
+  ++vci2;
+  CHECK(not vci2);
+}
+
+void test_vci_2d() {
+  VolumeCornerIterator<2> vci{};
+  CHECK(vci);
+  CHECK(vci() == std::array<Side, 2>{{Side::Lower, Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 2>{{-1.0, -1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 2>{{Side::Upper, Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 2>{{1.0, -1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 2>{{Side::Lower, Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 2>{{-1.0, 1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 2>{{Side::Upper, Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 2>{{1.0, 1.0}});
+  ++vci;
+  CHECK(not vci);
+
+  VolumeCornerIterator<2> vci2{Index<2>{1, 2}, Index<2>{3, 4}};
+  CHECK(vci2);
+  CHECK(vci2.global_corner_number() == 7);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 8);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 10);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 11);
+  ++vci2;
+  CHECK(not vci2);
+}
+
+void test_vci_3d() {
+  VolumeCornerIterator<3> vci{};
+  CHECK(vci);
+  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Lower, Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, -1.0, -1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Lower, Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, -1.0, -1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Upper, Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, 1.0, -1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Upper, Side::Lower}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, 1.0, -1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Lower, Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, -1.0, 1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Lower, Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, -1.0, 1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Upper, Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, 1.0, 1.0}});
+  ++vci;
+  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Upper, Side::Upper}});
+  CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, 1.0, 1.0}});
+  ++vci;
+  CHECK(not vci);
+
+  VolumeCornerIterator<3> vci2{Index<3>{1, 1, 1}, Index<3>{4, 4, 4}};
+  CHECK(vci2);
+  CHECK(vci2.global_corner_number() == 21);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 22);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 25);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 26);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 37);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 38);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 41);
+  ++vci2;
+  CHECK(vci2.global_corner_number() == 42);
+  ++vci2;
+  CHECK(not vci2);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
+                  "[Domain][Unit]") {
+  test_vci_1d();
+  test_vci_2d();
+  test_vci_3d();
+}
+
+// [[OutputRegex, Index out of range.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.DomainHelpers.VolumeCornerIterator.Assert", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto extents = Index<3>{4, 4, 4};
+  auto failed_index_with = Index<3>{2, 3, 4};
+  static_cast<void>(VolumeCornerIterator<3>{failed_index_with, extents});
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
+                  "[Domain][Unit]") {
+  std::vector<std::array<size_t, 2>> corners_for_a_1d_road{
+      {{0, 1}}, {{1, 2}}, {{2, 3}}};
+  std::vector<std::array<size_t, 4>> corners_for_a_2d_vertical_tower{
+      {{0, 1, 2, 3}}, {{2, 3, 4, 5}}, {{4, 5, 6, 7}}};
+  std::vector<std::array<size_t, 4>> corners_for_a_2d_horizontal_wall{
+      {{0, 1, 4, 5}}, {{1, 2, 5, 6}}, {{2, 3, 6, 7}}};
+  std::vector<std::array<size_t, 4>> corners_for_a_2d_field{
+      {{0, 1, 3, 4}}, {{1, 2, 4, 5}}, {{3, 4, 6, 7}}, {{4, 5, 7, 8}}};
+  // This 2D net of a cube does not have its boundaries identified.
+  std::vector<std::array<size_t, 4>> corners_for_a_2d_net_of_a_cube{
+      {{1, 2, 5, 6}},    {{5, 6, 9, 10}},    {{8, 9, 12, 13}},
+      {{9, 10, 13, 14}}, {{10, 11, 14, 15}}, {{13, 14, 17, 18}}};
+  std::vector<std::array<size_t, 8>> corners_for_a_3d_cube{
+      {{0, 1, 3, 4, 9, 10, 12, 13}},      {{1, 2, 4, 5, 10, 11, 13, 14}},
+      {{3, 4, 6, 7, 12, 13, 15, 16}},     {{4, 5, 7, 8, 13, 14, 16, 17}},
+      {{9, 10, 12, 13, 18, 19, 21, 22}},  {{10, 11, 13, 14, 19, 20, 22, 23}},
+      {{12, 13, 15, 16, 21, 22, 24, 25}}, {{13, 14, 16, 17, 22, 23, 25, 26}}};
+  std::vector<std::array<size_t, 8>> corners_for_a_rubiks_cube_with_hole{
+      {{0, 1, 4, 5, 16, 17, 20, 21}},
+      {{1, 2, 5, 6, 17, 18, 21, 22}},
+      {{2, 3, 6, 7, 18, 19, 22, 23}},
+      {{4, 5, 8, 9, 20, 21, 24, 25}},
+      {{5, 6, 9, 10, 21, 22, 25, 26}},
+      {{6, 7, 10, 11, 22, 23, 26, 27}},
+      {{8, 9, 12, 13, 24, 25, 28, 29}},
+      {{9, 10, 13, 14, 25, 26, 29, 30}},
+      {{10, 11, 14, 15, 26, 27, 30, 31}},
+
+      {{16, 17, 20, 21, 32, 33, 36, 37}},
+      {{17, 18, 21, 22, 33, 34, 37, 38}},
+      {{18, 19, 22, 23, 34, 35, 38, 39}},
+      {{20, 21, 24, 25, 36, 37, 40, 41}},
+      /*central block is skipped!*/
+      {{22, 23, 26, 27, 38, 39, 42, 43}},
+      {{24, 25, 28, 29, 40, 41, 44, 45}},
+      {{25, 26, 29, 30, 41, 42, 45, 46}},
+      {{26, 27, 30, 31, 42, 43, 46, 47}},
+
+      {{32, 33, 36, 37, 48, 49, 52, 53}},
+      {{33, 34, 37, 38, 49, 50, 53, 54}},
+      {{34, 35, 38, 39, 50, 51, 54, 55}},
+      {{36, 37, 40, 41, 52, 53, 56, 57}},
+      {{37, 38, 41, 42, 53, 54, 57, 58}},
+      {{38, 39, 42, 43, 54, 55, 58, 59}},
+      {{40, 41, 44, 45, 56, 57, 60, 61}},
+      {{41, 42, 45, 46, 57, 58, 61, 62}},
+      {{42, 43, 46, 47, 58, 59, 62, 63}}};
+
+  CHECK(corners_for_rectilinear_domains(Index<1>{3}) == corners_for_a_1d_road);
+  CHECK(corners_for_rectilinear_domains(Index<2>{1, 3}) ==
+        corners_for_a_2d_vertical_tower);
+  CHECK(corners_for_rectilinear_domains(Index<2>{3, 1}) ==
+        corners_for_a_2d_horizontal_wall);
+  CHECK(corners_for_rectilinear_domains(Index<2>{2, 2}) ==
+        corners_for_a_2d_field);
+  CHECK(corners_for_rectilinear_domains(
+            Index<2>{3, 4},
+            std::vector<Index<2>>{Index<2>{0, 0}, Index<2>{2, 0},
+                                  Index<2>{0, 1}, Index<2>{2, 1},
+                                  Index<2>{0, 3}, Index<2>{2, 3}}) ==
+        corners_for_a_2d_net_of_a_cube);
+  CHECK(corners_for_rectilinear_domains(Index<3>{2, 2, 2}) ==
+        corners_for_a_3d_cube);
+  CHECK(corners_for_rectilinear_domains(
+            Index<3>{3, 3, 3}, std::vector<Index<3>>{Index<3>{1, 1, 1}}) ==
+        corners_for_a_rubiks_cube_with_hole);
 }

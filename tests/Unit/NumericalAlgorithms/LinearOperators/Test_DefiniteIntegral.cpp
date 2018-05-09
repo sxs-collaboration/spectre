@@ -40,7 +40,7 @@ void test_definite_integral_2d(const Index<2>& extents) {
   for (size_t a = 0; a < num_pts_in_x; ++a) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
       for (IndexIterator<2> index_it(extents); index_it; ++index_it) {
-        integrand[index_it.offset()] =
+        integrand[index_it.collapsed_index()] =
             pow(x[index_it()[0]], a) * pow(y[index_it()[1]], b);
       }
       if (0 == a % 2 and 0 == b % 2) {
@@ -65,9 +65,9 @@ void test_definite_integral_3d(const Index<3>& extents) {
     for (size_t b = 0; b < num_pts_in_y; ++b) {
       for (size_t c = 0; c < num_pts_in_z; ++c) {
         for (IndexIterator<3> index_it(extents); index_it; ++index_it) {
-          integrand[index_it.offset()] = pow(x[index_it()[0]], a) *
-                                         pow(y[index_it()[1]], b) *
-                                         pow(z[index_it()[2]], c);
+          integrand[index_it.collapsed_index()] = pow(x[index_it()[0]], a) *
+                                                  pow(y[index_it()[1]], b) *
+                                                  pow(z[index_it()[2]], c);
         }
         if (0 == a % 2 and 0 == b % 2 and 0 == c % 2) {
           CHECK(8.0 / ((a + 1.0) * (b + 1.0) * (c + 1.0)) ==

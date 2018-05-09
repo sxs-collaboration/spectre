@@ -26,7 +26,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
-          u[i.offset()] = exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
+          u[i.collapsed_index()] =
+              exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
         }
         const DataVector u_lin = linearize(u, extents);
         size_t n_pts = extents.product();
@@ -49,14 +50,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
         const DataVector u_lin = [&extents, &x, &y, &z]() {
           DataVector temp(extents.product());
           for (IndexIterator<3> i(extents); i; ++i) {
-            temp[i.offset()] = x[i()[0]] + y[i()[1]] + z[i()[2]];
+            temp[i.collapsed_index()] = x[i()[0]] + y[i()[1]] + z[i()[2]];
           }
           return temp;
         }();
         const DataVector u_quad = [&extents, &x, &y]() {
           DataVector temp(extents.product());
           for (IndexIterator<3> i(extents); i; ++i) {
-            temp[i.offset()] = x[i()[0]] * y[i()[1]];
+            temp[i.collapsed_index()] = x[i()[0]] * y[i()[1]];
           }
           return temp;
         }();
@@ -105,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
     const DataVector u_lin = [&extents, &x]() {
       DataVector temp(extents.product());
       for (IndexIterator<1> i(extents); i; ++i) {
-        temp[i.offset()] = x[i()[0]];
+        temp[i.collapsed_index()] = x[i()[0]];
       }
       return temp;
     }();

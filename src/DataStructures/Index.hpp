@@ -110,6 +110,13 @@ class Index {
   std::array<size_t, Dim> indices_;
 };
 
+/// \ingroup DataStructuresGroup
+/// Get the collapsed index into a 1D array of the data corresponding to this
+/// Index. Note that the first dimension of the Index varies fastest when
+/// computing the collapsed index.
+template <size_t N>
+size_t collapsed_index(const Index<N>& index, const Index<N>& extents) noexcept;
+
 template <size_t N>
 std::ostream& operator<<(std::ostream& os, const Index<N>& i);
 

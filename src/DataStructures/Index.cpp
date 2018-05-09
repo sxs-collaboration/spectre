@@ -5,6 +5,7 @@
 
 #include <pup.h>  // IWYU pragma: keep
 
+#include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -13,6 +14,18 @@
 template <size_t Dim>
 void Index<Dim>::pup(PUP::er& p) noexcept {
   p | indices_;
+}
+
+template <size_t N>
+size_t collapsed_index(const Index<N>& index,
+                       const Index<N>& extents) noexcept {
+  size_t result = 0;
+  // note: size_t(-1) == std::numeric_limits<size_t>::max()
+  for (size_t i = N - 1; i < N; i--) {
+    ASSERT(index[i] < extents[i], "Index out of range.");
+    result = index[i] + extents[i] * result;
+  }
+  return result;
 }
 
 template <size_t N>
@@ -34,11 +47,13 @@ bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
 #define GEN_OP(op, dim)                            \
   template bool operator op(const Index<dim>& lhs, \
                             const Index<dim>& rhs) noexcept;
-#define INSTANTIATE(_, data)                          \
-  template class Index<DIM(data)>;                    \
-  GEN_OP(==, DIM(data))                               \
-  GEN_OP(!=, DIM(data))                               \
-  template std::ostream& operator<<(std::ostream& os, \
+#define INSTANTIATE(_, data)                                                 \
+  template class Index<DIM(data)>;                                           \
+  GEN_OP(==, DIM(data))                                                      \
+  GEN_OP(!=, DIM(data))                                                      \
+  template size_t collapsed_index(const Index<DIM(data)>& index,             \
+                                  const Index<DIM(data)>& extents) noexcept; \
+  template std::ostream& operator<<(std::ostream& os,                        \
                                     const Index<DIM(data)>& i);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))

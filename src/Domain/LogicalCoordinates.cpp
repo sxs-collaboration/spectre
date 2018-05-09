@@ -25,7 +25,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
     const auto& collocation_points_in_this_dim =
         Basis::lgl::collocation_points(extents[d]);
     for (IndexIterator<VolumeDim> index(extents); index; ++index) {
-      logical_x.get(d)[index.offset()] =
+      logical_x.get(d)[index.collapsed_index()] =
           collocation_points_in_this_dim[index()[d]];
     }
   }
@@ -47,14 +47,14 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
 
   for (IndexIterator<VolumeDim - 1> index(extents); index; ++index) {
     for (size_t d = 0; d < sliced_away_dim; ++d) {
-      logical_x.get(d)[index.offset()] =
+      logical_x.get(d)[index.collapsed_index()] =
           gsl::at(collocation_points_in_each_dim, d)[index()[d]];
     }
     logical_x[sliced_away_dim] =
         (Side::Lower == direction.side() ? DataVector(extents.product(), -1.0)
                                          : DataVector(extents.product(), 1.0));
     for (size_t d = sliced_away_dim; d < VolumeDim - 1; ++d) {
-      logical_x.get(d + 1)[index.offset()] =
+      logical_x.get(d + 1)[index.collapsed_index()] =
           gsl::at(collocation_points_in_each_dim, d)[index()[d]];
     }
   }

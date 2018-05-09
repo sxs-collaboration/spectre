@@ -18,6 +18,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"

@@ -10,6 +10,8 @@
 #include <string>
 
 #include "DataStructures/Index.hpp"
+#include "DataStructures/IndexIterator.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -73,4 +75,31 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   auto index_3d_copy = index_3d;
   // clang-tidy: std::move of index_3d (trivial) does nothing
   test_move_semantics(std::move(index_3d), index_3d_copy);  // NOLINT
+
+  // Test indexing into an Index
+  const Index<1> one_d_index{3};
+  const Index<1> one_d_index_with{2};
+  CHECK(collapsed_index(one_d_index_with, one_d_index) == 2);
+  const Index<2> two_d_index{3, 4};
+  const Index<2> two_d_index_with{1, 2};
+  CHECK(collapsed_index(two_d_index_with, two_d_index) == 7);
+  const Index<3> three_d_index{3, 4, 2};
+  const Index<3> three_d_index_with{2, 3, 1};
+  CHECK(collapsed_index(three_d_index_with, three_d_index) == 23);
+  const Index<3> extents_for_iterator{5, 6, 2};
+  for (IndexIterator<3> ii{extents_for_iterator}; ii; ++ii) {
+    CHECK(collapsed_index(*ii, extents_for_iterator) == ii.collapsed_index());
+  }
+}
+
+// [[OutputRegex, Index out of range.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.Index.Assert",
+                               "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto extents = Index<3>{4, 4, 4};
+  auto failed_index_with = Index<3>{2, 3, 4};
+  static_cast<void>(collapsed_index(failed_index_with, extents));
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }

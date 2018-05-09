@@ -28,7 +28,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
-          u[i.offset()] = exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
+          u[i.collapsed_index()] =
+              exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
         }
         DataVector u_lin = linearize(u, extents);
         for (size_t d = 0; d < 3; ++d) {
@@ -61,7 +62,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
-          u[i.offset()] = 3*x[i()[0]]+5*y[i()[1]]+z[i()[2]];
+          u[i.collapsed_index()] = 3 * x[i()[0]] + 5 * y[i()[1]] + z[i()[2]];
         }
         const DataVector u_lin = linearize(u, extents);
         CHECK_ITERABLE_APPROX(u, u_lin);
@@ -83,7 +84,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
         const Index<3> extents(nx, ny, nz);
         DataVector u(extents.product());
         for (IndexIterator<3> i(extents); i; ++i) {
-          u[i.offset()] = exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
+          u[i.collapsed_index()] =
+              exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
         }
         for (size_t d = 0; d < 3; ++d) {
           DataVector u_lin = linearize(u, extents, d);
