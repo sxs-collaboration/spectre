@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -25,7 +26,7 @@ class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
 template <size_t VolumeDim>
-class Direction;
+class OrientationMap;
 namespace Frame {
 struct Logical;
 }  // namespace Frame
@@ -143,13 +144,29 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
         {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
 
 /// \ingroup ComputationalDomainGroup
+/// \brief Permutes the corner numbers of an n-cube.
+///
+/// Returns the correct ordering of global corner numbers for a block
+/// having this orientation relative to an aligned edifice of blocks,
+/// given the corner numbering the block would have if it were aligned.
+/// This is useful in creating domains for testing purposes, e.g.
+/// RotatedIntervals, RotatedRectangles, and RotatedBricks.
+template <size_t VolumeDim>
+std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
+    const OrientationMap<VolumeDim>& orientation,
+    const std::array<size_t, two_to_the(VolumeDim)>&
+        corners_of_aligned) noexcept;
+
+/// \ingroup ComputationalDomainGroup
 /// Iterates over the corners of a VolumeDim-dimensional cube.
 template <size_t VolumeDim>
 class VolumeCornerIterator {
  public:
-  VolumeCornerIterator() noexcept = default;
+  VolumeCornerIterator() noexcept { setup_from_local_corner_number(); }
   explicit VolumeCornerIterator(size_t initial_local_corner_number) noexcept
-      : local_corner_number_(initial_local_corner_number) {}
+      : local_corner_number_(initial_local_corner_number) {
+    setup_from_local_corner_number();
+  }
   VolumeCornerIterator(
       // The block index is also global corner
       // index of the lowest corner of the block.
@@ -161,13 +178,7 @@ class VolumeCornerIterator {
         global_corner_extents_(global_corner_extents) {}
   void operator++() noexcept {
     ++local_corner_number_;
-    for (size_t i = 0; i < VolumeDim; i++) {
-      gsl::at(coords_of_corner_, i) =
-          2.0 * get_nth_bit(local_corner_number_, i) - 1.0;
-      gsl::at(array_sides_, i) =
-          2 * get_nth_bit(local_corner_number_, i) - 1 == 1 ? Side::Upper
-                                                            : Side::Lower;
-    }
+    setup_from_local_corner_number();
   }
   explicit operator bool() const noexcept {
     return local_corner_number_ < two_to_the(VolumeDim);
@@ -194,6 +205,21 @@ class VolumeCornerIterator {
   const std::array<double, VolumeDim>& coords_of_corner() const noexcept {
     return coords_of_corner_;
   }
+  const std::array<Direction<VolumeDim>, VolumeDim>& directions_of_corner()
+      const noexcept {
+    return array_directions_;
+  }
+  void setup_from_local_corner_number() noexcept {
+    for (size_t i = 0; i < VolumeDim; i++) {
+      gsl::at(coords_of_corner_, i) =
+          2.0 * get_nth_bit(local_corner_number_, i) - 1.0;
+      gsl::at(array_sides_, i) =
+          2 * get_nth_bit(local_corner_number_, i) - 1 == 1 ? Side::Upper
+                                                            : Side::Lower;
+      gsl::at(array_directions_, i) =
+          Direction<VolumeDim>(i, gsl::at(array_sides_, i));
+    }
+  }
 
  private:
   size_t local_corner_number_ = 0;
@@ -201,5 +227,6 @@ class VolumeCornerIterator {
   Index<VolumeDim> global_corner_index_{};
   Index<VolumeDim> global_corner_extents_{};
   std::array<Side, VolumeDim> array_sides_ = make_array<VolumeDim>(Side::Lower);
+  std::array<Direction<VolumeDim>, VolumeDim> array_directions_{};
   std::array<double, VolumeDim> coords_of_corner_ = make_array<VolumeDim>(-1.0);
 };

@@ -664,6 +664,44 @@ corners_for_rectilinear_domains(
   return corners;
 }
 
+template <size_t VolumeDim>
+std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
+    const OrientationMap<VolumeDim>& orientation,
+    const std::array<size_t, two_to_the(VolumeDim)>&
+        corners_of_aligned) noexcept {
+  // compute the mapped logical corners, as
+  // they are the indices into the global corners.
+  const std::array<size_t, two_to_the(VolumeDim)> mapped_logical_corners =
+      [&orientation, &corners_of_aligned ]() noexcept {
+    std::array<size_t, two_to_the(VolumeDim)> result{};
+    for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
+      const std::array<Direction<VolumeDim>, VolumeDim>
+          directions_of_logical_corner = vci.directions_of_corner();
+      std::array<Direction<VolumeDim>, VolumeDim> directions_of_mapped_corner{};
+      for (size_t i = 0; i < VolumeDim; i++) {
+        gsl::at(directions_of_mapped_corner, i) =
+            orientation(gsl::at(directions_of_logical_corner, i));
+      }
+      size_t mapped_corner = 0;
+      for (size_t i = 0; i < VolumeDim; i++) {
+        const auto& direction = gsl::at(directions_of_mapped_corner, i);
+        if (direction.side() == Side::Upper) {
+          mapped_corner += two_to_the(direction.dimension());
+        }
+      }
+      gsl::at(result, vci.local_corner_number()) = mapped_corner;
+    }
+    return result;
+      }();
+
+  std::array<size_t, two_to_the(VolumeDim)> result{};
+  for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
+    gsl::at(result, i) =
+        gsl::at(corners_of_aligned, gsl::at(mapped_logical_corners, i));
+  }
+  return result;
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
@@ -707,6 +745,15 @@ template std::vector<std::array<size_t, 4>> corners_for_rectilinear_domains(
 template std::vector<std::array<size_t, 8>> corners_for_rectilinear_domains(
     const Index<3>& domain_extents,
     const std::vector<Index<3>>& block_indices_to_exclude);
+template std::array<size_t, 2> discrete_rotation(
+    const OrientationMap<1>& orientation,
+    const std::array<size_t, 2>& corners_of_aligned) noexcept;
+template std::array<size_t, 4> discrete_rotation(
+    const OrientationMap<2>& orientation,
+    const std::array<size_t, 4>& corners_of_aligned) noexcept;
+template std::array<size_t, 8> discrete_rotation(
+    const OrientationMap<3>& orientation,
+    const std::array<size_t, 8>& corners_of_aligned) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
