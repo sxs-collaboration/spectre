@@ -14,6 +14,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -23,6 +24,7 @@
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 
@@ -664,6 +666,77 @@ corners_for_rectilinear_domains(
   return corners;
 }
 
+template <typename TargetFrame, typename Map>
+std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 1>>
+product_of_1d_maps(std::array<Map, 1>& maps) {
+  return make_coordinate_map_base<Frame::Logical, TargetFrame>(maps[0]);
+}
+
+template <typename TargetFrame, typename Map>
+std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 2>>
+product_of_1d_maps(std::array<Map, 2>& maps) {
+  return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+      CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
+}
+
+template <typename TargetFrame, typename Map>
+std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>
+product_of_1d_maps(std::array<Map, 3>& maps) {
+  return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+      CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1], maps[2]));
+}
+
+template <typename TargetFrame, size_t VolumeDim>
+std::vector<
+    std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+maps_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::array<std::vector<double>, VolumeDim>& block_demarcations,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
+    const bool use_equiangular_map) noexcept {
+  for (size_t d = 0; d < VolumeDim; d++) {
+    ASSERT(gsl::at(block_demarcations, d).size() == domain_extents[d] + 1,
+           "If there are N blocks, there must be N+1 demarcations.");
+  }
+  std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+      maps{};
+  for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
+    if (std::find(block_indices_to_exclude.begin(),
+                  block_indices_to_exclude.end(),
+                  *ii) == block_indices_to_exclude.end()) {
+      std::array<double, VolumeDim> lower_bounds{};
+      std::array<double, VolumeDim> upper_bounds{};
+      for (size_t d = 0; d < VolumeDim; d++) {
+        gsl::at(lower_bounds, d) =
+            gsl::at(gsl::at(block_demarcations, d), (*ii)[d]);
+        gsl::at(upper_bounds, d) =
+            gsl::at(gsl::at(block_demarcations, d), (*ii)[d] + 1);
+        ASSERT(gsl::at(upper_bounds, d) > gsl::at(lower_bounds, d),
+               "The block demarcations must be strictly increasing.");
+      }
+      if (not use_equiangular_map) {
+        using Affine = CoordinateMaps::Affine;
+        std::array<Affine, VolumeDim> affine_maps{};
+        for (size_t d = 0; d < VolumeDim; d++) {
+          gsl::at(affine_maps, d) = Affine{-1.0, 1.0, gsl::at(lower_bounds, d),
+                                           gsl::at(upper_bounds, d)};
+        }
+        maps.push_back(product_of_1d_maps<TargetFrame>(affine_maps));
+      } else {
+        using Equiangular = CoordinateMaps::Equiangular;
+        std::array<Equiangular, VolumeDim> equiangular_maps{};
+        for (size_t d = 0; d < VolumeDim; d++) {
+          gsl::at(equiangular_maps, d) = Equiangular{
+              -1.0, 1.0, gsl::at(lower_bounds, d), gsl::at(upper_bounds, d)};
+        }
+        maps.push_back(product_of_1d_maps<TargetFrame>(equiangular_maps));
+      }
+    }
+  }
+  return maps;
+}
+
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
     const OrientationMap<VolumeDim>& orientation,
@@ -671,8 +744,8 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
         corners_of_aligned) noexcept {
   // compute the mapped logical corners, as
   // they are the indices into the global corners.
-  const std::array<size_t, two_to_the(VolumeDim)> mapped_logical_corners =
-      [&orientation, &corners_of_aligned ]() noexcept {
+  const std::array<size_t, two_to_the(VolumeDim)>
+      mapped_logical_corners = [&orientation]() noexcept {
     std::array<size_t, two_to_the(VolumeDim)> result{};
     for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
       const std::array<Direction<VolumeDim>, VolumeDim>
@@ -780,3 +853,23 @@ template std::vector<
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map) noexcept;
+// Explicit instantiations
+/// \cond
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE(_, data)                                                \
+  template std::vector<std::unique_ptr<                                     \
+      CoordinateMapBase<Frame::Logical, FRAME(data), DIM(data)>>>           \
+  maps_for_rectilinear_domains(                                             \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
+      const bool use_equiangular_map) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+
+#undef DIM
+#undef DTYPE
+#undef INSTANTIATE
+/// \endcond

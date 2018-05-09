@@ -158,6 +158,19 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
         corners_of_aligned) noexcept;
 
 /// \ingroup ComputationalDomainGroup
+/// \brief The CoordinateMaps for a rectilinear domain of n-cubes.
+///
+/// Allows for both Affine and Equiangular maps.
+template <typename TargetFrame, size_t VolumeDim>
+std::vector<
+    std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+maps_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::array<std::vector<double>, VolumeDim>& block_demarcations,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
+    bool use_equiangular_map) noexcept;
+
+/// \ingroup ComputationalDomainGroup
 /// Iterates over the corners of a VolumeDim-dimensional cube.
 template <size_t VolumeDim>
 class VolumeCornerIterator {

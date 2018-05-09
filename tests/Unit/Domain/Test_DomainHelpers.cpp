@@ -15,6 +15,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -888,4 +889,127 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
                 {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
                  Direction<3>::lower_eta()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
+                  "[Domain][Unit]") {
+  using Affine = CoordinateMaps::Affine;
+  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Equiangular = CoordinateMaps::Equiangular;
+  using Equiangular2D =
+      CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
+  using Equiangular3D =
+      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>
+      affine_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<1>{3},
+          std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
+          {Index<1>{0}}, false);
+  const auto expected_affine_maps_1d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.7, 2.0});
+  for (size_t i = 0; i < affine_maps_1d.size(); i++) {
+    CHECK(*affine_maps_1d[i] == *expected_affine_maps_1d[i]);
+  }
+
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>
+      equiangular_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<1>{3},
+          std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
+          {Index<1>{1}}, true);
+  const auto expected_equiangular_maps_1d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Equiangular{-1., 1., 0.0, 0.5}, Equiangular{-1., 1., 1.7, 2.0});
+  for (size_t i = 0; i < equiangular_maps_1d.size(); i++) {
+    CHECK(*equiangular_maps_1d[i] == *expected_equiangular_maps_1d[i]);
+  }
+
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      affine_maps_2d = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<2>{3, 2},
+          std::array<std::vector<double>, 2>{
+              {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
+          {Index<2>{}}, false);
+  const auto expected_affine_maps_2d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0}},
+          Affine2D{Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 0.0, 1.0}},
+          Affine2D{Affine{-1., 1., 1.7, 2.0}, Affine{-1., 1., 0.0, 1.0}},
+          Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 1.0, 2.0}},
+          Affine2D{Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.0, 2.0}},
+          Affine2D{Affine{-1., 1., 1.7, 2.0}, Affine{-1., 1., 1.0, 2.0}});
+  for (size_t i = 0; i < affine_maps_2d.size(); i++) {
+    CHECK(*affine_maps_2d[i] == *expected_affine_maps_2d[i]);
+  }
+
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      equiangular_maps_2d = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<2>{3, 2},
+          std::array<std::vector<double>, 2>{
+              {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
+          {Index<2>{2, 1}}, true);
+  const auto expected_equiangular_maps_2d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Equiangular2D{Equiangular{-1., 1., 0.0, 0.5},
+                        Equiangular{-1., 1., 0.0, 1.0}},
+          Equiangular2D{Equiangular{-1., 1., 0.5, 1.7},
+                        Equiangular{-1., 1., 0.0, 1.0}},
+          Equiangular2D{Equiangular{-1., 1., 1.7, 2.0},
+                        Equiangular{-1., 1., 0.0, 1.0}},
+          Equiangular2D{Equiangular{-1., 1., 0.0, 0.5},
+                        Equiangular{-1., 1., 1.0, 2.0}},
+          Equiangular2D{Equiangular{-1., 1., 0.5, 1.7},
+                        Equiangular{-1., 1., 1.0, 2.0}});
+  for (size_t i = 0; i < equiangular_maps_2d.size(); i++) {
+    CHECK(*equiangular_maps_2d[i] == *expected_equiangular_maps_2d[i]);
+  }
+
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      affine_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<3>{2, 2, 1},
+          std::array<std::vector<double>, 3>{
+              {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
+          {Index<3>{}}, false);
+  const auto expected_affine_maps_3d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0},
+                   Affine{-1., 1., -0.4, 0.3}},
+          Affine3D{Affine{-1., 1., 0.5, 2.0}, Affine{-1., 1., 0.0, 1.0},
+                   Affine{-1., 1., -0.4, 0.3}},
+          Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 1.0, 2.0},
+                   Affine{-1., 1., -0.4, 0.3}},
+          Affine3D{Affine{-1., 1., 0.5, 2.0}, Affine{-1., 1., 1.0, 2.0},
+                   Affine{-1., 1., -0.4, 0.3}});
+  for (size_t i = 0; i < affine_maps_3d.size(); i++) {
+    CHECK(*affine_maps_3d[i] == *expected_affine_maps_3d[i]);
+  }
+
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      equiangular_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<3>{2, 2, 1},
+          std::array<std::vector<double>, 3>{
+              {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
+          {Index<3>{0, 0, 0}}, true);
+  const auto expected_equiangular_maps_3d =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Equiangular3D{Equiangular{-1., 1., 0.5, 2.0},
+                        Equiangular{-1., 1., 0.0, 1.0},
+                        Equiangular{-1., 1., -0.4, 0.3}},
+          Equiangular3D{Equiangular{-1., 1., 0.0, 0.5},
+                        Equiangular{-1., 1., 1.0, 2.0},
+                        Equiangular{-1., 1., -0.4, 0.3}},
+          Equiangular3D{Equiangular{-1., 1., 0.5, 2.0},
+                        Equiangular{-1., 1., 1.0, 2.0},
+                        Equiangular{-1., 1., -0.4, 0.3}});
+  for (size_t i = 0; i < equiangular_maps_3d.size(); i++) {
+    CHECK(*equiangular_maps_3d[i] == *expected_equiangular_maps_3d[i]);
+  }
 }
