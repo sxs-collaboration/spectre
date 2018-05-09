@@ -15,6 +15,8 @@
 #include <type_traits>
 #include <vector>
 
+// TODO: Should we do this, or what would be an alternative?
+#include "DataStructures/Matrix.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -533,6 +535,18 @@ class DataVector {
   SPECTRE_ALWAYS_INLINE friend decltype(auto) step_function(
       const DataVector& t) noexcept {
     return step_function(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) apply_matrix(
+      const Matrix& A, const DataVector& x) {
+    // FIXME: Without the `evaluate` the result of this function can't be
+    // assigned to a `DataVector` variable.
+    return evaluate(A * x.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) apply_matrix(const DataVector& x,
+                                                           const Matrix& A) {
+    return trans(trans(x.data_) * A);
   }
 
  private:

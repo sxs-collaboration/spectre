@@ -8,8 +8,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/Matrix.hpp"
+
 class DataVector;
-class Matrix;
 
 /// \ingroup SpectralGroup
 /// Basis functions, derivative matrices, etc. for spectral-type methods

@@ -13,12 +13,9 @@
 #include <string>
 #include <vector>
 
+#include "DataStructures/Matrix.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
-
-/// \cond
-class Matrix;
-/// \endcond
 
 namespace h5 {
 /*!
