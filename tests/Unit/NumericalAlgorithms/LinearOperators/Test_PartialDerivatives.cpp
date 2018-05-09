@@ -166,10 +166,11 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
       const double expected_deta = (0 == b ? 0.0
                                            : b * (n + 1) * pow(xi[ii()[0]], a) *
                                                  pow(eta[ii()[1]], b - 1));
-      CHECK(du[0].data()[ii.collapsed_index() +
+      // clang-tidy: pointer arithmetic
+      CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
                          n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
-      CHECK(du[1].data()[ii.collapsed_index() +
+      CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
                          n * number_of_grid_points] ==  // NOLINT
             approx(expected_deta));
     }
@@ -211,13 +212,14 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
           (0 == c ? 0.0
                   : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
                         pow(zeta[ii()[2]], c - 1));
-      CHECK(du[0].data()[ii.collapsed_index() +
+      // clang-tidy: pointer arithmetic
+      CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
                          n * number_of_grid_points] ==  // NOLINT
             approx(expected_dxi));
-      CHECK(du[1].data()[ii.collapsed_index() +
+      CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
                          n * number_of_grid_points] ==  // NOLINT
             approx(expected_deta));
-      CHECK(du[2].data()[ii.collapsed_index() +
+      CHECK(du[2].data()[ii.collapsed_index() +         // NOLINT
                          n * number_of_grid_points] ==  // NOLINT
             approx(expected_dzeta));
     }
