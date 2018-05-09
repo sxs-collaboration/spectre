@@ -67,6 +67,12 @@ void test_make_tagged_tuple() {
 SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                   "[DataStructures][Unit]") {
   check_make_with_value(8.3, 1.3, 8.3);
+  check_make_with_value(8.3, tnsr::i<double, 3>{{{1.3, 8.3, 3.4}}}, 8.3);
+  check_make_with_value(8.3, DataVector{8, 2.3}, 8.3);
+  check_make_with_value(
+      8.3, tnsr::i<DataVector, 3>{{{DataVector{8, 2.3}, DataVector{8, 9.8},
+                                    DataVector{8, -1.2}}}},
+      8.3);
   check_make_with_value(Scalar<double>(8.3), 1.3, 8.3);
   check_make_with_value(tnsr::I<double, 3, Frame::Grid>(8.3), 1.3, 8.3);
   check_make_with_value(8.3, tnsr::I<double, 3, Frame::Grid>(1.3), 8.3);
