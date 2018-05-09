@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_DataBoxTag.cpp
   Test_DataVector.cpp
   Test_Deferred.cpp
+  Test_DenseVector.cpp
   Test_GeneralIndexIterator.cpp
   Test_Identity.cpp
   Test_Index.cpp
