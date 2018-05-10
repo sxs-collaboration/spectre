@@ -580,3 +580,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.add_slice_to_data",
                    3233233., 3240034.}}}}) ==
         get<VariablesTestTags_detail::vector>(vars));
 }
+
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Variables.assign_to_default",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+  #ifdef SPECTRE_DEBUG
+  Variables<tmpl::list<VariablesTestTags_detail::scalar>> vars;
+  get<VariablesTestTags_detail::scalar>(vars) = Scalar<DataVector>{{{{0.}}}};
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
