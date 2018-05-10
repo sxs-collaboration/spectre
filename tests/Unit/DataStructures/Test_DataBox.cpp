@@ -105,7 +105,7 @@ struct ComputeLambda1 : db::ComputeItemTag {
 
 /// [databox_prefix_tag_example]
 template <typename Tag>
-struct TagPrefix : db::DataBoxPrefix {
+struct TagPrefix : db::DataBoxPrefix, db::DataBoxTag {
   using type = typename Tag::type;
   using tag = Tag;
   static constexpr db::DataBoxString label = "TagPrefix";
@@ -576,7 +576,7 @@ struct Var2 : db::DataBoxTag {
 };
 
 template <class Tag, class VolumeDim, class Frame>
-struct PrefixTag0 : db::DataBoxPrefix {
+struct PrefixTag0 : db::DataBoxPrefix, db::DataBoxTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;

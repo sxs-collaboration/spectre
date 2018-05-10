@@ -343,7 +343,7 @@ class DataBox<tmpl::list<Tags...>>
     : private DataBox_detail::DataBoxLeaf<
           Tags, db::item_type<Tags, tmpl::list<Tags...>>>... {
   static_assert(
-      tmpl2::flat_all_v<cpp17::is_base_of_v<db::DataBoxTag, Tags>...>,
+      tmpl2::flat_all_v<is_non_base_tag_v<Tags>...>,
       "All structs used to Tag (compute) items in a DataBox must derive off of "
       "db::DataBoxTag");
   static_assert(
@@ -687,8 +687,7 @@ SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_compute_item_to_box_impl(
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
   static_assert(
-      tmpl2::flat_all_v<
-          cpp17::is_base_of_v<db::DataBoxTag, ComputeItemArgumentsTags>...>,
+      tmpl2::flat_all_v<is_tag_v<ComputeItemArgumentsTags>...>,
       "Cannot have non-DataBoxTag arguments to a ComputeItem. Please make "
       "sure all the specified argument_tags in the ComputeItem derive from "
       "db::DataBoxTag.");

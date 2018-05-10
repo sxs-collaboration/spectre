@@ -66,7 +66,7 @@ struct TimeValue : db::ComputeItemTag {
 /// \tparam Tag tag for the variables
 /// \tparam DtTag tag for the time derivative of the variables
 template <typename Tag, typename DtTag>
-struct HistoryEvolvedVariables : db::DataBoxPrefix {
+struct HistoryEvolvedVariables : db::DataBoxPrefix, db::DataBoxTag {
   static constexpr db::DataBoxString label = "HistoryEvolvedVariables";
   using tag = Tag;
   using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
@@ -79,7 +79,7 @@ struct HistoryEvolvedVariables : db::DataBoxPrefix {
 /// \tparam Key type identifying a boundary
 /// \tparam Tag tag for boundary variables
 template <typename Key, typename Tag, typename Hash = std::hash<Key>>
-struct HistoryBoundaryVariables : db::DataBoxPrefix {
+struct HistoryBoundaryVariables : db::DataBoxPrefix, db::DataBoxTag {
   static constexpr db::DataBoxString label = "HistoryBoundaryVariables";
   using tag = Tag;
   using type = std::unordered_map<Key, db::item_type<Tag>, Hash>;

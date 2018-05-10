@@ -15,13 +15,13 @@ struct Var : db::DataBoxTag {
 };
 
 template <typename Tag>
-struct Prefix : db::DataBoxPrefix {
+struct Prefix : db::DataBoxPrefix, db::DataBoxTag {
   using tag = Tag;
   using type = db::item_type<Tag>;
 };
 
 template <typename Tag, typename Arg1, typename Arg2>
-struct PrefixWithArgs : db::DataBoxPrefix {
+struct PrefixWithArgs : db::DataBoxPrefix, db::DataBoxTag {
   using tag = Tag;
   using type = db::item_type<Tag>;
 };

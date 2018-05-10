@@ -263,7 +263,8 @@ template <bool IsComputeItem, typename DirectionsTag, typename NameTag,
 struct InterfaceImpl;
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
-struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag> {
+struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
+    : db::DataBoxTag {
   static_assert(cpp17::is_same_v<NameTag, FunctionTag>,
                 "Can't specify a function for a simple item tag");
   using tag = NameTag;

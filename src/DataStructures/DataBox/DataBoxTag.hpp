@@ -116,7 +116,7 @@ struct BaseTag {};
  *
  * \see DataBox DataBoxTag DataBoxString get_tag_name ComputeItemTag
  */
-struct DataBoxPrefix : virtual DataBoxTag {};
+struct DataBoxPrefix {};
 
 /*!
  * \ingroup DataBoxGroup
@@ -159,7 +159,7 @@ struct DataBoxPrefix : virtual DataBoxTag {};
  *
  * \see DataBox DataBoxTag DataBoxString get_tag_name DataBoxPrefix
  */
-struct ComputeItemTag : virtual DataBoxTag {};
+struct ComputeItemTag {};
 
 namespace DataBox_detail {
 template <typename TagList, typename Tag>
@@ -316,25 +316,64 @@ struct hash_databox_tag<Tag, Requires<tt::is_a_v<::Tags::Variables, Tag>>> {
 // @}
 }  // namespace detail
 
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `T` derives off of db::ComputeItemTag
+ * \brief Check if `Tag` derives off of db::ComputeItemTag
  */
-template <typename T, typename = std::nullptr_t>
+template <typename Tag, typename = std::nullptr_t>
 struct is_compute_item : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
-template <typename T>
-struct is_compute_item<T, Requires<cpp17::is_base_of_v<db::ComputeItemTag, T>>>
+template <typename Tag>
+struct is_compute_item<Tag,
+                       Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
+template <typename Tag>
+constexpr bool is_compute_item_v = is_compute_item<Tag>::value;
+// @}
+
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `T` derives off of db::ComputeItemTag
+ * \brief Check if `Tag` is a non-base DataBox tag. I.e. a SimpleTag or a
+ * ComputeTag
  */
-template <typename T>
-constexpr bool is_compute_item_v = is_compute_item<T>::value;
+template <typename Tag, typename = std::nullptr_t>
+struct is_non_base_tag : std::false_type {};
+/// \cond
+template <typename Tag>
+struct is_non_base_tag<Tag,
+                       Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag> or
+                                cpp17::is_base_of_v<db::DataBoxTag, Tag>>>
+    : std::true_type {};
+/// \endcond
 
+template <typename Tag>
+constexpr bool is_non_base_tag_v = is_non_base_tag<Tag>::value;
+// @}
+
+// @{
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Check if `Tag` is a BaseTag, SimpleTag, or ComputeTag
+ */
+template <typename Tag, typename = std::nullptr_t>
+struct is_tag : std::false_type {};
+/// \cond
+template <typename Tag>
+struct is_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag> or
+                            cpp17::is_base_of_v<db::DataBoxTag, Tag> or
+                            cpp17::is_base_of_v<db::BaseTag, Tag>>>
+    : std::true_type {};
+/// \endcond
+
+template <typename Tag>
+constexpr bool is_tag_v = is_tag<Tag>::value;
+// @}
+
+// @{
 /*!
  * \ingroup DataBoxGroup
  * \brief Check if `Tag` is a base DataBox tag
@@ -349,12 +388,9 @@ struct is_base_tag<Tag,
                             not is_compute_item_v<Tag>>> : std::true_type {};
 /// \endcond
 
-/*!
- * \ingroup DataBoxGroup
- * \brief Check if `Tag` is a pure base DataBox tag
- */
 template <typename Tag>
 constexpr bool is_base_tag_v = is_base_tag<Tag>::value;
+// @}
 
 namespace DataBox_detail {
 template <class T, class = void>
