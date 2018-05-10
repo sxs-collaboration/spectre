@@ -178,30 +178,22 @@ void test_coordinate_map_argument_types(
                    });
     return result;
   };
-  const auto make_tensor_data_vector = [](const auto& double_tensor) noexcept {
-    using Arg = std::decay_t<decltype(double_tensor)>;
-    Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list> result;
-    std::transform(double_tensor.begin(), double_tensor.end(), result.begin(),
-                   [](const double x) noexcept {
-                     return DataVector{x, x};
-                   });
-    return result;
-  };
   const auto add_reference_wrapper = [](const auto& unwrapped_array) noexcept {
     using Arg = std::decay_t<decltype(unwrapped_array)>;
     return make_array<std::reference_wrapper<const typename Arg::value_type>,
                       Map::dim>(unwrapped_array);
   };
 
-  const auto mapped_point = map(test_point, args...);
-  CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point), args...),
-                        mapped_point);
-  CHECK_ITERABLE_APPROX(map(make_array_data_vector(test_point), args...),
-                        make_array_data_vector(mapped_point));
-  CHECK_ITERABLE_APPROX(
-      map(add_reference_wrapper(make_array_data_vector(test_point)), args...),
-      make_array_data_vector(mapped_point));
   {
+    const auto mapped_point = map(test_point, args...);
+    CHECK_ITERABLE_APPROX(map(add_reference_wrapper(test_point), args...),
+                          mapped_point);
+    CHECK_ITERABLE_APPROX(map(make_array_data_vector(test_point), args...),
+                          make_array_data_vector(mapped_point));
+    CHECK_ITERABLE_APPROX(
+        map(add_reference_wrapper(make_array_data_vector(test_point)), args...),
+        make_array_data_vector(mapped_point));
+
     const auto expected = map.inverse(mapped_point, args...);
     CHECK_ITERABLE_APPROX(
         map.inverse(add_reference_wrapper(mapped_point), args...), expected);
@@ -214,27 +206,78 @@ void test_coordinate_map_argument_types(
         make_array_data_vector(expected));
   }
 
-  {
-    const auto expected = map.jacobian(test_point);
-    CHECK_ITERABLE_APPROX(map.jacobian(add_reference_wrapper(test_point)),
-                          expected);
-    CHECK_ITERABLE_APPROX(map.jacobian(make_array_data_vector(test_point)),
-                          make_tensor_data_vector(expected));
-    CHECK_ITERABLE_APPROX(
-        map.jacobian(add_reference_wrapper(make_array_data_vector(test_point))),
-        make_tensor_data_vector(expected));
-  }
+  // Here, time_args is a const auto& not const Args& because time_args
+  // is allowed to be different than Args (which was the reason for the
+  // overloader below that calls this function).
+  const auto check_jac = [](const auto& make_arr_data_vec,
+                            const auto& add_ref_wrap, const Map& the_map,
+                            const std::array<double, Map::dim>& point,
+                            const auto&... time_args) noexcept {
+    const auto make_tensor_data_vector = [](const auto& double_tensor) {
+      using Arg = std::decay_t<decltype(double_tensor)>;
+      Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list>
+          result;
+      std::transform(double_tensor.begin(), double_tensor.end(), result.begin(),
+                     [](const double x) {
+                       return DataVector{x, x};
+                     });
+      return result;
+    };
 
-  {
-    const auto expected = map.inv_jacobian(test_point);
-    CHECK_ITERABLE_APPROX(map.inv_jacobian(add_reference_wrapper(test_point)),
-                          expected);
-    CHECK_ITERABLE_APPROX(map.inv_jacobian(make_array_data_vector(test_point)),
-                          make_tensor_data_vector(expected));
-    CHECK_ITERABLE_APPROX(map.inv_jacobian(add_reference_wrapper(
-                              make_array_data_vector(test_point))),
-                          make_tensor_data_vector(expected));
-  }
+    {
+      const auto expected = the_map.jacobian(point, time_args...);
+      CHECK_ITERABLE_APPROX(the_map.jacobian(add_ref_wrap(point), time_args...),
+                            expected);
+      CHECK_ITERABLE_APPROX(
+          the_map.jacobian(make_arr_data_vec(point), time_args...),
+          make_tensor_data_vector(expected));
+      CHECK_ITERABLE_APPROX(
+          the_map.jacobian(add_ref_wrap(make_arr_data_vec(point)),
+                           time_args...),
+          make_tensor_data_vector(expected));
+    }
+    {
+      const auto expected = the_map.inv_jacobian(point, time_args...);
+      CHECK_ITERABLE_APPROX(
+          the_map.inv_jacobian(add_ref_wrap(point), time_args...), expected);
+      CHECK_ITERABLE_APPROX(
+          the_map.inv_jacobian(make_arr_data_vec(point), time_args...),
+          make_tensor_data_vector(expected));
+      CHECK_ITERABLE_APPROX(
+          the_map.inv_jacobian(add_ref_wrap(make_arr_data_vec(point)),
+                               time_args...),
+          make_tensor_data_vector(expected));
+    }
+
+    return nullptr;
+  };
+
+  const auto jac_overloader = make_overloader(
+      // The first two functions are passed through the jacobian
+      // overloader and the check_jac function due to gcc failing to deduce auto
+      [&check_jac](const auto& make_array_data_vec, const auto& add_ref_wrapper,
+                   const Map& this_map,
+                   const std::array<double, Map::dim>& this_point,
+                   const std::false_type /*is_time_independent*/,
+                   const Args&... /*the_args*/) noexcept {
+        check_jac(make_array_data_vec, add_ref_wrapper, this_map, this_point);
+        return nullptr;
+      },
+      [&check_jac](const auto& make_array_data_vec, const auto& add_ref_wrapper,
+                   const Map& this_map,
+                   const std::array<double, Map::dim>& this_point,
+                   const std::true_type /*is_time_dependent*/,
+                   const Args&... the_args) noexcept {
+        check_jac(make_array_data_vec, add_ref_wrapper, this_map, this_point,
+                  the_args...);
+        return nullptr;
+      });
+
+  jac_overloader(
+      make_array_data_vector, add_reference_wrapper, map, test_point,
+      CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                         double>{},
+      args...);
 }
 
 /*!

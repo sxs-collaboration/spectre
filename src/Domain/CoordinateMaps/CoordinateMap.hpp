@@ -16,6 +16,7 @@
 #include <tuple>
 #include <type_traits>
 #include <typeinfo>
+#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -98,18 +99,34 @@ class CoordinateMapBase : public PUP::able {
   /// Compute the inverse Jacobian of the `Maps` at the point(s)
   /// `source_point`
   virtual InverseJacobian<double, Dim, SourceFrame, TargetFrame> inv_jacobian(
-      tnsr::I<double, Dim, SourceFrame> source_point) const noexcept = 0;
+      tnsr::I<double, Dim, SourceFrame> source_point,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
+      noexcept = 0;
   virtual InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>
-  inv_jacobian(tnsr::I<DataVector, Dim, SourceFrame> source_point) const
+  inv_jacobian(
+      tnsr::I<DataVector, Dim, SourceFrame> source_point,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
       noexcept = 0;
   // @}
 
   // @{
   /// Compute the Jacobian of the `Maps` at the point(s) `source_point`
   virtual Jacobian<double, Dim, SourceFrame, TargetFrame> jacobian(
-      tnsr::I<double, Dim, SourceFrame> source_point) const noexcept = 0;
+      tnsr::I<double, Dim, SourceFrame> source_point,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
+      noexcept = 0;
   virtual Jacobian<DataVector, Dim, SourceFrame, TargetFrame> jacobian(
-      tnsr::I<DataVector, Dim, SourceFrame> source_point) const noexcept = 0;
+      tnsr::I<DataVector, Dim, SourceFrame> source_point,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
+      noexcept = 0;
   // @}
  private:
   virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
@@ -222,26 +239,41 @@ class CoordinateMap
   /// Compute the inverse Jacobian of the `Maps...` at the point(s)
   /// `source_point`
   constexpr InverseJacobian<double, dim, SourceFrame, TargetFrame> inv_jacobian(
-      tnsr::I<double, dim, SourceFrame> source_point) const noexcept override {
-    return inv_jacobian_impl(std::move(source_point));
+      tnsr::I<double, dim, SourceFrame> source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
+      noexcept override {
+    return inv_jacobian_impl(std::move(source_point), time, f_of_t_list);
   }
   constexpr InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>
-  inv_jacobian(tnsr::I<DataVector, dim, SourceFrame> source_point) const
+  inv_jacobian(
+      tnsr::I<DataVector, dim, SourceFrame> source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
       noexcept override {
-    return inv_jacobian_impl(std::move(source_point));
+    return inv_jacobian_impl(std::move(source_point), time, f_of_t_list);
   }
   // @}
 
   // @{
   /// Compute the Jacobian of the `Maps...` at the point(s) `source_point`
   constexpr Jacobian<double, dim, SourceFrame, TargetFrame> jacobian(
-      tnsr::I<double, dim, SourceFrame> source_point) const noexcept override {
-    return jacobian_impl(std::move(source_point));
+      tnsr::I<double, dim, SourceFrame> source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
+      noexcept override {
+    return jacobian_impl(std::move(source_point), time, f_of_t_list);
   }
   constexpr Jacobian<DataVector, dim, SourceFrame, TargetFrame> jacobian(
-      tnsr::I<DataVector, dim, SourceFrame> source_point) const
+      tnsr::I<DataVector, dim, SourceFrame> source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
+          std::unordered_map<std::string, FunctionOfTime&>{}) const
       noexcept override {
-    return jacobian_impl(std::move(source_point));
+    return jacobian_impl(std::move(source_point), time, f_of_t_list);
   }
   // @}
 
@@ -284,11 +316,17 @@ class CoordinateMap
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE InverseJacobian<T, dim, SourceFrame,
                                                   TargetFrame>
-  inv_jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const noexcept;
+  inv_jacobian_impl(
+      tnsr::I<T, dim, SourceFrame>&& source_point, double time,
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list) const
+      noexcept;
 
   template <typename T>
   constexpr SPECTRE_ALWAYS_INLINE Jacobian<T, dim, SourceFrame, TargetFrame>
-  jacobian_impl(tnsr::I<T, dim, SourceFrame>&& source_point) const noexcept;
+  jacobian_impl(
+      tnsr::I<T, dim, SourceFrame>&& source_point, double time,
+      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list) const
+      noexcept;
 
   std::tuple<Maps...> maps_;
 };
@@ -371,26 +409,62 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
   return tnsr::I<T, dim, SourceFrame>(std::move(mapped_point));
 }
 
+// define type-trait to check for time-dependent jacobian
+namespace CoordinateMap_detail {
+CREATE_IS_CALLABLE(jacobian)
+template <typename Map, typename T>
+using is_jacobian_time_dependent_t =
+    CoordinateMap_detail::is_jacobian_callable_t<
+        Map, std::array<std::decay_t<T>, std::decay_t<Map>::dim>, double,
+        std::unordered_map<std::string, FunctionOfTime&>>;
+}  // namespace CoordinateMap_detail
+
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE auto
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
-    tnsr::I<T, dim, SourceFrame>&& source_point) const noexcept
-    -> InverseJacobian<T, dim, SourceFrame, TargetFrame> {
+    tnsr::I<T, dim, SourceFrame>&& source_point, const double time,
+    const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list) const
+    noexcept -> InverseJacobian<T, dim, SourceFrame, TargetFrame> {
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
 
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
 
   tuple_transform(
       maps_,
-      [&inv_jac, &mapped_point](const auto& map, auto index,
-                                const std::tuple<Maps...>& maps) {
+      [&inv_jac, &mapped_point, time, &f_of_t_list](
+          const auto& map, auto index, const std::tuple<Maps...>& maps) {
         constexpr const size_t count = decltype(index)::value;
+
+        tnsr::Ij<T, dim, Frame::NoFrame> temp_inv_jac{};
+
+        // chooses the correct call based on time-dependence of jacobian
+        auto inv_jac_overload = make_overloader(
+            [](const gsl::not_null<tnsr::Ij<T, dim, Frame::NoFrame>*> t_inv_jac,
+               const auto& the_map, const std::array<T, dim>& point,
+               const double /*t*/,
+               const std::unordered_map<std::string, FunctionOfTime&>&
+               /*f_of_ts*/,
+               const std::false_type /*is_time_independent*/) {
+              *t_inv_jac = the_map.inv_jacobian(point);
+              return nullptr;
+            },
+            [](const gsl::not_null<tnsr::Ij<T, dim, Frame::NoFrame>*> t_inv_jac,
+               const auto& the_map, const std::array<T, dim>& point,
+               const double t,
+               const std::unordered_map<std::string, FunctionOfTime&>& f_of_ts,
+               const std::true_type /*is_time_dependent*/) {
+              *t_inv_jac = the_map.inv_jacobian(point, t, f_of_ts);
+              return nullptr;
+            });
 
         if (LIKELY(count != 0)) {
           mapped_point =
               std::get<(count != 0 ? count - 1 : 0)>(maps)(mapped_point);
-          const auto temp_inv_jac = map.inv_jacobian(mapped_point);
+          inv_jac_overload(
+              &temp_inv_jac, map, mapped_point, time, f_of_t_list,
+              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                                 T>{});
           std::array<T, dim> temp{};
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
@@ -406,7 +480,10 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
             }
           }
         } else {
-          auto temp_inv_jac = map.inv_jacobian(mapped_point);
+          inv_jac_overload(
+              &temp_inv_jac, map, mapped_point, time, f_of_t_list,
+              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                                 T>{});
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
               inv_jac.get(source, target) =
@@ -423,20 +500,49 @@ template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
 constexpr SPECTRE_ALWAYS_INLINE auto
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
-    tnsr::I<T, dim, SourceFrame>&& source_point) const noexcept
-    -> Jacobian<T, dim, SourceFrame, TargetFrame> {
+    tnsr::I<T, dim, SourceFrame>&& source_point, const double time,
+    const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list) const
+    noexcept -> Jacobian<T, dim, SourceFrame, TargetFrame> {
   std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
   Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
+
   tuple_transform(
       maps_,
-      [&jac, &mapped_point](const auto& map, auto index,
-                            const std::tuple<Maps...>& maps) {
+      [&jac, &mapped_point, time, &f_of_t_list](
+          const auto& map, auto index, const std::tuple<Maps...>& maps) {
         constexpr const size_t count = decltype(index)::value;
+
+        tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
+
+        // chooses the correct call based on time-dependence of jacobian
+        auto jac_overload = make_overloader(
+            [](const gsl::not_null<tnsr::Ij<T, dim, Frame::NoFrame>*>
+                   no_frame_jac,
+               const auto& the_map, const std::array<T, dim>& point,
+               const double /*t*/,
+               const std::unordered_map<std::string, FunctionOfTime&>&
+               /*f_of_ts*/,
+               const std::false_type /*is_time_independent*/) {
+              *no_frame_jac = the_map.jacobian(point);
+              return nullptr;
+            },
+            [](const gsl::not_null<tnsr::Ij<T, dim, Frame::NoFrame>*>
+                   no_frame_jac,
+               const auto& the_map, const std::array<T, dim>& point,
+               const double t,
+               const std::unordered_map<std::string, FunctionOfTime&>& f_of_ts,
+               const std::true_type /*is_time_dependent*/) {
+              *no_frame_jac = the_map.jacobian(point, t, f_of_ts);
+              return nullptr;
+            });
 
         if (LIKELY(count != 0)) {
           mapped_point =
               std::get<(count != 0 ? count - 1 : 0)>(maps)(mapped_point);
-          const auto noframe_jac = map.jacobian(mapped_point);
+          jac_overload(
+              &noframe_jac, map, mapped_point, time, f_of_t_list,
+              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                                 T>{});
           std::array<T, dim> temp{};
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
@@ -452,7 +558,10 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
             }
           }
         } else {
-          auto noframe_jac = map.jacobian(mapped_point);
+          jac_overload(
+              &noframe_jac, map, mapped_point, time, f_of_t_list,
+              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                                 T>{});
           for (size_t target = 0; target < dim; ++target) {
             for (size_t source = 0; source < dim; ++source) {
               jac.get(target, source) =
