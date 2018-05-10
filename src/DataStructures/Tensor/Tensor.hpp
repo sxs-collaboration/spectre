@@ -84,11 +84,6 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       "allowed. While other types are technically possible it is not "
       "clear that Tensor is the correct container for them. Please "
       "seek advice on the topic by discussing with the SpECTRE developers.");
-  /// The number of \ref SpacetimeIndex "TensorIndexType"'s
-  ///
-  /// Note: Scalars need to have 1 so we can still store their data.
-  static constexpr auto num_tensor_indices = sizeof...(Indices) == 0;
-
   /// The Tensor_detail::Structure for the particular tensor index structure
   ///
   /// Each tensor index structure, e.g. \f$T_{ab}\f$, \f$T_a{}^b\f$ or
