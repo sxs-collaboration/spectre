@@ -8,15 +8,17 @@
 #include <cmath>
 #include <cstddef>
 #include <random>
-#include <type_traits>
+#include <string>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 /// \cond
@@ -151,6 +153,18 @@ void test_constructor_with_different_coefs(Func function) {
   CHECK_ITERABLE_APPROX(strahlkorper_test1.coefficients(),
                         strahlkorper_test2.coefficients());
 }
+
+void test_construct_from_options() {
+  Options<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts("");
+  opts.parse(
+      "Strahlkorper:\n"
+      " Lmax : 6\n"
+      " Center: [1.,2.,3.]\n"
+      " Radius: 4.5\n");
+  CHECK(opts.get<OptionTags::Strahlkorper<Frame::Inertial>>() ==
+        Strahlkorper<Frame::Inertial>(6, 6, 4.5, {{1., 2., 3.}}));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper",
@@ -178,6 +192,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper",
     coefs[0] += sqrt(8.0) * add_to_r;
     return Strahlkorper<Frame::Inertial>(std::move(sk));
   });
+  test_construct_from_options();
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper.Serialization",
