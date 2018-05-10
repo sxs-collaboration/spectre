@@ -131,6 +131,41 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
 
   return gauge_source_h;
 }
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+  auto ex_curv = make_with_value<tnsr::ii<DataType, SpatialDim, Frame>>(pi, 0.);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = i; j < SpatialDim; ++j) {
+      for (size_t a = 0; a <= SpatialDim; ++a) {
+        ex_curv.get(i, j) += 0.5 *
+                             (phi.get(i, j + 1, a) + phi.get(j, i + 1, a)) *
+                             spacetime_normal_vector.get(a);
+      }
+      ex_curv.get(i, j) += 0.5 * pi.get(i + 1, j + 1);
+    }
+  }
+  return ex_curv;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+  auto deriv_spatial_metric =
+      make_with_value<tnsr::ijj<DataType, SpatialDim, Frame>>(phi, 0.);
+  for (size_t k = 0; k < SpatialDim; ++k) {
+    for (size_t i = 0; i < SpatialDim; ++i) {
+      for (size_t j = i; j < SpatialDim; ++j) {
+        deriv_spatial_metric.get(k, i, j) = phi.get(k, i + 1, j + 1);
+      }
+    }
+  }
+  return deriv_spatial_metric;
+}
+
 }  // namespace GeneralizedHarmonic
 
 /// \cond
@@ -155,6 +190,15 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
       const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                      \
+  GeneralizedHarmonic::extrinsic_curvature(                                   \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          spacetime_normal_vector,                                            \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
+  template tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>                     \
+  GeneralizedHarmonic::deriv_spatial_metric(                                  \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
   GeneralizedHarmonic::gauge_source(                                          \
