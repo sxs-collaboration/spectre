@@ -165,7 +165,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   static_assert(
       std::is_same<
           decltype(original_box),
-          db::DataBox<db::databox_detail::expand_subitems<
+          db::DataBox<db::DataBox_detail::expand_subitems<
               tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
                          test_databox_tags::Tag2>,
               tmpl::list<test_databox_tags::ComputeTag0,
@@ -379,26 +379,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
         db::get<test_databox_tags::ComputeTag0>(original_box);
         tag0 = 10.32;
         tag1[0] = 837.2;
-      });
-}
-
-// [[OutputRegex, Unable to retrieve a \(compute\) item 'ComputeTag0' from the
-// DataBox from within a call to mutate. You must pass these either through the
-// capture list of the lambda or the constructor of a class, this restriction
-// exists to avoid complexity]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get_lazy",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-  db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
-      original_box,
-      [&original_box](double& /*tag0*/, std::vector<double>& /*tag1*/) {
-        original_box.template get_lazy<test_databox_tags::ComputeTag0>();
       });
 }
 
