@@ -38,11 +38,13 @@ SPECTRE_ALWAYS_INLINE R make_with_value(const T& input, double value) {
 
 namespace MakeWithValueImpls {
 /// \brief Returns a double initialized to `value` (`input` is ignored)
-template <>
-SPECTRE_ALWAYS_INLINE double MakeWithValueImpl<double, double>::apply(
-    const double& /* input */, const double value) {
-  return value;
-}
+template <typename T>
+struct MakeWithValueImpl<double, T> {
+  static SPECTRE_ALWAYS_INLINE double apply(const T& /* input */,
+                                            const double value) {
+    return value;
+  }
+};
 
 /// \brief Makes a `std::array`; each element of the `std::array`
 /// must be `make_with_value`-creatable from a `T`.

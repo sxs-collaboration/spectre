@@ -68,9 +68,7 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
         func, *eos, "TestFunctions",
         python_function_prefix + "_pressure_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(
-            make_with_value<Scalar<T>>(used_for_size, member_args)...),
-        used_for_size);
+        std::make_tuple(member_args...), used_for_size);
     make_overloader(
         [&](const std::integral_constant<size_t, 1>& /*thermodynamic_dim*/,
             auto eos_for_type) {
@@ -87,9 +85,7 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
               {{std::make_pair(random_value_bounds[0].first * 1.0e4,
                                random_value_bounds[0].second * 1.0e4),
                 random_value_bounds[Is + 1]...}},
-              std::make_tuple(
-                  make_with_value<Scalar<T>>(used_for_size, member_args)...),
-              used_for_size);
+              std::make_tuple(member_args...), used_for_size);
         },
         [](const auto& /*meta*/, const auto& /*meta*/) {})(
         std::integral_constant<size_t, ThermodynamicDim>{},
@@ -102,8 +98,7 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
                        : std::string(python_function_prefix +
                                      "_newt_specific_enthalpy_from_density"),
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(
-            make_with_value<Scalar<T>>(used_for_size, member_args)...),
+        std::make_tuple(member_args...),
         used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
@@ -111,16 +106,14 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
         "TestFunctions",
         python_function_prefix + "_specific_internal_energy_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(
-            make_with_value<Scalar<T>>(used_for_size, member_args)...),
+        std::make_tuple(member_args...),
         used_for_size);
     INFO("Done\nTesting chi_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
         func = &EoS::chi_from_density, *eos, "TestFunctions",
         python_function_prefix + "_chi_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(
-            make_with_value<Scalar<T>>(used_for_size, member_args)...),
+        std::make_tuple(member_args...),
         used_for_size);
     INFO("Done\nTesting kappa_times_p_over_rho_squared_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
@@ -128,8 +121,7 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
         "TestFunctions",
         python_function_prefix + "_kappa_times_p_over_rho_squared_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(
-            make_with_value<Scalar<T>>(used_for_size, member_args)...),
+        std::make_tuple(member_args...),
         used_for_size);
     INFO("Done\n\n")
   };

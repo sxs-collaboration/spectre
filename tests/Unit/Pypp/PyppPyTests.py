@@ -124,6 +124,10 @@ def convert_tnsr_aBcc_successful(a):
     return bool(np.all(a == tnsr_aBcc()))
 
 
+def test_function_of_time(x, t):
+    return 2 * x[0] + x[1] - x[2] - t
+
+
 # Used to test tensor of datavectors
 def identity(a):
     return a
@@ -193,12 +197,20 @@ def check_by_value2_class(t0, a, b):
     return t0 + 5.0 * a + b
 
 
+def check_by_value3_class(t0, a, b, c):
+    return t0 + 5.0 * a + b + c[0] - 2.0 * c[1] - c[2]
+
+
 def check2_by_value1_class(t0, t1, a):
     return t0 + t1 + 5.0 * a
 
 
 def check2_by_value2_class(t0, t1, a, b):
     return t0 + 5.0 * a + t1 * b
+
+
+def check2_by_value3_class(t0, t1, a, b, c):
+    return t0 * c[0] + 5.0 * a + t1 * b + c[1] - c[2]
 
 
 def check2_by_value1_class1(t0, t1, a):
@@ -208,5 +220,15 @@ def check2_by_value1_class1(t0, t1, a):
 def check2_by_value2_class1(t0, t1, a, b):
     return 2.0 * t0 + 5.0 * a + t1 * b
 
+
 def permute_array(a):
     return [a[2], a[0], a[1]]
+
+
+def check_solution_scalar(x, t, a, b):
+    return np.dot(x, b) + a - t
+
+
+def check_solution_vector(x, t, a, b):
+    # b is passed in as a list so must be explicitly converted to an array
+    return a * x - t * np.array(b)

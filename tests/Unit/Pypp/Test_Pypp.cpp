@@ -16,6 +16,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
@@ -359,6 +361,22 @@ SPECTRE_TEST_CASE("Unit.Pypp.EinSum", "[Pypp][Unit]") {
   test_einsum<DataVector>(DataVector(5));
 }
 
+SPECTRE_TEST_CASE("Unit.Pypp.FunctionsOfTime", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  const tnsr::i<double, 3> x_d{{{3.4, 4.2, 5.8}}};
+  const tnsr::i<DataVector, 3> x_dv{
+      {{DataVector(8, 3.4), DataVector(8, 4.2), DataVector(8, 5.8)}}};
+  const double t = -9.2;
+  const auto check = [](const auto& x, const double time) {
+    CHECK((2 * x.get(0) + x.get(1) - x.get(2) - time) ==
+          (pypp::call<Scalar<typename std::decay_t<decltype(x)>::value_type>>(
+               "PyppPyTests", "test_function_of_time", x, time)
+               .get()));
+  };
+  check(x_d, t);
+  check(x_dv, t);
+}
+
 namespace {
 template <typename T>
 void check_single_not_null0(const gsl::not_null<T*> result,
@@ -476,7 +494,9 @@ T check_by_value2_scalar(const T& t0, const T& t1) noexcept {
 
 class RandomValuesTests {
  public:
-  RandomValuesTests(const double a, const double b) noexcept : a_(a), b_(b) {}
+  RandomValuesTests(const double a, const double b,
+                    const std::array<double, 3>& c) noexcept
+      : a_(a), b_(b), c_(c) {}
 
   // by value, single argument
   template <typename T>
@@ -495,6 +515,11 @@ class RandomValuesTests {
   }
 
   template <typename T>
+  T check_by_value3(const T& t0) const noexcept {
+    return t0 + 5.0 * a_ + b_ + c_[0] - 2.0 * c_[1] - c_[2];
+  }
+
+  template <typename T>
   T check_by_value0_scalar(const T& t0) const noexcept {
     return T{get(t0) + 5.0};
   }
@@ -507,6 +532,11 @@ class RandomValuesTests {
   template <typename T>
   T check_by_value2_scalar(const T& t0) const noexcept {
     return T{get(t0) + 5.0 * a_ + b_};
+  }
+
+  template <typename T>
+  T check_by_value3_scalar(const T& t0) const noexcept {
+    return T{get(t0) + 5.0 * a_ + b_ + c_[0] - 2.0 * c_[1] - c_[2]};
   }
 
   // by value, two arguments
@@ -526,6 +556,11 @@ class RandomValuesTests {
   }
 
   template <typename T>
+  T check2_by_value3(const T& t0, const T& t1) const noexcept {
+    return t0 * c_[0] + 5.0 * a_ + t1 * b_ + c_[1] - c_[2];
+  }
+
+  template <typename T>
   T check2_by_value0_scalar(const T& t0, const T& t1) const noexcept {
     return T{get(t0) + get(t1)};
   }
@@ -538,6 +573,11 @@ class RandomValuesTests {
   template <typename T>
   T check2_by_value2_scalar(const T& t0, const T& t1) const noexcept {
     return T{get(t0) + 5.0 * a_ + b_ * get(t1)};
+  }
+
+  template <typename T>
+  T check2_by_value3_scalar(const T& t0, const T& t1) const noexcept {
+    return T{get(t0) * c_[0] + 5.0 * a_ + b_ * get(t1) + c_[1] - c_[2]};
   }
 
   // single not_null, single argument
@@ -560,6 +600,12 @@ class RandomValuesTests {
   }
 
   template <typename T>
+  void check_by_not_null3(const gsl::not_null<T*> result0, const T& t0) const
+      noexcept {
+    *result0 = t0 + 5.0 * a_ + b_ + c_[0] - 2.0 * c_[1] - c_[2];
+  }
+
+  template <typename T>
   void check_by_not_null0_scalar(const gsl::not_null<T*> result0,
                                  const T& t0) const noexcept {
     get(*result0) = get(t0) + 5.0;
@@ -575,6 +621,12 @@ class RandomValuesTests {
   void check_by_not_null2_scalar(const gsl::not_null<T*> result0,
                                  const T& t0) const noexcept {
     get(*result0) = get(t0) + 5.0 * a_ + b_;
+  }
+
+  template <typename T>
+  void check_by_not_null3_scalar(const gsl::not_null<T*> result0,
+                                 const T& t0) const noexcept {
+    get(*result0) = get(t0) + 5.0 * a_ + b_ + c_[0] - 2.0 * c_[1] - c_[2];
   }
 
   // by value, two arguments
@@ -597,6 +649,12 @@ class RandomValuesTests {
   }
 
   template <typename T>
+  void check2_by_not_null3(const gsl::not_null<T*> result0, const T& t0,
+                           const T& t1) const noexcept {
+    *result0 = t0 * c_[0] + 5.0 * a_ + t1 * b_ + c_[1] - c_[2];
+  }
+
+  template <typename T>
   void check2_by_not_null0_scalar(const gsl::not_null<T*> result0, const T& t0,
                                   const T& t1) const noexcept {
     *result0 = T{get(t0) + get(t1)};
@@ -612,6 +670,12 @@ class RandomValuesTests {
   void check2_by_not_null2_scalar(const gsl::not_null<T*> result0, const T& t0,
                                   const T& t1) const noexcept {
     *result0 = T{get(t0) + 5.0 * a_ + b_ * get(t1)};
+  }
+
+  template <typename T>
+  void check2_by_not_null3_scalar(const gsl::not_null<T*> result0, const T& t0,
+                                  const T& t1) const noexcept {
+    *result0 = T{get(t0) * c_[0] + 5.0 * a_ + b_ * get(t1) + c_[1] - c_[2]};
   }
 
   // by value, two arguments
@@ -666,6 +730,42 @@ class RandomValuesTests {
  private:
   double a_ = 0;
   double b_ = 0;
+  std::array<double, 3> c_{};
+};
+
+struct AnalyticSolutionTest {
+  template <typename T>
+  struct Var1 {
+    using type = Scalar<T>;
+  };
+  template <typename T>
+  struct Var2 {
+    using type = tnsr::I<T, 3>;
+  };
+
+  AnalyticSolutionTest(const double a, const std::array<double, 3>& b)
+      : a_(a), b_(b) {}
+
+  template <typename T>
+  tuples::TaggedTuple<Var1<T>, Var2<T>> solution(const tnsr::i<T, 3>& x,
+                                                 const double t) const
+      noexcept {
+    auto sol =
+        make_with_value<tuples::TaggedTuple<Var1<T>, Var2<T>>>(x.get(0), 0.);
+    auto& scalar = tuples::get<Var1<T>>(sol);
+    auto& vector = tuples::get<Var2<T>>(sol);
+
+    for (size_t i = 0; i < 3; ++i) {
+      scalar.get() += x.get(i) * gsl::at(b_, i);
+      vector.get(i) = a_ * x.get(i) - gsl::at(b_, i) * t;
+    }
+    scalar.get() += a_ - t;
+    return sol;
+  }
+
+ private:
+  double a_;
+  std::array<double, 3> b_;
 };
 
 }  // namespace
@@ -799,7 +899,9 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
                                     {{{0.0, 10.0}, {-10.0, 0.0}}}, scalar_dv);
 
   // Test member functions
-  const RandomValuesTests test_class{3.1, 7.24};
+  const double a = 3.1, b = 7.24;
+  const std::array<double, 3> c{{4.23, -8.3, 5.4}};
+  const RandomValuesTests test_class{a, b, c};
   // by value, single argument
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value0<double>, test_class, "PyppPyTests",
@@ -818,37 +920,51 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
       std::make_tuple(), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value1<double>, test_class, "PyppPyTests",
-      "check_by_value1_class", {{{-10.0, 10.0}}}, std::make_tuple(3.1), doub);
+      "check_by_value1_class", {{{-10.0, 10.0}}}, std::make_tuple(a), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value1<DataVector>, test_class,
       "PyppPyTests", "check_by_value1_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), dv);
+      std::make_tuple(a), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value1_scalar<Scalar<double>>, test_class,
       "PyppPyTests", "check_by_value1_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), scalar_double);
+      std::make_tuple(a), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value1_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", "check_by_value1_class", {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1}), scalar_dv);
+      std::make_tuple(a), scalar_dv);
   pypp::check_with_random_values<1>(&RandomValuesTests::check_by_value2<double>,
                                     test_class, "PyppPyTests",
                                     "check_by_value2_class", {{{-10.0, 10.0}}},
-                                    std::make_tuple(3.1, 7.24), doub);
+                                    std::make_tuple(a, b), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value2<DataVector>, test_class,
       "PyppPyTests", "check_by_value2_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), dv);
+      std::make_tuple(a, b), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value2_scalar<Scalar<double>>, test_class,
       "PyppPyTests", "check_by_value2_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), scalar_double);
+      std::make_tuple(a, b), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value2_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", "check_by_value2_class", {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1},
-                      Scalar<DataVector>{size, 7.24}),
-      scalar_dv);
+      std::make_tuple(a, b), scalar_dv);
+  pypp::check_with_random_values<1>(&RandomValuesTests::check_by_value3<double>,
+                                    test_class, "PyppPyTests",
+                                    "check_by_value3_class", {{{-10.0, 10.0}}},
+                                    std::make_tuple(a, b, c), doub);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_value3<DataVector>, test_class,
+      "PyppPyTests", "check_by_value3_class", {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_value3_scalar<Scalar<double>>, test_class,
+      "PyppPyTests", "check_by_value3_class", {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_double);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_value3_scalar<Scalar<DataVector>>,
+      test_class, "PyppPyTests", "check_by_value3_class", {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_dv);
 
   // by value, two arguments
   pypp::check_with_random_values<1>(
@@ -868,37 +984,51 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
       std::make_tuple(), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value1<double>, test_class, "PyppPyTests",
-      "check2_by_value1_class", {{{-10.0, 10.0}}}, std::make_tuple(3.1), doub);
+      "check2_by_value1_class", {{{-10.0, 10.0}}}, std::make_tuple(a), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value1<DataVector>, test_class,
       "PyppPyTests", "check2_by_value1_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), dv);
+      std::make_tuple(a), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value1_scalar<Scalar<double>>, test_class,
       "PyppPyTests", "check2_by_value1_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), scalar_double);
+      std::make_tuple(a), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value1_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", "check2_by_value1_class", {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1}), scalar_dv);
+      std::make_tuple(a), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value2<double>, test_class, "PyppPyTests",
-      "check2_by_value2_class", {{{-10.0, 10.0}}}, std::make_tuple(3.1, 7.24),
+      "check2_by_value2_class", {{{-10.0, 10.0}}}, std::make_tuple(a, b),
       doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value2<DataVector>, test_class,
       "PyppPyTests", "check2_by_value2_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), dv);
+      std::make_tuple(a, b), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value2_scalar<Scalar<double>>, test_class,
       "PyppPyTests", "check2_by_value2_class", {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), scalar_double);
+      std::make_tuple(a, b), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value2_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", "check2_by_value2_class", {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1},
-                      Scalar<DataVector>{size, 7.24}),
-      scalar_dv);
+      std::make_tuple(a, b), scalar_dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_value3<double>, test_class, "PyppPyTests",
+      "check2_by_value3_class", {{{-10.0, 10.0}}}, std::make_tuple(a, b, c),
+      doub);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_value3<DataVector>, test_class,
+      "PyppPyTests", "check2_by_value3_class", {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_value3_scalar<Scalar<double>>, test_class,
+      "PyppPyTests", "check2_by_value3_class", {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_double);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_value3_scalar<Scalar<DataVector>>,
+      test_class, "PyppPyTests", "check2_by_value3_class", {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_dv);
 
   // Single not_null, single argument
   pypp::check_with_random_values<1>(
@@ -919,37 +1049,51 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
       std::make_tuple(), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null1<double>, test_class, "PyppPyTests",
-      {"check_by_value1_class"}, {{{-10.0, 10.0}}}, std::make_tuple(3.1), doub);
+      {"check_by_value1_class"}, {{{-10.0, 10.0}}}, std::make_tuple(a), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null1<DataVector>, test_class,
       "PyppPyTests", {"check_by_value1_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), dv);
+      std::make_tuple(a), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null1_scalar<Scalar<double>>, test_class,
       "PyppPyTests", {"check_by_value1_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), scalar_double);
+      std::make_tuple(a), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null1_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", {"check_by_value1_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1}), scalar_dv);
+      std::make_tuple(a), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null2<double>, test_class, "PyppPyTests",
-      {"check_by_value2_class"}, {{{-10.0, 10.0}}}, std::make_tuple(3.1, 7.24),
+      {"check_by_value2_class"}, {{{-10.0, 10.0}}}, std::make_tuple(a, b),
       doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null2<DataVector>, test_class,
       "PyppPyTests", {"check_by_value2_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), dv);
+      std::make_tuple(a, b), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null2_scalar<Scalar<double>>, test_class,
       "PyppPyTests", {"check_by_value2_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), scalar_double);
+      std::make_tuple(a, b), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_not_null2_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", {"check_by_value2_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1},
-                      Scalar<DataVector>{size, 7.24}),
-      scalar_dv);
+      std::make_tuple(a, b), scalar_dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_not_null3<double>, test_class, "PyppPyTests",
+      {"check_by_value3_class"}, {{{-10.0, 10.0}}}, std::make_tuple(a, b, c),
+      doub);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_not_null3<DataVector>, test_class,
+      "PyppPyTests", {"check_by_value3_class"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_not_null3_scalar<Scalar<double>>, test_class,
+      "PyppPyTests", {"check_by_value3_class"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_double);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_not_null3_scalar<Scalar<DataVector>>,
+      test_class, "PyppPyTests", {"check_by_value3_class"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_dv);
 
   // Single not_null, two arguments
   pypp::check_with_random_values<1>(
@@ -971,38 +1115,51 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null1<double>, test_class,
       {"PyppPyTests"}, {"check2_by_value1_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), doub);
+      std::make_tuple(a), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null1<DataVector>, test_class,
       {"PyppPyTests"}, {"check2_by_value1_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), dv);
+      std::make_tuple(a), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null1_scalar<Scalar<double>>,
       test_class, {"PyppPyTests"}, {"check2_by_value1_class"},
-      {{{-10.0, 10.0}}}, std::make_tuple(3.1), scalar_double);
+      {{{-10.0, 10.0}}}, std::make_tuple(a), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null1_scalar<Scalar<DataVector>>,
       test_class, {"PyppPyTests"}, {"check2_by_value1_class"},
-      {{{-10.0, 10.0}}}, std::make_tuple(Scalar<DataVector>{size, 3.1}),
-      scalar_dv);
+      {{{-10.0, 10.0}}}, std::make_tuple(a), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null2<double>, test_class,
       {"PyppPyTests"}, {"check2_by_value2_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), doub);
+      std::make_tuple(a, b), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null2<DataVector>, test_class,
       {"PyppPyTests"}, {"check2_by_value2_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), dv);
+      std::make_tuple(a, b), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null2_scalar<Scalar<double>>,
       test_class, {"PyppPyTests"}, {"check2_by_value2_class"},
-      {{{-10.0, 10.0}}}, std::make_tuple(3.1, 7.24), scalar_double);
+      {{{-10.0, 10.0}}}, std::make_tuple(a, b), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_not_null2_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", {"check2_by_value2_class"}, {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1},
-                      Scalar<DataVector>{size, 7.24}),
-      scalar_dv);
+      std::make_tuple(a, b), scalar_dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_not_null3<double>, test_class,
+      {"PyppPyTests"}, {"check2_by_value3_class"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), doub);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_not_null3<DataVector>, test_class,
+      {"PyppPyTests"}, {"check2_by_value3_class"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), dv);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_not_null3_scalar<Scalar<double>>,
+      test_class, {"PyppPyTests"}, {"check2_by_value3_class"},
+      {{{-10.0, 10.0}}}, std::make_tuple(a, b, c), scalar_double);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check2_by_not_null3_scalar<Scalar<DataVector>>,
+      test_class, "PyppPyTests", {"check2_by_value3_class"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b, c), scalar_dv);
 
   // Double not_null, two arguments
   pypp::check_with_random_values<1>(
@@ -1028,39 +1185,57 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null1<double>, test_class,
       {"PyppPyTests"}, {"check2_by_value1_class", "check2_by_value1_class1"},
-      {{{-10.0, 10.0}}}, std::make_tuple(3.1), doub);
+      {{{-10.0, 10.0}}}, std::make_tuple(a), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null1<DataVector>, test_class,
       {"PyppPyTests"}, {"check2_by_value1_class", "check2_by_value1_class1"},
-      {{{-10.0, 10.0}}}, std::make_tuple(3.1), dv);
+      {{{-10.0, 10.0}}}, std::make_tuple(a), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null1_scalar<Scalar<double>>,
       test_class, {"PyppPyTests"},
       {"check2_by_value1_class", "check2_by_value1_class1"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1), scalar_double);
+      std::make_tuple(a), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null1_scalar<Scalar<DataVector>>,
       test_class, {"PyppPyTests"},
       {"check2_by_value1_class", "check2_by_value1_class1"}, {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1}), scalar_dv);
+      std::make_tuple(a), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null2<double>, test_class,
       {"PyppPyTests"}, {"check2_by_value2_class", "check2_by_value2_class1"},
-      {{{-10.0, 10.0}}}, std::make_tuple(3.1, 7.24), doub);
+      {{{-10.0, 10.0}}}, std::make_tuple(a, b), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null2<DataVector>, test_class,
       {"PyppPyTests"}, {"check2_by_value2_class", "check2_by_value2_class1"},
-      {{{-10.0, 10.0}}}, std::make_tuple(3.1, 7.24), dv);
+      {{{-10.0, 10.0}}}, std::make_tuple(a, b), dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null2_scalar<Scalar<double>>,
       test_class, {"PyppPyTests"},
       {"check2_by_value2_class", "check2_by_value2_class1"}, {{{-10.0, 10.0}}},
-      std::make_tuple(3.1, 7.24), scalar_double);
+      std::make_tuple(a, b), scalar_double);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check3_by_not_null2_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests",
       {"check2_by_value2_class", "check2_by_value2_class1"}, {{{-10.0, 10.0}}},
-      std::make_tuple(Scalar<DataVector>{size, 3.1},
-                      Scalar<DataVector>{size, 7.24}),
-      scalar_dv);
+      std::make_tuple(a, b), scalar_dv);
+}
+
+SPECTRE_TEST_CASE("Unit.Pypp.AnalyticSolution", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  const double a = 4.3;
+  const std::array<double, 3> b{{-1.3, 5.6, -0.2}};
+  AnalyticSolutionTest solution{a, b};
+  const DataVector used_for_size(5);
+  pypp::check_with_random_values<
+      1, tmpl::list<AnalyticSolutionTest::Var1<double>,
+                    AnalyticSolutionTest::Var2<double>>>(
+      &AnalyticSolutionTest::solution<double>, solution, "PyppPyTests",
+      {"check_solution_scalar", "check_solution_vector"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b), a);
+  pypp::check_with_random_values<
+      1, tmpl::list<AnalyticSolutionTest::Var1<DataVector>,
+                    AnalyticSolutionTest::Var2<DataVector>>>(
+      &AnalyticSolutionTest::solution<DataVector>, solution, "PyppPyTests",
+      {"check_solution_scalar", "check_solution_vector"}, {{{-10.0, 10.0}}},
+      std::make_tuple(a, b), used_for_size);
 }

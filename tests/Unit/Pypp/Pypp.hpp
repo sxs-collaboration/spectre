@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
 
@@ -71,6 +72,37 @@ template <typename T>
 using convert_to_container_of_doubles_t =
     typename convert_to_container_of_doubles<T>::type;
 
+template <typename T>
+struct SliceContainerImpl {
+  static auto apply(const T& container_dv, const size_t slice_idx) noexcept {
+    convert_to_container_of_doubles_t<std::decay_t<decltype(container_dv)>>
+        container_double{};
+    ASSERT(slice_idx < container_dv.begin()->size(),
+           "Trying to slice DataVector of size " << container_dv.begin()->size()
+                                                 << "with slice_idx "
+                                                 << slice_idx);
+    for (decltype(auto) double_and_datavector_components :
+         boost::combine(container_double, container_dv)) {
+      boost::get<0>(double_and_datavector_components) =
+          boost::get<1>(double_and_datavector_components)[slice_idx];
+    }
+    return container_double;
+  }
+};
+
+template <>
+struct SliceContainerImpl<double> {
+  static double apply(const double& t, const size_t /*slice_index*/) noexcept {
+    return t;
+  }
+};
+
+template <typename T>
+decltype(auto) slice_container_of_datavectors_to_container_of_doubles(
+    const T& in, const size_t slice_index) noexcept {
+  return SliceContainerImpl<T>::apply(in, slice_index);
+}
+
 template <typename R>
 struct CallImpl<
     R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>) and
@@ -78,9 +110,17 @@ struct CallImpl<
   template <typename... Args>
   static R call(const std::string& module_name,
                 const std::string& function_name, const Args&... t) {
+
     static_assert(sizeof...(Args) > 0,
                   "Call to python which returns a Tensor of DataVectors must "
-                  "pass at least one Tensor of DataVectors.");
+                  "pass at least one argument");
+
+    static_assert(
+        cpp17::is_same_v<typename std::decay_t<decltype(
+                             get_first_argument(t...))>::value_type,
+                         DataVector>,
+        "Call to python which returns a Tensor of DataVectors must "
+        "pass a Tensor or std::array of DataVectors as its first argument.");
 
     PyObject* module = PyImport_ImportModule(module_name.c_str());
     if (module == nullptr) {
@@ -96,22 +136,6 @@ struct CallImpl<
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
 
-    const auto slice_container_of_datavectors_to_container_of_doubles = [](
-        const auto& container_dv, const size_t slice_idx) noexcept {
-      convert_to_container_of_doubles_t<std::decay_t<decltype(container_dv)>>
-          container_double{};
-      ASSERT(slice_idx < container_dv.begin()->size(),
-             "Trying to slice DataVector of size "
-                 << container_dv.begin()->size() << "with slice_idx "
-                 << slice_idx);
-      for (decltype(auto) double_and_datavector_components :
-           boost::combine(container_double, container_dv)) {
-        boost::get<0>(double_and_datavector_components) =
-            boost::get<1>(double_and_datavector_components)[slice_idx];
-      }
-      return container_double;
-    };
-
     const auto put_container_of_doubles_into_container_of_datavector = [](
         auto& container_dv, const auto& container_double,
         const size_t slice_idx) noexcept {
@@ -126,15 +150,7 @@ struct CallImpl<
       }
     };
 
-    // It's a GCC bug that rest_of_args needs to be given a name in order to
-    // compile, and as such it needs to be used to prevent a compiler warning.
-    const size_t npts = [](const auto& first_container,
-                           const auto&... rest_of_args) noexcept {
-      (void)std::make_tuple(rest_of_args...);
-      return first_container.begin()->size();
-    }
-    (t...);
-
+    const size_t npts = get_first_argument(t...).begin()->size();
     auto return_container = make_with_value<R>(
         DataVector{npts, 0.}, std::numeric_limits<double>::signaling_NaN());
 
