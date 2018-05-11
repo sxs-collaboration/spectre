@@ -445,10 +445,9 @@ class DataBox<tmpl::list<Tags...>>
     pup_impl(p, non_subitems_tags{}, compute_item_tags{});
   }
 
-  template <typename OldTags, typename... KeepTags, typename... AddTags,
+  template <typename Box, typename... KeepTags, typename... AddTags,
             typename... AddComputeTags, typename... Args>
-  constexpr DataBox(const DataBox<OldTags>& old_box,
-                    tmpl::list<KeepTags...> /*meta*/,
+  constexpr DataBox(Box&& old_box, tmpl::list<KeepTags...> /*meta*/,
                     tmpl::list<AddTags...> /*meta*/,
                     tmpl::list<AddComputeTags...> /*meta*/,
                     Args&&... args) noexcept;
@@ -543,6 +542,10 @@ class DataBox<tmpl::list<Tags...>>
   constexpr void merge_old_box(
       const db::DataBox<tmpl::list<OldTags...>>& old_box,
       tmpl::list<TagsToCopy...> /*meta*/) noexcept;
+
+  template <typename... OldTags, typename... TagsToCopy>
+  constexpr void merge_old_box(db::DataBox<tmpl::list<OldTags...>>&& old_box,
+                               tmpl::list<TagsToCopy...> /*meta*/) noexcept;
 
   // Serialization of DataBox
   // make_deferred_helper is used to expand the parameter pack
@@ -826,17 +829,28 @@ constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
 }
 
 template <typename... Tags>
-template <typename OldTags, typename... KeepTags, typename... AddTags,
+template <typename... OldTags, typename... TagsToCopy>
+constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
+    db::DataBox<tmpl::list<OldTags...>>&& old_box,
+    tmpl::list<TagsToCopy...> /*meta*/) noexcept {
+  (void)std::initializer_list<char>{
+      (void(get_deferred<TagsToCopy>() =
+                std::move(old_box.template get_deferred<TagsToCopy>())),
+       '0')...};
+}
+
+template <typename... Tags>
+template <typename Box, typename... KeepTags, typename... AddTags,
           typename... AddComputeTags, typename... Args>
 constexpr DataBox<tmpl::list<Tags...>>::DataBox(
-    const DataBox<OldTags>& old_box, tmpl::list<KeepTags...> /*meta*/,
+    Box&& old_box, tmpl::list<KeepTags...> /*meta*/,
     tmpl::list<AddTags...> /*meta*/, tmpl::list<AddComputeTags...> /*meta*/,
     Args&&... args) noexcept {
   expand_pack(
       DataBox_detail::check_argument_type<AddTags, typename AddTags::type,
                                           std::decay_t<Args>>()...);
 
-  merge_old_box(old_box, tmpl::list<KeepTags...>{});
+  merge_old_box(std::forward<Box>(old_box), tmpl::list<KeepTags...>{});
 
   // Add in new simple and compute tags
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
@@ -1184,13 +1198,12 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
 template <typename RemoveTags, typename AddTags = tmpl::list<>,
           typename AddComputeTags = tmpl::list<>, typename Box,
           typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
-                                                 Args&&... args) {
+SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
   static_assert(tmpl::size<AddTags>::value == sizeof...(Args),
                 "Must pass in as many arguments as AddTags to db::create_from");
 
   // 1. Full list of old tags, and the derived tags list of the RemoveTags
-  using old_box_tags = typename Box::tags_list;
+  using old_box_tags = typename std::decay_t<Box>::tags_list;
   using remove_tags =
       tmpl::transform<RemoveTags,
                       tmpl::bind<DataBox_detail::first_matching_tag,
@@ -1215,15 +1228,15 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
   // 4. Create new list of tags by removing all the remove tags, and adding all
   // the AddTags, including subitems
   using simple_tags_to_keep =
-      tmpl::list_difference<typename Box::simple_item_tags,
+      tmpl::list_difference<typename std::decay_t<Box>::simple_item_tags,
                             simple_tags_to_remove_with_subitems>;
   using new_simple_tags =
       tmpl::append<simple_tags_to_keep, simple_tags_to_add_with_subitems>;
 
   // 5. Create the list of compute items with the RemoveTags removed
-  using compute_tags_to_keep =
-      tmpl::list_difference<typename Box::compute_with_subitems_tags,
-                            compute_tags_to_remove_with_subitems>;
+  using compute_tags_to_keep = tmpl::list_difference<
+      typename std::decay_t<Box>::compute_with_subitems_tags,
+      compute_tags_to_remove_with_subitems>;
 
   // 6. List of the old tags that are being kept
   using old_tags_to_keep =
@@ -1243,16 +1256,15 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
 #ifdef SPECTRE_DEBUG
   // Check that we're not removing a subitem itself, should remove the parent.
   using compute_subitems_tags =
-      tmpl::filter<typename Box::compute_item_tags,
+      tmpl::filter<typename std::decay_t<Box>::compute_item_tags,
                    tmpl::bind<DataBox_detail::has_subitems,
-                              tmpl::pin<typename Box::tags_list>, tmpl::_1>>;
+                              tmpl::pin<old_box_tags>, tmpl::_1>>;
 
   using compute_only_expand_subitems_tags = tmpl::flatten<tmpl::transform<
-      compute_subitems_tags,
-      db::Subitems<tmpl::pin<typename Box::tags_list>, tmpl::_1>>>;
-  using all_only_subitems_tags =
-      tmpl::append<typename Box::simple_only_expanded_subitems_tags,
-                   compute_only_expand_subitems_tags>;
+      compute_subitems_tags, db::Subitems<tmpl::pin<old_box_tags>, tmpl::_1>>>;
+  using all_only_subitems_tags = tmpl::append<
+      typename std::decay_t<Box>::simple_only_expanded_subitems_tags,
+      compute_only_expand_subitems_tags>;
   using non_expand_subitems_remove_tags =
       tmpl::list_difference<RemoveTags, all_only_subitems_tags>;
   static_assert(tmpl::size<non_expand_subitems_remove_tags>::value ==
@@ -1263,8 +1275,9 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(const Box& box,
   tmpl::for_each<new_tag_list>(DataBox_detail::check_tag_labels{});
 #endif  // ifdef SPECTRE_DEBUG
 
-  return DataBox<new_tag_list>(box, old_tags_to_keep{}, AddTags{},
-                               AddComputeTags{}, std::forward<Args>(args)...);
+  return DataBox<new_tag_list>(std::forward<Box>(box), old_tags_to_keep{},
+                               AddTags{}, AddComputeTags{},
+                               std::forward<Args>(args)...);
 }
 
 namespace DataBox_detail {
