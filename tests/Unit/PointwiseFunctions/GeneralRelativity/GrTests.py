@@ -97,3 +97,31 @@ def extrinsic_curvature(lapse, shift, deriv_shift, spatial_metric,
 
 
 # End tests for Test_ComputeSpacetimeQuantities.cpp
+
+# Begin tests for Test_ComputeGhQuantities.cpp
+
+
+def gh_pi(lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric,
+          phi):
+    return (np.einsum("iab,i", phi, shift) - dt_spacetime_metric(
+        lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric)
+            ) / lapse
+
+
+def gh_gauge_source(lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
+                    spatial_metric, tr_extrinsic_curvature,
+                    trace_christoffel_last_indices):
+    dim = shift.size
+    source = np.zeros(dim + 1)
+    shift_dot_d_shift = np.einsum("k,ki", shift, deriv_shift)
+    inv_lapse = 1. / lapse
+    source[1:] = inv_lapse ** 2 * np.einsum("ij,j", spatial_metric,
+                                            dt_shift - shift_dot_d_shift) \
+                 + deriv_lapse / lapse - trace_christoffel_last_indices
+    source[0] = - dt_lapse * inv_lapse \
+                + inv_lapse * np.dot(shift, deriv_lapse) \
+                + np.dot(shift, source[1:]) - lapse * tr_extrinsic_curvature
+    return source
+
+
+# End tests for Test_ComputeGhQuantities.cpp
