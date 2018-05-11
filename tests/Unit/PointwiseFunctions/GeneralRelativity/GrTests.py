@@ -125,3 +125,15 @@ def gh_gauge_source(lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
 
 
 # End tests for Test_ComputeGhQuantities.cpp
+
+# Begin tests for Test_Ricci.cpp
+
+
+def ricci_tensor(christoffel, deriv_christoffel):
+    return (np.einsum("ccab", deriv_christoffel) - 0.5 * (np.einsum(
+        "bcac", deriv_christoffel) + np.einsum("acbc", deriv_christoffel)) +
+            np.einsum("dab,ccd", christoffel, christoffel) -
+            np.einsum("dac,cbd", christoffel, christoffel))
+
+
+# End tests for Test_Ricci.cpp
