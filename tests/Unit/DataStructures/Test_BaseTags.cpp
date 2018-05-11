@@ -22,7 +22,7 @@ template <int I>
 struct VectorBase : db::BaseTag {};
 
 template <int I>
-struct Vector : db::DataBoxTag, VectorBase<I> {
+struct Vector : db::SimpleTag, VectorBase<I> {
   using type = std::vector<double>;
   static constexpr db::DataBoxString label = "Vector";
 };
@@ -31,7 +31,7 @@ template <int I>
 struct ArrayBase : db::BaseTag {};
 
 template <int I>
-struct Array : virtual db::DataBoxTag, ArrayBase<I> {
+struct Array : virtual db::SimpleTag, ArrayBase<I> {
   using type = std::array<int, 3>;
   static constexpr db::DataBoxString label = "Array";
 };
@@ -189,7 +189,7 @@ template <size_t N>
 struct ParentBase : db::BaseTag {};
 
 template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
-struct Parent : ParentBase<N>, db::DataBoxTag {
+struct Parent : ParentBase<N>, db::SimpleTag {
   static constexpr db::DataBoxString label = "Parent";
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
@@ -207,14 +207,14 @@ struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>,
 };
 
 template <size_t N>
-struct First : FirstBase<N>, db::DataBoxTag {
+struct First : FirstBase<N>, db::SimpleTag {
   static constexpr db::DataBoxString label = "First";
   using type = Boxed<int>;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
-struct Second : SecondBase<N>, db::DataBoxTag {
+struct Second : SecondBase<N>, db::SimpleTag {
   static constexpr db::DataBoxString label = "Second";
   using type = Boxed<double>;
 

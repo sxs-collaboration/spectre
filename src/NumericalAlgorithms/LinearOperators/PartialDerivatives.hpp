@@ -100,7 +100,7 @@ namespace Tags_detail {
 template <typename Tag, typename VolumeDim, typename Frame>
 struct deriv_impl<Tag, VolumeDim, Frame,
                   Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
-    : db::PrefixTag, db::DataBoxTag {
+    : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;

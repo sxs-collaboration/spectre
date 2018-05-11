@@ -34,17 +34,17 @@ class DataBox;
 }  // namespace db
 
 namespace Tags {
-struct Int0 : db::DataBoxTag {
+struct Int0 : db::SimpleTag {
   static constexpr db::DataBoxString label = "Int0";
   using type = int;
 };
 
-struct Int1 : db::DataBoxTag {
+struct Int1 : db::SimpleTag {
   static constexpr db::DataBoxString label = "Int1";
   using type = int;
 };
 
-struct CountActionsCalled : db::DataBoxTag {
+struct CountActionsCalled : db::SimpleTag {
   static constexpr db::DataBoxString label = "CountActionsCalled";
   using type = int;
 };

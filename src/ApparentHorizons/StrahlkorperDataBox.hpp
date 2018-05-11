@@ -47,7 +47,7 @@ using SecondDeriv = tnsr::ii<DataVector, 3, Frame>;
 
 /// Tag referring to a `::Strahlkorper`
 template <typename Frame>
-struct Strahlkorper : db::DataBoxTag {
+struct Strahlkorper : db::SimpleTag {
   static constexpr db::DataBoxString label = "Strahlkorper";
   using type = ::Strahlkorper<Frame>;
 };

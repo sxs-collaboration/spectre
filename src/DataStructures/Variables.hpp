@@ -27,7 +27,7 @@ class Variables;
 
 namespace Tags {
 template <typename TagsList>
-struct Variables : db::DataBoxTag {
+struct Variables : db::SimpleTag {
   static_assert(tt::is_a<tmpl::list, TagsList>::value,
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
@@ -49,7 +49,7 @@ class Variables;
  * The `Tags` are `struct`s that must have a public type alias `type` whose
  * value must be a `Tensor<DataVector, ...>`, a `static constexpr
  * db::DataBoxString` variable named `label`, and must derive off of
- * `db::DataBoxTag`. In general, they should be DataBoxTags that are not compute
+ * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
  *
  * \snippet Test_Variables.cpp simple_variables_tag

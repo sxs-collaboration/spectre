@@ -22,7 +22,7 @@
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace {
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   static constexpr db::DataBoxString label = "Var";
   using type = double;
 };

@@ -45,7 +45,7 @@ class er;
 }  // namespace PUP
 
 namespace {
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Var";
   static constexpr bool should_be_sliced_to_boundary = true;

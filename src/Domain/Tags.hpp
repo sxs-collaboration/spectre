@@ -55,7 +55,7 @@ namespace Tags {
 /// \ingroup ComputationalDomainGroup
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
-struct Element : db::DataBoxTag {
+struct Element : db::SimpleTag {
   static constexpr db::DataBoxString label = "Element";
   using type = ::Element<VolumeDim>;
 };
@@ -64,7 +64,7 @@ struct Element : db::DataBoxTag {
 /// \ingroup ComputationalDomainGroup
 /// The extents of DataVectors in the DataBox
 template <size_t VolumeDim>
-struct Extents : db::DataBoxTag {
+struct Extents : db::SimpleTag {
   static constexpr db::DataBoxString label = "Extents";
   using type = ::Index<VolumeDim>;
 };
@@ -83,7 +83,7 @@ struct LogicalCoordinates : db::ComputeItemTag {
 /// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
-struct ElementMap : db::DataBoxTag {
+struct ElementMap : db::SimpleTag {
   static constexpr db::DataBoxString label = "ElementMap";
   using type = ::ElementMap<VolumeDim, Frame>;
 };
@@ -264,7 +264,7 @@ struct InterfaceImpl;
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
-    : db::DataBoxTag {
+    : db::SimpleTag {
   static_assert(cpp17::is_same_v<NameTag, FunctionTag>,
                 "Can't specify a function for a simple item tag");
   using tag = NameTag;
@@ -298,7 +298,7 @@ struct InterfaceBase
 /// \ingroup ComputationalDomainGroup
 /// ::Direction to an interface
 template <size_t VolumeDim>
-struct Direction : db::DataBoxTag {
+struct Direction : db::SimpleTag {
   static constexpr db::DataBoxString label = "Direction";
   using type = ::Direction<VolumeDim>;
 };

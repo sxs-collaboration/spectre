@@ -10,18 +10,18 @@
 class DataVector;
 
 namespace {
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
 template <typename Tag>
-struct Prefix : db::PrefixTag, db::DataBoxTag {
+struct Prefix : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   using type = db::item_type<Tag>;
 };
 
 template <typename Tag, typename Arg1, typename Arg2>
-struct PrefixWithArgs : db::PrefixTag, db::DataBoxTag {
+struct PrefixWithArgs : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   using type = db::item_type<Tag>;
 };

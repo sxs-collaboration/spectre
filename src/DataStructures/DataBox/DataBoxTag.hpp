@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines classes DataBoxTag, PrefixTag, ComputeItemTag and several
+/// Defines classes SimpleTag, PrefixTag, ComputeItemTag and several
 /// functions for retrieving tag info
 
 #pragma once
@@ -57,11 +57,11 @@ using DataBoxString = const char* const;
  * \brief Tags for the DataBox inherit from this type
  *
  * \details
- * Used to mark a type as being a DataBoxTag so that it can be used in a
+ * Used to mark a type as being a SimpleTag so that it can be used in a
  * DataBox.
  *
  * \derivedrequires
- * - type alias `type` of the type this DataBoxTag represents
+ * - type alias `type` of the type this SimpleTag represents
  * - `static constexpr DataBoxString` that is the same as the type name
  *    and named `label`
  *
@@ -70,7 +70,7 @@ using DataBoxString = const char* const;
  *
  * \see DataBox PrefixTag DataBoxString get_tag_name
  */
-struct DataBoxTag {};
+struct SimpleTag {};
 
 /*!
  * \ingroup DataBoxGroup
@@ -82,10 +82,11 @@ struct DataBoxTag {};
  * that retrieving items from the DataBox or setting argument tags in compute
  * items can be done without any knowledge of the type of the item.
  *
- * The base tag must inherit off of `BaseTag` and NOT `DataBoxTag`. This is very
- * important for the implementation. Inheriting off both and not making the tag
- * either a simple item or compute item is undefined behavior and is likely to
- * end in extremely complicated compiler errors.
+ * To use the base mechanism the base tag must inherit off of
+ * `BaseTag` and NOT `SimpleTag`. This is very important for the
+ * implementation. Inheriting off both and not making the tag either a simple
+ * item or compute item is undefined behavior and is likely to end in extremely
+ * complicated compiler errors.
  */
 struct BaseTag {};
 
@@ -157,7 +158,7 @@ struct PrefixTag {};
  * which offers a lot of simplicity for very simple compute items.
  * \snippet Test_DataBox.cpp compute_item_tag_function
  *
- * \see DataBox DataBoxTag DataBoxString get_tag_name PrefixTag
+ * \see DataBox SimpleTag DataBoxString get_tag_name PrefixTag
  */
 struct ComputeItemTag {};
 
@@ -344,7 +345,7 @@ struct is_non_base_tag : std::false_type {};
 template <typename Tag>
 struct is_non_base_tag<Tag,
                        Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag> or
-                                cpp17::is_base_of_v<db::DataBoxTag, Tag>>>
+                                cpp17::is_base_of_v<db::SimpleTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
@@ -362,7 +363,7 @@ struct is_tag : std::false_type {};
 /// \cond
 template <typename Tag>
 struct is_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag> or
-                            cpp17::is_base_of_v<db::DataBoxTag, Tag> or
+                            cpp17::is_base_of_v<db::SimpleTag, Tag> or
                             cpp17::is_base_of_v<db::BaseTag, Tag>>>
     : std::true_type {};
 /// \endcond
@@ -380,10 +381,10 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_base_tag : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct is_base_tag<Tag,
-                   Requires<cpp17::is_base_of_v<db::BaseTag, Tag> and
-                            not cpp17::is_base_of_v<db::DataBoxTag, Tag> and
-                            not is_compute_item_v<Tag>>> : std::true_type {};
+struct is_base_tag<Tag, Requires<cpp17::is_base_of_v<db::BaseTag, Tag> and
+                                 not cpp17::is_base_of_v<db::SimpleTag, Tag> and
+                                 not is_compute_item_v<Tag>>> : std::true_type {
+};
 /// \endcond
 
 template <typename Tag>
@@ -426,7 +427,7 @@ struct item_type_impl {
                 ? 3
                 : is_compute_item_v<Tag>
                       ? 2
-                      : cpp17::is_base_of_v<db::DataBoxTag, Tag> ? 1 : 0>::
+                      : cpp17::is_base_of_v<db::SimpleTag, Tag> ? 1 : 0>::
       template f<TagList, Tag>;
 };
 
@@ -549,7 +550,7 @@ struct remove_tag_prefix_impl;
 template <typename UnprefixedTag, template <typename...> class Prefix,
           typename... Args>
 struct remove_tag_prefix_impl<Prefix<UnprefixedTag, Args...>> {
-  static_assert(cpp17::is_base_of_v<db::DataBoxTag, UnprefixedTag>,
+  static_assert(cpp17::is_base_of_v<db::SimpleTag, UnprefixedTag>,
                 "Unwrapped tag is not a DataBoxTag");
   using type = UnprefixedTag;
 };

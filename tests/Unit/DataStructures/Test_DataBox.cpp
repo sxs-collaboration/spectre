@@ -49,20 +49,20 @@ auto get_tensor() { return tnsr::A<double, 3, Frame::Grid>{{{7.82, 8, 3, 9}}}; }
 
 namespace test_databox_tags {
 /// [databox_tag_example]
-struct Tag0 : db::DataBoxTag {
+struct Tag0 : db::SimpleTag {
   using type = double;
   static constexpr db::DataBoxString label = "Tag0";
 };
 /// [databox_tag_example]
-struct Tag1 : db::DataBoxTag {
+struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
   static constexpr db::DataBoxString label = "Tag1";
 };
-struct Tag2 : db::DataBoxTag {
+struct Tag2 : db::SimpleTag {
   using type = std::string;
   static constexpr db::DataBoxString label = "Tag2";
 };
-struct Tag3 : db::DataBoxTag {
+struct Tag3 : db::SimpleTag {
   using type = std::string;
   static constexpr db::DataBoxString label = "Tag3";
 };
@@ -105,7 +105,7 @@ struct ComputeLambda1 : db::ComputeItemTag {
 
 /// [databox_prefix_tag_example]
 template <typename Tag>
-struct TagPrefix : db::PrefixTag, db::DataBoxTag {
+struct TagPrefix : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
   static constexpr db::DataBoxString label = "TagPrefix";
@@ -263,12 +263,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
 }
 
 namespace ArgumentTypeTags {
-struct NonCopyable : db::DataBoxTag {
+struct NonCopyable : db::SimpleTag {
   static constexpr db::DataBoxString label = "NonCopyable";
   using type = ::NonCopyable;
 };
 template <size_t N>
-struct String : db::DataBoxTag {
+struct String : db::SimpleTag {
   static constexpr db::DataBoxString label = "String";
   using type = std::string;
 };
@@ -570,13 +570,13 @@ struct Var1 : db::ComputeItemTag {
   using argument_tags = tmpl::list<>;
 };
 
-struct Var2 : db::DataBoxTag {
+struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Var2";
 };
 
 template <class Tag, class VolumeDim, class Frame>
-struct PrefixTag0 : db::PrefixTag, db::DataBoxTag {
+struct PrefixTag0 : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;
@@ -617,35 +617,35 @@ static_assert(
 }  // namespace
 
 namespace test_databox_tags {
-struct ScalarTag : db::DataBoxTag {
+struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "ScalarTag";
 };
-struct VectorTag : db::DataBoxTag {
+struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
   static constexpr db::DataBoxString label = "VectorTag";
 };
-struct ScalarTag2 : db::DataBoxTag {
+struct ScalarTag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "ScalarTag2";
 };
-struct VectorTag2 : db::DataBoxTag {
+struct VectorTag2 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
   static constexpr db::DataBoxString label = "VectorTag2";
 };
-struct ScalarTag3 : db::DataBoxTag {
+struct ScalarTag3 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "ScalarTag3";
 };
-struct VectorTag3 : db::DataBoxTag {
+struct VectorTag3 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
   static constexpr db::DataBoxString label = "VectorTag3";
 };
-struct ScalarTag4 : db::DataBoxTag {
+struct ScalarTag4 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "ScalarTag4";
 };
-struct VectorTag4 : db::DataBoxTag {
+struct VectorTag4 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
   static constexpr db::DataBoxString label = "VectorTag4";
 };
@@ -890,11 +890,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
 }
 
 namespace {
-struct Tag1 : db::DataBoxTag {
+struct Tag1 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Tag1";
 };
-struct Tag2 : db::DataBoxTag {
+struct Tag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Tag2";
 };
@@ -949,11 +949,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
 }
 
 namespace ExtraResetTags {
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "Var";
 };
-struct Int : db::DataBoxTag {
+struct Int : db::SimpleTag {
   using type = int;
   static constexpr db::DataBoxString label = "Int";
 };
@@ -1296,17 +1296,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
 }
 
 namespace DataBoxTest_detail {
-struct vector : db::DataBoxTag {
+struct vector : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
   static constexpr db::DataBoxString label = "vector";
 };
 
-struct scalar : db::DataBoxTag {
+struct scalar : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString label = "scalar";
 };
 
-struct vector2 : db::DataBoxTag {
+struct vector2 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
   static constexpr db::DataBoxString label = "vector2";
 };
@@ -1519,7 +1519,7 @@ class Boxed {
 };
 
 template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
-struct Parent : db::DataBoxTag {
+struct Parent : db::SimpleTag {
   static constexpr db::DataBoxString label = "Parent";
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
@@ -1541,14 +1541,14 @@ template <size_t N, bool DependsOnComputeItem>
 int Parent<N, true, DependsOnComputeItem>::count = 0;
 
 template <size_t N>
-struct First : db::DataBoxTag {
+struct First : db::SimpleTag {
   static constexpr db::DataBoxString label = "First";
   using type = Boxed<int>;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
-struct Second : db::DataBoxTag {
+struct Second : db::SimpleTag {
   static constexpr db::DataBoxString label = "Second";
   using type = Boxed<double>;
 
@@ -1643,7 +1643,7 @@ struct MyTag1 {
   using type = double;
 };
 
-struct TupleTag : db::DataBoxTag {
+struct TupleTag : db::SimpleTag {
   static constexpr db::DataBoxString label = "TupleTag";
   using type = tuples::TaggedTuple<MyTag0, MyTag1>;
 };

@@ -27,7 +27,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace {
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 }  // namespace

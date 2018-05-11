@@ -39,18 +39,18 @@ struct NoCopy {
 };
 
 namespace TestTags {
-struct Int : db::DataBoxTag {
+struct Int : db::SimpleTag {
   static constexpr db::DataBoxString label = "Int";
   using type = int;
 };
 
-struct Double : db::DataBoxTag {
+struct Double : db::SimpleTag {
   static constexpr db::DataBoxString label = "Double";
   using type = double;
 };
 
 template <size_t N>
-struct NoCopy : db::DataBoxTag {
+struct NoCopy : db::SimpleTag {
   static constexpr db::DataBoxString label = "NoCopy";
   using type = ::NoCopy<N>;
 };
@@ -85,7 +85,7 @@ struct ComplexComputeItem : db::ComputeItemTag {
 };
 
 template <typename>
-struct TemplatedDirections : db::DataBoxTag {
+struct TemplatedDirections : db::SimpleTag {
   static constexpr db::DataBoxString label = "TemplatedDirections";
   using type = std::unordered_set<Direction<3>>;
 };
@@ -189,7 +189,7 @@ struct Dirs : db::ComputeItemTag {
 };
 
 template <size_t N>
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   static constexpr db::DataBoxString label = "Var";
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary =
@@ -325,7 +325,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
 
 namespace partial_slice {
 template <size_t N>
-struct Scalar : db::DataBoxTag {
+struct Scalar : db::SimpleTag {
   static constexpr db::DataBoxString label = "Scalar";
   using type = ::Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = N == 0;
@@ -333,7 +333,7 @@ struct Scalar : db::DataBoxTag {
 
 constexpr size_t vector_dim = 3;
 template <size_t N>
-struct Vector : db::DataBoxTag {
+struct Vector : db::SimpleTag {
   static constexpr db::DataBoxString label = "Vector";
   using type = tnsr::i<DataVector, vector_dim, Frame::Logical>;
   static constexpr bool should_be_sliced_to_boundary = N == 1;

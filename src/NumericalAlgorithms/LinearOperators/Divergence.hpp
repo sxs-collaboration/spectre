@@ -70,7 +70,7 @@ namespace Tags {
 namespace Tags_detail {
 template <typename Tag, typename Frame>
 struct div_impl<Tag, Frame, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
-    : db::PrefixTag, db::DataBoxTag {
+    : db::PrefixTag, db::SimpleTag {
   static_assert(
       cpp17::is_same_v<Frame,
                        std::tuple_element_t<

@@ -41,19 +41,19 @@
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
-struct Var : db::DataBoxTag {
+struct Var : db::SimpleTag {
   static constexpr db::DataBoxString label = "Var";
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
-struct Var2 : db::DataBoxTag {
+struct Var2 : db::SimpleTag {
   static constexpr db::DataBoxString label = "Var2";
   using type = tnsr::ii<DataVector, 2>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
-struct OtherArg : db::DataBoxTag {
+struct OtherArg : db::SimpleTag {
   static constexpr db::DataBoxString label = "OtherArg";
   using type = double;
 };

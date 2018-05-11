@@ -345,7 +345,7 @@ class DataBox<tmpl::list<Tags...>>
   static_assert(
       tmpl2::flat_all_v<is_non_base_tag_v<Tags>...>,
       "All structs used to Tag (compute) items in a DataBox must derive off of "
-      "db::DataBoxTag");
+      "db::SimpleTag");
   static_assert(
       tmpl2::flat_all_v<DataBox_detail::tag_has_label<Tags>::value...>,
       "Missing a label on a Tag. All Tags must have a static "
@@ -690,7 +690,7 @@ DataBox<tmpl::list<Tags...>>::add_compute_item_to_box_impl(
       tmpl2::flat_all_v<is_tag_v<ComputeItemArgumentsTags>...>,
       "Cannot have non-DataBoxTag arguments to a ComputeItem. Please make "
       "sure all the specified argument_tags in the ComputeItem derive from "
-      "db::DataBoxTag.");
+      "db::SimpleTag.");
   static_assert(not tmpl2::flat_any_v<
                     cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
                 "A ComputeItem cannot take its own Tag as an argument.");

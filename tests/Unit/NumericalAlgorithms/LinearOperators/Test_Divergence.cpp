@@ -64,7 +64,7 @@ auto make_affine_map<3>() noexcept {
 }
 
 template <size_t Dim, typename Frame>
-struct Flux1 : db::DataBoxTag {
+struct Flux1 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame>;
   static constexpr db::DataBoxString label = "Flux1";
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
@@ -89,7 +89,7 @@ struct Flux1 : db::DataBoxTag {
 };
 
 template <size_t Dim, typename Frame>
-struct Flux2 : db::DataBoxTag {
+struct Flux2 : db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim, Frame>;
   static constexpr db::DataBoxString label = "Flux2";
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
@@ -184,7 +184,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
 
 namespace {
 template <class MapType>
-struct MapTag : db::DataBoxTag {
+struct MapTag : db::SimpleTag {
   using type = MapType;
   static constexpr db::DataBoxString label = "MapTag";
 };

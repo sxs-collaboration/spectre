@@ -12,18 +12,18 @@ class DataVector;
 
 namespace RelativisticEuler {
 namespace Valencia {
-struct TildeD : db::DataBoxTag {
+struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString_t label = "TildeD";
 };
 
-struct TildeTau : db::DataBoxTag {
+struct TildeTau : db::SimpleTag {
   using type = Scalar<DataVector>;
   static constexpr db::DataBoxString_t label = "TildeTau";
 };
 
 template <size_t Dim>
-struct TildeS : db::DataBoxTag {
+struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
   static constexpr db::DataBoxString_t label = "TildeS";
 };

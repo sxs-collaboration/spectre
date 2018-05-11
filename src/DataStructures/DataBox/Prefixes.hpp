@@ -24,7 +24,7 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
-struct dt : db::PrefixTag, db::DataBoxTag {
+struct dt : db::PrefixTag, db::SimpleTag {
   static constexpr db::DataBoxString label = "dt";
   using type = db::item_type<Tag>;
   using tag = Tag;
@@ -40,7 +40,7 @@ struct Flux;
 template <typename Tag, typename VolumeDim, typename Fr>
 struct Flux<Tag, VolumeDim, Fr,
             Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>> : db::PrefixTag,
-                                                                db::DataBoxTag {
+                                                                db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
@@ -50,7 +50,7 @@ struct Flux<Tag, VolumeDim, Fr,
 template <typename Tag, typename VolumeDim, typename Fr>
 struct Flux<Tag, VolumeDim, Fr,
             Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
-    : db::PrefixTag, db::DataBoxTag {
+    : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "Flux";
@@ -61,7 +61,7 @@ struct Flux<Tag, VolumeDim, Fr,
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the flux
 template <typename Tag>
-struct NormalDotFlux : db::PrefixTag, db::DataBoxTag {
+struct NormalDotFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "NormalDotFlux";
@@ -72,7 +72,7 @@ struct NormalDotFlux : db::PrefixTag, db::DataBoxTag {
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the numerical flux
 template <typename Tag>
-struct NormalDotNumericalFlux : db::PrefixTag, db::DataBoxTag {
+struct NormalDotNumericalFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "NormalDotNumericalFlux";
