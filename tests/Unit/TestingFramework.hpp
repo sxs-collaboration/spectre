@@ -144,6 +144,8 @@ struct check_iterable_approx<
                 not tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+    CAPTURE_PRECISE(a);
+    CAPTURE_PRECISE(b);
     auto a_it = a.begin();
     auto b_it = b.begin();
     CHECK(a_it != a.end());
@@ -170,6 +172,8 @@ struct check_iterable_approx<T, Requires<tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b,
                     Approx& /*appx*/ = approx) {  // NOLINT
+    CAPTURE_PRECISE(a);
+    CAPTURE_PRECISE(b);
     // Approximate comparison of unordered sets is difficult
     CHECK(a == b);
   }
@@ -180,6 +184,8 @@ struct check_iterable_approx<
     T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+    CAPTURE_PRECISE(a);
+    CAPTURE_PRECISE(b);
     for (const auto& kv : a) {
       const auto& key = kv.first;
       try {
