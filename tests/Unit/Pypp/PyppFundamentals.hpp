@@ -213,11 +213,6 @@ struct ToPyObject<DataVector, std::nullptr_t> {
   }
 };
 
-template <typename T>
-struct ToPyObject<Scalar<T>> {
-  static PyObject* convert(const Scalar<T>& t) { return to_py_object(t.get()); }
-};
-
 template <>
 struct FromPyObject<long, std::nullptr_t> {
   static long convert(PyObject* t) {
@@ -401,13 +396,6 @@ struct FromPyObject<DataVector, std::nullptr_t> {
   }
 };
 
-template <typename T>
-struct FromPyObject<Scalar<T>> {
-  static Scalar<T> convert(PyObject* p) {
-    return Scalar<T>{from_py_object<T>(p)};
-  }
-};
-
 // This function is needed because one cannot cast an array of size_t's (used by
 // SpECTRE) to an array of longs (used by NumPy).
 template <size_t Size>
@@ -432,50 +420,64 @@ T* get_ptr_to_elem(PyObj* npy_array, const std::array<size_t, Size>& idx) {
 }
 
 template <typename T>
-struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
-                                cpp17::is_same_v<typename T::type, double>>> {
-  static T convert(PyObject* p) {
-    if (p == nullptr) {
-      throw std::runtime_error{"Received null PyObject."};
-    }
-    // clang-tidy: c-style casts. (Expanded from macro)
-    if (not PyArray_CheckExact(p)) {  // NOLINT
-      throw std::runtime_error{"Cannot convert non-array type to Tensor."};
-    }
-    // clang-tidy: reinterpret_cast
-    const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
-    if (PyArray_TYPE(npy_array) != NPY_DOUBLE) {
-      throw std::runtime_error{
-          "Cannot convert array of non-double type to Tensor."};
-    } else if (PyArray_NDIM(npy_array) != static_cast<long>(T::rank())) {
-      throw std::runtime_error{
-          "Mismatch between ndim of numpy ndarray and rank of Tensor."};
-    }
+T tensor_conversion_impl(PyObject* p) {
+  if (p == nullptr) {
+    throw std::runtime_error{"Received null PyObject."};
+  }
+  // clang-tidy: c-style casts. (Expanded from macro)
+  if (not PyArray_CheckExact(p)) {  // NOLINT
+    throw std::runtime_error{"Cannot convert non-array type to Tensor."};
+  }
+  // clang-tidy: reinterpret_cast
+  const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
+  if (PyArray_TYPE(npy_array) != NPY_DOUBLE) {
+    throw std::runtime_error{
+        "Cannot convert array of non-double type to Tensor."};
+  } else if (PyArray_NDIM(npy_array) != static_cast<long>(T::rank())) {
+    throw std::runtime_error{
+        "Mismatch between ndim of numpy ndarray and rank of Tensor."};
+  }
 
-    const auto npy_array_dims = PyArray_DIMS(npy_array);
-    const auto& t_array_dims = T::index_dims();
-    for (size_t i = 0; i < T::rank(); ++i) {
-      if (npy_array_dims[i] != static_cast<long>(gsl::at(t_array_dims, i))) {
-        throw std::runtime_error{
-            "Mismatch between number of components of ndarray and Tensor in " +
-            std::to_string(i) + "\'th dim"};
-      }
+  const auto npy_array_dims = PyArray_DIMS(npy_array);
+  constexpr auto t_array_dims = T::index_dims();
+  for (size_t i = 0; i < T::rank(); ++i) {
+    if (npy_array_dims[i] != static_cast<long>(gsl::at(t_array_dims, i))) {
+      throw std::runtime_error{
+          "Mismatch between number of components of ndarray and Tensor in " +
+          std::to_string(i) + "\'th dim"};
     }
-    auto t = make_with_value<T>(*get_ptr_to_elem<typename T::type>(
-                                    npy_array, make_array<T::rank()>(0ul)),
-                                0.);
-    for (IndexIterator<T::rank()> index_it((Index<T::rank()>(T::index_dims())));
-         index_it; ++index_it) {
-      const auto tensor_idx = (*index_it).indices();
-      t.get(tensor_idx) =
-          *get_ptr_to_elem<typename T::type>(npy_array, tensor_idx);
+  }
+  auto t = make_with_value<T>(
+      *get_ptr_to_elem<typename T::type>(npy_array, make_array<T::rank()>(0ul)),
+      0.);
+  for (IndexIterator<T::rank()> index_it((Index<T::rank()>(T::index_dims())));
+       index_it; ++index_it) {
+    const auto tensor_idx = (*index_it).indices();
+    t.get(tensor_idx) =
+        *get_ptr_to_elem<typename T::type>(npy_array, tensor_idx);
+  }
+  return t;
+}
+
+template <>
+struct FromPyObject<Scalar<double>> {
+  static Scalar<double> convert(PyObject* p) {
+    if (PyFloat_Check(p)) {
+      return Scalar<double>{PyFloat_AsDouble(p)};
+    } else {
+      return tensor_conversion_impl<Scalar<double>>(p);
     }
-    return t;
   }
 };
 
 template <typename T>
-struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
+struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
+                                cpp17::is_same_v<typename T::type, double>>> {
+  static T convert(PyObject* p) { return tensor_conversion_impl<T>(p); }
+};
+
+template <typename T>
+struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and
                               cpp17::is_same_v<typename T::type, double>>> {
   static PyObject* convert(const T& t) {
     std::array<long, T::rank()> dims =

@@ -197,7 +197,10 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor.Double", "[Pypp][Unit]") {
   }();
 
   // Check converting from Tensor to ndarray
-  CHECK(pypp::call<bool>("PyppPyTests", "convert_scalar_successful", scalar));
+  CHECK(pypp::call<bool>("PyppPyTests", "convert_scalar_to_ndarray_successful",
+                         scalar));
+  CHECK(pypp::call<bool>("PyppPyTests", "convert_scalar_to_double_unsuccessful",
+                         scalar));
   CHECK(pypp::call<bool>("PyppPyTests", "convert_vector_successful", vector));
   CHECK(pypp::call<bool>("PyppPyTests", "convert_tnsr_ia_successful", tnsr_ia));
   CHECK(pypp::call<bool>("PyppPyTests", "convert_tnsr_AA_successful", tnsr_AA));
@@ -209,7 +212,10 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor.Double", "[Pypp][Unit]") {
                          tnsr_aBcc));
 
   // Check converting from ndarray to Tensor
-  CHECK(scalar == (pypp::call<Scalar<double>>("PyppPyTests", "scalar")));
+  CHECK(scalar ==
+        (pypp::call<Scalar<double>>("PyppPyTests", "scalar_from_double")));
+  CHECK(scalar ==
+        (pypp::call<Scalar<double>>("PyppPyTests", "scalar_from_ndarray")));
   CHECK(vector == (pypp::call<tnsr::A<double, 3>>("PyppPyTests", "vector")));
   CHECK(tnsr_ia == (pypp::call<tnsr::ia<double, 3>>("PyppPyTests", "tnsr_ia")));
   CHECK(tnsr_AA == (pypp::call<tnsr::AA<double, 3>>("PyppPyTests", "tnsr_AA")));
