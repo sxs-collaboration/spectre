@@ -56,7 +56,7 @@ struct NoCopy : db::DataBoxTag {
 };
 
 template <typename Tag>
-struct Negate : db::DataBoxPrefix, db::ComputeItemTag {
+struct Negate : db::PrefixTag, db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Negate";
   using tag = Tag;
   static constexpr auto function(const db::item_type<Tag>& x) noexcept {

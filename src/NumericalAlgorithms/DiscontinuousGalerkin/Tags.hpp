@@ -13,7 +13,7 @@
 
 namespace Tags {
 template <typename Tag, size_t VolumeDim>
-struct Mortars : db::DataBoxPrefix, db::DataBoxTag {
+struct Mortars : db::PrefixTag, db::DataBoxTag {
   static constexpr db::DataBoxString label = "Mortar";
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;

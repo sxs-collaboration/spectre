@@ -93,7 +93,7 @@ struct ElementMap : db::DataBoxTag {
 /// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
 /// frame must be the source frame of `MapTag`
 template <class MapTag, class SourceCoordsTag>
-struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
+struct Coordinates : db::ComputeItemTag, db::PrefixTag {
   using tag = MapTag;
   static constexpr db::DataBoxString label = "Coordinates";
   static constexpr auto function(
@@ -110,7 +110,7 @@ struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
 /// held by `SourceCoordsTag`. The coordinates must be in the source frame of
 /// the map.
 template <typename MapTag, typename SourceCoordsTag>
-struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
+struct InverseJacobian : db::ComputeItemTag, db::PrefixTag {
   using tag = MapTag;
   static constexpr db::DataBoxString label = "InverseJacobian";
   static constexpr auto function(
@@ -288,7 +288,7 @@ struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceBase
-    : db::DataBoxPrefix,
+    : db::PrefixTag,
       Interface_detail::InterfaceImpl<db::is_compute_item_v<FunctionTag>,
                                       DirectionsTag, NameTag, FunctionTag> {
   static constexpr db::DataBoxString label = "Interface";
@@ -305,8 +305,8 @@ struct Direction : db::DataBoxTag {
 
 /// \cond
 template <typename DirectionsTag, size_t VolumeDim>
-struct Interface<DirectionsTag, Direction<VolumeDim>>
-    : db::DataBoxPrefix, db::ComputeItemTag {
+struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
+                                                        db::ComputeItemTag {
   static constexpr db::DataBoxString label = "Interface";
   using tag = Direction<VolumeDim>;
   static constexpr auto function(

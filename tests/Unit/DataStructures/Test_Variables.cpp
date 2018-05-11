@@ -47,7 +47,7 @@ struct scalar2 : db::DataBoxTag {
 
 /// [prefix_variables_tag]
 template <class Tag>
-struct PrefixTag0 : db::DataBoxPrefix, db::DataBoxTag {
+struct PrefixTag0 : db::PrefixTag, db::DataBoxTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "PrefixTag0";
@@ -55,21 +55,21 @@ struct PrefixTag0 : db::DataBoxPrefix, db::DataBoxTag {
 /// [prefix_variables_tag]
 
 template <class Tag>
-struct PrefixTag1 : db::DataBoxPrefix, db::DataBoxTag {
+struct PrefixTag1 : db::PrefixTag, db::DataBoxTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "PrefixTag1";
 };
 
 template <class Tag>
-struct PrefixTag2 : db::DataBoxPrefix, db::DataBoxTag {
+struct PrefixTag2 : db::PrefixTag, db::DataBoxTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "PrefixTag2";
 };
 
 template <class Tag>
-struct PrefixTag3 : db::DataBoxPrefix, db::DataBoxTag {
+struct PrefixTag3 : db::PrefixTag, db::DataBoxTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static constexpr db::DataBoxString label = "PrefixTag3";

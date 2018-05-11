@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines classes DataBoxTag, DataBoxPrefix, ComputeItemTag and several
+/// Defines classes DataBoxTag, PrefixTag, ComputeItemTag and several
 /// functions for retrieving tag info
 
 #pragma once
@@ -68,7 +68,7 @@ using DataBoxString = const char* const;
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
  *
- * \see DataBox DataBoxPrefix DataBoxString get_tag_name
+ * \see DataBox PrefixTag DataBoxString get_tag_name
  */
 struct DataBoxTag {};
 
@@ -103,11 +103,11 @@ struct BaseTag {};
  *
  * \derivedrequires
  * - type alias `tag` of the DataBoxTag that this tag is a prefix to
- * - type alias `type` that is the type that this DataBoxPrefix holds
+ * - type alias `type` that is the type that this PrefixTag holds
  * - DataBoxString `label` that is the prefix to the `tag`
  *
  * \example
- * A DataBoxPrefix tag has the structure:
+ * A PrefixTag tag has the structure:
  * \snippet Test_DataBox.cpp databox_prefix_tag_example
  *
  * The name used to retrieve a prefix tag from the DataBox is:
@@ -116,7 +116,7 @@ struct BaseTag {};
  *
  * \see DataBox DataBoxTag DataBoxString get_tag_name ComputeItemTag
  */
-struct DataBoxPrefix {};
+struct PrefixTag {};
 
 /*!
  * \ingroup DataBoxGroup
@@ -157,7 +157,7 @@ struct DataBoxPrefix {};
  * which offers a lot of simplicity for very simple compute items.
  * \snippet Test_DataBox.cpp compute_item_tag_function
  *
- * \see DataBox DataBoxTag DataBoxString get_tag_name DataBoxPrefix
+ * \see DataBox DataBoxTag DataBoxString get_tag_name PrefixTag
  */
 struct ComputeItemTag {};
 
@@ -252,19 +252,18 @@ struct check_tag_labels {
  *
  * \details
  * Given a DataBoxTag returns the name of the DataBoxTag as a std::string. If
- * the DataBoxTag is also a DataBoxPrefix then the prefix is added.
+ * the DataBoxTag is also a PrefixTag then the prefix is added.
  *
  * \tparam Tag the DataBoxTag whose name to get
  * \return string holding the DataBoxTag's name
  */
 template <typename Tag,
-          Requires<not cpp17::is_base_of_v<DataBoxPrefix, Tag>> = nullptr>
+          Requires<not cpp17::is_base_of_v<PrefixTag, Tag>> = nullptr>
 std::string get_tag_name() {
   return std::string(Tag::label);
 }
 /// \cond HIDDEN_SYMBOLS
-template <typename Tag,
-          Requires<cpp17::is_base_of_v<DataBoxPrefix, Tag>> = nullptr>
+template <typename Tag, Requires<cpp17::is_base_of_v<PrefixTag, Tag>> = nullptr>
 std::string get_tag_name() {
   return std::string(Tag::label) + get_tag_name<typename Tag::tag>();
 }
@@ -294,8 +293,7 @@ struct hash_databox_tag {
 };
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct hash_databox_tag<Tag,
-                        Requires<cpp17::is_base_of_v<DataBoxPrefix, Tag>>> {
+struct hash_databox_tag<Tag, Requires<cpp17::is_base_of_v<PrefixTag, Tag>>> {
   using value_type = size_t;
   static constexpr value_type value =
       cstring_hash(Tag::label) * hash_databox_tag<typename Tag::tag>::value;
@@ -587,7 +585,7 @@ struct remove_all_prefixes {
 template <template <class...> class F, class Tag, class... Args>
 struct remove_all_prefixes<F<Tag, Args...>, true> {
   using type = typename remove_all_prefixes<
-      Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+      Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
 };
 }  // namespace databox_detail
 
@@ -595,7 +593,7 @@ struct remove_all_prefixes<F<Tag, Args...>, true> {
 /// Completely remove all prefix tags from a Tag
 template <typename Tag>
 using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
-    Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+    Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
 
 /// \ingroup DataBoxGroup
 /// Struct that can be specialized to allow DataBox items to have
