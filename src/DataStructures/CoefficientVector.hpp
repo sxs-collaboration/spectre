@@ -1,0 +1,469 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+/// \file
+/// Defines class Data.
+
+#pragma once
+
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <initializer_list>
+#include <limits>
+#include <ostream>
+#include <type_traits>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/PointerVector.hpp"
+#include "Utilities/Requires.hpp"
+
+/// \cond HIDDEN_SYMBOLS
+namespace PUP {
+class er;
+}  // namespace PUP
+
+// clang-tidy: no using declarations in header files
+//             We want the std::abs to be used
+using std::abs;  // NOLINT
+/// \endcond
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief A class for storing spectral coefficients on a mesh.
+ *
+ * A CoefficientVector holds an array of spectral coefficients, and can be
+ * either owning (the array is deleted when the Data goes out of scope) or
+ * non-owning, meaning it just has a pointer to an array.
+ *
+ * Only basic mathematical operations are supported with CoefficientVectors. In
+ * addition to the addition, subtraction, multiplication, division, etc. there
+ * are the following element-wise operations:
+ *
+ * - abs
+ * - max
+ * - min
+ */
+class CoefficientVector {
+  /// \cond HIDDEN_SYMBOLS
+  static constexpr int private_asserts() {
+    static_assert(std::is_nothrow_move_constructible<CoefficientVector>::value,
+                  "Missing move semantics");
+    return 0;
+  }
+  /// \endcond
+ public:
+  using value_type = double;
+  using allocator_type = std::allocator<value_type>;
+  using size_type = size_t;
+  using difference_type = std::ptrdiff_t;
+
+  // The type alias ElementType is needed because blaze::IsInvertible<T> is not
+  // SFINAE friendly to an ElementType type alias
+  using ElementType = double;
+
+ private:
+  /// The type of the "pointer" used internally
+  using InternalCoefficientVector_t = PointerVector<double>;
+  /// The type used to store the data in
+  using InternalStorage_t = std::vector<double, allocator_type>;
+
+ public:
+  /// Create with the given size and value.
+  ///
+  /// \param size number of values
+  /// \param value the value to initialize each element.
+  //~ explicit CoefficientVector(
+  //~ size_t size, double value = std::numeric_limits<double>::signaling_NaN());
+
+  /// Create a non-owning CoefficientVector that points to `start`
+  CoefficientVector(double* start, size_t size);
+
+  /// Create from an initializer list of doubles. All elements in the
+  /// `std::initializer_list` must have decimal points
+  // cppcheck-suppress syntaxError
+  template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
+  CoefficientVector(std::initializer_list<T> list);
+
+  /// Empty CoefficientVector
+  CoefficientVector() = default;
+  /// \cond HIDDEN_SYMBOLS
+  ~CoefficientVector() = default;
+
+  CoefficientVector(const CoefficientVector& rhs);
+  CoefficientVector(CoefficientVector&& rhs) noexcept;
+  CoefficientVector& operator=(const CoefficientVector& rhs);
+  CoefficientVector& operator=(CoefficientVector&& rhs) noexcept;
+
+  // This is a converting constructor. clang-tidy complains that it's not
+  // explicit, but we want it to allow conversion.
+  // clang-tidy: mark as explicit (we want conversion to CoefficientVector)
+  template <typename VT, bool VF>
+  CoefficientVector(const blaze::Vector<VT, VF>& expression);  // NOLINT
+
+  template <typename VT, bool VF>
+  CoefficientVector& operator=(const blaze::Vector<VT, VF>& expression);
+  /// \endcond
+
+  /// Number of values stored
+  size_t size() const noexcept { return size_; }
+
+  // @{
+  /// Set the CoefficientVector to be a reference to another CoefficientVector
+  /// object
+  void set_data_ref(gsl::not_null<CoefficientVector*> rhs) noexcept {
+    set_data_ref(rhs->data(), rhs->size_);
+  }
+  void set_data_ref(double* start, size_t size) noexcept {
+    size_ = size;
+    owned_data_ = decltype(owned_data_){};
+    data_ = decltype(data_){start, size_};
+    owning_ = false;
+  }
+  // @}
+
+  /// Returns true if the class owns the data
+  bool is_owning() const noexcept { return owning_; }
+
+  // @{
+  /// Access ith element
+  double& operator[](const size_type i) noexcept {
+    ASSERT(i < size_, "i = " << i << ", size = " << size_);
+    // clang-tidy: do not use pointer arithmetic
+    return data_[i];  // NOLINT
+  }
+  const double& operator[](const size_type i) const noexcept {
+    ASSERT(i < size_, "i = " << i << ", size = " << size_);
+    // clang-tidy: do not use pointer arithmetic
+    return data_[i];  // NOLINT
+  }
+  // @}
+
+  // @{
+  /// Access to the pointer
+  double* data() noexcept { return data_.data(); }
+  const double* data() const noexcept { return data_.data(); }
+  // @}
+
+  // @{
+  /// Returns iterator to beginning of data
+  decltype(auto) begin() noexcept { return data_.begin(); }
+  decltype(auto) begin() const noexcept { return data_.begin(); }
+  // @}
+  // @{
+  /// Returns iterator to end of data
+  decltype(auto) end() noexcept { return data_.end(); }
+  decltype(auto) end() const noexcept { return data_.end(); }
+  // @}
+
+  /// Serialization for Charm++
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) noexcept;  // NOLINT
+
+  // @{
+  /// See the Blaze library documentation for details on these functions since
+  /// they merely forward to Blaze.
+  /// https://bitbucket.org/blaze-lib/blaze/overview
+  CoefficientVector& operator=(const double& rhs) noexcept {
+    data_ = rhs;
+    return *this;
+  }
+
+  CoefficientVector& operator+=(const CoefficientVector& rhs) noexcept {
+    data_ += rhs.data_;
+    return *this;
+  }
+  template <typename VT, bool VF>
+  CoefficientVector& operator+=(const blaze::Vector<VT, VF>& rhs) noexcept {
+    data_ += rhs;
+    return *this;
+  }
+  CoefficientVector& operator+=(const double& rhs) noexcept {
+    data_ += rhs;
+    return *this;
+  }
+
+  CoefficientVector& operator-=(const CoefficientVector& rhs) noexcept {
+    data_ -= rhs.data_;
+    return *this;
+  }
+  template <typename VT, bool VF>
+  CoefficientVector& operator-=(const blaze::Vector<VT, VF>& rhs) noexcept {
+    data_ -= rhs;
+    return *this;
+  }
+  CoefficientVector& operator-=(const double& rhs) noexcept {
+    data_ -= rhs;
+    return *this;
+  }
+
+  template <typename VT, bool VF>
+  CoefficientVector& operator*=(const blaze::Vector<VT, VF>& rhs) noexcept {
+    data_ *= rhs;
+    return *this;
+  }
+  CoefficientVector& operator*=(const double& rhs) noexcept {
+    data_ *= rhs;
+    return *this;
+  }
+  CoefficientVector& operator*=(const CoefficientVector& rhs) noexcept {
+    data_ *= rhs.data_;
+    return *this;
+  }
+
+  template <typename VT, bool VF>
+  CoefficientVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
+    data_ /= rhs;
+    return *this;
+  }
+  CoefficientVector& operator/=(const double& rhs) noexcept {
+    data_ /= rhs;
+    return *this;
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const CoefficientVector& lhs, const CoefficientVector& rhs) noexcept {
+    return lhs.data_ + rhs.data_;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const blaze::Vector<VT, VF>& lhs, const CoefficientVector& rhs) noexcept {
+    return ~lhs + rhs.data_;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+    return lhs.data_ + ~rhs;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const CoefficientVector& lhs, const double& rhs) noexcept {
+    return lhs.data_ + rhs;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
+      const double& lhs, const CoefficientVector& rhs) noexcept {
+    return lhs + rhs.data_;
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const CoefficientVector& lhs, const CoefficientVector& rhs) noexcept {
+    return lhs.data_ - rhs.data_;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const blaze::Vector<VT, VF>& lhs, const CoefficientVector& rhs) noexcept {
+    return ~lhs - rhs.data_;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+    return lhs.data_ - ~rhs;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const CoefficientVector& lhs, const double& rhs) noexcept {
+    return lhs.data_ - rhs;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const double& lhs, const CoefficientVector& rhs) noexcept {
+    return lhs - rhs.data_;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
+      const CoefficientVector& rhs) noexcept {
+    return -rhs.data_;
+  };
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const CoefficientVector& lhs, const double& rhs) noexcept {
+    return lhs.data_ * rhs;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const double& lhs, const CoefficientVector& rhs) noexcept {
+    return lhs * rhs.data_;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const CoefficientVector& lhs, const CoefficientVector& rhs) noexcept {
+    return lhs.data_ * rhs.data_;
+  }
+  // FIXME PK: Can we avoid the instantiation of new CV objects in the
+  // next 2 functions?
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const CoefficientVector& lhs, const DataVector& rhs) noexcept {
+    CoefficientVector _rhs_local(const_cast<double*>(rhs.data()), rhs.size());
+    return lhs.data_ * _rhs_local.data_;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const DataVector& lhs, const CoefficientVector& rhs) noexcept {
+    CoefficientVector _lhs_local(const_cast<double*>(lhs.data()), lhs.size());
+    return _lhs_local.data_ * rhs.data_;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const blaze::Vector<VT, VF>& lhs, const CoefficientVector& rhs) noexcept {
+    return ~lhs * rhs.data_;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+    return lhs.data_ * ~rhs;
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const CoefficientVector& lhs, const double& rhs) noexcept {
+    return lhs.data_ / rhs;
+  }
+  template <typename VT, bool VF>
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+    return lhs.data_ / ~rhs;
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) min(
+      const CoefficientVector& t) noexcept {
+    return min(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) max(
+      const CoefficientVector& t) noexcept {
+    return max(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) abs(
+      const CoefficientVector& t) noexcept {
+    return abs(t.data_);
+  }
+
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) fabs(
+      const CoefficientVector& t) noexcept {
+    return abs(t.data_);
+  }
+  // @}
+
+  /// If less than zero returns zero, otherwise returns one
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) step_function(
+      const CoefficientVector& t) noexcept {
+    return step_function(t.data_);
+  }
+
+ private:
+  /// \cond HIDDEN_SYMBOLS
+  size_t size_ = 0;
+  InternalStorage_t owned_data_;
+  InternalCoefficientVector_t data_;
+  bool owning_{true};
+  /// \endcond
+};
+
+/// Output operator for CoefficientVector
+std::ostream& operator<<(std::ostream& os, const CoefficientVector& d);
+
+/// Equivalence operator for CoefficientVector
+bool operator==(const CoefficientVector& lhs, const CoefficientVector& rhs);
+
+/// Inequivalence operator for CoefficientVector
+bool operator!=(const CoefficientVector& lhs, const CoefficientVector& rhs);
+
+template <typename T, size_t Dim>
+std::array<CoefficientVector, Dim> operator+(
+    const std::array<T, Dim>& lhs,
+    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+  std::array<CoefficientVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
+  }
+  return result;
+}
+template <typename U, size_t Dim>
+std::array<CoefficientVector, Dim> operator+(
+    const std::array<CoefficientVector, Dim>& lhs,
+    const std::array<U, Dim>& rhs) noexcept {
+  return rhs + lhs;
+}
+template <size_t Dim>
+std::array<CoefficientVector, Dim> operator+(
+    const std::array<CoefficientVector, Dim>& lhs,
+    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+  std::array<CoefficientVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
+  }
+  return result;
+}
+template <size_t Dim>
+std::array<CoefficientVector, Dim>& operator+=(
+    std::array<CoefficientVector, Dim>& lhs,
+    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(lhs, i) += gsl::at(rhs, i);
+  }
+  return lhs;
+}
+
+template <typename T, size_t Dim>
+std::array<CoefficientVector, Dim> operator-(
+    const std::array<T, Dim>& lhs,
+    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+  std::array<CoefficientVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
+  return result;
+}
+template <typename U, size_t Dim>
+std::array<CoefficientVector, Dim> operator-(
+    const std::array<CoefficientVector, Dim>& lhs,
+    const std::array<U, Dim>& rhs) noexcept {
+  std::array<CoefficientVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
+  return result;
+}
+template <size_t Dim>
+std::array<CoefficientVector, Dim> operator-(
+    const std::array<CoefficientVector, Dim>& lhs,
+    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+  std::array<CoefficientVector, Dim> result;
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
+  }
+  return result;
+}
+template <size_t Dim>
+std::array<CoefficientVector, Dim>& operator-=(
+    std::array<CoefficientVector, Dim>& lhs,
+    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+  for (size_t i = 0; i < Dim; i++) {
+    gsl::at(lhs, i) -= gsl::at(rhs, i);
+  }
+  return lhs;
+}
+
+// FIXME PK: What is the purpose of next 2 functions copied from DataVector?
+/// \cond HIDDEN_SYMBOLS
+template <typename VT, bool VF>
+CoefficientVector::CoefficientVector(const blaze::Vector<VT, VF>& expression)
+    : size_((~expression).size()),
+      owned_data_((~expression).size()),
+      data_(owned_data_.data(), (~expression).size()) {
+  data_ = expression;
+}
+
+template <typename VT, bool VF>
+CoefficientVector& CoefficientVector::operator=(
+    const blaze::Vector<VT, VF>& expression) {
+  if (owning_ and (~expression).size() != size()) {
+    size_ = (~expression).size();
+    owned_data_ = InternalStorage_t(size_);
+    data_ = decltype(data_){owned_data_.data(), size_};
+  } else if (not owning_) {
+    ASSERT((~expression).size() == size(), "Must copy into same size");
+  }
+  data_ = expression;
+  return *this;
+}
+/// \endcond

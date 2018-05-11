@@ -5,6 +5,7 @@ set(LIBRARY DataStructures)
 
 set(LIBRARY_SOURCES
     DataVector.cpp
+    CoefficientVector.cpp
     Index.cpp
     IndexIterator.cpp
     Matrix.cpp
