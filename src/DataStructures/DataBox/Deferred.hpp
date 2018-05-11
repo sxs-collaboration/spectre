@@ -55,6 +55,7 @@ class assoc_state {
   assoc_state& operator=(assoc_state&& /*rhs*/) = delete;
   virtual const Rt& get() const = 0;
   virtual Rt& mutate() = 0;
+  virtual void reset() noexcept = 0;
   // clang-tidy: no non-const references
   virtual void pack_unpack_lazy_function(PUP::er& p) noexcept = 0;  // NOLINT
   virtual ~assoc_state() = default;
@@ -68,6 +69,8 @@ class simple_assoc_state : public assoc_state<Rt> {
   const Rt& get() const override { return t_; }
 
   Rt& mutate() override { return t_; }
+
+  void reset() noexcept override { ERROR("Cannot reset a simple_assoc_state"); }
 
   // clang-tidy: no non-const references
   void pack_unpack_lazy_function(PUP::er& /*p*/) noexcept override {  // NOLINT
@@ -101,6 +104,8 @@ class deferred_assoc_state : public assoc_state<Rt> {
     ERROR("Cannot mutate a computed Deferred");
     return t_;
   }
+
+  void reset() noexcept override { evaluated_ = false; }
 
   void update_args(std::decay_t<Args>... args) noexcept {
     evaluated_ = false;
@@ -168,6 +173,11 @@ class Deferred {
   explicit Deferred(Rt t)
       : state_(boost::make_shared<Deferred_detail::simple_assoc_state<Rt>>(
             std::move(t))) {}
+  Deferred(const Deferred&) = default;
+  Deferred& operator=(const Deferred&) = default;
+  Deferred(Deferred&&) = default;
+  Deferred& operator=(Deferred&&) = default;
+  ~Deferred() = default;
 
   constexpr const Rt& get() const { return state_->get(); }
 
@@ -178,8 +188,10 @@ class Deferred {
     state_->pack_unpack_lazy_function(p);
   }
 
+  void reset() noexcept { state_->reset(); }
+
  private:
-  boost::shared_ptr<Deferred_detail::assoc_state<Rt>> state_;
+  boost::shared_ptr<Deferred_detail::assoc_state<Rt>> state_{nullptr};
 
   explicit Deferred(boost::shared_ptr<Deferred_detail::assoc_state<Rt>>&& state)
       : state_(std::move(state)) {}

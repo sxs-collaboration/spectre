@@ -920,18 +920,8 @@ template <typename ComputeItem, typename... ComputeItemArgumentsTags,
 SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_reset_compute_item_to_box(
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
-  update_deferred_args(
-      make_not_null(&get_deferred<ComputeItem>()),
-      DataBox_detail::compute_item_function_pointer_type<
-          tmpl::list<Tags...>, ComputeItem, ComputeItemArgumentsTags...>{
-          ComputeItem::function},
-      // We do not need to check that there is only one matching tag because we
-      // are just resetting the compute item. Such a check should instead be
-      // done when the item is being added.
-      get_deferred<DataBox_detail::first_matching_tag<
-          tmpl::list<Tags...>, ComputeItemArgumentsTags>>()...);
-
-  add_sub_compute_item_tags_to_box<ComputeItem>(
+  get_deferred<ComputeItem>().reset();
+  mutate_subitem_tags_in_box<ComputeItem>(
       typename Subitems<tmpl::list<Tags...>, ComputeItem>::type{});
 }
 
@@ -960,9 +950,13 @@ db::DataBox<tmpl::list<Tags...>>::mutate_subitem_tags_in_box(
   const auto helper = [this](auto tag_v) {
     (void)this;  // Compiler bug warns about unused this capture
     using tag = decltype(tag_v);
-    Subitems<tmpl::list<Tags...>, ParentTag>::template create_item<tag>(
-        make_not_null(&get_deferred<ParentTag>().mutate()),
-        make_not_null(&get_deferred<tag>().mutate()));
+    if (is_compute_item_v<ParentTag>) {
+      get_deferred<tag>().reset();
+    } else {
+      Subitems<tmpl::list<Tags...>, ParentTag>::template create_item<tag>(
+          make_not_null(&get_deferred<ParentTag>().mutate()),
+          make_not_null(&get_deferred<tag>().mutate()));
+    }
   };
 
   EXPAND_PACK_LEFT_TO_RIGHT(helper(Subtags{}));
