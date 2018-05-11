@@ -36,6 +36,18 @@ using one_var = tmpl::list<Var1<Dim>>;
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
+  // clang-format off
+  /// [transpose_matrix]
+  const DataVector matrix{ 1.,  2.,  3.,
+                           4.,  5.,  6.,
+                           7.,  8.,  9.,
+                          10., 11., 12.};
+  CHECK(transpose(matrix, 3, 4) == DataVector{1.,  4.,  7., 10.,
+                                              2.,  5.,  8., 11.,
+                                              3.,  6.,  9., 12.});
+  /// [transpose_matrix]
+  // clang-format on
+
   /// [return_transpose_example]
   const size_t chunk_size = 8;
   const size_t number_of_chunks = 2;
