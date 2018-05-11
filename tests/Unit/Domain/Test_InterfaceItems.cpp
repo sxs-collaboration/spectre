@@ -56,7 +56,7 @@ struct NoCopy : db::SimpleTag {
 };
 
 template <typename Tag>
-struct Negate : db::PrefixTag, db::ComputeItemTag {
+struct Negate : db::PrefixTag, db::ComputeTag {
   static constexpr db::DataBoxString label = "Negate";
   using tag = Tag;
   static constexpr auto function(const db::item_type<Tag>& x) noexcept {
@@ -65,7 +65,7 @@ struct Negate : db::PrefixTag, db::ComputeItemTag {
   using argument_tags = tmpl::list<Tag>;
 };
 
-struct AddThree : db::ComputeItemTag {
+struct AddThree : db::ComputeTag {
   static constexpr db::DataBoxString label = "AddThree";
   static constexpr auto function(const int x) noexcept { return x + 3; }
   using argument_tags = tmpl::list<Int>;
@@ -73,7 +73,7 @@ struct AddThree : db::ComputeItemTag {
 };
 
 template <size_t VolumeDim>
-struct ComplexComputeItem : db::ComputeItemTag {
+struct ComplexComputeItem : db::ComputeTag {
   static constexpr db::DataBoxString label = "ComplexComputeItem";
   static constexpr auto function(const int i, const double d,
                                  const ::NoCopy<1>& /*unused*/,
@@ -179,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
 namespace {
 constexpr size_t dim = 2;
 
-struct Dirs : db::ComputeItemTag {
+struct Dirs : db::ComputeTag {
   static constexpr db::DataBoxString label = "Dirs";
   static auto function() noexcept {
     return std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
@@ -198,7 +198,7 @@ struct Var : db::SimpleTag {
 };
 
 template <size_t VolumeDim>
-struct Compute : db::ComputeItemTag {
+struct Compute : db::ComputeTag {
   static constexpr db::DataBoxString label = "Compute";
   static auto function(const Index<VolumeDim>& extents) {
     auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
@@ -340,7 +340,7 @@ struct Vector : db::SimpleTag {
 };
 
 template <size_t VolumeDim>
-struct ComputedVars : db::ComputeItemTag {
+struct ComputedVars : db::ComputeTag {
   static constexpr db::DataBoxString label = "ComputedVars";
   static auto function(const Index<VolumeDim>& extents) noexcept {
     const DataVector volume_data{

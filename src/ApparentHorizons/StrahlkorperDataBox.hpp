@@ -55,7 +55,7 @@ struct Strahlkorper : db::SimpleTag {
 /// \f$(\theta,\phi)\f$ on the grid.
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
-struct ThetaPhi : db::ComputeItemTag {
+struct ThetaPhi : db::ComputeTag {
   static constexpr db::DataBoxString label = "ThetaPhi";
   static StrahlkorperTags_detail::ThetaPhi<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
@@ -65,7 +65,7 @@ struct ThetaPhi : db::ComputeItemTag {
 /// `Rhat(i)` is \f$\hat{r}^i = x_i/\sqrt{x^2+y^2+z^2}\f$ on the grid.
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
-struct Rhat : db::ComputeItemTag {
+struct Rhat : db::ComputeTag {
   static constexpr db::DataBoxString label = "Rhat";
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
@@ -78,7 +78,7 @@ struct Rhat : db::ComputeItemTag {
 /// Here \f$r\f$ means \f$\sqrt{x^2+y^2+z^2}\f$.
 /// `Jacobian` doesn't depend on the shape of the surface.
 template <typename Frame>
-struct Jacobian : db::ComputeItemTag {
+struct Jacobian : db::ComputeTag {
   static constexpr db::DataBoxString label = "Jacobian";
   static StrahlkorperTags_detail::Jacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
@@ -90,7 +90,7 @@ struct Jacobian : db::ComputeItemTag {
 /// Here \f$r\f$ means \f$\sqrt{x^2+y^2+z^2}\f$.
 /// `InvJacobian` doesn't depend on the shape of the surface.
 template <typename Frame>
-struct InvJacobian : db::ComputeItemTag {
+struct InvJacobian : db::ComputeTag {
   static constexpr db::DataBoxString label = "InvJacobian";
   static StrahlkorperTags_detail::InvJacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
@@ -102,7 +102,7 @@ struct InvJacobian : db::ComputeItemTag {
 /// `InvHessian` is not symmetric because the Jacobians are Pfaffian.
 /// `InvHessian` doesn't depend on the shape of the surface.
 template <typename Frame>
-struct InvHessian : db::ComputeItemTag {
+struct InvHessian : db::ComputeTag {
   static constexpr db::DataBoxString label = "InvHessian";
   static StrahlkorperTags_detail::InvHessian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
@@ -112,7 +112,7 @@ struct InvHessian : db::ComputeItemTag {
 /// (Euclidean) distance \f$r_{\rm surf}(\theta,\phi)\f$ from the center to each
 /// point of the surface.
 template <typename Frame>
-struct Radius : db::ComputeItemTag {
+struct Radius : db::ComputeTag {
   static constexpr db::DataBoxString label = "Radius";
   SPECTRE_ALWAYS_INLINE static auto function(
       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
@@ -126,7 +126,7 @@ struct Radius : db::ComputeItemTag {
 /// the vector of \f$(x,y,z)\f$ coordinates of each point
 /// on the surface.
 template <typename Frame>
-struct CartesianCoords : db::ComputeItemTag {
+struct CartesianCoords : db::ComputeTag {
   static constexpr db::DataBoxString label = "CartesianCoords";
   static StrahlkorperTags_detail::Vector<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
@@ -142,7 +142,7 @@ struct CartesianCoords : db::ComputeItemTag {
 /// \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$
 /// for this operation.
 template <typename Frame>
-struct DxRadius : db::ComputeItemTag {
+struct DxRadius : db::ComputeTag {
   static constexpr db::DataBoxString label = "DxRadius";
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
@@ -159,7 +159,7 @@ struct DxRadius : db::ComputeItemTag {
 /// \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$
 /// for this operation.
 template <typename Frame>
-struct D2xRadius : db::ComputeItemTag {
+struct D2xRadius : db::ComputeTag {
   static constexpr db::DataBoxString label = "D2xRadius";
   static StrahlkorperTags_detail::SecondDeriv<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
@@ -173,7 +173,7 @@ struct D2xRadius : db::ComputeItemTag {
 /// This is \f$\eta^{ij}\partial^2 r_{\rm surf}/\partial x^i\partial x^j\f$,
 /// where \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$.
 template <typename Frame>
-struct LaplacianRadius : db::ComputeItemTag {
+struct LaplacianRadius : db::ComputeTag {
   static constexpr db::DataBoxString label = "LaplacianRadius";
   static DataVector function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
@@ -192,7 +192,7 @@ struct LaplacianRadius : db::ComputeItemTag {
 /// (it is "normal" to the surface), but it does not have unit length
 /// (it is not "normalized"; normalization requires a metric).
 template <typename Frame>
-struct NormalOneForm : db::ComputeItemTag {
+struct NormalOneForm : db::ComputeTag {
   static constexpr db::DataBoxString label = "NormalOneForm";
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const db::item_type<DxRadius<Frame>>& dx_radius,
@@ -216,7 +216,7 @@ struct NormalOneForm : db::ComputeItemTag {
 /// since orthogonality between 2 vectors (as opposed to a vector and
 /// a one-form) is metric-dependent.
 template <typename Frame>
-struct Tangents : db::ComputeItemTag {
+struct Tangents : db::ComputeTag {
   static constexpr db::DataBoxString label = "Tangents";
   static StrahlkorperTags_detail::Jacobian<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,

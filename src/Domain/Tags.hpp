@@ -73,7 +73,7 @@ struct Extents : db::SimpleTag {
 /// \ingroup ComputationalDomainGroup
 /// The logical coordinates in the Element
 template <size_t VolumeDim>
-struct LogicalCoordinates : db::ComputeItemTag {
+struct LogicalCoordinates : db::ComputeTag {
   static constexpr db::DataBoxString label = "LogicalCoordinates";
   using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
   static constexpr auto function = logical_coordinates<VolumeDim>;
@@ -93,7 +93,7 @@ struct ElementMap : db::SimpleTag {
 /// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
 /// frame must be the source frame of `MapTag`
 template <class MapTag, class SourceCoordsTag>
-struct Coordinates : db::ComputeItemTag, db::PrefixTag {
+struct Coordinates : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
   static constexpr db::DataBoxString label = "Coordinates";
   static constexpr auto function(
@@ -110,7 +110,7 @@ struct Coordinates : db::ComputeItemTag, db::PrefixTag {
 /// held by `SourceCoordsTag`. The coordinates must be in the source frame of
 /// the map.
 template <typename MapTag, typename SourceCoordsTag>
-struct InverseJacobian : db::ComputeItemTag, db::PrefixTag {
+struct InverseJacobian : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
   static constexpr db::DataBoxString label = "InverseJacobian";
   static constexpr auto function(
@@ -125,7 +125,7 @@ struct InverseJacobian : db::ComputeItemTag, db::PrefixTag {
 /// \ingroup ComputationalDomainGroup
 /// The set of directions to neighboring Elements
 template <size_t VolumeDim>
-struct InternalDirections : db::ComputeItemTag {
+struct InternalDirections : db::ComputeTag {
   static constexpr db::DataBoxString label = "InternalDirections";
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
@@ -275,7 +275,7 @@ struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
-    : db::ComputeItemTag {
+    : db::ComputeTag {
   using tag = NameTag;
   using forwarded_argument_tags =
       interface_compute_item_argument_tags<DirectionsTag, FunctionTag>;
@@ -306,7 +306,7 @@ struct Direction : db::SimpleTag {
 /// \cond
 template <typename DirectionsTag, size_t VolumeDim>
 struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
-                                                        db::ComputeItemTag {
+                                                        db::ComputeTag {
   static constexpr db::DataBoxString label = "Interface";
   using tag = Direction<VolumeDim>;
   static constexpr auto function(
@@ -323,7 +323,7 @@ struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
 
 namespace detail {
 template <size_t VolumeDim>
-struct InterfaceExtents : db::ComputeItemTag {
+struct InterfaceExtents : db::ComputeTag {
   static constexpr auto function(
       const ::Direction<VolumeDim>& direction,
       const ::Index<VolumeDim>& volume_extents) noexcept {
@@ -402,7 +402,7 @@ template <size_t VolumeDim, typename>
 struct Slice;
 
 template <size_t VolumeDim, typename... SlicedTags>
-struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeItemTag {
+struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeTag {
   static constexpr auto function(
       const ::Index<VolumeDim>& extents,
       const ::Direction<VolumeDim>& direction,

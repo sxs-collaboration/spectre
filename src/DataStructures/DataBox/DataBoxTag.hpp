@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines classes SimpleTag, PrefixTag, ComputeItemTag and several
+/// Defines classes SimpleTag, PrefixTag, ComputeTag and several
 /// functions for retrieving tag info
 
 #pragma once
@@ -115,7 +115,7 @@ struct BaseTag {};
  * \snippet Test_DataBox.cpp databox_name_prefix
  *
  *
- * \see DataBox DataBoxTag DataBoxString get_tag_name ComputeItemTag
+ * \see DataBox DataBoxTag DataBoxString get_tag_name ComputeTag
  */
 struct PrefixTag {};
 
@@ -160,7 +160,7 @@ struct PrefixTag {};
  *
  * \see DataBox SimpleTag DataBoxString get_tag_name PrefixTag
  */
-struct ComputeItemTag {};
+struct ComputeTag {};
 
 namespace DataBox_detail {
 template <typename TagList, typename Tag>
@@ -318,14 +318,13 @@ struct hash_databox_tag<Tag, Requires<tt::is_a_v<::Tags::Variables, Tag>>> {
 // @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `Tag` derives off of db::ComputeItemTag
+ * \brief Check if `Tag` derives off of db::ComputeTag
  */
 template <typename Tag, typename = std::nullptr_t>
 struct is_compute_item : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct is_compute_item<Tag,
-                       Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag>>>
+struct is_compute_item<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
@@ -343,9 +342,8 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_non_base_tag : std::false_type {};
 /// \cond
 template <typename Tag>
-struct is_non_base_tag<Tag,
-                       Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag> or
-                                cpp17::is_base_of_v<db::SimpleTag, Tag>>>
+struct is_non_base_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag> or
+                                     cpp17::is_base_of_v<db::SimpleTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
@@ -362,7 +360,7 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_tag : std::false_type {};
 /// \cond
 template <typename Tag>
-struct is_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeItemTag, Tag> or
+struct is_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag> or
                             cpp17::is_base_of_v<db::SimpleTag, Tag> or
                             cpp17::is_base_of_v<db::BaseTag, Tag>>>
     : std::true_type {};

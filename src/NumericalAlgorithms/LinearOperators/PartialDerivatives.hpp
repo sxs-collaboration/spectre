@@ -115,7 +115,7 @@ struct deriv_impl<
     tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
     InverseJacobianTag,
     Requires<tt::is_a_v<Tensor, db::item_type<InverseJacobianTag>>>>
-    : db::ComputeItemTag {
+    : db::ComputeTag {
  private:
   using derivative_frame_index =
       tmpl::back<typename db::item_type<InverseJacobianTag>::index_list>;
@@ -137,7 +137,7 @@ template <typename... VariablesTags, typename... DerivativeTags, typename T,
           T Dim>
 struct deriv_impl<tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
                   std::integral_constant<T, Dim>,
-                  Requires<(0 < Dim and 4 > Dim)>> : db::ComputeItemTag {
+                  Requires<(0 < Dim and 4 > Dim)>> : db::ComputeTag {
   using variables_tags = tmpl::list<VariablesTags...>;
   static constexpr db::DataBoxString label = "deriv";
   static constexpr auto function =

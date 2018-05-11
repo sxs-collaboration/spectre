@@ -68,27 +68,27 @@ struct Tag3 : db::SimpleTag {
 };
 
 /// [databox_compute_item_tag_example]
-struct ComputeTag0 : db::ComputeItemTag {
+struct ComputeTag0 : db::ComputeTag {
   static constexpr db::DataBoxString label = "ComputeTag0";
   static constexpr auto function = multiply_by_two;
   using argument_tags = tmpl::list<Tag0>;
 };
 
 /// [databox_compute_item_tag_example]
-struct ComputeTag1 : db::ComputeItemTag {
+struct ComputeTag1 : db::ComputeTag {
   static constexpr db::DataBoxString label = "ComputeTag1";
   static constexpr auto function = append_word;
   using argument_tags = tmpl::list<Tag2, ComputeTag0>;
 };
 
-struct TagTensor : db::ComputeItemTag {
+struct TagTensor : db::ComputeTag {
   static constexpr db::DataBoxString label = "TagTensor";
   static constexpr auto function = get_tensor;
   using argument_tags = tmpl::list<>;
 };
 
 /// [compute_item_tag_function]
-struct ComputeLambda0 : db::ComputeItemTag {
+struct ComputeLambda0 : db::ComputeTag {
   static constexpr db::DataBoxString label = "ComputeLambda0";
   static constexpr double function(const double& a) { return 3.0 * a; }
   using argument_tags = tmpl::list<Tag0>;
@@ -96,7 +96,7 @@ struct ComputeLambda0 : db::ComputeItemTag {
 /// [compute_item_tag_function]
 
 /// [compute_item_tag_no_tags]
-struct ComputeLambda1 : db::ComputeItemTag {
+struct ComputeLambda1 : db::ComputeTag {
   static constexpr db::DataBoxString label = "ComputeLambda1";
   static constexpr double function() { return 7.0; }
   using argument_tags = tmpl::list<>;
@@ -564,7 +564,7 @@ namespace {
 
 auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
 
-struct Var1 : db::ComputeItemTag {
+struct Var1 : db::ComputeTag {
   static constexpr db::DataBoxString label = "Var1";
   static constexpr auto function = get_vector;
   using argument_tags = tmpl::list<>;
@@ -699,7 +699,7 @@ auto multiply_variables_by_two(
 }  // namespace
 
 namespace test_databox_tags {
-struct MultiplyScalarByTwo : db::ComputeItemTag {
+struct MultiplyScalarByTwo : db::ComputeTag {
   using variables_tags =
       tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>;
   static constexpr db::DataBoxString label = "MultiplyScalarByTwo";
@@ -707,31 +707,31 @@ struct MultiplyScalarByTwo : db::ComputeItemTag {
   using argument_tags = tmpl::list<test_databox_tags::ScalarTag>;
 };
 
-struct MultiplyScalarByFour : db::ComputeItemTag {
+struct MultiplyScalarByFour : db::ComputeTag {
   static constexpr db::DataBoxString label = "MultiplyScalarByFour";
   static constexpr auto function = multiply_scalar_by_four;
   using argument_tags = tmpl::list<test_databox_tags::ScalarTag2>;
 };
 
-struct MultiplyScalarByThree : db::ComputeItemTag {
+struct MultiplyScalarByThree : db::ComputeTag {
   static constexpr db::DataBoxString label = "MultiplyScalarByThree";
   static constexpr auto function = multiply_scalar_by_three;
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByFour>;
 };
 
-struct DivideScalarByThree : db::ComputeItemTag {
+struct DivideScalarByThree : db::ComputeTag {
   static constexpr db::DataBoxString label = "DivideScalarByThree";
   static constexpr auto function = divide_scalar_by_three;
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByThree>;
 };
 
-struct DivideScalarByTwo : db::ComputeItemTag {
+struct DivideScalarByTwo : db::ComputeTag {
   static constexpr db::DataBoxString label = "DivideScalarByTwo";
   static constexpr auto function = divide_scalar_by_two;
   using argument_tags = tmpl::list<test_databox_tags::DivideScalarByThree>;
 };
 
-struct MultiplyVariablesByTwo : db::ComputeItemTag {
+struct MultiplyVariablesByTwo : db::ComputeTag {
   static constexpr db::DataBoxString label = "MultiplyVariablesByTwo";
   static constexpr auto function = multiply_variables_by_two;
   using argument_tags = tmpl::list<Tags::Variables<
@@ -957,7 +957,7 @@ struct Int : db::SimpleTag {
   using type = int;
   static constexpr db::DataBoxString label = "Int";
 };
-struct CheckReset : db::ComputeItemTag {
+struct CheckReset : db::ComputeTag {
   static constexpr db::DataBoxString label = "CheckReset";
   static auto function(
       const ::Variables<tmpl::list<Var>>& /*unused*/) noexcept {
@@ -1167,19 +1167,19 @@ void mutate_variables(
 }  // namespace
 
 namespace test_databox_tags {
-struct MutateComputeTag0 : db::ComputeItemTag {
+struct MutateComputeTag0 : db::ComputeTag {
   using return_type = std::vector<double>;
   static constexpr db::DataBoxString label = "MutateComputeTag0";
   static constexpr auto function = multiply_by_two_mutate;
   using argument_tags = tmpl::list<Tag0>;
 };
-struct NonMutateComputeTag0 : db::ComputeItemTag {
+struct NonMutateComputeTag0 : db::ComputeTag {
   static constexpr db::DataBoxString label = "NonMutateComputeTag0";
   static constexpr auto function = multiply_by_two_non_mutate;
   using argument_tags = tmpl::list<Tag0>;
 };
 /// [databox_mutating_compute_item_tag]
-struct MutateVariablesCompute : db::ComputeItemTag {
+struct MutateVariablesCompute : db::ComputeTag {
   static constexpr db::DataBoxString label = "MutateVariablesCompute";
   static constexpr auto function = mutate_variables;
   using return_type = Variables<
@@ -1524,7 +1524,7 @@ struct Parent : db::SimpleTag {
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
 template <size_t N, bool DependsOnComputeItem>
-struct Parent<N, true, DependsOnComputeItem> : db::ComputeItemTag {
+struct Parent<N, true, DependsOnComputeItem> : db::ComputeTag {
   static constexpr db::DataBoxString label = "Parent";
   static auto function(
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
@@ -1822,14 +1822,14 @@ template <int Id>
 int CountingFunc<Id>::count = 0;
 
 template <int Id>
-struct CountingTag : db::ComputeItemTag {
+struct CountingTag : db::ComputeTag {
   static constexpr db::DataBoxString label = "CountingTag";
   static constexpr auto function = CountingFunc<Id>::apply;
   using argument_tags = tmpl::list<>;
 };
 
 template <size_t SecondId>
-struct CountingTagDouble : db::ComputeItemTag {
+struct CountingTagDouble : db::ComputeTag {
   static constexpr db::DataBoxString label = "CountingTag";
   static double function(const test_subitems::Boxed<double>& t) {
     count++;

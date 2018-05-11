@@ -44,7 +44,7 @@ inline ::Time time_from_id(const ::TimeId& id) noexcept { return id.time; }
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current ::Time (from TimeId)
-struct Time : db::ComputeItemTag {
+struct Time : db::ComputeTag {
   static constexpr db::DataBoxString label = "Time";
   static constexpr auto function = TimeTags_detail::time_from_id;
   using argument_tags = tmpl::list<TimeId>;
@@ -53,7 +53,7 @@ struct Time : db::ComputeItemTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current time as a double
-struct TimeValue : db::ComputeItemTag {
+struct TimeValue : db::ComputeTag {
   static constexpr db::DataBoxString label = "TimeValue";
   static auto function(const ::Time& t) noexcept { return t.value(); }
   using argument_tags = tmpl::list<Time>;

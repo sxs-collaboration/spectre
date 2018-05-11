@@ -454,13 +454,13 @@ class DataBox<tmpl::list<Tags...>>
                     Args&&... args) noexcept;
 
   template <typename... TagsInArgsOrder, typename... FullItems,
-            typename... ComputeItemTags, typename... FullComputeItems,
+            typename... ComputeTags, typename... FullComputeItems,
             typename... Args,
             Requires<not tmpl2::flat_any_v<
                 db::is_databox<std::decay_t<Args>>::value...>> = nullptr>
   constexpr DataBox(tmpl::list<TagsInArgsOrder...> /*meta*/,
                     tmpl::list<FullItems...> /*meta*/,
-                    tmpl::list<ComputeItemTags...> /*meta*/,
+                    tmpl::list<ComputeTags...> /*meta*/,
                     tmpl::list<FullComputeItems...> /*meta*/,
                     Args&&... args) noexcept;
   /// \endcond
@@ -527,12 +527,12 @@ class DataBox<tmpl::list<Tags...>>
   // End adding simple items
 
   template <typename FullTagList, typename... Ts, typename... AddItemTags,
-            typename... AddComputeItemTags, size_t... Is,
+            typename... AddComputeTags, size_t... Is,
             bool... DependenciesAddedBefore>
   void add_items_to_box(std::tuple<Ts...>& tupull,
                         tmpl::list<AddItemTags...> /*meta*/,
                         std::index_sequence<Is...> /*meta*/,
-                        tmpl::list<AddComputeItemTags...> /*meta*/) noexcept;
+                        tmpl::list<AddComputeTags...> /*meta*/) noexcept;
 
   // Merging DataBox's using create_from requires that all instantiations of
   // DataBox be friends with each other.
@@ -552,9 +552,9 @@ class DataBox<tmpl::list<Tags...>>
       tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept;
 
   // clang-tidy: no non-const references
-  template <typename... NonSubitemsTags, typename... ComputeItemTags>
+  template <typename... NonSubitemsTags, typename... ComputeTags>
   void pup_impl(PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,  // NOLINT
-                tmpl::list<ComputeItemTags...> /*meta*/) noexcept;
+                tmpl::list<ComputeTags...> /*meta*/) noexcept;
   // End serialization of DataBox
 
   // Mutating items in the DataBox
@@ -626,7 +626,7 @@ using compute_item_function_pointer_type =
         DataBox_detail::has_return_type_member_v<ComputeItem>>::
         template f<FullTagList, ComputeItem, ComputeItemArgumentsTags...>;
 
-template <bool IsComputeItemTag>
+template <bool IsComputeTag>
 struct get_argument_list_impl {
   template <class Tag>
   using f = tmpl::list<>;
@@ -757,19 +757,19 @@ db::DataBox<tmpl::list<Tags...>>::add_item_to_box(
 
 // Add items or compute items to the TaggedDeferredTuple `data`. If
 // `AddItemTags...` is an empty pack then only compute items are added, while if
-// `AddComputeItemTags...` is an empty pack only items are added. Items are
+// `AddComputeTags...` is an empty pack only items are added. Items are
 // always added before compute items.
 template <typename... Tags>
 template <typename FullTagList, typename... Ts, typename... AddItemTags,
-          typename... AddComputeItemTags, size_t... Is,
+          typename... AddComputeTags, size_t... Is,
           bool... DependenciesAddedBefore>
 SPECTRE_ALWAYS_INLINE void DataBox<tmpl::list<Tags...>>::add_items_to_box(
     std::tuple<Ts...>& tupull, tmpl::list<AddItemTags...> /*meta*/,
     std::index_sequence<Is...> /*meta*/,
-    tmpl::list<AddComputeItemTags...> /*meta*/) noexcept {
+    tmpl::list<AddComputeTags...> /*meta*/) noexcept {
   expand_pack(add_item_to_box<Is, AddItemTags>(tupull)...);
   EXPAND_PACK_LEFT_TO_RIGHT(
-      add_compute_item_to_box<AddComputeItemTags, FullTagList>());
+      add_compute_item_to_box<AddComputeTags, FullTagList>());
 }
 
 namespace DataBox_detail {
@@ -790,12 +790,12 @@ constexpr int check_argument_type() noexcept {
 /// \cond
 template <typename... Tags>
 template <
-    typename... TagsInArgsOrder, typename... FullItems,
-    typename... ComputeItemTags, typename... FullComputeItems, typename... Args,
+    typename... TagsInArgsOrder, typename... FullItems, typename... ComputeTags,
+    typename... FullComputeItems, typename... Args,
     Requires<not tmpl2::flat_any_v<is_databox<std::decay_t<Args>>::value...>>>
 constexpr DataBox<tmpl::list<Tags...>>::DataBox(
     tmpl::list<TagsInArgsOrder...> /*meta*/, tmpl::list<FullItems...> /*meta*/,
-    tmpl::list<ComputeItemTags...> /*meta*/,
+    tmpl::list<ComputeTags...> /*meta*/,
     tmpl::list<FullComputeItems...> /*meta*/, Args&&... args) noexcept {
   DEBUG_STATIC_ASSERT(
       sizeof...(Tags) == sizeof...(FullItems) + sizeof...(FullComputeItems),
@@ -811,7 +811,7 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
   add_items_to_box<tmpl::list<FullItems..., FullComputeItems...>>(
       args_tuple, tmpl::list<TagsInArgsOrder...>{},
       std::make_index_sequence<sizeof...(TagsInArgsOrder)>{},
-      tmpl::list<ComputeItemTags...>{});
+      tmpl::list<ComputeTags...>{});
 }
 
 ////////////////////////////////////////////////////////////////
@@ -860,10 +860,10 @@ Deferred<db::item_type<Tag>> DataBox<tmpl::list<Tags...>>::make_deferred_helper(
 }
 
 template <typename... Tags>
-template <typename... NonSubitemsTags, typename... ComputeItemTags>
+template <typename... NonSubitemsTags, typename... ComputeTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
     PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,
-    tmpl::list<ComputeItemTags...> /*meta*/) noexcept {
+    tmpl::list<ComputeTags...> /*meta*/) noexcept {
   const auto pup_simple_item = [&p, this](auto current_tag) noexcept {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
@@ -894,7 +894,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     }
   };
   (void)pup_compute_item;  // Silence GCC warning about unused variable
-  EXPAND_PACK_LEFT_TO_RIGHT(pup_compute_item(ComputeItemTags{}));
+  EXPAND_PACK_LEFT_TO_RIGHT(pup_compute_item(ComputeTags{}));
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1123,7 +1123,7 @@ using AddComputeTags = tmpl::flatten<tmpl::list<Tags...>>;
  * \see create_from
  *
  * \tparam AddSimpleTags the tags of the args being added
- * \tparam AddComputeTags list of \ref ComputeItemTag "compute item tags"
+ * \tparam AddComputeTags list of \ref ComputeTag "compute item tags"
  * to add to the DataBox
  *  \param args the data to be added to the DataBox
  */
@@ -1134,10 +1134,9 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
                 "AddComputeItems must by a typelist");
   static_assert(tt::is_a_v<tmpl::list, AddSimpleTags>,
                 "AddTags must by a typelist");
-  static_assert(
-      not tmpl::any<AddSimpleTags, is_compute_item<tmpl::_1>>::value,
-      "Cannot add any ComputeItemTag in the AddTags list, must use the "
-      "AddComputeItems list.");
+  static_assert(not tmpl::any<AddSimpleTags, is_compute_item<tmpl::_1>>::value,
+                "Cannot add any ComputeTag in the AddTags list, must use the "
+                "AddComputeItems list.");
   static_assert(tmpl::all<AddComputeTags, is_compute_item<tmpl::_1>>::value,
                 "Cannot add any Tags in the AddComputeItems list, must use the "
                 "AddTags list.");
@@ -1176,7 +1175,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
  * \tparam RemoveTags typelist of Tags to remove
  * \tparam AddTags typelist of Tags corresponding to the arguments to be
  * added
- * \tparam AddComputeTags list of \ref ComputeItemTag "compute item tags"
+ * \tparam AddComputeTags list of \ref ComputeTag "compute item tags"
  * to add to the DataBox
  * \param box the DataBox the new box should be based off
  * \param args the values for the items to add to the DataBox

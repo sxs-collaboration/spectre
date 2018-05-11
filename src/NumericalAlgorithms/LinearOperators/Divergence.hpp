@@ -84,7 +84,7 @@ struct div_impl<Tag, Frame, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
 template <typename... FluxTags, typename InverseJacobianTag>
 struct div_impl<tmpl::list<FluxTags...>, InverseJacobianTag,
                 Requires<tt::is_a_v<Tensor, db::item_type<InverseJacobianTag>>>>
-    : db::ComputeItemTag {
+    : db::ComputeTag {
  private:
   using derivative_frame_index =
       tmpl::back<typename db::item_type<InverseJacobianTag>::index_list>;

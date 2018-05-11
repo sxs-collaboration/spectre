@@ -37,7 +37,7 @@ struct Array : virtual db::SimpleTag, ArrayBase<I> {
 };
 
 template <int I, int VectorBaseIndex = 0, int... VectorBaseExtraIndices>
-struct ArrayComputeBase : Array<I>, db::ComputeItemTag {
+struct ArrayComputeBase : Array<I>, db::ComputeTag {
   static constexpr db::DataBoxString label = "ArrayComputeBase";
 
   static std::array<int, 3> function(const std::vector<double>& t) noexcept {
@@ -194,8 +194,7 @@ struct Parent : ParentBase<N>, db::SimpleTag {
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
 template <size_t N, bool DependsOnComputeItem>
-struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>,
-                                               db::ComputeItemTag {
+struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>, db::ComputeTag {
   static constexpr db::DataBoxString label = "Parent";
   static auto function(
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
@@ -225,7 +224,7 @@ template <size_t N0, size_t N1>
 struct MultiplyByTwo : db::BaseTag {};
 
 template <size_t N0, size_t N1>
-struct ComputeMultiplyByTwo : MultiplyByTwo<N0, N1>, db::ComputeItemTag {
+struct ComputeMultiplyByTwo : MultiplyByTwo<N0, N1>, db::ComputeTag {
   // We use a function template and auto return type solely to test that these
   // work correctly with the DataBox.
   template <typename T0, typename T1>

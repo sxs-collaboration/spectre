@@ -67,7 +67,7 @@ namespace Tags {
 /// \ingroup ComputationalDomain
 /// The unnormalized face normal one form
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
-struct UnnormalizedFaceNormal : db::ComputeItemTag {
+struct UnnormalizedFaceNormal : db::ComputeTag {
   static constexpr db::DataBoxString label = "UnnormalizedFaceNormal";
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
       const ::Index<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
