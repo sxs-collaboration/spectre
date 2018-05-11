@@ -714,9 +714,12 @@ struct Subitems<TagList, Tag,
       const gsl::not_null<item_type<Tag>*> parent_value,
       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
     auto& vars = get<Subtag>(*parent_value);
-    for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
-         vars_it != vars.end(); ++vars_it, ++sub_var_it) {
-      sub_var_it->set_data_ref(&*vars_it);
+    // Only update the Tensor if the Variables has changed its allocation
+    if (vars.begin()->data() != sub_value->begin()->data()) {
+      for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
+           vars_it != vars.end(); ++vars_it, ++sub_var_it) {
+        sub_var_it->set_data_ref(&*vars_it);
+      }
     }
   }
 
