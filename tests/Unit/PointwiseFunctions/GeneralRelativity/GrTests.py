@@ -137,3 +137,16 @@ def ricci_tensor(christoffel, deriv_christoffel):
 
 
 # End tests for Test_Ricci.cpp
+
+# Begin tests for Test_IndexManipulation.cpp
+
+
+def raise_or_lower_first_index(tensor, metric):
+    return np.einsum("ij,ikl", metric, tensor)
+
+
+def trace_last_indices(tensor, metric):
+    return np.einsum("ij,kij", metric, tensor)
+
+
+# Endtests for Test_IndexManipulation.cpp
