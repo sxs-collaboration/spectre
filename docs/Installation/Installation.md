@@ -83,11 +83,9 @@ To build with the docker image:
    Within the container, SPECTRE_ROOT is available and
    CHARM_DIR is /work/charm. For the following steps, stay inside the docker
    container as root.
-4. `cd` into /work/charm, and apply the Charm++ patch by
-   running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
-5. Make a build directory somewhere inside the container, e.g.
+4. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
-6. Build SpECTRE with
+5. Build SpECTRE with
    `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT`
    then
    `make -jN`
@@ -125,6 +123,52 @@ Notes:
     container are different, commands like `git commit` run *from
     outside the container* will die with `No such file or directory`.
   * To compile with clang, the cmake command is
+```
+    cmake -D CMAKE_CXX_COMPILER=clang++ \
+          -D CMAKE_C_COMPILER=clang \
+          -D CMAKE_Fortran_COMPILER=gfortran \
+          -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
+```
+
+## Using Singularity to obtain a SpECTRE environment
+
+[Singularity](http://singularity.lbl.gov/index.html) is a container alternative
+to Docker with better security and nicer integration.
+
+To use Singularity you must:
+
+1. Build [Singularity](http://singularity.lbl.gov/index.html) and add it to your
+   `$PATH`
+2. `cd` to the directory where you want to store the SpECTRE Singularity image,
+   source, and build directories, let's call it WORKDIR. The WORKDIR must be
+   somewhere in your home directory. If this does not work for you, follow the
+   Singularity instructions on setting up additional [bind
+   points](http://singularity.lbl.gov/docs-mount). Once inside the WORKDIR,
+   clone SpECTRE into `WORKDIR/SPECTRE_ROOT`.
+3. Run `singularity build spectre.img
+   docker://sxscollaboration/spectrebuildenv:latest`.
+4. To start the container run `singularity shell spectre.img` and you
+   will be dropped into a bash shell. The first thing you will always need to do
+   when entering the container is:
+   `. SPECTRE_HOME/containers/SingularityLoad.sh`
+5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
+   directory.
+6. To build SpECTRE run `cmake -D
+   CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT` followed by
+   `make -jN` where `N` is the number of cores to build on in parallel.
+
+Notes:
+- You should edit source files in SPECTRE_ROOT in a separate terminal outside
+  the container, and use the container only for compiling and running the code.
+- Unlike Docker, Singularity does not keep the state between runs. However, it
+  shares the home directory with the host OS so you should do all your work
+  somewhere in your home directory.
+- To run more than one container just do `singularity shell spectre.img` in
+  another terminal.
+- Since the data you modify lives on the host OS there is no need to worry about
+  losing any data, needing to clean up old containers, or sharing data between
+  containers and the host.
+- To build with clang, the CMake command is:
 ```
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \

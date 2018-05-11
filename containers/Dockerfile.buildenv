@@ -121,6 +121,9 @@ RUN git clone https://charm.cs.illinois.edu/gerrit/charm && \
     git checkout ${CHARM_GIT_TAG}  && \
     ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g -O0  && \
     ./build charm++ multicore-linux64 clang ${PARALLEL_MAKE_ARG} -g -O0
+RUN wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v6.8.patch &&\
+    cd /work/charm &&\
+    git apply /work/v6.8.patch
 
 WORKDIR /work
 
@@ -132,3 +135,15 @@ RUN echo 'spack load catch' >> /root/.bashrc && \
     echo 'spack load libxsmm' >> /root/.bashrc && \
     echo 'spack load yaml-cpp' >> /root/.bashrc && \
     echo 'spack load benchmark' >> /root/.bashrc
+
+# - Set the environment variable SPECTRE_CONTAINER so we can check if we are
+#   inside a container (0 is true in bash)
+# - The singularity containers work better if the locale is set properly
+ENV SPECTRE_CONTAINER 0
+RUN apt-get update && apt-get install -y \
+    locales language-pack-fi language-pack-en && \
+    export LANGUAGE=en_US.UTF-8 && \
+    export LANG=en_US.UTF-8 && \
+    export LC_ALL=en_US.UTF-8 && \
+    locale-gen en_US.UTF-8 && \
+    dpkg-reconfigure locales
