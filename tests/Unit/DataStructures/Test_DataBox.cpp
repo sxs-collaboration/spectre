@@ -175,6 +175,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
               true>>>::value,
       "Failed to create original_box");
 
+  /// [using_db_get]
+  const auto& tag0 = db::get<test_databox_tags::Tag0>(original_box);
+  /// [using_db_get]
   CHECK(db::get<test_databox_tags::Tag0>(original_box) == 3.14);
   // Check retrieving chained compute item result
   CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
@@ -420,7 +423,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
       db::AddComputeTags<test_databox_tags::ComputeTag0,
                          test_databox_tags::ComputeTag1>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7);
-  const std::string compute_string =
+  const auto& compute_string =
       db::get_item_from_box<std::string>(original_box, "ComputeTag1");
   /// [get_item_from_box]
   CHECK(compute_string == "My Sample String6.28"s);
@@ -1611,6 +1614,87 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
                   box)))>,
       "Failed testing that adding and removing a compute subitem does "
       "not change the type of the DataBox");
+}
+
+namespace test_databox_tags {
+struct Tag0Int : db::SimpleTag {
+  using type = int;
+  static constexpr db::Label label = "Tag0Int";
+};
+/// [overload_compute_tag_type]
+template <typename ArgumentTag>
+struct OverloadType : db::ComputeTag {
+  static constexpr db::Label label = "OverloadType";
+
+  static constexpr double function(const int& a) noexcept { return 5 * a; }
+
+  static constexpr double function(const double& a) noexcept { return 3.2 * a; }
+  using argument_tags = tmpl::list<ArgumentTag>;
+};
+/// [overload_compute_tag_type]
+
+/// [overload_compute_tag_number_of_args]
+template <typename ArgumentTag0, typename ArgumentTag1 = void>
+struct OverloadNumberOfArgs : db::ComputeTag {
+  static constexpr db::Label label = "OverloadNumberOfArgs";
+
+  static constexpr double function(const double& a) noexcept { return 3.2 * a; }
+
+  static constexpr double function(const double& a, const double& b) noexcept {
+    return a * b;
+  }
+
+  using argument_tags =
+      tmpl::conditional_t<cpp17::is_same_v<void, ArgumentTag1>,
+                          tmpl::list<ArgumentTag0>,
+                          tmpl::list<ArgumentTag0, ArgumentTag1>>;
+};
+/// [overload_compute_tag_number_of_args]
+
+/// [overload_compute_tag_template]
+template <typename ArgumentTag>
+struct ComputeTemplate : db::ComputeTag {
+  static constexpr db::Label label = "ComputeTemplate";
+
+  template <typename T>
+  static constexpr T function(const T& a) noexcept {
+    return 5 * a;
+  }
+
+  using argument_tags = tmpl::list<ArgumentTag>;
+};
+/// [overload_compute_tag_template]
+}  // namespace test_databox_tags
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.OverloadComputeTags",
+                  "[Unit][DataStructures]") {
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag0Int>,
+      db::AddComputeTags<
+          test_databox_tags::OverloadType<test_databox_tags::Tag0>,
+          test_databox_tags::OverloadType<test_databox_tags::Tag0Int>,
+          test_databox_tags::OverloadNumberOfArgs<test_databox_tags::Tag0>,
+          test_databox_tags::OverloadNumberOfArgs<
+              test_databox_tags::Tag0,
+              test_databox_tags::OverloadType<test_databox_tags::Tag0>>,
+          test_databox_tags::ComputeTemplate<test_databox_tags::Tag0>,
+          test_databox_tags::ComputeTemplate<test_databox_tags::Tag0Int>>>(8.4,
+                                                                           -3);
+  CHECK(db::get<test_databox_tags::OverloadType<test_databox_tags::Tag0>>(
+            box) == 8.4 * 3.2);
+  CHECK(db::get<test_databox_tags::OverloadType<test_databox_tags::Tag0Int>>(
+            box) == -3 * 5);
+  CHECK(
+      db::get<test_databox_tags::OverloadNumberOfArgs<test_databox_tags::Tag0>>(
+          box) == 3.2 * 8.4);
+  CHECK(db::get<test_databox_tags::OverloadNumberOfArgs<
+            test_databox_tags::Tag0,
+            test_databox_tags::OverloadType<test_databox_tags::Tag0>>>(box) ==
+        8.4 * 3.2 * 8.4);
+  CHECK(db::get<test_databox_tags::ComputeTemplate<test_databox_tags::Tag0>>(
+            box) == 8.4 * 5.0);
+  CHECK(db::get<test_databox_tags::ComputeTemplate<test_databox_tags::Tag0Int>>(
+            box) == -3 * 5);
 }
 
 namespace TestTags {

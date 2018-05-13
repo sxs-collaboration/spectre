@@ -19,6 +19,7 @@
 
 namespace {
 namespace TestTags {
+/// [vector_base_definitions]
 template <int I>
 struct VectorBase : db::BaseTag {};
 
@@ -27,7 +28,9 @@ struct Vector : db::SimpleTag, VectorBase<I> {
   using type = std::vector<double>;
   static constexpr db::Label label = "Vector";
 };
+/// [vector_base_definitions]
 
+/// [array_base_definitions]
 template <int I>
 struct ArrayBase : db::BaseTag {};
 
@@ -36,7 +39,9 @@ struct Array : virtual db::SimpleTag, ArrayBase<I> {
   using type = std::array<int, 3>;
   static constexpr db::Label label = "Array";
 };
+/// [array_base_definitions]
 
+/// [compute_template_base_tags]
 template <int I, int VectorBaseIndex = 0, int... VectorBaseExtraIndices>
 struct ArrayComputeBase : Array<I>, db::ComputeTag {
   static constexpr db::Label label = "ArrayComputeBase";
@@ -55,6 +60,7 @@ struct ArrayComputeBase : Array<I>, db::ComputeTag {
   using argument_tags = tmpl::list<VectorBase<VectorBaseIndex>,
                                    VectorBase<VectorBaseExtraIndices>...>;
 };
+/// [compute_template_base_tags]
 }  // namespace TestTags
 
 void test_non_subitems() {
@@ -64,21 +70,35 @@ void test_non_subitems() {
   // - using a base tag as the argument in a compute item
   // - `get`ing a compute item by base tag
   // - `get`ing a compute item by its simple tag
+  /// [base_simple_and_compute_mutate]
   auto box = db::create<db::AddSimpleTags<TestTags::Vector<0>>,
                         db::AddComputeTags<TestTags::ArrayComputeBase<0>>>(
       std::vector<double>{-10.0, 10.0});
+
+  // Check retrieving simple tag Vector<0> using base tag VectorBase<0>
   CHECK(db::get<TestTags::VectorBase<0>>(box) ==
         std::vector<double>{-10.0, 10.0});
+
+  // Check retrieving compute tag ArrayComputeBase<0> using simple tag Array<0>
   CHECK(db::get<TestTags::Array<0>>(box) == std::array<int, 3>{{2, -10, -8}});
+
+  // Check mutating Vector<0> using VectorBase<0>
   db::mutate<TestTags::VectorBase<0>>(
       make_not_null(&box), [](const auto vector) { (*vector)[0] = 101.8; });
+
   CHECK(db::get<TestTags::VectorBase<0>>(box) ==
         std::vector<double>{101.8, 10.0});
+
+  // Check retrieving ArrayComputeBase<0> using base tag ArrayBase<0>.
+  // ArrayComputeBase was reset after mutating Vector<0>
   CHECK(db::get<TestTags::ArrayBase<0>>(box) ==
         std::array<int, 3>{{2, 101, -8}});
+
+  // Check retrieving ArrayComputeBase<0> using simple tag Array<0>.
   CHECK(db::get<TestTags::Array<0>>(box) == std::array<int, 3>{{2, 101, -8}});
   CHECK(db::get<TestTags::ArrayComputeBase<0>>(box) ==
         std::array<int, 3>{{2, 101, -8}});
+  /// [base_simple_and_compute_mutate]
 
   // - adding compute item that uses a base tag as its argument
   const auto box2 =  // Add compute item that uses base tag as its argument
@@ -125,9 +145,11 @@ void test_non_subitems() {
         std::vector<double>{408.8, -73.2});
 
   // - removing a compute item and its dependencies by the base tags
+  /// [remove_using_base]
   const auto box6 = db::create_from<
       db::RemoveTags<TestTags::VectorBase<1>, TestTags::VectorBase<2>,
                      TestTags::ArrayBase<1>>>(box4);
+  /// [remove_using_base]
   CHECK(db::get<TestTags::VectorBase<0>>(box6) ==
         std::vector<double>{101.8, 10.0});
   CHECK(db::get<TestTags::ArrayBase<0>>(box6) ==

@@ -119,7 +119,240 @@
 
 /*!
  * \defgroup DataBoxGroup DataBox
- * \brief Contains (meta)functions used for manipulating DataBoxes
+ * \brief Documentation, functions, metafunctions, and classes necessary for
+ * using DataBox
+ *
+ * DataBox is a heterogeneous compile-time associative container with lazy
+ * evaluation of functions. DataBox can not only store data, but can also store
+ * functions that depend on other data inside the DataBox. The functions will be
+ * evaluated when the data they return is requested. The result is cached, and
+ * if a dependency of the function is modified the cache is invalidated.
+ *
+ * #### Simple and Compute Tags and Their Items
+ *
+ * The compile-time keys are `struct`s called tags, while the values are called
+ * items. Tags are quite minimal, containing only the information necessary to
+ * store the data and evaluate functions. There are two different types of tags
+ * that a DataBox can hold: simple tags and compute tags. Simple tags are for
+ * data that is inserted into the DataBox at the time of creation, while compute
+ * tags are for data that will be computed from a function when the compute item
+ * is retrieved. If a compute item is never retrieved from the DataBox then it
+ * is never evaluated.
+ *
+ * Simple tags must have a member type alias `type` that is the type of the data
+ * to be stored and a `static constexpr db::Label label` that is the name of the
+ * tag. Simple tags must inherit from `db::SimpleTag`.
+ *
+ * Compute tags must also have a `static constexpr db::Label label` that is the
+ * name of the tag, but they cannot have a `type` type alias. Instead, compute
+ * tags must have a static member function or static member function pointer
+ * named `function`. `function` can be a function template if necessary. The
+ * `function` must take all its arguments by `const` reference. The arguments to
+ * the function are retrieved using tags from the DataBox that the compute tag
+ * is in. The tags for the arguments are set in the member type alias
+ * `argument_tags`, which must be a `tmpl::list` of the tags corresponding to
+ * each argument. Note that the order of the tags in the `argument_list` is the
+ * order that they will be passed to the function. Compute tags must inherit
+ * from `db::ComputeTag`.
+ *
+ * Here is an example of a simple tag:
+ *
+ * \snippet Test_DataBox.cpp databox_tag_example
+ *
+ * and an example of a compute tag with a function pointer:
+ *
+ * \snippet Test_DataBox.cpp databox_compute_item_tag_example
+ *
+ * If the compute item's tag is inline then the compute item is of the form:
+ *
+ * \snippet Test_DataBox.cpp compute_item_tag_function
+ *
+ * Compute tags can also have their functions be overloaded on the type of its
+ * arguments:
+ *
+ * \snippet Test_DataBox.cpp overload_compute_tag_type
+ *
+ * or be overloaded on the number of arguments:
+ *
+ * \snippet Test_DataBox.cpp overload_compute_tag_number_of_args
+ *
+ * Compute tag function templates are implemented as follows:
+ *
+ * \snippet Test_DataBox.cpp overload_compute_tag_template
+ *
+ * Finally, overloading, function templates, and variadic functions can be
+ * combined to produce extremely generic compute tags. The below compute tag
+ * takes as template parameters a parameter pack of integers, which is used to
+ * specify several of the arguments. The function is overloaded for the single
+ * argument case, and a variadic function template is provided for the multiple
+ * arguments case. Note that in practice few compute tags will be this complex.
+ *
+ * \snippet Test_BaseTags.cpp compute_template_base_tags
+ *
+ * #### Subitems and Prefix Tags
+ *
+ * A simple or compute tag might also hold a collection of data, such as a
+ * container of `Tensor`s. In many cases you will want to be able to retrieve
+ * individual elements of the collection from the DataBox without having to
+ * first retrieve the collection. The infrastructure that allows for this is
+ * called *Subitems*. The subitems of the parent tag must refer to a subset of
+ * the data inside the parent tag, e.g. one `Tensor` in the collection. If the
+ * parent tag is `Parent` and the subitems tags are `Sub<0>, Sub<1>`, then when
+ * `Parent` is added to the DataBox, so are `Sub<0>` and `Sub<1>`. This means
+ * the retrieval mechanisms described below will work on `Parent`, `Sub<0>`, and
+ * `Sub<1>`.
+ *
+ * Subitems specify requirements on the tags they act on. For example, there
+ * could be a requirement that all tags with a certain type are to be treated as
+ * a Subitms. Let's say that the `Parent` tag holds a `Variables`, and
+ * `Variables` can be used with the Subitems infrastructure to add the nested
+ * `Tensor`s. Then all tags that hold a `Variables` will have their subitems
+ * added into the DataBox. To add a new type as a subitem the `db::Subitems`
+ * struct must be specialized. See the documentation of `db::Subitems` for more
+ * details.
+ *
+ * The DataBox also supports *prefix tags*, which are commonly used for items
+ * that are related to a different item by some operation. Specifically, say
+ * you have a tag `MyTensor` and you want to also have the time derivative of
+ * `MyTensor`, then you can use the prefix tag `dt` to get `dt<MyTensor>`. The
+ * benefit of a prefix tag over, say, a separate tag `dtMyTensor` is that prefix
+ * tags can be added and removed by the compute tags acting on the original tag.
+ * Prefix tags can also be composed, so a second time derivative would be
+ * `dt<dt<MyTensor>>`. The net result of the prefix tags infrastructure is that
+ * the compute tag that returns `dt<MyTensor>` only needs to know its input
+ * tags, it knows how to name its output based off that. In addition to the
+ * normal things a simple or a compute tag must hold, prefix tags must have a
+ * nested type alias `tag`, which is the tag being prefixed. Prefix tags must
+ * also inherit from `db::PrefixTag` in addition to inheriting from
+ * `db::SimpleTag` or `db::ComputeTag`.
+ *
+ * #### Creating a DataBox
+ *
+ * You should never call the constructor of a DataBox directly. DataBox
+ * construction is quite complicated and the helper functions `db::create` and
+ * `db::create_from` should be used instead. `db::create` is used to construct a
+ * new DataBox. It takes two typelists as explicit template parameters, the
+ * first being a list of the simple tags to add and the second being a list of
+ * compute tags to add. If no compute tags are being added then only the simple
+ * tags list must be specified. The tags lists should be passed as
+ * `db::create<db::AddSimpleTags<simple_tags...>,
+ * db::AddComputeTags<compute_tags...>>`. The arguments to `db::create` are the
+ * initial values of the simple tags and must be passed in the same order as the
+ * tags in the `db::AddSimpleTags` list. If the type of an argument passed to
+ * `db::create` does not match the type of the corresponding simple tag a static
+ * assertion will trigger. Here is an example of how to use `db::create`:
+ *
+ * \snippet Test_DataBox.cpp create_databox
+ *
+ * To create a new DataBox from an existing one use the `db::create_from`
+ * function. The only time a new DataBox needs to be created is when tags need
+ * to be removed or added. Like `db::create`, `db::create_from` also takes
+ * typelists as explicit template parameter. The first template parameter is the
+ * list of tags to be removed, which is passed using `db::RemoveTags`, second is
+ * the list of simple tags to add, and the third is the list of compute tags to
+ * add. If tags are only removed then only the first template parameter needs to
+ * be specified. If tags are being removed and only simple tags are being added
+ * then only the first two template parameters need to be specified. Here is an
+ * example of removing a tag or compute tag:
+ *
+ * \snippet Test_DataBox.cpp create_from_remove
+ *
+ * Adding a simple tag is done using:
+ *
+ * \snippet Test_DataBox.cpp create_from_add_item
+ *
+ * Adding a compute tag is done using:
+ *
+ * \snippet Test_DataBox.cpp create_from_add_compute_item
+ *
+ * #### Accessing and Mutating Items
+ *
+ * To retrieve an item from a DataBox use the `db::get` function. `db::get`
+ * will always return a `const` reference to the object stored in the DataBox
+ * and will also have full type information available. This means you are able
+ * to use `const auto&` when retrieving tags from the DataBox. For example,
+ * \snippet Test_DataBox.cpp using_db_get
+ *
+ * If you want to mutate the value of a simple item in the DataBox use
+ * `db::mutate`. Any compute item that depends on the mutated item will have its
+ * cached value invalidated and be recomputed the next time it is retrieved from
+ * the DataBox. `db::mutate` takes a parameter pack of tags to mutate as
+ * explicit template parameters, a `gsl::not_null` of the DataBox whose items
+ * will be mutated, an invokable, and extra arguments to forward to the
+ * invokable. The invokable takes the arguments passed from the DataBox by
+ * `const gsl::not_null` while the extra arguments are forwarded to the
+ * invokable. The invokable is not allowed to retrieve anything from the
+ * DataBox, so any items must be passed as extra arguments using `db::get` to
+ * retrieve them. For example,
+ *
+ * \snippet Test_DataBox.cpp databox_mutate_example
+ *
+ * In addition to retrieving items using `db::get` and mutating them using
+ * `db::mutate`, there is a facility to invoke an invokable with tags from the
+ * DataBox. `db::apply` takes a `tmpl::list` of tags as an explicit template
+ * parameter, will retrieve all the tags from the DataBox passed in and then
+ * invoke the  invokable with the items in the tag list. Similarly,
+ * `db::mutate_apply` invokes the invokable but allows for mutating some of
+ * the tags. See the documentation of `db::apply` and `db::mutate_apply` for
+ * examples of how to use them.
+ *
+ * #### The Base Tags Mechanism
+ *
+ * Retrieving items by tags should not require knowing whether the item being
+ * retrieved was computed using a compute tag or simply added using a simple
+ * tag. The framework that handles this falls under the umbrella term
+ * *base tags*. The reason is that a compute tag can inherit from a simple tag
+ * with the same item type, and then calls to `db::get` with the simple tag can
+ * be used to retrieve the compute item as well. That is, say you have a compute
+ * tag `ArrayCompute` that derives off of the simple tag `Array`, then you can
+ * retrieve the compute tag `ArrayCompute` and `Array` by calling
+ * `db::get<Array>(box)`. The base tags mechanism requires that only one `Array`
+ * tag be present in the DataBox, otherwise a static assertion is triggered.
+ *
+ * The inheritance idea can be generalized further with what are called base
+ * tags. A base tag is an empty `struct` that inherits from `db::BaseTag`. Any
+ * simple or compute item that derives off of the base tag can be retrieved
+ * using `db::get`. Consider the following `VectorBase` and `Vector` tag:
+ *
+ * \snippet Test_BaseTags.cpp vector_base_definitions
+ *
+ * It is possible to retrieve `Vector<1>` from the DataBox using
+ * `VectorBase<1>`. Most importantly, base tags can also be used in compute tag
+ * arguments, as follows:
+ *
+ * \snippet Test_BaseTags.cpp compute_template_base_tags
+ *
+ * As shown in the code example, the base tag mechanism works with function
+ * template compute tags, enabling generic programming to be combined with the
+ * lazy evaluation and automatic dependency analysis offered by the DataBox. To
+ * really demonstrate the power of base tags, let's also have `ArrayComputeBase`
+ * inherit from a simple tag `Array`, which inherits from a base tag `ArrayBase`
+ * as follows:
+ *
+ * \snippet Test_BaseTags.cpp array_base_definitions
+ *
+ * To start, let's create a DataBox that holds a `Vector<0>` and an
+ * `ArrayComputeBase<0>` (the concrete tag must be used when creating the
+ * DataBox, not the base tags), retrieve the tags using the base tag mechanism,
+ * including mutating `Vector<0>`, and then verifying that the dependencies are
+ * handled correctly.
+ *
+ * \snippet Test_BaseTags.cpp base_simple_and_compute_mutate
+ *
+ * Notice that we are able to retrieve `ArrayComputeBase<0>` with `ArrayBase<0>`
+ * and `Array<0>`. We were also able to mutate `Vector<0>` using
+ * `VectorBase<0>`.
+ *
+ * We can even remove tags using their base tags with `db::create_from`:
+ *
+ * \snippet Test_BaseTags.cpp remove_using_base
+ *
+ * The base tags infrastructure even works with Subitems. Even if you mutate the
+ * subitem of a parent using a base tag, the appropriate compute item caches
+ * will be invalidated.
+ *
+ * \note All of the base tags infrastructure works for `db::get`, `db::mutate`,
+ * `db::apply` and `db::mutate_apply`.
  */
 
 /*!
