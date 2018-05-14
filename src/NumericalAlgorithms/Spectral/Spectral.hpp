@@ -42,8 +42,11 @@ namespace Spectral {
  * \ingroup SpectralGroup
  * \brief The choice of basis functions for computing collocation points and
  * weights.
+ *
+ * \details Choose `Legendre` for a general-purpose DG mesh, unless you have a
+ * particular reason for choosing another basis.
  */
-enum class Basis { Legendre };
+enum class Basis { Chebyshev, Legendre };
 
 /// \cond HIDDEN_SYMBOLS
 std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;

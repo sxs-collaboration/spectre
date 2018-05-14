@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
 namespace {
 
 DataVector unit_polynomial(const size_t deg, const DataVector& x) {
-  // Simply choose all polynomial coefficients to one
+  // Choose all polynomial coefficients to be one
   const std::vector<double> coeffs(deg + 1, 1.);
   return evaluate_polynomial(coeffs, x);
 }
@@ -100,6 +100,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactDifferentiation",
                                Spectral::Quadrature::GaussLobatto>(
         [](const size_t n) { return n - 1; });
   }
+  SECTION(
+      "Chebyshev-Gauss differentiation is exact to polynomial order "
+      "num_points - 1") {
+    test_exact_differentiation<Spectral::Basis::Chebyshev,
+                               Spectral::Quadrature::Gauss>(
+        [](const size_t n) { return n - 1; });
+  }
+  SECTION(
+      "Chebyshev-Gauss-Lobatto differentiation is exact to polynomial order "
+      "num_points - 1") {
+    test_exact_differentiation<Spectral::Basis::Chebyshev,
+                               Spectral::Quadrature::GaussLobatto>(
+        [](const size_t n) { return n - 1; });
+  }
 }
 
 namespace {
@@ -137,6 +151,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearFilter",
   }
   SECTION("Legendre-Gauss-Lobatto") {
     test_linear_filter<Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto>();
+  }
+  SECTION("Chebyshev-Gauss") {
+    test_linear_filter<Spectral::Basis::Chebyshev,
+                       Spectral::Quadrature::Gauss>();
+  }
+  SECTION("Chebyshev-Gauss-Lobatto") {
+    test_linear_filter<Spectral::Basis::Chebyshev,
                        Spectral::Quadrature::GaussLobatto>();
   }
 }
@@ -180,6 +202,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactInterpolation",
       "Legendre-Gauss-Lobatto interpolation is exact to polynomial "
       "order num_points-1") {
     test_exact_interpolation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>(
+        [](const size_t n) { return n - 1; });
+  }
+  SECTION(
+      "Chebyshev-Gauss interpolation is exact to polynomial "
+      "order num_points-1") {
+    test_exact_interpolation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::Gauss>(
+        [](const size_t n) { return n - 1; });
+  }
+  SECTION(
+      "Chebyshev-Gauss-Lobatto interpolation is exact to polynomial "
+      "order num_points-1") {
+    test_exact_interpolation<Spectral::Basis::Chebyshev,
                              Spectral::Quadrature::GaussLobatto>(
         [](const size_t n) { return n - 1; });
   }
@@ -233,6 +269,46 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactQuadrature",
                                       Spectral::Quadrature::GaussLobatto>(
         [](const size_t n) { return 2 * n - 3; });
   }
+  // For a function \f$f(x)\f$ the exact quadrature is
+  // \f$\int_{-1}^{1}f(x)w(x)\mathrm{d}x\f$ where \f$w(x)=1/sqrt(1-x^2)\f$ is
+  // the Chebyshev weight. We test this here for polynomials with unit
+  // coefficients \f$f(x)=1+x+x^2+\ldots\f$.
+  SECTION(
+      "Chebyshev-Gauss quadrature is exact to polynomial order "
+      "2*num_points-1") {
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>(1, 1, M_PI);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>(2, 3, 3. * M_PI / 2.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>(3, 5, 15. * M_PI / 8.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>(4, 7, 35. * M_PI / 16.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>(5, 9,
+                                                       315. * M_PI / 128.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>(6, 11,
+                                                       693. * M_PI / 256.);
+  }
+  SECTION(
+      "Chebyshev-Gauss-Lobatto quadrature is exact to polynomial order "
+      "2*num_points-3") {
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>(2, 1, M_PI);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>(3, 3,
+                                                              3. * M_PI / 2.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>(4, 5,
+                                                              15. * M_PI / 8.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>(5, 7,
+                                                              35. * M_PI / 16.);
+    test_exact_quadrature<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>(
+        6, 9, 315. * M_PI / 128.);
+  }
 }
 
 namespace {
@@ -265,6 +341,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.QuadratureWeights",
   test_quadrature_weights<Spectral::Basis::Legendre,
                           Spectral::Quadrature::Gauss>();
   test_quadrature_weights<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_quadrature_weights<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>();
+  test_quadrature_weights<Spectral::Basis::Chebyshev,
                           Spectral::Quadrature::GaussLobatto>();
 }
 

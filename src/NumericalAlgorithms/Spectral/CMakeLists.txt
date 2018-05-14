@@ -4,6 +4,7 @@
 set(LIBRARY Spectral)
 
 set(LIBRARY_SOURCES
+    Chebyshev.cpp
     Legendre.cpp
     Projection.cpp
     Spectral.cpp

@@ -460,7 +460,8 @@ template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
 template Matrix Spectral::interpolation_matrix(
     const Mesh<1>&, const std::vector<double>&) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (Spectral::Basis::Legendre),
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (Spectral::Basis::Chebyshev, Spectral::Basis::Legendre),
                         (Spectral::Quadrature::Gauss,
                          Spectral::Quadrature::GaussLobatto))
 
