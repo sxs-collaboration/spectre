@@ -468,7 +468,7 @@ class DataBox<tmpl::list<Tags...>>
   template <typename... MutateTags, typename TagList, typename Invokable,
             typename... Args>
   // clang-tidy: redundant declaration
-  friend void mutate(DataBox<TagList>& box,                            // NOLINT
+  friend void mutate(gsl::not_null<DataBox<TagList>*> box,             // NOLINT
                      Invokable&& invokable, Args&&... args) noexcept;  // NOLINT
 
   /*!
@@ -985,7 +985,7 @@ db::DataBox<tmpl::list<Tags...>>::mutate_subitem_tags_in_box(
  */
 template <typename... MutateTags, typename TagList, typename Invokable,
           typename... Args>
-void mutate(DataBox<TagList>& box, Invokable&& invokable,
+void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
             Args&&... args) noexcept {
   using mutate_tags_list =
       tmpl::list<DataBox_detail::first_matching_tag<TagList, MutateTags>...>;
@@ -998,17 +998,19 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
                              TagList, MutateTags> == 1)...>,
       "One of the tags being mutated via a base tag has more than one tag in "
       "the DataBox that derives off of it. This is not allowed.");
-  if (UNLIKELY(box.mutate_locked_box_)) {
+  if (UNLIKELY(box->mutate_locked_box_)) {
     ERROR(
         "Unable to mutate a DataBox that is already being mutated. This "
         "error occurs when mutating a DataBox from inside the invokable "
         "passed to the mutate function.");
   }
-  box.mutate_locked_box_ = true;
-  invokable(box.template get_deferred<
-                   DataBox_detail::first_matching_tag<TagList, MutateTags>>()
-                .mutate()...,
-            std::forward<Args>(args)...);
+  box->mutate_locked_box_ = true;
+  invokable(
+      make_not_null(
+          &box->template get_deferred<
+                  DataBox_detail::first_matching_tag<TagList, MutateTags>>()
+               .mutate())...,
+      std::forward<Args>(args)...);
   // For all the tags in the DataBox, check if one of their subtags is
   // being mutated and if so add the parent to the list of tags
   // being mutated. Then, remove any tags that would be passed
@@ -1033,11 +1035,14 @@ void mutate(DataBox<TagList>& box, Invokable&& invokable,
                                               tmpl::pin<full_mutated_items>,
                                               tmpl::get_source<tmpl::_1>>>,
                       tmpl::get_destination<tmpl::_1>>;
-  EXPAND_PACK_LEFT_TO_RIGHT(box.template mutate_subitem_tags_in_box<MutateTags>(
-      typename Subitems<TagList, MutateTags>::type{}));
-  box.template reset_compute_items_after_mutate(first_compute_items_to_reset{});
 
-  box.mutate_locked_box_ = false;
+  EXPAND_PACK_LEFT_TO_RIGHT(
+      box->template mutate_subitem_tags_in_box<MutateTags>(
+          typename Subitems<TagList, MutateTags>::type{}));
+  box->template reset_compute_items_after_mutate(
+      first_compute_items_to_reset{});
+
+  box->mutate_locked_box_ = false;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1444,8 +1449,8 @@ inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& box,
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
-      box,
-      [](db::item_type<ReturnTags> & ... mutated_items,
+      make_not_null(&box),
+      [](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
          const db::item_type<ArgumentTags>&... args_items,
          decltype(std::forward<Args>(args))... l_args)
       // clang-format off
@@ -1454,7 +1459,7 @@ inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& box,
           std::declval<const db::item_type<ArgumentTags>&>()...,
           std::forward<Args>(args)...))) {
         // clang-format on
-        return F::apply(make_not_null(&mutated_items)..., args_items...,
+        return F::apply(mutated_items..., args_items...,
                         std::forward<Args>(l_args)...);
       },
       db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
@@ -1483,17 +1488,17 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags>& box,
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
-      box,
-      [&f](db::item_type<ReturnTags> & ... mutated_items,
+      make_not_null(&box),
+      [&f](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
            const db::item_type<ArgumentTags>&... args_items,
            decltype(std::forward<Args>(args))... l_args)
       // clang-format off
-      noexcept(noexcept(f(make_not_null(&mutated_items)...,
+      noexcept(noexcept(f(mutated_items...,
                           args_items..., std::forward<Args>(
                               l_args)...)))
       // clang-format on
       {
-        return f(make_not_null(&mutated_items)..., args_items...,
+        return f(mutated_items..., args_items...,
                  std::forward<Args>(l_args)...);
       },
       db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);

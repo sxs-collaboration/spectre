@@ -22,6 +22,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -275,8 +276,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
         make_interface_tensor({5., 5., 5.}, {5., 5., 5., 5.}));
 
   db::mutate<Tags::Interface<Dirs, Var<0>>>(
-      box, [](auto& boundary_tensor) noexcept {
-        get(boundary_tensor.at(Direction<dim>::lower_xi())) *= 3.;
+      make_not_null(&box), [](const auto boundary_tensor) noexcept {
+        get(boundary_tensor->at(Direction<dim>::lower_xi())) *= 3.;
       });
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
         make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));

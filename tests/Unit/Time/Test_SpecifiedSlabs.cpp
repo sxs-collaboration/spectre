@@ -15,6 +15,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -42,7 +43,8 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedSlabs", "[Unit][Time]") {
   for (const bool expected :
        {false, false, false, true, false, false, true, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);
-    db::mutate<Tags::TimeId>(box,
-                             [](TimeId& time_id) { ++time_id.slab_number; });
+    db::mutate<Tags::TimeId>(
+        make_not_null(&box),
+        [](const gsl::not_null<TimeId*> time_id) { ++time_id->slab_number; });
   }
 }

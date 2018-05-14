@@ -72,14 +72,15 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
 
   for (size_t substep = 0; substep < 3; ++substep) {
     db::mutate<dt_variables_tag, Tags::TimeId>(
-        box,
-        [&rhs, &substep, &substep_times ](double& dt_vars,
-                                          TimeId& local_time_id,
-                                          const double& vars) noexcept {
-          local_time_id.time = gsl::at(substep_times, substep);
-          local_time_id.substep = substep;
+        make_not_null(&box),
+        [&rhs, &substep, &substep_times ](
+            const gsl::not_null<double*> dt_vars,
+            const gsl::not_null<TimeId*> local_time_id,
+            const double& vars) noexcept {
+          local_time_id->time = gsl::at(substep_times, substep);
+          local_time_id->substep = substep;
 
-          dt_vars = rhs(local_time_id.time.value(), vars);
+          *dt_vars = rhs(local_time_id->time.value(), vars);
         },
         db::get<variables_tag>(box));
 

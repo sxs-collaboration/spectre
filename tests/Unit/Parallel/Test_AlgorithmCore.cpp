@@ -24,6 +24,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -109,7 +110,10 @@ struct increment_count_actions_called {
         cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
     static int a = 0;
     return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), ++a >= 5);
   }
@@ -224,7 +228,10 @@ struct add_int_value_10 {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
     static int a = 0;
     return std::make_tuple(
         db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), 10),
@@ -243,8 +250,12 @@ struct increment_int0 {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
-    db::mutate<Int0>(box, [](int& int0) { int0++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
+    db::mutate<Int0>(make_not_null(&box),
+                     [](const gsl::not_null<int*> int0) { ++*int0; });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -261,10 +272,10 @@ struct remove_int0 {
                     const ParallelComponent* const /*meta*/) noexcept {
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 11);
     db::mutate<CountActionsCalled>(
-        box,
-        [](int& count_actions_called, const int& int0) {
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called, const int& int0) {
           SPECTRE_PARALLEL_REQUIRE(int0 == 11);
-          count_actions_called++;
+          ++*count_actions_called;
         },
         db::get<Int0>(box));
     return std::make_tuple(db::create_from<tmpl::list<Int0>>(std::move(box)));
@@ -381,7 +392,10 @@ struct add_int0_from_receive {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
     static int a = 0;
     auto int0 = *(
         std::move(tuples::get<IntReceiveTag>(inboxes)[db::get<TemporalId>(box)])
@@ -405,8 +419,9 @@ struct add_int0_from_receive {
     // The const_cast in this function is purely for testing purposes, this is
     // NOT an example of how to use this function.
     // clang-tidy: do not use const_cast
-    db::mutate<Int1>(const_cast<db::DataBox<DbTags>&>(box),  // NOLINT
-                     [](int& int1) { int1++; });
+    db::mutate<Int1>(
+        make_not_null(&const_cast<db::DataBox<DbTags>&>(box)),  // NOLINT
+        [](const gsl::not_null<int*> int1) { ++*int1; });
     return inbox.count(db::get<TemporalId>(box)) != 0;
   }
 };
@@ -422,7 +437,10 @@ struct update_instance {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<TemporalId>(
-        box, [](TestAlgorithmArrayInstance& temporal_id) { ++temporal_id; });
+        make_not_null(&box),
+        [](const gsl::not_null<TestAlgorithmArrayInstance*> temporal_id) {
+          ++*temporal_id;
+        });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -533,7 +551,10 @@ struct iterate_increment_int0 {
                                    AnyOrderComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
     SPECTRE_PARALLEL_REQUIRE((db::get<CountActionsCalled>(box) - 1) / 2 ==
                              db::get<Int0>(box) - 10);
 

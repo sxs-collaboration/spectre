@@ -52,17 +52,16 @@ struct UpdateU {
 
     db::mutate<variables_tag, dt_variables_tag,
                Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>(
-        box, [&cache](auto& vars, auto& dt_vars, auto& history,
-                      const auto& time, const auto& time_step) noexcept {
+        make_not_null(&box),
+        [&cache](const auto vars, const auto dt_vars, const auto history,
+                 const auto& time, const auto& time_step) noexcept {
           const auto& time_stepper =
               Parallel::get<CacheTags::TimeStepper>(cache);
 
-          history.insert(time, vars, std::move(dt_vars));
-          time_stepper.update_u(make_not_null(&vars), make_not_null(&history),
-                                time_step);
+          history->insert(time, *vars, std::move(*dt_vars));
+          time_stepper.update_u(vars, history, time_step);
         },
-        db::get<Tags::Time>(box),
-        db::get<Tags::TimeStep>(box));
+        db::get<Tags::Time>(box), db::get<Tags::TimeStep>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -69,8 +70,8 @@ void test_non_subitems() {
   CHECK(db::get<TestTags::VectorBase<0>>(box) ==
         std::vector<double>{-10.0, 10.0});
   CHECK(db::get<TestTags::Array<0>>(box) == std::array<int, 3>{{2, -10, -8}});
-  db::mutate<TestTags::VectorBase<0>>(box,
-                                      [](auto& vector) { vector[0] = 101.8; });
+  db::mutate<TestTags::VectorBase<0>>(
+      make_not_null(&box), [](const auto vector) { (*vector)[0] = 101.8; });
   CHECK(db::get<TestTags::VectorBase<0>>(box) ==
         std::vector<double>{101.8, 10.0});
   CHECK(db::get<TestTags::ArrayBase<0>>(box) ==
@@ -109,8 +110,8 @@ void test_non_subitems() {
       box, std::vector<double>{-7.1, 8.9}, std::vector<double>{103.1, -73.2});
   CHECK(db::get<TestTags::ArrayBase<1>>(box4) ==
         std::array<int, 4>{{2, 101, -7, 103}});
-  db::mutate<TestTags::VectorBase<2>>(box4,
-                                      [](auto& vector) { vector[0] = 408.8; });
+  db::mutate<TestTags::VectorBase<2>>(
+      make_not_null(&box4), [](const auto vector) { (*vector)[0] = 408.8; });
   CHECK(db::get<TestTags::ArrayBase<1>>(box4) ==
         std::array<int, 4>{{2, 101, -7, 408}});
 
@@ -290,7 +291,8 @@ void test_subitems_tags() {
 
   // - `mutate`ing a subitem by a base tag
   db::mutate<TestTags::FirstBase<0>>(
-      box, [](TestTags::Boxed<int> & first) noexcept { *first = -3; });
+      make_not_null(&box), [](const gsl::not_null<TestTags::Boxed<int>*>
+                                  first) noexcept { **first = -3; });
   CHECK(*db::get<TestTags::FirstBase<0>>(box) == -3);
   CHECK(*db::get<TestTags::SecondBase<0>>(box) == 3.5);
   CHECK(db::get<TestTags::ParentBase<0>>(box) ==
@@ -322,11 +324,14 @@ void test_subitems_tags() {
                    TestTags::Boxed<double>(std::make_shared<double>(9.5))));
   CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == -3 * 9.5);
   db::mutate<TestTags::FirstBase<0>>(
-      box3, [](TestTags::Boxed<int> & first) noexcept { *first = 4; });
+      make_not_null(&box3), [](const gsl::not_null<TestTags::Boxed<int>*>
+                                   first) noexcept { **first = 4; });
   CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == 4 * 9.5);
   db::mutate<TestTags::ParentBase<0>>(
-      box3, [](std::pair<TestTags::Boxed<int>, TestTags::Boxed<double>> &
-               parent0) noexcept { *parent0.first = 8; });
+      make_not_null(&box3),
+      [](const gsl::not_null<
+          std::pair<TestTags::Boxed<int>, TestTags::Boxed<double>>*>
+             parent0) noexcept { *parent0->first = 8; });
   CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == 8 * 9.5);
 }
 }  // namespace
