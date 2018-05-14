@@ -129,6 +129,7 @@ void check_with_random_values_impl(
     using Tag = tmpl::type_from<decltype(tag)>;
     const auto result =
         tuples::get<Tag>((klass.*f)(std::get<ArgumentIs>(args)...));
+    INFO("function: " << function_names[count]);
     CHECK_ITERABLE_APPROX(
         result,
         (pypp::call<std::decay_t<decltype(result)>>(
@@ -174,6 +175,7 @@ void check_with_random_values_impl(
       std::integral_constant<
           bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
+  INFO("function: " << function_name);
   CHECK_ITERABLE_APPROX(
       result, pypp::call<ResultType>(
                   module_name, function_name, std::get<ArgumentIs>(args)...,
@@ -234,6 +236,7 @@ void check_with_random_values_impl(
     (void)member_args;  // avoid compiler warning
     (void)used_for_size;  // avoid compiler warning
     constexpr size_t iter = decltype(result_i)::value;
+    INFO("function: " << function_names[iter]);
     CHECK_ITERABLE_APPROX(
         std::get<iter>(results),
         (pypp::call<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
