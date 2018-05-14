@@ -1358,23 +1358,6 @@ struct Apply<tmpl::list<Tags...>> {
     return std::forward<F>(f)(::db::get<Tags>(box)...,
                               std::forward<Args>(args)...);
   }
-
-  template <typename F, typename BoxTags, typename... Args>
-  static constexpr auto apply_with_box(F&& f, const DataBox<BoxTags>& box,
-                                       Args&&... args) {
-    static_assert(
-        tt::is_callable_v<
-            F, DataBox<BoxTags>,
-            tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
-                                const DataBox<BoxTags>&, item_type<Tags>>...,
-            Args...>,
-        "Cannot call the function f with the list of tags and "
-        "arguments specified. Check that the Tags::type and the "
-        "types of the Args match the function f and that f is "
-        "receiving the correct type of DataBox.");
-    return std::forward<F>(f)(box, ::db::get<Tags>(box)...,
-                              std::forward<Args>(args)...);
-  }
 };
 }  // namespace DataBox_detail
 
@@ -1408,7 +1391,7 @@ struct Apply<tmpl::list<Tags...>> {
  * \example
  * \snippet Test_DataBox.cpp apply_example
  *
- * \see apply_with_box DataBox
+ * \see DataBox
  * \tparam TagsList typelist of Tags in the order that they are to be passed
  * to `f`
  * \param f the function to apply
@@ -1583,7 +1566,7 @@ constexpr bool check_mutate_apply_argument_tags(
  * and how to use `mutate_apply` with the class
  * \snippet Test_DataBox.cpp mutate_apply_apply_example
  *
- * \see apply apply_with_box
+ * \see box
  * \tparam MutateTags typelist of Tags to mutate
  * \tparam ArgumentTags typelist of additional items to retrieve from the
  * DataBox
@@ -1612,55 +1595,6 @@ inline constexpr auto mutate_apply(
   DataBox_detail::check_mutate_apply_argument_tags(BoxTags{}, ArgumentTags{});
   return DataBox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
                                       std::forward<Args>(args)...);
-}
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Apply the function `f` with argument Tags `TagList` from DataBox `box`
- * and `box` as the first argument
- *
- * \details
- * Apply the function `f` with arguments that are of type `Tags::type...` where
- * `Tags` is defined by `TagList = tmpl::list<Tags...>`. The arguments to `f`
- * are retrieved from the DataBox `box` and the first argument passed to `f` is
- * the DataBox.
- *
- * \usage
- * Given a function `func` that takes arguments of types `DataBox<BoxTags>`,
- * `T1`, `T2`, `A1` and `A2`. Let the Tags for the quantities of types `T1`
- * and `T2` in the DataBox `box` be `Tag1` and `Tag2`, and objects `a1` of type
- * `A1` and `a2` of type `A2`, then
- * \code
- * auto result = apply_with_box<tmpl::list<Tag1, Tag2>>(func, box, a1, a2);
- * \endcode
- * \return `decltype(func(box, box.get<Tag1>(), box.get<Tag2>(), a1, a2))`
- *
- * \semantics
- * For tags `Tags...` in a DataBox `box`, and a function `func` that takes
- * as its first argument a value of type`decltype(box)`,
- * `sizeof...(Tags)` arguments of types `typename Tags::type...`, and
- * `sizeof...(Args)` arguments of types `Args...`,
- * \code
- * result = func(box, box.get<Tags>()..., args...);
- * \endcode
- *
- * \example
- * \snippet Test_DataBox.cpp apply_with_box_example
- *
- * \see apply DataBox
- * \tparam TagsList typelist of Tags in the order that they are to be passed
- * to `f`
- * \param f the function to apply
- * \param box the DataBox out of which to retrieve the Tags and to pass to
- * f`
- * \param args the arguments to pass to the function that are not in the
- * DataBox, `box`
- */
-template <typename TagsList, typename F, typename BoxTags, typename... Args>
-inline constexpr auto apply_with_box(F&& f, const DataBox<BoxTags>& box,
-                                     Args&&... args) {
-  return DataBox_detail::Apply<TagsList>::apply_with_box(
-      std::forward<F>(f), box, std::forward<Args>(args)...);
 }
 
 /*!

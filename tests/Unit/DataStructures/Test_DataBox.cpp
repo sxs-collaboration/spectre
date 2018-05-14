@@ -495,44 +495,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
   db::apply<tmpl::list<>>(NonCopyableFunctor{}, original_box);
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply_with_box",
-                  "[Unit][DataStructures]") {
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-  auto check_result_no_args = [](const auto& box,
-                                 const std::string& sample_string,
-                                 const auto& computed_string) {
-    CHECK(sample_string == "My Sample String"s);
-    CHECK(computed_string == "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::Tag1>(box) ==
-          (std::vector<double>{8.7, 93.2, 84.7}));
-  };
-  db::apply_with_box<
-      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
-      check_result_no_args, original_box);
-
-  /// [apply_with_box_example]
-  auto check_result_args = [](const auto& box, const std::string& sample_string,
-                              const std::string& computed_string,
-                              const std::vector<int>& vector) {
-    CHECK(sample_string == "My Sample String"s);
-    CHECK(computed_string == "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::Tag1>(box) ==
-          (std::vector<double>{8.7, 93.2, 84.7}));
-    CHECK((vector == std::vector<int>{1, 4, 8}));
-  };
-  db::apply_with_box<
-      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
-      check_result_args, original_box, std::vector<int>{1, 4, 8});
-  /// [apply_with_box_example]
-
-  db::apply_with_box<tmpl::list<>>(NonCopyableFunctor{}, original_box);
-}
-
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
                   "[Unit][DataStructures]") {
