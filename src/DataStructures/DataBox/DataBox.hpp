@@ -1432,16 +1432,10 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
               F, const gsl::not_null<db::item_type<ReturnTags>*>...,
               const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& box,
-                                   tmpl::list<ReturnTags...> /*meta*/,
-                                   tmpl::list<ArgumentTags...> /*meta*/,
-                                   Args&&... args)
-    // clang-format off
-    noexcept(noexcept(F::apply(
-        std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
-        std::declval<const db::item_type<ArgumentTags>&>()...,
-        std::forward<Args>(args)...))) {
-  // clang-format on
+inline constexpr auto mutate_apply(
+    F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
+    tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
+    Args&&... args) noexcept {
   static_assert(
       not tmpl2::flat_any_v<
           cpp17::is_same_v<ArgumentTags, Tags::DataBox>...> and
@@ -1449,7 +1443,7 @@ inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& box,
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
-      make_not_null(&box),
+      box,
       [](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
          const db::item_type<ArgumentTags>&... args_items,
          decltype(std::forward<Args>(args))... l_args)
@@ -1462,7 +1456,7 @@ inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& box,
         return F::apply(mutated_items..., args_items...,
                         std::forward<Args>(l_args)...);
       },
-      db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+      db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
 }
 
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
@@ -1471,10 +1465,10 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
               F, const gsl::not_null<db::item_type<ReturnTags>*>...,
               const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags>& box,
-                                   tmpl::list<ReturnTags...> /*meta*/,
-                                   tmpl::list<ArgumentTags...> /*meta*/,
-                                   Args&&... args)
+inline constexpr auto mutate_apply(
+    F f, const gsl::not_null<db::DataBox<BoxTags>*> box,
+    tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
+    Args&&... args)
     // clang-format off
     noexcept(noexcept(f(
         std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
@@ -1488,7 +1482,7 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags>& box,
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
-      make_not_null(&box),
+      box,
       [&f](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
            const db::item_type<ArgumentTags>&... args_items,
            decltype(std::forward<Args>(args))... l_args)
@@ -1501,7 +1495,7 @@ inline constexpr auto mutate_apply(F f, db::DataBox<BoxTags>& box,
         return f(mutated_items..., args_items...,
                  std::forward<Args>(l_args)...);
       },
-      db::get<ArgumentTags>(box)..., std::forward<Args>(args)...);
+      db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
 }
 
 template <typename Func, typename... Args>
@@ -1525,10 +1519,10 @@ template <
             F, const gsl::not_null<db::item_type<ReturnTags>*>...,
             const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
             Args...>)> = nullptr>
-inline constexpr auto mutate_apply(F /*f*/, db::DataBox<BoxTags>& /*box*/,
-                                   tmpl::list<ReturnTags...> /*meta*/,
-                                   tmpl::list<ArgumentTags...> /*meta*/,
-                                   Args&&... /*args*/) noexcept {
+inline constexpr auto mutate_apply(
+    F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> /*box*/,
+    tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
+    Args&&... /*args*/) noexcept {
   error_mutate_apply_not_callable<
       F, gsl::not_null<db::item_type<ReturnTags>*>...,
       const db::item_type<ArgumentTags>&..., Args&&...>();
@@ -1600,13 +1594,16 @@ constexpr bool check_mutate_apply_argument_tags(
  */
 template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args>
-inline constexpr auto
-mutate_apply(F f, DataBox<BoxTags>& box, Args&&... args) noexcept(
-    DataBox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{}) and
-    DataBox_detail::check_mutate_apply_argument_tags(BoxTags{},
-                                                     ArgumentTags{}) and
-    noexcept(DataBox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
-                                          std::forward<Args>(args)...))) {
+inline constexpr auto mutate_apply(
+    F f, const gsl::not_null<DataBox<BoxTags>*> box,
+    Args&&... args) noexcept(DataBox_detail::
+                                 check_mutate_apply_mutate_tags(
+                                     BoxTags{}, MutateTags{}) and
+                             DataBox_detail::check_mutate_apply_argument_tags(
+                                 BoxTags{}, ArgumentTags{}) and
+                             noexcept(DataBox_detail::mutate_apply(
+                                 f, box, MutateTags{}, ArgumentTags{},
+                                 std::forward<Args>(args)...))) {
   // These checks are duplicated in the noexcept specification above
   // because the noexcept(DataBox_detail::mutate_apply(...)) can cause
   // a compilation error before the checks in the function body are

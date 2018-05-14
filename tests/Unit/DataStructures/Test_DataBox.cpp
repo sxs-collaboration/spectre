@@ -1040,7 +1040,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   /// [mutate_apply_example]
   db::mutate_apply<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
-      tmpl::list<>>(test_databox_mutate_apply{}, box,
+      tmpl::list<>>(test_databox_mutate_apply{}, make_not_null(&box),
                     db::get<test_databox_tags::Tag2>(box));
   /// [mutate_apply_example]
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
@@ -1066,7 +1066,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
         get<2>(*vector) *= 5.0;
         CHECK(tag2 == "My Sample String"s);
       },
-      box);
+      make_not_null(&box));
   /// [mutate_apply_apply_example]
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
@@ -1093,7 +1093,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
         get<2>(get<test_databox_tags::VectorTag>(*vars)) *= 5.0;
         CHECK(tag2 == "My Sample String"s);
       },
-      box);
+      make_not_null(&box));
 
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==

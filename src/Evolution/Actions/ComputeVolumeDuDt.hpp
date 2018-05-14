@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 
 /// \cond
@@ -52,7 +53,7 @@ struct ComputeVolumeDuDt {
     // Note: dt_variables is not zeroed and du_dt cannot assume this.
     db::mutate_apply<typename system::du_dt::return_tags,
                      typename system::du_dt::argument_tags>(
-        typename system::du_dt{}, box);
+        typename system::du_dt{}, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
