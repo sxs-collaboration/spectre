@@ -150,3 +150,13 @@ none of the executables or testing libraries. The second stage builds builds the
 test executables, runs the tests, and also runs ClangTidy, include-what-you-use,
 and various other checks. Another stage could be added that builds some of the
 test libraries if necessary.
+
+## Caching Dependencies on macOS Builds
+
+On macOS builds we cache all of our dependencies, like LIBXSMM and
+Charm++. These are cached in `$HOME/mac_cache`. Ultimately this saves about
+10-12 minutes even when compared to using ccache to cache the object files from
+building the dependencies. We also cache `$HOME/Library/Caches/Homebrew`, which
+is where Homebrew keeps the downloaded formulas. By caching the Homebrew bottles
+we are able to avoid brew formulas building from source because a tarball of the
+package was not available at the time.
