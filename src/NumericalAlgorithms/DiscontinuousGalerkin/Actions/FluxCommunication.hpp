@@ -68,7 +68,7 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: Tags::Mortars<implementation_defined_local_data>
 /// - Modifies: db::add_tag_prefix<Tags::dt, variables_tag>
-template <typename Metavariables>
+template <typename Metavariables, typename TemporalIdTag>
 struct ComputeBoundaryFlux {
   using PackagedData = Variables<
       typename Metavariables::normal_dot_numerical_flux::type::package_tags>;
@@ -87,13 +87,14 @@ struct ComputeBoundaryFlux {
       Tags::Mortars<Tags::Variables<typename LocalData::tags_list>, volume_dim>;
 
   struct FluxesTag {
-    using temporal_id = TimeId;
+    using temporal_id = typename TemporalIdTag::type;
     using type = std::unordered_map<
-        TimeId, std::unordered_map<
-                    std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-                    PackagedData,
-                    boost::hash<std::pair<Direction<volume_dim>,
-                                          ElementId<volume_dim>>>>>;
+        temporal_id,
+        std::unordered_map<
+            std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+            PackagedData,
+            boost::hash<
+                std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>>;
   };
 
   using inbox_tags = tmpl::list<FluxesTag>;
@@ -137,7 +138,7 @@ struct ComputeBoundaryFlux {
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
 
     auto& inbox = tuples::get<FluxesTag>(inboxes);
-    const auto& time_id = db::get<Tags::TimeId>(box);
+    const auto& time_id = db::get<TemporalIdTag>(box);
     auto remote_data = std::move(inbox[time_id]);
     inbox.erase(time_id);
 
@@ -200,7 +201,7 @@ struct ComputeBoundaryFlux {
       const tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
-    const auto& time_id = db::get<Tags::TimeId>(box);
+    const auto& time_id = db::get<TemporalIdTag>(box);
     const auto& inbox = tuples::get<FluxesTag>(inboxes);
     auto receives = inbox.find(time_id);
     const auto number_of_neighbors =
@@ -235,6 +236,7 @@ struct ComputeBoundaryFlux {
 /// - Adds: Tags::Mortars<implementation_defined_local_data>
 /// - Removes: Interface<db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>
 /// - Modifies: nothing
+template <typename TemporalIdTag>
 struct SendDataForFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -245,7 +247,7 @@ struct SendDataForFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using ReceiverAction = ComputeBoundaryFlux<Metavariables>;
+    using ReceiverAction = ComputeBoundaryFlux<Metavariables, TemporalIdTag>;
     using system = typename Metavariables::system;
     constexpr size_t volume_dim = system::volume_dim;
 
@@ -263,7 +265,7 @@ struct SendDataForFluxes {
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
-    const auto& time_id = db::get<Tags::TimeId>(box);
+    const auto& time_id = db::get<TemporalIdTag>(box);
 
     using LocalData = typename ReceiverAction::LocalData;
 
@@ -305,8 +307,8 @@ struct SendDataForFluxes {
           package_arguments,
           tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
                      tmpl::_1>>>(
-          [&boundary_extents, &direction, &normal_dot_numerical_flux_computer](
-              const auto&... args) noexcept {
+          [&boundary_extents, &direction,
+           &normal_dot_numerical_flux_computer ](const auto&... args) noexcept {
             typename ReceiverAction::PackagedData ret(
                 boundary_extents.product(), 0.0);
             normal_dot_numerical_flux_computer.package_data(
@@ -331,8 +333,8 @@ struct SendDataForFluxes {
           packaged_data, boundary_extents, dimension, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
-        Parallel::receive_data<
-            typename ComputeBoundaryFlux<Metavariables>::FluxesTag>(
+        Parallel::receive_data<typename ComputeBoundaryFlux<
+            Metavariables, TemporalIdTag>::FluxesTag>(
             receiver_proxy[neighbor], time_id,
             std::make_pair(
                 std::make_pair(direction_from_neighbor, element.id()),

@@ -28,6 +28,7 @@
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/FinalTime.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -47,22 +48,19 @@ struct EvolutionMetavars {
 
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
-      tmpl::list<Actions::ComputeVolumeDuDt<Dim>,
-                 dg::Actions::ComputeNonconservativeBoundaryFluxes,
-                 dg::Actions::SendDataForFluxes,
-                 dg::Actions::ComputeBoundaryFlux<EvolutionMetavars>,
-                 Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;
+      tmpl::list<
+          Actions::ComputeVolumeDuDt<Dim>,
+          dg::Actions::ComputeNonconservativeBoundaryFluxes,
+          dg::Actions::SendDataForFluxes<Tags::TimeId>,
+          dg::Actions::ComputeBoundaryFlux<EvolutionMetavars, Tags::TimeId>,
+          Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The analytic solution is: PlaneWave\n"
       "The numerical flux is:    UpwindFlux\n"};
 
-  enum class Phase {
-    Initialization,
-    Evolve,
-    Exit
-  };
+  enum class Phase { Initialization, Evolve, Exit };
 
   static Phase determine_next_phase(
       const Phase& current_phase,
