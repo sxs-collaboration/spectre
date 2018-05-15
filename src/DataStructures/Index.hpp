@@ -11,6 +11,7 @@
 #include <limits>
 #include <ostream>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
@@ -81,6 +82,8 @@ class Index {
   /// \param d the element to remove.
   template <size_t N = Dim, Requires<(N > 0)> = nullptr>
   Index<Dim - 1> slice_away(const size_t d) const noexcept {
+    ASSERT(d < Dim,
+           "Can't slice dimension " << d << " from an Index<" << Dim << ">");
     std::array<size_t, Dim - 1> t{};
     for (size_t i = 0; i < Dim; ++i) {
       if (i < d) {

@@ -95,7 +95,7 @@ class Variables<tmpl::list<Tags...>> {
                      tmpl::_state, tmpl::_element>>::value;
 
   /// Default construct an empty Variables class, Charm++ needs this
-  Variables() = default;
+  Variables() noexcept;
 
   explicit Variables(
       size_t number_of_grid_points,
@@ -359,6 +359,20 @@ class Variables<tmpl::list<Tags...>> {
   size_t number_of_grid_points_ = 0;
   tuples::TaggedTuple<Tags...> reference_variable_data_;
 };
+
+template <typename... Tags>
+Variables<tmpl::list<Tags...>>::Variables() noexcept {
+  // This makes an assertion trigger if one tries to assign to
+  // components of a default-constructed Variables.
+  const auto set_refs = [this](auto& var) noexcept {
+    for (auto& dv : var) {
+      dv.set_data_ref(&variable_data_[0], 0);
+    }
+    return 0;
+  };
+  (void)set_refs;
+  expand_pack(set_refs(tuples::get<Tags>(reference_variable_data_))...);
+}
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
