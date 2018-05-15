@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/CoefficientVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 
 #include <algorithm>
 #include <pup.h>
@@ -9,22 +9,22 @@
 
 #include "Utilities/StdHelpers.hpp"
 
-//~ CoefficientVector::CoefficientVector(const size_t size, const double value)
-    //~ : size_(size),
-      //~ owned_data_(size_, value),
-      //~ data_(owned_data_.data(), size_) {}
+ModalVector::ModalVector(const size_t size, const double value)
+    : size_(size),
+      owned_data_(size_, value),
+      data_(owned_data_.data(), size_) {}
 
 template <class T, Requires<cpp17::is_same_v<T, double>>>
-CoefficientVector::CoefficientVector(std::initializer_list<T> list)
+ModalVector::ModalVector(std::initializer_list<T> list)
     : size_(list.size()),
       owned_data_(std::move(list)),
       data_(owned_data_.data(), size_) {}
 
-CoefficientVector::CoefficientVector(double* start, size_t size)
+ModalVector::ModalVector(double* start, size_t size)
     : size_(size), owned_data_(0), data_(start, size_), owning_(false) {}
 
 /// \cond HIDDEN_SYMBOLS
-CoefficientVector::CoefficientVector(const CoefficientVector& rhs) {
+ModalVector::ModalVector(const ModalVector& rhs) {
   size_ = rhs.size();
   if (rhs.is_owning()) {
     owned_data_ = rhs.owned_data_;
@@ -34,7 +34,7 @@ CoefficientVector::CoefficientVector(const CoefficientVector& rhs) {
   data_ = decltype(data_){owned_data_.data(), size_};
 }
 
-CoefficientVector& CoefficientVector::operator=(const CoefficientVector& rhs) {
+ModalVector& ModalVector::operator=(const ModalVector& rhs) {
   if (this == &rhs) {
     return *this;
   }
@@ -54,7 +54,7 @@ CoefficientVector& CoefficientVector::operator=(const CoefficientVector& rhs) {
   return *this;
 }
 
-CoefficientVector::CoefficientVector(CoefficientVector&& rhs) noexcept {
+ModalVector::ModalVector(ModalVector&& rhs) noexcept {
   size_ = rhs.size_;
   owned_data_ = std::move(rhs.owned_data_);
   // clang-tidy: move trivially copyable type, future proof in case impl
@@ -67,8 +67,8 @@ CoefficientVector::CoefficientVector(CoefficientVector&& rhs) noexcept {
   rhs.data_ = decltype(rhs.data_){};
 }
 
-CoefficientVector&
-CoefficientVector::operator=(CoefficientVector&& rhs) noexcept {
+ModalVector&
+ModalVector::operator=(ModalVector&& rhs) noexcept {
   if (this == &rhs) {
     return *this;
   }
@@ -91,7 +91,7 @@ CoefficientVector::operator=(CoefficientVector&& rhs) noexcept {
 }
 /// \endcond
 
-void CoefficientVector::pup(PUP::er& p) noexcept {  // NOLINT
+void ModalVector::pup(PUP::er& p) noexcept {  // NOLINT
   p | size_;
   if (p.isUnpacking()) {
     owning_ = true;
@@ -109,24 +109,24 @@ void CoefficientVector::pup(PUP::er& p) noexcept {  // NOLINT
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const CoefficientVector& d) {
+std::ostream& operator<<(std::ostream& os, const ModalVector& d) {
   // This function is inside the detail namespace StdHelpers.hpp
   StdHelpers_detail::print_helper(os, d.begin(), d.end());
   return os;
 }
 
-/// Equivalence operator for CoefficientVector
-bool operator==(const CoefficientVector& lhs, const CoefficientVector& rhs) {
+/// Equivalence operator for ModalVector
+bool operator==(const ModalVector& lhs, const ModalVector& rhs) {
   return lhs.size() == rhs.size() and
          std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
-/// Inequivalence operator for CoefficientVector
-bool operator!=(const CoefficientVector& lhs, const CoefficientVector& rhs) {
+/// Inequivalence operator for ModalVector
+bool operator!=(const ModalVector& lhs, const ModalVector& rhs) {
   return not(lhs == rhs);
 }
 
 /// \cond
 template
-CoefficientVector::CoefficientVector(std::initializer_list<double> list);
+ModalVector::ModalVector(std::initializer_list<double> list);
 /// \endcond

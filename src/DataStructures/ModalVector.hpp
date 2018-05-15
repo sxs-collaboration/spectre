@@ -38,7 +38,7 @@ using std::abs;  // NOLINT
  * \ingroup DataStructuresGroup
  * \brief A class for storing spectral coefficients on a mesh.
  *
- * A CoefficientVector holds an array of spectral coefficients, and can be
+ * A ModalVector holds an array of spectral coefficients, and can be
  * either owning (the array is deleted when the Data goes out of scope) or
  * non-owning, meaning it just has a pointer to an array.
  *
@@ -50,10 +50,10 @@ using std::abs;  // NOLINT
  * - max
  * - min
  */
-class CoefficientVector {
+class ModalVector {
   /// \cond HIDDEN_SYMBOLS
   static constexpr int private_asserts() {
-    static_assert(std::is_nothrow_move_constructible<CoefficientVector>::value,
+    static_assert(std::is_nothrow_move_constructible<ModalVector>::value,
                   "Missing move semantics");
     return 0;
   }
@@ -79,45 +79,46 @@ class CoefficientVector {
   ///
   /// \param size number of values
   /// \param value the value to initialize each element.
-  //~ explicit CoefficientVector(
-  //~ size_t size, double value = std::numeric_limits<double>::signaling_NaN());
+  explicit ModalVector(
+  size_t size, double value = std::numeric_limits<double>::signaling_NaN());
 
-  /// Create a non-owning CoefficientVector that points to `start`
-  CoefficientVector(double* start, size_t size);
+  /// Create a non-owning ModalVector that points to `start`
+  ModalVector(double* start, size_t size);
+  ModalVector(const double* start, size_t size);
 
   /// Create from an initializer list of doubles. All elements in the
   /// `std::initializer_list` must have decimal points
   // cppcheck-suppress syntaxError
   template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
-  CoefficientVector(std::initializer_list<T> list);
+  ModalVector(std::initializer_list<T> list);
 
-  /// Empty CoefficientVector
-  CoefficientVector() = default;
+  /// Empty ModalVector
+  ModalVector() = default;
   /// \cond HIDDEN_SYMBOLS
-  ~CoefficientVector() = default;
+  ~ModalVector() = default;
 
-  CoefficientVector(const CoefficientVector& rhs);
-  CoefficientVector(CoefficientVector&& rhs) noexcept;
-  CoefficientVector& operator=(const CoefficientVector& rhs);
-  CoefficientVector& operator=(CoefficientVector&& rhs) noexcept;
+  ModalVector(const ModalVector& rhs);
+  ModalVector(ModalVector&& rhs) noexcept;
+  ModalVector& operator=(const ModalVector& rhs);
+  ModalVector& operator=(ModalVector&& rhs) noexcept;
 
   // This is a converting constructor. clang-tidy complains that it's not
   // explicit, but we want it to allow conversion.
-  // clang-tidy: mark as explicit (we want conversion to CoefficientVector)
+  // clang-tidy: mark as explicit (we want conversion to ModalVector)
   template <typename VT, bool VF>
-  CoefficientVector(const blaze::Vector<VT, VF>& expression);  // NOLINT
+  ModalVector(const blaze::Vector<VT, VF>& expression);  // NOLINT
 
   template <typename VT, bool VF>
-  CoefficientVector& operator=(const blaze::Vector<VT, VF>& expression);
+  ModalVector& operator=(const blaze::Vector<VT, VF>& expression);
   /// \endcond
 
   /// Number of values stored
   size_t size() const noexcept { return size_; }
 
   // @{
-  /// Set the CoefficientVector to be a reference to another CoefficientVector
+  /// Set the ModalVector to be a reference to another ModalVector
   /// object
-  void set_data_ref(gsl::not_null<CoefficientVector*> rhs) noexcept {
+  void set_data_ref(gsl::not_null<ModalVector*> rhs) noexcept {
     set_data_ref(rhs->data(), rhs->size_);
   }
   void set_data_ref(double* start, size_t size) noexcept {
@@ -170,182 +171,182 @@ class CoefficientVector {
   /// See the Blaze library documentation for details on these functions since
   /// they merely forward to Blaze.
   /// https://bitbucket.org/blaze-lib/blaze/overview
-  CoefficientVector& operator=(const double& rhs) noexcept {
+  ModalVector& operator=(const double& rhs) noexcept {
     data_ = rhs;
     return *this;
   }
 
-  CoefficientVector& operator+=(const CoefficientVector& rhs) noexcept {
+  ModalVector& operator+=(const ModalVector& rhs) noexcept {
     data_ += rhs.data_;
     return *this;
   }
   template <typename VT, bool VF>
-  CoefficientVector& operator+=(const blaze::Vector<VT, VF>& rhs) noexcept {
+  ModalVector& operator+=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ += rhs;
     return *this;
   }
-  CoefficientVector& operator+=(const double& rhs) noexcept {
+  ModalVector& operator+=(const double& rhs) noexcept {
     data_ += rhs;
     return *this;
   }
 
-  CoefficientVector& operator-=(const CoefficientVector& rhs) noexcept {
+  ModalVector& operator-=(const ModalVector& rhs) noexcept {
     data_ -= rhs.data_;
     return *this;
   }
   template <typename VT, bool VF>
-  CoefficientVector& operator-=(const blaze::Vector<VT, VF>& rhs) noexcept {
+  ModalVector& operator-=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ -= rhs;
     return *this;
   }
-  CoefficientVector& operator-=(const double& rhs) noexcept {
+  ModalVector& operator-=(const double& rhs) noexcept {
     data_ -= rhs;
     return *this;
   }
 
   template <typename VT, bool VF>
-  CoefficientVector& operator*=(const blaze::Vector<VT, VF>& rhs) noexcept {
+  ModalVector& operator*=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ *= rhs;
     return *this;
   }
-  CoefficientVector& operator*=(const double& rhs) noexcept {
+  ModalVector& operator*=(const double& rhs) noexcept {
     data_ *= rhs;
     return *this;
   }
-  CoefficientVector& operator*=(const CoefficientVector& rhs) noexcept {
+  ModalVector& operator*=(const ModalVector& rhs) noexcept {
     data_ *= rhs.data_;
     return *this;
   }
 
   template <typename VT, bool VF>
-  CoefficientVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
+  ModalVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
     data_ /= rhs;
     return *this;
   }
-  CoefficientVector& operator/=(const double& rhs) noexcept {
+  ModalVector& operator/=(const double& rhs) noexcept {
     data_ /= rhs;
     return *this;
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const CoefficientVector& lhs, const CoefficientVector& rhs) noexcept {
+      const ModalVector& lhs, const ModalVector& rhs) noexcept {
     return lhs.data_ + rhs.data_;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const blaze::Vector<VT, VF>& lhs, const CoefficientVector& rhs) noexcept {
+      const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
     return ~lhs + rhs.data_;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ + ~rhs;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const CoefficientVector& lhs, const double& rhs) noexcept {
+      const ModalVector& lhs, const double& rhs) noexcept {
     return lhs.data_ + rhs;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const double& lhs, const CoefficientVector& rhs) noexcept {
+      const double& lhs, const ModalVector& rhs) noexcept {
     return lhs + rhs.data_;
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const CoefficientVector& lhs, const CoefficientVector& rhs) noexcept {
+      const ModalVector& lhs, const ModalVector& rhs) noexcept {
     return lhs.data_ - rhs.data_;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const blaze::Vector<VT, VF>& lhs, const CoefficientVector& rhs) noexcept {
+      const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
     return ~lhs - rhs.data_;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ - ~rhs;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const CoefficientVector& lhs, const double& rhs) noexcept {
+      const ModalVector& lhs, const double& rhs) noexcept {
     return lhs.data_ - rhs;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const double& lhs, const CoefficientVector& rhs) noexcept {
+      const double& lhs, const ModalVector& rhs) noexcept {
     return lhs - rhs.data_;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const CoefficientVector& rhs) noexcept {
+      const ModalVector& rhs) noexcept {
     return -rhs.data_;
   };
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const CoefficientVector& lhs, const double& rhs) noexcept {
+      const ModalVector& lhs, const double& rhs) noexcept {
     return lhs.data_ * rhs;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const double& lhs, const CoefficientVector& rhs) noexcept {
+      const double& lhs, const ModalVector& rhs) noexcept {
     return lhs * rhs.data_;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const CoefficientVector& lhs, const CoefficientVector& rhs) noexcept {
+      const ModalVector& lhs, const ModalVector& rhs) noexcept {
     return lhs.data_ * rhs.data_;
   }
   // FIXME PK: Can we avoid the instantiation of new CV objects in the
   // next 2 functions?
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const CoefficientVector& lhs, const DataVector& rhs) noexcept {
-    CoefficientVector _rhs_local(const_cast<double*>(rhs.data()), rhs.size());
+      const ModalVector& lhs, const DataVector& rhs) noexcept {
+    ModalVector _rhs_local(rhs.data(), rhs.size());
     return lhs.data_ * _rhs_local.data_;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const DataVector& lhs, const CoefficientVector& rhs) noexcept {
-    CoefficientVector _lhs_local(const_cast<double*>(lhs.data()), lhs.size());
+      const DataVector& lhs, const ModalVector& rhs) noexcept {
+    ModalVector _lhs_local(lhs.data(), lhs.size());
     return _lhs_local.data_ * rhs.data_;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const blaze::Vector<VT, VF>& lhs, const CoefficientVector& rhs) noexcept {
+      const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
     return ~lhs * rhs.data_;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ * ~rhs;
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const CoefficientVector& lhs, const double& rhs) noexcept {
+      const ModalVector& lhs, const double& rhs) noexcept {
     return lhs.data_ / rhs;
   }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const CoefficientVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
+      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ / ~rhs;
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) min(
-      const CoefficientVector& t) noexcept {
+      const ModalVector& t) noexcept {
     return min(t.data_);
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) max(
-      const CoefficientVector& t) noexcept {
+      const ModalVector& t) noexcept {
     return max(t.data_);
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) abs(
-      const CoefficientVector& t) noexcept {
+      const ModalVector& t) noexcept {
     return abs(t.data_);
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) fabs(
-      const CoefficientVector& t) noexcept {
+      const ModalVector& t) noexcept {
     return abs(t.data_);
   }
   // @}
 
   /// If less than zero returns zero, otherwise returns one
   SPECTRE_ALWAYS_INLINE friend decltype(auto) step_function(
-      const CoefficientVector& t) noexcept {
+      const ModalVector& t) noexcept {
     return step_function(t.data_);
   }
 
@@ -358,45 +359,45 @@ class CoefficientVector {
   /// \endcond
 };
 
-/// Output operator for CoefficientVector
-std::ostream& operator<<(std::ostream& os, const CoefficientVector& d);
+/// Output operator for ModalVector
+std::ostream& operator<<(std::ostream& os, const ModalVector& d);
 
-/// Equivalence operator for CoefficientVector
-bool operator==(const CoefficientVector& lhs, const CoefficientVector& rhs);
+/// Equivalence operator for ModalVector
+bool operator==(const ModalVector& lhs, const ModalVector& rhs);
 
-/// Inequivalence operator for CoefficientVector
-bool operator!=(const CoefficientVector& lhs, const CoefficientVector& rhs);
+/// Inequivalence operator for ModalVector
+bool operator!=(const ModalVector& lhs, const ModalVector& rhs);
 
 template <typename T, size_t Dim>
-std::array<CoefficientVector, Dim> operator+(
+std::array<ModalVector, Dim> operator+(
     const std::array<T, Dim>& lhs,
-    const std::array<CoefficientVector, Dim>& rhs) noexcept {
-  std::array<CoefficientVector, Dim> result;
+    const std::array<ModalVector, Dim>& rhs) noexcept {
+  std::array<ModalVector, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
   }
   return result;
 }
 template <typename U, size_t Dim>
-std::array<CoefficientVector, Dim> operator+(
-    const std::array<CoefficientVector, Dim>& lhs,
+std::array<ModalVector, Dim> operator+(
+    const std::array<ModalVector, Dim>& lhs,
     const std::array<U, Dim>& rhs) noexcept {
   return rhs + lhs;
 }
 template <size_t Dim>
-std::array<CoefficientVector, Dim> operator+(
-    const std::array<CoefficientVector, Dim>& lhs,
-    const std::array<CoefficientVector, Dim>& rhs) noexcept {
-  std::array<CoefficientVector, Dim> result;
+std::array<ModalVector, Dim> operator+(
+    const std::array<ModalVector, Dim>& lhs,
+    const std::array<ModalVector, Dim>& rhs) noexcept {
+  std::array<ModalVector, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
   }
   return result;
 }
 template <size_t Dim>
-std::array<CoefficientVector, Dim>& operator+=(
-    std::array<CoefficientVector, Dim>& lhs,
-    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+std::array<ModalVector, Dim>& operator+=(
+    std::array<ModalVector, Dim>& lhs,
+    const std::array<ModalVector, Dim>& rhs) noexcept {
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(lhs, i) += gsl::at(rhs, i);
   }
@@ -404,39 +405,39 @@ std::array<CoefficientVector, Dim>& operator+=(
 }
 
 template <typename T, size_t Dim>
-std::array<CoefficientVector, Dim> operator-(
+std::array<ModalVector, Dim> operator-(
     const std::array<T, Dim>& lhs,
-    const std::array<CoefficientVector, Dim>& rhs) noexcept {
-  std::array<CoefficientVector, Dim> result;
+    const std::array<ModalVector, Dim>& rhs) noexcept {
+  std::array<ModalVector, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
   }
   return result;
 }
 template <typename U, size_t Dim>
-std::array<CoefficientVector, Dim> operator-(
-    const std::array<CoefficientVector, Dim>& lhs,
+std::array<ModalVector, Dim> operator-(
+    const std::array<ModalVector, Dim>& lhs,
     const std::array<U, Dim>& rhs) noexcept {
-  std::array<CoefficientVector, Dim> result;
+  std::array<ModalVector, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
   }
   return result;
 }
 template <size_t Dim>
-std::array<CoefficientVector, Dim> operator-(
-    const std::array<CoefficientVector, Dim>& lhs,
-    const std::array<CoefficientVector, Dim>& rhs) noexcept {
-  std::array<CoefficientVector, Dim> result;
+std::array<ModalVector, Dim> operator-(
+    const std::array<ModalVector, Dim>& lhs,
+    const std::array<ModalVector, Dim>& rhs) noexcept {
+  std::array<ModalVector, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
   }
   return result;
 }
 template <size_t Dim>
-std::array<CoefficientVector, Dim>& operator-=(
-    std::array<CoefficientVector, Dim>& lhs,
-    const std::array<CoefficientVector, Dim>& rhs) noexcept {
+std::array<ModalVector, Dim>& operator-=(
+    std::array<ModalVector, Dim>& lhs,
+    const std::array<ModalVector, Dim>& rhs) noexcept {
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(lhs, i) -= gsl::at(rhs, i);
   }
@@ -446,7 +447,7 @@ std::array<CoefficientVector, Dim>& operator-=(
 // FIXME PK: What is the purpose of next 2 functions copied from DataVector?
 /// \cond HIDDEN_SYMBOLS
 template <typename VT, bool VF>
-CoefficientVector::CoefficientVector(const blaze::Vector<VT, VF>& expression)
+ModalVector::ModalVector(const blaze::Vector<VT, VF>& expression)
     : size_((~expression).size()),
       owned_data_((~expression).size()),
       data_(owned_data_.data(), (~expression).size()) {
@@ -454,7 +455,7 @@ CoefficientVector::CoefficientVector(const blaze::Vector<VT, VF>& expression)
 }
 
 template <typename VT, bool VF>
-CoefficientVector& CoefficientVector::operator=(
+ModalVector& ModalVector::operator=(
     const blaze::Vector<VT, VF>& expression) {
   if (owning_ and (~expression).size() != size()) {
     size_ = (~expression).size();
