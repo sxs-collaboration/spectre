@@ -118,8 +118,9 @@ struct System {
 };
 
 struct Metavariables;
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes;
-using compute_boundary_flux = dg::Actions::ComputeBoundaryFlux<Metavariables>;
+using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Tags::TimeId>;
+using compute_boundary_flux =
+    dg::Actions::ComputeBoundaryFlux<Metavariables, Tags::TimeId>;
 
 using component =
     ActionTesting::MockArrayComponent<Metavariables, ElementIndex<2>,
