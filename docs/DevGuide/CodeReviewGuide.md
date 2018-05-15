@@ -44,6 +44,7 @@ Stylistic Items:
 // ================================================================
 ```
 
+* File lists in CMake are alphabetical.
 * No blank lines surrounding Doxygen group comments
   (<code>// \@{</code> and <code>// \@}</code>).
 * Use the [alternative tokens]
@@ -78,9 +79,10 @@ Code Quality Items:
 * Prefer range-based for loops
 * Use `size_t` for positive integers rather than `int`, specifically when
   looping over containers. This is in compliance with what the STL uses.
-* Error messages should be helpful. An example of a bad error message is
-  "Size mismatch" which should read "The number of grid points in the matrix
-  'F' is not the same as the number of grid points in the determinant."
+* Error messages should be helpful. An example of a bad error message is "Size
+  mismatch". Instead this message could read "The number of grid points in the
+  matrix 'F' is not the same as the number of grid points in the determinant.",
+  along with the runtime values of the mentioned quantities if applicable.
 * Mark immutable objects as `const`
 * Make classes serializable by writing a `pup` function
 * If a class stores an object passed into a constructor the object should
@@ -104,3 +106,4 @@ Code Quality Items:
   `get<a, b>(tensor)` instead of the member `get` function.
 * All necessary header files must be included. In header files, prefer
   forward declarations if class definitions aren't necessary.
+* Explicitly make numbers floating point, e.g. `2.` or `2.0` over `2`.

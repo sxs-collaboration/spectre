@@ -74,6 +74,31 @@ performed in the CHECK_FILES build.
 using a Linux OS, and the `AppleClang` compiler for `OS X`.
 * The `gcc Debug` build will fail if there are `doxygen` warnings.
 
+## How to perform the checks locally
+
+Before pushing to GitHub and waiting for Travis to perform the checks it is
+useful to perform at least the following tests locally:
+- **Unit tests:** Perform a `make test-executables` and then execute `ctest` to
+  run all unit tests. As for `make` you can append a `-jN` flag to `ctest` to
+  run in parallel on `N` cores. To run only a subset of the tests you can use
+  one of the other keywords that the tests are labeled with, such as `ctest -L
+  datastructures`. To run only particular tests you can also execute `ctest -R
+  TEST_NAME` instead, where `TEST_NAME` is a regular expression matching the
+  test identifiers such as `Unit.DataStructures.Mesh`. Pass the flag
+  `--output-on-failure` to get output from failed tests. Consult `ctest -h` for
+  further options.
+- **clang-tidy:** In a clang build directory, run `make clang-tidy
+  FILE=SOURCE_FILE` where `SOURCE_FILE` is a relative or absolute path to a
+  `.cpp` file. To perform this check for all source files that changed in your
+  pull request, `make clang-tidy-hash HASH=UPSTREAM_HEAD` where `UPSTREAM_HEAD`
+  is the hash of the commit that your pull request is based on, usually the
+  `HEAD` of the `upstream/develop` branch.
+- **IWYU:** Also just for the changed files in a pull request run `make
+  iwyu-hash HASH=UPSTREAM_HEAD`. Since IWYU requires `USE_PCH=OFF` you can
+  create a separate build directory and append `-D USE_PCH=OFF` to the usual
+  `cmake` call. Note that it is very easy to incorrectly install IWYU (if not
+  using the Docker container) and generate nonsense errors.
+
 ## Travis setup
 
 * The `gcc Debug` build runs code coverage for each Travis build.
