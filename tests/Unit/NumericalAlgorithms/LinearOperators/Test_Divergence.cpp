@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <string>
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -66,7 +67,7 @@ auto make_affine_map<3>() noexcept {
 template <size_t Dim, typename Frame>
 struct Flux1 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame>;
-  static constexpr db::Label label = "Flux1";
+  static std::string name() noexcept { return "Flux1"; }
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
                    const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
     auto result = make_with_value<tnsr::I<DataVector, Dim, Frame>>(x, 0.);
@@ -91,7 +92,7 @@ struct Flux1 : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct Flux2 : db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim, Frame>;
-  static constexpr db::Label label = "Flux2";
+  static std::string name() noexcept { return "Flux2"; }
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
                    const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
     auto result = make_with_value<tnsr::Ij<DataVector, Dim, Frame>>(x, 0.);
@@ -186,7 +187,7 @@ namespace {
 template <class MapType>
 struct MapTag : db::SimpleTag {
   using type = MapType;
-  static constexpr db::Label label = "MapTag";
+  static std::string name() noexcept { return "MapTag"; }
 };
 
 template <size_t Dim, typename Frame = Frame::Inertial>

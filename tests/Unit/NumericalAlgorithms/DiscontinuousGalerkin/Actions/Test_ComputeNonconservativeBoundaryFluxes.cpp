@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <pup.h>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -42,19 +43,19 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static constexpr db::Label label = "Var";
+  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 struct Var2 : db::SimpleTag {
-  static constexpr db::Label label = "Var2";
+  static std::string name() noexcept { return "Var2"; }
   using type = tnsr::ii<DataVector, 2>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 struct OtherArg : db::SimpleTag {
-  static constexpr db::Label label = "OtherArg";
+  static std::string name() noexcept { return "OtherArg"; }
   using type = double;
 };
 

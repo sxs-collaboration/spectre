@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <pup.h>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -51,12 +52,12 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static constexpr db::Label label = "Var";
+  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 
 struct OtherData : db::SimpleTag {
-  static constexpr db::Label label = "OtherData";
+  static std::string name() noexcept { return "OtherData"; }
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
@@ -64,7 +65,7 @@ struct OtherData : db::SimpleTag {
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-    static constexpr db::Label label = "ExtraTag";
+    static std::string name() noexcept { return "ExtraTag"; }
     using type = tnsr::I<DataVector, 1>;
   };
 

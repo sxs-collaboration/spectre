@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <functional>
 #include <pup.h>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -72,22 +73,22 @@ struct ElementId {};
 /// \endcond
 
 struct CountActionsCalled : db::SimpleTag {
-  static constexpr db::Label label = "CountActionsCalled";
+  static std::string name() noexcept { return "CountActionsCalled"; }
   using type = int;
 };
 
 struct Int0 : db::SimpleTag {
-  static constexpr db::Label label = "Int0";
+  static std::string name() noexcept { return "Int0"; }
   using type = int;
 };
 
 struct Int1 : db::SimpleTag {
-  static constexpr db::Label label = "Int1";
+  static std::string name() noexcept { return "Int1"; }
   using type = int;
 };
 
 struct TemporalId : db::SimpleTag {
-  static constexpr db::Label label = "TemporalId";
+  static std::string name() noexcept { return "TemporalId"; }
   using type = TestAlgorithmArrayInstance;
 };
 

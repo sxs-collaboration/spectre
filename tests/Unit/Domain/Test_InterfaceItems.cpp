@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <functional>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -41,24 +42,24 @@ struct NoCopy {
 
 namespace TestTags {
 struct Int : db::SimpleTag {
-  static constexpr db::Label label = "Int";
+  static std::string name() noexcept { return "Int"; }
   using type = int;
 };
 
 struct Double : db::SimpleTag {
-  static constexpr db::Label label = "Double";
+  static std::string name() noexcept { return "Double"; }
   using type = double;
 };
 
 template <size_t N>
 struct NoCopy : db::SimpleTag {
-  static constexpr db::Label label = "NoCopy";
+  static std::string name() noexcept { return "NoCopy"; }
   using type = ::NoCopy<N>;
 };
 
 template <typename Tag>
 struct Negate : db::PrefixTag, db::ComputeTag {
-  static constexpr db::Label label = "Negate";
+  static std::string name() noexcept { return "Negate"; }
   using tag = Tag;
   static constexpr auto function(const db::item_type<Tag>& x) noexcept {
     return -x;
@@ -67,7 +68,7 @@ struct Negate : db::PrefixTag, db::ComputeTag {
 };
 
 struct AddThree : db::ComputeTag {
-  static constexpr db::Label label = "AddThree";
+  static std::string name() noexcept { return "AddThree"; }
   static constexpr auto function(const int x) noexcept { return x + 3; }
   using argument_tags = tmpl::list<Int>;
   using volume_tags = tmpl::list<Int>;
@@ -75,7 +76,7 @@ struct AddThree : db::ComputeTag {
 
 template <size_t VolumeDim>
 struct ComplexComputeItem : db::ComputeTag {
-  static constexpr db::Label label = "ComplexComputeItem";
+  static std::string name() noexcept { return "ComplexComputeItem"; }
   static constexpr auto function(const int i, const double d,
                                  const ::NoCopy<1>& /*unused*/,
                                  const ::NoCopy<2>& /*unused*/) noexcept {
@@ -87,7 +88,7 @@ struct ComplexComputeItem : db::ComputeTag {
 
 template <typename>
 struct TemplatedDirections : db::SimpleTag {
-  static constexpr db::Label label = "TemplatedDirections";
+  static std::string name() noexcept { return "TemplatedDirections"; }
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
@@ -181,7 +182,7 @@ namespace {
 constexpr size_t dim = 2;
 
 struct Dirs : db::ComputeTag {
-  static constexpr db::Label label = "Dirs";
+  static std::string name() noexcept { return "Dirs"; }
   static auto function() noexcept {
     return std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
                                               Direction<dim>::upper_eta()};
@@ -191,7 +192,7 @@ struct Dirs : db::ComputeTag {
 
 template <size_t N>
 struct Var : db::SimpleTag {
-  static constexpr db::Label label = "Var";
+  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary =
       N == 3 or N == 30 or  // sliced_simple_item_tag below
@@ -200,7 +201,7 @@ struct Var : db::SimpleTag {
 
 template <size_t VolumeDim>
 struct Compute : db::ComputeTag {
-  static constexpr db::Label label = "Compute";
+  static std::string name() noexcept { return "Compute"; }
   static auto function(const Index<VolumeDim>& extents) {
     auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
         extents.product(), VolumeDim);
@@ -327,7 +328,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
 namespace partial_slice {
 template <size_t N>
 struct Scalar : db::SimpleTag {
-  static constexpr db::Label label = "Scalar";
+  static std::string name() noexcept { return "Scalar"; }
   using type = ::Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = N == 0;
 };
@@ -335,14 +336,14 @@ struct Scalar : db::SimpleTag {
 constexpr size_t vector_dim = 3;
 template <size_t N>
 struct Vector : db::SimpleTag {
-  static constexpr db::Label label = "Vector";
+  static std::string name() noexcept { return "Vector"; }
   using type = tnsr::i<DataVector, vector_dim, Frame::Logical>;
   static constexpr bool should_be_sliced_to_boundary = N == 1;
 };
 
 template <size_t VolumeDim>
 struct ComputedVars : db::ComputeTag {
-  static constexpr db::Label label = "ComputedVars";
+  static std::string name() noexcept { return "ComputedVars"; }
   static auto function(const Index<VolumeDim>& extents) noexcept {
     const DataVector volume_data{
       11., 10., 9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};

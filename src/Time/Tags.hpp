@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -25,7 +26,7 @@ namespace Tags {
 /// \ingroup TimeGroup
 /// \brief Tag for ::TimeId for the algorithm state
 struct TimeId : db::SimpleTag {
-  static constexpr db::Label label = "TimeId";
+  static std::string name() noexcept { return "TimeId"; }
   using type = ::TimeId;
 };
 
@@ -33,7 +34,7 @@ struct TimeId : db::SimpleTag {
 /// \ingroup TimeGroup
 /// \brief Tag for step size
 struct TimeStep : db::SimpleTag {
-  static constexpr db::Label label = "TimeStep";
+  static std::string name() noexcept { return "TimeStep"; }
   using type = ::TimeDelta;
 };
 
@@ -45,7 +46,7 @@ inline ::Time time_from_id(const ::TimeId& id) noexcept { return id.time; }
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current ::Time (from TimeId)
 struct Time : db::ComputeTag {
-  static constexpr db::Label label = "Time";
+  static std::string name() noexcept { return "Time"; }
   static constexpr auto function = TimeTags_detail::time_from_id;
   using argument_tags = tmpl::list<TimeId>;
 };
@@ -54,7 +55,7 @@ struct Time : db::ComputeTag {
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current time as a double
 struct TimeValue : db::ComputeTag {
-  static constexpr db::Label label = "TimeValue";
+  static std::string name() noexcept { return "TimeValue"; }
   static auto function(const ::Time& t) noexcept { return t.value(); }
   using argument_tags = tmpl::list<Time>;
 };
@@ -67,7 +68,7 @@ struct TimeValue : db::ComputeTag {
 /// \tparam DtTag tag for the time derivative of the variables
 template <typename Tag, typename DtTag>
 struct HistoryEvolvedVariables : db::PrefixTag, db::SimpleTag {
-  static constexpr db::Label label = "HistoryEvolvedVariables";
+  static std::string name() noexcept { return "HistoryEvolvedVariables"; }
   using tag = Tag;
   using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
 };
@@ -80,7 +81,7 @@ struct HistoryEvolvedVariables : db::PrefixTag, db::SimpleTag {
 /// \tparam Tag tag for boundary variables
 template <typename Key, typename Tag, typename Hash = std::hash<Key>>
 struct HistoryBoundaryVariables : db::PrefixTag, db::SimpleTag {
-  static constexpr db::Label label = "HistoryBoundaryVariables";
+  static std::string name() noexcept { return "HistoryBoundaryVariables"; }
   using tag = Tag;
   using type = std::unordered_map<Key, db::item_type<Tag>, Hash>;
 };

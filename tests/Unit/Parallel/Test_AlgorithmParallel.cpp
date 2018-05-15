@@ -5,6 +5,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -36,17 +37,17 @@ class DataBox;
 
 namespace Tags {
 struct Int0 : db::SimpleTag {
-  static constexpr db::Label label = "Int0";
+  static std::string name() noexcept { return "Int0"; }
   using type = int;
 };
 
 struct Int1 : db::SimpleTag {
-  static constexpr db::Label label = "Int1";
+  static std::string name() noexcept { return "Int1"; }
   using type = int;
 };
 
 struct CountActionsCalled : db::SimpleTag {
-  static constexpr db::Label label = "CountActionsCalled";
+  static std::string name() noexcept { return "CountActionsCalled"; }
   using type = int;
 };
 

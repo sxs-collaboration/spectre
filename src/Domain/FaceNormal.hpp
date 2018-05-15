@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -68,7 +69,7 @@ namespace Tags {
 /// The unnormalized face normal one form
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct UnnormalizedFaceNormal : db::ComputeTag {
-  static constexpr db::Label label = "UnnormalizedFaceNormal";
+  static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
       const ::Index<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
       const ::Direction<VolumeDim>&) = unnormalized_face_normal;

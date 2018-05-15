@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -14,18 +15,18 @@ namespace RelativisticEuler {
 namespace Valencia {
 struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label_t label = "TildeD";
+  static std::string name() noexcept { "TildeD"; }
 };
 
 struct TildeTau : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label_t label = "TildeTau";
+  static std::string name() noexcept { "TildeTau"; }
 };
 
 template <size_t Dim>
 struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-  static constexpr db::Label_t label = "TildeS";
+  static std::string name() noexcept { "TildeS"; }
 };
 }  // namespace Valencia
 }  // namespace RelativisticEuler

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -16,27 +17,27 @@ class DataVector;
 namespace CurvedScalarWave {
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Psi";
+  static std::string name() noexcept { return "Psi"; }
 };
 
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Pi";
+  static std::string name() noexcept { return "Pi"; }
 };
 
 template <size_t Dim>
 struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim>;
-  static constexpr db::Label label = "Phi";
+  static std::string name() noexcept { return "Phi"; }
 };
 
 struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ConstraintGamma1";
+  static std::string name() noexcept { return "ConstraintGamma1"; }
 };
 
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ConstraintGamma2";
+  static std::string name() noexcept { return "ConstraintGamma2"; }
 };
 }  // namespace CurvedScalarWave

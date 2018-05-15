@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -47,7 +48,7 @@ class er;
 namespace {
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Var";
+  static std::string name() noexcept { return "Var"; }
   static constexpr bool should_be_sliced_to_boundary = true;
 };
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <boost/functional/hash.hpp>
+#include <string>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -14,7 +15,7 @@
 namespace Tags {
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
-  static constexpr db::Label label = "Mortar";
+  static std::string name() noexcept { return "Mortar"; }
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;

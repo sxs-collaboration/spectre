@@ -126,7 +126,7 @@ struct UpwindFlux {
  private:
   struct NormalTimesFluxPi {
     using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-    static constexpr db::Label label = "NormalTimesFluxPi";
+    static std::string name() noexcept { return "NormalTimesFluxPi"; }
   };
 
  public:

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -44,12 +45,12 @@ struct NodegroupParallelComponent;
 
 namespace Tags {
 struct vector_of_array_indexs : db::SimpleTag {
-  static constexpr db::Label label = "vector_of_array_indexs";
+  static std::string name() noexcept { return "vector_of_array_indexs"; }
   using type = std::vector<int>;
 };
 
 struct total_receives_on_node : db::SimpleTag {
-  static constexpr db::Label label = "total_receives_on_node";
+  static std::string name() noexcept { return "total_receives_on_node"; }
   using type = int;
 };
 }  // namespace Tags

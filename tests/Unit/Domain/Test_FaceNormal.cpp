@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 #include <pup.h>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -124,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ElementMap", "[Unit][Domain]") {
 
 namespace {
 struct Directions : db::SimpleTag {
-  static constexpr db::Label label = "Directions";
+  static std::string name() noexcept { return "Directions"; }
   using type = std::unordered_set<Direction<2>>;
 };
 }  // namespace

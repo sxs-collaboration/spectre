@@ -140,19 +140,19 @@
  * is never evaluated.
  *
  * Simple tags must have a member type alias `type` that is the type of the data
- * to be stored and a `static constexpr db::Label label` that is the name of the
- * tag. Simple tags must inherit from `db::SimpleTag`.
+ * to be stored and a `static std::string name()` method that returns the name
+ * of the tag. Simple tags must inherit from `db::SimpleTag`.
  *
- * Compute tags must also have a `static constexpr db::Label label` that is the
- * name of the tag, but they cannot have a `type` type alias. Instead, compute
- * tags must have a static member function or static member function pointer
- * named `function`. `function` can be a function template if necessary. The
- * `function` must take all its arguments by `const` reference. The arguments to
- * the function are retrieved using tags from the DataBox that the compute tag
- * is in. The tags for the arguments are set in the member type alias
- * `argument_tags`, which must be a `tmpl::list` of the tags corresponding to
- * each argument. Note that the order of the tags in the `argument_list` is the
- * order that they will be passed to the function. Compute tags must inherit
+ * Compute tags must also have a `static std::string name()` method that returns
+ * the name of the tag, but they cannot have a `type` type alias. Instead,
+ * compute tags must have a static member function or static member function
+ * pointer named `function`. `function` can be a function template if necessary.
+ * The `function` must take all its arguments by `const` reference. The
+ * arguments to the function are retrieved using tags from the DataBox that the
+ * compute tag is in. The tags for the arguments are set in the member type
+ * alias `argument_tags`, which must be a `tmpl::list` of the tags corresponding
+ * to each argument. Note that the order of the tags in the `argument_list` is
+ * the order that they will be passed to the function. Compute tags must inherit
  * from `db::ComputeTag`.
  *
  * Here is an example of a simple tag:

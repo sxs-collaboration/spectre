@@ -51,45 +51,45 @@ namespace test_databox_tags {
 /// [databox_tag_example]
 struct Tag0 : db::SimpleTag {
   using type = double;
-  static constexpr db::Label label = "Tag0";
+  static std::string name() noexcept { return "Tag0"; }
 };
 /// [databox_tag_example]
 struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
-  static constexpr db::Label label = "Tag1";
+  static std::string name() noexcept { return "Tag1"; }
 };
 struct Tag2 : db::SimpleTag {
   using type = std::string;
-  static constexpr db::Label label = "Tag2";
+  static std::string name() noexcept { return "Tag2"; }
 };
 struct Tag3 : db::SimpleTag {
   using type = std::string;
-  static constexpr db::Label label = "Tag3";
+  static std::string name() noexcept { return "Tag3"; }
 };
 
 /// [databox_compute_item_tag_example]
 struct ComputeTag0 : db::ComputeTag {
-  static constexpr db::Label label = "ComputeTag0";
+  static std::string name() noexcept { return "ComputeTag0"; }
   static constexpr auto function = multiply_by_two;
   using argument_tags = tmpl::list<Tag0>;
 };
 
 /// [databox_compute_item_tag_example]
 struct ComputeTag1 : db::ComputeTag {
-  static constexpr db::Label label = "ComputeTag1";
+  static std::string name() noexcept { return "ComputeTag1"; }
   static constexpr auto function = append_word;
   using argument_tags = tmpl::list<Tag2, ComputeTag0>;
 };
 
 struct TagTensor : db::ComputeTag {
-  static constexpr db::Label label = "TagTensor";
+  static std::string name() noexcept { return "TagTensor"; }
   static constexpr auto function = get_tensor;
   using argument_tags = tmpl::list<>;
 };
 
 /// [compute_item_tag_function]
 struct ComputeLambda0 : db::ComputeTag {
-  static constexpr db::Label label = "ComputeLambda0";
+  static std::string name() noexcept { return "ComputeLambda0"; }
   static constexpr double function(const double& a) { return 3.0 * a; }
   using argument_tags = tmpl::list<Tag0>;
 };
@@ -97,7 +97,7 @@ struct ComputeLambda0 : db::ComputeTag {
 
 /// [compute_item_tag_no_tags]
 struct ComputeLambda1 : db::ComputeTag {
-  static constexpr db::Label label = "ComputeLambda1";
+  static std::string name() noexcept { return "ComputeLambda1"; }
   static constexpr double function() { return 7.0; }
   using argument_tags = tmpl::list<>;
 };
@@ -108,7 +108,9 @@ template <typename Tag>
 struct TagPrefix : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static constexpr db::Label label = "TagPrefix";
+  static std::string name() noexcept {
+    return "TagPrefix(" + Tag::name() + ")";
+  }
 };
 /// [databox_prefix_tag_example]
 }  // namespace test_databox_tags
@@ -144,11 +146,6 @@ static_assert(
 static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
                            Box_t>::value,
               "Failed testing no-op create_from");
-
-static_assert(db::DataBox_detail::tag_has_label_v<test_databox_tags::Tag0>,
-              "Failed testing db::tag_has_label");
-static_assert(db::DataBox_detail::tag_has_label_v<test_databox_tags::TagTensor>,
-              "Failed testing db::tag_has_label");
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
@@ -267,12 +264,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
 
 namespace ArgumentTypeTags {
 struct NonCopyable : db::SimpleTag {
-  static constexpr db::Label label = "NonCopyable";
+  static std::string name() noexcept { return "NonCopyable"; }
   using type = ::NonCopyable;
 };
 template <size_t N>
 struct String : db::SimpleTag {
-  static constexpr db::Label label = "String";
+  static std::string name() noexcept { return "String"; }
   using type = std::string;
 };
 }  // namespace ArgumentTypeTags
@@ -431,7 +428,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
       db::get_item_from_box<std::string>(original_box, "Tag2");
   CHECK(added_string == "My Sample String"s);
   /// [databox_name_prefix]
-  CHECK(db::get_item_from_box<double>(original_box, "TagPrefixTag0") == 8.7);
+  CHECK(db::get_item_from_box<double>(original_box, "TagPrefix(Tag0)") == 8.7);
   /// [databox_name_prefix]
 }
 
@@ -539,14 +536,14 @@ namespace {
 auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
 
 struct Var1 : db::ComputeTag {
-  static constexpr db::Label label = "Var1";
+  static std::string name() noexcept { return "Var1"; }
   static constexpr auto function = get_vector;
   using argument_tags = tmpl::list<>;
 };
 
 struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Var2";
+  static std::string name() noexcept { return "Var2"; }
 };
 
 template <class Tag, class VolumeDim, class Frame>
@@ -554,7 +551,9 @@ struct PrefixTag0 : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;
-  static constexpr db::Label label = "PrefixTag0";
+  static std::string name() noexcept {
+    return "PrefixTag0(" + tag::name() + ")";
+  }
 };
 
 using two_vars = tmpl::list<Var1, Var2>;
@@ -593,35 +592,35 @@ static_assert(
 namespace test_databox_tags {
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ScalarTag";
+  static std::string name() noexcept { return "ScalarTag"; }
 };
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static constexpr db::Label label = "VectorTag";
+  static std::string name() noexcept { return "VectorTag"; }
 };
 struct ScalarTag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ScalarTag2";
+  static std::string name() noexcept { return "ScalarTag2"; }
 };
 struct VectorTag2 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static constexpr db::Label label = "VectorTag2";
+  static std::string name() noexcept { return "VectorTag2"; }
 };
 struct ScalarTag3 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ScalarTag3";
+  static std::string name() noexcept { return "ScalarTag3"; }
 };
 struct VectorTag3 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static constexpr db::Label label = "VectorTag3";
+  static std::string name() noexcept { return "VectorTag3"; }
 };
 struct ScalarTag4 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ScalarTag4";
+  static std::string name() noexcept { return "ScalarTag4"; }
 };
 struct VectorTag4 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static constexpr db::Label label = "VectorTag4";
+  static std::string name() noexcept { return "VectorTag4"; }
 };
 }  // namespace test_databox_tags
 
@@ -676,37 +675,37 @@ namespace test_databox_tags {
 struct MultiplyScalarByTwo : db::ComputeTag {
   using variables_tags =
       tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>;
-  static constexpr db::Label label = "MultiplyScalarByTwo";
+  static std::string name() noexcept { return "MultiplyScalarByTwo"; }
   static constexpr auto function = multiply_scalar_by_two;
   using argument_tags = tmpl::list<test_databox_tags::ScalarTag>;
 };
 
 struct MultiplyScalarByFour : db::ComputeTag {
-  static constexpr db::Label label = "MultiplyScalarByFour";
+  static std::string name() noexcept { return "MultiplyScalarByFour"; }
   static constexpr auto function = multiply_scalar_by_four;
   using argument_tags = tmpl::list<test_databox_tags::ScalarTag2>;
 };
 
 struct MultiplyScalarByThree : db::ComputeTag {
-  static constexpr db::Label label = "MultiplyScalarByThree";
+  static std::string name() noexcept { return "MultiplyScalarByThree"; }
   static constexpr auto function = multiply_scalar_by_three;
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByFour>;
 };
 
 struct DivideScalarByThree : db::ComputeTag {
-  static constexpr db::Label label = "DivideScalarByThree";
+  static std::string name() noexcept { return "DivideScalarByThree"; }
   static constexpr auto function = divide_scalar_by_three;
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByThree>;
 };
 
 struct DivideScalarByTwo : db::ComputeTag {
-  static constexpr db::Label label = "DivideScalarByTwo";
+  static std::string name() noexcept { return "DivideScalarByTwo"; }
   static constexpr auto function = divide_scalar_by_two;
   using argument_tags = tmpl::list<test_databox_tags::DivideScalarByThree>;
 };
 
 struct MultiplyVariablesByTwo : db::ComputeTag {
-  static constexpr db::Label label = "MultiplyVariablesByTwo";
+  static std::string name() noexcept { return "MultiplyVariablesByTwo"; }
   static constexpr auto function = multiply_variables_by_two;
   using argument_tags = tmpl::list<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>;
@@ -869,11 +868,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
 namespace {
 struct Tag1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Tag1";
+  static std::string name() noexcept { return "Tag1"; }
 };
 struct Tag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Tag2";
+  static std::string name() noexcept { return "Tag2"; }
 };
 }  // namespace
 
@@ -930,14 +929,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
 namespace ExtraResetTags {
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Var";
+  static std::string name() noexcept { return "Var"; }
 };
 struct Int : db::SimpleTag {
   using type = int;
-  static constexpr db::Label label = "Int";
+  static std::string name() noexcept { return "Int"; }
 };
 struct CheckReset : db::ComputeTag {
-  static constexpr db::Label label = "CheckReset";
+  static std::string name() noexcept { return "CheckReset"; }
   static auto function(
       const ::Variables<tmpl::list<Var>>& /*unused*/) noexcept {
     static bool first_call = true;
@@ -1149,18 +1148,18 @@ void mutate_variables(
 namespace test_databox_tags {
 struct MutateComputeTag0 : db::ComputeTag {
   using return_type = std::vector<double>;
-  static constexpr db::Label label = "MutateComputeTag0";
+  static std::string name() noexcept { return "MutateComputeTag0"; }
   static constexpr auto function = multiply_by_two_mutate;
   using argument_tags = tmpl::list<Tag0>;
 };
 struct NonMutateComputeTag0 : db::ComputeTag {
-  static constexpr db::Label label = "NonMutateComputeTag0";
+  static std::string name() noexcept { return "NonMutateComputeTag0"; }
   static constexpr auto function = multiply_by_two_non_mutate;
   using argument_tags = tmpl::list<Tag0>;
 };
 /// [databox_mutating_compute_item_tag]
 struct MutateVariablesCompute : db::ComputeTag {
-  static constexpr db::Label label = "MutateVariablesCompute";
+  static std::string name() noexcept { return "MutateVariablesCompute"; }
   static constexpr auto function = mutate_variables;
   using return_type = Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
@@ -1280,17 +1279,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
 namespace DataBoxTest_detail {
 struct vector : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
-  static constexpr db::Label label = "vector";
+  static std::string name() noexcept { return "vector"; }
 };
 
 struct scalar : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "scalar";
+  static std::string name() noexcept { return "scalar"; }
 };
 
 struct vector2 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
-  static constexpr db::Label label = "vector2";
+  static std::string name() noexcept { return "vector2"; }
 };
 }  // namespace DataBoxTest_detail
 
@@ -1502,12 +1501,12 @@ class Boxed {
 
 template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
 struct Parent : db::SimpleTag {
-  static constexpr db::Label label = "Parent";
+  static std::string name() noexcept { return "Parent"; }
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
 template <size_t N, bool DependsOnComputeItem>
 struct Parent<N, true, DependsOnComputeItem> : db::ComputeTag {
-  static constexpr db::Label label = "Parent";
+  static std::string name() noexcept { return "Parent"; }
   static auto function(
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
     count++;
@@ -1524,14 +1523,14 @@ int Parent<N, true, DependsOnComputeItem>::count = 0;
 
 template <size_t N>
 struct First : db::SimpleTag {
-  static constexpr db::Label label = "First";
+  static std::string name() noexcept { return "First"; }
   using type = Boxed<int>;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
 struct Second : db::SimpleTag {
-  static constexpr db::Label label = "Second";
+  static std::string name() noexcept { return "Second"; }
   using type = Boxed<double>;
 
   static constexpr size_t index = 1;
@@ -1619,12 +1618,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
 namespace test_databox_tags {
 struct Tag0Int : db::SimpleTag {
   using type = int;
-  static constexpr db::Label label = "Tag0Int";
+  static std::string name() noexcept { return "Tag0Int"; }
 };
 /// [overload_compute_tag_type]
 template <typename ArgumentTag>
 struct OverloadType : db::ComputeTag {
-  static constexpr db::Label label = "OverloadType";
+  static std::string name() noexcept { return "OverloadType"; }
 
   static constexpr double function(const int& a) noexcept { return 5 * a; }
 
@@ -1636,7 +1635,7 @@ struct OverloadType : db::ComputeTag {
 /// [overload_compute_tag_number_of_args]
 template <typename ArgumentTag0, typename ArgumentTag1 = void>
 struct OverloadNumberOfArgs : db::ComputeTag {
-  static constexpr db::Label label = "OverloadNumberOfArgs";
+  static std::string name() noexcept { return "OverloadNumberOfArgs"; }
 
   static constexpr double function(const double& a) noexcept { return 3.2 * a; }
 
@@ -1654,7 +1653,7 @@ struct OverloadNumberOfArgs : db::ComputeTag {
 /// [overload_compute_tag_template]
 template <typename ArgumentTag>
 struct ComputeTemplate : db::ComputeTag {
-  static constexpr db::Label label = "ComputeTemplate";
+  static std::string name() noexcept { return "ComputeTemplate"; }
 
   template <typename T>
   static constexpr T function(const T& a) noexcept {
@@ -1708,7 +1707,7 @@ struct MyTag1 {
 };
 
 struct TupleTag : db::SimpleTag {
-  static constexpr db::Label label = "TupleTag";
+  static std::string name() noexcept { return "TupleTag"; }
   using type = tuples::TaggedTuple<MyTag0, MyTag1>;
 };
 }  // namespace
@@ -1887,14 +1886,14 @@ int CountingFunc<Id>::count = 0;
 
 template <int Id>
 struct CountingTag : db::ComputeTag {
-  static constexpr db::Label label = "CountingTag";
+  static std::string name() noexcept { return "CountingTag"; }
   static constexpr auto function = CountingFunc<Id>::apply;
   using argument_tags = tmpl::list<>;
 };
 
 template <size_t SecondId>
 struct CountingTagDouble : db::ComputeTag {
-  static constexpr db::Label label = "CountingTag";
+  static std::string name() noexcept { return "CountingTag"; }
   static double function(const test_subitems::Boxed<double>& t) {
     count++;
     return *t * 6.0;

@@ -32,16 +32,18 @@
 namespace VariablesTestTags_detail {
 /// [simple_variables_tag]
 struct vector : db::SimpleTag {
-  static constexpr db::Label label = "vector";
+  static std::string name() noexcept { return "vector"; }
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
 /// [simple_variables_tag]
 
 struct scalar : db::SimpleTag {
+  static std::string name() noexcept { return "scalar"; }
   using type = Scalar<DataVector>;
 };
 
 struct scalar2 : db::SimpleTag {
+  static std::string name() noexcept { return "scalar2"; }
   using type = Scalar<DataVector>;
 };
 
@@ -50,7 +52,7 @@ template <class Tag>
 struct PrefixTag0 : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "PrefixTag0";
+  static std::string name() noexcept { return "PrefixTag0"; }
 };
 /// [prefix_variables_tag]
 
@@ -58,21 +60,21 @@ template <class Tag>
 struct PrefixTag1 : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "PrefixTag1";
+  static std::string name() noexcept { return "PrefixTag1"; }
 };
 
 template <class Tag>
 struct PrefixTag2 : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "PrefixTag2";
+  static std::string name() noexcept { return "PrefixTag2"; }
 };
 
 template <class Tag>
 struct PrefixTag3 : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "PrefixTag3";
+  static std::string name() noexcept { return "PrefixTag3"; }
 };
 }  // namespace VariablesTestTags_detail
 
@@ -159,6 +161,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   // Check self-assignment
   v = v;
   CHECK(v == v2);
+
+  CHECK(
+      Tags::Variables<tmpl::list<VariablesTestTags_detail::vector,
+                                 VariablesTestTags_detail::scalar,
+                                 VariablesTestTags_detail::scalar2>>::name() ==
+      "Variables(vector,scalar,scalar2)");
 }
 
 // [[OutputRegex, Must copy into same size]]
