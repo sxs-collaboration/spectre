@@ -25,7 +25,7 @@ namespace Tags {
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
 struct dt : db::PrefixTag, db::SimpleTag {
-  static constexpr db::DataBoxString label = "dt";
+  static constexpr db::Label label = "dt";
   using type = db::item_type<Tag>;
   using tag = Tag;
 };
@@ -44,7 +44,7 @@ struct Flux<Tag, VolumeDim, Fr,
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "Flux";
+  static constexpr db::Label label = "Flux";
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
@@ -53,7 +53,7 @@ struct Flux<Tag, VolumeDim, Fr,
     : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "Flux";
+  static constexpr db::Label label = "Flux";
 };
 /// \endcond
 
@@ -64,7 +64,7 @@ template <typename Tag>
 struct NormalDotFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "NormalDotFlux";
+  static constexpr db::Label label = "NormalDotFlux";
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
@@ -75,6 +75,6 @@ template <typename Tag>
 struct NormalDotNumericalFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "NormalDotNumericalFlux";
+  static constexpr db::Label label = "NormalDotNumericalFlux";
 };
 }  // namespace Tags

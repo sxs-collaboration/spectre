@@ -68,12 +68,12 @@ namespace {
 template <size_t Dim>
 struct Kappa : db::SimpleTag {
   using type = tnsr::abb<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString label = "Kappa";
+  static constexpr db::Label label = "Kappa";
 };
 template <size_t Dim>
 struct Psi : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame::Grid>;
-  static constexpr db::DataBoxString label = "Psi";
+  static constexpr db::Label label = "Psi";
 };
 
 // clang-tidy: don't pass be non-const reference

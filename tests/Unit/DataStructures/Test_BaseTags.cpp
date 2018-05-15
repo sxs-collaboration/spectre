@@ -24,7 +24,7 @@ struct VectorBase : db::BaseTag {};
 template <int I>
 struct Vector : db::SimpleTag, VectorBase<I> {
   using type = std::vector<double>;
-  static constexpr db::DataBoxString label = "Vector";
+  static constexpr db::Label label = "Vector";
 };
 
 template <int I>
@@ -33,12 +33,12 @@ struct ArrayBase : db::BaseTag {};
 template <int I>
 struct Array : virtual db::SimpleTag, ArrayBase<I> {
   using type = std::array<int, 3>;
-  static constexpr db::DataBoxString label = "Array";
+  static constexpr db::Label label = "Array";
 };
 
 template <int I, int VectorBaseIndex = 0, int... VectorBaseExtraIndices>
 struct ArrayComputeBase : Array<I>, db::ComputeTag {
-  static constexpr db::DataBoxString label = "ArrayComputeBase";
+  static constexpr db::Label label = "ArrayComputeBase";
 
   static std::array<int, 3> function(const std::vector<double>& t) noexcept {
     return {{static_cast<int>(t.size()), static_cast<int>(t[0]), -8}};
@@ -190,12 +190,12 @@ struct ParentBase : db::BaseTag {};
 
 template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
 struct Parent : ParentBase<N>, db::SimpleTag {
-  static constexpr db::DataBoxString label = "Parent";
+  static constexpr db::Label label = "Parent";
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
 template <size_t N, bool DependsOnComputeItem>
 struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>, db::ComputeTag {
-  static constexpr db::DataBoxString label = "Parent";
+  static constexpr db::Label label = "Parent";
   static auto function(
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
     return std::make_pair(
@@ -207,14 +207,14 @@ struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>, db::ComputeTag {
 
 template <size_t N>
 struct First : FirstBase<N>, db::SimpleTag {
-  static constexpr db::DataBoxString label = "First";
+  static constexpr db::Label label = "First";
   using type = Boxed<int>;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
 struct Second : SecondBase<N>, db::SimpleTag {
-  static constexpr db::DataBoxString label = "Second";
+  static constexpr db::Label label = "Second";
   using type = Boxed<double>;
 
   static constexpr size_t index = 1;
@@ -231,7 +231,7 @@ struct ComputeMultiplyByTwo : MultiplyByTwo<N0, N1>, db::ComputeTag {
   static auto function(const T0& t0, const T1& t1) noexcept {
     return *t0 * *t1;
   }
-  static constexpr db::DataBoxString label = "MultiplyByTwo";
+  static constexpr db::Label label = "MultiplyByTwo";
   using argument_tags = tmpl::list<First<N0>, Second<N1>>;
 };
 }  // namespace TestTags

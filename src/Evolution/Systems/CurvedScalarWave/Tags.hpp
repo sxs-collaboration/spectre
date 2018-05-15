@@ -16,27 +16,27 @@ class DataVector;
 namespace CurvedScalarWave {
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "Psi";
+  static constexpr db::Label label = "Psi";
 };
 
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "Pi";
+  static constexpr db::Label label = "Pi";
 };
 
 template <size_t Dim>
 struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim>;
-  static constexpr db::DataBoxString label = "Phi";
+  static constexpr db::Label label = "Phi";
 };
 
 struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "ConstraintGamma1";
+  static constexpr db::Label label = "ConstraintGamma1";
 };
 
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "ConstraintGamma2";
+  static constexpr db::Label label = "ConstraintGamma2";
 };
 }  // namespace CurvedScalarWave

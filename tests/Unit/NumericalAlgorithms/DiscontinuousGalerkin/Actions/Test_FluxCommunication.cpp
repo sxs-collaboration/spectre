@@ -51,12 +51,12 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Var";
+  static constexpr db::Label label = "Var";
   using type = Scalar<DataVector>;
 };
 
 struct OtherData : db::SimpleTag {
-  static constexpr db::DataBoxString label = "OtherData";
+  static constexpr db::Label label = "OtherData";
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
@@ -64,7 +64,7 @@ struct OtherData : db::SimpleTag {
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-    static constexpr db::DataBoxString label = "ExtraTag";
+    static constexpr db::Label label = "ExtraTag";
     using type = tnsr::I<DataVector, 1>;
   };
 

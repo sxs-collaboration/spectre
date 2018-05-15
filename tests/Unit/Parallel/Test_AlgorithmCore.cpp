@@ -71,22 +71,22 @@ struct ElementId {};
 /// \endcond
 
 struct CountActionsCalled : db::SimpleTag {
-  static constexpr db::DataBoxString label = "CountActionsCalled";
+  static constexpr db::Label label = "CountActionsCalled";
   using type = int;
 };
 
 struct Int0 : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Int0";
+  static constexpr db::Label label = "Int0";
   using type = int;
 };
 
 struct Int1 : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Int1";
+  static constexpr db::Label label = "Int1";
   using type = int;
 };
 
 struct TemporalId : db::SimpleTag {
-  static constexpr db::DataBoxString label = "TemporalId";
+  static constexpr db::Label label = "TemporalId";
   using type = TestAlgorithmArrayInstance;
 };
 

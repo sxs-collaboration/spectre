@@ -47,7 +47,7 @@ namespace Tags {
 /// The Euclidean magnitude of a (co)vector
 template <typename Tag>
 struct EuclideanMagnitude : db::ComputeTag {
-  static constexpr db::DataBoxString label = "EuclideanMagnitude";
+  static constexpr db::Label label = "EuclideanMagnitude";
   static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
       magnitude;
   using argument_tags = tmpl::list<Tag>;
@@ -59,7 +59,7 @@ struct EuclideanMagnitude : db::ComputeTag {
 /// MagnitudeTag.
 template <typename Tag, typename MagnitudeTag>
 struct Normalized : db::ComputeTag {
-  static constexpr db::DataBoxString label = "Normalized";
+  static constexpr db::Label label = "Normalized";
   static constexpr auto function(
       const db::item_type<Tag>&
           vector_in,  // Compute items need to take const references

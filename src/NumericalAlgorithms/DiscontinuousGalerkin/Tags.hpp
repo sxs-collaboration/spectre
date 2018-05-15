@@ -14,7 +14,7 @@
 namespace Tags {
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
-  static constexpr db::DataBoxString label = "Mortar";
+  static constexpr db::Label label = "Mortar";
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;

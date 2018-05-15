@@ -56,7 +56,7 @@ namespace Tags {
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Element";
+  static constexpr db::Label label = "Element";
   using type = ::Element<VolumeDim>;
 };
 
@@ -65,7 +65,7 @@ struct Element : db::SimpleTag {
 /// The extents of DataVectors in the DataBox
 template <size_t VolumeDim>
 struct Extents : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Extents";
+  static constexpr db::Label label = "Extents";
   using type = ::Index<VolumeDim>;
 };
 
@@ -74,7 +74,7 @@ struct Extents : db::SimpleTag {
 /// The logical coordinates in the Element
 template <size_t VolumeDim>
 struct LogicalCoordinates : db::ComputeTag {
-  static constexpr db::DataBoxString label = "LogicalCoordinates";
+  static constexpr db::Label label = "LogicalCoordinates";
   using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
   static constexpr auto function = logical_coordinates<VolumeDim>;
 };
@@ -84,7 +84,7 @@ struct LogicalCoordinates : db::ComputeTag {
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::SimpleTag {
-  static constexpr db::DataBoxString label = "ElementMap";
+  static constexpr db::Label label = "ElementMap";
   using type = ::ElementMap<VolumeDim, Frame>;
 };
 
@@ -95,7 +95,7 @@ struct ElementMap : db::SimpleTag {
 template <class MapTag, class SourceCoordsTag>
 struct Coordinates : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
-  static constexpr db::DataBoxString label = "Coordinates";
+  static constexpr db::Label label = "Coordinates";
   static constexpr auto function(
       const db::item_type<MapTag>& element_map,
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {
@@ -112,7 +112,7 @@ struct Coordinates : db::ComputeTag, db::PrefixTag {
 template <typename MapTag, typename SourceCoordsTag>
 struct InverseJacobian : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
-  static constexpr db::DataBoxString label = "InverseJacobian";
+  static constexpr db::Label label = "InverseJacobian";
   static constexpr auto function(
       const db::item_type<MapTag>& element_map,
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {
@@ -126,7 +126,7 @@ struct InverseJacobian : db::ComputeTag, db::PrefixTag {
 /// The set of directions to neighboring Elements
 template <size_t VolumeDim>
 struct InternalDirections : db::ComputeTag {
-  static constexpr db::DataBoxString label = "InternalDirections";
+  static constexpr db::Label label = "InternalDirections";
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
     std::unordered_set<::Direction<VolumeDim>> result;
@@ -291,7 +291,7 @@ struct InterfaceBase
     : db::PrefixTag,
       Interface_detail::InterfaceImpl<db::is_compute_item_v<FunctionTag>,
                                       DirectionsTag, NameTag, FunctionTag> {
-  static constexpr db::DataBoxString label = "Interface";
+  static constexpr db::Label label = "Interface";
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -299,7 +299,7 @@ struct InterfaceBase
 /// ::Direction to an interface
 template <size_t VolumeDim>
 struct Direction : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Direction";
+  static constexpr db::Label label = "Direction";
   using type = ::Direction<VolumeDim>;
 };
 
@@ -307,7 +307,7 @@ struct Direction : db::SimpleTag {
 template <typename DirectionsTag, size_t VolumeDim>
 struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
                                                         db::ComputeTag {
-  static constexpr db::DataBoxString label = "Interface";
+  static constexpr db::Label label = "Interface";
   using tag = Direction<VolumeDim>;
   static constexpr auto function(
       const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {

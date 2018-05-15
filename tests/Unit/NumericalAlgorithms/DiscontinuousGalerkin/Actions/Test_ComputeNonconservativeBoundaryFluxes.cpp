@@ -42,19 +42,19 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Var";
+  static constexpr db::Label label = "Var";
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 struct Var2 : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Var2";
+  static constexpr db::Label label = "Var2";
   using type = tnsr::ii<DataVector, 2>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 struct OtherArg : db::SimpleTag {
-  static constexpr db::DataBoxString label = "OtherArg";
+  static constexpr db::Label label = "OtherArg";
   using type = double;
 };
 

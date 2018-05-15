@@ -23,7 +23,7 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static constexpr db::DataBoxString label = "Var";
+  static constexpr db::Label label = "Var";
   using type = double;
 };
 

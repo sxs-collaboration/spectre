@@ -104,7 +104,7 @@ struct deriv_impl<Tag, VolumeDim, Frame,
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "deriv";
+  static constexpr db::Label label = "deriv";
 };
 
 // Partial derivatives with derivative index in the frame related to the logical
@@ -122,7 +122,7 @@ struct deriv_impl<
   using variables_tags = tmpl::list<VariablesTags...>;
 
  public:
-  static constexpr db::DataBoxString label = "deriv";
+  static constexpr db::Label label = "deriv";
   static constexpr auto function =
       partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                           derivative_frame_index::dim,
@@ -139,7 +139,7 @@ struct deriv_impl<tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
                   std::integral_constant<T, Dim>,
                   Requires<(0 < Dim and 4 > Dim)>> : db::ComputeTag {
   using variables_tags = tmpl::list<VariablesTags...>;
-  static constexpr db::DataBoxString label = "deriv";
+  static constexpr db::Label label = "deriv";
   static constexpr auto function =
       logical_partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                                   Dim>;

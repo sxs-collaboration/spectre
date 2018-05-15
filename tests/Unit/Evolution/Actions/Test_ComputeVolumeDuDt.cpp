@@ -15,11 +15,11 @@
 namespace {
 struct var_tag : db::SimpleTag {
   using type = int;
-  static constexpr db::DataBoxString label = "var_tag";
+  static constexpr db::Label label = "var_tag";
 };
 struct dt_var_tag : db::SimpleTag {
   using type = int;
-  static constexpr db::DataBoxString label = "dt_var_tag";
+  static constexpr db::Label label = "dt_var_tag";
 };
 
 struct ComputeDuDt {

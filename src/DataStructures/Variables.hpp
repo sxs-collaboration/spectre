@@ -32,7 +32,7 @@ struct Variables : db::SimpleTag {
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
   using type = ::Variables<TagsList>;
-  static constexpr db::DataBoxString label = "Variables";
+  static constexpr db::Label label = "Variables";
 };
 }  // namespace Tags
 
@@ -48,7 +48,7 @@ class Variables;
  *
  * The `Tags` are `struct`s that must have a public type alias `type` whose
  * value must be a `Tensor<DataVector, ...>`, a `static constexpr
- * db::DataBoxString` variable named `label`, and must derive off of
+ * db::Label` variable named `label`, and must derive off of
  * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
  *
