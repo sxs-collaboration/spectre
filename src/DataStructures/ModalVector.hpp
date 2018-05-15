@@ -20,7 +20,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PointerVector.hpp"
 #include "Utilities/Requires.hpp"
 
@@ -42,7 +41,7 @@ using std::abs;  // NOLINT
  * either owning (the array is deleted when the Data goes out of scope) or
  * non-owning, meaning it just has a pointer to an array.
  *
- * Only basic mathematical operations are supported with CoefficientVectors. In
+ * Only basic mathematical operations are supported with ModalVectors. In
  * addition to the addition, subtraction, multiplication, division, etc. there
  * are the following element-wise operations:
  *
@@ -70,7 +69,7 @@ class ModalVector {
 
  private:
   /// The type of the "pointer" used internally
-  using InternalCoefficientVector_t = PointerVector<double>;
+  using InternalModalVector_t = PointerVector<double>;
   /// The type used to store the data in
   using InternalStorage_t = std::vector<double, allocator_type>;
 
@@ -84,7 +83,6 @@ class ModalVector {
 
   /// Create a non-owning ModalVector that points to `start`
   ModalVector(double* start, size_t size);
-  ModalVector(const double* start, size_t size);
 
   /// Create from an initializer list of doubles. All elements in the
   /// `std::initializer_list` must have decimal points
@@ -217,6 +215,12 @@ class ModalVector {
     data_ *= rhs.data_;
     return *this;
   }
+  // FIXME PK: Can we avoid the instantiation of new DV object in this function
+  ModalVector& operator*=(const DataVector& rhs) noexcept {
+    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
+    data_ *= _rhs_local;
+    return *this;
+  }
 
   template <typename VT, bool VF>
   ModalVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
@@ -225,6 +229,12 @@ class ModalVector {
   }
   ModalVector& operator/=(const double& rhs) noexcept {
     data_ /= rhs;
+    return *this;
+  }
+  // FIXME PK: Can we avoid the instantiation of new DV object in this function
+  ModalVector& operator/=(const DataVector& rhs) noexcept {
+    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
+    data_ /= _rhs_local;
     return *this;
   }
 
@@ -290,18 +300,6 @@ class ModalVector {
       const ModalVector& lhs, const ModalVector& rhs) noexcept {
     return lhs.data_ * rhs.data_;
   }
-  // FIXME PK: Can we avoid the instantiation of new CV objects in the
-  // next 2 functions?
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const ModalVector& lhs, const DataVector& rhs) noexcept {
-    ModalVector _rhs_local(rhs.data(), rhs.size());
-    return lhs.data_ * _rhs_local.data_;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const DataVector& lhs, const ModalVector& rhs) noexcept {
-    ModalVector _lhs_local(lhs.data(), lhs.size());
-    return _lhs_local.data_ * rhs.data_;
-  }
   template <typename VT, bool VF>
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
       const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
@@ -312,6 +310,18 @@ class ModalVector {
       const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ * ~rhs;
   }
+  // FIXME PK: Can we avoid the instantiation of new DV objects in the
+  // next 2 functions?
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      const ModalVector& lhs, const DataVector& rhs) noexcept {
+    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
+    return lhs * _rhs_local;
+  }
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
+      DataVector& lhs, const ModalVector& rhs) noexcept {
+    const blaze::DynamicVector<double> _lhs_local(lhs.size(), lhs.data());
+    return _lhs_local * rhs;
+  }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
       const ModalVector& lhs, const double& rhs) noexcept {
@@ -321,6 +331,12 @@ class ModalVector {
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
       const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
     return lhs.data_ / ~rhs;
+  }
+  // FIXME PK: Can we avoid the instantiation of new DV object in this function
+  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
+      const ModalVector& lhs, const DataVector& rhs) noexcept {
+    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
+    return lhs / _rhs_local;
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) min(
@@ -354,7 +370,7 @@ class ModalVector {
   /// \cond HIDDEN_SYMBOLS
   size_t size_ = 0;
   InternalStorage_t owned_data_;
-  InternalCoefficientVector_t data_;
+  InternalModalVector_t data_;
   bool owning_{true};
   /// \endcond
 };

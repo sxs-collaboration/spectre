@@ -3,13 +3,15 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <iostream>
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <numeric>
-#include <stddef.h>
+#include <cstddef>
 
 #include "DataStructures/ModalVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -74,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.ModalVector",
   CHECK(t.is_owning());
 }
 
-SPECTRE_TEST_CASE("Unit.Serialization.CoefficientVector_Ref",
+SPECTRE_TEST_CASE("Unit.Serialization.ModalVector_Ref",
                   "[DataStructures][Unit][Serialization]") {
   const size_t npts = 10;
   ModalVector t(npts);
@@ -98,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.CoefficientVector_Ref",
   CHECK_FALSE(t2.is_owning());
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.CoefficientVector_Ref",
+SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector_Ref",
                   "[DataStructures][Unit]") {
   ModalVector data{1.43, 2.83, 3.94, 7.85};
   ModalVector t;
@@ -367,7 +369,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   //~ x /= x;
   //~ check_vectors(ModalVector(num_pts, 1.0), x);
 
-  // Test addition of arrays of CoefficientVectors to arrays of doubles.
+  // Test addition of arrays of ModalVectors to arrays of doubles.
   const ModalVector t1{0.0, 1.0, 2.0, 3.0};
   const ModalVector t2{-0.1, -0.2, -0.3, -0.4};
   const ModalVector t3{5.0, 4.0, 3.0, 2.0};
@@ -428,6 +430,30 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   const ModalVector expected_d3(2, 13.);
   const auto magnitude_d3 = magnitude(d3);
   CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
+                  "[Unit][DataStructures]") {
+  constexpr size_t num_pts = 23;
+  ModalVector nine(num_pts, 9.0);
+  DataVector eight(num_pts, 8.0);
+
+  // Test math with DataVector
+  ModalVector test_72(num_pts, -1.0);
+  test_72 = nine * eight;
+  check_vectors(ModalVector(num_pts, 72.0), test_72);
+  CHECK(test_72.is_owning());
+  test_72 = eight * nine;
+  check_vectors(ModalVector(num_pts, 72.0), test_72);
+  CHECK(test_72.is_owning());
+
+  test_72 = nine;
+  test_72 *= eight;
+  check_vectors(ModalVector(num_pts, 72.0), test_72);
+  CHECK(test_72.is_owning());
+  test_72 /= eight;
+  check_vectors(ModalVector(num_pts, 9.0), test_72);
+  CHECK(test_72.is_owning());
 }
 
 // [[OutputRegex, Must copy into same size]]
