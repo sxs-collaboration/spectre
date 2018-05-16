@@ -24,8 +24,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -38,6 +36,11 @@ class er;
 /// \endcond
 
 namespace {
+struct TemporalId : db::SimpleTag {
+  static std::string name() noexcept { return "TemporalId"; }
+  using type = size_t;
+};
+
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
@@ -83,6 +86,7 @@ using component = ActionTesting::MockArrayComponent<
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component>;
+  using temporal_id = TemporalId;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
 };
@@ -111,20 +115,19 @@ SPECTRE_TEST_CASE(
       const tnsr::I<DataVector, 1>& remote_extra_data,
       const Scalar<DataVector>& local_flux,
       const Scalar<DataVector>& local_magnitude_face_normal) noexcept {
-    const Slab slab(0., 1.);
-    dg::SimpleBoundaryData<LocalData, PackagedData> data;
+    dg::SimpleBoundaryData<size_t, LocalData, PackagedData> data;
 
     LocalData local_data(3);
     get<Tags::NormalDotFlux<Var>>(local_data) = local_flux;
     get<NumericalFlux::ExtraData>(local_data) = local_extra_data;
     get<Var>(local_data) = local_var;
     get<MagnitudeOfFaceNormal>(local_data) = local_magnitude_face_normal;
-    data.local_insert(slab.start(), std::move(local_data));
+    data.local_insert(0, std::move(local_data));
 
     PackagedData remote_data(3);
     get<NumericalFlux::ExtraData>(remote_data) = remote_extra_data;
     get<Var>(remote_data) = remote_var;
-    data.remote_insert(slab.start(), std::move(remote_data));
+    data.remote_insert(0, std::move(remote_data));
 
     return data;
   };

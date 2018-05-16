@@ -24,11 +24,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-struct Time;
-struct TimeId;
 namespace Tags {
-struct Time;
-struct TimeId;
 template <typename Tag, typename MagnitudeTag>
 struct Normalized;
 }  // namespace Tags
@@ -44,8 +40,7 @@ namespace Actions {
 /// Uses:
 /// - DataBox:
 ///   - Tags::Element<volume_dim>
-///   - Tags::Time
-///   - Tags::TimeId
+///   - Metavariables::temporal_id
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -70,20 +65,22 @@ struct ReceiveDataForFluxes {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using mortar_data_tag = typename flux_comm_types::mortar_data_tag;
+    using temporal_id_tag = typename Metavariables::temporal_id;
     db::mutate<mortar_data_tag>(
         make_not_null(&box),
         [&inboxes](
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const TimeId& time_id, const Time& time) noexcept {
+            const db::item_type<temporal_id_tag>& temporal_id) noexcept {
           auto& inbox =
               tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
-          for (auto& mortar_received_data : inbox[time_id]) {
+          for (auto& mortar_received_data : inbox[temporal_id]) {
             mortar_data->at(mortar_received_data.first)
-                .remote_insert(time, std::move(mortar_received_data.second));
+                .remote_insert(temporal_id,
+                               std::move(mortar_received_data.second));
           }
-          inbox.erase(time_id);
+          inbox.erase(temporal_id);
         },
-        db::get<Tags::TimeId>(box), db::get<Tags::Time>(box));
+        db::get<temporal_id_tag>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
@@ -96,10 +93,10 @@ struct ReceiveDataForFluxes {
       const ArrayIndex& /*array_index*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
-    const auto& time_id = db::get<Tags::TimeId>(box);
+    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
     const auto& inbox =
         tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
-    auto receives = inbox.find(time_id);
+    auto receives = inbox.find(temporal_id);
     const auto number_of_neighbors =
         db::get<Tags::Element<volume_dim>>(box).number_of_neighbors();
     const size_t num_receives =
@@ -127,8 +124,7 @@ struct ReceiveDataForFluxes {
 ///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>
 ///   - Interface<typename System::template magnitude_tag<
 ///                 Tags::UnnormalizedFaceNormal<volume_dim>>>
-///   - Tags::Time
-///   - Tags::TimeId
+///   - Metavariables::temporal_id
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -163,7 +159,7 @@ struct SendDataForFluxes {
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
-    const auto& time_id = db::get<Tags::TimeId>(box);
+    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
@@ -232,7 +228,7 @@ struct SendDataForFluxes {
       for (const auto& neighbor : neighbors_in_direction) {
         const auto mortar_id = std::make_pair(direction, neighbor);
         Parallel::receive_data<typename flux_comm_types::FluxesTag>(
-            receiver_proxy[neighbor], time_id,
+            receiver_proxy[neighbor], temporal_id,
             std::make_pair(
                 std::make_pair(direction_from_neighbor, element.id()),
                 neighbor_packaged_data));
@@ -240,13 +236,11 @@ struct SendDataForFluxes {
         using mortar_data_tag = typename flux_comm_types::mortar_data_tag;
         db::mutate<mortar_data_tag>(
             make_not_null(&box),
-            [&mortar_id, &local_data](
+            [&mortar_id, &temporal_id, &local_data](
                 const gsl::not_null<db::item_type<mortar_data_tag>*>
-                    mortar_data,
-                const Time& time) noexcept {
-              mortar_data->at(mortar_id).local_insert(time, local_data);
-            },
-            db::get<Tags::Time>(box));
+                    mortar_data) noexcept {
+              mortar_data->at(mortar_id).local_insert(temporal_id, local_data);
+            });
       }  // loop over neighbors_in_direction
     }    // loop over element.neighbors()
 

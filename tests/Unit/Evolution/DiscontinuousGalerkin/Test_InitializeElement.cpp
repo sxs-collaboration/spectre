@@ -108,6 +108,7 @@ template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<component<Dim>>;
   using system = System<Dim>;
+  using temporal_id = Tags::TimeId;
   using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
 };
 

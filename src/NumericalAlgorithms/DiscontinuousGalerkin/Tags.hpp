@@ -19,10 +19,10 @@ namespace Tags {
 /// \ingroup DataBoxTags
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Simple boundary communication data
-template <typename LocalData, typename RemoteData>
+template <typename TemporalId, typename LocalData, typename RemoteData>
 struct SimpleBoundaryData : db::SimpleTag {
   static std::string name() noexcept { return "SimpleBoundaryData"; }
-  using type = dg::SimpleBoundaryData<LocalData, RemoteData>;
+  using type = dg::SimpleBoundaryData<TemporalId, LocalData, RemoteData>;
 };
 
 /// \ingroup DataBoxTagsGroup

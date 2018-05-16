@@ -29,6 +29,7 @@
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/FinalTime.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -36,6 +37,7 @@ template <size_t Dim>
 struct EvolutionMetavars {
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
+  using temporal_id = Tags::TimeId;
   using analytic_solution_tag =
       CacheTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using normal_dot_numerical_flux =

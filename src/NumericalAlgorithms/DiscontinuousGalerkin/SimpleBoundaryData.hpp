@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/BoostHelpers.hpp"  // IWYU pragma: keep
 
 namespace dg {
@@ -20,14 +19,14 @@ namespace dg {
 ///
 /// Typically, values are inserted into this container by the flux
 /// communication actions.
-template <typename LocalVars, typename RemoteVars>
+template <typename TemporalId, typename LocalVars, typename RemoteVars>
 class SimpleBoundaryData {
  public:
   /// Add a value.  This function must be called once between calls to
   /// extract.
   //@{
-  void local_insert(Time time, LocalVars vars) noexcept;
-  void remote_insert(Time time, RemoteVars vars) noexcept;
+  void local_insert(TemporalId temporal_id, LocalVars vars) noexcept;
+  void remote_insert(TemporalId temporal_id, RemoteVars vars) noexcept;
   //@}
 
   /// Return the inserted data and reset the state to empty.
@@ -37,36 +36,36 @@ class SimpleBoundaryData {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  Time time_;
-  boost::optional<LocalVars> local_data_;
-  boost::optional<RemoteVars> remote_data_;
+  TemporalId temporal_id_{};
+  boost::optional<LocalVars> local_data_{};
+  boost::optional<RemoteVars> remote_data_{};
 };
 
-template <typename LocalVars, typename RemoteVars>
-void SimpleBoundaryData<LocalVars, RemoteVars>::local_insert(
-    Time time, LocalVars vars) noexcept {
+template <typename TemporalId, typename LocalVars, typename RemoteVars>
+void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::local_insert(
+    TemporalId temporal_id, LocalVars vars) noexcept {
   ASSERT(not local_data_, "Already received local data.");
-  ASSERT(not remote_data_ or time == time_,
-         "Received local data at time " << time
-         << " but already have remote data at time " << time_);
-  time_ = time;
+  ASSERT(not remote_data_ or temporal_id == temporal_id_,
+         "Received local data at " << temporal_id
+         << ", but already have remote data at " << temporal_id_);
+  temporal_id_ = std::move(temporal_id);
   local_data_ = std::move(vars);
 }
 
-template <typename LocalVars, typename RemoteVars>
-void SimpleBoundaryData<LocalVars, RemoteVars>::remote_insert(
-    Time time, RemoteVars vars) noexcept {
+template <typename TemporalId, typename LocalVars, typename RemoteVars>
+void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::remote_insert(
+    TemporalId temporal_id, RemoteVars vars) noexcept {
   ASSERT(not remote_data_, "Already received remote data.");
-  ASSERT(not local_data_ or time == time_,
-         "Received remote data at time " << time
-         << " but already have local data at time " << time_);
-  time_ = time;
+  ASSERT(not local_data_ or temporal_id == temporal_id_,
+         "Received remote data at " << temporal_id
+         << ", but already have local data at " << temporal_id_);
+  temporal_id_ = std::move(temporal_id);
   remote_data_ = std::move(vars);
 }
 
-template <typename LocalVars, typename RemoteVars>
+template <typename TemporalId, typename LocalVars, typename RemoteVars>
 std::pair<LocalVars, RemoteVars>
-SimpleBoundaryData<LocalVars, RemoteVars>::extract() noexcept {
+SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
   ASSERT(local_data_ and remote_data_,
          "Tried to extract boundary data, but do not have "
          << (local_data_ ? "remote" : remote_data_ ? "local" : "any")
@@ -78,9 +77,10 @@ SimpleBoundaryData<LocalVars, RemoteVars>::extract() noexcept {
   return result;
 }
 
-template <typename LocalVars, typename RemoteVars>
-void SimpleBoundaryData<LocalVars, RemoteVars>::pup(PUP::er& p) noexcept {
-  p | time_;
+template <typename TemporalId, typename LocalVars, typename RemoteVars>
+void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::pup(
+    PUP::er& p) noexcept {
+  p | temporal_id_;
   p | local_data_;
   p | remote_data_;
 }

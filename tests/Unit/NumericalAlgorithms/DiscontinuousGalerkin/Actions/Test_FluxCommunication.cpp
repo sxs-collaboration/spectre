@@ -38,10 +38,6 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,6 +48,11 @@
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
+struct TemporalId : db::SimpleTag {
+  static std::string name() noexcept { return "TemporalId"; }
+  using type = int;
+};
+
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
@@ -119,6 +120,7 @@ using component =
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component>;
+  using temporal_id = TemporalId;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
 };
@@ -139,7 +141,7 @@ using fluxes_tag = typename flux_comm_types::FluxesTag;
 using other_data_tag = interface_tag<Tags::Variables<tmpl::list<OtherData>>>;
 
 using compute_items = db::AddComputeTags<
-    Tags::Time, Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
+    Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
     interface_tag<Tags::Extents<1>>,
     interface_tag<Tags::UnnormalizedFaceNormal<2>>,
     interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
@@ -156,9 +158,6 @@ Scalar<DataVector> reverse(Scalar<DataVector> x) noexcept {
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
-
-  const Slab slab(1., 3.);
-  const TimeId time_id{8, slab.start(), 0};
 
   const Index<2> extents{{{3, 3}}};
 
@@ -216,8 +215,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
        {Direction<2>::upper_eta(), Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
 
   auto start_box = [
-    &extents, &time_id, &self_id, &west_id, &east_id, &south_id,
-    &block_orientation, &coordmap, &neighbor_directions, &data
+    &extents, &self_id, &west_id, &east_id, &south_id, &block_orientation,
+    &coordmap, &neighbor_directions, &data
   ]() noexcept {
     const Element<2> element(
         self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
@@ -246,10 +245,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     mortar_history[std::make_pair(Direction<2>::upper_eta(), south_id)];
 
     return db::create<
-        db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+        db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
                           Tags::ElementMap<2>, normal_dot_fluxes_tag,
                           other_data_tag, mortar_data_tag>,
-        compute_items>(time_id, extents, element, std::move(map),
+        compute_items>(0, extents, element, std::move(map),
                        std::move(normal_dot_fluxes), std::move(other_data),
                        std::move(mortar_history));
   }();
@@ -262,13 +261,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   {
     CHECK(runner.nonempty_inboxes<component, fluxes_tag>() ==
           std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
-    const auto check_sent_data = [&runner, &time_id, &self_id](
+    const auto check_sent_data = [&runner, &self_id](
         const ElementId<2>& id, const Direction<2>& direction) noexcept {
       const auto& inboxes = runner.inboxes<component>();
       const auto& flux_inbox = tuples::get<fluxes_tag>(inboxes.at(id));
       CHECK(flux_inbox.size() == 1);
-      CHECK(flux_inbox.count(time_id) == 1);
-      const auto& flux_inbox_at_time = flux_inbox.at(time_id);
+      CHECK(flux_inbox.count(0) == 1);
+      const auto& flux_inbox_at_time = flux_inbox.at(0);
       CHECK(flux_inbox_at_time.size() == 1);
       CHECK(flux_inbox_at_time.count({direction, self_id}) == 1);
     };
@@ -278,7 +277,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   }
 
   // Now check ReceiveDataForFluxes
-  const auto send_data = [&extents, &runner, &self_id, &time_id, &coordmap](
+  const auto send_data = [&extents, &runner, &self_id, &coordmap](
       const ElementId<2>& id, const Direction<2>& direction,
       const OrientationMap<2>& orientation,
       const Scalar<DataVector>& normal_dot_fluxes,
@@ -299,10 +298,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     mortar_history[std::make_pair(direction, self_id)];
 
     auto box = db::create<
-        db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+        db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
                           Tags::ElementMap<2>, normal_dot_fluxes_tag,
                           other_data_tag, mortar_data_tag>,
-        compute_items>(time_id, extents, element, std::move(map),
+        compute_items>(0, extents, element, std::move(map),
                        std::move(normal_dot_fluxes_map),
                        std::move(other_data_map), std::move(mortar_history));
 
@@ -403,9 +402,6 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
 
-  const Slab slab(1., 3.);
-  const TimeId time_id{8, slab.start(), 0};
-
   const Index<2> extents{{{3, 3}}};
 
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
@@ -419,10 +415,10 @@ SPECTRE_TEST_CASE(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   auto start_box = db::create<
-      db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
+      db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
                         Tags::ElementMap<2>, normal_dot_fluxes_tag,
                         other_data_tag, mortar_data_tag>,
-      compute_items>(time_id, extents, element, std::move(map),
+      compute_items>(0, extents, element, std::move(map),
                      db::item_type<normal_dot_fluxes_tag>{},
                      db::item_type<other_data_tag>{},
                      db::item_type<mortar_data_tag>{});

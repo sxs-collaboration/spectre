@@ -17,7 +17,6 @@
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace dg {
@@ -52,18 +51,22 @@ struct FluxCommunicationTypes {
       typename PackagedData::tags_list, tmpl::list<MagnitudeOfFaceNormal>>>>;
 
   /// The DataBox tag for the data stored on the mortars.
-  using mortar_data_tag = Tags::Mortars<
-      Tags::SimpleBoundaryData<LocalData, PackagedData>, volume_dim>;
+  using mortar_data_tag =
+      Tags::Mortars<Tags::SimpleBoundaryData<
+                        db::item_type<typename Metavariables::temporal_id>,
+                        LocalData, PackagedData>,
+                    volume_dim>;
 
   /// The inbox tag for flux communication.
   struct FluxesTag {
-    using temporal_id = TimeId;
+    using temporal_id = db::item_type<typename Metavariables::temporal_id>;
     using type = std::unordered_map<
-        TimeId, std::unordered_map<
-                    std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-                    PackagedData,
-                    boost::hash<std::pair<Direction<volume_dim>,
-                                          ElementId<volume_dim>>>>>;
+        temporal_id,
+        std::unordered_map<
+            std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+            PackagedData,
+            boost::hash<
+                std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>>;
   };
 };
 }  // namespace dg
