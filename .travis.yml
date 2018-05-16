@@ -160,7 +160,6 @@ before_install:
       brew install jemalloc;
       brew install gsl;
 
-      brew tap homebrew/science;
       brew install hdf5;
 
       ccache -z;
