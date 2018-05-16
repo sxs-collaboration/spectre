@@ -266,10 +266,15 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowSchwarzschild",
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowKerr", "[Utilities][Unit]") {
   test_kerr(FastFlow::FlowType::Fast, 2.0, 100);
-  // Changing the mass to 2.0 for Jacobi and Curvature slows down
-  // those methods, so we keep mass=1.0 for those tests so that they
-  // don't take too much time.
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.JacobiKerr", "[Utilities][Unit]") {
+  // Keep mass at 1.0 so test doesn't timeout.
   test_kerr(FastFlow::FlowType::Jacobi, 1.0, 200);
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.CurvatureKerr", "[Utilities][Unit]") {
+  // Keep mass at 1.0 so test doesn't timeout.
   test_kerr(FastFlow::FlowType::Curvature, 1.0, 200);
 }
 
