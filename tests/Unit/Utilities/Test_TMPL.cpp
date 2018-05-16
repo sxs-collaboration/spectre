@@ -73,3 +73,25 @@ SPECTRE_TEST_CASE("Unit.Utilities.get_first_argument", "[Unit][Utilities]") {
   CHECK(6 == get_first_argument(a1, a0, a2, a3));
   CHECK('7' == get_first_argument(a3, a1, a2, a0));
 }
+
+namespace {
+/// [expand_pack_left_to_right]
+template <typename... Ts>
+void test_expand_pack_left_to_right(const size_t expected,
+                                    tmpl::list<Ts...> /*meta*/) {
+  size_t sum = 0;
+  const auto lambda = [&sum](auto tag) { sum += decltype(tag)::value; };
+  EXPAND_PACK_LEFT_TO_RIGHT(lambda(Ts{}));
+  CHECK(sum == expected);
+}
+/// [expand_pack_left_to_right]
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Utilities.EXPAND_PACK_LEFT_TO_RIGHT",
+                  "[Unit][Utilities]") {
+  test_expand_pack_left_to_right(
+      10, tmpl::list<std::integral_constant<size_t, 2>,
+                     std::integral_constant<size_t, 4>,
+                     std::integral_constant<size_t, 1>,
+                     std::integral_constant<size_t, 3>>{});
+}
