@@ -17,7 +17,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PointerVector.hpp"
@@ -318,7 +317,7 @@ class ModalVector {
     return lhs * _rhs_local;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      DataVector& lhs, const ModalVector& rhs) noexcept {
+      const DataVector& lhs, const ModalVector& rhs) noexcept {
     const blaze::DynamicVector<double> _lhs_local(lhs.size(), lhs.data());
     return _lhs_local * rhs;
   }

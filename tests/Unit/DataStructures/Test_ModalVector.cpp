@@ -3,17 +3,15 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <iostream>
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <numeric>
 #include <cstddef>
+#include <numeric>
 
-#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -244,7 +242,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathAfterMove",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
                   "[Unit][DataStructures]") {
-  constexpr size_t num_pts = 19;
+  const size_t num_pts = 19;
   ModalVector val{1., -2., 3., -4., 8., 12., -14.};
   ModalVector nine(num_pts, 9.0);
   ModalVector one(num_pts, 1.0);
@@ -434,7 +432,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
                   "[Unit][DataStructures]") {
-  constexpr size_t num_pts = 23;
+  const size_t num_pts = 17;
   ModalVector nine(num_pts, 9.0);
   DataVector eight(num_pts, 8.0);
 
