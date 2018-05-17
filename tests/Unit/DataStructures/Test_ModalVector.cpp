@@ -432,6 +432,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
                   "[Unit][DataStructures]") {
+  ASSERTION_TEST();
   //~ const size_t num_pts = 17;
   //~ ModalVector nine(num_pts, 9.0);
   //~ DataVector eight(num_pts, 8.0);
