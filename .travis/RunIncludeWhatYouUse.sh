@@ -21,78 +21,105 @@ check_whitelist() {
     return 0
 }
 
-# Setup lmod and spack to load dependencies
-. /etc/profile.d/lmod.sh
-export PATH=$PATH:/work/spack/bin
-. /work/spack/share/spack/setup-env.sh
-spack load benchmark
-spack load blaze
-spack load brigand
-spack load catch
-spack load gsl
-spack load libxsmm
-spack load pkg-config
-spack load yaml-cpp
+# if on travis
+if [ $# == 0 ]; then
 
-SOURCE_DIR="/work/spectre/"
-BUILD_DIR=`pwd`
-git clone ${UPSTREAM_REPO} /work/spectre_upstream
-cd /work/spectre_upstream
-git checkout ${UPSTREAM_BRANCH}
-COMMITS_ON_UPSTREAM=`git rev-list HEAD`
-cd /work/spectre
+    # Setup lmod and spack to load dependencies
+    . /etc/profile.d/lmod.sh
+    export PATH=$PATH:/work/spack/bin
+    . /work/spack/share/spack/setup-env.sh
+    spack load benchmark
+    spack load blaze
+    spack load brigand
+    spack load catch
+    spack load gsl
+    spack load libxsmm
+    spack load pkg-config
+    spack load yaml-cpp
 
-# For each upstream commit we check if the commit is on this branch, once we
-# find a match we save that hash and exit. This allows us to check only files
-# currently being committed.
-UPSTREAM_COMMIT_HASH=''
+    SOURCE_DIR="/work/spectre/"
+    BUILD_DIR=`pwd`
+    IWYU_TOOL=iwyu_tool.py
+    NUMBER_OF_CORES=2
+    git clone ${UPSTREAM_REPO} /work/spectre_upstream
+    cd /work/spectre_upstream
+    git checkout ${UPSTREAM_BRANCH}
+    COMMITS_ON_UPSTREAM=`git rev-list HEAD`
+    cd /work/spectre
 
-for HASH in ${COMMITS_ON_UPSTREAM}
-do
-    if git cat-file -e $HASH^{commit} 2> /dev/null
+    # For each upstream commit we check if the commit is on this branch,
+    # once we find a match we save that hash and exit. This allows us
+    # to check only files currently being committed.
+    UPSTREAM_COMMIT_HASH=''
+
+    for HASH in ${COMMITS_ON_UPSTREAM}
+    do
+        if git cat-file -e $HASH^{commit} 2> /dev/null
+        then
+            UPSTREAM_COMMIT_HASH=$HASH
+            break
+        fi
+    done
+
+    if [ -z $UPSTREAM_COMMIT_HASH ];
     then
-       UPSTREAM_COMMIT_HASH=$HASH
-       break
+        echo "The branch is not branched from"
+        echo "${UPSTREAM_REPO}/${UPSTREAM_BRANCH}"
+        exit 1
     fi
-done
 
-if [ -z $UPSTREAM_COMMIT_HASH ];
-then
-   echo "The branch is not branched from ${UPSTREAM_REPO}/${UPSTREAM_BRANCH}"
-   exit 1
+    echo "Using upstream commit hash: ${UPSTREAM_COMMIT_HASH}"
+elif [ $# == 5 ]; then # Run locally
+    BUILD_DIR=$1
+    SOURCE_DIR=$2
+    IWYU_TOOL=$3
+    NUMBER_OF_CORES=$4
+    UPSTREAM_COMMIT_HASH=$5
+else
+    echo "Wrong number of arguments passed to RunIncludeWhatYouUse.sh"
+    echo "Expecting BUILD_DIR SOURCE_DIR IWYU_TOOL NUMBER_OF_CORES HASH"
+    echo "If you ran 'make iwyu-hash' then you must specify 'HASH=OLD_HASH'."
+    echo "IWYU will then be run on all files changed between OLD_HASH and HEAD"
+    exit 1
 fi
-
-echo "Using upstream commit hash: ${UPSTREAM_COMMIT_HASH}"
 
 ###############################################################################
 # Get list of non-deleted files
 MODIFIED_FILES=()
 
-for FILENAME in `git diff --name-only ${UPSTREAM_COMMIT_HASH} HEAD`
+EXECUTED_FROM_DIR=`pwd`
+cd $SOURCE_DIR
+ALL_GIT_FILES=`git diff --name-only ${UPSTREAM_COMMIT_HASH} HEAD`
+cd $EXECUTED_FROM_DIR
+
+for FILENAME in ${ALL_GIT_FILES}
 do
+    RELATIVE_FILENAME=$FILENAME
+    FILENAME=$SOURCE_DIR/$FILENAME
     if [ -f $FILENAME ] \
            && [ ${FILENAME: -4} == ".cpp" ] \
            && ! grep -q "FILE_IS_COMPILATION_TEST" $FILENAME \
-           && check_whitelist "${FILENAME}" $whitelist; then
-        MODIFIED_FILES+=("$SOURCE_DIR$FILENAME")
+           && check_whitelist "${RELATIVE_FILENAME}" $whitelist; then
+        MODIFIED_FILES+=("$FILENAME")
     fi
 done
 
 # Go to build directory and then run iwyu, writing output to file
 cd ${BUILD_DIR}
-IWYU_OUTPUT="./.iwyu_output"
+IWYU_OUTPUT="${BUILD_DIR}/.iwyu_output"
 rm -f ${IWYU_OUTPUT}
 
 if [ ! -z "$MODIFIED_FILES" ]; then
     printf "Invoking IWYU as:\n \
-iwyu_tool.py -j 2 -p . $MODIFIED_FILES -- --mapping_file=$SOURCE_DIR/tools/Iwyu/iwyu.imp\n"
+$IWYU_TOOL -j ${NUMBER_OF_CORES} -p $BUILD_DIR ${MODIFIED_FILES} -- --mapping_file=$SOURCE_DIR/tools/Iwyu/iwyu.imp\n"
 
     # We loop over two files at a time since we can run IWYU
     # in parallel and TravisCI has 2 cores.
-    for (( i=0; i<${#MODIFIED_FILES[@]} ; i+=2 )) ; do
+    for (( i=0; i<${#MODIFIED_FILES[@]} ; i+=$NUMBER_OF_CORES )) ; do
         # need to output something so TravisCI knows we're not stalled
         printf '.'
-        iwyu_tool.py -p . ${MODIFIED_FILES[i]} ${MODIFIED_FILES[i+1]} \
+        ${IWYU_TOOL} -j ${NUMBER_OF_CORES} -p ${BUILD_DIR} \
+                     ${MODIFIED_FILES[@]:$i:$NUMBER_OF_CORES} \
                      -- --mapping_file=${SOURCE_DIR}/tools/Iwyu/iwyu.imp \
                      >> ${IWYU_OUTPUT} 2>&1
     done
@@ -139,9 +166,11 @@ sometimes. Known problematic cases are:\n\
     having corrected all valid suggestions. You can run IWYU from the Docker\n\
     container to test locally.\n\
 IWYU Output:\n"
-        more ${IWYU_OUTPUT}
+        cat ${IWYU_OUTPUT}
+        cd $EXECUTED_FROM_DIR
         exit 1
     fi
 fi
 
+cd $EXECUTED_FROM_DIR
 exit 0
