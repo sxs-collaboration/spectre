@@ -14,6 +14,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Actions {
@@ -40,18 +41,19 @@ struct AdvanceTime {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<Tags::TimeId, Tags::TimeStep>(
-        box, [&cache](auto& time_id, auto& time_step) noexcept {
+        make_not_null(&box), [&cache](const auto time_id,
+                                      const auto time_step) noexcept {
           const auto& time_stepper =
               Parallel::get<CacheTags::TimeStepper>(cache);
-          time_id = time_stepper.next_time_id(time_id, time_step);
-          if (time_id.is_at_slab_boundary() and
-              (time_step.is_positive() ? time_id.time.is_at_slab_end()
-                                       : time_id.time.is_at_slab_start())) {
-            ++time_id.slab_number;
+          *time_id = time_stepper.next_time_id(*time_id, *time_step);
+          if (time_id->is_at_slab_boundary() and
+              (time_step->is_positive() ? time_id->time.is_at_slab_end()
+                                        : time_id->time.is_at_slab_start())) {
+            ++time_id->slab_number;
             const Slab new_slab =
-                time_id.time.slab().advance_towards(time_step);
-            time_id.time = time_id.time.with_slab(new_slab);
-            time_step = time_step.with_slab(new_slab);
+                time_id->time.slab().advance_towards(*time_step);
+            time_id->time = time_id->time.with_slab(new_slab);
+            *time_step = time_step->with_slab(new_slab);
           }
         });
 

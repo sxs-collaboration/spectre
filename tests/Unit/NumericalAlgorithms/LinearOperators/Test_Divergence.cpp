@@ -64,9 +64,9 @@ auto make_affine_map<3>() noexcept {
 }
 
 template <size_t Dim, typename Frame>
-struct Flux1 : db::DataBoxTag {
+struct Flux1 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "Flux1";
+  static constexpr db::Label label = "Flux1";
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
                    const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
     auto result = make_with_value<tnsr::I<DataVector, Dim, Frame>>(x, 0.);
@@ -89,9 +89,9 @@ struct Flux1 : db::DataBoxTag {
 };
 
 template <size_t Dim, typename Frame>
-struct Flux2 : db::DataBoxTag {
+struct Flux2 : db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "Flux2";
+  static constexpr db::Label label = "Flux2";
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
                    const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
     auto result = make_with_value<tnsr::Ij<DataVector, Dim, Frame>>(x, 0.);
@@ -184,9 +184,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
 
 namespace {
 template <class MapType>
-struct MapTag : db::DataBoxTag {
+struct MapTag : db::SimpleTag {
   using type = MapType;
-  static constexpr db::DataBoxString label = "MapTag";
+  static constexpr db::Label label = "MapTag";
 };
 
 template <size_t Dim, typename Frame = Frame::Inertial>

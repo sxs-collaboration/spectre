@@ -24,8 +24,8 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
-struct dt : db::DataBoxPrefix {
-  static constexpr db::DataBoxString label = "dt";
+struct dt : db::PrefixTag, db::SimpleTag {
+  static constexpr db::Label label = "dt";
   using type = db::item_type<Tag>;
   using tag = Tag;
 };
@@ -39,21 +39,21 @@ struct Flux;
 /// \cond
 template <typename Tag, typename VolumeDim, typename Fr>
 struct Flux<Tag, VolumeDim, Fr,
-            Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
-    : db::DataBoxPrefix {
+            Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>> : db::PrefixTag,
+                                                                db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "Flux";
+  static constexpr db::Label label = "Flux";
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
 struct Flux<Tag, VolumeDim, Fr,
             Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
-    : db::DataBoxPrefix {
+    : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "Flux";
+  static constexpr db::Label label = "Flux";
 };
 /// \endcond
 
@@ -61,10 +61,10 @@ struct Flux<Tag, VolumeDim, Fr,
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the flux
 template <typename Tag>
-struct NormalDotFlux : db::DataBoxPrefix {
+struct NormalDotFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "NormalDotFlux";
+  static constexpr db::Label label = "NormalDotFlux";
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
@@ -72,9 +72,9 @@ struct NormalDotFlux : db::DataBoxPrefix {
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the numerical flux
 template <typename Tag>
-struct NormalDotNumericalFlux : db::DataBoxPrefix {
+struct NormalDotNumericalFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "NormalDotNumericalFlux";
+  static constexpr db::Label label = "NormalDotNumericalFlux";
 };
 }  // namespace Tags

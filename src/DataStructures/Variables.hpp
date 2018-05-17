@@ -27,12 +27,12 @@ class Variables;
 
 namespace Tags {
 template <typename TagsList>
-struct Variables : db::DataBoxTag {
+struct Variables : db::SimpleTag {
   static_assert(tt::is_a<tmpl::list, TagsList>::value,
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
   using type = ::Variables<TagsList>;
-  static constexpr db::DataBoxString label = "Variables";
+  static constexpr db::Label label = "Variables";
 };
 }  // namespace Tags
 
@@ -48,8 +48,8 @@ class Variables;
  *
  * The `Tags` are `struct`s that must have a public type alias `type` whose
  * value must be a `Tensor<DataVector, ...>`, a `static constexpr
- * db::DataBoxString` variable named `label`, and must derive off of
- * `db::DataBoxTag`. In general, they should be DataBoxTags that are not compute
+ * db::Label` variable named `label`, and must derive off of
+ * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
  *
  * \snippet Test_Variables.cpp simple_variables_tag
@@ -704,8 +704,9 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
 }  // namespace MakeWithValueImpls
 
 namespace db {
-template <typename Tag>
-struct Subitems<Tag, Requires<tt::is_a_v<Variables, item_type<Tag>>>> {
+template <typename TagList, typename Tag>
+struct Subitems<TagList, Tag,
+                Requires<tt::is_a_v<Variables, item_type<Tag, TagList>>>> {
   using type = typename item_type<Tag>::tags_list;
 
   template <typename Subtag>
@@ -713,9 +714,12 @@ struct Subitems<Tag, Requires<tt::is_a_v<Variables, item_type<Tag>>>> {
       const gsl::not_null<item_type<Tag>*> parent_value,
       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
     auto& vars = get<Subtag>(*parent_value);
-    for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
-         vars_it != vars.end(); ++vars_it, ++sub_var_it) {
-      sub_var_it->set_data_ref(&*vars_it);
+    // Only update the Tensor if the Variables has changed its allocation
+    if (vars.begin()->data() != sub_value->begin()->data()) {
+      for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
+           vars_it != vars.end(); ++vars_it, ++sub_var_it) {
+        sub_var_it->set_data_ref(&*vars_it);
+      }
     }
   }
 

@@ -131,12 +131,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
 }
 
 namespace {
-struct Vector : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Vector";
+struct Vector : db::SimpleTag {
+  static constexpr db::Label label = "Vector";
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
-struct Covector : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Covector";
+struct Covector : db::SimpleTag {
+  static constexpr db::Label label = "Covector";
   using type = tnsr::i<DataVector, 2, Frame::Grid>;
 };
 }  // namespace

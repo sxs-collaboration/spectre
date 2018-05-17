@@ -21,7 +21,7 @@ struct get_item_from_variant_databox;
 
 template <typename Tag>
 struct get_item_from_variant_databox<
-    Tag, Requires<std::is_base_of<db::DataBoxTag, Tag>::value>>
+    Tag, Requires<std::is_base_of<db::SimpleTag, Tag>::value>>
     : boost::static_visitor<db::item_type<Tag>> {
   template <typename DataBox_t>
   constexpr db::item_type<Tag> operator()(DataBox_t& box) const {
@@ -31,7 +31,7 @@ struct get_item_from_variant_databox<
 
 template <typename TagType>
 struct get_item_from_variant_databox<
-    TagType, Requires<not std::is_base_of<db::DataBoxTag, TagType>::value>>
+    TagType, Requires<not std::is_base_of<db::SimpleTag, TagType>::value>>
     : boost::static_visitor<TagType> {
   explicit get_item_from_variant_databox(std::string name)
       : var_name(std::move(name)) {}

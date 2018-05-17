@@ -22,6 +22,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -42,13 +43,13 @@ template <class Metavariables>
 struct NodegroupParallelComponent;
 
 namespace Tags {
-struct vector_of_array_indexs : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "vector_of_array_indexs";
+struct vector_of_array_indexs : db::SimpleTag {
+  static constexpr db::Label label = "vector_of_array_indexs";
   using type = std::vector<int>;
 };
 
-struct total_receives_on_node : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "total_receives_on_node";
+struct total_receives_on_node : db::SimpleTag {
+  static constexpr db::Label label = "total_receives_on_node";
   using type = int;
 };
 }  // namespace Tags
@@ -92,16 +93,17 @@ struct nodegroup_receive {
                          NodegroupParallelComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
-        box, [&id_of_array](std::vector<int>& array_indexs,
-                            int& total_receives_on_node) {
-          if (static_cast<int>(array_indexs.size()) !=
+        make_not_null(&box),
+        [&id_of_array](const gsl::not_null<std::vector<int>*> array_indexs,
+                       const gsl::not_null<int*> total_receives_on_node) {
+          if (static_cast<int>(array_indexs->size()) !=
               number_of_1d_array_elements_per_core *
                   Parallel::procs_on_node(Parallel::my_node())) {
-            array_indexs[static_cast<size_t>(id_of_array)]++;
+            (*array_indexs)[static_cast<size_t>(id_of_array)]++;
           }
-          std::for_each(array_indexs.begin(), array_indexs.end(),
+          std::for_each(array_indexs->begin(), array_indexs->end(),
                         [](int& t) { t++; });
-          total_receives_on_node++;
+          ++*total_receives_on_node;
         });
   }
 };
@@ -147,16 +149,17 @@ struct nodegroup_threaded_receive {
                     const NodeLock& node_lock, const int& id_of_array) {
     Parallel::lock(node_lock);
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
-        box, [&id_of_array](std::vector<int>& array_indexs,
-                            int& total_receives_on_node) {
-          if (static_cast<int>(array_indexs.size()) !=
+        make_not_null(&box),
+        [&id_of_array](const gsl::not_null<std::vector<int>*> array_indexs,
+                       const gsl::not_null<int*> total_receives_on_node) {
+          if (static_cast<int>(array_indexs->size()) !=
               number_of_1d_array_elements_per_core *
                   Parallel::procs_on_node(Parallel::my_node())) {
-            array_indexs[static_cast<size_t>(id_of_array)]++;
+            (*array_indexs)[static_cast<size_t>(id_of_array)]++;
           }
-          std::for_each(array_indexs.begin(), array_indexs.end(),
+          std::for_each(array_indexs->begin(), array_indexs->end(),
                         [](int& t) { t++; });
-          total_receives_on_node++;
+          ++*total_receives_on_node;
         });
     Parallel::unlock(node_lock);
   }

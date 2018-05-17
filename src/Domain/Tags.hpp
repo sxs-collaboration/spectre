@@ -55,8 +55,8 @@ namespace Tags {
 /// \ingroup ComputationalDomainGroup
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
-struct Element : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Element";
+struct Element : db::SimpleTag {
+  static constexpr db::Label label = "Element";
   using type = ::Element<VolumeDim>;
 };
 
@@ -64,8 +64,8 @@ struct Element : db::DataBoxTag {
 /// \ingroup ComputationalDomainGroup
 /// The extents of DataVectors in the DataBox
 template <size_t VolumeDim>
-struct Extents : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Extents";
+struct Extents : db::SimpleTag {
+  static constexpr db::Label label = "Extents";
   using type = ::Index<VolumeDim>;
 };
 
@@ -73,8 +73,8 @@ struct Extents : db::DataBoxTag {
 /// \ingroup ComputationalDomainGroup
 /// The logical coordinates in the Element
 template <size_t VolumeDim>
-struct LogicalCoordinates : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "LogicalCoordinates";
+struct LogicalCoordinates : db::ComputeTag {
+  static constexpr db::Label label = "LogicalCoordinates";
   using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
   static constexpr auto function = logical_coordinates<VolumeDim>;
 };
@@ -83,8 +83,8 @@ struct LogicalCoordinates : db::ComputeItemTag {
 /// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
-struct ElementMap : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "ElementMap";
+struct ElementMap : db::SimpleTag {
+  static constexpr db::Label label = "ElementMap";
   using type = ::ElementMap<VolumeDim, Frame>;
 };
 
@@ -93,9 +93,9 @@ struct ElementMap : db::DataBoxTag {
 /// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
 /// frame must be the source frame of `MapTag`
 template <class MapTag, class SourceCoordsTag>
-struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
+struct Coordinates : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
-  static constexpr db::DataBoxString label = "Coordinates";
+  static constexpr db::Label label = "Coordinates";
   static constexpr auto function(
       const db::item_type<MapTag>& element_map,
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {
@@ -110,9 +110,9 @@ struct Coordinates : db::ComputeItemTag, db::DataBoxPrefix {
 /// held by `SourceCoordsTag`. The coordinates must be in the source frame of
 /// the map.
 template <typename MapTag, typename SourceCoordsTag>
-struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
+struct InverseJacobian : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
-  static constexpr db::DataBoxString label = "InverseJacobian";
+  static constexpr db::Label label = "InverseJacobian";
   static constexpr auto function(
       const db::item_type<MapTag>& element_map,
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {
@@ -125,8 +125,8 @@ struct InverseJacobian : db::ComputeItemTag, db::DataBoxPrefix {
 /// \ingroup ComputationalDomainGroup
 /// The set of directions to neighboring Elements
 template <size_t VolumeDim>
-struct InternalDirections : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "InternalDirections";
+struct InternalDirections : db::ComputeTag {
+  static constexpr db::Label label = "InternalDirections";
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
     std::unordered_set<::Direction<VolumeDim>> result;
@@ -263,7 +263,8 @@ template <bool IsComputeItem, typename DirectionsTag, typename NameTag,
 struct InterfaceImpl;
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
-struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag> {
+struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
+    : db::SimpleTag {
   static_assert(cpp17::is_same_v<NameTag, FunctionTag>,
                 "Can't specify a function for a simple item tag");
   using tag = NameTag;
@@ -274,7 +275,7 @@ struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag> {
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
-    : db::ComputeItemTag {
+    : db::ComputeTag {
   using tag = NameTag;
   using forwarded_argument_tags =
       interface_compute_item_argument_tags<DirectionsTag, FunctionTag>;
@@ -287,26 +288,26 @@ struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceBase
-    : db::DataBoxPrefix,
+    : db::PrefixTag,
       Interface_detail::InterfaceImpl<db::is_compute_item_v<FunctionTag>,
                                       DirectionsTag, NameTag, FunctionTag> {
-  static constexpr db::DataBoxString label = "Interface";
+  static constexpr db::Label label = "Interface";
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// ::Direction to an interface
 template <size_t VolumeDim>
-struct Direction : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Direction";
+struct Direction : db::SimpleTag {
+  static constexpr db::Label label = "Direction";
   using type = ::Direction<VolumeDim>;
 };
 
 /// \cond
 template <typename DirectionsTag, size_t VolumeDim>
-struct Interface<DirectionsTag, Direction<VolumeDim>>
-    : db::DataBoxPrefix, db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "Interface";
+struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
+                                                        db::ComputeTag {
+  static constexpr db::Label label = "Interface";
   using tag = Direction<VolumeDim>;
   static constexpr auto function(
       const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {
@@ -322,7 +323,7 @@ struct Interface<DirectionsTag, Direction<VolumeDim>>
 
 namespace detail {
 template <size_t VolumeDim>
-struct InterfaceExtents : db::ComputeItemTag {
+struct InterfaceExtents : db::ComputeTag {
   static constexpr auto function(
       const ::Direction<VolumeDim>& direction,
       const ::Index<VolumeDim>& volume_extents) noexcept {
@@ -342,9 +343,10 @@ struct Interface<DirectionsTag, Extents<InterfaceDim>>
 }  // namespace Tags
 
 namespace db {
-template <typename DirectionsTag, typename VariablesTag>
-struct Subitems<Tags::Interface<DirectionsTag, VariablesTag>,
-                Requires<tt::is_a_v<Variables, item_type<VariablesTag>>>> {
+template <typename TagList, typename DirectionsTag, typename VariablesTag>
+struct Subitems<
+    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
+    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>> {
   using type = tmpl::transform<
       typename item_type<VariablesTag>::tags_list,
       tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
@@ -400,7 +402,7 @@ template <size_t VolumeDim, typename>
 struct Slice;
 
 template <size_t VolumeDim, typename... SlicedTags>
-struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeItemTag {
+struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeTag {
   static constexpr auto function(
       const ::Index<VolumeDim>& extents,
       const ::Direction<VolumeDim>& direction,

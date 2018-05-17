@@ -70,7 +70,7 @@ namespace Tags {
 namespace Tags_detail {
 template <typename Tag, typename Frame>
 struct div_impl<Tag, Frame, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
-    : db::DataBoxPrefix {
+    : db::PrefixTag, db::SimpleTag {
   static_assert(
       cpp17::is_same_v<Frame,
                        std::tuple_element_t<
@@ -78,20 +78,20 @@ struct div_impl<Tag, Frame, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
       "the first index is not in the specified Frame");
   using type = TensorMetafunctions::remove_first_index<db::item_type<Tag>>;
   using tag = Tag;
-  static constexpr db::DataBoxString label = "div";
+  static constexpr db::Label label = "div";
 };
 
 template <typename... FluxTags, typename InverseJacobianTag>
 struct div_impl<tmpl::list<FluxTags...>, InverseJacobianTag,
                 Requires<tt::is_a_v<Tensor, db::item_type<InverseJacobianTag>>>>
-    : db::ComputeItemTag {
+    : db::ComputeTag {
  private:
   using derivative_frame_index =
       tmpl::back<typename db::item_type<InverseJacobianTag>::index_list>;
   using flux_tags = tmpl::list<FluxTags...>;
 
  public:
-  static constexpr db::DataBoxString label = "div";
+  static constexpr db::Label label = "div";
   static constexpr auto function =
       divergence<flux_tags, derivative_frame_index::dim,
                  typename derivative_frame_index::Frame>;

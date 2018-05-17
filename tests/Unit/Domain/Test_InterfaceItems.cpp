@@ -22,6 +22,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -39,25 +40,25 @@ struct NoCopy {
 };
 
 namespace TestTags {
-struct Int : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Int";
+struct Int : db::SimpleTag {
+  static constexpr db::Label label = "Int";
   using type = int;
 };
 
-struct Double : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Double";
+struct Double : db::SimpleTag {
+  static constexpr db::Label label = "Double";
   using type = double;
 };
 
 template <size_t N>
-struct NoCopy : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "NoCopy";
+struct NoCopy : db::SimpleTag {
+  static constexpr db::Label label = "NoCopy";
   using type = ::NoCopy<N>;
 };
 
 template <typename Tag>
-struct Negate : db::DataBoxPrefix, db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "Negate";
+struct Negate : db::PrefixTag, db::ComputeTag {
+  static constexpr db::Label label = "Negate";
   using tag = Tag;
   static constexpr auto function(const db::item_type<Tag>& x) noexcept {
     return -x;
@@ -65,16 +66,16 @@ struct Negate : db::DataBoxPrefix, db::ComputeItemTag {
   using argument_tags = tmpl::list<Tag>;
 };
 
-struct AddThree : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "AddThree";
+struct AddThree : db::ComputeTag {
+  static constexpr db::Label label = "AddThree";
   static constexpr auto function(const int x) noexcept { return x + 3; }
   using argument_tags = tmpl::list<Int>;
   using volume_tags = tmpl::list<Int>;
 };
 
 template <size_t VolumeDim>
-struct ComplexComputeItem : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "ComplexComputeItem";
+struct ComplexComputeItem : db::ComputeTag {
+  static constexpr db::Label label = "ComplexComputeItem";
   static constexpr auto function(const int i, const double d,
                                  const ::NoCopy<1>& /*unused*/,
                                  const ::NoCopy<2>& /*unused*/) noexcept {
@@ -85,8 +86,8 @@ struct ComplexComputeItem : db::ComputeItemTag {
 };
 
 template <typename>
-struct TemplatedDirections : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "TemplatedDirections";
+struct TemplatedDirections : db::SimpleTag {
+  static constexpr db::Label label = "TemplatedDirections";
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
@@ -179,8 +180,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
 namespace {
 constexpr size_t dim = 2;
 
-struct Dirs : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "Dirs";
+struct Dirs : db::ComputeTag {
+  static constexpr db::Label label = "Dirs";
   static auto function() noexcept {
     return std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
                                               Direction<dim>::upper_eta()};
@@ -189,8 +190,8 @@ struct Dirs : db::ComputeItemTag {
 };
 
 template <size_t N>
-struct Var : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Var";
+struct Var : db::SimpleTag {
+  static constexpr db::Label label = "Var";
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary =
       N == 3 or N == 30 or  // sliced_simple_item_tag below
@@ -198,8 +199,8 @@ struct Var : db::DataBoxTag {
 };
 
 template <size_t VolumeDim>
-struct Compute : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "Compute";
+struct Compute : db::ComputeTag {
+  static constexpr db::Label label = "Compute";
   static auto function(const Index<VolumeDim>& extents) {
     auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
         extents.product(), VolumeDim);
@@ -275,8 +276,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
         make_interface_tensor({5., 5., 5.}, {5., 5., 5., 5.}));
 
   db::mutate<Tags::Interface<Dirs, Var<0>>>(
-      box, [](auto& boundary_tensor) noexcept {
-        get(boundary_tensor.at(Direction<dim>::lower_xi())) *= 3.;
+      make_not_null(&box), [](const auto boundary_tensor) noexcept {
+        get(boundary_tensor->at(Direction<dim>::lower_xi())) *= 3.;
       });
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
         make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));
@@ -325,23 +326,23 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
 
 namespace partial_slice {
 template <size_t N>
-struct Scalar : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Scalar";
+struct Scalar : db::SimpleTag {
+  static constexpr db::Label label = "Scalar";
   using type = ::Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = N == 0;
 };
 
 constexpr size_t vector_dim = 3;
 template <size_t N>
-struct Vector : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Vector";
+struct Vector : db::SimpleTag {
+  static constexpr db::Label label = "Vector";
   using type = tnsr::i<DataVector, vector_dim, Frame::Logical>;
   static constexpr bool should_be_sliced_to_boundary = N == 1;
 };
 
 template <size_t VolumeDim>
-struct ComputedVars : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "ComputedVars";
+struct ComputedVars : db::ComputeTag {
+  static constexpr db::Label label = "ComputedVars";
   static auto function(const Index<VolumeDim>& extents) noexcept {
     const DataVector volume_data{
       11., 10., 9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};

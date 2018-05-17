@@ -46,8 +46,8 @@ namespace Tags {
 /// \ingroup DataStructuresGroup
 /// The Euclidean magnitude of a (co)vector
 template <typename Tag>
-struct EuclideanMagnitude : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "EuclideanMagnitude";
+struct EuclideanMagnitude : db::ComputeTag {
+  static constexpr db::Label label = "EuclideanMagnitude";
   static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
       magnitude;
   using argument_tags = tmpl::list<Tag>;
@@ -58,11 +58,13 @@ struct EuclideanMagnitude : db::ComputeItemTag {
 /// The (co)vector represented by Tag normalized by its magnitude from
 /// MagnitudeTag.
 template <typename Tag, typename MagnitudeTag>
-struct Normalized : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "Normalized";
+struct Normalized : db::ComputeTag {
+  static constexpr db::Label label = "Normalized";
   static constexpr auto function(
-      db::item_type<Tag> vector,
+      const db::item_type<Tag>&
+          vector_in,  // Compute items need to take const references
       const db::item_type<MagnitudeTag>& magnitude) noexcept {
+    auto vector = vector_in;
     for (size_t d = 0; d < vector.index_dim(0); ++d) {
       vector.get(d) /= get(magnitude);
     }

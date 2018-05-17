@@ -181,12 +181,14 @@ struct ComputeBoundaryFlux {
           local_mortar_data, std::move(normal_dot_numerical_fluxes),
           extents[dimension], magnitude_of_face_normal));
 
-      db::mutate<dt_variables_tag>(box, [
-        &lifted_data, &extents, &dimension, &direction
-      ](db::item_type<dt_variables_tag> & dt_vars) noexcept {
-        add_slice_to_data(make_not_null(&dt_vars), lifted_data, extents,
-                          dimension, index_to_slice_at(extents, direction));
-      });
+      db::mutate<dt_variables_tag>(
+          make_not_null(&box),
+          [&lifted_data, &extents, &dimension,
+           &direction ](const gsl::not_null<db::item_type<dt_variables_tag>*>
+                            dt_vars) noexcept {
+            add_slice_to_data(dt_vars, lifted_data, extents, dimension,
+                              index_to_slice_at(extents, direction));
+          });
     }
 
     return std::make_tuple(

@@ -123,8 +123,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ElementMap", "[Unit][Domain]") {
 }
 
 namespace {
-struct Directions : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Directions";
+struct Directions : db::SimpleTag {
+  static constexpr db::Label label = "Directions";
   using type = std::unordered_set<Direction<2>>;
 };
 }  // namespace

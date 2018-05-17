@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines classes DataBoxTag, DataBoxPrefix, ComputeItemTag and several
+/// Defines classes SimpleTag, PrefixTag, ComputeTag and several
 /// functions for retrieving tag info
 
 #pragma once
@@ -50,27 +50,45 @@ namespace db {
  * \ingroup DataBoxGroup
  * \brief The string used to give a runtime name to a DataBoxTag
  */
-using DataBoxString = const char* const;
+using Label = const char* const;
 
 /*!
  * \ingroup DataBoxGroup
  * \brief Tags for the DataBox inherit from this type
  *
  * \details
- * Used to mark a type as being a DataBoxTag so that it can be used in a
+ * Used to mark a type as being a SimpleTag so that it can be used in a
  * DataBox.
  *
  * \derivedrequires
- * - type alias `type` of the type this DataBoxTag represents
- * - `static constexpr DataBoxString` that is the same as the type name
+ * - type alias `type` of the type this SimpleTag represents
+ * - `static constexpr db::Label` that is the same as the type name
  *    and named `label`
  *
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
  *
- * \see DataBox DataBoxPrefix DataBoxString get_tag_name
+ * \see DataBox PrefixTag db::Label get_tag_name
  */
-struct DataBoxTag {};
+struct SimpleTag {};
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Tags that are base tags, i.e. a simple or compute tag must derive
+ * off them for them to be useful
+ *
+ * Base tags do not need to contain type information, unlike simple
+ * tags which must contain the type information. Base tags are designed so
+ * that retrieving items from the DataBox or setting argument tags in compute
+ * items can be done without any knowledge of the type of the item.
+ *
+ * To use the base mechanism the base tag must inherit off of
+ * `BaseTag` and NOT `SimpleTag`. This is very important for the
+ * implementation. Inheriting off both and not making the tag either a simple
+ * item or compute item is undefined behavior and is likely to end in extremely
+ * complicated compiler errors.
+ */
+struct BaseTag {};
 
 /*!
  * \ingroup DataBoxGroup
@@ -86,20 +104,20 @@ struct DataBoxTag {};
  *
  * \derivedrequires
  * - type alias `tag` of the DataBoxTag that this tag is a prefix to
- * - type alias `type` that is the type that this DataBoxPrefix holds
- * - DataBoxString `label` that is the prefix to the `tag`
+ * - type alias `type` that is the type that this PrefixTag holds
+ * - db::Label `label` that is the prefix to the `tag`
  *
  * \example
- * A DataBoxPrefix tag has the structure:
+ * A PrefixTag tag has the structure:
  * \snippet Test_DataBox.cpp databox_prefix_tag_example
  *
  * The name used to retrieve a prefix tag from the DataBox is:
  * \snippet Test_DataBox.cpp databox_name_prefix
  *
  *
- * \see DataBox DataBoxTag DataBoxString get_tag_name ComputeItemTag
+ * \see DataBox DataBoxTag db::Label get_tag_name ComputeTag
  */
-struct DataBoxPrefix : DataBoxTag {};
+struct PrefixTag {};
 
 /*!
  * \ingroup DataBoxGroup
@@ -140,11 +158,23 @@ struct DataBoxPrefix : DataBoxTag {};
  * which offers a lot of simplicity for very simple compute items.
  * \snippet Test_DataBox.cpp compute_item_tag_function
  *
- * \see DataBox DataBoxTag DataBoxString get_tag_name DataBoxPrefix
+ * \see DataBox SimpleTag db::Label get_tag_name PrefixTag
  */
-struct ComputeItemTag : DataBoxTag {};
+struct ComputeTag {};
 
-namespace detail {
+namespace DataBox_detail {
+template <typename TagList, typename Tag>
+using list_of_matching_tags = tmpl::conditional_t<
+    cpp17::is_same_v<Tag, ::Tags::DataBox>, tmpl::list<::Tags::DataBox>,
+    tmpl::filter<TagList, std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>;
+
+template <typename TagList, typename Tag>
+using first_matching_tag = tmpl::front<list_of_matching_tags<TagList, Tag>>;
+
+template <typename TagList, typename Tag>
+constexpr auto number_of_matching_tags =
+    tmpl::size<list_of_matching_tags<TagList, Tag>>::value;
+
 // @{
 /*!
  * \ingroup DataBoxGroup
@@ -170,16 +200,19 @@ struct tag_has_label : std::false_type {};
 template <typename T>
 struct tag_has_label<T, cpp17::void_t<decltype(T::label)>> : std::true_type {};
 /// \endcond
+
+template <typename Tag>
+constexpr bool tag_has_label_v = tag_has_label<Tag>::value;
 // @}
 
 // @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if a Tag label has type DataBoxString
+ * \brief Check if a Tag label has type db::Label
  *
  * \details
  * For a type `T`, check that the static member variable named `label` has type
- * DataBoxString
+ * db::Label
  *
  * \usage
  * For any type `T`
@@ -196,7 +229,7 @@ struct tag_label_correct_type : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct tag_label_correct_type<
-    T, Requires<std::is_same<DataBoxString, decltype(T::label)>::value>>
+    T, Requires<cpp17::is_same_v<db::Label, decltype(T::label)>>>
     : std::true_type {};
 /// \endcond
 // @}
@@ -211,7 +244,7 @@ struct check_tag_labels {
                                             << pretty_type::get_name<T>());
   }
 };
-}  // namespace detail
+}  // namespace DataBox_detail
 
 // @{
 /*!
@@ -220,19 +253,18 @@ struct check_tag_labels {
  *
  * \details
  * Given a DataBoxTag returns the name of the DataBoxTag as a std::string. If
- * the DataBoxTag is also a DataBoxPrefix then the prefix is added.
+ * the DataBoxTag is also a PrefixTag then the prefix is added.
  *
  * \tparam Tag the DataBoxTag whose name to get
  * \return string holding the DataBoxTag's name
  */
 template <typename Tag,
-          Requires<not std::is_base_of<DataBoxPrefix, Tag>::value> = nullptr>
+          Requires<not cpp17::is_base_of_v<PrefixTag, Tag>> = nullptr>
 std::string get_tag_name() {
   return std::string(Tag::label);
 }
 /// \cond HIDDEN_SYMBOLS
-template <typename Tag,
-          Requires<std::is_base_of<DataBoxPrefix, Tag>::value> = nullptr>
+template <typename Tag, Requires<cpp17::is_base_of_v<PrefixTag, Tag>> = nullptr>
 std::string get_tag_name() {
   return std::string(Tag::label) + get_tag_name<typename Tag::tag>();
 }
@@ -262,8 +294,7 @@ struct hash_databox_tag {
 };
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct hash_databox_tag<Tag,
-                        Requires<std::is_base_of<DataBoxPrefix, Tag>::value>> {
+struct hash_databox_tag<Tag, Requires<cpp17::is_base_of_v<PrefixTag, Tag>>> {
   using value_type = size_t;
   static constexpr value_type value =
       cstring_hash(Tag::label) * hash_databox_tag<typename Tag::tag>::value;
@@ -271,8 +302,7 @@ struct hash_databox_tag<Tag,
 };
 
 template <typename Tag>
-struct hash_databox_tag<Tag,
-                        Requires<tt::is_a<::Tags::Variables, Tag>::value>> {
+struct hash_databox_tag<Tag, Requires<tt::is_a_v<::Tags::Variables, Tag>>> {
   using value_type = size_t;
   using reduced_hash = tmpl::fold<
       typename Tag::type::tags_list, tmpl::size_t<0>,
@@ -285,27 +315,81 @@ struct hash_databox_tag<Tag,
 // @}
 }  // namespace detail
 
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `T` derives off of db::ComputeItemTag
+ * \brief Check if `Tag` derives off of db::ComputeTag
  */
-template <typename T, typename = std::nullptr_t>
+template <typename Tag, typename = std::nullptr_t>
 struct is_compute_item : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
-template <typename T>
-struct is_compute_item<T,
-                       Requires<std::is_base_of<db::ComputeItemTag, T>::value>>
+template <typename Tag>
+struct is_compute_item<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
+template <typename Tag>
+constexpr bool is_compute_item_v = is_compute_item<Tag>::value;
+// @}
+
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `T` derives off of db::ComputeItemTag
+ * \brief Check if `Tag` is a non-base DataBox tag. I.e. a SimpleTag or a
+ * ComputeTag
  */
-template <typename T>
-constexpr bool is_compute_item_v = is_compute_item<T>::value;
+template <typename Tag, typename = std::nullptr_t>
+struct is_non_base_tag : std::false_type {};
+/// \cond
+template <typename Tag>
+struct is_non_base_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag> or
+                                     cpp17::is_base_of_v<db::SimpleTag, Tag>>>
+    : std::true_type {};
+/// \endcond
 
-namespace detail {
+template <typename Tag>
+constexpr bool is_non_base_tag_v = is_non_base_tag<Tag>::value;
+// @}
+
+// @{
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Check if `Tag` is a BaseTag, SimpleTag, or ComputeTag
+ */
+template <typename Tag, typename = std::nullptr_t>
+struct is_tag : std::false_type {};
+/// \cond
+template <typename Tag>
+struct is_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag> or
+                            cpp17::is_base_of_v<db::SimpleTag, Tag> or
+                            cpp17::is_base_of_v<db::BaseTag, Tag>>>
+    : std::true_type {};
+/// \endcond
+
+template <typename Tag>
+constexpr bool is_tag_v = is_tag<Tag>::value;
+// @}
+
+// @{
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Check if `Tag` is a base DataBox tag
+ */
+template <typename Tag, typename = std::nullptr_t>
+struct is_base_tag : std::false_type {};
+/// \cond HIDDEN_SYMBOLS
+template <typename Tag>
+struct is_base_tag<Tag, Requires<cpp17::is_base_of_v<db::BaseTag, Tag> and
+                                 not cpp17::is_base_of_v<db::SimpleTag, Tag> and
+                                 not is_compute_item_v<Tag>>> : std::true_type {
+};
+/// \endcond
+
+template <typename Tag>
+constexpr bool is_base_tag_v = is_base_tag<Tag>::value;
+// @}
+
+namespace DataBox_detail {
 template <class T, class = void>
 struct has_return_type_member : std::false_type {};
 template <class T>
@@ -318,62 +402,119 @@ struct has_return_type_member<T, cpp17::void_t<typename T::return_type>>
 template <class T>
 constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
-template <typename Tag, typename = std::nullptr_t>
-struct compute_item_result_impl;
+template <typename TagList, typename Tag>
+struct item_type_impl;
 
-template <typename Tag, typename ArgsList>
-struct compute_item_result_helper;
+template <int SelectTagType>
+struct dispatch_item_type;
 
-template <typename Tag, template <typename...> class ArgumentsList,
-          typename... Args>
-struct compute_item_result_helper<Tag, ArgumentsList<Args...>> {
-  static_assert(
-      tt::is_callable<decltype(Tag::function),
-                      typename compute_item_result_impl<Args>::type...>::value,
-      "The compute item is not callable with the types that the tags hold. The "
-      "compute item tag that is the problem should be shown in the first line "
-      "after the static assert error: "
-      R"("detail::compute_item_result_helper<TheItemThatsFailingToBeCalled,)"
-      R"(list<PassedTags...> >")");
-  using type =
-      decltype(std::declval<std::remove_pointer_t<decltype(Tag::function)>>()(
-          std::declval<typename compute_item_result_impl<Args>::type>()...));
-};
+template <typename ArgsList>
+struct compute_item_type;
 
-template <typename Tag>
-struct compute_item_result_impl<
-    Tag,
-    Requires<is_compute_item_v<Tag> and not has_return_type_member_v<Tag>>> {
-  using type =
-      typename compute_item_result_helper<Tag,
-                                          typename Tag::argument_tags>::type;
-};
-
-template <typename Tag>
-struct compute_item_result_impl<
-    Tag, Requires<is_compute_item_v<Tag> and has_return_type_member_v<Tag>>> {
-  using type = typename Tag::return_type;
-};
-
-template <typename Tag>
-struct compute_item_result_impl<
-    Tag, Requires<not is_compute_item_v<Tag> and
-                  std::is_base_of<db::DataBoxTag, Tag>::value>> {
-  using type = typename Tag::type;
+template <typename TagList, typename Tag>
+struct item_type_impl {
+  // item_type_impl is intentionally a lazy metafunction rather than a
+  // metaclosure or a metacontinuation. The reason is that it is quite likely we
+  // call `db::item_type<Tag>` multiple times within the same translation unit
+  // and so we want to memoize the resulting type. However, we do not want to
+  // memoize the dispatch calls.
+  using type = typename dispatch_item_type<
+      is_base_tag_v<Tag>
+          ? 4
+          : (is_compute_item_v<Tag>and has_return_type_member_v<Tag>)
+                ? 3
+                : is_compute_item_v<Tag>
+                      ? 2
+                      : cpp17::is_base_of_v<db::SimpleTag, Tag> ? 1 : 0>::
+      template f<TagList, Tag>;
 };
 
 template <>
-struct compute_item_result_impl<Tags::DataBox> {
-  using type = NoSuchType;
+struct dispatch_item_type<0> {
+  // Tag is not a tag. This is necessary for SFINAE friendliness, specifically
+  // if someone calls Requires<tt::is_a_v<std::vector, db::item_type<Tag>>>
+  // with, say Tag = double, then this should probably SFINAE away, not fail to
+  // compile.
+  template <typename TagList, typename Tag>
+  using f = NoSuchType;
 };
-}  // namespace detail
+
+template <>
+struct dispatch_item_type<1> {
+  // simple item
+  template <typename TagList, typename Tag>
+  using f = typename Tag::type;
+};
+
+template <>
+struct dispatch_item_type<2> {
+  // compute item
+  template <typename TagList, typename Tag>
+  using f = typename compute_item_type<typename Tag::argument_tags>::template f<
+      TagList, Tag>;
+};
+
+template <>
+struct dispatch_item_type<3> {
+  // mutating compute item
+  template <typename TagList, typename Tag>
+  using f = typename Tag::return_type;
+};
+
+template <>
+struct dispatch_item_type<4> {
+  // base tag item: retrieve the derived tag from the tag list then call
+  // item_type_impl on the result.
+  // We do not check that there is only one matching tag in the DataBox because
+  // the uniqueness is only checked in get and mutate. The reason for that is
+  // that it is fine to have multiple derived tags in the DataBox as long as
+  // they all have the same type. We do not check that the types are all the
+  // same, it is undefined behavior if they are not and the user's
+  // responsibility.
+  template <typename TagList, typename Tag>
+  using f =
+      typename item_type_impl<TagList, first_matching_tag<TagList, Tag>>::type;
+};
+
+CREATE_IS_CALLABLE(function)
+
+template <typename Tag, typename TagList, typename TagTypesList>
+struct check_compute_item_is_invokable;
+
+template <typename Tag, typename... Tags, typename... TagTypes>
+struct check_compute_item_is_invokable<Tag, tmpl::list<Tags...>,
+                                       tmpl::list<TagTypes...>> {
+  static_assert(
+      is_function_callable_v<Tag, TagTypes...>,
+      "The compute item is not callable with the types that the tags hold. The "
+      "compute item tag that is the problem should be shown in the first line "
+      " after the static assert error: "
+      "'check_compute_item_is_invokable<TheItemThatsFailingToBeCalled, "
+      "brigand::list<PassedTags...>, "
+      "brigand::list<item_type<PassedTags>...>>'");
+};
+
+template <typename... Args>
+struct compute_item_type<tmpl::list<Args...>> {
+  template <typename TagList, typename Tag>
+  using f = decltype(
+#ifdef SPECTRE_DEBUG
+      (void)check_compute_item_is_invokable<
+          Tag, tmpl::list<Args...>,
+          tmpl::list<typename item_type_impl<TagList, Args>::type...>>{},
+#endif  // SPECTRE_DEBUG
+      Tag::function(
+          std::declval<typename item_type_impl<TagList, Args>::type>()...));
+};
+}  // namespace DataBox_detail
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Get the type that is returned by a Compute Item
+ * \brief Get the type that is returned by the `Tag`. If it is a base tag then a
+ * `TagList` must be passed as a second argument.
  */
-template <typename T>
-using item_type = typename detail::compute_item_result_impl<T>::type;
+template <typename Tag, typename TagList = NoSuchType>
+using item_type = typename DataBox_detail::item_type_impl<TagList, Tag>::type;
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Create a new list of Tags by wrapping each tag in `TagList` using the
@@ -407,7 +548,7 @@ struct remove_tag_prefix_impl;
 template <typename UnprefixedTag, template <typename...> class Prefix,
           typename... Args>
 struct remove_tag_prefix_impl<Prefix<UnprefixedTag, Args...>> {
-  static_assert(cpp17::is_base_of_v<db::DataBoxTag, UnprefixedTag>,
+  static_assert(cpp17::is_base_of_v<db::SimpleTag, UnprefixedTag>,
                 "Unwrapped tag is not a DataBoxTag");
   using type = UnprefixedTag;
 };
@@ -443,7 +584,7 @@ struct remove_all_prefixes {
 template <template <class...> class F, class Tag, class... Args>
 struct remove_all_prefixes<F<Tag, Args...>, true> {
   using type = typename remove_all_prefixes<
-      Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+      Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
 };
 }  // namespace databox_detail
 
@@ -451,7 +592,7 @@ struct remove_all_prefixes<F<Tag, Args...>, true> {
 /// Completely remove all prefix tags from a Tag
 template <typename Tag>
 using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
-    Tag, cpp17::is_base_of_v<db::DataBoxPrefix, Tag>>::type;
+    Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
 
 /// \ingroup DataBoxGroup
 /// Struct that can be specialized to allow DataBox items to have
@@ -473,7 +614,7 @@ using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
 ///   static item_type<Subtag> create_compute_item(
 ///       const item_type<Tag>& parent_value) noexcept;
 ///   ```
-template <typename Tag, typename = std::nullptr_t>
+template <typename TagList, typename Tag, typename = std::nullptr_t>
 struct Subitems {
   using type = tmpl::list<>;
 };

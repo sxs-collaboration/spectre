@@ -24,16 +24,16 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for ::TimeId for the algorithm state
-struct TimeId : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "TimeId";
+struct TimeId : db::SimpleTag {
+  static constexpr db::Label label = "TimeId";
   using type = ::TimeId;
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for step size
-struct TimeStep : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "TimeStep";
+struct TimeStep : db::SimpleTag {
+  static constexpr db::Label label = "TimeStep";
   using type = ::TimeDelta;
 };
 
@@ -44,8 +44,8 @@ inline ::Time time_from_id(const ::TimeId& id) noexcept { return id.time; }
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current ::Time (from TimeId)
-struct Time : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "Time";
+struct Time : db::ComputeTag {
+  static constexpr db::Label label = "Time";
   static constexpr auto function = TimeTags_detail::time_from_id;
   using argument_tags = tmpl::list<TimeId>;
 };
@@ -53,8 +53,8 @@ struct Time : db::ComputeItemTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current time as a double
-struct TimeValue : db::ComputeItemTag {
-  static constexpr db::DataBoxString label = "TimeValue";
+struct TimeValue : db::ComputeTag {
+  static constexpr db::Label label = "TimeValue";
   static auto function(const ::Time& t) noexcept { return t.value(); }
   using argument_tags = tmpl::list<Time>;
 };
@@ -66,8 +66,8 @@ struct TimeValue : db::ComputeItemTag {
 /// \tparam Tag tag for the variables
 /// \tparam DtTag tag for the time derivative of the variables
 template <typename Tag, typename DtTag>
-struct HistoryEvolvedVariables : db::DataBoxPrefix {
-  static constexpr db::DataBoxString label = "HistoryEvolvedVariables";
+struct HistoryEvolvedVariables : db::PrefixTag, db::SimpleTag {
+  static constexpr db::Label label = "HistoryEvolvedVariables";
   using tag = Tag;
   using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
 };
@@ -79,8 +79,8 @@ struct HistoryEvolvedVariables : db::DataBoxPrefix {
 /// \tparam Key type identifying a boundary
 /// \tparam Tag tag for boundary variables
 template <typename Key, typename Tag, typename Hash = std::hash<Key>>
-struct HistoryBoundaryVariables : db::DataBoxPrefix {
-  static constexpr db::DataBoxString label = "HistoryBoundaryVariables";
+struct HistoryBoundaryVariables : db::PrefixTag, db::SimpleTag {
+  static constexpr db::Label label = "HistoryBoundaryVariables";
   using tag = Tag;
   using type = std::unordered_map<Key, db::item_type<Tag>, Hash>;
 };

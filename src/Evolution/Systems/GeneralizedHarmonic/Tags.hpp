@@ -17,9 +17,9 @@ namespace GeneralizedHarmonic {
  * where \f$\phi_{iab}\f$ is the variable defined by the tag Phi.
  */
 template <size_t Dim, typename Frame>
-struct Pi : db::DataBoxTag {
+struct Pi : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "Pi";
+  static constexpr db::Label label = "Pi";
 };
 
 /*!
@@ -29,31 +29,31 @@ struct Pi : db::DataBoxTag {
  * \f$\phi_{iab} = \partial_i \psi_{ab}\f$
  */
 template <size_t Dim, typename Frame>
-struct Phi : db::DataBoxTag {
+struct Phi : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "Phi";
+  static constexpr db::Label label = "Phi";
 };
 
-struct ConstraintGamma0 : db::DataBoxTag {
+struct ConstraintGamma0 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "ConstraintGamma0";
+  static constexpr db::Label label = "ConstraintGamma0";
 };
-struct ConstraintGamma1 : db::DataBoxTag {
+struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "ConstraintGamma1";
+  static constexpr db::Label label = "ConstraintGamma1";
 };
-struct ConstraintGamma2 : db::DataBoxTag {
+struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "ConstraintGamma2";
+  static constexpr db::Label label = "ConstraintGamma2";
 };
 template <size_t Dim, typename Frame>
-struct GaugeH : db::DataBoxTag {
+struct GaugeH : db::SimpleTag {
   using type = tnsr::a<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "GaugeH";
+  static constexpr db::Label label = "GaugeH";
 };
 template <size_t Dim, typename Frame>
-struct SpacetimeDerivGaugeH : db::DataBoxTag {
+struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "SpacetimeDerivGaugeH";
+  static constexpr db::Label label = "SpacetimeDerivGaugeH";
 };
 }  // namespace GeneralizedHarmonic

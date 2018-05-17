@@ -149,15 +149,15 @@ void test_tensor_product(
                         expected_second_derivs(point, powers, scale));
 }
 
-struct Var1 : db::DataBoxTag {
+struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "Var1";
+  static constexpr db::Label label = "Var1";
 };
 
 template <size_t VolumeDim>
-struct Var2 : db::DataBoxTag {
+struct Var2 : db::SimpleTag {
   using type = tnsr::i<DataVector, VolumeDim, Frame::Inertial>;
-  static constexpr db::DataBoxString label = "Var2";
+  static constexpr db::Label label = "Var2";
 };
 
 template <size_t VolumeDim>

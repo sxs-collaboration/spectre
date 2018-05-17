@@ -12,6 +12,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
@@ -46,10 +47,9 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
 
   for (const auto& test : tests) {
     db::mutate<Tags::TimeId, Tags::TimeStep>(
-        box,
-        [&test](auto& time_id, auto& time_step) {
-          time_id.time = test.time;
-          time_step = test.time_step;
+        make_not_null(&box), [&test](const auto time_id, const auto time_step) {
+          time_id->time = test.time;
+          *time_step = test.time_step;
         });
 
     bool terminate;

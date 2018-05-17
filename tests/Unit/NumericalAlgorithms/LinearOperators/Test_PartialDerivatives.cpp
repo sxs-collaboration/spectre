@@ -34,9 +34,9 @@
 namespace {
 
 template <size_t Dim, class Frame = ::Frame::Grid>
-struct Var1 : db::DataBoxTag {
+struct Var1 : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame>;
-  static constexpr db::DataBoxString label = "Var1";
+  static constexpr db::Label label = "Var1";
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame>& x) {
     tnsr::i<DataVector, Dim, Frame> result(x.begin()->size(), 0.);
@@ -72,9 +72,9 @@ struct Var1 : db::DataBoxTag {
   }
 };
 
-struct Var2 : db::DataBoxTag {
+struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::DataBoxString label = "Var2";
+  static constexpr db::Label label = "Var2";
   template <size_t Dim, class Frame>
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame>& x) {
@@ -444,9 +444,9 @@ void test_logical_derivatives_compute_item(
 }
 
 template <class MapType>
-struct MapTag : db::DataBoxTag {
+struct MapTag : db::SimpleTag {
   using type = MapType;
-  static constexpr db::DataBoxString label = "MapTag";
+  static constexpr db::Label label = "MapTag";
 };
 
 template <size_t Dim, typename T>

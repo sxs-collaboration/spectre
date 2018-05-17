@@ -23,6 +23,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -34,18 +35,18 @@ class DataBox;
 }  // namespace db
 
 namespace Tags {
-struct Int0 : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Int0";
+struct Int0 : db::SimpleTag {
+  static constexpr db::Label label = "Int0";
   using type = int;
 };
 
-struct Int1 : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Int1";
+struct Int1 : db::SimpleTag {
+  static constexpr db::Label label = "Int1";
   using type = int;
 };
 
-struct CountActionsCalled : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "CountActionsCalled";
+struct CountActionsCalled : db::SimpleTag {
+  static constexpr db::Label label = "CountActionsCalled";
   using type = int;
 };
 
@@ -195,7 +196,10 @@ struct AddIntValue10 {
       /// [broadcast_to_group]
     }
     db::mutate<Tags::CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
     const bool terminate_algorithm =
         db::get<Tags::CountActionsCalled>(box) >= 15;
     return std::make_tuple(
@@ -219,8 +223,12 @@ struct IncrementInt0 {
                                    ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
-    db::mutate<Tags::Int0>(box, [](int& int0) { int0++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
+    db::mutate<Tags::Int0>(make_not_null(&box),
+                           [](const gsl::not_null<int*> int0) { ++*int0; });
     return std::forward_as_tuple(std::move(box));
   }
 };
@@ -240,7 +248,10 @@ struct RemoveInt0 {
                   "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::Int0>(box) == 11);
     db::mutate<Tags::CountActionsCalled>(
-        box, [](int& count_actions_called) { count_actions_called++; });
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
     return std::make_tuple(
         db::create_from<tmpl::list<Tags::Int0>>(std::move(box)));
   }

@@ -76,7 +76,7 @@ void check_du_dt(const size_t npts, const double time) {
 
   db::mutate_apply<typename ScalarWave::ComputeDuDt<Dim>::return_tags,
                    typename ScalarWave::ComputeDuDt<Dim>::argument_tags>(
-      ScalarWave::ComputeDuDt<Dim>{}, box);
+      ScalarWave::ComputeDuDt<Dim>{}, make_not_null(&box));
 
   CHECK_ITERABLE_APPROX(
       db::get<Tags::dt<ScalarWave::Pi>>(box),

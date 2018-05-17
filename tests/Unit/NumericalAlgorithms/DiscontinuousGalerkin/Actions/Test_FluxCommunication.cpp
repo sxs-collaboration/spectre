@@ -50,21 +50,21 @@
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
-struct Var : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "Var";
+struct Var : db::SimpleTag {
+  static constexpr db::Label label = "Var";
   using type = Scalar<DataVector>;
 };
 
-struct OtherData : db::DataBoxTag {
-  static constexpr db::DataBoxString label = "OtherData";
+struct OtherData : db::SimpleTag {
+  static constexpr db::Label label = "OtherData";
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 class NumericalFlux {
  public:
-  struct ExtraData : db::DataBoxTag {
-    static constexpr db::DataBoxString label = "ExtraTag";
+  struct ExtraData : db::SimpleTag {
+    static constexpr db::Label label = "ExtraTag";
     using type = tnsr::I<DataVector, 1>;
   };
 

@@ -17,6 +17,8 @@
 /// \endcond
 #include <brigand/brigand.hpp>
 
+#include <initializer_list>
+
 #include "Utilities/Digraph.hpp"
 #include "Utilities/ForceInline.hpp"
 
@@ -537,9 +539,27 @@ constexpr bool flat_any_v = flat_any<Bs...>::value;
  * \snippet Utilities/Test_TMPL.cpp expand_pack_example
  *
  * \see tuple_fold tuple_counted_fold tuple_transform std::tuple
+ * EXPAND_PACK_LEFT_TO_RIGHT
  */
 template <typename... Ts>
 constexpr void expand_pack(Ts&&...) noexcept {}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Expand a parameter pack evaluating the terms from left to right.
+ *
+ * The parameter pack inside the argument to the macro must not be expanded
+ * since the macro will do the expansion correctly for you. In the below example
+ * a parameter pack of `std::integral_constant<size_t, I>` is passed to the
+ * function. The closure `lambda` is used to sum up the values of all the `Ts`.
+ * Note that the `Ts` passed to `EXPAND_PACK_LEFT_TO_RIGHT` is not expanded.
+ *
+ * \snippet Utilities/Test_TMPL.cpp expand_pack_left_to_right
+ *
+ * \see tuple_fold tuple_counted_fold tuple_transform std::tuple expand_pack
+ */
+#define EXPAND_PACK_LEFT_TO_RIGHT(...) \
+  (void)std::initializer_list<char> { ((void)(__VA_ARGS__), '0')... }
 
 /*!
  * \ingroup UtilitiesGroup
