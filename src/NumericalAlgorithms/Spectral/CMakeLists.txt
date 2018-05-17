@@ -4,7 +4,9 @@
 set(LIBRARY Spectral)
 
 set(LIBRARY_SOURCES
+    Legendre.cpp
     LegendreGaussLobatto.cpp
+    Spectral.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

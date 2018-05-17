@@ -4,7 +4,9 @@
 set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES
+  Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
+  Test_Spectral.cpp
   )
 
 add_test_library(
