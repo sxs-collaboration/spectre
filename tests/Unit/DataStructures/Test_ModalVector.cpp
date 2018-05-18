@@ -430,7 +430,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
+[[noreturn]] SPECTRE_TEST_CASE(
+                  "Unit.DataStructures.ModalVector.MathWithDataVector",
                   "[Unit][DataStructures]") {
   ASSERTION_TEST();
   //~ const size_t num_pts = 17;
