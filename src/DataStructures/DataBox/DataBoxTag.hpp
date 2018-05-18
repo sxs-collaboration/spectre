@@ -487,4 +487,11 @@ template <typename TagList, typename Tag, typename = std::nullptr_t>
 struct Subitems {
   using type = tmpl::list<>;
 };
+
+/// \ingroup DataBoxGroup
+/// Split a tag into its subitems.  `Tag` cannot be a base tag.
+template <typename Tag, typename TagList = NoSuchType>
+using split_tag = tmpl::conditional_t<
+    tmpl::size<typename Subitems<TagList, Tag>::type>::value == 0,
+    tmpl::list<Tag>, typename Subitems<TagList, Tag>::type>;
 }  // namespace db
