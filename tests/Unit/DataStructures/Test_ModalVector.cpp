@@ -440,7 +440,7 @@ SPECTRE_TEST_CASE(
   CHECK(nine.is_owning());
   CHECK_FALSE(t2.is_owning());
   CHECK(t2 == nine);
-  //~ DataVector eight(num_pts, 8.0);
+  DataVector eight(num_pts, 8.0);
 
   // Test math with DataVector
   //~ ModalVector test_72(num_pts, -1.0);
