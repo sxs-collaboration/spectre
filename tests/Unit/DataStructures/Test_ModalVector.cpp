@@ -430,12 +430,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
 }
 
-[[noreturn]] SPECTRE_TEST_CASE(
+SPECTRE_TEST_CASE(
                   "Unit.DataStructures.ModalVector.MathWithDataVector",
                   "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-  //~ const size_t num_pts = 17;
-  //~ ModalVector nine(num_pts, 9.0);
+  const size_t num_pts = 19;
+  ModalVector nine(num_pts, 9.0);
+  ModalVector t2;
+  t2.set_data_ref(&nine);
+  CHECK(nine.is_owning());
+  CHECK_FALSE(t2.is_owning());
+  CHECK(t2 == nine);
   //~ DataVector eight(num_pts, 8.0);
 
   // Test math with DataVector
@@ -446,7 +450,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   //~ test_72 = eight * nine;
   //~ check_vectors(ModalVector(num_pts, 72.0), test_72);
   //~ CHECK(test_72.is_owning());
-//~
   //~ test_72 = nine;
   //~ test_72 *= eight;
   //~ check_vectors(ModalVector(num_pts, 72.0), test_72);
