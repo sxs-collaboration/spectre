@@ -25,6 +25,7 @@ installation_on_clusters "Installation on clusters" page.
 * [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
+* LAPACK
 * [LIBXSMM](https://github.com/hfp/libxsmm)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) built from a commit more
   recent than November 2016 (versions newer than 0.5.3 should work once any
