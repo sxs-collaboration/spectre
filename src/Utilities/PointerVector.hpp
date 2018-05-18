@@ -448,8 +448,8 @@ struct PointerVector
     // clang-tidy: do not use pointer arithmetic
     return v_[i];  // NOLINT
   }
-  inline Reference at(size_t index);
-  inline ConstReference at(size_t index) const;
+  Reference at(size_t index);
+  ConstReference at(size_t index) const;
   Pointer data() noexcept { return v_; }
   ConstPointer data() const noexcept { return v_; }
   Iterator begin() noexcept { return Iterator(v_); }
@@ -468,33 +468,33 @@ struct PointerVector
 
   /*!\name Assignment operators */
   //@{
-  inline PointerVector& operator=(const Type& rhs);
-  inline PointerVector& operator=(std::initializer_list<Type> list);
+  PointerVector& operator=(const Type& rhs);
+  PointerVector& operator=(std::initializer_list<Type> list);
 
   template <typename Other, size_t N>
-  inline PointerVector& operator=(const Other (&array)[N]);
+  PointerVector& operator=(const Other (&array)[N]);
 
   template <typename VT>
-  inline PointerVector& operator=(const blaze::Vector<VT, TF>& rhs);
+  PointerVector& operator=(const blaze::Vector<VT, TF>& rhs);
   template <typename VT>
-  inline PointerVector& operator+=(const blaze::Vector<VT, TF>& rhs);
+  PointerVector& operator+=(const blaze::Vector<VT, TF>& rhs);
   template <typename VT>
-  inline PointerVector& operator-=(const blaze::Vector<VT, TF>& rhs);
+  PointerVector& operator-=(const blaze::Vector<VT, TF>& rhs);
   template <typename VT>
-  inline PointerVector& operator*=(const blaze::Vector<VT, TF>& rhs);
+  PointerVector& operator*=(const blaze::Vector<VT, TF>& rhs);
   template <typename VT>
-  inline PointerVector& operator/=(const blaze::Vector<VT, TF>& rhs);
+  PointerVector& operator/=(const blaze::Vector<VT, TF>& rhs);
   template <typename VT>
-  inline PointerVector& operator%=(const blaze::Vector<VT, TF>& rhs);
+  PointerVector& operator%=(const blaze::Vector<VT, TF>& rhs);
 
   template <typename Other>
-  inline std::enable_if_t<blaze::IsNumeric<Other>::value,
-                          PointerVector<Type, AF, PF, TF>>&
+  std::enable_if_t<blaze::IsNumeric<Other>::value,
+                   PointerVector<Type, AF, PF, TF>>&
   operator*=(Other rhs);
 
   template <typename Other>
-  inline std::enable_if_t<blaze::IsNumeric<Other>::value,
-                          PointerVector<Type, AF, PF, TF>>&
+  std::enable_if_t<blaze::IsNumeric<Other>::value,
+                   PointerVector<Type, AF, PF, TF>>&
   operator/=(Other rhs);
   //@}
 
@@ -514,7 +514,7 @@ struct PointerVector
   //@{
   void reset() { clear(); }
 
-  inline void reset(Type* ptr, size_t n) {
+  void reset(Type* ptr, size_t n) noexcept {
     v_ = ptr;
     size_ = n;
   }
@@ -557,12 +557,12 @@ struct PointerVector
   /*!\name Expression template evaluation functions */
   //@{
   template <typename Other>
-  inline bool canAlias(const Other* alias) const noexcept;
+  bool canAlias(const Other* alias) const noexcept;
   template <typename Other>
-  inline bool isAliased(const Other* alias) const noexcept;
+  bool isAliased(const Other* alias) const noexcept;
 
-  inline bool isAligned() const noexcept;
-  inline bool canSMPAssign() const noexcept;
+  bool isAligned() const noexcept;
+  bool canSMPAssign() const noexcept;
 
   BLAZE_ALWAYS_INLINE SIMDType load(size_t index) const noexcept;
   BLAZE_ALWAYS_INLINE SIMDType loada(size_t index) const noexcept;
@@ -574,57 +574,57 @@ struct PointerVector
   BLAZE_ALWAYS_INLINE void stream(size_t index, const SIMDType& value) noexcept;
 
   template <typename VT>
-  inline std::enable_if_t<not(
+  std::enable_if_t<not(
       PointerVector<Type, AF, PF, TF>::template VectorizedAssign<VT>::value)>
   assign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<(VectorizedAssign<VT>::value)> assign(
+  std::enable_if_t<(VectorizedAssign<VT>::value)> assign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<not(
+  std::enable_if_t<not(
       PointerVector<Type, AF, PF, TF>::template VectorizedAddAssign<VT>::value)>
   addAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<(VectorizedAddAssign<VT>::value)> addAssign(
+  std::enable_if_t<(VectorizedAddAssign<VT>::value)> addAssign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline void addAssign(const blaze::SparseVector<VT, TF>& rhs);
+  void addAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<not(
+  std::enable_if_t<not(
       PointerVector<Type, AF, PF, TF>::template VectorizedSubAssign<VT>::value)>
   subAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<(VectorizedSubAssign<VT>::value)> subAssign(
+  std::enable_if_t<(VectorizedSubAssign<VT>::value)> subAssign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline void subAssign(const blaze::SparseVector<VT, TF>& rhs);
+  void subAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF>::
-                                  template VectorizedMultAssign<VT>::value)>
+  std::enable_if_t<not(PointerVector<Type, AF, PF, TF>::
+                           template VectorizedMultAssign<VT>::value)>
   multAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<(VectorizedMultAssign<VT>::value)> multAssign(
+  std::enable_if_t<(VectorizedMultAssign<VT>::value)> multAssign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline void multAssign(const blaze::SparseVector<VT, TF>& rhs);
+  void multAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<not(
+  std::enable_if_t<not(
       PointerVector<Type, AF, PF, TF>::template VectorizedDivAssign<VT>::value)>
   divAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  inline std::enable_if_t<(VectorizedDivAssign<VT>::value)> divAssign(
+  std::enable_if_t<(VectorizedDivAssign<VT>::value)> divAssign(
       const blaze::DenseVector<VT, TF>& rhs);
   //@}
 
