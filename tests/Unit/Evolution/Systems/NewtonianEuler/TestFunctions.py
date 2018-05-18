@@ -18,6 +18,19 @@ def characteristic_speeds(velocity, sound_speed_squared, normal):
 # End functions for testing Characteristics.cpp
 
 
+# Functions for testing ConservativeFromPrimitive.cpp
+def momentum_density(mass_density, velocity, specific_internal_energy):
+    return mass_density * velocity
+
+
+def energy_density(mass_density, velocity, specific_internal_energy):
+    return (0.5 * mass_density * np.dot(velocity, velocity) +
+            mass_density * specific_internal_energy)
+
+
+# End functions for testing ConservativeFromPrimitive.cpp
+
+
 # Functions for testing Fluxes.cpp
 def mass_density_flux(momentum_density, energy_density, velocity, pressure):
     return momentum_density
