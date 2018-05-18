@@ -28,6 +28,8 @@ namespace DomainCreators {
 template <typename TargetFrame>
 class Brick;
 template <typename TargetFrame>
+class Cylinder;
+template <typename TargetFrame>
 class Disk;
 template <typename TargetFrame>
 class Interval;
@@ -65,8 +67,8 @@ template <>
 struct domain_creators<3> {
   template <typename Frame>
   using creators =
-      tmpl::list<DomainCreators::Brick<Frame>, DomainCreators::Shell<Frame>,
-                 DomainCreators::Sphere<Frame>>;
+      tmpl::list<DomainCreators::Brick<Frame>, DomainCreators::Cylinder<Frame>,
+                 DomainCreators::Shell<Frame>, DomainCreators::Sphere<Frame>>;
 };
 }  // namespace DomainCreators_detail
 
@@ -98,6 +100,7 @@ class DomainCreator {
 };
 
 #include "Domain/DomainCreators/Brick.hpp"
+#include "Domain/DomainCreators/Cylinder.hpp"
 #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"

@@ -4,6 +4,7 @@
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
   DomainCreators/Test_Brick.cpp
+  DomainCreators/Test_Cylinder.cpp
   DomainCreators/Test_Disk.cpp
   DomainCreators/Test_Interval.cpp
   DomainCreators/Test_Rectangle.cpp

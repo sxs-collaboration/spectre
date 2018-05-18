@@ -143,9 +143,13 @@ void test_element_map<2>() {
                     logical_point_double, logical_point_dv);
 
   // test with a rotation and a wedge
-  test_element_impl(false, element_id, affine_map, first_map,
-                    Wedge2D(3., 7., Direction<2>::lower_eta(), false),
-                    logical_point_double, logical_point_dv);
+  test_element_impl(
+      false, element_id, affine_map, first_map,
+      Wedge2D(3., 7., 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_eta(), Direction<2>::lower_xi()}}},
+              false),
+      logical_point_double, logical_point_dv);
 }
 
 template <>

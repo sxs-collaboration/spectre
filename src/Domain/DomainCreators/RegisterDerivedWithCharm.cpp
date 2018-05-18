@@ -25,6 +25,11 @@ using Equiangular = CoordinateMaps::Equiangular;
 using Equiangular2D = CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
 using Equiangular3D =
     CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+using Equiangular3DPrism =
+    CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+using Wedge2D = CoordinateMaps::Wedge2D;
+using Wedge3D = CoordinateMaps::Wedge3D;
+using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
 
 template <size_t Dim>
 void register_with_charm();
@@ -46,8 +51,8 @@ void register_with_charm<2>() {
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Identity<2>>));
-  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::Wedge2D>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge2D>));
 }
 template <>
 void register_with_charm<3>() {
@@ -55,10 +60,14 @@ void register_with_charm<3>() {
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
+  PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3DPrism>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Frustum>));
-  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::Wedge3D>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D>));
+  PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3DPrism>));
 }
 }  // namespace DomainCreators_detail
 
