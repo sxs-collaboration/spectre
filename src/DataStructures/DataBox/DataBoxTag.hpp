@@ -45,13 +45,6 @@ struct DataBox {
 }  // namespace Tags
 
 namespace db {
-
-/*!
- * \ingroup DataBoxGroup
- * \brief The string used to give a runtime name to a DataBoxTag
- */
-using Label = const char* const;
-
 /*!
  * \ingroup DataBoxGroup
  * \brief Tags for the DataBox inherit from this type
@@ -62,13 +55,12 @@ using Label = const char* const;
  *
  * \derivedrequires
  * - type alias `type` of the type this SimpleTag represents
- * - `static constexpr db::Label` that is the same as the type name
- *    and named `label`
+ * - static `std::string name()` method that returns a runtime name for the tag.
  *
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
  *
- * \see DataBox PrefixTag db::Label get_tag_name
+ * \see DataBox PrefixTag get_tag_name
  */
 struct SimpleTag {};
 
@@ -105,7 +97,7 @@ struct BaseTag {};
  * \derivedrequires
  * - type alias `tag` of the DataBoxTag that this tag is a prefix to
  * - type alias `type` that is the type that this PrefixTag holds
- * - db::Label `label` that is the prefix to the `tag`
+ * - static `std::string name()` method that returns a runtime name for the tag.
  *
  * \example
  * A PrefixTag tag has the structure:
@@ -115,7 +107,7 @@ struct BaseTag {};
  * \snippet Test_DataBox.cpp databox_name_prefix
  *
  *
- * \see DataBox DataBoxTag db::Label get_tag_name ComputeTag
+ * \see DataBox DataBoxTag get_tag_name ComputeTag
  */
 struct PrefixTag {};
 
@@ -158,7 +150,7 @@ struct PrefixTag {};
  * which offers a lot of simplicity for very simple compute items.
  * \snippet Test_DataBox.cpp compute_item_tag_function
  *
- * \see DataBox SimpleTag db::Label get_tag_name PrefixTag
+ * \see DataBox SimpleTag get_tag_name PrefixTag
  */
 struct ComputeTag {};
 
@@ -174,79 +166,8 @@ using first_matching_tag = tmpl::front<list_of_matching_tags<TagList, Tag>>;
 template <typename TagList, typename Tag>
 constexpr auto number_of_matching_tags =
     tmpl::size<list_of_matching_tags<TagList, Tag>>::value;
-
-// @{
-/*!
- * \ingroup DataBoxGroup
- * \brief Check if a Tag has a label
- *
- * \details
- * Check if a type `T` has a static member variable named `label`.
- *
- * \usage
- * For any type `T`
- * \code
- * using result = db::detail::tag_has_label<T>;
- * \endcode
- * \metareturns
- * cpp17::bool_constant
- *
- * \see tag_label_correct_type
- * \tparam T the type to check
- */
-template <typename T, typename = void>
-struct tag_has_label : std::false_type {};
-/// \cond HIDDEN_SYMBOLS
-template <typename T>
-struct tag_has_label<T, cpp17::void_t<decltype(T::label)>> : std::true_type {};
-/// \endcond
-
-template <typename Tag>
-constexpr bool tag_has_label_v = tag_has_label<Tag>::value;
-// @}
-
-// @{
-/*!
- * \ingroup DataBoxGroup
- * \brief Check if a Tag label has type db::Label
- *
- * \details
- * For a type `T`, check that the static member variable named `label` has type
- * db::Label
- *
- * \usage
- * For any type `T`
- * \code
- * using result = db::tag_label_correct_type<T>;
- * \endcode
- * \metareturns
- * cpp17::bool_constant
- *
- * \tparam T the type to check
- */
-template <typename T, typename = std::nullptr_t>
-struct tag_label_correct_type : std::false_type {};
-/// \cond HIDDEN_SYMBOLS
-template <typename T>
-struct tag_label_correct_type<
-    T, Requires<cpp17::is_same_v<db::Label, decltype(T::label)>>>
-    : std::true_type {};
-/// \endcond
-// @}
-
-struct check_tag_labels {
-  template <typename T>
-  void operator()(tmpl::type_<T> /*meta*/) {
-    ASSERT(pretty_type::get_name<T>().find(std::string(T::label)) !=
-               std::string::npos,
-           "Failed to match the Tag label " << std::string(T::label)
-                                            << " with its type name "
-                                            << pretty_type::get_name<T>());
-  }
-};
 }  // namespace DataBox_detail
 
-// @{
 /*!
  * \ingroup DataBoxGroup
  * \brief Get the name of a DataBoxTag, including prefixes
@@ -258,62 +179,10 @@ struct check_tag_labels {
  * \tparam Tag the DataBoxTag whose name to get
  * \return string holding the DataBoxTag's name
  */
-template <typename Tag,
-          Requires<not cpp17::is_base_of_v<PrefixTag, Tag>> = nullptr>
-std::string get_tag_name() {
-  return std::string(Tag::label);
-}
-/// \cond HIDDEN_SYMBOLS
-template <typename Tag, Requires<cpp17::is_base_of_v<PrefixTag, Tag>> = nullptr>
-std::string get_tag_name() {
-  return std::string(Tag::label) + get_tag_name<typename Tag::tag>();
-}
-/// \endcond
-// @}
-
-namespace detail {
-// @{
-/*!
- * \ingroup DataBoxGroup
- * \brief Compute a hash of the `label` of a DataBoxTag
- *
- * \details
- * Given a DataBoxTag returns a `value` of type `value_type` which is the hash
- * of the label of the DataBoxTag, including any prefix. The hashing algorithm
- * is based on what is used for std::typeinfo in libcxx v3.9.0.
- *
- * \tparam Tag the DataBoxTag whose name to get
- * \metareturns
- * value member of type `value_type` representing the hash of the DataBoxTag
- */
-template <typename Tag, typename = std::nullptr_t>
-struct hash_databox_tag {
-  using value_type = size_t;
-  static constexpr value_type value = cstring_hash(Tag::label);
-  using type = std::integral_constant<value_type, value>;
-};
-/// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct hash_databox_tag<Tag, Requires<cpp17::is_base_of_v<PrefixTag, Tag>>> {
-  using value_type = size_t;
-  static constexpr value_type value =
-      cstring_hash(Tag::label) * hash_databox_tag<typename Tag::tag>::value;
-  using type = std::integral_constant<value_type, value>;
-};
-
-template <typename Tag>
-struct hash_databox_tag<Tag, Requires<tt::is_a_v<::Tags::Variables, Tag>>> {
-  using value_type = size_t;
-  using reduced_hash = tmpl::fold<
-      typename Tag::type::tags_list, tmpl::size_t<0>,
-      tmpl::bind<tmpl::plus, tmpl::_state, hash_databox_tag<tmpl::_element>>>;
-  static constexpr value_type value =
-      cstring_hash(Tag::label) * reduced_hash::value;
-  using type = std::integral_constant<value_type, value>;
-};
-/// \endcond
-// @}
-}  // namespace detail
+std::string get_tag_name() {
+  return Tag::name();
+}
 
 // @{
 /*!

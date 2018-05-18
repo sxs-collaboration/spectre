@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include <string>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 
 class DataVector;
 
@@ -19,7 +22,7 @@ namespace GeneralizedHarmonic {
 template <size_t Dim, typename Frame>
 struct Pi : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
-  static constexpr db::Label label = "Pi";
+  static std::string name() noexcept { return "Pi"; }
 };
 
 /*!
@@ -31,29 +34,29 @@ struct Pi : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct Phi : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
-  static constexpr db::Label label = "Phi";
+  static std::string name() noexcept { return "Phi"; }
 };
 
 struct ConstraintGamma0 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ConstraintGamma0";
+  static std::string name() noexcept { return "ConstraintGamma0"; }
 };
 struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ConstraintGamma1";
+  static std::string name() noexcept { return "ConstraintGamma1"; }
 };
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "ConstraintGamma2";
+  static std::string name() noexcept { return "ConstraintGamma2"; }
 };
 template <size_t Dim, typename Frame>
 struct GaugeH : db::SimpleTag {
   using type = tnsr::a<DataVector, Dim, Frame>;
-  static constexpr db::Label label = "GaugeH";
+  static std::string name() noexcept { return "GaugeH"; }
 };
 template <size_t Dim, typename Frame>
 struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
-  static constexpr db::Label label = "SpacetimeDerivGaugeH";
+  static std::string name() noexcept { return "SpacetimeDerivGaugeH"; }
 };
 }  // namespace GeneralizedHarmonic

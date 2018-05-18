@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -23,7 +24,7 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static constexpr db::Label label = "Var";
+  static std::string name() noexcept { return "Var"; }
   using type = double;
 };
 

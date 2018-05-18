@@ -10,6 +10,7 @@
 #include <cassert>
 #include <functional>
 #include <pup.h>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 
@@ -324,6 +325,32 @@ struct create_dependency_graph<TagList, Caller, Callee, List,
 };
 }  // namespace DataBox_detail
 
+namespace DataBox_detail {
+// Check if a tag has a name method
+template <typename Tag, typename = std::nullptr_t>
+struct tag_has_name {
+  static_assert(cpp17::is_same_v<Tag, const void* const*>,
+                "The tag does not have a static method 'name()' that returns a "
+                "std::string. See the first template parameter of "
+                "db::DataBox_detail::tag_has_name to see the problematic tag.");
+};
+template <typename Tag>
+struct tag_has_name<
+    Tag, Requires<cpp17::is_same_v<decltype(Tag::name()), std::string>>> {};
+
+template <typename Tag, typename = std::nullptr_t>
+struct check_simple_or_compute_tag {
+  static_assert(cpp17::is_same_v<Tag, const void* const*>,
+                "All tags added to a DataBox must derive off of db::SimpleTag "
+                "or db::ComputeTag, you cannot add a base tag itself. See the "
+                "first template parameter of "
+                "db::DataBox_detail::check_simple_or_compute_tag to see "
+                "the problematic tag.");
+};
+template <typename Tag>
+struct check_simple_or_compute_tag<Tag, Requires<is_non_base_tag_v<Tag>>> {};
+}  // namespace DataBox_detail
+
 /*!
  * \ingroup DataBoxGroup
  * \brief A DataBox stores objects that can be retrieved by using Tags
@@ -342,19 +369,13 @@ template <typename... Tags>
 class DataBox<tmpl::list<Tags...>>
     : private DataBox_detail::DataBoxLeaf<
           Tags, db::item_type<Tags, tmpl::list<Tags...>>>... {
+#ifdef SPECTRE_DEBUG
   static_assert(
       tmpl2::flat_all_v<is_non_base_tag_v<Tags>...>,
       "All structs used to Tag (compute) items in a DataBox must derive off of "
-      "db::SimpleTag");
-  static_assert(
-      tmpl2::flat_all_v<DataBox_detail::tag_has_label<Tags>::value...>,
-      "Missing a label on a Tag. All Tags must have a static "
-      "constexpr db::Label member variable named 'label' with "
-      "the name of the Tag.");
-  static_assert(
-      tmpl2::flat_all_v<DataBox_detail::tag_label_correct_type<Tags>::value...>,
-      "One of the labels of the Tags in a DataBox has the incorrect "
-      "type. It should be a db::Label.");
+      "db::SimpleTag. Another static_assert will tell you which tag is the "
+      "problematic one. Look for check_simple_or_compute_tag.");
+#endif // ifdef SPECTRE_DEBUG
 
  public:
   /*!
@@ -419,7 +440,17 @@ class DataBox<tmpl::list<Tags...>>
     }
     return *this;
   }
+#ifdef SPECTRE_DEBUG
+  // Destructor is used for triggering assertions
+  ~DataBox() noexcept {
+    EXPAND_PACK_LEFT_TO_RIGHT(DataBox_detail::tag_has_name<Tags>{});
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        DataBox_detail::check_simple_or_compute_tag<Tags>{});
+  }
+#else   // ifdef SPECTRE_DEBUG
   ~DataBox() = default;
+#endif  // ifdef SPECTRE_DEBUG
+
   /// \endcond
 
   /// \cond HIDDEN_SYMBOLS
@@ -1061,7 +1092,7 @@ SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
   using derived_tag = DataBox_detail::first_matching_tag<tags_list, Tag>;
   if (UNLIKELY(mutate_locked_box_)) {
     ERROR("Unable to retrieve a (compute) item '"
-          << derived_tag::label
+          << derived_tag::name()
           << "' from the DataBox from within a "
              "call to mutate. You must pass these either through the capture "
              "list of the lambda or the constructor of a class, this "
@@ -1160,10 +1191,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
       DataBox_detail::expand_subitems<AddSimpleTags, tmpl::list<>, true>;
   using full_compute_items =
       DataBox_detail::expand_subitems_from_list<tag_list, AddComputeTags>;
-
-#ifdef SPECTRE_DEBUG
-  tmpl::for_each<tag_list>(DataBox_detail::check_tag_labels{});
-#endif
 
   return DataBox<tmpl::append<full_items, full_compute_items>>(
       AddSimpleTags{}, full_items{}, AddComputeTags{}, full_compute_items{},
@@ -1270,8 +1297,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
                     tmpl::size<RemoveTags>::value,
                 "You are not allowed to remove part of a Subitem from the "
                 "DataBox using db::create_from.");
-
-  tmpl::for_each<new_tag_list>(DataBox_detail::check_tag_labels{});
 #endif  // ifdef SPECTRE_DEBUG
 
   return DataBox<new_tag_list>(std::forward<Box>(box), old_tags_to_keep{},
@@ -1280,35 +1305,33 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
 }
 
 namespace DataBox_detail {
-template <typename Tag, typename TagList, typename T>
-constexpr void get_item_from_box_helper(const DataBox<TagList>& box,
-                                        const std::string& tag_name,
-                                        T const** result) {
-  if (get_tag_name<Tag>() == tag_name) {
-    *result = &::db::get<Tag>(box);
-  }
-}
-
-template <typename Type, typename... Tags, typename TagList>
-const Type& get_item_from_box(const DataBox<TagList>& box,
+template <typename Type, typename... Tags, typename... TagsInBox>
+const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
                               const std::string& tag_name,
                               tmpl::list<Tags...> /*meta*/) {
-  static_assert(sizeof...(Tags) != 0,
-                "No items with the requested type were found in the DataBox");
-  Type const* result = nullptr;
-  EXPAND_PACK_LEFT_TO_RIGHT(
-      get_item_from_box_helper<Tags>(box, tag_name, &result));
+  DEBUG_STATIC_ASSERT(
+      sizeof...(Tags) != 0,
+      "No items with the requested type were found in the DataBox");
+  const Type* result = nullptr;
+  const auto helper = [&box, &tag_name, &result ](auto current_tag) noexcept {
+    using tag = decltype(current_tag);
+    if (get_tag_name<tag>() == tag_name) {
+      result = &::db::get<tag>(box);
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(Tags{}));
   if (result == nullptr) {
-    std::stringstream tags_in_box;
-    tmpl::for_each<TagList>([&tags_in_box](auto temp) {
-      tags_in_box << "  " << decltype(temp)::type::label << "\n";
-    });
+    std::string tags_in_box;
+    const auto print_helper = [&tags_in_box](auto tag) noexcept {
+      tags_in_box += "  " + decltype(tag)::name() + "\n";
+    };
+    EXPAND_PACK_LEFT_TO_RIGHT(print_helper(Tags{}));
     ERROR("Could not find the tag named \""
           << tag_name << "\" in the DataBox. Available tags are:\n"
-          << tags_in_box.str());
+          << tags_in_box);
   }
   return *result;
-}
+}  // namespace db
 }  // namespace DataBox_detail
 
 /*!
@@ -1331,7 +1354,7 @@ const Type& get_item_from_box(const DataBox<TagList>& box,
  */
 template <typename Type, typename TagList>
 constexpr const Type& get_item_from_box(const DataBox<TagList>& box,
-                                        const std::string& tag_name) {
+                                        const std::string& tag_name) noexcept {
   using tags = tmpl::filter<
       TagList, std::is_same<tmpl::bind<item_type, tmpl::_1>, tmpl::pin<Type>>>;
   return DataBox_detail::get_item_from_box<Type>(box, tag_name, tags{});

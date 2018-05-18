@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -48,7 +49,7 @@ using SecondDeriv = tnsr::ii<DataVector, 3, Frame>;
 /// Tag referring to a `::Strahlkorper`
 template <typename Frame>
 struct Strahlkorper : db::SimpleTag {
-  static constexpr db::Label label = "Strahlkorper";
+  static std::string name() noexcept { return "Strahlkorper"; }
   using type = ::Strahlkorper<Frame>;
 };
 
@@ -56,7 +57,7 @@ struct Strahlkorper : db::SimpleTag {
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
 struct ThetaPhi : db::ComputeTag {
-  static constexpr db::Label label = "ThetaPhi";
+  static std::string name() noexcept { return "ThetaPhi"; }
   static StrahlkorperTags_detail::ThetaPhi<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
@@ -66,7 +67,7 @@ struct ThetaPhi : db::ComputeTag {
 /// Doesn't depend on the shape of the surface.
 template <typename Frame>
 struct Rhat : db::ComputeTag {
-  static constexpr db::Label label = "Rhat";
+  static std::string name() noexcept { return "Rhat"; }
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -79,7 +80,7 @@ struct Rhat : db::ComputeTag {
 /// `Jacobian` doesn't depend on the shape of the surface.
 template <typename Frame>
 struct Jacobian : db::ComputeTag {
-  static constexpr db::Label label = "Jacobian";
+  static std::string name() noexcept { return "Jacobian"; }
   static StrahlkorperTags_detail::Jacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -91,7 +92,7 @@ struct Jacobian : db::ComputeTag {
 /// `InvJacobian` doesn't depend on the shape of the surface.
 template <typename Frame>
 struct InvJacobian : db::ComputeTag {
-  static constexpr db::Label label = "InvJacobian";
+  static std::string name() noexcept { return "InvJacobian"; }
   static StrahlkorperTags_detail::InvJacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -103,7 +104,7 @@ struct InvJacobian : db::ComputeTag {
 /// `InvHessian` doesn't depend on the shape of the surface.
 template <typename Frame>
 struct InvHessian : db::ComputeTag {
-  static constexpr db::Label label = "InvHessian";
+  static std::string name() noexcept { return "InvHessian"; }
   static StrahlkorperTags_detail::InvHessian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
@@ -113,7 +114,7 @@ struct InvHessian : db::ComputeTag {
 /// point of the surface.
 template <typename Frame>
 struct Radius : db::ComputeTag {
-  static constexpr db::Label label = "Radius";
+  static std::string name() noexcept { return "Radius"; }
   SPECTRE_ALWAYS_INLINE static auto function(
       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
     return strahlkorper.ylm_spherepack().spec_to_phys(
@@ -127,7 +128,7 @@ struct Radius : db::ComputeTag {
 /// on the surface.
 template <typename Frame>
 struct CartesianCoords : db::ComputeTag {
-  static constexpr db::Label label = "CartesianCoords";
+  static std::string name() noexcept { return "CartesianCoords"; }
   static StrahlkorperTags_detail::Vector<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<Rhat<Frame>>& r_hat) noexcept;
@@ -143,7 +144,7 @@ struct CartesianCoords : db::ComputeTag {
 /// for this operation.
 template <typename Frame>
 struct DxRadius : db::ComputeTag {
-  static constexpr db::Label label = "DxRadius";
+  static std::string name() noexcept { return "DxRadius"; }
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<InvJacobian<Frame>>& inv_jac) noexcept;
@@ -160,7 +161,7 @@ struct DxRadius : db::ComputeTag {
 /// for this operation.
 template <typename Frame>
 struct D2xRadius : db::ComputeTag {
-  static constexpr db::Label label = "D2xRadius";
+  static std::string name() noexcept { return "D2xRadius"; }
   static StrahlkorperTags_detail::SecondDeriv<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<InvJacobian<Frame>>& inv_jac,
@@ -174,7 +175,7 @@ struct D2xRadius : db::ComputeTag {
 /// where \f$r_{\rm surf}=r_{\rm surf}(\theta(x,y,z),\phi(x,y,z))\f$.
 template <typename Frame>
 struct LaplacianRadius : db::ComputeTag {
-  static constexpr db::Label label = "LaplacianRadius";
+  static std::string name() noexcept { return "LaplacianRadius"; }
   static DataVector function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
@@ -193,7 +194,7 @@ struct LaplacianRadius : db::ComputeTag {
 /// (it is not "normalized"; normalization requires a metric).
 template <typename Frame>
 struct NormalOneForm : db::ComputeTag {
-  static constexpr db::Label label = "NormalOneForm";
+  static std::string name() noexcept { return "NormalOneForm"; }
   static StrahlkorperTags_detail::OneForm<Frame> function(
       const db::item_type<DxRadius<Frame>>& dx_radius,
       const db::item_type<Rhat<Frame>>& r_hat) noexcept;
@@ -217,7 +218,7 @@ struct NormalOneForm : db::ComputeTag {
 /// a one-form) is metric-dependent.
 template <typename Frame>
 struct Tangents : db::ComputeTag {
-  static constexpr db::Label label = "Tangents";
+  static std::string name() noexcept { return "Tangents"; }
   static StrahlkorperTags_detail::Jacobian<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<Rhat<Frame>>& r_hat,

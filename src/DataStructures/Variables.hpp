@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -32,7 +34,18 @@ struct Variables : db::SimpleTag {
                 "The TagsList passed to Tags::Variables is not a typelist");
   using tags_list = TagsList;
   using type = ::Variables<TagsList>;
-  static constexpr db::Label label = "Variables";
+  static std::string name() noexcept {
+    std::string tag_name{"Variables("};
+    size_t iter = 0;
+    tmpl::for_each<TagsList>([&tag_name, &iter ](auto tag) noexcept {
+      tag_name += tmpl::type_from<decltype(tag)>::name();
+      if (iter + 1 != tmpl::size<TagsList>::value) {
+        tag_name += ",";
+      }
+      iter++;
+    });
+    return tag_name + ")";
+  }
 };
 }  // namespace Tags
 
@@ -47,8 +60,8 @@ class Variables;
  * into it.
  *
  * The `Tags` are `struct`s that must have a public type alias `type` whose
- * value must be a `Tensor<DataVector, ...>`, a `static constexpr
- * db::Label` variable named `label`, and must derive off of
+ * value must be a `Tensor<DataVector, ...>`, a `static' method `name()` that
+ * returns a `std::string` of the tag name, and must derive off of
  * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
  *

@@ -16,21 +16,21 @@ HASH=$3
 ###############################################################################
 cd $SOURCE_DIR
 # Get list of non-deleted files
-MODIFIED_FILES=''
+MODIFIED_FILES=()
 
 for FILENAME in `git diff --name-only ${HASH} HEAD`
 do
     if [ -f $FILENAME ] \
            && [ ${FILENAME: -4} == ".cpp" ] \
            && ! grep -q "FILE_IS_COMPILATION_TEST" $FILENAME; then
-        MODIFIED_FILES="${MODIFIED_FILES} $FILENAME"
+        MODIFIED_FILES+=("$FILENAME")
     fi
 done
 
 # Go to build directory and then run clang-tidy, writing output to file
 cd ${BUILD_DIR}
 
-for FILENAME in $MODIFIED_FILES
+for FILENAME in ${MODIFIED_FILES[@]}
 do
     printf "\n\nRunning clang-tidy on file $FILENAME\n"
     make clang-tidy FILE=$SOURCE_DIR/${FILENAME}

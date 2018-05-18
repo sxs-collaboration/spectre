@@ -3,6 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <string>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/ElementId.hpp"
@@ -15,11 +17,11 @@
 namespace {
 struct var_tag : db::SimpleTag {
   using type = int;
-  static constexpr db::Label label = "var_tag";
+  static std::string name() noexcept { return "var_tag"; }
 };
 struct dt_var_tag : db::SimpleTag {
   using type = int;
-  static constexpr db::Label label = "dt_var_tag";
+  static std::string name() noexcept { return "dt_var_tag"; }
 };
 
 struct ComputeDuDt {

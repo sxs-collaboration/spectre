@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <string>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -151,13 +152,13 @@ void test_tensor_product(
 
 struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static constexpr db::Label label = "Var1";
+  static std::string name() noexcept { return "Var1"; }
 };
 
 template <size_t VolumeDim>
 struct Var2 : db::SimpleTag {
   using type = tnsr::i<DataVector, VolumeDim, Frame::Inertial>;
-  static constexpr db::Label label = "Var2";
+  static std::string name() noexcept { return "Var2"; }
 };
 
 template <size_t VolumeDim>

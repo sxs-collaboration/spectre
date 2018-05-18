@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -47,7 +49,7 @@ namespace Tags {
 /// The Euclidean magnitude of a (co)vector
 template <typename Tag>
 struct EuclideanMagnitude : db::ComputeTag {
-  static constexpr db::Label label = "EuclideanMagnitude";
+  static std::string name() noexcept { return "EuclideanMagnitude"; }
   static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
       magnitude;
   using argument_tags = tmpl::list<Tag>;
@@ -59,7 +61,7 @@ struct EuclideanMagnitude : db::ComputeTag {
 /// MagnitudeTag.
 template <typename Tag, typename MagnitudeTag>
 struct Normalized : db::ComputeTag {
-  static constexpr db::Label label = "Normalized";
+  static std::string name() noexcept { return "Normalized"; }
   static constexpr auto function(
       const db::item_type<Tag>&
           vector_in,  // Compute items need to take const references

@@ -62,6 +62,7 @@ include(SetupPch)
 # dependencies on the PCH if necessary.
 include(SetupClangFormat)
 include(SetupClangTidy)
+include(SetupIwyu)
 include(SetupCppCheck)
 include(SetupDoxygen)
 include(CodeCoverageDetection)

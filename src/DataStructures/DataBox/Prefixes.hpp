@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -25,7 +26,7 @@ namespace Tags {
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
 struct dt : db::PrefixTag, db::SimpleTag {
-  static constexpr db::Label label = "dt";
+  static std::string name() noexcept { return "dt"; }
   using type = db::item_type<Tag>;
   using tag = Tag;
 };
@@ -44,7 +45,7 @@ struct Flux<Tag, VolumeDim, Fr,
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
-  static constexpr db::Label label = "Flux";
+  static std::string name() noexcept { return "Flux"; }
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
@@ -53,7 +54,7 @@ struct Flux<Tag, VolumeDim, Fr,
     : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "Flux";
+  static std::string name() noexcept { return "Flux"; }
 };
 /// \endcond
 
@@ -64,7 +65,7 @@ template <typename Tag>
 struct NormalDotFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "NormalDotFlux";
+  static std::string name() noexcept { return "NormalDotFlux"; }
   static constexpr bool should_be_sliced_to_boundary = false;
 };
 
@@ -75,6 +76,6 @@ template <typename Tag>
 struct NormalDotNumericalFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static constexpr db::Label label = "NormalDotNumericalFlux";
+  static std::string name() noexcept { return "NormalDotNumericalFlux"; }
 };
 }  // namespace Tags

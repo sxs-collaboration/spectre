@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -132,11 +133,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
 
 namespace {
 struct Vector : db::SimpleTag {
-  static constexpr db::Label label = "Vector";
+  static std::string name() noexcept { return "Vector"; }
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
 struct Covector : db::SimpleTag {
-  static constexpr db::Label label = "Covector";
+  static std::string name() noexcept { return "Covector"; }
   using type = tnsr::i<DataVector, 2, Frame::Grid>;
 };
 }  // namespace
