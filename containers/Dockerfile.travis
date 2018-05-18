@@ -63,10 +63,6 @@ COPY known_hosts /root/.ssh/known_hosts
 # builds) to the Docker image
 COPY ccache /root/.ccache
 
-# Apply Charm++ patch
-WORKDIR /work/charm
-RUN git apply /work/spectre/support/Charm/${CHARM_PATCH}
-
 # Create build directory
 RUN mkdir /work/build_${BUILD_TYPE}_${CC}
 WORKDIR /work/build_${BUILD_TYPE}_${CC}
