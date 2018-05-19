@@ -19,7 +19,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/PointerVector.hpp"
+//~ #include "Utilities/PointerVector.hpp" // IWYU complains on double includes
 #include "Utilities/Requires.hpp"
 
 /// \cond HIDDEN_SYMBOLS
