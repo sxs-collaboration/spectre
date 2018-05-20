@@ -10,6 +10,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Mesh.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -60,14 +61,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
   }
 
   SECTION("Explicit choices per dimension") {
+    CHECK(Mesh<0>{}.slice_through() == Mesh<0>{});
     const Mesh<1> mesh1d{{{2}},
                          {{Spectral::Basis::Legendre}},
                          {{Spectral::Quadrature::GaussLobatto}}};
     test_extents_basis_and_quadrature(mesh1d, {{2}},
                                       {{Spectral::Basis::Legendre}},
                                       {{Spectral::Quadrature::GaussLobatto}});
-    const auto mesh1d_sliced = mesh1d.slice_away(0);
-    test_extents_basis_and_quadrature(mesh1d_sliced, {}, {}, {});
+    CHECK(mesh1d.slice_away(0) == Mesh<0>{});
+    CHECK(mesh1d.slice_through() == Mesh<0>{});
+    CHECK(mesh1d.slice_through(0) == mesh1d);
+
     const Mesh<2> mesh2d{
         {{2, 3}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
@@ -76,14 +80,20 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
         mesh2d, {{2, 3}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
         {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}});
-    const auto mesh2d_sliced_0 = mesh2d.slice_away(0);
-    test_extents_basis_and_quadrature(mesh2d_sliced_0, {{3}},
-                                      {{Spectral::Basis::Legendre}},
-                                      {{Spectral::Quadrature::GaussLobatto}});
-    const auto mesh2d_sliced_1 = mesh2d.slice_away(1);
-    test_extents_basis_and_quadrature(mesh2d_sliced_1, {{2}},
-                                      {{Spectral::Basis::Legendre}},
-                                      {{Spectral::Quadrature::Gauss}});
+    CHECK(mesh2d.slice_away(0) == Mesh<1>{3, Spectral::Basis::Legendre,
+                                          Spectral::Quadrature::GaussLobatto});
+    CHECK(mesh2d.slice_away(1) ==
+          Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+    CHECK(mesh2d.slice_through() == Mesh<0>{});
+    CHECK(mesh2d.slice_through(0) == mesh2d.slice_away(1));
+    CHECK(mesh2d.slice_through(1) == mesh2d.slice_away(0));
+    CHECK(mesh2d.slice_through(0, 1) == mesh2d);
+    CHECK(mesh2d.slice_through(1, 0) ==
+          Mesh<2>{{{3, 2}},
+                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+                  {{Spectral::Quadrature::GaussLobatto,
+                    Spectral::Quadrature::Gauss}}});
+
     const Mesh<3> mesh3d{
         {{2, 3, 4}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
@@ -96,22 +106,39 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
           Spectral::Basis::Legendre}},
         {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
           Spectral::Quadrature::GaussLobatto}});
-    const auto mesh3d_sliced_0 = mesh3d.slice_away(0);
-    test_extents_basis_and_quadrature(
-        mesh3d_sliced_0, {{3, 4}},
-        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-        {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}});
-    const auto mesh3d_sliced_1 = mesh3d.slice_away(1);
-    test_extents_basis_and_quadrature(
-        mesh3d_sliced_1, {{2, 4}},
-        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-        {{Spectral::Quadrature::GaussLobatto,
-          Spectral::Quadrature::GaussLobatto}});
-    const auto mesh3d_sliced_2 = mesh3d.slice_away(2);
-    test_extents_basis_and_quadrature(
-        mesh3d_sliced_2, {{2, 3}},
-        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-        {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}});
+    CHECK(mesh3d.slice_away(0) ==
+          Mesh<2>{{{3, 4}},
+                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+                  {{Spectral::Quadrature::Gauss,
+                    Spectral::Quadrature::GaussLobatto}}});
+    CHECK(mesh3d.slice_away(1) == Mesh<2>{{{2, 4}},
+                                          Spectral::Basis::Legendre,
+                                          Spectral::Quadrature::GaussLobatto});
+    CHECK(mesh3d.slice_away(2) ==
+          Mesh<2>{{{2, 3}},
+                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+                  {{Spectral::Quadrature::GaussLobatto,
+                    Spectral::Quadrature::Gauss}}});
+    CHECK(mesh3d.slice_through() == Mesh<0>{});
+    CHECK(mesh3d.slice_through(0) ==
+          Mesh<1>{2, Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto});
+    CHECK(mesh3d.slice_through(1) ==
+          Mesh<1>{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+    CHECK(mesh3d.slice_through(2) ==
+          Mesh<1>{4, Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto});
+    CHECK(mesh3d.slice_through(0, 1) == mesh3d.slice_away(2));
+    CHECK(mesh3d.slice_through(0, 2) == mesh3d.slice_away(1));
+    CHECK(mesh3d.slice_through(1, 2) == mesh3d.slice_away(0));
+    CHECK(mesh3d.slice_through(0, 1, 2) == mesh3d);
+    CHECK(mesh3d.slice_through(2, 0, 1) ==
+          Mesh<3>{{{4, 2, 3}},
+                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                    Spectral::Basis::Legendre}},
+                  {{Spectral::Quadrature::GaussLobatto,
+                    Spectral::Quadrature::GaussLobatto,
+                    Spectral::Quadrature::Gauss}}});
   }
 
   SECTION("Equality") {
@@ -194,4 +221,43 @@ SPECTRE_TEST_CASE("Unit.Serialization.Mesh",
                 Spectral::Basis::Legendre}},
               {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
                 Spectral::Quadrature::GaussLobatto}}});
+}
+
+// [[OutputRegex, Tried to slice through non-existing dimension]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Mesh.SliceThroughNonExistingDimension",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  mesh1d.slice_through(1);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Tried to slice away non-existing dimension]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Mesh.SliceAwayNonExistingDimension",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  mesh1d.slice_away(1);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Dimensions to slice through contain duplicates]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Mesh.SliceThroughDuplicateDimensions",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const Mesh<3> mesh3d{2, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  mesh3d.slice_through(2, 1, 1);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
