@@ -313,13 +313,13 @@ class ModalVector {
   // next 2 functions?
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
       const ModalVector& lhs, const DataVector& rhs) noexcept {
-    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
+    blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
     return lhs * _rhs_local;
   }
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
       const DataVector& lhs, const ModalVector& rhs) noexcept {
-    const blaze::DynamicVector<double> _lhs_local(lhs.size(), lhs.data());
-    return _lhs_local * rhs;
+    blaze::DynamicVector<double> _lhs_local(lhs.size(), lhs.data());
+    return rhs * _lhs_local;
   }
 
   SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
