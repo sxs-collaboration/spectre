@@ -445,7 +445,7 @@ SPECTRE_TEST_CASE(
   // Test math with DataVector
   ModalVector test_72(num_pts, -1.0);
   test_72 = nine * eight;
-  //~ check_vectors(ModalVector(num_pts, 72.0), test_72);
+  check_vectors(ModalVector(num_pts, 72.0), test_72);
   //~ CHECK(test_72.is_owning());
   //~ test_72 = eight * nine;
   //~ check_vectors(ModalVector(num_pts, 72.0), test_72);
