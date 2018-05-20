@@ -450,8 +450,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
   check_vectors(ModalVector(num_pts, 72.0), test_72);
   //~ CHECK(test_72.is_owning());
   test_72 = nine;
-  //~ test_72 *= eight;
-  //~ check_vectors(ModalVector(num_pts, 72.0), test_72);
+  test_72 *= eight;
+  check_vectors(ModalVector(num_pts, 72.0), test_72);
   //~ CHECK(test_72.is_owning());
   //~ test_72 /= eight;
   //~ check_vectors(ModalVector(num_pts, 9.0), test_72);
