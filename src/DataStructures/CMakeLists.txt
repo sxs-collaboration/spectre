@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     Index.cpp
     IndexIterator.cpp
     LeviCivitaIterator.cpp
+    ModalVector.cpp
     SliceIterator.cpp
     StripeIterator.cpp
     Tensor/TensorData.cpp
