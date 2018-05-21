@@ -297,8 +297,35 @@ template <typename TagList, typename Tag>
 using has_subitems = tmpl::not_<
     std::is_same<typename Subitems<TagList, Tag>::type, tmpl::list<>>>;
 
+template <typename ComputeTag, typename ArgumentTag,
+          typename FoundComputeItemInBox>
+struct report_missing_compute_item_argument {
+  static_assert(cpp17::is_same_v<ComputeTag, void>,
+                "A compute item's argument could not be found in the "
+                "DataBox or was found multiple times.  See the first "
+                "template argument for the compute item and the second "
+                "for the missing argument.");
+};
+
+template <typename ComputeTag, typename ArgumentTag>
+struct report_missing_compute_item_argument<ComputeTag, ArgumentTag,
+                                            tmpl::true_type> {
+  using type = void;
+};
+
 template <typename TagList, typename ComputeTag>
 struct create_dependency_graph {
+#ifdef SPECTRE_DEBUG
+  using argument_check_assertion = tmpl::transform<
+      typename ComputeTag::argument_tags,
+      report_missing_compute_item_argument<
+          tmpl::pin<ComputeTag>, tmpl::_1,
+          tmpl::equal_to<
+              tmpl::bind<tmpl::size,
+                         tmpl::bind<DataBox_detail::list_of_matching_tags,
+                                    tmpl::pin<TagList>, tmpl::_1>>,
+              std::integral_constant<size_t, 1>>>>;
+#endif  // SPECTRE_DEBUG
   // These edges record that a compute item's value depends on the
   // values of it's arguments.
   using compute_tag_argument_edges =
