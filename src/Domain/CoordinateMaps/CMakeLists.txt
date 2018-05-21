@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     BulgedCube.cpp
     CubicScale.cpp
     DiscreteRotation.cpp
+    EquatorialCompression.cpp
     Equiangular.cpp
     Frustum.cpp
     Identity.cpp
