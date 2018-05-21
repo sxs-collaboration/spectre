@@ -24,10 +24,24 @@ std::ostream& operator<<(std::ostream& os, const TestStream& t) {
   os << t.b[t.b.size() - 1] << ")";
   return os;
 }
+
+enum class TestEnum { Value1, Value2 };
+
+std::ostream& operator<<(std::ostream& os, const TestEnum& t) noexcept {
+  switch (t) {
+    case TestEnum::Value1:
+      return os << "Value 1";
+    case TestEnum::Value2:
+      return os << "Value 2";
+    default:
+      return os;
+  }
+}
+
 }  // namespace
 
 // [[OutputRegex, -100 3000000000 1.0000000000000000000e\+00 \(0,4,8,-7\) test 1
-// 2 3 abf a o e u]]
+// 2 3 abf a o e u Value 2]]
 SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   const char c_string0[40] = {"test 1 2 3"};
   auto* c_string1 = new char[80];
@@ -37,8 +51,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   c_string1[2] = 'f';   // NOLINT
   c_string1[3] = '\0';  // NOLINT
   constexpr const char* const c_string2 = {"a o e u"};
-  Parallel::printf("%d %lld %s %s %s %s\n", -100, 3000000000, TestStream{},
-                   c_string0, c_string1, c_string2);
+  Parallel::printf("%d %lld %s %s %s %s %s\n", -100, 3000000000, TestStream{},
+                   c_string0, c_string1, c_string2, TestEnum::Value2);
   delete[] c_string1;
   // Catch requires us to have at least one CHECK in each test
   // The Unit.Parallel.printf does not need to check anything
