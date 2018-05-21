@@ -297,31 +297,23 @@ template <typename TagList, typename Tag>
 using has_subitems = tmpl::not_<
     std::is_same<typename Subitems<TagList, Tag>::type, tmpl::list<>>>;
 
-template <typename TagList, typename Caller, typename Callee, typename List,
-          typename = std::nullptr_t>
+template <typename TagList, typename ComputeTag>
 struct create_dependency_graph {
-  using new_edge =
-      tmpl::edge<DataBox_detail::first_matching_tag<TagList, Callee>,
-                 DataBox_detail::first_matching_tag<TagList, Caller>>;
-  using type = tmpl::conditional_t<tmpl::list_contains_v<List, new_edge>, List,
-                                   tmpl::push_back<List, new_edge>>;
-};
+  // These edges record that a compute item's value depends on the
+  // values of it's arguments.
+  using compute_tag_argument_edges =
+      tmpl::transform<typename ComputeTag::argument_tags,
+                      tmpl::bind<tmpl::edge,
+                                 tmpl::bind<DataBox_detail::first_matching_tag,
+                                            tmpl::pin<TagList>, tmpl::_1>,
+                                 tmpl::pin<ComputeTag>>>;
+  // These edges record that the values of the subitems of a compute
+  // item depend on the value of the compute item itself.
+  using subitem_reverse_edges =
+      tmpl::transform<typename Subitems<TagList, ComputeTag>::type,
+                      tmpl::bind<tmpl::edge, tmpl::pin<ComputeTag>, tmpl::_1>>;
 
-template <typename TagList, typename Caller, typename Callee, typename List>
-struct create_dependency_graph<TagList, Caller, Callee, List,
-                               Requires<is_compute_item_v<Callee>>> {
-  using partial_sub_tree =
-      tmpl::fold<typename Callee::argument_tags, List,
-                 create_dependency_graph<tmpl::pin<TagList>, tmpl::pin<Callee>,
-                                         tmpl::_element, tmpl::_state>>;
-  using subitem_dependency =
-      tmpl::transform<typename Subitems<TagList, Callee>::type,
-                      tmpl::bind<tmpl::edge, tmpl::pin<Callee>, tmpl::_1>>;
-
-  using sub_tree = tmpl::append<partial_sub_tree, subitem_dependency>;
-  using type = tmpl::conditional_t<
-      cpp17::is_same_v<void, Caller>, sub_tree,
-      tmpl::push_back<sub_tree, tmpl::edge<Callee, Caller>>>;
+  using type = tmpl::append<compute_tag_argument_edges, subitem_reverse_edges>;
 };
 }  // namespace DataBox_detail
 
@@ -617,10 +609,9 @@ class DataBox<tmpl::list<Tags...>>
       tmpl::list<> /*meta*/) noexcept {}
   // End mutating items in the DataBox
 
-  using edge_list =
-      tmpl::fold<compute_item_tags, tmpl::list<>,
-                 DataBox_detail::create_dependency_graph<
-                     tmpl::pin<tags_list>, void, tmpl::_element, tmpl::_state>>;
+  using edge_list = tmpl::join<tmpl::transform<
+      compute_item_tags,
+      DataBox_detail::create_dependency_graph<tmpl::pin<tags_list>, tmpl::_1>>>;
 
   bool mutate_locked_box_{false};
 };
