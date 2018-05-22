@@ -161,19 +161,9 @@ struct SpectralToGridPointsMatrixGenerator {
 template <Basis BasisType, Quadrature QuadratureType>
 struct GridPointsToSpectralMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
-    const Matrix& vandermonde_matrix =
-        spectral_to_grid_points_matrix<BasisType, QuadratureType>(num_points);
     // Numerically invert the matrix for this generic case
-    Matrix vandermonde_inverse(num_points, num_points);
-    blaze::DynamicMatrix<double, blaze::columnMajor> work(
-        num_points, num_points, vandermonde_matrix.data());
-    blaze::invert(work);
-    for (size_t i = 0; i < num_points; i++) {
-      for (size_t j = 0; j < num_points; j++) {
-        vandermonde_inverse(i, j) = work(i, j);
-      }
-    }
-    return vandermonde_inverse;
+    return inv(
+        spectral_to_grid_points_matrix<BasisType, QuadratureType>(num_points));
   }
 };
 
