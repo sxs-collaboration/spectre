@@ -191,34 +191,32 @@ void test_spectral_quantities_for_mesh(const Mesh<1>& slice) {
   const auto num_points = slice.extents(0);
   const auto& expected_points =
       Spectral::collocation_points<BasisType, QuadratureType>(num_points);
-  CHECK_ITERABLE_APPROX(Spectral::collocation_points(slice), expected_points);
+  CHECK(Spectral::collocation_points(slice) == expected_points);
   const auto& expected_weights =
       Spectral::quadrature_weights<BasisType, QuadratureType>(num_points);
-  CHECK_ITERABLE_APPROX(Spectral::quadrature_weights(slice), expected_weights);
+  CHECK(Spectral::quadrature_weights(slice) == expected_weights);
   const auto& expected_diff_matrix =
       Spectral::differentiation_matrix<BasisType, QuadratureType>(num_points);
-  CHECK_ITERABLE_APPROX(Spectral::differentiation_matrix(slice),
-                        expected_diff_matrix);
+  CHECK(Spectral::differentiation_matrix(slice) == expected_diff_matrix);
   const DataVector target_points{-0.5, -0.1, 0., 0.75, 0.9888, 1.};
   const auto expected_interp_matrix_points =
       Spectral::interpolation_matrix<BasisType, QuadratureType>(num_points,
                                                                 target_points);
-  CHECK_ITERABLE_APPROX(Spectral::interpolation_matrix(slice, target_points),
-                        expected_interp_matrix_points);
+  CHECK(Spectral::interpolation_matrix(slice, target_points) ==
+        expected_interp_matrix_points);
   const auto& expected_vand_matrix =
       Spectral::spectral_to_grid_points_matrix<BasisType, QuadratureType>(
           num_points);
-  CHECK_ITERABLE_APPROX(Spectral::spectral_to_grid_points_matrix(slice),
-                        expected_vand_matrix);
+  CHECK(Spectral::spectral_to_grid_points_matrix(slice) ==
+        expected_vand_matrix);
   const auto& expected_inv_vand_matrix =
       Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(
           num_points);
-  CHECK_ITERABLE_APPROX(Spectral::grid_points_to_spectral_matrix(slice),
-                        expected_inv_vand_matrix);
+  CHECK(Spectral::grid_points_to_spectral_matrix(slice) ==
+        expected_inv_vand_matrix);
   const auto& expected_lin_matrix =
       Spectral::linear_filter_matrix<BasisType, QuadratureType>(num_points);
-  CHECK_ITERABLE_APPROX(Spectral::linear_filter_matrix(slice),
-                        expected_lin_matrix);
+  CHECK(Spectral::linear_filter_matrix(slice) == expected_lin_matrix);
 }
 
 }  // namespace

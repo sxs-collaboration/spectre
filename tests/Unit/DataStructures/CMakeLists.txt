@@ -10,12 +10,12 @@ set(LIBRARY_SOURCES
   Test_DataBoxTag.cpp
   Test_DataVector.cpp
   Test_Deferred.cpp
+  Test_DenseMatrix.cpp
   Test_DenseVector.cpp
   Test_GeneralIndexIterator.cpp
   Test_Identity.cpp
   Test_Index.cpp
   Test_IndexIterator.cpp
-  Test_Matrix.cpp
   Test_Mesh.cpp
   Test_OrientVariablesOnSlice.cpp
   Test_SliceIterator.cpp

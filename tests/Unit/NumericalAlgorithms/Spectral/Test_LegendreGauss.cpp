@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -73,7 +72,7 @@ void test_diff_matrix(const size_t num_points, const Matrix& expected_matrix) {
   const auto& diff_matrix =
       Spectral::differentiation_matrix<Spectral::Basis::Legendre,
                                        Spectral::Quadrature::Gauss>(num_points);
-  CHECK_ITERABLE_APPROX(expected_matrix, diff_matrix);
+  CHECK_MATRIX_APPROX(expected_matrix, diff_matrix);
 }
 
 }  // namespace
@@ -133,7 +132,7 @@ void test_spectral_to_grid_points_matrix(const size_t num_points,
                                          const Matrix& expected_matrix) {
   const auto& matrix = Spectral::spectral_to_grid_points_matrix<
       Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>(num_points);
-  CHECK_ITERABLE_APPROX(expected_matrix, matrix);
+  CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
@@ -183,7 +182,7 @@ void test_grid_points_to_spectral_matrix(const size_t num_points,
                                          const Matrix& expected_matrix) {
   const auto& matrix = Spectral::grid_points_to_spectral_matrix<
       Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>(num_points);
-  CHECK_ITERABLE_APPROX(expected_matrix, matrix);
+  CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
