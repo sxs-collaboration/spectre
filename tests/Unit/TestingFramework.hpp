@@ -26,8 +26,8 @@
 // add_test_library CMake function. It is used to make a call into a translation
 // unit so that static variables for Catch are properly initialized.
 #ifdef SPECTRE_TEST_REGISTER_FUNCTION
-void SPECTRE_TEST_REGISTER_FUNCTION() noexcept {} // NOLINT
-#endif // SPECTRE_TEST_REGISTER_FUNCTION
+void SPECTRE_TEST_REGISTER_FUNCTION() noexcept {}  // NOLINT
+#endif  // SPECTRE_TEST_REGISTER_FUNCTION
 /// \endcond
 
 namespace TestHelpers_detail {
@@ -43,9 +43,9 @@ std::string format_capture_precise(const T& t) noexcept {
  * \ingroup TestingFrameworkGroup
  * \brief Alternative to Catch's CAPTURE that prints more digits.
  */
-#define CAPTURE_PRECISE(variable)                                    \
-  INFO(#variable << ": "                                             \
-       << TestHelpers_detail::format_capture_precise(variable))
+#define CAPTURE_PRECISE(variable) \
+  INFO(#variable << ": "          \
+                 << TestHelpers_detail::format_capture_precise(variable))
 
 /*!
  * \ingroup TestingFrameworkGroup
@@ -208,6 +208,60 @@ struct check_iterable_approx<
       } catch (const std::out_of_range&) {
         INFO("Missing key in first container: " << key);
         CHECK(false);
+      }
+    }
+  }
+};
+
+#define CHECK_MATRIX_APPROX(a, b)                                            \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_matrix_approx<std::common_type_t<                                  \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
+  } while (false)
+
+#define CHECK_MATRIX_CUSTOM_APPROX(a, b, appx)                               \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_matrix_approx<std::common_type_t<                                  \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b,  \
+                                                                      appx); \
+  } while (false)
+
+template <typename M>
+struct check_matrix_approx {
+  // clang-tidy: non-const reference
+  static void apply(const M& a, const M& b,
+                    Approx& appx = approx) {  // NOLINT
+    // This implementation is for a column-major matrix. It does not trivially
+    // generalize to a row-major matrix because the iterator
+    // `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
+    // column, and takes its index as argument.
+    CHECK(a.columns() == b.columns());
+    for (size_t j = 0; j < a.columns(); j++) {
+      CAPTURE_PRECISE(a);
+      CAPTURE_PRECISE(b);
+      auto a_it = a.cbegin(j);
+      auto b_it = b.cbegin(j);
+      CHECK(a_it != a.cend(j));
+      CHECK(b_it != b.cend(j));
+      while (a_it != a.cend(j) and b_it != b.cend(j)) {
+        check_iterable_approx<std::decay_t<decltype(*a_it)>>::apply(
+            *a_it, *b_it, appx);
+        ++a_it;
+        ++b_it;
+      }
+      {
+        INFO("Column " << j
+                       << " of the first matrix is longer than that of the "
+                          "second matrix.");
+        CHECK(a_it == a.end(j));
+      }
+      {
+        INFO("Column " << j
+                       << " of the first matrix is shorter than that of the "
+                          "second matrix.");
+        CHECK(b_it == b.end(j));
       }
     }
   }
