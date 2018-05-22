@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   ConservativeFromPrimitive.cpp
   Equations.cpp
   Fluxes.cpp
+  PrimitiveFromConservative.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
