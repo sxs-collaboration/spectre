@@ -83,12 +83,11 @@ static_assert(
         tnsr::ab<double, 3, Frame::Grid>,
         TensorMetafunctions::remove_first_index<Tensor<
             double, tmpl::integral_list<std::int32_t, 2, 2, 1>,
-            index_list<Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
-                                                      IndexType::Spacetime>,
-                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
-                                                      IndexType::Spacetime>,
-                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
-                                                      IndexType::Spacetime>>>>>,
+            index_list<
+                TensorIndexType<3, UpLo::Lo, Frame::Grid, IndexType::Spacetime>,
+                TensorIndexType<3, UpLo::Lo, Frame::Grid, IndexType::Spacetime>,
+                TensorIndexType<3, UpLo::Lo, Frame::Grid,
+                                IndexType::Spacetime>>>>>,
     "Failed testing remove_first_index");
 static_assert(cpp17::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
                                TensorMetafunctions::remove_first_index<
@@ -198,13 +197,12 @@ static_assert(
 namespace {
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using abcd = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 4, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using abcd =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 4, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 
 // Test construction of high-rank, high-dim tensors
 constexpr abcd<double, 7> check_construction{};

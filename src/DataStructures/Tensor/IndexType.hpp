@@ -110,7 +110,6 @@ inline std::ostream& operator<<(std::ostream& os, const IndexType& index_type) {
 }
 /// \endcond
 
-namespace Tensor_detail {
 /// \ingroup TensorGroup
 /// A ::TensorIndexType holds information about what type of index an index of a
 /// Tensor is. It holds the information about the number of spatial dimensions,
@@ -126,9 +125,10 @@ struct TensorIndexType {
                 "Cannot have a spatial dimensionality less than 1 (one) in a "
                 "TensorIndexType");
   using value_type = decltype(SpatialDim);
+  /// Dimensionality of the index, i.e., SpatialDim for spatial
+  /// indices or SpatialDim + 1 for spacetime indices.
   static constexpr value_type dim =
-      Index == IndexType::Spatial ? SpatialDim
-                                  : SpatialDim + static_cast<value_type>(1);
+      Index == IndexType::Spatial ? SpatialDim : SpatialDim + 1;
   // value is here just so that some generic metafunctions can retrieve the dim
   // easily
   static constexpr value_type value = dim;
@@ -136,7 +136,6 @@ struct TensorIndexType {
   using Frame = Fr;
   static constexpr IndexType index_type = Index;
 };
-}  // namespace Tensor_detail
 
 /// \ingroup TensorGroup
 /// A SpatialIndex holds information about the number of spatial
@@ -148,8 +147,7 @@ struct TensorIndexType {
 /// \tparam Fr the ::Frame the \ref SpatialIndex "TensorIndexType"
 /// is in
 template <size_t SpatialDim, UpLo Ul, typename Fr>
-using SpatialIndex =
-    Tensor_detail::TensorIndexType<SpatialDim, Ul, Fr, IndexType::Spatial>;
+using SpatialIndex = TensorIndexType<SpatialDim, Ul, Fr, IndexType::Spatial>;
 
 /// \ingroup TensorGroup
 /// A SpacetimeIndex holds information about the number of spatial
@@ -163,7 +161,7 @@ using SpatialIndex =
 /// is in
 template <size_t SpatialDim, UpLo Ul, typename Fr>
 using SpacetimeIndex =
-    Tensor_detail::TensorIndexType<SpatialDim, Ul, Fr, IndexType::Spacetime>;
+    TensorIndexType<SpatialDim, Ul, Fr, IndexType::Spacetime>;
 
 namespace tt {
 // @{
@@ -175,8 +173,7 @@ template <typename T>
 struct is_tensor_index_type : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <size_t SpatialDim, UpLo Ul, typename Fr, IndexType Index>
-struct is_tensor_index_type<
-    Tensor_detail::TensorIndexType<SpatialDim, Ul, Fr, Index>>
+struct is_tensor_index_type<TensorIndexType<SpatialDim, Ul, Fr, Index>>
     : std::true_type {};
 /// \endcond
 /// \see is_tensor_index_type
@@ -194,10 +191,11 @@ using is_tensor_index_type_t = typename is_tensor_index_type<T>::type;
 ///
 /// \tparam Index the \ref SpacetimeIndex "TensorIndexType" to change
 template <typename Index>
-using change_index_up_lo = Tensor_detail::TensorIndexType<
-    Index::index_type == IndexType::Spatial ? Index::value : Index::value - 1,
-    Index::ul == UpLo::Up ? UpLo::Lo : UpLo::Up, typename Index::Frame,
-    Index::index_type>;
+using change_index_up_lo =
+    TensorIndexType<Index::index_type == IndexType::Spatial ? Index::value
+                                                            : Index::value - 1,
+                    Index::ul == UpLo::Up ? UpLo::Lo : UpLo::Up,
+                    typename Index::Frame, Index::index_type>;
 
 template <typename... Ts>
 using index_list = tmpl::list<Ts...>;

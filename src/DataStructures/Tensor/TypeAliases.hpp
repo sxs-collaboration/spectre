@@ -33,13 +33,11 @@ namespace tnsr {
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
 using a = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
-                 index_list<Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo,
-                                                           Fr, Index>>>;
+                 index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
 using A = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
-                 index_list<Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up,
-                                                           Fr, Index>>>;
+                 index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using i = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
                  index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>>>;
@@ -50,32 +48,24 @@ using I = Tensor<DataType, tmpl::integral_list<std::int32_t, 1>,
 // Rank 2
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using ab = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using ab = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+                  index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                             TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using Ab = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using Ab = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+                  index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                             TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using aB = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using aB = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+                  index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                             TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using AB = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using AB = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+                  index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                             TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using ij = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
                   index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
@@ -94,23 +84,19 @@ using IJ = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
                              SpatialIndex<SpatialDim, UpLo::Up, Fr>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using ia = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
-index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
-           SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
+                  index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
+                             SpacetimeIndex<SpatialDim, UpLo::Lo, Fr>>>;
 
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using aa = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using aa = Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
+                  index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                             TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using AA = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using AA = Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
+                  index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                             TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using ii = Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
                   index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
@@ -123,100 +109,88 @@ using II = Tensor<DataType, tmpl::integral_list<std::int32_t, 1, 1>,
 // Rank 3 - spacetime
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using abc = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using abc =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using abC = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using abC =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using aBc = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using aBc =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using Abc = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using Abc =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using aBC = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using aBC =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using AbC = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using AbC =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using ABc = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using ABc =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using ABC = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using ABC =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using abb = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using abb =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using Abb = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using Abb =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using aBB = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using aBB =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using ABB = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+using ABB =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 
 // Rank 3 - spatial
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
@@ -343,22 +317,20 @@ using ijaa = Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
 // Rank 4 - generic (default spacetime)
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using abcc = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using abcc =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
-using aBcc = Tensor<
-    DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
-    index_list<
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
-        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
+using aBcc =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 3, 2, 1, 1>,
+           index_list<TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+                      TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>>>;
 
 // Rank 4 - spatial
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>

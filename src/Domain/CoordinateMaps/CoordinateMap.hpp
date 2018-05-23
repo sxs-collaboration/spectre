@@ -348,6 +348,7 @@ constexpr CoordinateMap<SourceFrame, TargetFrame, Maps...>::CoordinateMap(
     Maps... maps)
     : maps_(std::move(maps)...) {}
 
+/// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
 constexpr SPECTRE_ALWAYS_INLINE tnsr::I<
@@ -573,6 +574,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
       maps_);
   return jac;
 }
+/// \endcond
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 bool operator!=(
