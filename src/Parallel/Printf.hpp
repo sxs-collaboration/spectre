@@ -37,7 +37,9 @@ inline constexpr T stream_object_to_string(T&& t) {
  * We need a 2-phase call so that the std::string doesn't go out of scope before
  * the C-style string is passed to printf.
  */
-template <typename T, Requires<std::is_class<std::decay_t<T>>::value> = nullptr>
+template <typename T,
+          Requires<std::is_class<std::decay_t<T>>::value or
+                   std::is_enum<std::decay_t<T>>::value> = nullptr>
 inline std::string stream_object_to_string(T&& t) {
   static_assert(tt::is_streamable<std::stringstream, T>::value,
                 "Cannot stream type and therefore it cannot be printed. Please "
