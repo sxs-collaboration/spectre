@@ -146,9 +146,7 @@ using compute_items = db::AddComputeTags<
     interface_tag<Tags::Extents<1>>,
     interface_tag<Tags::UnnormalizedFaceNormal<2>>,
     interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
-    interface_tag<Tags::Normalized<
-        Tags::UnnormalizedFaceNormal<2>,
-        Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>>>;
+    interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
 
 Scalar<DataVector> reverse(Scalar<DataVector> x) noexcept {
   std::reverse(get(x).begin(), get(x).end());

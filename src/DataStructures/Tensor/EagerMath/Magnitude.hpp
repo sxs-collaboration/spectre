@@ -46,10 +46,20 @@ Scalar<DataType> magnitude(
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
+/// The magnitude of a (co)vector
+template <typename Tag>
+struct Magnitude : db::PrefixTag, db::SimpleTag {
+  static std::string name() noexcept { return "Magnitude"; }
+  using tag = Tag;
+  using type = Scalar<DataVector>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DataStructuresGroup
 /// The Euclidean magnitude of a (co)vector
 template <typename Tag>
-struct EuclideanMagnitude : db::ComputeTag {
-  static std::string name() noexcept { return "EuclideanMagnitude"; }
+struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
+  using base = Magnitude<Tag>;
   static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
       magnitude;
   using argument_tags = tmpl::list<Tag>;
@@ -57,21 +67,20 @@ struct EuclideanMagnitude : db::ComputeTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
-/// The (co)vector represented by Tag normalized by its magnitude from
-/// MagnitudeTag.
-template <typename Tag, typename MagnitudeTag>
+/// The normalized (co)vector represented by Tag
+template <typename Tag>
 struct Normalized : db::ComputeTag {
   static std::string name() noexcept { return "Normalized"; }
   static constexpr auto function(
       const db::item_type<Tag>&
           vector_in,  // Compute items need to take const references
-      const db::item_type<MagnitudeTag>& magnitude) noexcept {
+      const db::item_type<Magnitude<Tag>>& magnitude) noexcept {
     auto vector = vector_in;
     for (size_t d = 0; d < vector.index_dim(0); ++d) {
       vector.get(d) /= get(magnitude);
     }
     return vector;
   }
-  using argument_tags = tmpl::list<Tag, MagnitudeTag>;
+  using argument_tags = tmpl::list<Tag, Magnitude<Tag>>;
 };
 }  // namespace Tags

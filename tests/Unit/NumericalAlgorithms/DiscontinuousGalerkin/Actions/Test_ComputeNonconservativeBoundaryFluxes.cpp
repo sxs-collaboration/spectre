@@ -130,9 +130,7 @@ auto run_action(
           interface_tag<Tags::UnnormalizedFaceNormal<2>>,
           interface_tag<
               Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
-          interface_tag<Tags::Normalized<
-              Tags::UnnormalizedFaceNormal<2>,
-              Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>>>>(
+          interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>>(
       element, extents, std::move(element_map), vars, other_arg);
 
   return std::get<0>(
@@ -165,8 +163,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
   auto box = run_action(element, vars, other_arg);
 
   const auto& unit_face_normal = db::get<interface_tag<Tags::Normalized<
-      Tags::UnnormalizedFaceNormal<2>,
-      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>>>(box);
+      Tags::UnnormalizedFaceNormal<2>>>>(box);
   const auto& n_dot_f =
       db::get<interface_tag<Tags::NormalDotFlux<Tags::Variables<
           tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>>(

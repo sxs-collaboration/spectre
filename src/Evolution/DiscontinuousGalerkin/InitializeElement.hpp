@@ -113,10 +113,7 @@ struct InitializeElement {
       interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       interface_tag<typename Metavariables::system::template magnitude_tag<
           Tags::UnnormalizedFaceNormal<Dim>>>,
-      interface_tag<Tags::Normalized<
-          Tags::UnnormalizedFaceNormal<Dim>,
-          typename Metavariables::system::template magnitude_tag<
-              Tags::UnnormalizedFaceNormal<Dim>>>>,
+      interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>,
       // This should be the boundary forms of
       // System::normal_dot_fluxes::argument_tags, but it is not clear
       // how to get that.  System::variables_tag should generally be a

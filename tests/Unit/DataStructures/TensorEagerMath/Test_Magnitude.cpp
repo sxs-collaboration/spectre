@@ -145,10 +145,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
                   "[DataStructures][Unit]") {
   const auto box = db::create<
       db::AddSimpleTags<Vector, Covector>,
-      db::AddComputeTags<
-          Tags::EuclideanMagnitude<Vector>, Tags::EuclideanMagnitude<Covector>,
-          Tags::Normalized<Vector, Tags::EuclideanMagnitude<Vector>>,
-          Tags::Normalized<Covector, Tags::EuclideanMagnitude<Covector>>>>(
+      db::AddComputeTags<Tags::EuclideanMagnitude<Vector>,
+                         Tags::EuclideanMagnitude<Covector>,
+                         Tags::Normalized<Vector>, Tags::Normalized<Covector>>>(
       db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
       db::item_type<Covector>({{{3., 5.}, {4., 12.}}}));
 
@@ -156,11 +155,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
         Scalar<DataVector>({{{3., 7.}}}));
   CHECK(db::get<Tags::EuclideanMagnitude<Covector>>(box) ==
         Scalar<DataVector>({{{5., 13.}}}));
-  CHECK(db::get<Tags::Normalized<Vector, Tags::EuclideanMagnitude<Vector>>>(
-            box) ==
+  CHECK(db::get<Tags::Normalized<Vector>>(box) ==
         db::item_type<Vector>(
             {{{1. / 3., 2. / 7.}, {2. / 3., 3. / 7.}, {2. / 3., 6. / 7.}}}));
-  CHECK(db::get<Tags::Normalized<Covector, Tags::EuclideanMagnitude<Covector>>>(
-            box) ==
+  CHECK(db::get<Tags::Normalized<Covector>>(box) ==
         db::item_type<Covector>({{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
 }
