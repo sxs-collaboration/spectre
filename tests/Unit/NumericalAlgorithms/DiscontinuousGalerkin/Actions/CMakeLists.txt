@@ -3,6 +3,7 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
+  Actions/Test_ApplyBoundaryFluxesGlobalTimeStepping.cpp
   Actions/Test_ComputeNonconservativeBoundaryFluxes.cpp
   Actions/Test_FluxCommunication.cpp
   PARENT_SCOPE

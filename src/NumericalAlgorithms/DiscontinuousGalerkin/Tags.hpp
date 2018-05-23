@@ -3,19 +3,34 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
+#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <cstddef>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/ElementId.hpp"
+#include "Domain/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "Options/Options.hpp"
 
 namespace Tags {
+/// \ingroup DataBoxTags
+/// \ingroup DiscontinuousGalerkinGroup
+/// \brief Simple boundary communication data
+template <typename TemporalId, typename LocalData, typename RemoteData>
+struct SimpleBoundaryData : db::SimpleTag {
+  static std::string name() noexcept { return "SimpleBoundaryData"; }
+  using type = dg::SimpleBoundaryData<TemporalId, LocalData, RemoteData>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DiscontinuousGalerkinGroup
+/// Data on mortars, indexed by (Direction, ElementId) pairs
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "Mortar"; }
+  static std::string name() noexcept { return "Mortars"; }
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;

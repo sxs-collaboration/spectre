@@ -30,6 +30,7 @@
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -80,11 +81,17 @@ struct SystemAnalyticSolution {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
+template <size_t Dim>
 struct System {
+  static constexpr size_t volume_dim = Dim;
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
   using gradients_tags = tmpl::list<Var>;
   template <typename Tag>
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
+};
+
+struct NormalDotNumericalFluxTag {
+  using type = struct { using package_tags = tmpl::list<Var>; };
 };
 
 template <size_t Dim>
@@ -100,7 +107,9 @@ using component = ActionTesting::MockArrayComponent<
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<component<Dim>>;
-  using system = System;
+  using system = System<Dim>;
+  using temporal_id = Tags::TimeId;
+  using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
 };
 
 template <size_t Dim, typename DomainCreatorType>
@@ -151,8 +160,9 @@ void test_initialize_element(const ElementId<Dim>& element_id,
         }()));
   {
     const auto& history = db::get<Tags::HistoryEvolvedVariables<
-        typename System::variables_tag,
-        db::add_tag_prefix<Tags::dt, typename System::variables_tag>>>(box);
+        typename System<Dim>::variables_tag,
+        db::add_tag_prefix<Tags::dt, typename System<Dim>::variables_tag>>>(
+        box);
     TimeSteppers::AdamsBashforthN stepper(4, false);
     CHECK(history.size() == stepper.number_of_past_steps());
     const SystemAnalyticSolution solution{};
@@ -184,8 +194,8 @@ void test_initialize_element(const ElementId<Dim>& element_id,
                                        Tags::LogicalCoordinates<Dim>>>(box)) ==
         map.inv_jacobian(logical_coords));
   CHECK((db::get<
-            Tags::deriv<typename System::variables_tag::tags_list,
-                        typename System::gradients_tags,
+            Tags::deriv<typename System<Dim>::variables_tag::tags_list,
+                        typename System<Dim>::gradients_tags,
                         Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                               Tags::LogicalCoordinates<Dim>>>>(
             box)) == ([&inertial_coords, &extents, &map, &logical_coords]() {
@@ -195,9 +205,15 @@ void test_initialize_element(const ElementId<Dim>& element_id,
           return partial_derivatives<tmpl::list<Var>>(
               vars, extents, map.inv_jacobian(logical_coords));
         }()));
-  CHECK((db::get<db::add_tag_prefix<Tags::dt, typename System::variables_tag>>(
+  CHECK((db::get<
+            db::add_tag_prefix<Tags::dt, typename System<Dim>::variables_tag>>(
             box)) ==
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
+
+  CHECK(db::get<typename dg::FluxCommunicationTypes<
+            Metavariables<Dim>>::mortar_data_tag>(box)
+            .size() == element.number_of_neighbors());
+
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 Tags::UnnormalizedFaceNormal<Dim>>>(box);
   using magnitude_tag =
@@ -208,7 +224,7 @@ void test_initialize_element(const ElementId<Dim>& element_id,
       Tags::InternalDirections<Dim>,
       Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>, magnitude_tag>>>(box);
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
-                                typename System::variables_tag>>(box);
+                                typename System<Dim>::variables_tag>>(box);
 }
 }  // namespace
 

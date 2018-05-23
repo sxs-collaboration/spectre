@@ -2,20 +2,28 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines metafunction make_boost_variant_over
+/// Defines helper functions for working with boost.
 
 #pragma once
 
 #include <array>
+#include <boost/none.hpp>
 #include <boost/variant.hpp>
 #include <cstddef>
 #include <initializer_list>
 #include <pup.h>
 #include <string>
-#include <utility>
+#include <utility>  // IWYU pragma: keep
 
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+namespace boost {
+template <typename T>
+class optional;
+}  // namespace boost
+/// \endcond
 
 namespace detail {
 template <typename Sequence>
@@ -87,4 +95,23 @@ std::string type_of_current_state(
   return std::array<std::string, sizeof...(Ts)>{  // NOLINT
       {pretty_type::get_name<Ts>()...}}[static_cast<size_t>(variant.which())];
   // clang-format on
+}
+
+template <class T>
+void pup(PUP::er& p, boost::optional<T>& var) {  // NOLINT
+  bool has_data = var != boost::none;
+  p | has_data;
+  if (has_data) {
+    if (p.isUnpacking()) {
+      var.emplace();
+    }
+    p | *var;
+  } else {
+    var = boost::none;
+  }
+}
+
+template <typename T>
+inline void operator|(PUP::er& p, boost::optional<T>& var) {  // NOLINT
+  pup(p, var);
 }

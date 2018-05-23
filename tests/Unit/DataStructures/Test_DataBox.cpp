@@ -175,7 +175,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   /// [using_db_get]
   const auto& tag0 = db::get<test_databox_tags::Tag0>(original_box);
   /// [using_db_get]
-  CHECK(db::get<test_databox_tags::Tag0>(original_box) == 3.14);
+  CHECK(tag0 == 3.14);
   // Check retrieving chained compute item result
   CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
         "My Sample String6.28"s);

@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
+// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -14,6 +14,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -36,21 +37,22 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
+struct TemporalId : db::SimpleTag {
+  static std::string name() noexcept { return "TemporalId"; }
+  using type = int;
+};
+
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
@@ -87,20 +89,7 @@ class NumericalFlux {
         3. * get<1>(interface_unit_normal);
   }
 
-  void operator()(
-      const gsl::not_null<Scalar<DataVector>*> normal_dot_numerical_flux,
-      const tnsr::I<DataVector, 1>& extra_data_interior,
-      const Scalar<DataVector>& packaged_var_interior,
-      const tnsr::I<DataVector, 1>& extra_data_exterior,
-      const Scalar<DataVector>& packaged_var_exterior) const noexcept {
-    get(*normal_dot_numerical_flux) =
-        1.1 * get(packaged_var_interior) + 100. * get(packaged_var_exterior);
-    // We can't easily get an expected value in here, so this
-    // expression is chosen so similar errors on the two interfaces
-    // are unlikely to cancel out.  We tune the exterior data we feed
-    // in to make it pass.
-    CHECK(get<0>(extra_data_exterior) == 2. * get<0>(extra_data_interior) + 1.);
-  }
+  // void operator()(...) is unused
 
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -120,29 +109,35 @@ struct System {
 
 struct Metavariables;
 using send_data_for_fluxes = dg::Actions::SendDataForFluxes;
-using compute_boundary_flux = dg::Actions::ComputeBoundaryFlux<Metavariables>;
+using receive_data_for_fluxes =
+    dg::Actions::ReceiveDataForFluxes<Metavariables>;
 
 using component =
     ActionTesting::MockArrayComponent<Metavariables, ElementIndex<2>,
                                       tmpl::list<NumericalFluxTag>,
-                                      tmpl::list<compute_boundary_flux>>;
+                                      tmpl::list<receive_data_for_fluxes>>;
 
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component>;
+  using temporal_id = TemporalId;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
 };
 
-using dt_variables_tag = Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>;
-using fluxes_tag = compute_boundary_flux::FluxesTag;
-using history_tag = Tags::Mortars<System::variables_tag, 2>;
-
 template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 
-using normal_dot_fluxes_tag = interface_tag<
-    db::add_tag_prefix<Tags::NormalDotFlux, System::variables_tag>>;
+using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
+using mortar_data_tag = typename flux_comm_types::mortar_data_tag;
+using LocalData = typename flux_comm_types::LocalData;
+using PackagedData = typename flux_comm_types::PackagedData;
+using MagnitudeOfFaceNormal = typename flux_comm_types::MagnitudeOfFaceNormal;
+using normal_dot_fluxes_tag =
+    interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>;
+
+using fluxes_tag = typename flux_comm_types::FluxesTag;
+
 using other_data_tag = interface_tag<Tags::Variables<tmpl::list<OtherData>>>;
 
 using compute_items = db::AddComputeTags<
@@ -153,14 +148,16 @@ using compute_items = db::AddComputeTags<
     interface_tag<Tags::Normalized<
         Tags::UnnormalizedFaceNormal<2>,
         Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>>>;
+
+Scalar<DataVector> reverse(Scalar<DataVector> x) noexcept {
+  std::reverse(get(x).begin(), get(x).end());
+  return x;
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   "[Unit][NumericalAlgorithms][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-
-  const Slab slab(1., 3.);
-  const TimeId time_id{8, slab.start(), 0};
+  ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
 
   const Index<2> extents{{{3, 3}}};
 
@@ -195,9 +192,31 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                                          CoordinateMaps::Affine>(xi_map,
                                                                  eta_map));
 
+  const auto neighbor_directions = {Direction<2>::lower_xi(),
+                                    Direction<2>::upper_xi(),
+                                    Direction<2>::upper_eta()};
+  const struct {
+    std::unordered_map<Direction<2>, Scalar<DataVector>> fluxes;
+    std::unordered_map<Direction<2>, Scalar<DataVector>> other_data;
+    std::unordered_map<Direction<2>, Scalar<DataVector>> remote_fluxes;
+    std::unordered_map<Direction<2>, Scalar<DataVector>> remote_other_data;
+  } data{
+      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{1., 2., 3.}}}}},
+       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{4., 5., 6.}}}}},
+       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{7., 8., 9.}}}}}},
+      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{10., 11., 12.}}}}},
+       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{13., 14., 15.}}}}},
+       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{16., 17., 18.}}}}}},
+      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{19., 20., 21.}}}}},
+       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{22., 23., 24.}}}}},
+       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{25., 26., 27.}}}}}},
+      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{28., 29., 30.}}}}},
+       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{31., 32., 33.}}}}},
+       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
+
   auto start_box = [
-    &extents, &time_id, &self_id, &west_id, &east_id, &south_id,
-    &block_orientation, &coordmap
+    &extents, &self_id, &west_id, &east_id, &south_id, &block_orientation,
+    &coordmap, &neighbor_directions, &data
   ]() noexcept {
     const Element<2> element(
         self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
@@ -206,61 +225,49 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
     auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
 
-    // The initial value for dt_variables checks that it isn't
-    // improperly zeroed.
-    db::item_type<dt_variables_tag> dt_variables(extents.product(), 3.0);
     db::item_type<normal_dot_fluxes_tag> normal_dot_fluxes;
-    {
-      const auto set_flux_in_direction = [&normal_dot_fluxes](
-          const Direction<2>& direction, const DataVector& flux) noexcept {
-        auto& flux_vars = normal_dot_fluxes[direction];
-        flux_vars.initialize(3);
-        get(get<Tags::NormalDotFlux<Var>>(flux_vars)) = flux;
-      };
-      set_flux_in_direction(Direction<2>::lower_xi(), {1., 2., 3.});
-      set_flux_in_direction(Direction<2>::upper_xi(), {4., 5., 6.});
-      set_flux_in_direction(Direction<2>::upper_eta(), {7., 8., 9.});
+    for (const auto& direction : neighbor_directions) {
+      auto& flux_vars = normal_dot_fluxes[direction];
+      flux_vars.initialize(3);
+      get<Tags::NormalDotFlux<Var>>(flux_vars) = data.fluxes.at(direction);
     }
 
     db::item_type<other_data_tag> other_data;
-    {
-      const auto set_other_data_in_direction = [&other_data](
-          const Direction<2>& direction, const DataVector& data) noexcept {
-        auto& other_data_vars = other_data[direction];
-        other_data_vars.initialize(3);
-        get(get<OtherData>(other_data_vars)) = data;
-      };
-      set_other_data_in_direction(Direction<2>::lower_xi(), {15., 25., 35.});
-      set_other_data_in_direction(Direction<2>::upper_xi(), {45., 55., 65.});
-      set_other_data_in_direction(Direction<2>::upper_eta(), {75., 85., 95.});
+    for (const auto& direction : neighbor_directions) {
+      auto& other_data_vars = other_data[direction];
+      other_data_vars.initialize(3);
+      get<OtherData>(other_data_vars) = data.other_data.at(direction);
     }
 
+    db::item_type<mortar_data_tag> mortar_history{};
+    mortar_history[std::make_pair(Direction<2>::lower_xi(), west_id)];
+    mortar_history[std::make_pair(Direction<2>::upper_xi(), east_id)];
+    mortar_history[std::make_pair(Direction<2>::upper_eta(), south_id)];
+
     return db::create<
-        db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
-                          Tags::ElementMap<2>, dt_variables_tag,
-                          normal_dot_fluxes_tag, other_data_tag>,
-        compute_items>(time_id, extents, element, std::move(map),
-                       std::move(dt_variables), std::move(normal_dot_fluxes),
-                       std::move(other_data));
+        db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
+                          Tags::ElementMap<2>, normal_dot_fluxes_tag,
+                          other_data_tag, mortar_data_tag>,
+        compute_items>(0, extents, element, std::move(map),
+                       std::move(normal_dot_fluxes), std::move(other_data),
+                       std::move(mortar_history));
   }();
 
   auto sent_box = std::get<0>(
       runner.apply<component, send_data_for_fluxes>(start_box, self_id));
 
-  // The check in NumericalFlux::operator() (and the final dt check)
-  // verify that the action sends the correct values, but we need to
-  // check that it sends the correct number of messages to the correct
-  // places.
+  // Here, we just check that messages are sent to the correct places.
+  // We will check the received values on the central element later.
   {
-    CHECK((runner.nonempty_inboxes<component, fluxes_tag>()) ==
-          (std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id}));
-    const auto check_sent_data = [&runner, &time_id, &self_id](
+    CHECK(runner.nonempty_inboxes<component, fluxes_tag>() ==
+          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
+    const auto check_sent_data = [&runner, &self_id](
         const ElementId<2>& id, const Direction<2>& direction) noexcept {
       const auto& inboxes = runner.inboxes<component>();
       const auto& flux_inbox = tuples::get<fluxes_tag>(inboxes.at(id));
       CHECK(flux_inbox.size() == 1);
-      CHECK(flux_inbox.count(time_id) == 1);
-      const auto& flux_inbox_at_time = flux_inbox.at(time_id);
+      CHECK(flux_inbox.count(0) == 1);
+      const auto& flux_inbox_at_time = flux_inbox.at(0);
       CHECK(flux_inbox_at_time.size() == 1);
       CHECK(flux_inbox_at_time.count({direction, self_id}) == 1);
     };
@@ -269,102 +276,131 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     check_sent_data(south_id, Direction<2>::lower_eta());
   }
 
-  // Now check ComputeBoundaryFlux
-  const auto send_data = [&extents, &runner, &self_id, &time_id, &coordmap](
+  // Now check ReceiveDataForFluxes
+  const auto send_data = [&extents, &runner, &self_id, &coordmap](
       const ElementId<2>& id, const Direction<2>& direction,
-      const OrientationMap<2>& orientation, const DataVector& normal_dot_fluxes,
-      const DataVector& other_data) noexcept {
+      const OrientationMap<2>& orientation,
+      const Scalar<DataVector>& normal_dot_fluxes,
+      const Scalar<DataVector>& other_data) noexcept {
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
 
     db::item_type<normal_dot_fluxes_tag> normal_dot_fluxes_map{};
-    normal_dot_fluxes_map[direction].initialize(normal_dot_fluxes.size());
-    get(get<Tags::NormalDotFlux<Var>>(normal_dot_fluxes_map[direction])) =
+    normal_dot_fluxes_map[direction].initialize(get(normal_dot_fluxes).size());
+    get<Tags::NormalDotFlux<Var>>(normal_dot_fluxes_map[direction]) =
         normal_dot_fluxes;
 
     db::item_type<other_data_tag> other_data_map{};
-    other_data_map[direction].initialize(other_data.size());
-    get(get<OtherData>(other_data_map[direction])) = other_data;
+    other_data_map[direction].initialize(get(other_data).size());
+    get<OtherData>(other_data_map[direction]) = other_data;
 
-    auto box =
-        db::create<db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>,
-                                     Tags::Element<2>, Tags::ElementMap<2>,
-                                     normal_dot_fluxes_tag, other_data_tag>,
-                   compute_items>(time_id, extents, element, std::move(map),
-                                  std::move(normal_dot_fluxes_map),
-                                  std::move(other_data_map));
+    db::item_type<mortar_data_tag> mortar_history{};
+    mortar_history[std::make_pair(direction, self_id)];
+
+    auto box = db::create<
+        db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
+                          Tags::ElementMap<2>, normal_dot_fluxes_tag,
+                          other_data_tag, mortar_data_tag>,
+        compute_items>(0, extents, element, std::move(map),
+                       std::move(normal_dot_fluxes_map),
+                       std::move(other_data_map), std::move(mortar_history));
 
     runner.apply<component, send_data_for_fluxes>(box, id);
   };
 
-  // The `other_data` (second DataVector argument) for each send is
-  // chosen to satisfy the check in NumericalFlux::operator().  For
-  // that, we want (with I<> and E<> indicating interior and exterior)
-  // E<other_data> = 1 + 2 I<other_data>
-  //    + 4 I<normal>_0 - 2 E<normal>_0 + 6 I<normal>_1 - 3 E<normal>_1
-  // Note that these are unit normals, and remember the eta map is
-  // reversing so the normals point the wrong way with respect to the
-  // logical coordinates.
   CHECK_FALSE(
-      (runner.is_ready<component, compute_boundary_flux>(sent_box, self_id)));
-  // 0 = I<normal>_0 = E<normal>_0, 1 = E<normal>_1 = - I<normal>_1
-  // => E<other_data> = 2 I<other_data> - 8
-  send_data(south_id, Direction<2>::lower_eta(), {}, {11., 12., 13.},
-            {142., 162., 182.});
+      (runner.is_ready<component, receive_data_for_fluxes>(sent_box, self_id)));
+  send_data(south_id, Direction<2>::lower_eta(), {},
+            data.remote_fluxes.at(Direction<2>::upper_eta()),
+            data.remote_other_data.at(Direction<2>::upper_eta()));
   CHECK_FALSE(
-      (runner.is_ready<component, compute_boundary_flux>(sent_box, self_id)));
-  // 0 = I<normal>_1 = E<normal>_1, 1 = I<normal>_0 = - E<normal>_0
-  // => E<other_data> = 2 I<other_data> + 7
-  send_data(east_id, Direction<2>::lower_xi(), {}, {21., 22., 23.},
-            {97., 117., 137.});
+      (runner.is_ready<component, receive_data_for_fluxes>(sent_box, self_id)));
+  send_data(east_id, Direction<2>::lower_xi(), {},
+            data.remote_fluxes.at(Direction<2>::upper_xi()),
+            data.remote_other_data.at(Direction<2>::upper_xi()));
   CHECK_FALSE(
-      (runner.is_ready<component, compute_boundary_flux>(sent_box, self_id)));
-  // 0 = I<normal>_1 = E<normal>_0, 1 = E<normal>_1 = - I<normal>_0
-  // => E<other_data> = 2 I<other_data> - 6
-  // And the data order is reversed due to the block alignment.
+      (runner.is_ready<component, receive_data_for_fluxes>(sent_box, self_id)));
   send_data(west_id, Direction<2>::lower_eta(), block_orientation.inverse_map(),
-            {31., 32., 33.}, {64., 44., 24.});
-  CHECK((runner.is_ready<component, compute_boundary_flux>(sent_box, self_id)));
+            data.remote_fluxes.at(Direction<2>::lower_xi()),
+            data.remote_other_data.at(Direction<2>::lower_xi()));
+  CHECK(runner.is_ready<component, receive_data_for_fluxes>(sent_box, self_id));
 
   auto received_box = std::get<0>(
-      runner.apply<component, compute_boundary_flux>(sent_box, self_id));
+      runner.apply<component, receive_data_for_fluxes>(sent_box, self_id));
 
   CHECK(tuples::get<fluxes_tag>(runner.inboxes<component>()[self_id]).empty());
 
-  const double element_length_xi =
-      0.25 * abs(xi_map(std::array<double, 1>{{1.}})[0] -
-                 xi_map(std::array<double, 1>{{-1.}})[0]);
-  const double element_length_eta =
-      0.5 * abs(eta_map(std::array<double, 1>{{1.}})[0] -
-                eta_map(std::array<double, 1>{{-1.}})[0]);
+  db::mutate<mortar_data_tag>(make_not_null(&received_box), [
+    &west_id, &east_id, &south_id, &data
+  ](const gsl::not_null<db::item_type<mortar_data_tag>*>
+        mortar_history) noexcept {
+    CHECK(mortar_history->size() == 3);
+    const auto check_mortar = [&mortar_history](
+        const std::pair<Direction<2>, ElementId<2>>& mortar_id,
+        const Scalar<DataVector>& local_flux,
+        const Scalar<DataVector>& remote_flux,
+        const Scalar<DataVector>& local_other,
+        const Scalar<DataVector>& remote_other,
+        const tnsr::i<DataVector, 2>& local_normal,
+        const tnsr::i<DataVector, 2>& remote_normal) noexcept {
+      LocalData local_data(3);
+      get<Tags::NormalDotFlux<Var>>(local_data) = local_flux;
+      get<MagnitudeOfFaceNormal>(local_data) = magnitude(local_normal);
+      auto normalized_local_normal = local_normal;
+      for (auto& x : normalized_local_normal) {
+        x /= get(get<MagnitudeOfFaceNormal>(local_data));
+      }
+      PackagedData local_packaged(3);
+      NumericalFlux{}.package_data(&local_packaged, local_flux, local_flux,
+                                   local_other, normalized_local_normal);
+      local_data.assign_subset(local_packaged);
 
-  // Prefactor and weight as in Kopriva 8.42.  Equal to
-  // -2/(element length)/w_0  with  w_0 = 2/(N(N-1))  where here N=3.
-  const double xi_lift = -6. / element_length_xi;
-  const double eta_lift = -6. / element_length_eta;
-  // n.(F* - F)
-  // For the test we set n.F* = 11 n.F + 1000 n.F_nbr, so
-  //      n.(F* - F) = 10 n.F + 1000 n.F_nbr
-  const DataVector xi_boundaries{33010., 0., 21040.,
-                                 32020., 0., 22050.,
-                                 31030., 0., 23060.};
-  const DataVector eta_boundaries{0., 0., 0.,
-                                  0., 0., 0.,
-                                  11070., 12080., 13090.};
+      const auto magnitude_remote_normal = magnitude(remote_normal);
+      auto normalized_remote_normal = remote_normal;
+      for (auto& x : normalized_remote_normal) {
+        x /= get(magnitude_remote_normal);
+      }
+      PackagedData remote_packaged(3);
+      NumericalFlux{}.package_data(&remote_packaged, remote_flux, remote_flux,
+                                   remote_other, normalized_remote_normal);
+      // Cannot be inlined because of CHECK implementation.
+      const auto expected =
+          std::make_pair(std::move(local_data), std::move(remote_packaged));
+      CHECK(mortar_history->at(mortar_id).extract() == expected);
+    };
 
-  // 3.0 is the time derivative put in at the start.
-  CHECK_ITERABLE_APPROX(
-      get(get<Tags::dt<Var>>(db::get<dt_variables_tag>(received_box))),
-      xi_lift * xi_boundaries + eta_lift * eta_boundaries + 3.0);
+    // Remote side is inverted
+    check_mortar(
+        std::make_pair(Direction<2>::lower_xi(), west_id),
+        data.fluxes.at(Direction<2>::lower_xi()),
+        reverse(data.remote_fluxes.at(Direction<2>::lower_xi())),
+        data.other_data.at(Direction<2>::lower_xi()),
+        reverse(data.remote_other_data.at(Direction<2>::lower_xi())),
+        tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}},
+        tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 0.5}}}});
+    check_mortar(
+        std::make_pair(Direction<2>::upper_xi(), east_id),
+        data.fluxes.at(Direction<2>::upper_xi()),
+        data.remote_fluxes.at(Direction<2>::upper_xi()),
+        data.other_data.at(Direction<2>::upper_xi()),
+        data.remote_other_data.at(Direction<2>::upper_xi()),
+        tnsr::i<DataVector, 2>{{{DataVector{3, 2.0}, DataVector{3, 0.0}}}},
+        tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}});
+    check_mortar(
+        std::make_pair(Direction<2>::upper_eta(), south_id),
+        data.fluxes.at(Direction<2>::upper_eta()),
+        data.remote_fluxes.at(Direction<2>::upper_eta()),
+        data.other_data.at(Direction<2>::upper_eta()),
+        data.remote_other_data.at(Direction<2>::upper_eta()),
+        tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, -1.0}}}},
+        tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 1.0}}}});
+  });
 }
 
 SPECTRE_TEST_CASE(
     "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.NoNeighbors",
     "[Unit][NumericalAlgorithms][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-
-  const Slab slab(1., 3.);
-  const TimeId time_id{8, slab.start(), 0};
+  ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
 
   const Index<2> extents{{{3, 3}}};
 
@@ -378,25 +414,26 @@ SPECTRE_TEST_CASE(
                                                   CoordinateMaps::Affine>(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
-  db::item_type<dt_variables_tag> dt_variables(extents.product(), 3.0);
   auto start_box = db::create<
-      db::AddSimpleTags<Tags::TimeId, Tags::Extents<2>, Tags::Element<2>,
-                        Tags::ElementMap<2>, dt_variables_tag,
-                        normal_dot_fluxes_tag, other_data_tag>,
-      compute_items>(
-      time_id, extents, element, std::move(map), std::move(dt_variables),
-      db::item_type<normal_dot_fluxes_tag>{}, db::item_type<other_data_tag>{});
+      db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
+                        Tags::ElementMap<2>, normal_dot_fluxes_tag,
+                        other_data_tag, mortar_data_tag>,
+      compute_items>(0, extents, element, std::move(map),
+                     db::item_type<normal_dot_fluxes_tag>{},
+                     db::item_type<other_data_tag>{},
+                     db::item_type<mortar_data_tag>{});
 
   auto sent_box = std::get<0>(
       runner.apply<component, send_data_for_fluxes>(start_box, self_id));
 
-  CHECK((runner.nonempty_inboxes<component, fluxes_tag>().empty()));
+  CHECK(db::get<mortar_data_tag>(sent_box).empty());
+  CHECK(runner.nonempty_inboxes<component, fluxes_tag>().empty());
 
-  CHECK((runner.is_ready<component, compute_boundary_flux>(sent_box, self_id)));
+  CHECK(runner.is_ready<component, receive_data_for_fluxes>(sent_box, self_id));
 
   const auto received_box = std::get<0>(
-      runner.apply<component, compute_boundary_flux>(sent_box, self_id));
+      runner.apply<component, receive_data_for_fluxes>(sent_box, self_id));
 
-  CHECK(db::get<dt_variables_tag>(received_box) ==
-        db::item_type<dt_variables_tag>(extents.product(), 3.0));
+  CHECK(db::get<mortar_data_tag>(received_box).empty());
+  CHECK(runner.nonempty_inboxes<component, fluxes_tag>().empty());
 }
