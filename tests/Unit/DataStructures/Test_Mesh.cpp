@@ -206,21 +206,21 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
               {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
                 Spectral::Quadrature::GaussLobatto}}});
   }
-}
-SPECTRE_TEST_CASE("Unit.Serialization.Mesh",
-                  "[DataStructures][Unit][Serialization]") {
-  test_serialization(Mesh<1>{3, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto});
-  test_serialization(Mesh<2>{
-      {{3, 2}},
-      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}});
-  test_serialization(
-      Mesh<3>{{{3, 2, 4}},
-              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-                Spectral::Basis::Legendre}},
-              {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
-                Spectral::Quadrature::GaussLobatto}}});
+
+  SECTION("Serialization") {
+    test_serialization(Mesh<1>{3, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto});
+    test_serialization(Mesh<2>{
+        {{3, 2}},
+        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+        {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}});
+    test_serialization(Mesh<3>{
+        {{3, 2, 4}},
+        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+          Spectral::Basis::Legendre}},
+        {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+          Spectral::Quadrature::GaussLobatto}}});
+  }
 }
 
 // [[OutputRegex, Tried to slice through non-existing dimension]]
