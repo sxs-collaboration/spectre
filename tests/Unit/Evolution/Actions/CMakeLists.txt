@@ -5,6 +5,7 @@ set(LIBRARY "Test_EvolutionActions")
 
 set(LIBRARY_SOURCES
   Test_ComputeVolumeDuDt.cpp
+  Test_ComputeVolumeFluxes.cpp
   )
 
 add_test_library(
