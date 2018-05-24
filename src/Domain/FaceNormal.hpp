@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -23,16 +24,6 @@ template <size_t Dim, typename Frame>
 class ElementMap;
 template <size_t>
 class Index;
-/// \endcond
-
-namespace Tags {
-template <size_t>
-struct Direction;
-template <size_t, typename>
-struct ElementMap;
-template <size_t>
-struct Extents;
-}  // namespace Tags
 /// \endcond
 
 // @{

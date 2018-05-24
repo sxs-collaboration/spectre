@@ -5,6 +5,7 @@ set(LIBRARY "Test_EvolutionConservative")
 
 set(LIBRARY_SOURCES
   Test_ConservativeDuDt.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
