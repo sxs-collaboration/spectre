@@ -19,6 +19,7 @@ allowed_tags = [
                 "GeneralizedHarmonic",
                 "H5",
                 "IO",
+                "LinearAlgebra",
                 "LinearOperators",
                 "NumericalAlgorithms",
                 "Options",
