@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 
@@ -30,7 +31,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - All elements in `system::du_dt::return_tags`
+///   - db::add_tag_prefix<Tags::dt, typename system::variables_tag>
 ///   - All elements in `system::du_dt::argument_tags`
 ///
 /// DataBox changes:
@@ -51,7 +52,8 @@ struct ComputeVolumeDuDt {
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
     // Note: dt_variables is not zeroed and du_dt cannot assume this.
-    db::mutate_apply<typename system::du_dt::return_tags,
+    db::mutate_apply<db::split_tag<db::add_tag_prefix<
+                         Tags::dt, typename system::variables_tag>>,
                      typename system::du_dt::argument_tags>(
         typename system::du_dt{}, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));

@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
@@ -19,13 +20,8 @@ struct var_tag : db::SimpleTag {
   using type = int;
   static std::string name() noexcept { return "var_tag"; }
 };
-struct dt_var_tag : db::SimpleTag {
-  using type = int;
-  static std::string name() noexcept { return "dt_var_tag"; }
-};
 
 struct ComputeDuDt {
-  using return_tags = tmpl::list<dt_var_tag>;
   using argument_tags = tmpl::list<var_tag>;
   static void apply(const gsl::not_null<int*> dt_var, const int& var) {
     *dt_var = var * 2;
@@ -33,6 +29,7 @@ struct ComputeDuDt {
 };
 
 struct System {
+  using variables_tag = var_tag;
   using du_dt = ComputeDuDt;
 };
 
@@ -46,6 +43,7 @@ using component = ActionTesting::MockArrayComponent<
 struct Metavariables {
   using component_list = tmpl::list<component>;
   using system = System;
+  using const_global_cache_tag_list = tmpl::list<>;
 };
 }  // namespace
 
@@ -53,12 +51,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
                   "[Unit][Evolution][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
-  auto start_box = db::create<db::AddSimpleTags<var_tag, dt_var_tag>>(3, -100);
+  auto start_box =
+      db::create<db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>(3, -100);
 
   CHECK(db::get<var_tag>(start_box) == 3);
-  CHECK(db::get<dt_var_tag>(start_box) == -100);
+  CHECK(db::get<Tags::dt<var_tag>>(start_box) == -100);
   runner.apply<component, Actions::ComputeVolumeDuDt<2>>(
       start_box, ElementIndexType(self_id));
   CHECK(db::get<var_tag>(start_box) == 3);
-  CHECK(db::get<dt_var_tag>(start_box) == 6);
+  CHECK(db::get<Tags::dt<var_tag>>(start_box) == 6);
 }

@@ -642,6 +642,7 @@ struct TestMetavariables {
                                     ReceiveComponent<TestMetavariables>,
                                     AnyOrderComponent<TestMetavariables>>;
   /// [component_list_example]
+  using const_global_cache_tag_list = tmpl::list<>;
 
   /// [help_string_example]
   static constexpr OptionString help =

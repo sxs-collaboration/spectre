@@ -38,6 +38,8 @@ namespace Actions {
 /// - Modifies: system::variables_tag, dt_variables_tag,
 ///   Tags::HistoryEvolvedVariables<system::variables_tag, dt_variables_tag>
 struct UpdateU {
+  using const_global_cache_tags = tmpl::list<CacheTags::TimeStepper>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

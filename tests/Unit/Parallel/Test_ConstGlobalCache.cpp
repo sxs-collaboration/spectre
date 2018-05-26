@@ -138,6 +138,7 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
+  using const_global_cache_tag_list = tmpl::list<>;
 };
 
 }  // namespace

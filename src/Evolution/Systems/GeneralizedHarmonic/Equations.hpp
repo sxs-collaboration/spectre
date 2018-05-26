@@ -41,8 +41,6 @@ namespace GeneralizedHarmonic {
 template <size_t Dim>
 struct ComputeDuDt {
  public:
-  using return_tags = tmpl::list<Tags::dt<gr::Tags::SpacetimeMetric<Dim>>,
-                                 Tags::dt<Pi<Dim>>, Tags::dt<Phi<Dim>>>;
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<Dim>, Pi<Dim>, Phi<Dim>,
                  Tags::deriv<gr::Tags::SpacetimeMetric<Dim>, tmpl::size_t<Dim>,

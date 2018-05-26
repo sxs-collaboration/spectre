@@ -69,3 +69,18 @@ static_assert(
                          PrefixWithArgs<Var, int, double>, char, bool>>,
                      Var>,
     "Failed testing remove_tag_prefix");
+
+static_assert(cpp17::is_same_v<db::split_tag<Var>, tmpl::list<Var>>,
+              "Failed testing split_tag");
+static_assert(
+    cpp17::is_same_v<db::split_tag<Prefix<Var>>, tmpl::list<Prefix<Var>>>,
+    "Failed testing split_tag");
+static_assert(cpp17::is_same_v<
+                  db::split_tag<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>,
+                  tmpl::list<Var, Prefix<Var>>>,
+              "Failed testing split_tag");
+static_assert(
+    cpp17::is_same_v<
+        db::split_tag<Prefix<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>>,
+        tmpl::list<Var, Prefix<Var>>>,
+    "Failed testing split_tag");

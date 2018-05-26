@@ -108,7 +108,7 @@ struct System {
 };
 
 struct Metavariables;
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes;
+using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables>;
 using receive_data_for_fluxes =
     dg::Actions::ReceiveDataForFluxes<Metavariables>;
 
@@ -121,6 +121,7 @@ struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component>;
   using temporal_id = TemporalId;
+  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
 };

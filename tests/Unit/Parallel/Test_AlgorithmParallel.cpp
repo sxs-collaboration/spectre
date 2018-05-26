@@ -491,6 +491,7 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
+  using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{"Test Algorithm in parallel"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
