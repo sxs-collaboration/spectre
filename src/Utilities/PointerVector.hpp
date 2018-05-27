@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cmath>
+#include <functional>
 
 // The Utilities/Blaze.hpp configures Blaze
 #include "ErrorHandling/Assert.hpp"
@@ -389,6 +390,14 @@ VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
 }  // namespace blaze
 /// \endcond
 
+namespace blaze {
+// Enable support for reference wrappers with Blaze
+template <typename T>
+struct UnderlyingElement<std::reference_wrapper<T>> {
+  using Type = typename UnderlyingElement<std::decay_t<T>>::Type;
+};
+}  // namespace blaze
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief A raw pointer endowed with expression template support via the Blaze
@@ -403,17 +412,26 @@ VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
  * See the Blaze documentation for CustomVector for details on the template
  * parameters to PointerVector since CustomVector is what PointerVector is
  * modeled after.
+ *
+ * One additional feature that Blaze's CustomVector (currently) does not support
+ * is the ability to change the result type so that CustomVector can be used for
+ * the expression template backend for different vector types. PointerVector
+ * allows this by passing the `ExprResultType` template parameter. For example,
+ * `DataVector` sets `ExprResultType = DataVector`.
  */
 template <typename Type, bool AF = blaze::unaligned, bool PF = blaze::unpadded,
-          bool TF = blaze::defaultTransposeFlag>
+          bool TF = blaze::defaultTransposeFlag,
+          typename ExprResultType =
+              blaze::DynamicVector<blaze::RemoveConst_<Type>, TF>>
 struct PointerVector
-    : public blaze::DenseVector<PointerVector<Type, AF, PF, TF>, TF> {
+    : public blaze::DenseVector<PointerVector<Type, AF, PF, TF, ExprResultType>,
+                                TF> {
   /// \cond
  public:
-  using This = PointerVector<Type, AF, PF, TF>;
+  using This = PointerVector<Type, AF, PF, TF, ExprResultType>;
   using BaseType = blaze::DenseVector<This, TF>;
-  using ResultType = blaze::DynamicVector<blaze::RemoveConst_<Type>, TF>;
-  using TransposeType = PointerVector<Type, AF, PF, !TF>;
+  using ResultType = ExprResultType;
+  using TransposeType = PointerVector<Type, AF, PF, !TF, ExprResultType>;
   using ElementType = Type;
   using SIMDType = blaze::SIMDTrait_<ElementType>;
   using ReturnType = const Type&;
@@ -441,10 +459,12 @@ struct PointerVector
   /*!\name Data access functions */
   //@{
   Type& operator[](const size_t i) noexcept {
+    ASSERT(i < size(), "i = " << i << ", size = " << size());
     // clang-tidy: do not use pointer arithmetic
     return v_[i];  // NOLINT
   }
   const Type& operator[](const size_t i) const noexcept {
+    ASSERT(i < size(), "i = " << i << ", size = " << size());
     // clang-tidy: do not use pointer arithmetic
     return v_[i];  // NOLINT
   }
@@ -488,14 +508,10 @@ struct PointerVector
   PointerVector& operator%=(const blaze::Vector<VT, TF>& rhs);
 
   template <typename Other>
-  std::enable_if_t<blaze::IsNumeric<Other>::value,
-                   PointerVector<Type, AF, PF, TF>>&
-  operator*=(Other rhs);
+  std::enable_if_t<blaze::IsNumeric<Other>::value, This>& operator*=(Other rhs);
 
   template <typename Other>
-  std::enable_if_t<blaze::IsNumeric<Other>::value,
-                   PointerVector<Type, AF, PF, TF>>&
-  operator/=(Other rhs);
+  std::enable_if_t<blaze::IsNumeric<Other>::value, This>& operator/=(Other rhs);
   //@}
 
   /*!\name Utility functions */
@@ -574,17 +590,15 @@ struct PointerVector
   BLAZE_ALWAYS_INLINE void stream(size_t index, const SIMDType& value) noexcept;
 
   template <typename VT>
-  std::enable_if_t<not(
-      PointerVector<Type, AF, PF, TF>::template VectorizedAssign<VT>::value)>
-  assign(const blaze::DenseVector<VT, TF>& rhs);
+  std::enable_if_t<not(This::template VectorizedAssign<VT>::value)> assign(
+      const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
   std::enable_if_t<(VectorizedAssign<VT>::value)> assign(
       const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
-  std::enable_if_t<not(
-      PointerVector<Type, AF, PF, TF>::template VectorizedAddAssign<VT>::value)>
+  std::enable_if_t<not(This::template VectorizedAddAssign<VT>::value)>
   addAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
@@ -595,8 +609,7 @@ struct PointerVector
   void addAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  std::enable_if_t<not(
-      PointerVector<Type, AF, PF, TF>::template VectorizedSubAssign<VT>::value)>
+  std::enable_if_t<not(This::template VectorizedSubAssign<VT>::value)>
   subAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
@@ -607,7 +620,7 @@ struct PointerVector
   void subAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  std::enable_if_t<not(PointerVector<Type, AF, PF, TF>::
+  std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ResultType>::
                            template VectorizedMultAssign<VT>::value)>
   multAssign(const blaze::DenseVector<VT, TF>& rhs);
 
@@ -619,8 +632,7 @@ struct PointerVector
   void multAssign(const blaze::SparseVector<VT, TF>& rhs);
 
   template <typename VT>
-  std::enable_if_t<not(
-      PointerVector<Type, AF, PF, TF>::template VectorizedDivAssign<VT>::value)>
+  std::enable_if_t<not(This::template VectorizedDivAssign<VT>::value)>
   divAssign(const blaze::DenseVector<VT, TF>& rhs);
 
   template <typename VT>
@@ -635,27 +647,27 @@ struct PointerVector
 };
 
 /// \cond
-template <typename Type, bool AF, bool PF, bool TF>
-inline typename PointerVector<Type, AF, PF, TF>::Reference
-PointerVector<Type, AF, PF, TF>::at(size_t index) {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+inline typename PointerVector<Type, AF, PF, TF, ExprResultType>::Reference
+PointerVector<Type, AF, PF, TF, ExprResultType>::at(size_t index) {
   if (index >= size_) {
     BLAZE_THROW_OUT_OF_RANGE("Invalid vector access index");
   }
   return (*this)[index];
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-inline typename PointerVector<Type, AF, PF, TF>::ConstReference
-PointerVector<Type, AF, PF, TF>::at(size_t index) const {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+inline typename PointerVector<Type, AF, PF, TF, ExprResultType>::ConstReference
+PointerVector<Type, AF, PF, TF, ExprResultType>::at(size_t index) const {
   if (index >= size_) {
     BLAZE_THROW_OUT_OF_RANGE("Invalid vector access index");
   }
   return (*this)[index];
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator=(const Type& rhs) {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(const Type& rhs) {
   for (size_t i = 0; i < size_; ++i) {
     // clang-tidy: do not use pointer arithmetic
     v_[i] = rhs;  // NOLINT
@@ -663,18 +675,20 @@ operator=(const Type& rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator=(std::initializer_list<Type> list) {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
+    std::initializer_list<Type> list) {
   ASSERT(list.size() <= size_, "Invalid assignment to custom vector");
   std::fill(std::copy(list.begin(), list.end(), v_), v_ + size_, Type());
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other, size_t N>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator=(const Other (&array)[N]) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
+    const Other (&array)[N]) {
   ASSERT(size_ == N, "Invalid array size");
   for (size_t i = 0UL; i < N; ++i) {
     // clang-tidy: do not use pointer arithmetic
@@ -683,37 +697,41 @@ operator=(const Other (&array)[N]) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator=(const blaze::Vector<VT, TF>& rhs) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
+    const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
   blaze::smpAssign(*this, ~rhs);
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator+=(const blaze::Vector<VT, TF>& rhs) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator+=(
+    const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
   blaze::smpAddAssign(*this, ~rhs);
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator-=(const blaze::Vector<VT, TF>& rhs) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator-=(
+    const blaze::Vector<VT, TF>& rhs) {
   ASSERT((~rhs).size() == size_, "Vector sizes do not match");
   blaze::smpSubAssign(*this, ~rhs);
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator*=(const blaze::Vector<VT, TF>& rhs) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(
+    const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
 
@@ -727,10 +745,11 @@ operator*=(const blaze::Vector<VT, TF>& rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator/=(const blaze::Vector<VT, TF>& rhs) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(
+    const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
 
@@ -744,10 +763,11 @@ operator/=(const blaze::Vector<VT, TF>& rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline PointerVector<Type, AF, PF, TF>& PointerVector<Type, AF, PF, TF>::
-operator%=(const blaze::Vector<VT, TF>& rhs) {
+inline PointerVector<Type, AF, PF, TF, ExprResultType>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator%=(
+    const blaze::Vector<VT, TF>& rhs) {
   using blaze::assign;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
@@ -769,61 +789,67 @@ operator%=(const blaze::Vector<VT, TF>& rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other>
 inline std::enable_if_t<blaze::IsNumeric<Other>::value,
-                        PointerVector<Type, AF, PF, TF>>&
-PointerVector<Type, AF, PF, TF>::operator*=(Other rhs) {
+                        PointerVector<Type, AF, PF, TF, ExprResultType>>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(Other rhs) {
   blaze::smpAssign(*this, (*this) * rhs);
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other>
 inline std::enable_if_t<blaze::IsNumeric<Other>::value,
-                        PointerVector<Type, AF, PF, TF>>&
-PointerVector<Type, AF, PF, TF>::operator/=(Other rhs) {
+                        PointerVector<Type, AF, PF, TF, ExprResultType>>&
+PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(Other rhs) {
   BLAZE_USER_ASSERT(rhs != Other(0), "Division by zero detected");
   blaze::smpAssign(*this, (*this) / rhs);
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other>
-inline bool PointerVector<Type, AF, PF, TF>::canAlias(const Other* alias) const
-    noexcept {
+inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::canAlias(
+    const Other* alias) const noexcept {
   return static_cast<const void*>(this) == static_cast<const void*>(alias);
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other>
-inline bool PointerVector<Type, AF, PF, TF>::isAliased(const Other* alias) const
-    noexcept {
+inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::isAliased(
+    const Other* alias) const noexcept {
   return static_cast<const void*>(this) == static_cast<const void*>(alias);
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-inline bool PointerVector<Type, AF, PF, TF>::isAligned() const noexcept {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::isAligned() const
+    noexcept {
   return (AF || checkAlignment(v_));
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-inline bool PointerVector<Type, AF, PF, TF>::canSMPAssign() const noexcept {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::canSMPAssign()
+    const noexcept {
   return (size() > blaze::SMP_DVECASSIGN_THRESHOLD);
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE typename PointerVector<Type, AF, PF, TF>::SIMDType
-PointerVector<Type, AF, PF, TF>::load(size_t index) const noexcept {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE
+    typename PointerVector<Type, AF, PF, TF, ExprResultType>::SIMDType
+    PointerVector<Type, AF, PF, TF, ExprResultType>::load(size_t index) const
+    noexcept {
   if (AF) {
     return loada(index);
   }
   return loadu(index);
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE typename PointerVector<Type, AF, PF, TF>::SIMDType
-PointerVector<Type, AF, PF, TF>::loada(size_t index) const noexcept {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE
+    typename PointerVector<Type, AF, PF, TF, ExprResultType>::SIMDType
+    PointerVector<Type, AF, PF, TF, ExprResultType>::loada(size_t index) const
+    noexcept {
   using blaze::loada;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
@@ -839,9 +865,11 @@ PointerVector<Type, AF, PF, TF>::loada(size_t index) const noexcept {
   return loada(v_ + index);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE typename PointerVector<Type, AF, PF, TF>::SIMDType
-PointerVector<Type, AF, PF, TF>::loadu(size_t index) const noexcept {
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE
+    typename PointerVector<Type, AF, PF, TF, ExprResultType>::SIMDType
+    PointerVector<Type, AF, PF, TF, ExprResultType>::loadu(size_t index) const
+    noexcept {
   using blaze::loadu;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
@@ -853,8 +881,8 @@ PointerVector<Type, AF, PF, TF>::loadu(size_t index) const noexcept {
   return loadu(v_ + index);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::store(
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF, ExprResultType>::store(
     size_t index, const SIMDType& value) noexcept {
   if (AF) {
     storea(index, value);
@@ -863,8 +891,9 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::store(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::storea(
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE void
+PointerVector<Type, AF, PF, TF, ExprResultType>::storea(
     size_t index, const SIMDType& value) noexcept {
   using blaze::storea;
 
@@ -881,8 +910,9 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::storea(
   storea(v_ + index, value);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::storeu(
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE void
+PointerVector<Type, AF, PF, TF, ExprResultType>::storeu(
     size_t index, const SIMDType& value) noexcept {
   using blaze::storeu;
 
@@ -895,8 +925,9 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::storeu(
   storeu(v_ + index, value);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
-BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::stream(
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+BLAZE_ALWAYS_INLINE void
+PointerVector<Type, AF, PF, TF, ExprResultType>::stream(
     size_t index, const SIMDType& value) noexcept {
   using blaze::stream;
 
@@ -913,12 +944,14 @@ BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF>::stream(
   stream(v_ + index, value);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
-        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
+    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
+        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
+            VectorizedAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
+    const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
   const size_t ipos(size_ & size_t(-2));
@@ -936,11 +969,12 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                             VectorizedAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                             BLAZE_TEMPLATE VectorizedAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
+    const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
 
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -990,12 +1024,13 @@ PointerVector<Type, AF, PF, TF>::assign(const blaze::DenseVector<VT, TF>& rhs) {
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
-        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedAddAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::addAssign(
+    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
+        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
+            VectorizedAddAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1014,11 +1049,11 @@ PointerVector<Type, AF, PF, TF>::addAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                             VectorizedAddAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::addAssign(
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                             BLAZE_TEMPLATE VectorizedAddAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
 
@@ -1055,9 +1090,9 @@ PointerVector<Type, AF, PF, TF>::addAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline void PointerVector<Type, AF, PF, TF>::addAssign(
+inline void PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1067,12 +1102,13 @@ inline void PointerVector<Type, AF, PF, TF>::addAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
-        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedSubAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::subAssign(
+    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
+        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
+            VectorizedSubAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1091,11 +1127,11 @@ PointerVector<Type, AF, PF, TF>::subAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                             VectorizedSubAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::subAssign(
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                             BLAZE_TEMPLATE VectorizedSubAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
 
@@ -1132,9 +1168,9 @@ PointerVector<Type, AF, PF, TF>::subAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline void PointerVector<Type, AF, PF, TF>::subAssign(
+inline void PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1144,12 +1180,13 @@ inline void PointerVector<Type, AF, PF, TF>::subAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
-        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedMultAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::multAssign(
+    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
+        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
+            VectorizedMultAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1168,11 +1205,11 @@ PointerVector<Type, AF, PF, TF>::multAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                             VectorizedMultAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::multAssign(
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                             BLAZE_TEMPLATE VectorizedMultAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
 
@@ -1209,9 +1246,9 @@ PointerVector<Type, AF, PF, TF>::multAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline void PointerVector<Type, AF, PF, TF>::multAssign(
+inline void PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1223,12 +1260,13 @@ inline void PointerVector<Type, AF, PF, TF>::multAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF>::template PointerVector<
-        Type, AF, PF, TF>::BLAZE_TEMPLATE VectorizedDivAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::divAssign(
+    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
+        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
+            VectorizedDivAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
@@ -1247,11 +1285,11 @@ PointerVector<Type, AF, PF, TF>::divAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF>
+template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<(PointerVector<Type, AF, PF, TF>::BLAZE_TEMPLATE
-                             VectorizedDivAssign<VT>::value)>
-PointerVector<Type, AF, PF, TF>::divAssign(
+inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                             BLAZE_TEMPLATE VectorizedDivAssign<VT>::value)>
+PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTORIZABLE_TYPE(Type);
 
@@ -1288,3 +1326,48 @@ PointerVector<Type, AF, PF, TF>::divAssign(
   }
 }
 /// \endcond
+
+// There is a bug either in Blaze or in vector intrinsics implementation in GCC
+// that results in _mm_set1_epi64 not being callable with an `unsigned long`.
+// The way to work around this is to use a forwarding reference (which is super
+// aggressive and matches everything), convert the exponent to a double, and
+// then call the double pow.
+template <
+    typename Type, bool AF, bool PF, bool TF, typename ExprResultType,
+    typename T,
+    typename = std::enable_if_t<std::is_fundamental<std::decay_t<T>>::value>>
+decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
+                   T&& exponent) noexcept {
+  using ReturnType =
+      const blaze::DVecMapExpr<PointerVector<Type, AF, PF, TF, ExprResultType>,
+                               blaze::Pow<double>, TF>;
+  return ReturnType(t, blaze::Pow<double>{static_cast<double>(exponent)});
+}
+
+/*!
+ * \brief Generates the `OP` assignment operator for the type `TYPE`
+ *
+ * For example, if `OP` is `+=` and `TYPE` is `DataVector` then this will add
+ * `+=` for `DataVector` on the RHS, `blaze::DenseVector` on the RHS, and
+ * `ElementType` (`double` for `DataVector`) on the RHS. This macro is used in
+ * the cases where the new vector type inherits from `PointerVector` with a
+ * custom `ExprResultType`.
+ */
+#define MAKE_EXPRESSION_MATH_ASSIGN_PV(OP, TYPE)                        \
+  TYPE& operator OP(const TYPE& rhs) noexcept {                         \
+    /* clang-tidy: parens around OP */                                  \
+    ~*this OP ~rhs; /* NOLINT */                                        \
+    return *this;                                                       \
+  }                                                                     \
+  /* clang-tidy: parens around TYPE */                                  \
+  template <typename VT, bool VF>                                       \
+  TYPE& operator OP(const blaze::DenseVector<VT, VF>& rhs) /* NOLINT */ \
+      noexcept {                                                        \
+    ~*this OP rhs;                                                      \
+    return *this;                                                       \
+  }                                                                     \
+  /* clang-tidy: parens around TYPE */                                  \
+  TYPE& operator OP(const ElementType& rhs) noexcept { /* NOLINT */     \
+    ~*this OP rhs;                                                      \
+    return *this;                                                       \
+  }

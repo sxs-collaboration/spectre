@@ -176,7 +176,7 @@ class Variables<tmpl::list<Tags...>> {
   /// Needed because of limitations and inconsistency between compiler
   /// implementations of friend function templates with auto return type of
   /// class templates
-  const PointerVector<double>& get_variable_data() const noexcept {
+  const auto& get_variable_data() const noexcept {
     return variable_data_;
   }
   /// \endcond
@@ -367,7 +367,10 @@ class Variables<tmpl::list<Tags...>> {
 
   std::vector<double, allocator_type> variable_data_impl_;
   // variable_data_ is only used to plug into the Blaze expression templates
-  PointerVector<double> variable_data_;
+  PointerVector<double, blaze::unaligned, blaze::unpadded,
+                blaze::defaultTransposeFlag,
+                blaze::DynamicVector<double, blaze::defaultTransposeFlag>>
+      variable_data_;
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
   tuples::TaggedTuple<Tags...> reference_variable_data_;
@@ -377,9 +380,9 @@ template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables() noexcept {
   // This makes an assertion trigger if one tries to assign to
   // components of a default-constructed Variables.
-  const auto set_refs = [this](auto& var) noexcept {
+  const auto set_refs = [](auto& var) noexcept {
     for (auto& dv : var) {
-      dv.set_data_ref(&variable_data_[0], 0);
+      dv.set_data_ref(nullptr, 0);
     }
     return 0;
   };
