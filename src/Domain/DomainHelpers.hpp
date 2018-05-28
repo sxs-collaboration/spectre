@@ -25,6 +25,8 @@ template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+template <size_t VolumeDim, typename TargetFrame>
+class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
 namespace Frame {
@@ -176,6 +178,35 @@ maps_for_rectilinear_domains(
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
+    bool use_equiangular_map = false) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief Create a rectilinear Domain of multicubes.
+///
+/// \details Useful for constructing domains for testing non-trivially
+/// connected rectilinear domains made up of cubes. We refer to a domain of
+/// this type as an edifice. The `domain_extents` provides the size (in the
+/// number of blocks) of the initial aligned edifice to construct. The
+/// `block_indices_to_exclude` parameter is used in refining the shape of
+/// the edifice from a cube to sometime more non-trivial, such as an L-shape
+/// or the net of a tesseract. The `block_demarcations` and
+/// `use_equiangular_map` parameters determine the CoordinateMaps to be used.
+/// `orientations_of_all_blocks` contains the OrientationMap of the edifice
+/// relative to each block.
+///
+/// The `identifications` parameter is used when identifying the faces of
+/// blocks in an edifice. This is used to identify the 1D boundaries in the 2D
+/// net for a 3D cube to construct a domain with topology S2. Note: If the user
+/// wishes to rotate the blocks as well as manually identify their faces, the
+/// user must provide the PairOfFaces corresponding to the rotated corners.
+template <size_t VolumeDim, typename TargetFrame>
+Domain<VolumeDim, TargetFrame> rectilinear_domain(
+    const Index<VolumeDim>& domain_extents,
+    const std::array<std::vector<double>, VolumeDim>& block_demarcations,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
+    const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
+        {},
+    const std::vector<PairOfFaces>& identifications = {},
     bool use_equiangular_map = false) noexcept;
 
 /// \ingroup ComputationalDomainGroup

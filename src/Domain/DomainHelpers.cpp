@@ -11,6 +11,7 @@
 
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -22,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -793,6 +795,44 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
   return result;
 }
 
+template <size_t VolumeDim, typename TargetFrame>
+Domain<VolumeDim, TargetFrame> rectilinear_domain(
+    const Index<VolumeDim>& domain_extents,
+    const std::array<std::vector<double>, VolumeDim>& block_demarcations,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
+    const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
+    const std::vector<PairOfFaces>& identifications,
+    bool use_equiangular_map) noexcept {
+  std::vector<Block<VolumeDim, TargetFrame>> blocks{};
+  auto corners_of_all_blocks =
+      corners_for_rectilinear_domains(domain_extents, block_indices_to_exclude);
+  auto rotations_of_all_blocks = orientations_of_all_blocks;
+  // If no OrientationMaps are provided - default to all aligned:
+  if (orientations_of_all_blocks.empty()) {
+    rotations_of_all_blocks = std::vector<OrientationMap<VolumeDim>>{
+        corners_of_all_blocks.size(), OrientationMap<VolumeDim>{}};
+  }
+  auto maps = maps_for_rectilinear_domains<TargetFrame>(
+      domain_extents, block_demarcations, block_indices_to_exclude,
+      rotations_of_all_blocks, use_equiangular_map);
+  for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
+    corners_of_all_blocks[i] =
+        discrete_rotation(rotations_of_all_blocks[i], corners_of_all_blocks[i]);
+  }
+  std::vector<
+      std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>
+      neighbors_of_all_blocks;
+  set_internal_boundaries<VolumeDim>(corners_of_all_blocks,
+                                     &neighbors_of_all_blocks);
+  set_periodic_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
+                                     &neighbors_of_all_blocks);
+  for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
+    blocks.emplace_back(std::move(maps[i]), i,
+                        std::move(neighbors_of_all_blocks[i]));
+  }
+  return Domain<VolumeDim, TargetFrame>(std::move(blocks));
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
@@ -887,7 +927,15 @@ frustum_coordinate_maps(const double length_inner_cube,
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
       const std::vector<OrientationMap<DIM(data)>>&                         \
           orientations_of_all_blocks,                                       \
-      const bool use_equiangular_map) noexcept;
+      const bool use_equiangular_map) noexcept;                             \
+  template Domain<DIM(data), FRAME(data)> rectilinear_domain(               \
+      const Index<DIM(data)>& domain_extents,                               \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
+      const std::vector<OrientationMap<DIM(data)>>&                         \
+          orientations_of_all_blocks,                                       \
+      const std::vector<PairOfFaces>& identifications,                      \
+      bool use_equiangular_map) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 
