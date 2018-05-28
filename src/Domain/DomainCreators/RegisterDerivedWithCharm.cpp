@@ -46,9 +46,9 @@ template <>
 void register_with_charm<2>() {
   PUPable_reg(
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
-  PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D,
-                                 CoordinateMaps::DiscreteRotation<2>>));
+  PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial,
+                      CoordinateMaps::DiscreteRotation<2>, Affine2D>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
   PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
