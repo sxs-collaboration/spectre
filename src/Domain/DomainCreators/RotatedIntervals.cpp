@@ -2,20 +2,19 @@
 // See LICENSE.txt for details.
 
 #include "Domain/DomainCreators/RotatedIntervals.hpp"
-
+#include "DataStructures/Index.hpp"
 #include "Domain/Block.hpp"          // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/OrientationMap.hpp"
 
 /// \cond
 namespace Frame {
 struct Grid;
 struct Inertial;
-struct Logical;
 }  // namespace Frame
 /// \endcond
 
@@ -41,13 +40,11 @@ RotatedIntervals<TargetFrame>::RotatedIntervals(
 template <typename TargetFrame>
 Domain<1, TargetFrame> RotatedIntervals<TargetFrame>::create_domain() const
     noexcept {
-  return Domain<1, TargetFrame>{
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-          CoordinateMaps::Affine{-1.0, 1.0, lower_x_[0], midpoint_x_[0]},
-          CoordinateMaps::Affine{-1.0, 1.0, upper_x_[0], midpoint_x_[0]}),
-      std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}},
-      is_periodic_in_[0] ? std::vector<PairOfFaces>{{{1}, {3}}}
-                         : std::vector<PairOfFaces>{}};
+  return rectilinear_domain<1, TargetFrame>(
+      Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}}, {},
+      {OrientationMap<1>{}, OrientationMap<1>{std::array<Direction<1>, 1>{
+                                {Direction<1>::lower_xi()}}}},
+      is_periodic_in_);
 }
 
 template <typename TargetFrame>

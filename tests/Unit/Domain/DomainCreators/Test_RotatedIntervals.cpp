@@ -6,28 +6,25 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <pup.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"          // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/RotatedIntervals.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
-
-/// \cond
-namespace Frame {
-struct Inertial;
-struct Logical;
-}  // namespace Frame
-/// \endcond
 
 namespace {
 void test_rotated_intervals_construction(
@@ -51,10 +48,13 @@ void test_rotated_intervals_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Affine{-1., 1., lower_bound[0], midpoint[0]},
-          CoordinateMaps::Affine{-1., 1., upper_bound[0], midpoint[0]}));
-
+      make_vector(
+          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+              CoordinateMaps::Affine{-1., 1., lower_bound[0], midpoint[0]}),
+          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+              CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{
+                  std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}},
+              CoordinateMaps::Affine{-1., 1., midpoint[0], upper_bound[0]})));
   test_initial_domain(domain, rotated_intervals.initial_refinement_levels());
 }
 }  // namespace
@@ -80,6 +80,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals",
           {{Direction<1>::upper_xi(), {0, flipped}}}},
       std::vector<std::unordered_set<Direction<1>>>{
           {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}});
+  test_physical_separation(rotated_intervals.create_domain().blocks());
 
   const DomainCreators::RotatedIntervals<Frame::Inertial>
       periodic_rotated_intervals{
