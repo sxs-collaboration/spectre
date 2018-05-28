@@ -170,6 +170,7 @@ SPECTRE_TEST_CASE(
                                0., 0., 0.};
   // These factors are (see Kopriva 8.42)
   // -3[based on extents] * magnitude_of_normal
-  CHECK_ITERABLE_APPROX(get(db::get<Tags::dt<Var>>(out_box)),
-                        initial_dt - 6. * xi_flux - 9. * eta_flux);
+  CHECK_ITERABLE_APPROX(
+      get(db::get<Tags::dt<Var>>(out_box)),
+      get(get<Tags::dt<Var>>(initial_dt)) - 6. * xi_flux - 9. * eta_flux);
 }
