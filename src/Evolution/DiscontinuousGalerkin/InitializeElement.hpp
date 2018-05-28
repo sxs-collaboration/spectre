@@ -23,8 +23,10 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Conservative/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -117,7 +119,7 @@ struct InitializeElement {
   };
 
   // Tags related only to the system
-  template <typename System>
+  template <typename System, bool IsConservative = System::is_conservative>
   struct SystemTags {
     using simple_tags = db::AddSimpleTags<typename System::variables_tag>;
 
@@ -144,6 +146,47 @@ struct InitializeElement {
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(vars));
+    }
+  };
+
+  template <typename System>
+  struct SystemTags<System, true> {
+    using variables_tag = typename System::variables_tag;
+    using fluxes_tag = db::add_tag_prefix<Tags::Flux, variables_tag,
+                                          tmpl::size_t<Dim>, Frame::Inertial>;
+    using sources_tag = db::add_tag_prefix<Tags::Source, variables_tag>;
+
+    using simple_tags =
+        db::AddSimpleTags<variables_tag, fluxes_tag, sources_tag>;
+
+    using compute_tags = db::AddComputeTags<>;
+
+    template <typename TagsList, typename Metavariables>
+    static auto initialize(
+        db::DataBox<TagsList>&& box,
+        const Parallel::ConstGlobalCache<Metavariables>& cache,
+        const Time& initial_time) noexcept {
+      using Vars = typename System::variables_tag::type;
+
+      const size_t num_grid_points =
+          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+      const auto& inertial_coords =
+          db::get<Tags::Coordinates<Tags::ElementMap<Dim>,
+                                    Tags::LogicalCoordinates<Dim>>>(box);
+
+      // Set initial data from analytic solution
+      using solution_tag = CacheTags::AnalyticSolutionBase;
+      Vars vars{num_grid_points};
+      vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
+          inertial_coords, initial_time.value(), typename Vars::tags_list{}));
+
+      // Will be set before use
+      typename fluxes_tag::type fluxes(num_grid_points);
+      typename sources_tag::type sources(num_grid_points);
+
+      return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
+          std::move(box), std::move(vars), std::move(fluxes),
+          std::move(sources));
     }
   };
 
@@ -184,12 +227,29 @@ struct InitializeElement {
         dt_variables_tag,
         Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>;
 
-    using compute_tags = db::AddComputeTags<
-        Tags::Time,
-        Tags::deriv<typename variables_tag::tags_list,
-                    typename System::gradients_tags,
-                    Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                                          Tags::LogicalCoordinates<Dim>>>>;
+    template <typename LocalSystem,
+              bool IsConservative = LocalSystem::is_conservative>
+    struct ComputeTags {
+      using type = db::AddComputeTags<
+          Tags::Time,
+          Tags::deriv<typename variables_tag::tags_list,
+                      typename System::gradients_tags,
+                      Tags::InverseJacobian<Tags::ElementMap<Dim>,
+                                            Tags::LogicalCoordinates<Dim>>>>;
+    };
+
+    template <typename LocalSystem>
+    struct ComputeTags<LocalSystem, true> {
+      using type = db::AddComputeTags<
+          Tags::Time,
+          Tags::ComputeDiv<
+              db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<Dim>,
+                                 Frame::Inertial>,
+              Tags::InverseJacobian<Tags::ElementMap<Dim>,
+                                    Tags::LogicalCoordinates<Dim>>>>;
+    };
+
+    using compute_tags = typename ComputeTags<System>::type;
 
     template <typename TagsList, typename Metavariables>
     static auto initialize(
@@ -217,7 +277,7 @@ struct InitializeElement {
                                     Tags::LogicalCoordinates<Dim>>>(box);
 
       // Will be overwritten before use
-      DtVars dt_vars{num_grid_points, 0.0};
+      DtVars dt_vars{num_grid_points};
 
       typename Tags::HistoryEvolvedVariables<variables_tag,
                                              dt_variables_tag>::type history;
@@ -257,41 +317,95 @@ struct InitializeElement {
     template <typename Tag>
     using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 
-    using simple_tags = db::AddSimpleTags<
-        typename dg::FluxCommunicationTypes<
-            Metavariables>::simple_mortar_data_tag,
-        Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
-        interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
-
-    using compute_tags = db::AddComputeTags<>;
-
     template <typename TagsList>
-    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+    static auto add_mortar_data(db::DataBox<TagsList>&& box) noexcept {
       const auto& element = db::get<Tags::Element<Dim>>(box);
 
       typename flux_comm_types::simple_mortar_data_tag::type mortar_data{};
       typename Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>::type
           mortar_next_temporal_ids{};
-      typename interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>::
-          type normal_dot_fluxes{};
       const auto& temporal_id = get<temporal_id_tag>(box);
       for (const auto& direction_neighbors : element.neighbors()) {
         const auto& direction = direction_neighbors.first;
         const auto& neighbors = direction_neighbors.second;
-        const auto& face_mesh =
-            db::get<interface_tag<Tags::Mesh<Dim - 1>>>(box).at(direction);
         for (const auto& neighbor : neighbors) {
           const auto mortar_id = std::make_pair(direction, neighbor);
           mortar_data.insert({mortar_id, {}});
           mortar_next_temporal_ids.insert({mortar_id, temporal_id});
-          normal_dot_fluxes[direction].initialize(
-              face_mesh.number_of_grid_points(), 0.);
         }
       }
 
-      return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
+      return db::create_from<
+          db::RemoveTags<>,
+          db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
+                            Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>>>(
           std::move(box), std::move(mortar_data),
-          std::move(mortar_next_temporal_ids), std::move(normal_dot_fluxes));
+          std::move(mortar_next_temporal_ids));
+    }
+
+    template <typename LocalSystem,
+              bool IsConservative = LocalSystem::is_conservative>
+    struct Impl {
+      using simple_tags = db::AddSimpleTags<
+          typename flux_comm_types::simple_mortar_data_tag,
+          Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
+          interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
+
+      using compute_tags = db::AddComputeTags<>;
+
+      template <typename TagsList>
+      static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+        auto box2 = add_mortar_data(std::move(box));
+
+        const auto& internal_directions =
+            db::get<Tags::InternalDirections<Dim>>(box2);
+
+        typename interface_tag<
+            typename flux_comm_types::normal_dot_fluxes_tag>::type
+            normal_dot_fluxes{};
+        for (const auto& direction : internal_directions) {
+          const auto& interface_num_points =
+              db::get<interface_tag<Tags::Mesh<Dim - 1>>>(box2)
+                  .at(direction)
+                  .number_of_grid_points();
+          normal_dot_fluxes[direction].initialize(interface_num_points, 0.);
+        }
+
+        return db::create_from<
+            db::RemoveTags<>,
+            db::AddSimpleTags<interface_tag<
+                typename flux_comm_types::normal_dot_fluxes_tag>>>(
+            std::move(box2), std::move(normal_dot_fluxes));
+      }
+    };
+
+    template <typename LocalSystem>
+    struct Impl<LocalSystem, true> {
+      using simple_tags =
+          db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
+                            Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>>;
+
+      using compute_tags = db::AddComputeTags<
+          interface_tag<db::add_tag_prefix<Tags::Flux,
+                                           typename LocalSystem::variables_tag,
+                                           tmpl::size_t<Dim>, Frame::Inertial>>,
+          interface_tag<Tags::ComputeNormalDotFlux<
+              typename LocalSystem::variables_tag, Dim, Frame::Inertial>>>;
+
+      template <typename TagsList>
+      static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+        return db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
+                               compute_tags>(add_mortar_data(std::move(box)));
+      }
+    };
+
+    using impl = Impl<typename Metavariables::system>;
+    using simple_tags = typename impl::simple_tags;
+    using compute_tags = typename impl::compute_tags;
+
+    template <typename TagsList>
+    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+      return impl::initialize(std::move(box));
     }
   };
 
