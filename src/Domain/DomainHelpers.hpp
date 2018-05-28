@@ -173,8 +173,10 @@ std::vector<
 maps_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
-    const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
-    bool use_equiangular_map) noexcept;
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
+    const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
+        {},
+    bool use_equiangular_map = false) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// Iterates over the corners of a VolumeDim-dimensional cube.

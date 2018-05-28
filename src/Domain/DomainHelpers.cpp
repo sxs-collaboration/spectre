@@ -14,6 +14,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
@@ -653,21 +654,39 @@ corners_for_rectilinear_domains(
 
 template <typename TargetFrame, typename Map>
 std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 1>>
-product_of_1d_maps(std::array<Map, 1>& maps) {
-  return make_coordinate_map_base<Frame::Logical, TargetFrame>(maps[0]);
+product_of_1d_maps(std::array<Map, 1>& maps,
+                   const OrientationMap<1>& rotation = {}) noexcept {
+  if (rotation == OrientationMap<1>{}) {
+    return make_coordinate_map_base<Frame::Logical, TargetFrame>(maps[0]);
+  }
+  return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+      CoordinateMaps::DiscreteRotation<1>{rotation}, maps[0]);
 }
 
 template <typename TargetFrame, typename Map>
 std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 2>>
-product_of_1d_maps(std::array<Map, 2>& maps) {
+product_of_1d_maps(std::array<Map, 2>& maps,
+                   const OrientationMap<2>& rotation = {}) noexcept {
+  if (rotation == OrientationMap<2>{}) {
+    return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
+  }
   return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+      CoordinateMaps::DiscreteRotation<2>{rotation},
       CoordinateMaps::ProductOf2Maps<Map, Map>(maps[0], maps[1]));
 }
 
 template <typename TargetFrame, typename Map>
 std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>
-product_of_1d_maps(std::array<Map, 3>& maps) {
+product_of_1d_maps(std::array<Map, 3>& maps,
+                   const OrientationMap<3>& rotation = {}) noexcept {
+  if (rotation == OrientationMap<3>{}) {
+    return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1],
+                                                      maps[2]));
+  }
   return make_coordinate_map_base<Frame::Logical, TargetFrame>(
+      CoordinateMaps::DiscreteRotation<3>{rotation},
       CoordinateMaps::ProductOf3Maps<Map, Map, Map>(maps[0], maps[1], maps[2]));
 }
 
@@ -678,6 +697,7 @@ maps_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
+    const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     const bool use_equiangular_map) noexcept {
   for (size_t d = 0; d < VolumeDim; d++) {
     ASSERT(gsl::at(block_demarcations, d).size() == domain_extents[d] + 1,
@@ -707,7 +727,12 @@ maps_for_rectilinear_domains(
           gsl::at(affine_maps, d) = Affine{-1.0, 1.0, gsl::at(lower_bounds, d),
                                            gsl::at(upper_bounds, d)};
         }
-        maps.push_back(product_of_1d_maps<TargetFrame>(affine_maps));
+        if (not orientations_of_all_blocks.empty()) {
+          maps.push_back(product_of_1d_maps<TargetFrame>(
+              affine_maps, orientations_of_all_blocks[ii.collapsed_index()]));
+        } else {
+          maps.push_back(product_of_1d_maps<TargetFrame>(affine_maps));
+        }
       } else {
         using Equiangular = CoordinateMaps::Equiangular;
         std::array<Equiangular, VolumeDim> equiangular_maps{};
@@ -715,7 +740,13 @@ maps_for_rectilinear_domains(
           gsl::at(equiangular_maps, d) = Equiangular{
               -1.0, 1.0, gsl::at(lower_bounds, d), gsl::at(upper_bounds, d)};
         }
-        maps.push_back(product_of_1d_maps<TargetFrame>(equiangular_maps));
+        if (not orientations_of_all_blocks.empty()) {
+          maps.push_back(product_of_1d_maps<TargetFrame>(
+              equiangular_maps,
+              orientations_of_all_blocks[ii.collapsed_index()]));
+        } else {
+          maps.push_back(product_of_1d_maps<TargetFrame>(equiangular_maps));
+        }
       }
     }
   }
@@ -854,6 +885,8 @@ frustum_coordinate_maps(const double length_inner_cube,
       const Index<DIM(data)>& domain_extents,                               \
       const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
+      const std::vector<OrientationMap<DIM(data)>>&                         \
+          orientations_of_all_blocks,                                       \
       const bool use_equiangular_map) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
