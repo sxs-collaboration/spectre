@@ -946,12 +946,12 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
   CHECK(std::array<size_t, 4>{{1, 4, 0, 3}} ==
         discrete_rotation(
             OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}),
+                {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}),
             std::array<size_t, 4>{{0, 1, 3, 4}}));
   CHECK(std::array<size_t, 4>{{4, 0, 5, 1}} ==
         discrete_rotation(
             OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}),
+                {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}),
             std::array<size_t, 4>{{0, 1, 4, 5}}));
   CHECK(std::array<size_t, 4>{{3, 1, 2, 0}} ==
         discrete_rotation(
@@ -962,20 +962,20 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
   CHECK(std::array<size_t, 8>{{9, 0, 12, 3, 10, 1, 13, 4}} ==
         discrete_rotation(
             OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::lower_zeta(), Direction<3>::upper_eta(),
-                 Direction<3>::upper_xi()}}),
+                {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
+                 Direction<3>::lower_xi()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
   CHECK(std::array<size_t, 8>{{10, 13, 9, 12, 1, 4, 0, 3}} ==
         discrete_rotation(
             OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
+                {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
                  Direction<3>::lower_zeta()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
   CHECK(std::array<size_t, 8>{{12, 3, 13, 4, 9, 0, 10, 1}} ==
         discrete_rotation(
             OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
-                 Direction<3>::lower_eta()}}),
+                {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+                 Direction<3>::lower_xi()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
 }
 

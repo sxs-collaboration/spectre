@@ -151,9 +151,10 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
 /// \ingroup ComputationalDomainGroup
 /// \brief Permutes the corner numbers of an n-cube.
 ///
-/// Returns the correct ordering of global corner numbers for a block
-/// having this orientation relative to an aligned edifice of blocks,
-/// given the corner numbering the block would have if it were aligned.
+/// Returns the correct ordering of global corner numbers for a rotated block
+/// in an otherwise aligned edifice of blocks, given the OrientationMap a
+/// block aligned with the edifice has relative to this one, and given the
+/// corner numbering the rotated block would have if it were aligned.
 /// This is useful in creating domains for testing purposes, e.g.
 /// RotatedIntervals, RotatedRectangles, and RotatedBricks.
 template <size_t VolumeDim>

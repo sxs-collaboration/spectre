@@ -738,7 +738,9 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
       std::array<Direction<VolumeDim>, VolumeDim> directions_of_mapped_corner{};
       for (size_t i = 0; i < VolumeDim; i++) {
         gsl::at(directions_of_mapped_corner, i) =
-            orientation(gsl::at(directions_of_logical_corner, i));
+            // The inverse_map is used here to match the sense of rotation
+            // used in OrientationMap's discrete_rotation.
+            orientation.inverse_map()(gsl::at(directions_of_logical_corner, i));
       }
       size_t mapped_corner = 0;
       for (size_t i = 0; i < VolumeDim; i++) {
