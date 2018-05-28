@@ -99,6 +99,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
       lower_bound,
       midpoint,
       upper_bound,
+      {{false, false}},
       {{refinement_level[0][0], refinement_level[0][1]}},
       {{{{grid_points[0][0], grid_points[1][0]}},
         {{grid_points[0][1], grid_points[2][0]}}}}};
@@ -120,6 +121,37 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
           {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
   test_physical_separation(rotated_rectangles.create_domain().blocks());
+
+  const DomainCreators::RotatedRectangles<Frame::Inertial>
+      rotated_periodic_rectangles{
+          lower_bound,
+          midpoint,
+          upper_bound,
+          {{true, true}},
+          {{refinement_level[0][0], refinement_level[0][1]}},
+          {{{{grid_points[0][0], grid_points[1][0]}},
+            {{grid_points[0][1], grid_points[2][0]}}}}};
+  test_rotated_rectangles_construction(
+      rotated_periodic_rectangles, lower_bound, midpoint, upper_bound,
+      grid_points, refinement_level,
+      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
+          {{Direction<2>::upper_xi(), {1, half_turn}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
+           {Direction<2>::lower_xi(), {1, half_turn}},
+           {Direction<2>::lower_eta(), {2, quarter_turn_ccw}}},
+          {{Direction<2>::upper_xi(), {0, half_turn}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}},
+           {Direction<2>::lower_xi(), {0, half_turn}},
+           {Direction<2>::upper_eta(), {3, quarter_turn_ccw}}},
+          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {3, half_turn}},
+           {Direction<2>::upper_xi(), {0, quarter_turn_cw}},
+           {Direction<2>::upper_eta(), {3, half_turn}}},
+          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {Direction<2>::lower_eta(), {2, half_turn}},
+           {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
+           {Direction<2>::upper_eta(), {2, half_turn}}}},
+      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles.Factory",
@@ -137,6 +169,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles.Factory",
           "    LowerBound: [0.1, -0.4]\n"
           "    Midpoint:   [2.6, 3.2]\n"
           "    UpperBound: [5.1, 6.2]\n"
+          "    IsPeriodicIn: [false, false]\n"
           "    InitialGridPoints: [[3,2],[1,4]]\n"
           "    InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
