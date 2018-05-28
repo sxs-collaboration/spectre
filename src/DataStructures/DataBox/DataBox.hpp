@@ -1033,17 +1033,15 @@ template <typename... MutateTags, typename TagList, typename Invokable,
           typename... Args>
 void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
             Args&&... args) noexcept {
-  using mutate_tags_list =
-      tmpl::list<DataBox_detail::first_matching_tag<TagList, MutateTags>...>;
+  static_assert(
+      tmpl2::flat_all_v<
+          DataBox_detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
+      "One of the tags being mutated could not be found in the DataBox or "
+      "is a base tag identifying more than one tag.");
   static_assert(
       not tmpl2::flat_any_v<db::is_compute_item_v<
           DataBox_detail::first_matching_tag<TagList, MutateTags>>...>,
       "Cannot mutate a compute item");
-  static_assert(
-      tmpl2::flat_all_v<DataBox_detail::has_unique_matching_tag_v<
-                            TagList, MutateTags>...>,
-      "One of the tags being mutated via a base tag has more than one tag in "
-      "the DataBox that derives off of it. This is not allowed.");
   if (UNLIKELY(box->mutate_locked_box_)) {
     ERROR(
         "Unable to mutate a DataBox that is already being mutated. This "
@@ -1057,6 +1055,8 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
                   DataBox_detail::first_matching_tag<TagList, MutateTags>>()
                .mutate())...,
       std::forward<Args>(args)...);
+  using mutate_tags_list =
+      tmpl::list<DataBox_detail::first_matching_tag<TagList, MutateTags>...>;
   // For all the tags in the DataBox, check if one of their subtags is
   // being mutated and if so add the parent to the list of tags
   // being mutated. Then, remove any tags that would be passed
@@ -1245,6 +1245,11 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
 
   // 1. Full list of old tags, and the derived tags list of the RemoveTags
   using old_box_tags = typename std::decay_t<Box>::tags_list;
+  static_assert(
+      tmpl::all<RemoveTags, DataBox_detail::has_unique_matching_tag<
+                                tmpl::pin<old_box_tags>, tmpl::_1>>::value,
+      "One of the tags being removed could not be found in the DataBox or "
+      "is a base tag identifying more than one tag.");
   using remove_tags =
       tmpl::transform<RemoveTags,
                       tmpl::bind<DataBox_detail::first_matching_tag,
