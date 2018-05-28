@@ -252,11 +252,16 @@ struct InitializeElement {
   template <typename Metavariables>
   struct DgTags {
     using temporal_id_tag = typename Metavariables::temporal_id;
+    using flux_comm_types = FluxCommunicationTypes<Metavariables>;
 
-    using simple_tags =
-        db::AddSimpleTags<typename dg::FluxCommunicationTypes<
-                              Metavariables>::simple_mortar_data_tag,
-                          Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>>;
+    template <typename Tag>
+    using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+
+    using simple_tags = db::AddSimpleTags<
+        typename dg::FluxCommunicationTypes<
+            Metavariables>::simple_mortar_data_tag,
+        Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
+        interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
 
     using compute_tags = db::AddComputeTags<>;
 
@@ -264,24 +269,29 @@ struct InitializeElement {
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {
       const auto& element = db::get<Tags::Element<Dim>>(box);
 
-      typename dg::FluxCommunicationTypes<
-          Metavariables>::simple_mortar_data_tag::type mortar_data{};
+      typename flux_comm_types::simple_mortar_data_tag::type mortar_data{};
       typename Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>::type
           mortar_next_temporal_ids{};
+      typename interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>::
+          type normal_dot_fluxes{};
       const auto& temporal_id = get<temporal_id_tag>(box);
       for (const auto& direction_neighbors : element.neighbors()) {
         const auto& direction = direction_neighbors.first;
         const auto& neighbors = direction_neighbors.second;
+        const auto& face_mesh =
+            db::get<interface_tag<Tags::Mesh<Dim - 1>>>(box).at(direction);
         for (const auto& neighbor : neighbors) {
           const auto mortar_id = std::make_pair(direction, neighbor);
           mortar_data.insert({mortar_id, {}});
           mortar_next_temporal_ids.insert({mortar_id, temporal_id});
+          normal_dot_fluxes[direction].initialize(
+              face_mesh.number_of_grid_points(), 0.);
         }
       }
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(mortar_data),
-          std::move(mortar_next_temporal_ids));
+          std::move(mortar_next_temporal_ids), std::move(normal_dot_fluxes));
     }
   };
 

@@ -191,8 +191,7 @@ struct ReceiveDataForFluxes {
 ///
 /// DataBox changes:
 /// - Adds: nothing
-/// - Removes:
-///   Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
+/// - Removes: nothing
 /// - Modifies: Tags::VariablesBoundaryData
 ///
 /// \see ReceiveDataForFluxes
@@ -312,8 +311,7 @@ struct SendDataForFluxes {
       }  // loop over neighbors_in_direction
     }    // loop over element.neighbors()
 
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<interface_normal_dot_fluxes_tag>>(box));
+    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace Actions
