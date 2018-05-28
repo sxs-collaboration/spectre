@@ -309,22 +309,19 @@ struct report_missing_compute_item_argument {
 
 template <typename ComputeTag, typename ArgumentTag>
 struct report_missing_compute_item_argument<ComputeTag, ArgumentTag,
-                                            tmpl::true_type> {
+                                            std::true_type> {
   using type = void;
 };
 
 template <typename TagList, typename ComputeTag>
 struct create_dependency_graph {
 #ifdef SPECTRE_DEBUG
-  using argument_check_assertion = tmpl::transform<
-      typename ComputeTag::argument_tags,
-      report_missing_compute_item_argument<
-          tmpl::pin<ComputeTag>, tmpl::_1,
-          tmpl::equal_to<
-              tmpl::bind<tmpl::size,
-                         tmpl::bind<DataBox_detail::list_of_matching_tags,
-                                    tmpl::pin<TagList>, tmpl::_1>>,
-              std::integral_constant<size_t, 1>>>>;
+  using argument_check_assertion =
+      tmpl::transform<typename ComputeTag::argument_tags,
+                      report_missing_compute_item_argument<
+                          tmpl::pin<ComputeTag>, tmpl::_1,
+                          DataBox_detail::has_unique_matching_tag<
+                              tmpl::pin<TagList>, tmpl::_1>>>;
 #endif  // SPECTRE_DEBUG
   // These edges record that a compute item's value depends on the
   // values of it's arguments.
@@ -1043,8 +1040,8 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
           DataBox_detail::first_matching_tag<TagList, MutateTags>>...>,
       "Cannot mutate a compute item");
   static_assert(
-      tmpl2::flat_all_v<(DataBox_detail::number_of_matching_tags<
-                             TagList, MutateTags> == 1)...>,
+      tmpl2::flat_all_v<DataBox_detail::has_unique_matching_tag_v<
+                            TagList, MutateTags>...>,
       "One of the tags being mutated via a base tag has more than one tag in "
       "the DataBox that derives off of it. This is not allowed.");
   if (UNLIKELY(box->mutate_locked_box_)) {
@@ -1103,7 +1100,7 @@ template <typename Tag, Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>>>
 SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
     -> const item_type<Tag, tags_list>& {
   DEBUG_STATIC_ASSERT(
-      DataBox_detail::number_of_matching_tags<tags_list, Tag> == 1,
+      DataBox_detail::has_unique_matching_tag_v<tags_list, Tag>,
       "Found more than one (or no) tag(s) in the DataBox that matches the tag "
       "being retrieved. This happens because more than one tag with the same "
       "base (class) tag was added to the DataBox.");

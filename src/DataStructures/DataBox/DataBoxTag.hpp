@@ -166,6 +166,19 @@ using first_matching_tag = tmpl::front<list_of_matching_tags<TagList, Tag>>;
 template <typename TagList, typename Tag>
 constexpr auto number_of_matching_tags =
     tmpl::size<list_of_matching_tags<TagList, Tag>>::value;
+
+template <typename TagList, typename Tag>
+struct has_unique_matching_tag
+    : std::integral_constant<bool, number_of_matching_tags<TagList, Tag> == 1> {
+};
+
+template <typename TagList, typename Tag>
+using has_unique_matching_tag_t =
+    typename has_unique_matching_tag<TagList, Tag>::type;
+
+template <typename TagList, typename Tag>
+constexpr bool has_unique_matching_tag_v =
+    has_unique_matching_tag<TagList, Tag>::value;
 }  // namespace DataBox_detail
 
 /*!
