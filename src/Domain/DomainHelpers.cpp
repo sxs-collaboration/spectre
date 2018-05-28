@@ -251,6 +251,114 @@ obtain_correspondence_between_blocks(
   return create_correspondence_between_blocks(self_dir, nhbr_dir, self_align,
                                               nhbr_align);
 }
+
+// Sets periodic boundary conditions for rectilinear multi-cube domains.
+//
+// For each block with an external boundary in the +i^th direction, traverses
+// the block neighbors in the -i^th direction until finding a neighbor block
+// with an external boundary in the -i^th direction, and identifies these two
+// external boundaries with each other, if `dimension_is_periodic[i]` is
+// `true`. This is useful when setting the boundaries of a rectilinear domain.
+//
+// The argument passed to `orientations_of_all_blocks` is the relative
+// orientation of the edifice relative to each block. This is used when
+// constructing non-trivial domains for testing such as RotatedBricks.
+template <size_t VolumeDim>
+void set_cartesian_periodic_boundaries(
+    const std::array<bool, VolumeDim>& dimension_is_periodic,
+    const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
+        corners_of_all_blocks,
+    const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
+    gsl::not_null<std::vector<
+        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+        neighbors_of_all_blocks) {
+  ASSERT(orientations_of_all_blocks.size() == corners_of_all_blocks.size(),
+         "Each block must have an OrientationMap relative to an edifice.");
+  size_t block_id = 0;
+  for (auto& block : *neighbors_of_all_blocks) {
+    const auto& corners_of_block = corners_of_all_blocks[block_id];
+    const auto& orientation_of_block = orientations_of_all_blocks[block_id];
+    for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+      // Loop over Directions to search which Directions were not set to
+      // neighbors, these Directions are external_boundaries, so we proceed
+      // in the opposite direction to find the block we wish to identify
+      // boundaries with.
+      if (not gsl::at(dimension_is_periodic, direction.dimension())) {
+        continue;  // Don't identify neighbors in dimensions not specified as
+                   // periodic.
+      }
+      if (block.find(orientation_of_block(direction)) == block.end()) {
+        // follow to neighbor in the opposite direction:
+        const auto local_direction_in_block = orientation_of_block(direction);
+        auto opposite_block_id = block_id;
+        auto opposite_block = block;
+        auto corners_of_opposite_block = corners_of_block;
+        // The local direction that points to the opposite block:
+        auto opposite_block_direction = local_direction_in_block.opposite();
+        for (size_t neighbor_counter = 0;
+             neighbor_counter < corners_of_all_blocks.size();
+             neighbor_counter++) {
+          if (opposite_block.find(opposite_block_direction) ==
+              opposite_block.end()) {
+            continue;
+          } else {
+            opposite_block_id = opposite_block[opposite_block_direction].id();
+            opposite_block = (*neighbors_of_all_blocks)[opposite_block_id];
+            opposite_block_direction =
+                orientations_of_all_blocks[opposite_block_id](direction)
+                    .opposite();
+            corners_of_opposite_block =
+                corners_of_all_blocks[opposite_block_id];
+          }
+          if (neighbor_counter == corners_of_all_blocks.size() - 1) {
+            // There is no domain that can be constructed using
+            // `rectilinear_domain`, that triggers this ERROR, so the ERROR is
+            // expected to be unreachable. We keep this check in the case that
+            // this assumption is wrong.
+            // LCOV_EXCL_START
+            ERROR(
+                "A closed cycle of neighbors exists in this domain. Has "
+                "`orientations_of_all_blocks` been set correctly?");
+            // LCOV_EXCL_STOP
+          }
+        }
+        //`opposite_block` is now the block on the opposite cartesian side
+        // of `block`, so we identify the faces of those blocks that were
+        // external boundaries as now being periodic. Note that `opposite_block`
+        // and `block`  may be the same block, if the domain only has an extent
+        // of one in that dimension.
+        std::vector<size_t> face_corners_of_block{};
+        std::vector<size_t> face_corners_of_opposite_block{};
+        for (FaceCornerIterator<VolumeDim> fci(local_direction_in_block); fci;
+             ++fci) {
+          face_corners_of_block.push_back(
+              gsl::at(corners_of_block, fci.volume_index()));
+        }
+        for (FaceCornerIterator<VolumeDim> fci(
+                 orientations_of_all_blocks[opposite_block_id](direction)
+                     .opposite());
+             fci; ++fci) {
+          face_corners_of_opposite_block.push_back(
+              gsl::at(corners_of_opposite_block, fci.volume_index()));
+        }
+        // The face corners in both blocks should be in ascending order
+        // for periodic boundary conditions. Note that this shortcut only
+        // works in the special case where the global corners are
+        // increasing in each cartesian direction of the domain.
+        std::sort(face_corners_of_block.begin(), face_corners_of_block.end());
+        std::sort(face_corners_of_opposite_block.begin(),
+                  face_corners_of_opposite_block.end());
+        // This modifies the BlockNeighbors of both the current block
+        // and the block it found to be its neighbor.
+        set_identified_boundaries(
+            std::vector<PairOfFaces>{PairOfFaces{
+                face_corners_of_block, face_corners_of_opposite_block}},
+            corners_of_all_blocks, neighbors_of_all_blocks);
+      }
+    }
+    block_id++;
+  }
+}
 }  // namespace
 
 template <size_t VolumeDim>
@@ -801,6 +909,7 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
+    const std::array<bool, VolumeDim>& dimension_is_periodic,
     const std::vector<PairOfFaces>& identifications,
     bool use_equiangular_map) noexcept {
   std::vector<Block<VolumeDim, TargetFrame>> blocks{};
@@ -824,8 +933,11 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(corners_of_all_blocks,
                                      &neighbors_of_all_blocks);
-  set_periodic_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
-                                     &neighbors_of_all_blocks);
+  set_identified_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
+                                       &neighbors_of_all_blocks);
+  set_cartesian_periodic_boundaries<VolumeDim>(
+      dimension_is_periodic, corners_of_all_blocks, rotations_of_all_blocks,
+      &neighbors_of_all_blocks);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
     blocks.emplace_back(std::move(maps[i]), i,
                         std::move(neighbors_of_all_blocks[i]));
@@ -934,6 +1046,7 @@ frustum_coordinate_maps(const double length_inner_cube,
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
       const std::vector<OrientationMap<DIM(data)>>&                         \
           orientations_of_all_blocks,                                       \
+      const std::array<bool, DIM(data)>& dimension_is_periodic,             \
       const std::vector<PairOfFaces>& identifications,                      \
       bool use_equiangular_map) noexcept;
 

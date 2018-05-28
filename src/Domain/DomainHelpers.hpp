@@ -30,9 +30,6 @@ template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
-namespace Frame {
-struct Logical;
-}  // namespace Frame
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
@@ -207,6 +204,8 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
+    const std::array<bool, VolumeDim>& dimension_is_periodic =
+        make_array<VolumeDim>(false),
     const std::vector<PairOfFaces>& identifications = {},
     bool use_equiangular_map = false) noexcept;
 

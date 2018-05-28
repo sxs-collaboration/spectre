@@ -8,6 +8,7 @@
 #include <memory>
 #include <pup.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
@@ -22,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
@@ -1263,5 +1265,125 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
                         Equiangular{-1., 1., -0.4, 0.3}});
   for (size_t i = 0; i < equiangular_maps_3d.size(); i++) {
     CHECK(*equiangular_maps_3d[i] == *expected_equiangular_maps_3d[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
+                  "[Domain][Unit]") {
+  const auto domain = rectilinear_domain<3, Frame::Inertial>(
+      Index<3>{3, 3, 3},
+      std::array<std::vector<double>, 3>{
+          {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
+      {Index<3>{1, 1, 1}}, {}, std::array<bool, 3>{{true, false, false}}, {});
+  const std::vector<std::unordered_set<Direction<3>>>
+      expected_external_boundaries{
+          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_zeta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_zeta()}},
+          {{Direction<3>::lower_zeta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_eta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_eta()}},
+          {},
+          {},
+          {{Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_eta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_zeta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}},
+          {{Direction<3>::upper_zeta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}}};
+  for (const auto& block : domain.blocks()) {
+  }
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
+                  "[Domain][Unit]") {
+  const auto rotation = OrientationMap<2>{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  auto orientations_of_all_blocks =
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+  orientations_of_all_blocks[0] = rotation;
+  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
+      false);
+
+  const std::vector<std::unordered_set<Direction<2>>>
+      expected_external_boundaries{{{Direction<2>::upper_xi()}},
+                                   {{Direction<2>::lower_eta()}},
+                                   {{Direction<2>::upper_eta()}},
+                                   {{Direction<2>::upper_eta()}}};
+
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
+                  "[Domain][Unit]") {
+  const OrientationMap<2> flipped{std::array<Direction<2>, 2>{
+      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
+  const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
+      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  auto orientations_of_all_blocks =
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+  orientations_of_all_blocks[1] = flipped;
+  orientations_of_all_blocks[2] = quarter_turn_cw;
+  orientations_of_all_blocks[3] = quarter_turn_ccw;
+  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
+      false);
+
+  std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
+      expected_block_neighbors{
+          {{Direction<2>::upper_xi(), {1, flipped}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
+           {Direction<2>::lower_xi(), {1, flipped}},
+           {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, flipped}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
+           {Direction<2>::lower_xi(), {0, flipped}},
+           {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {3, flipped}},
+           {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::lower_eta(), {3, flipped}}},
+          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {2, flipped}},
+           {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::lower_eta(), {2, flipped}}}};
+  std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
+      {}, {}, {}, {}};
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
 }

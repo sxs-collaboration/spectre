@@ -143,7 +143,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
   SECTION("Aligned domain.") {
     const auto domain = rectilinear_domain<1, Frame::Inertial>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
-        {}, {}, {}, true);
+        {}, {}, {{false}}, {}, true);
     const OrientationMap<1> aligned{};
     std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
         expected_block_neighbors{{{Direction<1>::upper_xi(), {1, aligned}}},
@@ -169,8 +169,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
     const auto domain = rectilinear_domain<1, Frame::Inertial>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
-        {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned}, {},
-        true);
+        {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
+        {{false}}, {}, true);
     std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
         expected_block_neighbors{
             {{Direction<1>::upper_xi(), {1, antialigned}}},
