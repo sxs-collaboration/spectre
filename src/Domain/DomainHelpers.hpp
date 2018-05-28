@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -282,3 +283,54 @@ class VolumeCornerIterator {
   std::array<Direction<VolumeDim>, VolumeDim> array_directions_{};
   std::array<double, VolumeDim> coords_of_corner_ = make_array<VolumeDim>(-1.0);
 };
+
+/// \ingroup ComputationalDomainGroup
+/// Iterates over the 2^(VolumeDim-1) logical corners of the face of a
+/// VolumeDim-dimensional cube in the given direction.
+template <size_t VolumeDim>
+class FaceCornerIterator {
+ public:
+  explicit FaceCornerIterator(Direction<VolumeDim> direction) noexcept;
+  void operator++() noexcept {
+    face_index_++;
+    do {
+      index_++;
+    } while (get_nth_bit(index_, direction_.dimension()) ==
+             (direction_.side() == Side::Upper ? 0 : 1));
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
+    }
+  }
+  explicit operator bool() noexcept {
+    return face_index_ < two_to_the(VolumeDim - 1);
+  }
+  tnsr::I<double, VolumeDim, Frame::Logical> operator()() noexcept {
+    return corner_;
+  }
+  tnsr::I<double, VolumeDim, Frame::Logical> operator*() noexcept {
+    return corner_;
+  }
+
+  // Returns the value used to construct the logical corner.
+  size_t volume_index() noexcept { return index_; }
+  // Returns the number of times operator++ has been called.
+  size_t face_index() noexcept { return face_index_; }
+
+ private:
+  const Direction<VolumeDim> direction_;
+  size_t index_;
+  size_t face_index_ = 0;
+  tnsr::I<double, VolumeDim, Frame::Logical> corner_;
+};
+
+template <size_t VolumeDim>
+FaceCornerIterator<VolumeDim>::FaceCornerIterator(
+    Direction<VolumeDim> direction) noexcept
+    : direction_(std::move(direction)),
+      index_(direction.side() == Side::Upper
+                 ? two_to_the(direction_.dimension())
+                 : 0) {
+  for (size_t i = 0; i < VolumeDim; ++i) {
+    corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
+  }
+}
