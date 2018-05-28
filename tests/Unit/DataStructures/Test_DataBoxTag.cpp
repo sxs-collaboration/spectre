@@ -45,6 +45,33 @@ static_assert(
             Tags::Variables<tmpl::list<PrefixWithArgs<Var, int, double>>>, int,
             double>>,
     "Failed testing add_tag_prefix");
+static_assert(cpp17::is_same_v<
+                  db::add_tag_prefix<Prefix, PrefixWithArgs<Var, int, double>>,
+                  Prefix<PrefixWithArgs<Var, int, double>>>,
+              "Failed testing add_tag_prefix");
+static_assert(
+    cpp17::is_same_v<
+        db::add_tag_prefix<
+            Prefix, PrefixWithArgs<Tags::Variables<tmpl::list<
+                                       PrefixWithArgs<Var, int, double>>>,
+                                   int, double>>,
+        Prefix<PrefixWithArgs<Tags::Variables<tmpl::list<
+                                  Prefix<PrefixWithArgs<Var, int, double>>>>,
+                              int, double>>>,
+    "Failed testing add_tag_prefix");
+static_assert(cpp17::is_same_v<
+                  db::add_tag_prefix<PrefixWithArgs, Prefix<Var>, int, double>,
+                  PrefixWithArgs<Prefix<Var>, int, double>>,
+              "Failed testing add_tag_prefix");
+static_assert(
+    cpp17::is_same_v<
+        db::add_tag_prefix<PrefixWithArgs,
+                           Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>,
+                           int, double>,
+        PrefixWithArgs<Prefix<Tags::Variables<tmpl::list<
+                           PrefixWithArgs<Prefix<Var>, int, double>>>>,
+                       int, double>>,
+    "Failed testing add_tag_prefix");
 
 static_assert(cpp17::is_same_v<db::remove_tag_prefix<Prefix<Var>>, Var>,
               "Failed testing remove_tag_prefix");
