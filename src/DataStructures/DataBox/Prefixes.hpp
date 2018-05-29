@@ -46,6 +46,7 @@ struct Flux<Tag, VolumeDim, Fr,
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
   static std::string name() noexcept { return "Flux"; }
+  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
