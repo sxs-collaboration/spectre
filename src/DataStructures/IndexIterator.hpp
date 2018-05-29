@@ -42,7 +42,8 @@ class IndexIterator {
   /// Advance to next Index.
   IndexIterator<Dim>& operator++();
 
-  decltype(auto) operator*() const noexcept { return index_; }
+  const Index<Dim>& operator*() const noexcept { return index_; }
+  const Index<Dim>* operator->() const noexcept { return &index_; }
 
   /// Returns an index representing the (i, j, ...)th values that the iterator
   /// currently represents
