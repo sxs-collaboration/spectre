@@ -59,6 +59,14 @@ void raw_transpose(const gsl::not_null<T*> result,
 /// filling `result` (or the returned object) with the transpose of that
 /// matrix.
 ///
+/// If `u` represents a block of data indexed by
+/// \f$(x, y, z, \ldots)\f$ with the first index varying fastest,
+/// transpose serves to rotate the indices.  If the extents are
+/// \f$(X, Y, Z, \ldots)\f$, with product \f$N\f$, `transpose(u, X,
+/// N/X)` reorders the data to be indexed \f$(y, z, \ldots, x)\f$,
+/// `transpose(u, X*Y, N/X/Y)` reorders the data to be indexed
+/// \f$(z, \ldots, x, y)\f$, etc.
+///
 /// \example
 /// \snippet Test_Transpose.cpp transpose_matrix
 /// \snippet Test_Transpose.cpp transpose_by_not_null_example
