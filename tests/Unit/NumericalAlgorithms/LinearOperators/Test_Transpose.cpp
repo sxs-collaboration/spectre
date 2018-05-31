@@ -48,6 +48,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   /// [transpose_matrix]
   // clang-format on
 
+  DataVector transposed_matrix(12);
+  raw_transpose(make_not_null(transposed_matrix.data()), matrix.data(), 3, 4);
+  CHECK(transposed_matrix ==
+        DataVector{1., 4., 7., 10., 2., 5., 8., 11., 3., 6., 9., 12.});
+
   /// [return_transpose_example]
   const size_t chunk_size = 8;
   const size_t number_of_chunks = 2;
