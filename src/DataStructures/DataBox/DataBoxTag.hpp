@@ -394,21 +394,59 @@ using wrap_tags_in =
     tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, tmpl::pin<Args>...>>;
 
 namespace detail {
-template <bool IsVariables>
+enum class DispatchTagType {
+  Variables,
+  Prefix,
+  Other,
+};
+
+template <DispatchTagType TagType>
 struct add_tag_prefix_impl;
 
+// Call the appropriate impl based on the type of the tag being
+// prefixed.
+template <template <typename...> class Prefix, typename Tag, typename... Args>
+using dispatch_add_tag_prefix_impl = typename add_tag_prefix_impl<
+    tt::is_a_v<Tags::Variables, Tag>
+        ? DispatchTagType::Variables
+        : cpp17::is_base_of_v<db::PrefixTag, Tag>
+              ? DispatchTagType::Prefix
+              : DispatchTagType::Other>::template f<Prefix, Tag, Args...>;
+
 template <>
-struct add_tag_prefix_impl<false> {
+struct add_tag_prefix_impl<DispatchTagType::Other> {
   template <template <typename...> class Prefix, typename Tag, typename... Args>
-  using f = Prefix<Tag, Args...>;
+  using f = Tag;
 };
 
 template <>
-struct add_tag_prefix_impl<true> {
+struct add_tag_prefix_impl<DispatchTagType::Prefix> {
   template <template <typename...> class Prefix, typename Tag, typename... Args>
-  using f = Prefix<
-      Tags::Variables<wrap_tags_in<Prefix, typename Tag::tags_list, Args...>>,
-      Args...>;
+  struct prefix_wrapper_helper;
+
+  template <template <typename...> class Prefix,
+            template <typename...> class InnerPrefix, typename InnerTag,
+            typename... InnerArgs, typename... Args>
+  struct prefix_wrapper_helper<Prefix, InnerPrefix<InnerTag, InnerArgs...>,
+                               Args...> {
+    static_assert(
+        cpp17::is_same_v<typename InnerPrefix<InnerTag, InnerArgs...>::tag,
+                         InnerTag>,
+        "Inconsistent values of prefixed tag");
+    using type =
+        InnerPrefix<dispatch_add_tag_prefix_impl<Prefix, InnerTag, Args...>,
+                    InnerArgs...>;
+  };
+
+  template <template <typename...> class Prefix, typename Tag, typename... Args>
+  using f = typename prefix_wrapper_helper<Prefix, Tag, Args...>::type;
+};
+
+template <>
+struct add_tag_prefix_impl<DispatchTagType::Variables> {
+  template <template <typename...> class Prefix, typename Tag, typename... Args>
+  using f =
+      Tags::Variables<wrap_tags_in<Prefix, typename Tag::tags_list, Args...>>;
 };
 
 template <typename>
@@ -435,8 +473,8 @@ struct remove_tag_prefix_impl<
 /// Wrap `Tag` in `Prefix<_, Args...>`, also wrapping variables tags
 /// if `Tag` is a `Tags::Variables`.
 template <template <typename...> class Prefix, typename Tag, typename... Args>
-using add_tag_prefix = typename detail::add_tag_prefix_impl<
-    tt::is_a_v<Tags::Variables, Tag>>::template f<Prefix, Tag, Args...>;
+using add_tag_prefix =
+    Prefix<detail::dispatch_add_tag_prefix_impl<Prefix, Tag, Args...>, Args...>;
 
 /// \ingroup DataBoxTagsGroup
 /// Remove a prefix from `Tag`, also removing it from the variables
