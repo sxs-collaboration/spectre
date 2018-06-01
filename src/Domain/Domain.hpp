@@ -45,13 +45,11 @@ class Domain {
    * numbering of that block's corners according to the global corner number
    * scheme. The details of the corner numbering scheme are described in the
    * [tutorial](@ref tutorial_orientations). `identifications` is for imposing
-   * periodic boundary conditions on the domain. To identify two faces,
-   * `identifications` should contain the corners corresponding to the first
-   * face as its first element, and the second face as its second. If periodic
-   * boundary conditions need be set up in more than one direction, the corners
-   * corresponding to the 3rd and 4th elements of `identifications` will be
-   * identified as the same, and the 5th and 6th elements identified if
-   * necessary.
+   * periodic boundary conditions on the domain. To identify faces,
+   * `identifications` should contain the PairOfFaces containing the corners of
+   * each pair of faces that you wish to identify with one another. For more
+   * information on setting up domains, see the
+   * [domain creation tutorial](@ref tutorial_domain_creation).
    *
    * \requires `maps.size() == corners_of_all_blocks.size()`, and
    * `identifications.size()` is even.
