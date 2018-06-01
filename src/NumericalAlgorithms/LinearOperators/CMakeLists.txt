@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     ApplyMatrices.cpp
     DefiniteIntegral.cpp
     Linearize.cpp
+    Mass.cpp
     MeanValue.cpp
     )
 
