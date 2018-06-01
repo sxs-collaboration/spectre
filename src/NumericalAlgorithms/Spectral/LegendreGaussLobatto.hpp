@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+/// \cond
 class DataVector;
 class Matrix;
 
@@ -57,3 +58,4 @@ Matrix interpolation_matrix(size_t number_of_pts, const T& target_points);
 static const size_t maximum_number_of_pts = 12;
 }  // namespace lgl
 }  // namespace Basis
+/// \endcond

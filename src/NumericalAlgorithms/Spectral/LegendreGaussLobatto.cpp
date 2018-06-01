@@ -6,6 +6,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
+/// \cond
 namespace Basis {
 namespace lgl {
 
@@ -55,7 +56,6 @@ Matrix interpolation_matrix(size_t number_of_pts, const T& target_points) {
 }  // namespace lgl
 }  // namespace Basis
 
-/// \cond
 template Matrix Basis::lgl::interpolation_matrix(
     const size_t num_collocation_points, const DataVector& target_points);
 template Matrix Basis::lgl::interpolation_matrix(
