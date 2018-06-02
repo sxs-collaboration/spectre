@@ -18,31 +18,19 @@ At a high level, describe what this PR does.
 
 ### Code review checklist
 
-- Follows [code review guidelines](https://sxs-collaboration.github.io/spectre/code_review_guide.html)
-- Code has documentation and unit tests
-- Private member variables have a trailing underscore
-- Do not use [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation), e.g. `double* pd_blah` is bad
-- Header order:
-  1. hpp corresponding to cpp (only in cpp files) or `tests/Unit/TestingFramework.hpp` (only in tests)
-  2. Blank line (only in cpp files and tests)
-  3. STL and externals (in alphabetical order)
-  4. Blank line
-  5. SpECTRE includes (in alphabetical order)
-- File lists in CMake are alphabetical
-- Correct `noexcept` specification for functions (if unsure, mark `noexcept`)
-- Mark objects `const` whenever possible
-- Almost always `auto`, except with expression templates, i.e. `DataVector`
-- All commits for performance changes provide quantitative evidence and the tests used to obtain said evidence.
-- Make sure error messages are helpful, e.g. "The number of grid points in the matrix 'F' is not the same as the number of grid points in the determinant."
-- Prefix commits addressing PR requests with `fixup`. These commits are flagged
-  by Travis so we do not accidentally merge them.
-- Include what you use, prefer forward declarations in hpp files.
-- Explicitly make numbers floating point, e.g. `2.` or `2.0` over `2`
-- Use `Tensor`'s non-member get if the indices are constant expressions, e.g.
-  `get<1>(tensor)`
+- [ ] The PR passes all checks, including unit tests, `clang-tidy` and `IWYU`. For
+  instructions on how to perform the CI checks locally refer to the [Dev guide
+  on the Travis CI](https://spectre-code.org/travis_guide.html).
+- [ ] The code is documented and the documentation renders correctly. Run `make doc`
+  to generate the documentation locally into `BUILD_DIR/docs/html`. Then open
+  `index.html`.
+- [ ] The code follows the stylistic and code quality guidelines listed in the
+  [code review guide](https://spectre-code.org/code_review_guide.html).
 
 ### Further comments
 
 <!--
-If this is a relatively large or complex change, kick off the discussion by explaining why you chose the solution you did and what alternatives you considered, etc...
+If this is a relatively large or complex change, kick off the discussion by
+explaining why you chose the solution you did and what alternatives you
+considered, etc...
 -->
