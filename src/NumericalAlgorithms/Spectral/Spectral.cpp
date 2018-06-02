@@ -4,11 +4,14 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -243,12 +246,30 @@ const DataVector& quadrature_weights(const size_t num_points) noexcept {
       .second;
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& differentiation_matrix(const size_t num_points) noexcept {
-  return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      DifferentiationMatrixGenerator<BasisType, QuadratureType>>(num_points);
-}
+/// \cond
+// clang-tidy: Macro arguments should be in parentheses, but we want to append
+// template parameters here.
+#define PRECOMPUTED_SPECTRAL_QUANTITY(function_name, return_type,      \
+                                      generator_name)                  \
+  template <Basis BasisType, Quadrature QuadratureType>                \
+  const return_type& function_name(const size_t num_points) noexcept { \
+    return precomputed_spectral_quantity<                              \
+        BasisType, QuadratureType,                                     \
+        generator_name<BasisType, QuadratureType>>(/* NOLINT */        \
+                                                   num_points);        \
+  }
+
+PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
+                              DifferentiationMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(spectral_to_grid_points_matrix, Matrix,
+                              SpectralToGridPointsMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(grid_points_to_spectral_matrix, Matrix,
+                              GridPointsToSpectralMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(linear_filter_matrix, Matrix,
+                              LinearFilterMatrixGenerator)
+
+#undef PRECOMPUTED_SPECTRAL_QUANTITY
+/// \endcond
 
 template <Basis BasisType, Quadrature QuadratureType, typename T>
 Matrix interpolation_matrix(const size_t num_points,
@@ -271,8 +292,8 @@ Matrix interpolation_matrix(const size_t num_points,
   // This implements algorithm 32 on p. 76 of Kopriva's book.
   // It is valid for any collocation points.
   for (size_t k = 0; k < num_target_points; k++) {
-    // Check where no interpolation is necessary since a target point matches
-    // the original collocation points
+    // Check where no interpolation is necessary since a target point
+    // matches the original collocation points
     bool row_has_match = false;
     for (size_t j = 0; j < num_points; j++) {
       interp_matrix(k, j) = 0.0;
@@ -298,27 +319,76 @@ Matrix interpolation_matrix(const size_t num_points,
   return interp_matrix;
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& spectral_to_grid_points_matrix(const size_t num_points) noexcept {
-  return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      SpectralToGridPointsMatrixGenerator<BasisType, QuadratureType>>(
-      num_points);
+namespace {
+
+template <typename F>
+decltype(auto) get_spectral_quantity_for_mesh(F&& f,
+                                              const Mesh<1>& mesh) noexcept {
+  const auto num_points = mesh.extents(0);
+  // Switch on runtime values of basis and quadrature to select
+  // corresponding template specialization. For basis functions spanning
+  // multiple dimensions we can generalize this function to take a
+  // higher-dimensional Mesh.
+  switch (mesh.basis(0)) {
+    case Basis::Legendre:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::Gauss:
+          return f(std::integral_constant<Basis, Basis::Legendre>{},
+                   std::integral_constant<Quadrature, Quadrature::Gauss>{},
+                   num_points);
+          break;
+        case Quadrature::GaussLobatto:
+          return f(
+              std::integral_constant<Basis, Basis::Legendre>{},
+              std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
+              num_points);
+          break;
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
+      break;
+    default:
+      ERROR("Missing basis case for spectral quantity");
+  }
 }
 
-template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& grid_points_to_spectral_matrix(const size_t num_points) noexcept {
-  return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      GridPointsToSpectralMatrixGenerator<BasisType, QuadratureType>>(
-      num_points);
-}
+}  // namespace
 
-template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& linear_filter_matrix(const size_t num_points) noexcept {
-  return precomputed_spectral_quantity<
-      BasisType, QuadratureType,
-      LinearFilterMatrixGenerator<BasisType, QuadratureType>>(num_points);
+/// \cond
+// clang-tidy: Macro arguments should be in parentheses, but we want to append
+// template parameters here.
+#define SPECTRAL_QUANTITY_FOR_MESH(function_name, return_type)           \
+  const return_type& function_name(const Mesh<1>& mesh) noexcept {       \
+    return get_spectral_quantity_for_mesh(                               \
+        [](const auto basis, const auto quadrature,                      \
+           const size_t num_points) noexcept->const return_type& {       \
+          return function_name</* NOLINT */ decltype(basis)::value,      \
+                               decltype(quadrature)::value>(num_points); \
+        },                                                               \
+        mesh);                                                           \
+  }
+
+SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
+SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
+SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(spectral_to_grid_points_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(grid_points_to_spectral_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
+
+#undef SPECTRAL_QUANTITY_FOR_MESH
+/// \endcond
+
+template <typename T>
+Matrix interpolation_matrix(const Mesh<1>& mesh,
+                            const T& target_points) noexcept {
+  return get_spectral_quantity_for_mesh(
+      [target_points](const auto basis, const auto quadrature,
+                      const size_t num_points) noexcept->Matrix {
+        return interpolation_matrix<decltype(basis)::value,
+                                    decltype(quadrature)::value>(num_points,
+                                                                 target_points);
+      },
+      mesh);
 }
 
 }  // namespace Spectral
@@ -347,6 +417,10 @@ const Matrix& linear_filter_matrix(const size_t num_points) noexcept {
       size_t, const DataVector&) noexcept;                                    \
   template Matrix Spectral::interpolation_matrix<BASIS(data), QUAD(data)>(    \
       size_t, const std::vector<double>&) noexcept;
+template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
+                                               const DataVector&) noexcept;
+template Matrix Spectral::interpolation_matrix(
+    const Mesh<1>&, const std::vector<double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Spectral::Basis::Legendre),
                         (Spectral::Quadrature::Gauss,

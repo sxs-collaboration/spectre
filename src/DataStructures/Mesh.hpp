@@ -12,6 +12,7 @@
 #include "DataStructures/Index.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
 
 /// \cond
 namespace PUP {
@@ -32,16 +33,15 @@ enum class Quadrature;
  * placement of grid points in the computational domain. It does so through a
  * choice of basis functions, quadrature and number of points \f$N\f$ in each
  * dimension. The grid points are the associated collocation points and can be
- * computed by `Spectral::collocation_points`. This means that a simulated
- * physical field can be represented by its value on each grid point and then
- * approximated by a polynomial of degree \f$p=N-1\f$ through a linear
- * combination of Lagrange polynomials.
+ * obtained from Spectral::collocation_points(const Mesh<1>&):
  *
- * \note A field represented by a `DataVector` has no meaning without an
- * accompanying `Mesh` to provide context. Only w.r.t a `Mesh` can a
- * `DataVector` of length `mesh.number_of_grid_points()` be interpreted as the
- * field values at the collocation points. These field values are identical to
- * the nodal expansion coefficients in Lagrange polynomials.
+ * \snippet Test_Spectral.cpp get_points_for_mesh
+ *
+ * A simulated physical field can be represented by a DataVector of length
+ * number_of_grid_points() that holds the field value on each point of
+ * the computational grid. These values are identical to the field's nodal
+ * expansion coefficients. They approximate the field by a polynomial of degree
+ * \f$p=N-1\f$ through a linear combination of Lagrange polynomials.
  *
  * \tparam Dim the number of dimensions of the computational grid.
  */
@@ -107,7 +107,8 @@ class Mesh {
   const Index<Dim>& extents() const noexcept { return extents_; }
 
   /*!
-   * \brief The number of grid points in dimension `d` of the grid.
+   * \brief The number of grid points in dimension \p d of the grid
+   * (zero-indexed).
    */
   size_t extents(const size_t d) const noexcept { return extents_[d]; }
 
@@ -130,7 +131,7 @@ class Mesh {
   }
 
   /*!
-   * \brief The basis chosen in dimension `d` of the grid.
+   * \brief The basis chosen in dimension \p d of the grid (zero-indexed).
    */
   Spectral::Basis basis(const size_t d) const noexcept {
     return gsl::at(bases_, d);
@@ -144,20 +145,47 @@ class Mesh {
   }
 
   /*!
-   * \brief The quadrature chosen in dimension `d` of the grid.
+   * \brief The quadrature chosen in dimension \p d of the grid (zero-indexed).
    */
   Spectral::Quadrature quadrature(const size_t d) const noexcept {
     return gsl::at(quadratures_, d);
   }
 
   /*!
-   * \brief Returns a mesh with dimension `d` removed.
+   * \brief Returns a Mesh with dimension \p d removed (zero-indexed).
    *
-   * \param d The dimension to remove (zero-indexed).
+   * \see slice_through()
    */
   // clang-tidy: incorrectly reported redundancy in template expression
   template <size_t N = Dim, Requires<(N > 0 and N == Dim)> = nullptr>  // NOLINT
   Mesh<Dim - 1> slice_away(size_t d) const noexcept;
+
+  /*!
+   * \brief Returns a Mesh with the dimensions \p d, ... present (zero-indexed).
+   *
+   * \details Generally you use this method to obtain a lower-dimensional Mesh
+   * by slicing through a subset of the dimensions. However, you can also
+   * reorder dimensions using this method by slicing through the dimensions in
+   * an order you choose.
+   *
+   * \see slice_away()
+   */
+  template <typename... D, Requires<(sizeof...(D) <= Dim)> = nullptr>
+  Mesh<sizeof...(D)> slice_through(D... d) const noexcept {
+    static_assert(cpp17::conjunction_v<tt::is_integer<D>...>,
+                  "The dimensions must be integers.");
+    const std::array<size_t, sizeof...(D)> dims{{static_cast<size_t>(d)...}};
+    return slice_through(dims);
+  }
+
+  /*!
+   * \brief Returns a Mesh with the dimensions \p dims present (zero-indexed).
+   *
+   * \see slice_through() The templated overload of this function
+   */
+  template <size_t SliceDim, Requires<(SliceDim <= Dim)> = nullptr>
+  Mesh<SliceDim> slice_through(const std::array<size_t, SliceDim>& dims) const
+      noexcept;
 
   // clang-tidy: runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
