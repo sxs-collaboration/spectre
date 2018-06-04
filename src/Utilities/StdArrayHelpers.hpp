@@ -8,6 +8,8 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
+#include <type_traits>
 #include <utility>
 
 #include "Utilities/Gsl.hpp"
@@ -148,3 +150,22 @@ inline T magnitude(const std::array<T, 3>& a) noexcept {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 //@}
+
+namespace std_array_helpers_detail {
+template <typename T, size_t Dim, typename F, size_t... Indices>
+auto map_array_impl(const std::array<T, Dim>& array, const F& f,
+                    const std::index_sequence<Indices...> /*meta*/) noexcept {
+  return std::array<std::decay_t<decltype(f(std::declval<T>()))>, Dim>{
+      {f(array[Indices])...}};
+}
+}  // namespace std_array_helpers_detail
+
+/// \ingroup UtilitiesGroup
+/// Applies a function to each element of an array, producing a new
+/// array of the results.  The elements of the new array are
+/// constructed in place, so they need not be default constructible.
+template <typename T, size_t Dim, typename F>
+auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
+  return std_array_helpers_detail::map_array_impl(
+      array, f, std::make_index_sequence<Dim>{});
+}
