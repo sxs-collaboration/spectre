@@ -261,20 +261,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   check_vectors(nine - (one * nine), ModalVector(num_pts, 0.0));
   check_vectors((one * nine) - nine, ModalVector(num_pts, 0.0));
 
-  //~ check_vectors(ModalVector(num_pts, -1.0 / 9.0), -one / nine);
-  //~ check_vectors(ModalVector(num_pts,-8.0 / 9.0),-(nine - one) / nine);
   check_vectors(ModalVector(num_pts, 18.0), (one / 0.5) * nine);
-  //~ check_vectors(ModalVector(num_pts, 1.0), 9.0 / nine);
-  //~ check_vectors(ModalVector(num_pts, 1.0), (one * 9.0) / nine);
 
   CHECK(-14 == min(val));
   CHECK(12 == max(val));
   check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.}, abs(val));
   check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.}, fabs(val));
-
-  check_vectors(step_function(
-                ModalVector{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0}),
-                ModalVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
 
   check_vectors(ModalVector(num_pts, 81.0), nine * nine);
   check_vectors(ModalVector(num_pts, 81.0), nine * (nine * one));
@@ -282,8 +274,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   check_vectors(ModalVector(num_pts, 81.0), 9.0 * nine);
   check_vectors(ModalVector(num_pts, 81.0), nine * 9.0);
   check_vectors(ModalVector(num_pts, 1.0), nine / 9.0);
-  //~ check_vectors(ModalVector(num_pts, 1.0), nine / (one * 9.0));
-  //~ check_vectors(ModalVector(num_pts, 9.0), (one * nine) / one);
 
   ModalVector dummy(nine * nine * 1.0);
   check_vectors(ModalVector(num_pts, 81.0), dummy);
@@ -354,18 +344,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   test_assignment = 2.0;
   test_assignment /= 2.0;
   check_vectors(ModalVector(num_pts, 1.0), test_assignment);
-  //~ test_assignment /= ModalVector(num_pts, 0.5);
-  //~ check_vectors(ModalVector(num_pts, 2.0), test_assignment);
-  //~ test_assignment /=
-  //~       (ModalVector(num_pts, 2.0) * ModalVector(num_pts, 3.0));
-  //~ check_vectors(ModalVector(num_pts, 1.0 / 3.0), test_assignment);
 
   // Test assignment where the RHS is an expression that contains the LHS
   ModalVector x(num_pts, 4.);
   x *= x;
   check_vectors(ModalVector(num_pts, 16.0), x);
-  //~ x /= x;
-  //~ check_vectors(ModalVector(num_pts, 1.0), x);
 
   // Test addition of arrays of ModalVectors to arrays of doubles.
   const ModalVector t1{0.0, 1.0, 2.0, 3.0};
@@ -445,6 +428,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
   test_72 = eight * nine;
   check_vectors(ModalVector(num_pts, 72.0), test_72);
   CHECK(test_72.is_owning());
+  test_72 = test_72 / eight;
+  check_vectors(ModalVector(num_pts, 9.0), test_72);
   test_72 = nine;
   test_72 *= eight;
   check_vectors(ModalVector(num_pts, 72.0), test_72);

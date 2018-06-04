@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines class Data.
+/// Defines class ModalVector.
 
 #pragma once
 
@@ -19,7 +19,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-//~ #include "Utilities/PointerVector.hpp" // IWYU complains on double includes
+#include "Utilities/PointerVector.hpp" // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 
 /// \cond HIDDEN_SYMBOLS
@@ -37,16 +37,26 @@ using std::abs;  // NOLINT
  * \brief A class for storing spectral coefficients on a mesh.
  *
  * A ModalVector holds an array of spectral coefficients, and can be
- * either owning (the array is deleted when the Data goes out of scope) or
- * non-owning, meaning it just has a pointer to an array.
+ * either owning (the array is deleted when the ModalVector goes out of scope)
+ * or non-owning, meaning it just has a pointer to an array.
  *
  * Only basic mathematical operations are supported with ModalVectors. In
- * addition to the addition, subtraction, multiplication, division, etc. there
+ * addition to addition, subtraction, multiplication, division, there
  * are the following element-wise operations:
  *
  * - abs
  * - max
  * - min
+ *
+ * In order to allow filtering, multiplication (*, *=) and division (/, /=)
+ * operations with a DataVectors (holding filters) is supported.
+ *
+ * Note : Because of no tagging feature yet, expressions containing purely
+ * DataVectors will evaluate and get copy-constructed to a ModalVector.
+ * Disallowing this would also mean disallowing expressions such as
+ * ModalVector coeffs_filtered(coeffs * filter) - where:
+ *  - coeffs is a ModalVector
+ *  - filter is a DataVector
  */
 class ModalVector {
   /// \cond HIDDEN_SYMBOLS
@@ -77,8 +87,9 @@ class ModalVector {
   ///
   /// \param size number of values
   /// \param value the value to initialize each element.
-  explicit ModalVector(
-  size_t size, double value = std::numeric_limits<double>::signaling_NaN());
+  explicit
+  ModalVector(size_t size,
+              double value = std::numeric_limits<double>::signaling_NaN());
 
   /// Create a non-owning ModalVector that points to `start`
   ModalVector(double* start, size_t size);
@@ -359,11 +370,6 @@ class ModalVector {
   }
   // @}
 
-  /// If less than zero returns zero, otherwise returns one
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) step_function(
-      const ModalVector& t) noexcept {
-    return step_function(t.data_);
-  }
 
  private:
   /// \cond HIDDEN_SYMBOLS
@@ -459,7 +465,6 @@ std::array<ModalVector, Dim>& operator-=(
   return lhs;
 }
 
-// FIXME PK: What is the purpose of next 2 functions copied from DataVector?
 /// \cond HIDDEN_SYMBOLS
 template <typename VT, bool VF>
 ModalVector::ModalVector(const blaze::Vector<VT, VF>& expression)
