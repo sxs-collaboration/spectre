@@ -25,7 +25,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> positive_dis(0, 1);
 
-  const double width = positive_dis(gen);
+  // If the width is too small then the terms in the second derivative
+  // can become very large and fail the test due to rounding errors.
+  const double width = positive_dis(gen) + 0.5;
   CAPTURE_PRECISE(width);
   const double amplitude = positive_dis(gen);
   CAPTURE_PRECISE(amplitude);
