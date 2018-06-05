@@ -20,8 +20,9 @@ class MathFunction;
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
                   "[PointwiseFunctions][Unit]") {
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  const auto seed = std::random_device{}();
+  CAPTURE(seed);
+  std::mt19937 gen(seed);
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> positive_dis(0, 1);
 

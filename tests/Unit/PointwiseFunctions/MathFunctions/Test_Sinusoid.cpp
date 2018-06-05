@@ -20,8 +20,9 @@ class MathFunction;
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
                   "[PointwiseFunctions][Unit]") {
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  const auto seed = std::random_device{}();
+  CAPTURE(seed);
+  std::mt19937 gen(seed);
   std::uniform_real_distribution<> real_dis(-1, 1);
   const double wavenumber = real_dis(gen);
   CAPTURE_PRECISE(wavenumber);
