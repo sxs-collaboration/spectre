@@ -297,31 +297,47 @@ template <typename TagList, typename Tag>
 using has_subitems = tmpl::not_<
     std::is_same<typename Subitems<TagList, Tag>::type, tmpl::list<>>>;
 
-template <typename TagList, typename Caller, typename Callee, typename List,
-          typename = std::nullptr_t>
-struct create_dependency_graph {
-  using new_edge =
-      tmpl::edge<DataBox_detail::first_matching_tag<TagList, Callee>,
-                 DataBox_detail::first_matching_tag<TagList, Caller>>;
-  using type = tmpl::conditional_t<tmpl::list_contains_v<List, new_edge>, List,
-                                   tmpl::push_back<List, new_edge>>;
+template <typename ComputeTag, typename ArgumentTag,
+          typename FoundComputeItemInBox>
+struct report_missing_compute_item_argument {
+  static_assert(cpp17::is_same_v<ComputeTag, void>,
+                "A compute item's argument could not be found in the "
+                "DataBox or was found multiple times.  See the first "
+                "template argument for the compute item and the second "
+                "for the missing argument.");
 };
 
-template <typename TagList, typename Caller, typename Callee, typename List>
-struct create_dependency_graph<TagList, Caller, Callee, List,
-                               Requires<is_compute_item_v<Callee>>> {
-  using partial_sub_tree =
-      tmpl::fold<typename Callee::argument_tags, List,
-                 create_dependency_graph<tmpl::pin<TagList>, tmpl::pin<Callee>,
-                                         tmpl::_element, tmpl::_state>>;
-  using subitem_dependency =
-      tmpl::transform<typename Subitems<TagList, Callee>::type,
-                      tmpl::bind<tmpl::edge, tmpl::pin<Callee>, tmpl::_1>>;
+template <typename ComputeTag, typename ArgumentTag>
+struct report_missing_compute_item_argument<ComputeTag, ArgumentTag,
+                                            std::true_type> {
+  using type = void;
+};
 
-  using sub_tree = tmpl::append<partial_sub_tree, subitem_dependency>;
-  using type = tmpl::conditional_t<
-      cpp17::is_same_v<void, Caller>, sub_tree,
-      tmpl::push_back<sub_tree, tmpl::edge<Callee, Caller>>>;
+template <typename TagList, typename ComputeTag>
+struct create_dependency_graph {
+#ifdef SPECTRE_DEBUG
+  using argument_check_assertion =
+      tmpl::transform<typename ComputeTag::argument_tags,
+                      report_missing_compute_item_argument<
+                          tmpl::pin<ComputeTag>, tmpl::_1,
+                          DataBox_detail::has_unique_matching_tag<
+                              tmpl::pin<TagList>, tmpl::_1>>>;
+#endif  // SPECTRE_DEBUG
+  // These edges record that a compute item's value depends on the
+  // values of it's arguments.
+  using compute_tag_argument_edges =
+      tmpl::transform<typename ComputeTag::argument_tags,
+                      tmpl::bind<tmpl::edge,
+                                 tmpl::bind<DataBox_detail::first_matching_tag,
+                                            tmpl::pin<TagList>, tmpl::_1>,
+                                 tmpl::pin<ComputeTag>>>;
+  // These edges record that the values of the subitems of a compute
+  // item depend on the value of the compute item itself.
+  using subitem_reverse_edges =
+      tmpl::transform<typename Subitems<TagList, ComputeTag>::type,
+                      tmpl::bind<tmpl::edge, tmpl::pin<ComputeTag>, tmpl::_1>>;
+
+  using type = tmpl::append<compute_tag_argument_edges, subitem_reverse_edges>;
 };
 }  // namespace DataBox_detail
 
@@ -617,10 +633,9 @@ class DataBox<tmpl::list<Tags...>>
       tmpl::list<> /*meta*/) noexcept {}
   // End mutating items in the DataBox
 
-  using edge_list =
-      tmpl::fold<compute_item_tags, tmpl::list<>,
-                 DataBox_detail::create_dependency_graph<
-                     tmpl::pin<tags_list>, void, tmpl::_element, tmpl::_state>>;
+  using edge_list = tmpl::join<tmpl::transform<
+      compute_item_tags,
+      DataBox_detail::create_dependency_graph<tmpl::pin<tags_list>, tmpl::_1>>>;
 
   bool mutate_locked_box_{false};
 };
@@ -1018,17 +1033,15 @@ template <typename... MutateTags, typename TagList, typename Invokable,
           typename... Args>
 void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
             Args&&... args) noexcept {
-  using mutate_tags_list =
-      tmpl::list<DataBox_detail::first_matching_tag<TagList, MutateTags>...>;
+  static_assert(
+      tmpl2::flat_all_v<
+          DataBox_detail::has_unique_matching_tag_v<TagList, MutateTags>...>,
+      "One of the tags being mutated could not be found in the DataBox or "
+      "is a base tag identifying more than one tag.");
   static_assert(
       not tmpl2::flat_any_v<db::is_compute_item_v<
           DataBox_detail::first_matching_tag<TagList, MutateTags>>...>,
       "Cannot mutate a compute item");
-  static_assert(
-      tmpl2::flat_all_v<(DataBox_detail::number_of_matching_tags<
-                             TagList, MutateTags> == 1)...>,
-      "One of the tags being mutated via a base tag has more than one tag in "
-      "the DataBox that derives off of it. This is not allowed.");
   if (UNLIKELY(box->mutate_locked_box_)) {
     ERROR(
         "Unable to mutate a DataBox that is already being mutated. This "
@@ -1042,6 +1055,8 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
                   DataBox_detail::first_matching_tag<TagList, MutateTags>>()
                .mutate())...,
       std::forward<Args>(args)...);
+  using mutate_tags_list =
+      tmpl::list<DataBox_detail::first_matching_tag<TagList, MutateTags>...>;
   // For all the tags in the DataBox, check if one of their subtags is
   // being mutated and if so add the parent to the list of tags
   // being mutated. Then, remove any tags that would be passed
@@ -1085,7 +1100,7 @@ template <typename Tag, Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>>>
 SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
     -> const item_type<Tag, tags_list>& {
   DEBUG_STATIC_ASSERT(
-      DataBox_detail::number_of_matching_tags<tags_list, Tag> == 1,
+      DataBox_detail::has_unique_matching_tag_v<tags_list, Tag>,
       "Found more than one (or no) tag(s) in the DataBox that matches the tag "
       "being retrieved. This happens because more than one tag with the same "
       "base (class) tag was added to the DataBox.");
@@ -1230,6 +1245,11 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
 
   // 1. Full list of old tags, and the derived tags list of the RemoveTags
   using old_box_tags = typename std::decay_t<Box>::tags_list;
+  static_assert(
+      tmpl::all<RemoveTags, DataBox_detail::has_unique_matching_tag<
+                                tmpl::pin<old_box_tags>, tmpl::_1>>::value,
+      "One of the tags being removed could not be found in the DataBox or "
+      "is a base tag identifying more than one tag.");
   using remove_tags =
       tmpl::transform<RemoveTags,
                       tmpl::bind<DataBox_detail::first_matching_tag,
