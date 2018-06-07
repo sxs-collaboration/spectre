@@ -17,6 +17,7 @@ allowed_tags = [
                 "ErrorHandling",
                 "Evolution",
                 "GeneralizedHarmonic",
+                "GrMhd",
                 "H5",
                 "IO",
                 "LinearAlgebra",

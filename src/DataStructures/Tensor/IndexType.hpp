@@ -92,6 +92,39 @@ inline std::ostream& operator<<(std::ostream& os,
   return os << "NoFrame";
 }
 /// \endcond
+
+/// \ingroup TensorGroup
+/// The frame-dependent prefix used when constructing the string returned by the
+/// name function of a tag.
+///
+/// For Frame::Inertial it is the empty string, otherwise, it is the name of
+/// the Frame followed by an underscore (as the name will be used in I/O).
+/// \example
+/// \snippet Test_GrMhd.cpp prefix_example
+template <typename Fr>
+inline std::string prefix() noexcept;
+
+/// \cond HIDDEN_SYMBOLS
+template <>
+inline std::string prefix<Frame::Logical>() noexcept {
+  return "Logical_";
+}
+
+template <>
+inline std::string prefix<Frame::Grid>() noexcept {
+  return "Grid_";
+}
+
+template <>
+inline std::string prefix<Frame::Inertial>() noexcept {
+  return "";
+}
+
+template <>
+inline std::string prefix<Frame::Distorted>() noexcept {
+  return "Distorted_";
+}
+/// \endcond
 }  // namespace Frame
 
 /// \ingroup TensorGroup
