@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -130,9 +131,7 @@ struct print {
   }
   template <typename T, Requires<has_lower_bound<T>::value> = nullptr>
   static std::string print_lower_bound() noexcept {
-    std::ostringstream ss;
-    ss << "min=" << T::lower_bound();
-    return ss.str();
+    return "min=" + get_output(T::lower_bound());
   }
   template <typename T, Requires<not has_lower_bound<T>::value> = nullptr>
   static std::string print_lower_bound() noexcept {
@@ -140,9 +139,7 @@ struct print {
   }
   template <typename T, Requires<has_upper_bound<T>::value> = nullptr>
   static std::string print_upper_bound() noexcept {
-    std::ostringstream ss;
-    ss << "max=" << T::upper_bound();
-    return ss.str();
+    return "max=" + get_output(T::upper_bound());
   }
   template <typename T, Requires<not has_upper_bound<T>::value> = nullptr>
   static std::string print_upper_bound() noexcept {
@@ -150,9 +147,7 @@ struct print {
   }
   template <typename T, Requires<has_lower_bound_on_size<T>::value> = nullptr>
   static std::string print_lower_bound_on_size() noexcept {
-    std::ostringstream ss;
-    ss << "min size=" << T::lower_bound_on_size();
-    return ss.str();
+    return "min size=" + get_output(T::lower_bound_on_size());
   }
   template <typename T,
             Requires<not has_lower_bound_on_size<T>::value> = nullptr>
@@ -161,9 +156,7 @@ struct print {
   }
   template <typename T, Requires<has_upper_bound_on_size<T>::value> = nullptr>
   static std::string print_upper_bound_on_size() noexcept {
-    std::ostringstream ss;
-    ss << "max size=" << T::upper_bound_on_size();
-    return ss.str();
+    return "max size=" + get_output(T::upper_bound_on_size());
   }
   template <typename T,
             Requires<not has_upper_bound_on_size<T>::value> = nullptr>
