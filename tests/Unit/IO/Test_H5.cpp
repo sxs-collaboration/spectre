@@ -31,7 +31,7 @@
 #include "IO/VolumeDataFile.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.File.h5");

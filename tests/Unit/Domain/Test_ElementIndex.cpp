@@ -12,7 +12,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/SegmentId.hpp"  // IWYU pragma: keep
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 
 namespace {
 template <size_t VolumeDim>

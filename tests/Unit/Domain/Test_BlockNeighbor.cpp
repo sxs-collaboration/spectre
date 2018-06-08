@@ -3,14 +3,16 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {

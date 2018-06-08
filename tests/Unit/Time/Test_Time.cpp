@@ -10,6 +10,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/GetOutput.hpp"
 // IWYU pragma: no_include "Utilities/Rational.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

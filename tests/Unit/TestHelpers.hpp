@@ -224,17 +224,6 @@ void check_cmp(const T& less, const T& greater) {
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Get the streamed output `c` as a `std::string`
- */
-template <typename Container>
-std::string get_output(const Container& c) {
-  std::ostringstream os;
-  os << c;
-  return os.str();
-}
-
-/*!
- * \ingroup TestingFrameworkGroup
  * \brief Calculates the derivative of an Invocable at a point x - represented
  * by an array of doubles - in the domain of `map` with a sixth-order finite
  * difference method.

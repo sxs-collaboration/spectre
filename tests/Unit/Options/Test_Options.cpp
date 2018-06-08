@@ -16,8 +16,8 @@
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
   Options<tmpl::list<>> opts("");

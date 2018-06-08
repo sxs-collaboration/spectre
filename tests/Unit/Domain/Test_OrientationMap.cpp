@@ -16,6 +16,7 @@
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
