@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -403,4 +404,43 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.PartialSlice", "[Unit][Domain]") {
         (std::unordered_map<Direction<dim>, decltype(expected_xi)>{
             {Direction<dim>::lower_xi(), expected_xi},
             {Direction<dim>::upper_eta(), expected_eta}}));
+}
+
+namespace {
+struct SimpleBase : db::SimpleTag {
+  static std::string name() noexcept { return "SimpleBase"; }
+  using type = int;
+};
+
+struct SimpleDerived : SimpleBase {
+  using base = SimpleBase;
+  static std::string name() noexcept { return "SimpleDerived"; }
+  using type = int;
+};
+
+struct ComputeBase : db::SimpleTag {
+  std::string name() noexcept { return "ComputeBase"; }
+  using type = double;
+};
+
+struct ComputeDerived : ComputeBase, db::ComputeTag {
+  using base = ComputeBase;
+  static std::string name() noexcept { return "ComputeDerived"; }
+  static auto function(const int& arg) noexcept { return arg + 1.5; }
+  using argument_tags = tmpl::list<SimpleBase>;
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
+  const auto interface = [](const auto xi_value,
+                            const auto eta_value) noexcept {
+    return std::unordered_map<Direction<2>, std::decay_t<decltype(xi_value)>>{
+        {Direction<2>::lower_xi(), xi_value},
+        {Direction<2>::upper_eta(), eta_value}};
+  };
+  const auto box = db::create<
+      db::AddSimpleTags<Tags::Interface<Dirs, SimpleDerived>>,
+      db::AddComputeTags<Dirs, Tags::Interface<Dirs, ComputeDerived>>>(
+      interface(4, 5));
+  CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));
 }

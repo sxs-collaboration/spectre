@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -15,29 +16,20 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"
+#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
 class DataVector;
-template <size_t Dim>
-class Element;
-template <size_t Dim>
-class Index;
-template <size_t Dim, typename TargetFrame>
-class ElementMap;
-namespace Frame {
-struct Logical;
-struct Inertial;
-}  // namespace Frame
 /// \endcond
 
 namespace OptionTags {
@@ -160,6 +152,11 @@ struct InterfaceBase;
 /// applied on a slice, it may indicate them using a `volume_tags`
 /// typelist in the tag struct.
 ///
+/// If using the base tag mechanism for an interface tag is desired,
+/// then `Tag` can have a `base` type alias pointing to its base
+/// class.  (This requirement is due to the lack of a way to determine
+/// a type's base classes in C++.)
+///
 /// If the type of the item is a Variables, then each tag in the
 /// Variables must specify whether it should be sliced from the volume
 /// or computed (or set) on the interface.  This is done using a
@@ -168,6 +165,10 @@ struct InterfaceBase;
 /// member.  DataBox tags for sliced Variables will be compute items
 /// performing the slicing.  %Tags for non-sliced Variables will
 /// perform the same action as the corresponding volume tag.
+///
+/// It must be possible to determine the type associated with `Tag`
+/// without reference to a DataBox, i.e., `db::item_type<Tag>` must
+/// work.
 ///
 /// \tparam DirectionsTag the item of directions
 /// \tparam Tag the tag labeling the item
@@ -259,13 +260,24 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   }
 };
 
+template <typename DirectionsTag, typename Tag, typename = cpp17::void_t<>>
+struct GetBaseTagIfPresent {};
+
+template <typename DirectionsTag, typename Tag>
+struct GetBaseTagIfPresent<DirectionsTag, Tag,
+                           cpp17::void_t<typename Tag::base>>
+    : Interface<DirectionsTag, typename Tag::base> {
+  static_assert(cpp17::is_base_of_v<typename Tag::base, Tag>,
+                "Tag `base` alias must be a base class of `Tag`.");
+};
+
 template <bool IsComputeItem, typename DirectionsTag, typename NameTag,
           typename FunctionTag>
 struct InterfaceImpl;
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
-    : db::SimpleTag {
+    : virtual db::SimpleTag, GetBaseTagIfPresent<DirectionsTag, NameTag> {
   static_assert(cpp17::is_same_v<NameTag, FunctionTag>,
                 "Can't specify a function for a simple item tag");
   using tag = NameTag;
@@ -276,7 +288,7 @@ struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
-    : db::ComputeTag {
+    : db::ComputeTag, GetBaseTagIfPresent<DirectionsTag, NameTag> {
   using tag = NameTag;
   using forwarded_argument_tags =
       interface_compute_item_argument_tags<DirectionsTag, FunctionTag>;
@@ -289,7 +301,7 @@ struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
 struct InterfaceBase
-    : db::PrefixTag,
+    : virtual db::PrefixTag,
       Interface_detail::InterfaceImpl<db::is_compute_item_v<FunctionTag>,
                                       DirectionsTag, NameTag, FunctionTag> {
   static std::string name() noexcept { return "Interface"; }
