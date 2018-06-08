@@ -93,9 +93,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   // Test output:
   CHECK(get_output(block) ==
         "Block 3:\n"
-        "Neighbors:\n"
-        "-1: Id = 2; orientation = (-0, +1)\n"
-        "+0: Id = 1; orientation = (+0, +1)\n"
+        "Neighbors: "
+        "([+0,Id = 1; orientation = (+0, +1)],"
+        "[-1,Id = 2; orientation = (-0, +1)])\n"
         "External boundaries: (+1,-0)\n");
 
   // Test comparison:

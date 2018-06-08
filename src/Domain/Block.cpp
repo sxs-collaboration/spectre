@@ -42,11 +42,7 @@ template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
                          const Block<VolumeDim, TargetFrame>& block) {
   os << "Block " << block.id() << ":\n";
-  os << "Neighbors:\n";
-  for (const auto& direction_to_neighbors : block.neighbors()) {
-    os << direction_to_neighbors.first << ": " << direction_to_neighbors.second
-       << "\n";
-  }
+  os << "Neighbors: " << block.neighbors() << "\n";
   os << "External boundaries: " << block.external_boundaries() << "\n";
   return os;
 }
