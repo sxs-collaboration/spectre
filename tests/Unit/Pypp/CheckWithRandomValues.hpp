@@ -5,7 +5,31 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+// IWYU pragma: begin_exports
+#include <boost/preprocessor/comparison/equal.hpp>
+#include <boost/preprocessor/control/if.hpp>
+#include <boost/preprocessor/debug/assert.hpp>
+#include <boost/preprocessor/list/adt.hpp>
+#include <boost/preprocessor/list/for_each.hpp>
+#include <boost/preprocessor/list/for_each_product.hpp>
+#include <boost/preprocessor/list/to_tuple.hpp>
+#include <boost/preprocessor/list/transform.hpp>
+#include <boost/preprocessor/logical/not.hpp>
+#include <boost/preprocessor/tuple/elem.hpp>
+#include <boost/preprocessor/tuple/enum.hpp>
+#include <boost/preprocessor/tuple/pop_front.hpp>
+#include <boost/preprocessor/tuple/push_back.hpp>
+#include <boost/preprocessor/tuple/push_front.hpp>
+#include <boost/preprocessor/tuple/size.hpp>
+#include <boost/preprocessor/tuple/to_list.hpp>
+#include <boost/preprocessor/variadic/elem.hpp>
+#include <boost/preprocessor/variadic/to_list.hpp>
+#include <boost/preprocessor/variadic/to_tuple.hpp>
+#include <boost/vmd/is_empty.hpp>
+// IWYU pragma: end_exports
+
 #include <initializer_list>
+#include <limits>
 #include <random>
 #include <string>
 #include <tuple>
@@ -233,7 +257,7 @@ void check_with_random_values_impl(
       std::forward<F>(f));
   const auto helper = [&module_name, &function_names, &args, &results,
                        &member_args, &used_for_size](auto result_i) {
-    (void)member_args;  // avoid compiler warning
+    (void)member_args;    // avoid compiler warning
     (void)used_for_size;  // avoid compiler warning
     constexpr size_t iter = decltype(result_i)::value;
     INFO("function: " << function_names[iter]);
@@ -639,4 +663,242 @@ void check_with_random_values(
       std::make_index_sequence<tmpl::size<argument_types>::value>{},
       std::make_index_sequence<sizeof...(MemberArgs)>{}, TagsList{});
 }
+
+/// \cond
+#define INVOKE_FUNCTION_TUPLE_PUSH_BACK(r, DATA, ELEM) \
+  BOOST_PP_TUPLE_PUSH_BACK(DATA, ELEM)
+
+#define INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS_IMPL(r, DATA)              \
+  BOOST_PP_TUPLE_ELEM(                                                       \
+      0, BOOST_PP_TUPLE_ELEM(                                                \
+             0, DATA))<BOOST_PP_TUPLE_ELEM(2, BOOST_PP_TUPLE_ELEM(0, DATA)), \
+                       BOOST_PP_TUPLE_ENUM(BOOST_PP_TUPLE_POP_FRONT(DATA))>  \
+      BOOST_PP_TUPLE_ELEM(1, BOOST_PP_TUPLE_ELEM(0, DATA));
+
+// The case where there is more than one tuple of template parameters to tensor
+// product together. The first tuple of template parameters is transformed to a
+// tuple of (FUNCTION_NAME, TUPLE_ARGS, TEMPLATE_PARAM). Then the macro will
+// extract the values. The reason for needing to do this is that
+// BOOST_PP_LIST_FOR_EACH_PRODUCT does not allow for passing extra data along
+// to the macro.
+#define INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS(TUPLE_OF_TEMPLATE_PARAMS) \
+  BOOST_PP_LIST_FOR_EACH_PRODUCT(                                           \
+      INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS_IMPL,                       \
+      BOOST_PP_TUPLE_SIZE(TUPLE_OF_TEMPLATE_PARAMS), TUPLE_OF_TEMPLATE_PARAMS)
+
+// The case where there is one tuple of template parameters to iterate over.
+#define INVOKE_FUNCTION_WITH_SINGLE_TEMPLATE_PARAM(_, DATA, ELEM) \
+  BOOST_PP_TUPLE_ELEM(0, DATA)<ELEM> BOOST_PP_TUPLE_ELEM(1, DATA);
+
+#define INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS_TUPLE_TO_LIST(r, _, ELEM) \
+  BOOST_PP_TUPLE_TO_LIST(ELEM)
+/// \endcond
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Macro used to invoke a test function of multiple template arguments.
+ *
+ * This macro allows to generate calls to multiple instances of
+ * a test function template, all of which will receive the same parameters.
+ * The first argument to this macro is the name of the function. The second
+ * argument is a macro-tuple containing the parameters passed to each instance,
+ * e.g. `(x, y)`. The remaining arguments are macro-tuples of the values for
+ * each template parameter one wants to loop over, e.g.
+ * `(1, 2, 3), (Frame::Inertial, Frame::Grid)`. For example, a function template
+ *
+ * \code
+ * template <class Arg1, size_t Arg2, class Arg3>
+ * my_function(const double& var_1, const int& var_2) noexcept { ... }
+ * \endcode
+ *
+ * can be invoked by writing
+ *
+ * \code
+ * INVOKE_TEST_FUNCTION(my_function, (d, i), (a, b, c), (1, 2, 3), (A, B, C))
+ * \endcode
+ *
+ * which will generate
+ *
+ * \code
+ * my_function<a, 1, A>(d, i);
+ * my_function<a, 1, B>(d, i);
+ * my_function<a, 1, C>(d, i);
+ * my_function<a, 2, A>(d, i);
+ * my_function<a, 2, B>(d, i);
+ * my_function<a, 2, C>(d, i);
+ * my_function<a, 3, A>(d, i);
+ * my_function<a, 3, B>(d, i);
+ * my_function<a, 3, C>(d, i);
+ * my_function<b, 1, A>(d, i);
+ * my_function<b, 1, B>(d, i);
+ * my_function<b, 1, C>(d, i);
+ * my_function<b, 2, A>(d, i);
+ * my_function<b, 2, B>(d, i);
+ * my_function<b, 2, C>(d, i);
+ * my_function<b, 3, A>(d, i);
+ * my_function<b, 3, B>(d, i);
+ * my_function<b, 3, C>(d, i);
+ * my_function<c, 1, A>(d, i);
+ * my_function<c, 1, B>(d, i);
+ * my_function<c, 1, C>(d, i);
+ * my_function<c, 2, A>(d, i);
+ * my_function<c, 2, B>(d, i);
+ * my_function<c, 2, C>(d, i);
+ * my_function<c, 3, A>(d, i);
+ * my_function<c, 3, B>(d, i);
+ * my_function<c, 3, C>(d, i);
+ * \endcode
+ *
+ * \note The order of the macro-tuples of values must match the order of the
+ * template parameters of the function.
+ *
+ * \note The function to be called must at least have one template argument,
+ * so passing an empty set of template parameters will not work.
+ */
+#define INVOKE_TEST_FUNCTION(FUNCTION_NAME, TUPLE_ARGS, ...)                   \
+  BOOST_PP_ASSERT_MSG(BOOST_PP_NOT(BOOST_VMD_IS_EMPTY(__VA_ARGS__)),           \
+                      "You cannot pass an empty set of template parameters "   \
+                      "to INVOKE_TEST_FUNCTION")                               \
+  BOOST_PP_TUPLE_ENUM(                                                         \
+      0,                                                                       \
+      BOOST_PP_IF(                                                             \
+          BOOST_PP_EQUAL(                                                      \
+              BOOST_PP_TUPLE_SIZE(BOOST_PP_VARIADIC_TO_TUPLE(__VA_ARGS__)),    \
+              1),                                                              \
+          (BOOST_PP_LIST_FOR_EACH(                                             \
+              INVOKE_FUNCTION_WITH_SINGLE_TEMPLATE_PARAM,                      \
+              (FUNCTION_NAME, TUPLE_ARGS),                                     \
+              BOOST_PP_TUPLE_TO_LIST(                                          \
+                  BOOST_PP_VARIADIC_ELEM(0, __VA_ARGS__)))),                   \
+          (INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS(                          \
+              BOOST_PP_TUPLE_PUSH_FRONT(                                       \
+                  BOOST_PP_LIST_TO_TUPLE(BOOST_PP_LIST_TRANSFORM(              \
+                      INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS_TUPLE_TO_LIST, \
+                      _, BOOST_PP_LIST_REST(                                   \
+                             BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__)))),        \
+                  BOOST_PP_LIST_TRANSFORM(                                     \
+                      INVOKE_FUNCTION_TUPLE_PUSH_BACK,                         \
+                      (FUNCTION_NAME, TUPLE_ARGS),                             \
+                      BOOST_PP_TUPLE_TO_LIST(                                  \
+                          BOOST_PP_VARIADIC_ELEM(0, __VA_ARGS__))))))))
+
+/// \cond
+#define GENERATE_UNINITIALIZED_DOUBLE \
+  const double d(std::numeric_limits<double>::signaling_NaN())
+
+#define GENERATE_UNINITIALIZED_DATAVECTOR const DataVector dv(5)
+
+#define GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR \
+  GENERATE_UNINITIALIZED_DOUBLE;                     \
+  GENERATE_UNINITIALIZED_DATAVECTOR
+
+#define CHECK_FOR_DOUBLES(FUNCTION_NAME, ...) \
+  INVOKE_TEST_FUNCTION(FUNCTION_NAME, (d), __VA_ARGS__)
+
+#define CHECK_FOR_DATAVECTORS(FUNCTION_NAME, ...) \
+  INVOKE_TEST_FUNCTION(FUNCTION_NAME, (dv), __VA_ARGS__)
+/// \endcond
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Macro used to test functions whose parameter can be a `double` or a
+ * `DataVector`.
+ *
+ * In testing multiple instances of a function template using random values, it
+ * often proves useful to write a wrapper around
+ * `pypp::check_with_random_values`. This way, one can easily loop over several
+ * values of one or multiple template parameters (e.g. when testing a
+ * function templated in the number of spacetime dimensions.) The template
+ * parameters of the wrapper will then correspond to the template parameters of
+ * the function, which will be used by `pypp::check_with_random_values`
+ * to invoke and test each instance. Each of these wrappers will generally
+ * need only one parameter, namely a variable `used_for_size` passed to
+ * `pypp::check_with_random_values` that can be a `double`, a `DataVector`, or
+ * both (provided that the function being tested is templated in the type of
+ * `used_for_size`.) Since this is applied in multiple test files, all of these
+ * files will share the same way to generate the required calls to the wrapper.
+ *
+ * This macro, along with
+ *
+ * \code
+ * CHECK_FOR_DOUBLES(FUNCTION_NAME, ...)
+ * \endcode
+ * \code
+ * CHECK_FOR_DATAVECTORS(FUNCTION_NAME, ...)
+ * \endcode
+ *
+ * allow to generate calls to multiple instances of a test function template in
+ * the same way as done by `INVOKE_TEST_FUNCTION(FUNCTION_NAME, ARGS_TUPLE,
+ * ...)`
+ * (to which these macros call), except that the tuple of arguments is not
+ * passed, as these macros will assume that a `double` `d`
+ * and/or a `DataVector` `dv` will be previously defined. Although any `d`s and
+ * `dv`s will work, one can (and it is recommended to) generate signaling `NaN`
+ * values for `d` and `dv`. This can be done by invoking one of the three
+ * provided macros: `GENERATE_UNINIATILIZED_DOUBLE`,
+ * `GENERATE_UNINITIALIZED_DATAVECTOR`, or
+ * `GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR`. For example,
+ *
+ * \code
+ * GENERATE_UNINITIALIZED_DATAVECTOR;
+ * CHECK_FOR_DATAVECTORS(test_fluxes, (1, 2, 3))
+ * \endcode
+ *
+ * will generate a test case for 1, 2 and 3 dimensions:
+ *
+ * \code
+ * const DataVector dv(5);
+ * test_fluxes<1>(dv);
+ * test_fluxes<2>(dv);
+ * test_fluxes<3>(dv);
+ * \endcode
+ *
+ * Analogously, the wrapper
+ *
+ * \code
+ * template <size_t Dim, IndexType TypeOfIndex, typename DataType>
+ * test_ricci(const DataType& used_for_size) noexcept { ... }
+ * \endcode
+ *
+ * can be invoked by writing
+ *
+ * \code
+ * GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
+ *
+ * CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_ricci, (1, 2, 3),
+ *                                   (IndexType::Spatial, IndexType::Spacetime))
+ * \endcode
+ *
+ * which will generate
+ *
+ * \code
+ * const double d(std::numeric_limits<double>::signaling_NaN());
+ * const DataVector dv(5);
+ *
+ * test_ricci<1, IndexType::Spatial>(d);
+ * test_ricci<1, IndexType::Spacetime>(d);
+ * test_ricci<2, IndexType::Spatial>(d);
+ * test_ricci<2, IndexType::Spacetime>(d);
+ * test_ricci<3, IndexType::Spatial>(d);
+ * test_ricci<3, IndexType::Spacetime>(d);
+ * test_ricci<1, IndexType::Spatial>(dv);
+ * test_ricci<1, IndexType::Spacetime>(dv);
+ * test_ricci<2, IndexType::Spatial>(dv);
+ * test_ricci<2, IndexType::Spacetime>(dv);
+ * test_ricci<3, IndexType::Spatial>(dv);
+ * test_ricci<3, IndexType::Spacetime>(dv);
+ * \endcode
+ *
+ * Note that it is not necessary to pass values for `DataType`, as they are
+ * deduced from `used_for_size`.
+ *
+ * \note The order of the macro-tuples of values must match the order of the
+ * template parameters of the function.
+ *
+ * \note The function to be called must at least have one template argument,
+ * so passing an empty set of template parameters will not work.
+ */
+#define CHECK_FOR_DOUBLES_AND_DATAVECTORS(FUNCTION_NAME, ...) \
+  CHECK_FOR_DOUBLES(FUNCTION_NAME, __VA_ARGS__)               \
+  CHECK_FOR_DATAVECTORS(FUNCTION_NAME, __VA_ARGS__)
 }  // namespace pypp
