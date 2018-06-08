@@ -59,6 +59,17 @@ struct Flux<Tag, VolumeDim, Fr,
 /// \endcond
 
 /// \ingroup DataBoxTagsGroup
+/// \brief Prefix indicating a source term
+///
+/// \snippet Test_DataBoxPrefixes.cpp source_name
+template <typename Tag>
+struct Source : db::PrefixTag, db::SimpleTag {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static std::string name() noexcept { return "Source(" + Tag::name() + ")"; }
+};
+
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the flux
 template <typename Tag>
