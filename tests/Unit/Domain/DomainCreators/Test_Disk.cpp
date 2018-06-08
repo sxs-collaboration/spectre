@@ -8,19 +8,18 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
@@ -44,7 +43,7 @@ void test_disk_construction(
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}});
   const OrientationMap<2> quarter_turn_cw(std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}});
-  const std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
+  const std::vector<DirectionMap<2, BlockNeighbor<2>>>
       expected_block_neighbors{
           {{Direction<2>::lower_eta(), {3, aligned_orientation}},
            {Direction<2>::upper_eta(), {1, aligned_orientation}},

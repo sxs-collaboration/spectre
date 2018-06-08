@@ -8,10 +8,10 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <unordered_map>
 #include <unordered_set>
 
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/DirectionMap.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 
@@ -28,8 +28,7 @@ class er;
 template <size_t VolumeDim>
 class Element {
  public:
-  using Neighbors_t =
-      std::unordered_map<Direction<VolumeDim>, Neighbors<VolumeDim>>;
+  using Neighbors_t = DirectionMap<VolumeDim, Neighbors<VolumeDim>>;
 
   /// Constructor
   ///

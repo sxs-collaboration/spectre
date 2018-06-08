@@ -8,6 +8,7 @@
 // IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
+// IWYU pragma: no_include <initializer_list>
 #include <memory>
 #include <pup.h>
 #include <string>
@@ -28,6 +29,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
@@ -197,10 +199,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                                     Direction<2>::upper_xi(),
                                     Direction<2>::upper_eta()};
   const struct {
-    std::unordered_map<Direction<2>, Scalar<DataVector>> fluxes;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> other_data;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> remote_fluxes;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> remote_other_data;
+    DirectionMap<2, Scalar<DataVector>> fluxes;
+    DirectionMap<2, Scalar<DataVector>> other_data;
+    DirectionMap<2, Scalar<DataVector>> remote_fluxes;
+    DirectionMap<2, Scalar<DataVector>> remote_other_data;
   } data{
       {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{1., 2., 3.}}}}},
        {Direction<2>::upper_xi(), Scalar<DataVector>{{{{4., 5., 6.}}}}},

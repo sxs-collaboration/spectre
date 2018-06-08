@@ -7,21 +7,18 @@
 #include <boost/rational.hpp>
 #include <cstddef>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Side.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArray.hpp"
+// Can be forward declaration in C++17
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+// Can be forward declaration in C++17
+#include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
 
 /// \cond
 template <size_t VolumeDim, typename TargetFrame>
 class Block;
-template <size_t VolumeDim>
-class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
 class DataVector;
@@ -37,8 +34,7 @@ class ElementId;
 template <size_t VolumeDim>
 void test_domain_construction(
     const Domain<VolumeDim, Frame::Inertial>& domain,
-    const std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>&
+    const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,

@@ -6,9 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <functional>
+// IWYU pragma: no_include <initializer_list>
 #include <string>
 #include <type_traits>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
@@ -20,12 +20,12 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -111,7 +111,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
                         {Direction<dim>::upper_xi(), {}},
                         {Direction<dim>::upper_zeta(), {}}}};
 
-  std::unordered_map<Direction<dim>, NoCopy<2>> nocopy_map_item;
+  DirectionMap<dim, NoCopy<2>> nocopy_map_item;
   nocopy_map_item.emplace(Direction<dim>::lower_xi(), NoCopy<2>{});
   nocopy_map_item.emplace(Direction<dim>::upper_xi(), NoCopy<2>{});
   nocopy_map_item.emplace(Direction<dim>::upper_zeta(), NoCopy<2>{});
@@ -136,18 +136,16 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
           Tags::Interface<templated_directions,
                           TestTags::Negate<TestTags::Double>>>>(
       std::move(element), 5,
-      std::unordered_map<Direction<dim>, double>{
-          {Direction<dim>::lower_xi(), 1.5},
-          {Direction<dim>::upper_xi(), 2.5},
-          {Direction<dim>::upper_zeta(), 3.5}},
+      DirectionMap<dim, double>{{Direction<dim>::lower_xi(), 1.5},
+                                {Direction<dim>::upper_xi(), 2.5},
+                                {Direction<dim>::upper_zeta(), 3.5}},
       NoCopy<1>{}, std::move(nocopy_map_item),
       std::unordered_set<Direction<dim>>{Direction<dim>::upper_xi()},
-      std::unordered_map<Direction<dim>, double>{
-          {Direction<dim>::upper_xi(), 4.5}});
+      DirectionMap<dim, double>{{Direction<dim>::upper_xi(), 4.5}});
 
   CHECK(
       (get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(box)) ==
-      (std::unordered_map<Direction<dim>, Direction<dim>>{
+      (DirectionMap<dim, Direction<dim>>{
           {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
           {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
           {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
@@ -155,28 +153,25 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   CHECK(get<TestTags::Negate<TestTags::Int>>(box) == -5);
   CHECK((get<Tags::Interface<internal_directions,
                              TestTags::Negate<TestTags::Double>>>(box)) ==
-        (std::unordered_map<Direction<dim>, double>{
-            {Direction<dim>::lower_xi(), -1.5},
-            {Direction<dim>::upper_xi(), -2.5},
-            {Direction<dim>::upper_zeta(), -3.5}}));
+        (DirectionMap<dim, double>{{Direction<dim>::lower_xi(), -1.5},
+                                   {Direction<dim>::upper_xi(), -2.5},
+                                   {Direction<dim>::upper_zeta(), -3.5}}));
 
   CHECK((get<Tags::Interface<internal_directions, TestTags::Int>>(box)) ==
-        (std::unordered_map<Direction<dim>, int>{
-            {Direction<dim>::lower_xi(), 8},
-            {Direction<dim>::upper_xi(), 8},
-            {Direction<dim>::upper_zeta(), 8}}));
+        (DirectionMap<dim, int>{{Direction<dim>::lower_xi(), 8},
+                                {Direction<dim>::upper_xi(), 8},
+                                {Direction<dim>::upper_zeta(), 8}}));
 
   CHECK((get<Tags::Interface<internal_directions,
                              TestTags::ComplexComputeItem<dim>>>(box)) ==
-        (std::unordered_map<Direction<dim>, std::pair<int, double>>{
+        (DirectionMap<dim, std::pair<int, double>>{
             {Direction<dim>::lower_xi(), {5, 1.5}},
             {Direction<dim>::upper_xi(), {5, 2.5}},
             {Direction<dim>::upper_zeta(), {5, 3.5}}}));
 
   CHECK((get<Tags::Interface<templated_directions,
                              TestTags::Negate<TestTags::Double>>>(box)) ==
-        (std::unordered_map<Direction<dim>, double>{
-            {Direction<dim>::upper_xi(), -4.5}}));
+        (DirectionMap<dim, double>{{Direction<dim>::upper_xi(), -4.5}}));
 }
 
 namespace {
@@ -220,7 +215,7 @@ auto make_interface_variables(DataVector value_xi,
     get(get<Var<N>>(v)) = std::move(value);
     return v;
   };
-  std::unordered_map<Direction<dim>, decltype(make(value_xi))> ret;
+  DirectionMap<dim, decltype(make(value_xi))> ret;
   ret.emplace(Direction<dim>::lower_xi(), make(std::move(value_xi)));
   ret.emplace(Direction<dim>::upper_eta(), make(std::move(value_eta)));
   return ret;
@@ -236,7 +231,7 @@ auto make_interface_variables(
     get(get<Var<N1>>(v)) = std::move(value1);
     return v;
   };
-  std::unordered_map<Direction<dim>, decltype(make(value_xi0, value_xi1))> ret;
+  DirectionMap<dim, decltype(make(value_xi0, value_xi1))> ret;
   ret.emplace(Direction<dim>::lower_xi(),
               make(std::move(value_xi0), std::move(value_xi1)));
   ret.emplace(Direction<dim>::upper_eta(),
@@ -245,7 +240,7 @@ auto make_interface_variables(
 }
 
 auto make_interface_tensor(DataVector value_xi, DataVector value_eta) noexcept {
-  std::unordered_map<Direction<dim>, Scalar<DataVector>> ret;
+  DirectionMap<dim, Scalar<DataVector>> ret;
   ret.emplace(Direction<dim>::lower_xi(),
               Scalar<DataVector>(std::move(value_xi)));
   ret.emplace(Direction<dim>::upper_eta(),
@@ -401,7 +396,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.PartialSlice", "[Unit][Domain]") {
   }
 
   CHECK((db::get<Tags::Interface<Dirs, partial_slice::slice_tag>>(box)) ==
-        (std::unordered_map<Direction<dim>, decltype(expected_xi)>{
+        (DirectionMap<dim, decltype(expected_xi)>{
             {Direction<dim>::lower_xi(), expected_xi},
             {Direction<dim>::upper_eta(), expected_eta}}));
 }
@@ -434,7 +429,7 @@ struct ComputeDerived : ComputeBase, db::ComputeTag {
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
   const auto interface = [](const auto xi_value,
                             const auto eta_value) noexcept {
-    return std::unordered_map<Direction<2>, std::decay_t<decltype(xi_value)>>{
+    return DirectionMap<2, std::decay_t<decltype(xi_value)>>{
         {Direction<2>::lower_xi(), xi_value},
         {Direction<2>::upper_eta(), eta_value}};
   };

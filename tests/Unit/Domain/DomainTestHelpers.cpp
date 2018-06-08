@@ -7,22 +7,23 @@
 
 #include <algorithm>
 #include <typeinfo>
+#include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                  // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"  // IWYU pragma: keep
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Domain/InitialElementIds.hpp"
-#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/OrientationMap.hpp"
+#include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -330,8 +331,7 @@ double physical_separation(
 template <size_t VolumeDim>
 void test_domain_construction(
     const Domain<VolumeDim, Frame::Inertial>& domain,
-    const std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>&
+    const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
@@ -418,8 +418,7 @@ tnsr::i<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
 #define INSTANTIATE1(_, data)                                                  \
   template void test_domain_construction<DIM(data)>(                           \
       const Domain<DIM(data), Frame::Inertial>& domain,                        \
-      const std::vector<                                                       \
-          std::unordered_map<Direction<DIM(data)>, BlockNeighbor<DIM(data)>>>& \
+      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>&    \
           expected_block_neighbors,                                            \
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&             \
           expected_external_boundaries,                                        \

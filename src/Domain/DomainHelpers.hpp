@@ -10,19 +10,20 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+// Can be forward declaration in C++17
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
+// Can be forward declaration in C++17
+#include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
-template <size_t VolumeDim>
-class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
 template <size_t VolumeDim>
@@ -50,8 +51,8 @@ template <size_t VolumeDim>
 void set_internal_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup
@@ -63,8 +64,8 @@ void set_periodic_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup

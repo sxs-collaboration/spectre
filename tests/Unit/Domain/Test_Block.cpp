@@ -3,15 +3,14 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <functional>
+// IWYU pragma: no_include <initializer_list>
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
@@ -19,6 +18,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -63,7 +63,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Identity", "[Domain][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
-  // Create std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
+  // Create DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>
 
   // Each BlockNeighbor is an id and an OrientationMap:
   const BlockNeighbor<2> block_neighbor1(
@@ -72,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   const BlockNeighbor<2> block_neighbor2(
       2, OrientationMap<2>(std::array<Direction<2>, 2>{
              {Direction<2>::lower_xi(), Direction<2>::upper_eta()}}));
-  std::unordered_map<Direction<2>, BlockNeighbor<2>> neighbors = {
+  DirectionMap<2, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
   using coordinate_map =

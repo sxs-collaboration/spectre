@@ -10,7 +10,6 @@
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -23,6 +22,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
@@ -144,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
-  std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>> expected;
+  DirectionMap<2, tnsr::i<DataVector, 2>> expected;
   expected[Direction<2>::upper_xi()] =
       tnsr::i<DataVector, 2>{{{{0.6, 0.6}, {0.8, 0.8}}}};
   expected[Direction<2>::lower_eta()] =

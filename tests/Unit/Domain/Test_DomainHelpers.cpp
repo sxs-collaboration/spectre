@@ -5,9 +5,9 @@
 
 #include <array>
 #include <cstddef>
+// IWYU pragma: no_include <initializer_list>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
@@ -21,6 +21,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
@@ -33,8 +34,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      neighbors_of_all_blocks;
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
 
   const OrientationMap<3> aligned{};
@@ -49,11 +49,11 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
 
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{{{Direction<3>::upper_xi(), {0, aligned}},
-                                {Direction<3>::lower_xi(), {0, aligned}},
-                                {Direction<3>::lower_zeta(), {1, aligned}}},
-                               {{Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {0, aligned}},
+       {Direction<3>::lower_xi(), {0, aligned}},
+       {Direction<3>::lower_zeta(), {1, aligned}}},
+      {{Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
@@ -62,8 +62,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      neighbors_of_all_blocks;
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
 
   const OrientationMap<3> aligned{};
@@ -77,11 +76,11 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
                              &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{{{Direction<3>::upper_xi(), {1, aligned}},
-                                {Direction<3>::lower_zeta(), {1, aligned}}},
-                               {{Direction<3>::lower_xi(), {0, aligned}},
-                                {Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {1, aligned}},
+       {Direction<3>::lower_zeta(), {1, aligned}}},
+      {{Direction<3>::lower_xi(), {0, aligned}},
+       {Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }

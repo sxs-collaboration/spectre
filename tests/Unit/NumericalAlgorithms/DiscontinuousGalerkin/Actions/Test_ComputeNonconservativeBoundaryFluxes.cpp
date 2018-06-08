@@ -6,11 +6,12 @@
 #include <array>
 #include <cstddef>
 #include <functional>
+// IWYU pragma: no_include <initializer_list>
 #include <memory>
 #include <pup.h>
 #include <string>
 #include <tuple>
-#include <unordered_map>
+#include <unordered_set>  // IWYU pragma: keep
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -25,6 +26,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
@@ -34,7 +36,6 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
@@ -103,10 +104,9 @@ template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 
 using VarsType = Variables<tmpl::list<Var, Var2>>;
-auto run_action(
-    const Element<2>& element,
-    const std::unordered_map<Direction<2>, VarsType>& vars,
-    const std::unordered_map<Direction<2>, double>& other_arg) noexcept {
+auto run_action(const Element<2>& element,
+                const DirectionMap<2, VarsType>& vars,
+                const DirectionMap<2, double>& other_arg) noexcept {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
 
   const Index<2> extents{{{3, 3}}};
@@ -148,7 +148,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
       ElementId<2>(0), {{Direction<2>::upper_xi(), {{ElementId<2>(1)}, {}}},
                         {Direction<2>::lower_eta(), {{ElementId<2>(1)}, {}}}});
 
-  std::unordered_map<Direction<2>, VarsType> vars;
+  DirectionMap<2, VarsType> vars;
   vars[Direction<2>::upper_xi()] = VarsType(3);
   get(get<Var>(vars[Direction<2>::upper_xi()])) = DataVector{0., 1., 2.};
   {
@@ -159,8 +159,8 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
   }
   vars[Direction<2>::lower_eta()] = -10. * vars[Direction<2>::upper_xi()];
 
-  const std::unordered_map<Direction<2>, double> other_arg{
-      {Direction<2>::upper_xi(), 5.}, {Direction<2>::lower_eta(), 7.}};
+  const DirectionMap<2, double> other_arg{{Direction<2>::upper_xi(), 5.},
+                                          {Direction<2>::lower_eta(), 7.}};
 
   auto box = run_action(element, vars, other_arg);
 
@@ -172,9 +172,8 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
           tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>>(
           box);
 
-  std::unordered_map<Direction<2>,
-                     Variables<tmpl::list<Tags::NormalDotFlux<Var>,
-                                          Tags::NormalDotFlux<Var2>>>>
+  DirectionMap<2, Variables<tmpl::list<Tags::NormalDotFlux<Var>,
+                                       Tags::NormalDotFlux<Var2>>>>
       expected;
   for (const auto& direction :
        {Direction<2>::upper_xi(), Direction<2>::lower_eta()}) {
@@ -194,8 +193,8 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   const Element<2> element(ElementId<2>(0), {});
 
-  const std::unordered_map<Direction<2>, VarsType> vars{};
-  const std::unordered_map<Direction<2>, double> other_arg{};
+  const DirectionMap<2, VarsType> vars{};
+  const DirectionMap<2, double> other_arg{};
 
   auto box = run_action(element, vars, other_arg);
 

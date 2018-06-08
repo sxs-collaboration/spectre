@@ -3,15 +3,13 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -20,6 +18,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -51,11 +50,11 @@ void test_1d_domains() {
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
                                                   {{Direction<1>::upper_xi()}}};
 
-    const std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
-        expected_neighbors{{{Direction<1>::upper_xi(),
-                             BlockNeighbor<1>{1, unaligned_orientation}}},
-                           {{Direction<1>::upper_xi(),
-                             BlockNeighbor<1>{0, unaligned_orientation}}}};
+    const std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_neighbors{
+        {{Direction<1>::upper_xi(),
+          BlockNeighbor<1>{1, unaligned_orientation}}},
+        {{Direction<1>::upper_xi(),
+          BlockNeighbor<1>{0, unaligned_orientation}}}};
 
     const std::vector<std::unordered_set<Direction<1>>> expected_boundaries{
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
@@ -118,7 +117,7 @@ void test_1d_domains() {
     const auto expected_neighbors = []() {
       OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
                                     {{Direction<1>::lower_xi()}}};
-      return std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>{
+      return std::vector<DirectionMap<1, BlockNeighbor<1>>>{
           {{Direction<1>::lower_xi(), BlockNeighbor<1>{0, orientation}},
            {Direction<1>::upper_xi(), BlockNeighbor<1>{0, orientation}}}};
     }();

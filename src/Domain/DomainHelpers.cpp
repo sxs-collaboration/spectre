@@ -11,7 +11,6 @@
 
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
@@ -254,12 +253,12 @@ template <size_t VolumeDim>
 void set_internal_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
        block1_index++) {
-    std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>> neighbor;
+    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
     for (size_t block2_index = 0; block2_index < corners_of_all_blocks.size();
          block2_index++) {
       if (block1_index != block2_index and
@@ -286,8 +285,8 @@ void set_periodic_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) {
   for (const auto& pair : identifications) {
     const auto& face1 = pair.first;
@@ -777,37 +776,31 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
 
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
+    gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks);
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
+    gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks);
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
+    gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks);
 
 template void set_periodic_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
+    gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks);
 template void set_periodic_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
+    gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks);
 template void set_periodic_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
+    gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks);
 template std::vector<std::array<size_t, 2>> corners_for_rectilinear_domains(
     const Index<1>& domain_extents,

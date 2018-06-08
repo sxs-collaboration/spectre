@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -17,6 +16,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
@@ -244,12 +244,11 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   static constexpr auto apply(
       const db::item_type<DirectionsTag>& directions,
       const db::item_type<ArgumentTags>&... args) noexcept {
-    std::unordered_map<
-        typename db::item_type<DirectionsTag>::value_type,
-        std::decay_t<decltype(BaseComputeItem::function(
-            unmap_interface_args<tmpl::list_contains_v<
-                volume_tags, ArgumentTags>>::apply(*directions.begin(),
-                                                   args)...))>>
+    DirectionMap<db::item_type<DirectionsTag>::value_type::volume_dim,
+                 std::decay_t<decltype(BaseComputeItem::function(
+                     unmap_interface_args<tmpl::list_contains_v<
+                         volume_tags, ArgumentTags>>::apply(*directions.begin(),
+                                                            args)...))>>
         result;
     for (const auto& direction : directions) {
       result[direction] = BaseComputeItem::function(
@@ -282,8 +281,8 @@ struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
                 "Can't specify a function for a simple item tag");
   using tag = NameTag;
   using type =
-      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
-                         db::item_type<NameTag>>;
+      DirectionMap<db::item_type<DirectionsTag>::value_type::volume_dim,
+                   db::item_type<NameTag>>;
 };
 
 template <typename DirectionsTag, typename NameTag, typename FunctionTag>
@@ -324,7 +323,7 @@ struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
   using tag = Direction<VolumeDim>;
   static constexpr auto function(
       const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {
-    std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>> result;
+    ::DirectionMap<VolumeDim, ::Direction<VolumeDim>> result;
     for (const auto& d : directions) {
       result.emplace(d, d);
     }
