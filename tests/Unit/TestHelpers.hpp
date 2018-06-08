@@ -187,8 +187,8 @@ void test_reverse_iterators(Container& c) {
  * \brief Function to test comparison operators.  Pass values with
  * less < greater.
  */
-template <typename T>
-void check_cmp(const T& less, const T& greater) {
+template <typename T, typename U>
+void check_cmp(const T& less, const U& greater) {
   CHECK(less == less);
   CHECK_FALSE(less == greater);
   CHECK(less != greater);
