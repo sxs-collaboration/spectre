@@ -11,6 +11,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 

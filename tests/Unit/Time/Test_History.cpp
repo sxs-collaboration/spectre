@@ -3,18 +3,18 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
 #include <deque>
 #include <string>
-#include <sys/types.h>
+#include <utility>
 #include <vector>
 
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

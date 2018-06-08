@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 template <size_t Dim>

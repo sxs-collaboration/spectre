@@ -14,7 +14,6 @@
 #include <iterator>
 #include <memory>
 #include <ostream>
-#include <string>
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -221,17 +220,6 @@ void check_cmp(const T& less, const U& greater) {
     CHECK((f op## = b_) == c_); \
     CHECK(f == c_);             \
   } while (false)
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief Get the streamed output `c` as a `std::string`
- */
-template <typename Container>
-std::string get_output(const Container& c) {
-  std::ostringstream os;
-  os << c;
-  return os.str();
-}
 
 /*!
  * \ingroup TestingFrameworkGroup

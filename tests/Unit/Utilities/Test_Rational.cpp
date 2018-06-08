@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Rational.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

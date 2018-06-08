@@ -10,6 +10,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeId", "[Unit][Time]") {

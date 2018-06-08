@@ -23,6 +23,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"

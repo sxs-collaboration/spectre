@@ -12,6 +12,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
