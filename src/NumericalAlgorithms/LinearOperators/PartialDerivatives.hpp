@@ -73,8 +73,9 @@ struct deriv : Tags_detail::deriv_impl<T, S, U> {};
 /// \tparam DerivativeTags the subset of `VariableTags` for which derivatives
 /// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
-std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
-    const Variables<VariableTags>& u, const Index<Dim>& extents) noexcept;
+auto logical_partial_derivatives(const Variables<VariableTags>& u,
+                                 const Index<Dim>& extents) noexcept
+    -> std::array<Variables<DerivativeTags>, Dim>;
 
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
@@ -89,12 +90,12 @@ std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
 /// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
-Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
-                           DerivativeFrame>>
-partial_derivatives(
+auto partial_derivatives(
     const Variables<VariableTags>& u, const Index<Dim>& extents,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+        inverse_jacobian) noexcept
+    -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
+                                  tmpl::size_t<Dim>, DerivativeFrame>>;
 
 namespace Tags {
 namespace Tags_detail {
