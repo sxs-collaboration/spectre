@@ -5648,4 +5648,8 @@
                 "<boost/preprocessor/arithmetic/sub.hpp>", public]},
     { include: ["<boost/smart_ptr/make_shared_object.hpp>", public,
                 "<boost/make_shared.hpp>", public]},
+    { include: ["<boost/vmd/detail/is_empty.hpp>", private,
+                "<boost/vmd/is_empty.hpp>", public]},
+    { include: ["<boost/preprocessor/punctuation/detail/is_begin_parens.hpp>", private,
+                "<boost/preprocessor/punctuation/is_begin_parens.hpp>", public]},
 ]

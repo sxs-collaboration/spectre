@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
-#include <limits>
 
 #include "DataStructures/DataVector.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
@@ -29,13 +28,6 @@ SPECTRE_TEST_CASE(
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler"};
 
-  const double d = std::numeric_limits<double>::signaling_NaN();
-  test_conservative_from_primitive<1>(d);
-  test_conservative_from_primitive<2>(d);
-  test_conservative_from_primitive<3>(d);
-
-  const DataVector dv(5);
-  test_conservative_from_primitive<1>(dv);
-  test_conservative_from_primitive<2>(dv);
-  test_conservative_from_primitive<3>(dv);
+  GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_conservative_from_primitive, (1, 2, 3))
 }

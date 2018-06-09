@@ -12,6 +12,7 @@
 #include "Domain/Direction.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
@@ -65,13 +66,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Characteristics",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler"};
 
-  const DataVector dv(5);
-
-  test_characteristic_speeds<1>(dv);
-  test_characteristic_speeds<2>(dv);
-  test_characteristic_speeds<3>(dv);
-
-  test_with_normal_along_coordinate_axes<1>(dv);
-  test_with_normal_along_coordinate_axes<2>(dv);
-  test_with_normal_along_coordinate_axes<3>(dv);
+  GENERATE_UNINITIALIZED_DATAVECTOR;
+  CHECK_FOR_DATAVECTORS(test_characteristic_speeds, (1, 2, 3))
+  CHECK_FOR_DATAVECTORS(test_with_normal_along_coordinate_axes, (1, 2, 3))
 }
