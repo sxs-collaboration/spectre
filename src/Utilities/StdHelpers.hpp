@@ -30,12 +30,14 @@
 #include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-namespace StdHelpers_detail {
-// applies the function f(out, it) to each item from begin to end, separated
-// by commas and surrounded by parens
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Applies the function f(out, it) to each item from begin to
+ * end, separated by commas and surrounded by parens.
+ */
 template <typename ForwardIt, typename Func>
-inline void print_helper(std::ostream& out, ForwardIt&& begin, ForwardIt&& end,
-                         Func f) {
+inline void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
+                                  ForwardIt&& end, Func f) {
   out << "(";
   if (begin != end) {
     while (true) {
@@ -49,16 +51,23 @@ inline void print_helper(std::ostream& out, ForwardIt&& begin, ForwardIt&& end,
   out << ")";
 }
 
-// prints all the items as a comma separated list surrounded by parens
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Prints all the items as a comma separated list surrounded by parens.
+ */
 template <typename ForwardIt>
-inline void print_helper(std::ostream& out, ForwardIt&& begin,
-                         ForwardIt&& end) {
-  print_helper(out, std::forward<ForwardIt>(begin),
-               std::forward<ForwardIt>(end),
-               [](std::ostream& os, const ForwardIt& it) { os << *it; });
+inline void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
+                                  ForwardIt&& end) {
+  sequence_print_helper(
+      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
+      [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
 
-// Like print_helper, but sorts the string representations
+/*!
+ * \ingroup UtilitiesGroup
+ * Like sequence_print_helper, but sorts the string representations.
+ */
+//@{
 template <typename ForwardIt, typename Func>
 inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
                                    ForwardIt&& end, Func f) {
@@ -69,7 +78,7 @@ inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
     entries.push_back(ss.str());
   }
   std::sort(entries.begin(), entries.end());
-  print_helper(out, entries.begin(), entries.end());
+  sequence_print_helper(out, entries.begin(), entries.end());
 }
 
 template <typename ForwardIt>
@@ -79,7 +88,9 @@ inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
       out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
       [](std::ostream& os, const ForwardIt& it) { os << *it; });
 }
+//@}
 
+namespace StdHelpers_detail {
 // Helper classes for operator<< for tuples
 template <size_t N>
 struct TuplePrinter {
@@ -116,7 +127,7 @@ struct TuplePrinter<0> {
  */
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
-  StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
+  sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
 
@@ -126,7 +137,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
  */
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
-  StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
+  sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
 
@@ -136,7 +147,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
  */
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) {
-  StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
+  sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
 
@@ -146,7 +157,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) {
  */
 template <typename T, size_t N>
 inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a) {
-  StdHelpers_detail::print_helper(os, begin(a), end(a));
+  sequence_print_helper(os, begin(a), end(a));
   return os;
 }
 
@@ -170,7 +181,7 @@ inline std::ostream& operator<<(std::ostream& os,
 template <typename K, typename V, typename H>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::unordered_map<K, V, H>& m) {
-  StdHelpers_detail::unordered_print_helper(
+  unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
          typename std::unordered_map<K, V, H>::const_iterator it) {
@@ -185,7 +196,7 @@ inline std::ostream& operator<<(std::ostream& os,
  */
 template <typename K, typename V, typename C>
 inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
-  StdHelpers_detail::print_helper(
+  sequence_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
         out << "[" << it->first << "," << it->second << "]";
@@ -200,7 +211,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::unordered_set<T>& v) {
-  StdHelpers_detail::unordered_print_helper(os, std::begin(v), std::end(v));
+  unordered_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
 
@@ -210,7 +221,7 @@ inline std::ostream& operator<<(std::ostream& os,
  */
 template <typename T, typename C>
 inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v) {
-  StdHelpers_detail::print_helper(os, std::begin(v), std::end(v));
+  sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
 
@@ -248,7 +259,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
 template <typename K, typename V, typename H>
 inline std::string keys_of(const std::unordered_map<K, V, H>& m) {
   std::ostringstream os;
-  StdHelpers_detail::unordered_print_helper(
+  unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
          typename std::unordered_map<K, V, H>::const_iterator it) {
@@ -264,7 +275,7 @@ inline std::string keys_of(const std::unordered_map<K, V, H>& m) {
 template <typename K, typename V, typename C>
 inline std::string keys_of(const std::map<K, V, C>& m) {
   std::ostringstream os;
-  StdHelpers_detail::print_helper(
+  sequence_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
         out << it->first;
