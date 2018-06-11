@@ -12,21 +12,31 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
-Variables<db::wrap_tags_in<Tags::div, FluxTags, DerivativeFrame>> divergence(
+Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
     const Variables<FluxTags>& F, const Index<Dim>& extents,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept {
   const auto logical_partial_derivatives_of_F =
       logical_partial_derivatives<FluxTags>(F, extents);
 
-  Variables<db::wrap_tags_in<Tags::div, FluxTags, DerivativeFrame>>
+  Variables<db::wrap_tags_in<Tags::div, FluxTags>>
       divergence_of_F(F.number_of_grid_points(), 0.0);
 
   tmpl::for_each<FluxTags>([
     &divergence_of_F, &inverse_jacobian, &logical_partial_derivatives_of_F
   ](auto tag) noexcept {
     using FluxTag = tmpl::type_from<decltype(tag)>;
-    using DivFluxTag = Tags::div<FluxTag, DerivativeFrame>;
+    using DivFluxTag = Tags::div<FluxTag>;
+
+    using first_index =
+        tmpl::front<typename db::item_type<FluxTag>::index_list>;
+    static_assert(
+        cpp17::is_same_v<typename first_index::Frame, DerivativeFrame> and
+            first_index::ul == UpLo::Up,
+        "First index of tensor cannot be contracted with derivative "
+        "because either it is in the wrong frame or it has the wrong "
+        "valence");
+
     auto& divergence_of_flux = get<DivFluxTag>(divergence_of_F);
     for (auto it = divergence_of_flux.begin(); it != divergence_of_flux.end();
          ++it) {

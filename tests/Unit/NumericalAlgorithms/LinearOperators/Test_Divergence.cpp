@@ -3,13 +3,13 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -31,10 +31,9 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <size_t VolumeDim>
-class MathFunction;
-template <typename X, typename Symm, typename IndexList>
-class Tensor;
+// IWYU pragma: no_forward_declare MathFunction
+// IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare Tags::div
 
 namespace {
 using Affine = CoordinateMaps::Affine;
@@ -133,13 +132,13 @@ void test_divergence(
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
   using flux_tags = two_fluxes<Dim, Frame>;
   Variables<flux_tags> fluxes(number_of_grid_points);
-  Variables<db::wrap_tags_in<Tags::div, flux_tags, Frame>> expected_div_fluxes(
+  Variables<db::wrap_tags_in<Tags::div, flux_tags>> expected_div_fluxes(
       number_of_grid_points);
   tmpl::for_each<flux_tags>([&x, &f, &fluxes,
                              &expected_div_fluxes ](auto tag) noexcept {
     using FluxTag = tmpl::type_from<decltype(tag)>;
     get<FluxTag>(fluxes) = FluxTag::flux(f, x);
-    using DivFluxTag = Tags::div<FluxTag, Frame>;
+    using DivFluxTag = Tags::div<FluxTag>;
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
   const auto div_fluxes = divergence<flux_tags>(fluxes, extents, inv_jacobian);
@@ -157,6 +156,13 @@ void test_divergence(
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
+  using TensorTag = Flux1<1, Frame::Inertial>;
+  using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
+  /// [divergence_name]
+  CHECK(Tags::div<TensorTag>::name() == "div(" + TensorTag::name() + ")");
+  CHECK(Tags::div<VariablesTag>::name() == "div(" + VariablesTag::name() + ")");
+  /// [divergence_name]
+
   const size_t n0 = Basis::lgl::maximum_number_of_pts / 2;
   const size_t n1 = Basis::lgl::maximum_number_of_pts / 2 + 1;
   const size_t n2 = Basis::lgl::maximum_number_of_pts / 2 - 1;
@@ -199,7 +205,8 @@ void test_divergence_compute_item(
   using inv_jac_tag =
       Tags::InverseJacobian<map_tag, Tags::LogicalCoordinates<Dim>>;
   using flux_tags = two_fluxes<Dim, Frame>;
-  using div_tag = Tags::div<flux_tags, inv_jac_tag>;
+  using flux_tag = Tags::Variables<flux_tags>;
+  using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
 
   const size_t number_of_grid_points = extents.product();
   const auto xi = logical_coordinates(extents);
@@ -207,25 +214,24 @@ void test_divergence_compute_item(
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
   Variables<flux_tags> fluxes(number_of_grid_points);
-  Variables<db::wrap_tags_in<Tags::div, flux_tags, Frame>> expected_div_fluxes(
-      number_of_grid_points);
-
+  Variables<div_tags> expected_div_fluxes(number_of_grid_points);
 
   tmpl::for_each<flux_tags>([&x, &f, &fluxes,
                              &expected_div_fluxes ](auto tag) noexcept {
     using FluxTag = tmpl::type_from<decltype(tag)>;
     get<FluxTag>(fluxes) = FluxTag::flux(f, x);
-    using DivFluxTag = Tags::div<FluxTag, Frame>;
+    using DivFluxTag = Tags::div<FluxTag>;
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
 
-  auto box = db::create<
-      db::AddSimpleTags<Tags::Extents<Dim>, Tags::Variables<flux_tags>,
-                        map_tag>,
-      db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag, div_tag>>(
-      extents, fluxes, coordinate_map);
+  auto box =
+      db::create<db::AddSimpleTags<Tags::Extents<Dim>, flux_tag, map_tag>,
+                 db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                                    Tags::ComputeDiv<flux_tag, inv_jac_tag>>>(
+          extents, fluxes, coordinate_map);
 
-  const auto& div_fluxes = db::get<div_tag>(box);
+  const auto& div_fluxes =
+      db::get<Tags::div<Tags::Variables<div_tags>>>(box);
 
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
   for (size_t n = 0; n < div_fluxes.size(); ++n) {
