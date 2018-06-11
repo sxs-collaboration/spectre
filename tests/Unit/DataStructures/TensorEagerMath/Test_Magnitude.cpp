@@ -160,4 +160,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
             {{{1. / 3., 2. / 7.}, {2. / 3., 3. / 7.}, {2. / 3., 6. / 7.}}}));
   CHECK(db::get<Tags::Normalized<Covector>>(box) ==
         db::item_type<Covector>({{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
+
+  using Tag = Vector;
+  /// [magnitude_name]
+  CHECK(Tags::Magnitude<Tag>::name() == "Magnitude(" + Tag::name() + ")");
+  /// [magnitude_name]
+  /// [normalized_name]
+  CHECK(Tags::Normalized<Tag>::name() == "Normalized(" + Tag::name() + ")");
+  /// [normalized_name]
 }

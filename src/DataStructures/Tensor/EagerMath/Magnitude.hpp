@@ -47,9 +47,13 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
 /// The magnitude of a (co)vector
+///
+/// \snippet Test_Magnitude.cpp magnitude_name
 template <typename Tag>
 struct Magnitude : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "Magnitude"; }
+  static std::string name() noexcept {
+    return "Magnitude(" + Tag::name() + ")";
+  }
   using tag = Tag;
   using type = Scalar<DataVector>;
 };
@@ -57,6 +61,8 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
 /// The Euclidean magnitude of a (co)vector
+///
+/// This tag inherits from `Tags::Magnitude<Tag>`
 template <typename Tag>
 struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using base = Magnitude<Tag>;
@@ -68,9 +74,13 @@ struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
 /// The normalized (co)vector represented by Tag
+///
+/// \snippet Test_Magnitude.cpp normalized_name
 template <typename Tag>
 struct Normalized : db::ComputeTag {
-  static std::string name() noexcept { return "Normalized"; }
+  static std::string name() noexcept {
+    return "Normalized(" + Tag::name() + ")";
+  }
   static constexpr auto function(
       const db::item_type<Tag>&
           vector_in,  // Compute items need to take const references
