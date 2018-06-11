@@ -117,8 +117,8 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
                  extents[1], 1.0, differentiation_matrix_eta.data(), extents[1],
                  u_eta_fastest.data(), extents[1], 0.0,
                  partial_u_wrt_eta.data(), extents[1]);
-    transpose(partial_u_wrt_eta, num_components_times_xi_slices, extents[0],
-              make_not_null(&logical_partial_derivatives_of_u[1]));
+    transpose(make_not_null(&logical_partial_derivatives_of_u[1]),
+              partial_u_wrt_eta, num_components_times_xi_slices, extents[0]);
 
     return logical_partial_derivatives_of_u;
   }
@@ -153,14 +153,15 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
                  extents[1], 1.0, differentiation_matrix_eta.data(), extents[1],
                  u_eta_or_zeta_fastest.data(), extents[1], 0.0,
                  partial_u_wrt_eta_or_zeta.data(), extents[1]);
-    transpose(partial_u_wrt_eta_or_zeta, num_components_times_xi_slices,
-              extents[0], make_not_null(&logical_partial_derivatives_of_u[1]));
+    transpose(make_not_null(&logical_partial_derivatives_of_u[1]),
+              partial_u_wrt_eta_or_zeta, num_components_times_xi_slices,
+              extents[0]);
 
     const size_t chunk_size = extents[0] * extents[1];
     const size_t number_of_chunks =
         logical_partial_derivatives_of_u[1].size() / chunk_size;
-    transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
-        u, chunk_size, number_of_chunks, make_not_null(&u_eta_or_zeta_fastest));
+    transpose(make_not_null(&u_eta_or_zeta_fastest), u, chunk_size,
+              number_of_chunks);
     const Matrix& differentiation_matrix_zeta =
         Basis::lgl::differentiation_matrix(extents[2]);
     const size_t num_components_times_zeta_slices =
@@ -169,8 +170,8 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
                  extents[2], 1.0, differentiation_matrix_zeta.data(),
                  extents[2], u_eta_or_zeta_fastest.data(), extents[2], 0.0,
                  partial_u_wrt_eta_or_zeta.data(), extents[2]);
-    transpose(partial_u_wrt_eta_or_zeta, number_of_chunks, chunk_size,
-              make_not_null(&logical_partial_derivatives_of_u[2]));
+    transpose(make_not_null(&logical_partial_derivatives_of_u[2]),
+              partial_u_wrt_eta_or_zeta, number_of_chunks, chunk_size);
 
     return logical_partial_derivatives_of_u;
   }

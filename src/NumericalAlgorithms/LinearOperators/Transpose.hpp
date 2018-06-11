@@ -46,9 +46,9 @@
 /// \tparam U the type of data to be transposed
 /// \tparam T the type of the transposed data
 template <typename U, typename T>
-void transpose(const U& u, const size_t chunk_size,
-               const size_t number_of_chunks,
-               const gsl::not_null<T*> transpose) {
+void transpose(const gsl::not_null<T*> transpose,
+               const U& u, const size_t chunk_size,
+               const size_t number_of_chunks) {
   ASSERT(chunk_size * number_of_chunks == transpose->size(),
          "chunk_size = " << chunk_size
                          << ", number_of_chunks = " << number_of_chunks
@@ -68,7 +68,7 @@ template <typename U, typename T = U>
 T transpose(const U& u, const size_t chunk_size,
             const size_t number_of_chunks) {
   T t = make_with_value<T>(u,0.0);
-  transpose(u, chunk_size, number_of_chunks, make_not_null(&t));
+  transpose(make_not_null(&t), u, chunk_size, number_of_chunks);
   return t;
 }
 // @}
