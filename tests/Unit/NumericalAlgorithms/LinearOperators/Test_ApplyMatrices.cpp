@@ -18,6 +18,7 @@
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -145,4 +146,25 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.ApplyMatrices",
   test_interpolation<1>();
   test_interpolation<2>();
   test_interpolation<3>();
+
+  // Can't use test_interpolation for 0 because Tensor errors on
+  // Dim=0.
+  const Index<0> extents{};
+  Variables<tmpl::list<ScalarTag, VectorTag>> data(extents.product());
+  get(get<ScalarTag>(data)) = DataVector{2.};
+  get<0>(get<VectorTag>(data)) = DataVector{3.0};
+  get<1>(get<VectorTag>(data)) = DataVector{4.0};
+  const std::array<Matrix, 0> matrices{};
+  // Can't construct the array directly because of
+  // https://bugs.llvm.org/show_bug.cgi?id=35491 .
+  // make_array contains a workaround.
+  const std::array<std::reference_wrapper<const Matrix>, 0> ref_matrices =
+      make_array<0, std::reference_wrapper<const Matrix>>(
+          cpp17::as_const(Matrix{}));
+
+  CHECK(apply_matrices(matrices, data, extents) == data);
+  CHECK(apply_matrices(ref_matrices, data, extents) == data);
+  const DataVector& data_vector = get(get<ScalarTag>(data));
+  CHECK(apply_matrices(matrices, data_vector, extents) == data_vector);
+  CHECK(apply_matrices(ref_matrices, data_vector, extents) == data_vector);
 }
