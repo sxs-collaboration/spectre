@@ -48,6 +48,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   /// [transpose_matrix]
   // clang-format on
 
+  DataVector transposed_matrix(12);
+  raw_transpose(make_not_null(transposed_matrix.data()), matrix.data(), 3, 4);
+  CHECK(transposed_matrix ==
+        DataVector{1., 4., 7., 10., 2., 5., 8., 11., 3., 6., 9., 12.});
+
   /// [return_transpose_example]
   const size_t chunk_size = 8;
   const size_t number_of_chunks = 2;
@@ -93,8 +98,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   }
   const size_t number_of_chunks_vars = variables.size() / chunk_size_vars;
   auto transposed_vars = variables;
-  transpose(variables, chunk_size_vars, number_of_chunks_vars,
-            make_not_null(&transposed_vars));
+  transpose(make_not_null(&transposed_vars), variables, chunk_size_vars,
+            number_of_chunks_vars);
   for (size_t i = 0; i < chunk_size_vars; ++i) {
     for (size_t j = 0; j < number_of_chunks_vars; ++j) {
       // clang-tidy: pointer arithmetic
@@ -109,8 +114,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   get<Var1<2>>(partial_vars) = get<Var1<2>>(variables);
   Variables<one_var<2>> partial_transpose(n_grid_pts, 0.);
   const size_t partial_number_of_chunks = 2*number_of_chunks_vars / 3;
-  transpose(variables, chunk_size_vars, partial_number_of_chunks,
-            make_not_null(&partial_transpose));
+  transpose(make_not_null(&partial_transpose), variables, chunk_size_vars,
+            partial_number_of_chunks);
   for (size_t i = 0; i < chunk_size_vars; ++i) {
     for (size_t j = 0; j < partial_number_of_chunks; ++j) {
       // clang-tidy: pointer arithmetic
