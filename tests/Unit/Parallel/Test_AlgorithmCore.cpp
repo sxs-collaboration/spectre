@@ -197,7 +197,7 @@ struct NoOpsComponent {
         Parallel::get_parallel_component<NoOpsComponent>(local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -353,7 +353,7 @@ struct MutateComponent {
     /// [simple_action_call]
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -506,7 +506,7 @@ struct ReceiveComponent {
         Parallel::get_parallel_component<ReceiveComponent>(local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -621,7 +621,7 @@ struct AnyOrderComponent {
         Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());

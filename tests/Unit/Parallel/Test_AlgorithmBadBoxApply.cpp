@@ -49,7 +49,7 @@ struct Component {
         Parallel::get_parallel_component<Component>(local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
       const Parallel::CProxy_ConstGlobalCache<
           Metavariables>& /*global_cache*/) {}

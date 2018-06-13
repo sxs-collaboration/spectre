@@ -268,7 +268,7 @@ struct ArrayParallelComponent {
     array_proxy.doneInserting();
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -301,7 +301,7 @@ struct NodegroupParallelComponent {
             local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
