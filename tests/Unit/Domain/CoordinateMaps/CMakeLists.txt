@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   CoordinateMaps/Test_CoordinateMap.cpp
   CoordinateMaps/Test_CubicScale.cpp
   CoordinateMaps/Test_DiscreteRotation.cpp
+  CoordinateMaps/Test_EquatorialCompression.cpp
   CoordinateMaps/Test_Equiangular.cpp
   CoordinateMaps/Test_Frustum.cpp
   CoordinateMaps/Test_Identity.cpp
