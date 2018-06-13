@@ -118,7 +118,8 @@ EXCLUDE_SYMBOLS        = *brigand*                                    \
                          std*                                         \
                          YAML*
 
-EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/Unit/
+EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/Unit/ \
+                         @PROJECT_SOURCE_DIR@/src/Executables/Examples/
 
 EXAMPLE_PATTERNS       =
 
