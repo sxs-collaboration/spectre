@@ -56,23 +56,33 @@ class Shell : public DomainCreator<3, TargetFrame> {
     using type = bool;
     static constexpr OptionString help = {
         "Use equiangular instead of equidistant coordinates."};
-    static type default_value() { return true; }
+    static constexpr type default_value() noexcept { return true; }
   };
+
+  struct AspectRatio {
+    using type = double;
+    static constexpr OptionString help = {"The equatorial compression factor."};
+    static constexpr type default_value() noexcept { return 1.0; }
+  };
+
   using options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
-                             InitialGridPoints, UseEquiangularMap>;
+                             InitialGridPoints, UseEquiangularMap, AspectRatio>;
 
   static constexpr OptionString help{
       "Creates a 3D spherical shell with 6 Blocks. `UseEquiangularMap` has\n"
       "a default value of `true` because there is no central Block in this\n"
       "domain. Equidistant coordinates are best suited to Blocks with\n"
       "Cartesian grids. However, the option is allowed for testing "
-      "purposes.\n"};
+      "purposes. The `aspect_ratio` moves grid points on the shell towards\n"
+      "the equator for values greater than 1.0, and towards the poles for\n"
+      "positive values less than 1.0."};
 
   Shell(typename InnerRadius::type inner_radius,
         typename OuterRadius::type outer_radius,
         typename InitialRefinement::type initial_refinement,
         typename InitialGridPoints::type initial_number_of_grid_points,
-        typename UseEquiangularMap::type use_equiangular_map) noexcept;
+        typename UseEquiangularMap::type use_equiangular_map,
+        typename AspectRatio::type aspect_ratio = 1.0) noexcept;
 
   Shell() = default;
   Shell(const Shell&) = delete;
@@ -94,5 +104,6 @@ class Shell : public DomainCreator<3, TargetFrame> {
   typename InitialRefinement::type initial_refinement_{};
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_ = true;
+  typename AspectRatio::type aspect_ratio_ = 1.0;
 };
 }  // namespace DomainCreators

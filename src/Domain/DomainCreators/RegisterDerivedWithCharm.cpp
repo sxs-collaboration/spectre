@@ -9,6 +9,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
+#include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -27,6 +28,7 @@ using Equiangular3D =
     CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
 using Equiangular3DPrism =
     CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+using EquatorialCompression = CoordinateMaps::EquatorialCompression;
 using Wedge2D = CoordinateMaps::Wedge2D;
 using Wedge3D = CoordinateMaps::Wedge3D;
 using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
@@ -66,6 +68,8 @@ void register_with_charm<3>() {
                                          CoordinateMaps::Frustum>));
   PUPable_reg(
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D>));
+  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                         Wedge3D, EquatorialCompression>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3DPrism>));
 }

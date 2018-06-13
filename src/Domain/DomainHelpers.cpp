@@ -14,6 +14,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -368,7 +369,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double outer_sphericity,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
-                      const bool use_half_wedges) noexcept {
+                      const bool use_half_wedges,
+                      const double aspect_ratio) noexcept {
   const auto wedge_orientations = orientations_for_wrappings();
 
   using Wedge3DMap = CoordinateMaps::Wedge3D;
@@ -411,6 +413,15 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
     return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
         std::move(wedges), std::move(translation));  // NOLINT
   }
+
+  if (aspect_ratio != 1.0) {
+    const auto compression =
+        CoordinateMaps::EquatorialCompression{aspect_ratio};
+    // clang-tidy: trivially copyable
+    return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
+        std::move(wedges), std::move(compression));  // NOLINT
+  }
+
   // clang-tidy: trivially copyable
   return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
       std::move(wedges));  // NOLINT
@@ -808,7 +819,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double outer_sphericity,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
-                      const bool use_wedge_halves) noexcept;
+                      const bool use_wedge_halves,
+                      const double aspect_ratio) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
@@ -816,7 +828,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double outer_sphericity,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
-                      const bool use_wedge_halves) noexcept;
+                      const bool use_wedge_halves,
+                      const double aspect_ratio) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
