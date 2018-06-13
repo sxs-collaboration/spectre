@@ -25,7 +25,7 @@
 
 /// \cond
 namespace Tags {
-template <typename Tag, typename MagnitudeTag>
+template <typename Tag>
 struct Normalized;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
@@ -125,8 +125,7 @@ struct ReceiveDataForFluxes {
 ///   - Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
 ///   - Interface<Tags::Extents<volume_dim - 1>>
 ///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>
-///   - Interface<typename System::template magnitude_tag<
-///                 Tags::UnnormalizedFaceNormal<volume_dim>>>
+///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   - Metavariables::temporal_id
 ///
 /// DataBox changes:
@@ -190,14 +189,12 @@ struct SendDataForFluxes {
       // from this side of the mortar now, then package it into a Variables.
       // We store one copy of the Variables and send another, since we need
       // the data on both sides of the mortar.
-      using normal_tag = Tags::UnnormalizedFaceNormal<volume_dim>;
-      using magnitude_of_normal_tag =
-          typename system::template magnitude_tag<normal_tag>;
       using package_arguments = tmpl::append<
           typename db::item_type<
               typename flux_comm_types::normal_dot_fluxes_tag>::tags_list,
           typename Metavariables::normal_dot_numerical_flux::type::slice_tags,
-          tmpl::list<Tags::Normalized<normal_tag, magnitude_of_normal_tag>>>;
+          tmpl::list<
+              Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
       const auto packaged_data = db::apply<tmpl::transform<
           package_arguments,
           tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
@@ -218,8 +215,9 @@ struct SendDataForFluxes {
           db::get<interface_normal_dot_fluxes_tag>(box).at(direction));
       local_data.assign_subset(packaged_data);
       get<typename flux_comm_types::MagnitudeOfFaceNormal>(local_data) =
-          db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
-                                  magnitude_of_normal_tag>>(box)
+          db::get<Tags::Interface<
+              Tags::InternalDirections<volume_dim>,
+              Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
               .at(direction);
 
       const auto direction_from_neighbor = orientation(direction.opposite());

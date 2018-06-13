@@ -223,7 +223,7 @@ void test_initialize_element(const ElementId<Dim>& element_id,
       box);
   (void)db::get<Tags::Interface<
       Tags::InternalDirections<Dim>,
-      Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>, magnitude_tag>>>(box);
+      Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>(box);
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 typename System<Dim>::variables_tag>>(box);
 }

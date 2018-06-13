@@ -46,10 +46,26 @@ Scalar<DataType> magnitude(
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
-/// The Euclidean magnitude of a (co)vector
+/// The magnitude of a (co)vector
+///
+/// \snippet Test_Magnitude.cpp magnitude_name
 template <typename Tag>
-struct EuclideanMagnitude : db::ComputeTag {
-  static std::string name() noexcept { return "EuclideanMagnitude"; }
+struct Magnitude : db::PrefixTag, db::SimpleTag {
+  static std::string name() noexcept {
+    return "Magnitude(" + Tag::name() + ")";
+  }
+  using tag = Tag;
+  using type = Scalar<DataVector>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DataStructuresGroup
+/// The Euclidean magnitude of a (co)vector
+///
+/// This tag inherits from `Tags::Magnitude<Tag>`
+template <typename Tag>
+struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
+  using base = Magnitude<Tag>;
   static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
       magnitude;
   using argument_tags = tmpl::list<Tag>;
@@ -57,21 +73,24 @@ struct EuclideanMagnitude : db::ComputeTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
-/// The (co)vector represented by Tag normalized by its magnitude from
-/// MagnitudeTag.
-template <typename Tag, typename MagnitudeTag>
+/// The normalized (co)vector represented by Tag
+///
+/// \snippet Test_Magnitude.cpp normalized_name
+template <typename Tag>
 struct Normalized : db::ComputeTag {
-  static std::string name() noexcept { return "Normalized"; }
+  static std::string name() noexcept {
+    return "Normalized(" + Tag::name() + ")";
+  }
   static constexpr auto function(
       const db::item_type<Tag>&
           vector_in,  // Compute items need to take const references
-      const db::item_type<MagnitudeTag>& magnitude) noexcept {
+      const db::item_type<Magnitude<Tag>>& magnitude) noexcept {
     auto vector = vector_in;
     for (size_t d = 0; d < vector.index_dim(0); ++d) {
       vector.get(d) /= get(magnitude);
     }
     return vector;
   }
-  using argument_tags = tmpl::list<Tag, MagnitudeTag>;
+  using argument_tags = tmpl::list<Tag, Magnitude<Tag>>;
 };
 }  // namespace Tags
