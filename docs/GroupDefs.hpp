@@ -35,6 +35,12 @@
  */
 
 /*!
+ * \defgroup ConservativeGroup Conservative System Evolution
+ * \brief Contains generic functions used for evolving conservative
+ * systems.
+ */
+
+/*!
  * \defgroup ConstantExpressionsGroup Constant Expressions
  * \brief Contains an assortment of constexpr functions
  *
