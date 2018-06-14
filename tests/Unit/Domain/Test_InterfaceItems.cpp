@@ -107,6 +107,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   using boundary_directions = Tags::BoundaryDirections<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
 
+  CHECK(internal_directions::name() == "InternalDirections");
+  CHECK(boundary_directions::name() == "BoundaryDirections");
+
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), {}},
                         {Direction<dim>::upper_xi(), {}},
