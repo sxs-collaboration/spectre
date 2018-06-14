@@ -218,7 +218,7 @@ void test_initialize_element(const ElementId<Dim>& element_id,
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
 
   CHECK(db::get<typename dg::FluxCommunicationTypes<
-            Metavariables<Dim>>::mortar_data_tag>(box)
+            Metavariables<Dim>>::global_time_stepping_mortar_data_tag>(box)
             .size() == element.number_of_neighbors());
 
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,

@@ -16,6 +16,7 @@
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -50,12 +51,19 @@ struct FluxCommunicationTypes {
       typename db::item_type<normal_dot_fluxes_tag>::tags_list,
       typename PackagedData::tags_list, tmpl::list<MagnitudeOfFaceNormal>>>>;
 
-  /// The DataBox tag for the data stored on the mortars.
-  using mortar_data_tag =
-      Tags::Mortars<Tags::SimpleBoundaryData<
-                        db::item_type<typename Metavariables::temporal_id>,
-                        LocalData, PackagedData>,
-                    volume_dim>;
+ private:
+  template <typename Base, typename Tag, size_t VolumeDim>
+  struct BasedMortars : Base, Tags::Mortars<Tag, VolumeDim> {};
+
+ public:
+  /// The DataBox tag for the data stored on the mortars for global
+  /// time stepping.
+  using global_time_stepping_mortar_data_tag =
+      BasedMortars<Tags::VariablesBoundaryData,
+                   Tags::SimpleBoundaryData<
+                       db::item_type<typename Metavariables::temporal_id>,
+                       LocalData, PackagedData>,
+                   volume_dim>;
 
   /// The inbox tag for flux communication.
   struct FluxesTag {

@@ -93,7 +93,8 @@ struct Metavariables {
 };
 
 using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
-using mortar_data_tag = typename flux_comm_types::mortar_data_tag;
+using mortar_data_tag =
+    typename flux_comm_types::global_time_stepping_mortar_data_tag;
 using LocalData = typename flux_comm_types::LocalData;
 using PackagedData = typename flux_comm_types::PackagedData;
 using MagnitudeOfFaceNormal = typename flux_comm_types::MagnitudeOfFaceNormal;

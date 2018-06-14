@@ -26,6 +26,8 @@
 /// \cond
 namespace Tags {
 template <typename Tag>
+struct Magnitude;
+template <typename Tag>
 struct Normalized;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
@@ -45,7 +47,7 @@ namespace Actions {
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: FluxCommunicationTypes<Metavariables>::mortar_data_tag
+/// - Modifies: Tags::VariablesBoundaryData
 ///
 /// \see SendDataForFluxes
 template <typename Metavariables>
@@ -67,13 +69,13 @@ struct ReceiveDataForFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using mortar_data_tag = typename flux_comm_types::mortar_data_tag;
     using temporal_id_tag = typename Metavariables::temporal_id;
-    db::mutate<mortar_data_tag>(
+    db::mutate<Tags::VariablesBoundaryData>(
         make_not_null(&box),
-        [&inboxes](
-            const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::item_type<temporal_id_tag>& temporal_id) noexcept {
+        [&inboxes](const gsl::not_null<
+                       db::item_type<Tags::VariablesBoundaryData, DbTags>*>
+                       mortar_data,
+                   const db::item_type<temporal_id_tag>& temporal_id) noexcept {
           auto& inbox =
               tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
           for (auto& mortar_received_data : inbox[temporal_id]) {
@@ -132,7 +134,7 @@ struct ReceiveDataForFluxes {
 /// - Adds: nothing
 /// - Removes:
 ///   Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
-/// - Modifies: FluxCommunicationTypes<Metavariables>::mortar_data_tag
+/// - Modifies: Tags::VariablesBoundaryData
 ///
 /// \see ReceiveDataForFluxes
 template <typename Metavariables>
@@ -238,11 +240,11 @@ struct SendDataForFluxes {
                 std::make_pair(direction_from_neighbor, element.id()),
                 neighbor_packaged_data));
 
-        using mortar_data_tag = typename flux_comm_types::mortar_data_tag;
-        db::mutate<mortar_data_tag>(
+        db::mutate<Tags::VariablesBoundaryData>(
             make_not_null(&box),
             [&mortar_id, &temporal_id, &local_data](
-                const gsl::not_null<db::item_type<mortar_data_tag>*>
+                const gsl::not_null<
+                    db::item_type<Tags::VariablesBoundaryData, DbTags>*>
                     mortar_data) noexcept {
               mortar_data->at(mortar_id).local_insert(temporal_id, local_data);
             });

@@ -99,7 +99,8 @@ struct InitializeElement {
                              typename Metavariables::system::variables_tag>>,
       db::add_tag_prefix<Tags::dt,
                          typename Metavariables::system::variables_tag>,
-      typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag,
+      typename dg::FluxCommunicationTypes<
+          Metavariables>::global_time_stepping_mortar_data_tag,
       // Compute items
       Tags::Time, Tags::LogicalCoordinates<Dim>,
       Tags::Coordinates<Tags::ElementMap<Dim>, Tags::LogicalCoordinates<Dim>>,
@@ -191,8 +192,8 @@ struct InitializeElement {
     }
 
     // Set up boundary information
-    db::item_type<
-        typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag>
+    db::item_type<typename dg::FluxCommunicationTypes<
+        Metavariables>::global_time_stepping_mortar_data_tag>
         boundary_data{};
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
