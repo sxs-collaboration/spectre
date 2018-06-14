@@ -239,7 +239,8 @@ void test_wedge_map_generation_against_domain_helpers(
   const auto maps = wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges);
-  for (size_t i = 0; i < maps.size(); i++) {
+  CHECK(maps.size() == expected_coord_maps.size());
+  for (size_t i = 0; i < expected_coord_maps.size(); i++) {
     CHECK(*expected_coord_maps[i] == *maps[i]);
   }
 }
