@@ -89,4 +89,16 @@ struct NormalDotNumericalFlux : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   static std::string name() noexcept { return "NormalDotNumericalFlux"; }
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Prefix indicating the value a quantity will take on the
+/// next iteration of the algorithm.
+///
+/// \snippet Test_DataBoxPrefixes.cpp next_name
+template <typename Tag>
+struct Next : db::PrefixTag, db::SimpleTag {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static std::string name() noexcept { return "Next(" + Tag::name() + ")"; }
+};
 }  // namespace Tags
