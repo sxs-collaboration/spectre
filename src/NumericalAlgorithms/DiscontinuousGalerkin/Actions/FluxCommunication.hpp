@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <tuple>
 #include <utility>
@@ -17,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
@@ -27,6 +29,8 @@
 namespace Tags {
 template <typename Tag>
 struct Magnitude;
+template <typename Tag>
+struct Next;
 template <typename Tag>
 struct Normalized;
 }  // namespace Tags
@@ -41,13 +45,14 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - Tags::Element<volume_dim>
 ///   - Metavariables::temporal_id
-///
+///   - Tags::Next<Metavariables::temporal_id>
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: Tags::VariablesBoundaryData
+/// - Modifies:
+///   - Tags::Mortars<Tags::Next<Metavariables::temporal_id>, volume_dim>
+///   - Tags::VariablesBoundaryData
 ///
 /// \see SendDataForFluxes
 template <typename Metavariables>
@@ -69,23 +74,62 @@ struct ReceiveDataForFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    constexpr size_t volume_dim = Metavariables::system::volume_dim;
     using temporal_id_tag = typename Metavariables::temporal_id;
-    db::mutate<Tags::VariablesBoundaryData>(
+    using neighbor_temporal_id_tag =
+        Tags::Mortars<Tags::Next<temporal_id_tag>, volume_dim>;
+    db::mutate<Tags::VariablesBoundaryData, neighbor_temporal_id_tag>(
         make_not_null(&box),
         [&inboxes](const gsl::not_null<
                        db::item_type<Tags::VariablesBoundaryData, DbTags>*>
                        mortar_data,
-                   const db::item_type<temporal_id_tag>& temporal_id) noexcept {
+                   const gsl::not_null<db::item_type<neighbor_temporal_id_tag>*>
+                       neighbor_next_temporal_ids,
+                   const db::item_type<Tags::Next<temporal_id_tag>>&
+                       local_next_temporal_id) noexcept {
           auto& inbox =
               tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
-          for (auto& mortar_received_data : inbox[temporal_id]) {
-            mortar_data->at(mortar_received_data.first)
-                .remote_insert(temporal_id,
-                               std::move(mortar_received_data.second));
+          for (auto received_data = inbox.begin();
+               received_data != inbox.end() and
+                   received_data->first < local_next_temporal_id;
+               received_data = inbox.erase(received_data)) {
+            const auto& receive_temporal_id = received_data->first;
+            for (auto& received_mortar_data : received_data->second) {
+              const auto mortar_id = received_mortar_data.first;
+              ASSERT(neighbor_next_temporal_ids->at(mortar_id) ==
+                         receive_temporal_id,
+                     "Expected data at "
+                     << neighbor_next_temporal_ids->at(mortar_id)
+                     << " but received at " << receive_temporal_id);
+              neighbor_next_temporal_ids->at(mortar_id) =
+                  received_mortar_data.second.first;
+              mortar_data->at(mortar_id).remote_insert(
+                  receive_temporal_id,
+                  std::move(received_mortar_data.second.second));
+            }
           }
-          inbox.erase(temporal_id);
+
+          // The apparently pointless lambda wrapping this check
+          // prevents gcc-7.3.0 from segfaulting.
+          ASSERT(([
+                   &neighbor_next_temporal_ids, &local_next_temporal_id
+                 ]() noexcept {
+                   return std::all_of(
+                       neighbor_next_temporal_ids->begin(),
+                       neighbor_next_temporal_ids->end(),
+                       [&local_next_temporal_id](const auto& next) noexcept {
+                         return next.second >= local_next_temporal_id;
+                       });
+                 }()),
+                 "apply called before all data received");
+          ASSERT(
+              inbox.empty() or (inbox.size() == 1 and
+                                inbox.begin()->first == local_next_temporal_id),
+              "Shouldn't have received data that depended upon the step being "
+              "taken: Received data at " << inbox.begin()->first
+              << " while stepping to " << local_next_temporal_id);
         },
-        db::get<temporal_id_tag>(box));
+        db::get<Tags::Next<temporal_id_tag>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
@@ -97,16 +141,30 @@ struct ReceiveDataForFluxes {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
+    using temporal_id = typename Metavariables::temporal_id;
 
-    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
     const auto& inbox =
         tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
-    auto receives = inbox.find(temporal_id);
-    const auto number_of_neighbors =
-        db::get<Tags::Element<volume_dim>>(box).number_of_neighbors();
-    const size_t num_receives =
-        receives == inbox.end() ? 0 : receives->second.size();
-    return num_receives == number_of_neighbors;
+
+    const auto& local_next_temporal_id = db::get<Tags::Next<temporal_id>>(box);
+    const auto& mortars_next_temporal_id =
+        db::get<Tags::Mortars<Tags::Next<temporal_id>, volume_dim>>(box);
+    for (const auto& mortar_id_next_temporal_id : mortars_next_temporal_id) {
+      const auto& mortar_id = mortar_id_next_temporal_id.first;
+      auto next_temporal_id = mortar_id_next_temporal_id.second;
+      while (next_temporal_id < local_next_temporal_id) {
+        const auto temporal_received = inbox.find(next_temporal_id);
+        if (temporal_received == inbox.end()) {
+          return false;
+        }
+        const auto mortar_received = temporal_received->second.find(mortar_id);
+        if (mortar_received == temporal_received->second.end()) {
+          return false;
+        }
+        next_temporal_id = mortar_received->second.first;
+      }
+    }
+    return true;
   }
 };
 
@@ -129,6 +187,7 @@ struct ReceiveDataForFluxes {
 ///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>
 ///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   - Metavariables::temporal_id
+///   - Tags::Next<Metavariables::temporal_id>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -168,6 +227,8 @@ struct SendDataForFluxes {
 
     const auto& element = db::get<Tags::Element<volume_dim>>(box);
     const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
+    const auto& next_temporal_id =
+        db::get<Tags::Next<typename Metavariables::temporal_id>>(box);
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
@@ -238,7 +299,7 @@ struct SendDataForFluxes {
             receiver_proxy[neighbor], temporal_id,
             std::make_pair(
                 std::make_pair(direction_from_neighbor, element.id()),
-                neighbor_packaged_data));
+                std::make_pair(next_temporal_id, neighbor_packaged_data)));
 
         db::mutate<Tags::VariablesBoundaryData>(
             make_not_null(&box),

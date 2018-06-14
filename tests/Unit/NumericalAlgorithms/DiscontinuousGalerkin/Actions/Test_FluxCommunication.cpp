@@ -8,6 +8,8 @@
 // IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
+#include <initializer_list>  // IWYU pragma: keep
+#include <map>
 #include <memory>
 #include <pup.h>
 #include <string>
@@ -15,6 +17,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -26,6 +29,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
@@ -38,6 +42,8 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -141,6 +147,7 @@ using normal_dot_fluxes_tag =
 using fluxes_tag = typename flux_comm_types::FluxesTag;
 
 using other_data_tag = interface_tag<Tags::Variables<tmpl::list<OtherData>>>;
+using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, 2>;
 
 using compute_items = db::AddComputeTags<
     Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
@@ -195,6 +202,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   const auto neighbor_directions = {Direction<2>::lower_xi(),
                                     Direction<2>::upper_xi(),
                                     Direction<2>::upper_eta()};
+  const auto neighbor_mortar_ids = {
+      std::make_pair(Direction<2>::lower_xi(), west_id),
+      std::make_pair(Direction<2>::upper_xi(), east_id),
+      std::make_pair(Direction<2>::upper_eta(), south_id)};
   const struct {
     std::unordered_map<Direction<2>, Scalar<DataVector>> fluxes;
     std::unordered_map<Direction<2>, Scalar<DataVector>> other_data;
@@ -216,7 +227,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
   auto start_box = [
     &extents, &self_id, &west_id, &east_id, &south_id, &block_orientation,
-    &coordmap, &neighbor_directions, &data
+    &coordmap, &neighbor_directions, &neighbor_mortar_ids, &data
   ]() noexcept {
     const Element<2> element(
         self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
@@ -240,17 +251,21 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     }
 
     db::item_type<mortar_data_tag> mortar_history{};
-    mortar_history[std::make_pair(Direction<2>::lower_xi(), west_id)];
-    mortar_history[std::make_pair(Direction<2>::upper_xi(), east_id)];
-    mortar_history[std::make_pair(Direction<2>::upper_eta(), south_id)];
+    db::item_type<mortar_next_temporal_ids_tag> mortar_next_temporal_ids{};
+    for (const auto& mortar_id : neighbor_mortar_ids) {
+      mortar_history.insert({mortar_id, {}});
+      mortar_next_temporal_ids.insert({mortar_id, 0});
+    }
 
     return db::create<
-        db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
-                          Tags::ElementMap<2>, normal_dot_fluxes_tag,
-                          other_data_tag, mortar_data_tag>,
-        compute_items>(0, extents, element, std::move(map),
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
+                          Tags::Element<2>, Tags::ElementMap<2>,
+                          normal_dot_fluxes_tag, other_data_tag,
+                          mortar_data_tag, mortar_next_temporal_ids_tag>,
+        compute_items>(0, 1, extents, element, std::move(map),
                        std::move(normal_dot_fluxes), std::move(other_data),
-                       std::move(mortar_history));
+                       std::move(mortar_history),
+                       std::move(mortar_next_temporal_ids));
   }();
 
   auto sent_box = std::get<0>(
@@ -298,10 +313,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     mortar_history[std::make_pair(direction, self_id)];
 
     auto box = db::create<
-        db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
-                          Tags::ElementMap<2>, normal_dot_fluxes_tag,
-                          other_data_tag, mortar_data_tag>,
-        compute_items>(0, extents, element, std::move(map),
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
+                          Tags::Element<2>, Tags::ElementMap<2>,
+                          normal_dot_fluxes_tag, other_data_tag,
+                          mortar_data_tag>,
+        compute_items>(0, 1, extents, element, std::move(map),
                        std::move(normal_dot_fluxes_map),
                        std::move(other_data_map), std::move(mortar_history));
 
@@ -329,6 +345,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       runner.apply<component, receive_data_for_fluxes>(sent_box, self_id));
 
   CHECK(tuples::get<fluxes_tag>(runner.inboxes<component>()[self_id]).empty());
+
+  for (const auto& mortar_id : neighbor_mortar_ids) {
+    CHECK(db::get<mortar_next_temporal_ids_tag>(received_box).at(mortar_id) ==
+          1);
+  };
 
   db::mutate<mortar_data_tag>(make_not_null(&received_box), [
     &west_id, &east_id, &south_id, &data
@@ -415,13 +436,15 @@ SPECTRE_TEST_CASE(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   auto start_box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Extents<2>, Tags::Element<2>,
-                        Tags::ElementMap<2>, normal_dot_fluxes_tag,
-                        other_data_tag, mortar_data_tag>,
-      compute_items>(0, extents, element, std::move(map),
+      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
+                        Tags::Element<2>, Tags::ElementMap<2>,
+                        normal_dot_fluxes_tag, other_data_tag, mortar_data_tag,
+                        mortar_next_temporal_ids_tag>,
+      compute_items>(0, 1, extents, element, std::move(map),
                      db::item_type<normal_dot_fluxes_tag>{},
                      db::item_type<other_data_tag>{},
-                     db::item_type<mortar_data_tag>{});
+                     db::item_type<mortar_data_tag>{},
+                     db::item_type<mortar_next_temporal_ids_tag>{});
 
   auto sent_box = std::get<0>(
       runner.apply<component, send_data_for_fluxes>(start_box, self_id));
@@ -436,4 +459,164 @@ SPECTRE_TEST_CASE(
 
   CHECK(db::get<mortar_data_tag>(received_box).empty());
   CHECK(runner.nonempty_inboxes<component, fluxes_tag>().empty());
+}
+
+namespace {
+struct DataRecorder {
+  // Only called on the sending sides, which are not interesting here.
+  void local_insert(int /*temporal_id*/, const LocalData& /*data*/) noexcept {}
+
+  void remote_insert(int temporal_id, PackagedData data) noexcept {
+    received_data.emplace_back(temporal_id, std::move(data));
+  }
+
+  std::vector<std::pair<int, PackagedData>> received_data{};
+};
+
+struct DataRecorderTag : db::SimpleTag {
+  static std::string name() { return "DataRecorderTag"; }
+  using type = DataRecorder;
+};
+
+struct MortarRecorderTag : Tags::VariablesBoundaryData,
+                           Tags::Mortars<DataRecorderTag, 2> {};
+
+void send_from_neighbor(
+    const gsl::not_null<ActionTesting::ActionRunner<Metavariables>*> runner,
+    const Element<2>& element, const int start, const int end,
+    const double n_dot_f) noexcept {
+  const Direction<2>& send_direction = element.neighbors().begin()->first;
+  const ElementId<2>& receiver_id =
+      *element.neighbors().begin()->second.begin();
+
+  ElementMap<2, Frame::Inertial> map(
+      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                        CoordinateMaps::Identity<2>{}));
+
+  db::item_type<normal_dot_fluxes_tag> fluxes;
+  fluxes[send_direction].initialize(2, n_dot_f);
+
+  db::item_type<other_data_tag> other_data;
+  other_data[send_direction].initialize(2, 0.);
+
+  db::item_type<MortarRecorderTag> recorders;
+  recorders.insert({{send_direction, receiver_id}, {}});
+
+  auto box =
+      db::create<db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
+                                   Tags::Extents<2>, Tags::Element<2>,
+                                   Tags::ElementMap<2>, normal_dot_fluxes_tag,
+                                   other_data_tag, MortarRecorderTag>,
+                 compute_items>(start, end, Index<2>{{{2, 2}}}, element,
+                                std::move(map), std::move(fluxes),
+                                std::move(other_data), std::move(recorders));
+
+  runner->apply<component, send_data_for_fluxes>(box, element.id());
+}
+
+// Sends the left steps, then the right steps.  The step must not be
+// ready until after the last send.
+void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
+                  const std::vector<int>& right_steps) noexcept {
+  ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
+
+  const ElementId<2> left_id(0);
+  const ElementId<2> self_id(1);
+  const ElementId<2> right_id(2);
+
+  using MortarId = std::pair<Direction<2>, ElementId<2>>;
+  const MortarId left_mortar_id(Direction<2>::lower_xi(), left_id);
+  const MortarId right_mortar_id(Direction<2>::upper_xi(), right_id);
+
+  db::item_type<MortarRecorderTag> initial_recorders;
+  initial_recorders.insert({{Direction<2>::lower_xi(), left_id}, {}});
+  initial_recorders.insert({{Direction<2>::upper_xi(), right_id}, {}});
+  db::item_type<mortar_next_temporal_ids_tag> initial_mortar_temporal_ids{
+      {left_mortar_id, left_steps.front()},
+      {right_mortar_id, right_steps.front()}};
+
+  auto box =
+      db::create<db::AddSimpleTags<Tags::Next<TemporalId>, MortarRecorderTag,
+                                   mortar_next_temporal_ids_tag>>(
+          self_step_end, std::move(initial_recorders),
+          std::move(initial_mortar_temporal_ids));
+
+  const Element<2> left_element(left_id,
+                                {{Direction<2>::upper_xi(), {{self_id}, {}}}});
+  const Element<2> right_element(right_id,
+                                 {{Direction<2>::lower_xi(), {{self_id}, {}}}});
+
+  std::vector<int> relevant_left_steps{left_steps.front()};
+  for (size_t step = 1; step < left_steps.size(); ++step) {
+    CHECK_FALSE(
+        runner.is_ready<component, receive_data_for_fluxes>(box, self_id));
+    send_from_neighbor(&runner, left_element, left_steps[step - 1],
+                       left_steps[step], step);
+    if (left_steps[step - 1] < self_step_end) {
+      relevant_left_steps.push_back(left_steps[step]);
+    }
+  }
+  std::vector<int> relevant_right_steps{right_steps.front()};
+  for (size_t step = 1; step < right_steps.size(); ++step) {
+    CHECK_FALSE(
+        runner.is_ready<component, receive_data_for_fluxes>(box, self_id));
+    send_from_neighbor(&runner, right_element, right_steps[step - 1],
+                       right_steps[step], step);
+    if (right_steps[step - 1] < self_step_end) {
+      relevant_right_steps.push_back(right_steps[step]);
+    }
+  }
+  CHECK(runner.is_ready<component, receive_data_for_fluxes>(box, self_id));
+
+  box = std::get<0>(
+      runner.apply<component, receive_data_for_fluxes>(box, self_id));
+
+  CHECK(db::get<mortar_next_temporal_ids_tag>(box) ==
+        db::item_type<mortar_next_temporal_ids_tag>{
+            {left_mortar_id, relevant_left_steps.back()},
+            {right_mortar_id, relevant_right_steps.back()}});
+
+  const auto& recorders = db::get<MortarRecorderTag>(box);
+  const auto check_data = [](const auto& recorder,
+                             const std::vector<int>& steps) noexcept {
+    const auto& received_data = recorder.received_data;
+    CHECK(received_data.size() == steps.size() - 1);
+
+    for (size_t step = 0; step < received_data.size(); ++step) {
+      CHECK(received_data[step].first == steps[step]);
+      CHECK(get(get<Var>(received_data[step].second)) ==
+            DataVector(2, 10. * (step + 1)));
+    }
+  };
+  check_data(recorders.at(left_mortar_id), relevant_left_steps);
+  check_data(recorders.at(right_mortar_id), relevant_right_steps);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication.lts",
+                  "[Unit][NumericalAlgorithms][Actions]") {
+  // Global step 0 -> 1
+  run_lts_case(1, {0, 1}, {0, 1});
+  // Global step 0 -> 1 with left element taking second step
+  run_lts_case(1, {0, 1, 2}, {0, 1});
+  // Neighbors stepping past element
+  run_lts_case(1, {0, 2}, {0, 1});
+  run_lts_case(1, {0, 1}, {0, 2});
+  run_lts_case(1, {0, 2}, {0, 2});
+  // No receives from one or both sides (because one or more neighbors
+  // have already made it to the desired time)
+  run_lts_case(1, {1}, {1});
+  run_lts_case(1, {1}, {2});
+  run_lts_case(1, {2}, {1});
+  run_lts_case(1, {2}, {2});
+  run_lts_case(1, {0, 1}, {1});
+  run_lts_case(1, {0, 1}, {2});
+  run_lts_case(1, {0, 2}, {1});
+  run_lts_case(1, {0, 2}, {2});
+  run_lts_case(1, {1}, {0, 1});
+  run_lts_case(1, {1}, {0, 2});
+  run_lts_case(1, {2}, {0, 1});
+  run_lts_case(1, {2}, {0, 2});
+  // Several steps to receive
+  run_lts_case(3, {0, 1, 3, 4}, {0, 1, 2, 4});
 }

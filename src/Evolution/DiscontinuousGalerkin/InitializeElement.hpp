@@ -25,6 +25,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -101,6 +102,7 @@ struct InitializeElement {
                          typename Metavariables::system::variables_tag>,
       typename dg::FluxCommunicationTypes<
           Metavariables>::global_time_stepping_mortar_data_tag,
+      Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>,
       // Compute items
       Tags::Time, Tags::LogicalCoordinates<Dim>,
       Tags::Coordinates<Tags::ElementMap<Dim>, Tags::LogicalCoordinates<Dim>>,
@@ -195,12 +197,15 @@ struct InitializeElement {
     db::item_type<typename dg::FluxCommunicationTypes<
         Metavariables>::global_time_stepping_mortar_data_tag>
         boundary_data{};
+    typename Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>::type
+        mortar_next_time_ids{};
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
       const auto& neighbors = direction_neighbors.second;
       for (const auto& neighbor : neighbors) {
         const auto mortar_id = std::make_pair(direction, neighbor);
         boundary_data.insert({mortar_id, {}});
+        mortar_next_time_ids.insert({mortar_id, time_id});
       }
     }
 
@@ -212,7 +217,7 @@ struct InitializeElement {
             std::move(history_dt_vars),
             Variables<db::wrap_tags_in<Tags::dt, variables_tags>>{
                 num_grid_points, 0.0},
-            std::move(boundary_data));
+            std::move(boundary_data), std::move(mortar_next_time_ids));
 
     return std::make_tuple(std::move(outbox));
   }

@@ -45,6 +45,10 @@
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace Tags {
+template <typename Tag, size_t VolumeDim>
+struct Mortars;
+}  // namespace Tags
 
 namespace {
 struct Var : db::SimpleTag {
@@ -220,6 +224,8 @@ void test_initialize_element(const ElementId<Dim>& element_id,
   CHECK(db::get<typename dg::FluxCommunicationTypes<
             Metavariables<Dim>>::global_time_stepping_mortar_data_tag>(box)
             .size() == element.number_of_neighbors());
+  CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>>(box).size() ==
+        element.number_of_neighbors());
 
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 Tags::UnnormalizedFaceNormal<Dim>>>(box);

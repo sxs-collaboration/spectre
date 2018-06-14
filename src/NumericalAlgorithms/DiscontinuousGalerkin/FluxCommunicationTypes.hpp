@@ -5,6 +5,7 @@
 
 #include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
+#include <map>
 #include <unordered_map>
 #include <utility>
 
@@ -68,11 +69,11 @@ struct FluxCommunicationTypes {
   /// The inbox tag for flux communication.
   struct FluxesTag {
     using temporal_id = db::item_type<typename Metavariables::temporal_id>;
-    using type = std::unordered_map<
+    using type = std::map<
         temporal_id,
         std::unordered_map<
             std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-            PackagedData,
+            std::pair<temporal_id, PackagedData>,
             boost::hash<
                 std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>>;
   };
