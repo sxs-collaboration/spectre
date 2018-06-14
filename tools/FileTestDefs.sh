@@ -131,7 +131,8 @@ standard_checks=()
 
 # Check for lines longer than 80 characters
 long_lines() {
-    is_c++ "$1" && grep '^[^#].\{80,\}' "$1" | grep -Evq 'https?://'
+    is_c++ "$1" && grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
+        grep -v '// IWYU pragma:' >/dev/null
 }
 long_lines_report() {
     echo "Found lines over 80 characters:"
@@ -149,6 +150,7 @@ long_lines_test() {
     test_check fail foo.tpp "${eighty}x"$'\n'
     test_check pass foo.yaml "${eighty}x"$'\n'
     test_check pass foo.cpp "#include ${eighty}x"$'\n'
+    test_check pass foo.cpp "// IWYU pragma: no_include ${eighty}x"$'\n'
     test_check pass foo.cpp "xxx http://${eighty}x"$'\n'
     test_check pass foo.cpp "xxx https://${eighty}x"$'\n'
 }
