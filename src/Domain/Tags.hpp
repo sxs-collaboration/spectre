@@ -132,6 +132,18 @@ struct InternalDirections : db::ComputeTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// The set of directions which correspond to external boundaries
+template <size_t VolumeDim>
+struct BoundaryDirections : db::ComputeTag {
+  static std::string name() noexcept { return "BoundaryDirections"; }
+  using argument_tags = tmpl::list<Element<VolumeDim>>;
+  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
+    return element.external_boundaries();
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// Base type for the Interface tag.  Exposed so that specializations
 /// can reuse the implementation.
 /// \tparam DirectionsTag the item of directions

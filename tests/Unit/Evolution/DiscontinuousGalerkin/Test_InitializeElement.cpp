@@ -226,6 +226,15 @@ void test_initialize_element(const ElementId<Dim>& element_id,
       Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>(box);
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 typename System<Dim>::variables_tag>>(box);
+  (void)db::get<Tags::Interface<Tags::BoundaryDirections<Dim>,
+                                Tags::UnnormalizedFaceNormal<Dim>>>(box);
+  (void)db::get<Tags::Interface<Tags::BoundaryDirections<Dim>, magnitude_tag>>(
+      box);
+  (void)db::get<Tags::Interface<
+      Tags::BoundaryDirections<Dim>,
+      Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>(box);
+  (void)db::get<Tags::Interface<Tags::BoundaryDirections<Dim>,
+                                typename System<Dim>::variables_tag>>(box);
 }
 }  // namespace
 

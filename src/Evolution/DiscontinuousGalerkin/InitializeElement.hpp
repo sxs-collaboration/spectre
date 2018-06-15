@@ -87,6 +87,9 @@ struct InitializeElement {
   template <typename Tag>
   using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 
+  template <typename Tag>
+  using boundary_tag = Tags::Interface<Tags::BoundaryDirections<Dim>, Tag>;
+
   template <class Metavariables>
   using return_tag_list = tmpl::list<
       // Simple items
@@ -118,7 +121,14 @@ struct InitializeElement {
       // System::normal_dot_fluxes::argument_tags, but it is not clear
       // how to get that.  System::variables_tag should generally be a
       // superset.
-      interface_tag<typename Metavariables::system::variables_tag>>;
+      interface_tag<typename Metavariables::system::variables_tag>,
+      Tags::BoundaryDirections<Dim>, boundary_tag<Tags::Direction<Dim>>,
+      boundary_tag<Tags::Extents<Dim - 1>>,
+      boundary_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      boundary_tag<typename Metavariables::system::template magnitude_tag<
+          Tags::UnnormalizedFaceNormal<Dim>>>,
+      boundary_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>,
+      boundary_tag<typename Metavariables::system::variables_tag>>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>
