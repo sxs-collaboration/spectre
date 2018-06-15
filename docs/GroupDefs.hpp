@@ -1084,6 +1084,8 @@ then typically look as follows:
  * just that the test failed. Since the string passed is a regular
  * expression you must escape any regex tokens. For example, to match
  * `some (word) and` you must specify the string `some \(word\) and`.
+ * If your error message contains a newline, you can match it using the
+ * dot operator `.`, which matches any character.
  * </td>
  * </tr>
  * </table>
