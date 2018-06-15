@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
     TimeId.cpp
     )
 
+add_subdirectory(StepChoosers)
 add_subdirectory(TimeSteppers)
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
