@@ -194,3 +194,20 @@ the `ifdef SPECTRE_DEBUG` block, they can just call have the code that triggers
 an `ERROR`. For example,
 
 \snippet Test_AbortWithErrorMessage.cpp error_test_example
+
+### Building and Running A Single Test File
+
+In cases where low-level header files are frequently being altered and the
+changes need to be tested, building `RunTests` becomes extremely time
+consuming. The `RunSingleTest` executable in `tests/Unit/RunSingleTest` allows
+one to compile only a select few of the test source files and only link in the
+necessary libraries. To set which test file and libraries are linked into
+`RunSingleTest` edit the `tests/Unit/RunSingleTest/CMakeLists.txt`
+file. However, do not commit your changes to that file since it is meant to
+serve as an example. To compile `RunSingleTest` use `make RunSingleTest`, and to
+run it use `BUILD_DIR/bin/RunSingleTest Unit.Test.Name`.
+
+\warning
+`Parallel::abort` does not work correctly in the `RunSingleTest` executable
+because a segfault occurs inside Charm++ code after the abort message is
+printed.

@@ -105,3 +105,5 @@ set_target_properties(
   )
 
 add_compilation_tests(${EXECUTABLE})
+
+add_subdirectory(RunSingleTest)
