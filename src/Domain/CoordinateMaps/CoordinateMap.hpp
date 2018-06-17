@@ -626,6 +626,27 @@ make_vector_coordinate_map_base(Arg0&& arg_0,
   return return_vector;
 }
 
+/// \ingroup ComputationalDomainGroup
+/// \brief Creates a `std::vector<std::unique_ptr<CoordinateMapBase>>`
+/// containing the result of `make_coordinate_map_base` applied to each
+/// element of the vector of maps composed with the rest of the arguments
+/// passed in.
+template <typename SourceFrame, typename TargetFrame, size_t Dim, typename Map,
+          typename... Maps>
+std::vector<std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>>
+make_vector_coordinate_map_base(std::vector<Map> maps,
+                                const Maps&... remaining_maps) noexcept {
+  std::vector<std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>>
+      return_vector;
+  return_vector.reserve(sizeof...(Maps) + 1);
+  for (auto& map : maps) {
+    return_vector.emplace_back(
+        make_coordinate_map_base<SourceFrame, TargetFrame>(std::move(map),
+                                                           remaining_maps...));
+  }
+  return return_vector;
+}
+
 /// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 PUP::able::PUP_ID

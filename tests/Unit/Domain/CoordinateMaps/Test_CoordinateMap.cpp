@@ -548,6 +548,7 @@ void test_coordinate_map_with_rotation_wedge() {
 
 void test_make_vector_coordinate_map_base() {
   using Affine = CoordinateMaps::Affine;
+  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 
   const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       Affine{-1.0, 1.0, 2.0, 8.0});
@@ -564,6 +565,38 @@ void test_make_vector_coordinate_map_base() {
   CHECK(*(vector_of_affine1d[0]) == affine1d);
 
   using Wedge2DMap = CoordinateMaps::Wedge2D;
+  const auto upper_xi_wedge =
+      Wedge2DMap{1.0,
+                 2.0,
+                 0.0,
+                 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+                 true};
+  const auto upper_eta_wedge =
+      Wedge2DMap{1.0,
+                 2.0,
+                 0.0,
+                 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+                 true};
+  const auto lower_xi_wedge =
+      Wedge2DMap{1.0,
+                 2.0,
+                 0.0,
+                 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+                 true};
+  const auto lower_eta_wedge =
+      Wedge2DMap{1.0,
+                 2.0,
+                 0.0,
+                 1.0,
+                 OrientationMap<2>{std::array<Direction<2>, 2>{
+                     {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+                 true};
   const auto vector_of_wedges =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Wedge2DMap{
@@ -586,34 +619,125 @@ void test_make_vector_coordinate_map_base() {
               OrientationMap<2>{std::array<Direction<2>, 2>{
                   {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
               true});
-  const auto upper_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Wedge2DMap{
-          1.0, 2.0, 0.0, 1.0,
-          OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
-          true});
-  const auto upper_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Wedge2DMap{
-          1.0, 2.0, 0.0, 1.0,
-          OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
-          true});
-  const auto lower_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Wedge2DMap{
-          1.0, 2.0, 0.0, 1.0,
-          OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
-          true});
-  const auto lower_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Wedge2DMap{
-          1.0, 2.0, 0.0, 1.0,
-          OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
-          true});
-  CHECK(upper_xi_wedge == *(vector_of_wedges[0]));
-  CHECK(upper_eta_wedge == *(vector_of_wedges[1]));
-  CHECK(lower_xi_wedge == *(vector_of_wedges[2]));
-  CHECK(lower_eta_wedge == *(vector_of_wedges[3]));
+
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_xi_wedge) ==
+        *(vector_of_wedges[0]));
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_eta_wedge) ==
+        *(vector_of_wedges[1]));
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_xi_wedge) ==
+        *(vector_of_wedges[2]));
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_eta_wedge) ==
+        *(vector_of_wedges[3]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            upper_xi_wedge) == *(vector_of_wedges[0]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            upper_eta_wedge) == *(vector_of_wedges[1]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            lower_xi_wedge) == *(vector_of_wedges[2]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            lower_eta_wedge) == *(vector_of_wedges[3]));
+
+  const auto wedges = std::vector<Wedge2DMap>{upper_xi_wedge, upper_eta_wedge,
+                                              lower_xi_wedge, lower_eta_wedge};
+  const auto vector_of_wedges2 =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial, 2>(
+          wedges);
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_xi_wedge) ==
+        *(vector_of_wedges2[0]));
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_eta_wedge) ==
+        *(vector_of_wedges2[1]));
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_xi_wedge) ==
+        *(vector_of_wedges2[2]));
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_eta_wedge) ==
+        *(vector_of_wedges2[3]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            upper_xi_wedge) == *(vector_of_wedges2[0]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            upper_eta_wedge) == *(vector_of_wedges2[1]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            lower_xi_wedge) == *(vector_of_wedges2[2]));
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            lower_eta_wedge) == *(vector_of_wedges2[3]));
+
+  const auto translation =
+      Affine2D{Affine{-1.0, 1.0, -1.0, 1.0}, Affine{-1.0, 1.0, 0.0, 2.0}};
+  const auto vector_of_translated_wedges =
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial, 2>(
+          wedges, translation);
+
+  const auto translated_upper_xi_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+              true},
+          translation);
+  const auto translated_upper_eta_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+              true},
+          translation);
+  const auto translated_lower_xi_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+              true},
+          translation);
+  const auto translated_lower_eta_wedge =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+              true},
+          translation);
+  const auto translated_upper_xi_wedge_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+              true},
+          translation);
+  const auto translated_upper_eta_wedge_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+              true},
+          translation);
+  const auto translated_lower_xi_wedge_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+              true},
+          translation);
+  const auto translated_lower_eta_wedge_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Wedge2DMap{
+              1.0, 2.0, 0.0, 1.0,
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+              true},
+          translation);
+
+  CHECK(translated_upper_xi_wedge == *(vector_of_translated_wedges[0]));
+  CHECK(translated_upper_eta_wedge == *(vector_of_translated_wedges[1]));
+  CHECK(translated_lower_xi_wedge == *(vector_of_translated_wedges[2]));
+  CHECK(translated_lower_eta_wedge == *(vector_of_translated_wedges[3]));
+  CHECK(*translated_upper_xi_wedge_base == *(vector_of_translated_wedges[0]));
+  CHECK(*translated_upper_eta_wedge_base == *(vector_of_translated_wedges[1]));
+  CHECK(*translated_lower_xi_wedge_base == *(vector_of_translated_wedges[2]));
+  CHECK(*translated_lower_eta_wedge_base == *(vector_of_translated_wedges[3]));
 }
 }  // namespace
 

@@ -26,7 +26,6 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeVector.hpp"
 
 namespace {
 
@@ -382,24 +381,23 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
 
   if (use_half_wedges) {
     using Halves = Wedge3DMap::WedgeHalves;
-    std::vector<Wedge3DMap> half_wedges{};
+    std::vector<Wedge3DMap> wedges_and_half_wedges{};
     for (size_t i = 0; i < 4; i++) {
-      half_wedges.emplace_back(inner_radius, outer_radius,
-                               gsl::at(wedge_orientations, i), inner_sphericity,
-                               outer_sphericity, use_equiangular_map,
-                               Halves::LowerOnly);
-      half_wedges.emplace_back(inner_radius, outer_radius,
-                               gsl::at(wedge_orientations, i), inner_sphericity,
-                               outer_sphericity, use_equiangular_map,
-                               Halves::UpperOnly);
+      wedges_and_half_wedges.emplace_back(
+          inner_radius, outer_radius, gsl::at(wedge_orientations, i),
+          inner_sphericity, outer_sphericity, use_equiangular_map,
+          Halves::LowerOnly);
+      wedges_and_half_wedges.emplace_back(
+          inner_radius, outer_radius, gsl::at(wedge_orientations, i),
+          inner_sphericity, outer_sphericity, use_equiangular_map,
+          Halves::UpperOnly);
     }
+    wedges_and_half_wedges.push_back(wedges[4]);
+    wedges_and_half_wedges.push_back(wedges[5]);
+
     // clang-tidy: trivially copyable
-    return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-        std::move(half_wedges[0]), std::move(half_wedges[1]),  // NOLINT
-        std::move(half_wedges[2]), std::move(half_wedges[3]),  // NOLINT
-        std::move(half_wedges[4]), std::move(half_wedges[5]),  // NOLINT
-        std::move(half_wedges[6]), std::move(half_wedges[7]),  // NOLINT
-        std::move(wedges[4]), std::move(wedges[5]));           // NOLINT
+    return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
+        std::move(wedges_and_half_wedges));  // NOLINT
   }
 
   if (x_coord_of_shell_center != 0.0) {
@@ -410,27 +408,12 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
     // clang-tidy: trivially copyable
     const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
         std::move(shift_1d), Identity2D{});  // NOLINT
-    return make_vector(make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           std::move(wedges[0]), translation),  // NOLINT
-                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           std::move(wedges[1]), translation),  // NOLINT
-                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           std::move(wedges[2]), translation),  // NOLINT
-                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           std::move(wedges[3]), translation),  // NOLINT
-                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           std::move(wedges[4]), translation),  // NOLINT
-                       make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           std::move(wedges[5]), translation));  // NOLINT
+    return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
+        std::move(wedges), std::move(translation));  // NOLINT
   }
   // clang-tidy: trivially copyable
-  return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-      std::move(wedges[0]),   // NOLINT
-      std::move(wedges[1]),   // NOLINT
-      std::move(wedges[2]),   // NOLINT
-      std::move(wedges[3]),   // NOLINT
-      std::move(wedges[4]),   // NOLINT
-      std::move(wedges[5]));  // NOLINT
+  return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
+      std::move(wedges));  // NOLINT
 }
 
 template <typename TargetFrame>
@@ -466,13 +449,6 @@ frustum_coordinate_maps(const double length_inner_cube,
                                   gsl::at(frustum_orientations, i),
                                   use_equiangular_map});
   }
-  // frustum on the left
-  frustums.push_back(FrustumMap{
-      {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
-      2.0 * lower,
-      top,
-      frustum_orientations[5],
-      use_equiangular_map});
   // frustum on the right
   frustums.push_back(FrustumMap{
       {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
@@ -480,19 +456,17 @@ frustum_coordinate_maps(const double length_inner_cube,
       top,
       frustum_orientations[4],
       use_equiangular_map});
+  // frustum on the left
+  frustums.push_back(FrustumMap{
+      {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
+      2.0 * lower,
+      top,
+      frustum_orientations[5],
+      use_equiangular_map});
 
   // clang-tidy: trivially copyable
-  return make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
-      std::move(frustums[0]),   // NOLINT
-      std::move(frustums[1]),   // NOLINT
-      std::move(frustums[2]),   // NOLINT
-      std::move(frustums[3]),   // NOLINT
-      std::move(frustums[4]),   // NOLINT
-      std::move(frustums[5]),   // NOLINT
-      std::move(frustums[6]),   // NOLINT
-      std::move(frustums[7]),   // NOLINT
-      std::move(frustums[9]),   // NOLINT
-      std::move(frustums[8]));  // NOLINT
+  return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
+      std::move(frustums));  // NOLINT
 }
 
 namespace {
