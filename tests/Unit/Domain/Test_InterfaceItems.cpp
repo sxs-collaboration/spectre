@@ -15,7 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
@@ -24,6 +24,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -257,13 +258,13 @@ struct Var : db::SimpleTag {
 template <size_t VolumeDim>
 struct Compute : db::ComputeTag {
   static std::string name() noexcept { return "Compute"; }
-  static auto function(const Index<VolumeDim>& extents) {
+  static auto function(const Mesh<VolumeDim>& mesh) {
     auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
-        extents.product(), VolumeDim);
+        mesh.number_of_grid_points(), VolumeDim);
     get(get<Var<10 * VolumeDim>>(ret)) *= 5;
     return ret;
   }
-  using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
+  using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
 };
 
 template <size_t N>
@@ -309,20 +310,20 @@ auto make_interface_tensor(DataVector value_xi, DataVector value_eta) noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
-  const Index<dim> extents{{{4, 3}}};
+  const Mesh<dim> mesh{
+      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
   const DataVector boundary_vars_xi{10., 11., 12.};
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
   auto box = db::create<
       db::AddSimpleTags<
-          Tags::Extents<dim>,
+          Tags::Mesh<dim>,
           Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
       db::AddComputeTags<Dirs, Tags::Interface<Dirs, Tags::Direction<dim>>,
-                         Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
+                         Tags::Interface<Dirs, Tags::Mesh<dim - 1>>,
                          Tags::Interface<Dirs, Compute<1>>>>(
-      extents,
-      make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+      mesh, make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
         make_interface_tensor(boundary_vars_xi, boundary_vars_eta));
@@ -347,24 +348,26 @@ using sliced_simple_item_tag = Tags::Variables<tmpl::list<Var<3>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
-  const Index<dim> extents{{{4, 3}}};
+  const Mesh<dim> mesh{
+      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
-  db::item_type<sliced_simple_item_tag> volume_vars(extents.product());
+  db::item_type<sliced_simple_item_tag> volume_vars(
+      mesh.number_of_grid_points());
   get<Var<3>>(volume_vars).get() =
       DataVector{0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
   const DataVector boundary_vars_xi{10., 11., 12.};
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
   auto box = db::create<
-      db::AddSimpleTags<Tags::Extents<dim>, sliced_simple_item_tag,
+      db::AddSimpleTags<Tags::Mesh<dim>, sliced_simple_item_tag,
                         Tags::Interface<Dirs, simple_item_tag>>,
       db::AddComputeTags<Dirs, sliced_compute_item_tag,
                          Tags::Interface<Dirs, Tags::Direction<dim>>,
-                         Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
+                         Tags::Interface<Dirs, Tags::Mesh<dim - 1>>,
                          Tags::Interface<Dirs, compute_item_tag>,
                          Tags::Interface<Dirs, sliced_compute_item_tag>,
                          Tags::Interface<Dirs, sliced_simple_item_tag>>>(
-      extents, std::move(volume_vars),
+      mesh, std::move(volume_vars),
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
   CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
@@ -399,18 +402,19 @@ struct Vector : db::SimpleTag {
 template <size_t VolumeDim>
 struct ComputedVars : db::ComputeTag {
   static std::string name() noexcept { return "ComputedVars"; }
-  static auto function(const Index<VolumeDim>& extents) noexcept {
+  static auto function(const Mesh<VolumeDim>& mesh) noexcept {
     const DataVector volume_data{
       11., 10., 9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};
 
-    Variables<tmpl::list<Scalar<1>, Vector<1>>> vars(extents.product());
+    Variables<tmpl::list<Scalar<1>, Vector<1>>> vars(
+        mesh.number_of_grid_points());
     get<Scalar<1>>(vars).get() = volume_data;
     for (size_t i = 0; i < vector_dim; ++i) {
       get<Vector<1>>(vars).get(i) = volume_data * (i + 2);
     }
     return vars;
   }
-  using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
+  using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
 };
 
 using volume_vars_tag = Tags::Variables<tmpl::list<Scalar<0>, Vector<0>>>;
@@ -418,24 +422,26 @@ using slice_tag = Tags::Variables<tmpl::list<Vector<1>, Scalar<0>>>;
 }  // namespace partial_slice
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.PartialSlice", "[Unit][Domain]") {
-  const Index<dim> extents{{{4, 3}}};
+  const Mesh<dim> mesh{
+      {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
   const DataVector volume_data{
     0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
 
-  db::item_type<partial_slice::volume_vars_tag> volume_vars(extents.product());
+  db::item_type<partial_slice::volume_vars_tag> volume_vars(
+      mesh.number_of_grid_points());
   get<partial_slice::Scalar<0>>(volume_vars).get() = volume_data;
   for (size_t i = 0; i < partial_slice::vector_dim; ++i) {
     get<partial_slice::Vector<0>>(volume_vars).get(i) = volume_data * (i + 2);
   }
 
   const auto box = db::create<
-      db::AddSimpleTags<Tags::Extents<dim>, partial_slice::volume_vars_tag>,
+      db::AddSimpleTags<Tags::Mesh<dim>, partial_slice::volume_vars_tag>,
       db::AddComputeTags<Dirs, partial_slice::ComputedVars<dim>,
                          Tags::Interface<Dirs, Tags::Direction<dim>>,
-                         Tags::Interface<Dirs, Tags::Extents<dim - 1>>,
+                         Tags::Interface<Dirs, Tags::Mesh<dim - 1>>,
                          Tags::Interface<Dirs, partial_slice::slice_tag>>>(
-      extents, std::move(volume_vars));
+      mesh, std::move(volume_vars));
 
   Variables<tmpl::list<partial_slice::Vector<1>, partial_slice::Scalar<0>>>
       expected_xi(3);

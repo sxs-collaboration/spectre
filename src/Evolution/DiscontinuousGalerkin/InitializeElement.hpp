@@ -67,7 +67,7 @@ namespace Actions {
 ///   * Tags::Time
 ///   * Tags::TimeStep
 ///   * Tags::LogicalCoordinates<Dim>
-///   * Tags::Extents<Dim>
+///   * Tags::Mesh<Dim>
 ///   * Tags::Element<Dim>
 ///   * Tags::ElementMap<Dim>
 ///   * System::variables_tag
@@ -96,9 +96,9 @@ struct InitializeElement {
   template <class Metavariables>
   using return_tag_list = tmpl::list<
       // Simple items
-      Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
-      Tags::Extents<Dim>, Tags::Mesh<Dim>, Tags::Element<Dim>,
-      Tags::ElementMap<Dim>, typename Metavariables::system::variables_tag,
+      Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep, Tags::Mesh<Dim>,
+      Tags::Element<Dim>, Tags::ElementMap<Dim>,
+      typename Metavariables::system::variables_tag,
       Tags::HistoryEvolvedVariables<
           typename Metavariables::system::variables_tag,
           db::add_tag_prefix<Tags::dt,
@@ -118,7 +118,7 @@ struct InitializeElement {
                   Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                         Tags::LogicalCoordinates<Dim>>>,
       Tags::InternalDirections<Dim>, interface_tag<Tags::Direction<Dim>>,
-      interface_tag<Tags::Extents<Dim - 1>>, interface_tag<Tags::Mesh<Dim - 1>>,
+      interface_tag<Tags::Mesh<Dim - 1>>,
       interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       interface_tag<typename Metavariables::system::template magnitude_tag<
           Tags::UnnormalizedFaceNormal<Dim>>>,
@@ -129,7 +129,7 @@ struct InitializeElement {
       // superset.
       interface_tag<typename Metavariables::system::variables_tag>,
       Tags::BoundaryDirections<Dim>, boundary_tag<Tags::Direction<Dim>>,
-      boundary_tag<Tags::Extents<Dim - 1>>, boundary_tag<Tags::Mesh<Dim - 1>>,
+      boundary_tag<Tags::Mesh<Dim - 1>>,
       boundary_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       boundary_tag<typename Metavariables::system::template magnitude_tag<
           Tags::UnnormalizedFaceNormal<Dim>>>,
@@ -226,7 +226,7 @@ struct InitializeElement {
     db::compute_databox_type<return_tag_list<Metavariables>> outbox =
         db::create<db::get_items<return_tag_list<Metavariables>>,
                    db::get_compute_items<return_tag_list<Metavariables>>>(
-            time_id, next_time_id, initial_dt, mesh.extents(), std::move(mesh),
+            time_id, next_time_id, initial_dt, std::move(mesh),
             std::move(element), std::move(map), std::move(vars),
             std::move(history_dt_vars),
             Variables<db::wrap_tags_in<Tags::dt, variables_tags>>{

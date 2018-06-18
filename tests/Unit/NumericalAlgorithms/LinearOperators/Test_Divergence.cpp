@@ -233,11 +233,10 @@ void test_divergence_compute_item(
   });
 
   auto box =
-      db::create<db::AddSimpleTags<Tags::Extents<Dim>,
-                                   Tags::Mesh<Dim>, flux_tag, map_tag>,
+      db::create<db::AddSimpleTags<Tags::Mesh<Dim>, flux_tag, map_tag>,
                  db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
                                     Tags::ComputeDiv<flux_tag, inv_jac_tag>>>(
-      mesh.extents(), mesh, fluxes, coordinate_map);
+      mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =
       db::get<Tags::div<Tags::Variables<div_tags>>>(box);

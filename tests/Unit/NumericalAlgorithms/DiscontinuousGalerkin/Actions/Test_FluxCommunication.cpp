@@ -23,7 +23,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -152,7 +152,7 @@ using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, 2>;
 
 using compute_items = db::AddComputeTags<
     Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
-    interface_tag<Tags::Extents<1>>, interface_tag<Tags::Mesh<1>>,
+    interface_tag<Tags::Mesh<1>>,
     interface_tag<Tags::UnnormalizedFaceNormal<2>>,
     interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
     interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
@@ -260,11 +260,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     }
 
     return db::create<
-        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
-                          Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>,
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                          Tags::Element<2>, Tags::ElementMap<2>,
                           normal_dot_fluxes_tag, other_data_tag,
                           mortar_data_tag, mortar_next_temporal_ids_tag>,
-        compute_items>(0, 1, mesh.extents(), mesh, element, std::move(map),
+        compute_items>(0, 1, mesh, element, std::move(map),
                        std::move(normal_dot_fluxes), std::move(other_data),
                        std::move(mortar_history),
                        std::move(mortar_next_temporal_ids));
@@ -315,11 +315,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     mortar_history[std::make_pair(direction, self_id)];
 
     auto box = db::create<
-        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
                           Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>,
                           normal_dot_fluxes_tag, other_data_tag,
                           mortar_data_tag>,
-        compute_items>(0, 1, mesh.extents(), mesh, element, std::move(map),
+        compute_items>(0, 1, mesh, element, std::move(map),
                        std::move(normal_dot_fluxes_map),
                        std::move(other_data_map), std::move(mortar_history));
 
@@ -439,11 +439,11 @@ SPECTRE_TEST_CASE(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   auto start_box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
-                        Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>,
+      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                        Tags::Element<2>, Tags::ElementMap<2>,
                         normal_dot_fluxes_tag, other_data_tag, mortar_data_tag,
                         mortar_next_temporal_ids_tag>,
-      compute_items>(0, 1, mesh.extents(), mesh, element, std::move(map),
+      compute_items>(0, 1, mesh, element, std::move(map),
                      db::item_type<normal_dot_fluxes_tag>{},
                      db::item_type<other_data_tag>{},
                      db::item_type<mortar_data_tag>{},
@@ -510,11 +510,10 @@ void send_from_neighbor(
 
   auto box =
       db::create<db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
-                                   Tags::Extents<2>,
                                    Tags::Mesh<2>, Tags::Element<2>,
                                    Tags::ElementMap<2>, normal_dot_fluxes_tag,
                                    other_data_tag, MortarRecorderTag>,
-                 compute_items>(start, end, mesh.extents(), mesh, element,
+                 compute_items>(start, end, mesh, element,
                                 std::move(map), std::move(fluxes),
                                 std::move(other_data), std::move(recorders));
 

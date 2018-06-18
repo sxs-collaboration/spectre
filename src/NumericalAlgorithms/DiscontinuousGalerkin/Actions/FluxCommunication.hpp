@@ -183,7 +183,7 @@ struct ReceiveDataForFluxes {
 ///   - Interface<Tags listed in
 ///               Metavariables::normal_dot_numerical_flux::type::slice_tags>
 ///   - Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
-///   - Interface<Tags::Extents<volume_dim - 1>>
+///   - Interface<Tags::Mesh<volume_dim - 1>>
 ///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>
 ///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   - Metavariables::temporal_id
@@ -240,9 +240,9 @@ struct SendDataForFluxes {
                  << "\nNeighbors:\n"
                  << neighbors_in_direction);
       const auto& orientation = neighbors_in_direction.orientation();
-      const auto& boundary_extents =
+      const auto& boundary_mesh =
           db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
-                                  Tags::Extents<volume_dim - 1>>>(box)
+                                  Tags::Mesh<volume_dim - 1>>>(box)
               .at(direction);
 
       // Everything below here needs to be fixed for
@@ -262,10 +262,10 @@ struct SendDataForFluxes {
           package_arguments,
           tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
                      tmpl::_1>>>(
-          [&boundary_extents, &direction, &normal_dot_numerical_flux_computer](
-              const auto&... args) noexcept {
+          [&boundary_mesh, &direction,
+           &normal_dot_numerical_flux_computer ](const auto&... args) noexcept {
             typename flux_comm_types::PackagedData ret(
-                boundary_extents.product(), 0.0);
+                boundary_mesh.number_of_grid_points(), 0.0);
             normal_dot_numerical_flux_computer.package_data(
                 make_not_null(&ret), args.at(direction)...);
             return ret;
@@ -273,7 +273,7 @@ struct SendDataForFluxes {
           box);
 
       typename flux_comm_types::LocalData local_data(
-          boundary_extents.product());
+          boundary_mesh.number_of_grid_points());
       local_data.assign_subset(
           db::get<interface_normal_dot_fluxes_tag>(box).at(direction));
       local_data.assign_subset(packaged_data);
@@ -291,7 +291,7 @@ struct SendDataForFluxes {
       // even with AMR since the quantities are already on the mortar at this
       // point
       const auto neighbor_packaged_data = orient_variables_on_slice(
-          packaged_data, boundary_extents, dimension, orientation);
+          packaged_data, boundary_mesh.extents(), dimension, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
         const auto mortar_id = std::make_pair(direction, neighbor);

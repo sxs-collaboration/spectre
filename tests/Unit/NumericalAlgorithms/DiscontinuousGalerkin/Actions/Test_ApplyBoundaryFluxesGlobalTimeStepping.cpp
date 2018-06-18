@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
@@ -24,6 +24,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -105,10 +106,12 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
 
-  const Index<2> extents{{{3, 3}}};
+  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
   const ElementId<2> id(0);
 
-  const Variables<tmpl::list<Tags::dt<Var>>> initial_dt(extents.product(), 5.);
+  const Variables<tmpl::list<Tags::dt<Var>>> initial_dt(
+      mesh.number_of_grid_points(), 5.);
 
   const auto make_mortar_data = [](
       const Scalar<DataVector>& local_var,
@@ -153,8 +156,8 @@ SPECTRE_TEST_CASE(
            Scalar<DataVector>{{{{3., 3., 3.}}}})}};      // normal magnitude
 
   auto box = db::create<db::AddSimpleTags<
-      Tags::Extents<2>, Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
-      mortar_data_tag>>(extents, initial_dt, std::move(mortar_data));
+      Tags::Mesh<2>, Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
+      mortar_data_tag>>(mesh, initial_dt, std::move(mortar_data));
 
   const auto out_box = get<0>(
       runner

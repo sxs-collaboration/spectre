@@ -21,6 +21,7 @@
 #include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/IndexToSliceAt.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
@@ -52,15 +53,6 @@ template <size_t VolumeDim>
 struct Element : db::SimpleTag {
   static std::string name() noexcept { return "Element"; }
   using type = ::Element<VolumeDim>;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The extents of DataVectors in the DataBox
-template <size_t VolumeDim>
-struct Extents : db::SimpleTag {
-  static std::string name() noexcept { return "Extents"; }
-  using type = ::Index<VolumeDim>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -365,16 +357,6 @@ struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
 
 namespace detail {
 template <size_t VolumeDim>
-struct InterfaceExtents : db::ComputeTag {
-  static constexpr auto function(
-      const ::Direction<VolumeDim>& direction,
-      const ::Index<VolumeDim>& volume_extents) noexcept {
-    return volume_extents.slice_away(direction.dimension());
-  }
-  using argument_tags = tmpl::list<Direction<VolumeDim>, Extents<VolumeDim>>;
-  using volume_tags = tmpl::list<Extents<VolumeDim>>;
-};
-template <size_t VolumeDim>
 struct InterfaceMesh : db::ComputeTag {
   static constexpr auto function(
       const ::Direction<VolumeDim>& direction,
@@ -387,10 +369,6 @@ struct InterfaceMesh : db::ComputeTag {
 }  // namespace detail
 
 /// \cond
-template <typename DirectionsTag, size_t InterfaceDim>
-struct Interface<DirectionsTag, Extents<InterfaceDim>>
-    : InterfaceBase<DirectionsTag, Extents<InterfaceDim>,
-                    detail::InterfaceExtents<InterfaceDim + 1>> {};
 template <typename DirectionsTag, size_t InterfaceDim>
 struct Interface<DirectionsTag, Mesh<InterfaceDim>>
     : InterfaceBase<DirectionsTag, Mesh<InterfaceDim>,
@@ -460,18 +438,15 @@ struct Slice;
 template <size_t VolumeDim, typename... SlicedTags>
 struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeTag {
   static constexpr auto function(
-      const ::Index<VolumeDim>& extents,
-      const ::Direction<VolumeDim>& direction,
+      const ::Mesh<VolumeDim>& mesh, const ::Direction<VolumeDim>& direction,
       const db::item_type<SlicedTags>&... tensors) noexcept {
     return data_on_slice<SlicedTags...>(
-        extents, direction.dimension(),
-        direction.side() == Side::Lower ? 0
-                                        : extents[direction.dimension()] - 1,
-        tensors...);
+        mesh.extents(), direction.dimension(),
+        index_to_slice_at(mesh.extents(), direction), tensors...);
   }
   using argument_tags =
-      tmpl::list<Extents<VolumeDim>, Direction<VolumeDim>, SlicedTags...>;
-  using volume_tags = tmpl::list<Extents<VolumeDim>, SlicedTags...>;
+      tmpl::list<Mesh<VolumeDim>, Direction<VolumeDim>, SlicedTags...>;
+  using volume_tags = tmpl::list<Mesh<VolumeDim>, SlicedTags...>;
 };
 
 template <typename Tag>
