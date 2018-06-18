@@ -262,9 +262,9 @@ void test_initialize_element(
       });
     }
   }
-  CHECK((db::get<Tags::Coordinates<Tags::ElementMap<dim>,
-                                   Tags::LogicalCoordinates<dim>>>(box)) ==
-        inertial_coords);
+  CHECK((db::get<Tags::MappedCoordinates<Tags::ElementMap<dim>,
+                                         Tags::LogicalCoordinates<dim>>>(
+            box)) == inertial_coords);
   CHECK((db::get<Tags::InverseJacobian<Tags::ElementMap<dim>,
                                        Tags::LogicalCoordinates<dim>>>(box)) ==
         map.inv_jacobian(logical_coords));
