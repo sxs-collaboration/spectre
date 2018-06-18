@@ -61,10 +61,11 @@ struct div<Tag, Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the (Euclidean) divergence of fluxes
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
-Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
+auto divergence(
     const Variables<FluxTags>& F, const Index<Dim>& extents,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+        inverse_jacobian) noexcept
+    -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
