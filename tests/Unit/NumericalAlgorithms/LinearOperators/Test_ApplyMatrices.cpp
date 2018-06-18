@@ -58,8 +58,7 @@ Variables<tmpl::list<ScalarTag, VectorTag>> polynomial_data(
 template <size_t Dim, size_t FilledDim = 0>
 struct CheckApply {
   static void apply(
-      const Index<Dim>& source_extents,
-      const Index<Dim>& dest_extents,
+      const Index<Dim>& source_extents, const Index<Dim>& dest_extents,
       const Index<Dim>& powers,
       std::array<Matrix, Dim> matrices = std::array<Matrix, Dim>{}) noexcept {
     if (source_extents[FilledDim] == dest_extents[FilledDim]) {
@@ -79,8 +78,7 @@ struct CheckApply {
 template <size_t Dim>
 struct CheckApply<Dim, Dim> {
   static void apply(const Index<Dim>& source_extents,
-                    const Index<Dim>& dest_extents,
-                    const Index<Dim>& powers,
+                    const Index<Dim>& dest_extents, const Index<Dim>& powers,
                     const std::array<Matrix, Dim>& matrices = {}) noexcept {
     const auto source_data = polynomial_data(source_extents, powers);
     const auto result = apply_matrices(matrices, source_data, source_extents);
@@ -93,10 +91,13 @@ struct CheckApply<Dim, Dim> {
     const auto ref_matrices =
         make_array<std::reference_wrapper<const Matrix>, Dim>(matrices);
     CHECK(apply_matrices(ref_matrices, source_data, source_extents) == result);
-    CHECK(apply_matrices(matrices, get(get<ScalarTag>(source_data)),
-                         source_extents) == get(get<ScalarTag>(result)));
+    const auto datavector_result = apply_matrices(
+        matrices, get(get<ScalarTag>(source_data)), source_extents);
+    for (const auto& p : datavector_result - get(get<ScalarTag>(expected))) {
+      CHECK(approx(p) == 0.);
+    }
     CHECK(apply_matrices(ref_matrices, get(get<ScalarTag>(source_data)),
-                         source_extents) == get(get<ScalarTag>(result)));
+                         source_extents) == datavector_result);
   }
 };
 
@@ -107,16 +108,14 @@ void test_interpolation() noexcept {
   };
 
   for (IndexIterator<Dim> source_extents(Index<Dim>(max_points<Dim> + 1));
-       source_extents;
-       ++source_extents) {
+       source_extents; ++source_extents) {
     if (std::any_of(source_extents->begin(), source_extents->end(),
                     too_few_points)) {
       continue;
     }
     CAPTURE(*source_extents);
     for (IndexIterator<Dim> dest_extents(Index<Dim>(max_points<Dim> + 1));
-         dest_extents;
-         ++dest_extents) {
+         dest_extents; ++dest_extents) {
       if (std::any_of(dest_extents->begin(), dest_extents->end(),
                       too_few_points)) {
         continue;
