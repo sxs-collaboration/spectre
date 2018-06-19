@@ -6,21 +6,32 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 // IWYU pragma: begin_exports
+#include <boost/preprocessor/arithmetic/inc.hpp>
 #include <boost/preprocessor/comparison/equal.hpp>
+#include <boost/preprocessor/comparison/not_equal.hpp>
+#include <boost/preprocessor/control/expr_iif.hpp>
 #include <boost/preprocessor/control/if.hpp>
 #include <boost/preprocessor/debug/assert.hpp>
+#include <boost/preprocessor/detail/check.hpp>
 #include <boost/preprocessor/list/adt.hpp>
+#include <boost/preprocessor/list/fold_right.hpp>
 #include <boost/preprocessor/list/for_each.hpp>
 #include <boost/preprocessor/list/for_each_product.hpp>
 #include <boost/preprocessor/list/to_tuple.hpp>
 #include <boost/preprocessor/list/transform.hpp>
+#include <boost/preprocessor/logical/compl.hpp>
 #include <boost/preprocessor/logical/not.hpp>
+#include <boost/preprocessor/punctuation/is_begin_parens.hpp>
+#include <boost/preprocessor/repetition/for.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/tuple/enum.hpp>
 #include <boost/preprocessor/tuple/pop_front.hpp>
 #include <boost/preprocessor/tuple/push_back.hpp>
 #include <boost/preprocessor/tuple/push_front.hpp>
+#include <boost/preprocessor/tuple/rem.hpp>
 #include <boost/preprocessor/tuple/size.hpp>
+#include <boost/preprocessor/tuple/to_array.hpp>
 #include <boost/preprocessor/tuple/to_list.hpp>
 #include <boost/preprocessor/variadic/elem.hpp>
 #include <boost/preprocessor/variadic/to_list.hpp>

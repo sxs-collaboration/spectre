@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RelativisticEuler/Valencia/Equations.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
@@ -26,8 +26,6 @@ SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Equations",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/RelativisticEuler/Valencia"};
 
-  const DataVector dv(5);
-  test_source_terms<1>(dv);
-  test_source_terms<2>(dv);
-  test_source_terms<3>(dv);
+  GENERATE_UNINITIALIZED_DATAVECTOR;
+  CHECK_FOR_DATAVECTORS(test_source_terms, (1, 2, 3))
 }
