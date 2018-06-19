@@ -91,13 +91,18 @@ corners_for_rectilinear_domains(const Index<VolumeDim>& domain_extents,
 /// When the argument `use_half_wedges` is set to `true`, the wedges in the
 /// +z,-z,+y,-y directions are cut in half along their xi-axes. The resulting
 /// ten CoordinateMaps are used for the outermost Blocks of the BBH Domain.
+/// The argument `aspect_ratio` sets the equatorial compression factor,
+/// used by the EquatorialCompression maps which get composed with the Wedges.
+/// This is done if `aspect_ratio` is set to something other than the default
+/// value of one.
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(double inner_radius, double outer_radius,
                       double inner_sphericity, double outer_sphericity,
                       bool use_equiangular_map,
                       double x_coord_of_shell_center = 0.0,
-                      bool use_half_wedges = false) noexcept;
+                      bool use_half_wedges = false,
+                      double aspect_ratio = 1.0) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
