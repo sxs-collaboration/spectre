@@ -52,10 +52,9 @@ double AdamsBashforthN::stable_step() const noexcept {
 TimeId AdamsBashforthN::next_time_id(
     const TimeId& current_id,
     const TimeDelta& time_step) const noexcept {
-  ASSERT(current_id.substep == 0, "Adams-Bashforth should not have substeps");
-  TimeId next_id = current_id;
-  next_id.time += time_step;
-  return next_id;
+  ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
+  return {current_id.time_runs_forward(), current_id.slab_number(),
+          current_id.time() + time_step};
 }
 
 std::vector<double> AdamsBashforthN::get_coefficients_impl(

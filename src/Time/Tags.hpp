@@ -38,16 +38,12 @@ struct TimeStep : db::SimpleTag {
   using type = ::TimeDelta;
 };
 
-namespace TimeTags_detail {
-inline ::Time time_from_id(const ::TimeId& id) noexcept { return id.time; }
-}  // namespace TimeTags_detail
-
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for compute item for current ::Time (from TimeId)
 struct Time : db::ComputeTag {
   static std::string name() noexcept { return "Time"; }
-  static constexpr auto function = TimeTags_detail::time_from_id;
+  static auto function(const ::TimeId& id) noexcept { return id.time(); }
   using argument_tags = tmpl::list<TimeId>;
 };
 

@@ -20,4 +20,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   /// [source_name]
   CHECK(Tags::Source<Tag>::name() == "Source(" + Tag::name() + ")");
   /// [source_name]
+  /// [next_name]
+  CHECK(Tags::Next<Tag>::name() == "Next(" + Tag::name() + ")");
+  /// [next_name]
 }

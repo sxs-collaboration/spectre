@@ -45,6 +45,10 @@
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace Tags {
+template <typename Tag, size_t VolumeDim>
+struct Mortars;
+}  // namespace Tags
 
 namespace {
 struct Var : db::SimpleTag {
@@ -130,11 +134,17 @@ void test_initialize_element(const ElementId<Dim>& element_id,
           .template apply<component<Dim>, dg::Actions::InitializeElement<Dim>>(
               empty_box, element_id, domain_creator.initial_extents(),
               domain_creator.create_domain(), slab.start(), slab.duration()));
-  CHECK(db::get<Tags::TimeId>(box) == [&slab]() {
-    TimeId time_id{};
-    time_id.time = slab.start();
-    return time_id;
-  }());
+  CHECK(db::get<Tags::TimeId>(box) == TimeId(true, 0, slab.start()));
+  const auto expected_next_time_id =
+      get<CacheTags::TimeStepper>(runner.cache())
+          .next_time_id(TimeId(true, 0, slab.start()), slab.duration());
+  // The slab can differ from the expected value if the first substep
+  // crosses the entire slab.
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).substep() ==
+        expected_next_time_id.substep());
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time() ==
+        expected_next_time_id.time());
+  CHECK_FALSE(db::get<Tags::Next<Tags::TimeId>>(box).time().is_at_slab_end());
   CHECK(db::get<Tags::Time>(box) == slab.start());
   CHECK(db::get<Tags::TimeStep>(box) == slab.duration());
 
@@ -212,8 +222,10 @@ void test_initialize_element(const ElementId<Dim>& element_id,
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
 
   CHECK(db::get<typename dg::FluxCommunicationTypes<
-            Metavariables<Dim>>::mortar_data_tag>(box)
+            Metavariables<Dim>>::global_time_stepping_mortar_data_tag>(box)
             .size() == element.number_of_neighbors());
+  CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>>(box).size() ==
+        element.number_of_neighbors());
 
   (void)db::get<Tags::Interface<Tags::InternalDirections<Dim>,
                                 Tags::UnnormalizedFaceNormal<Dim>>>(box);

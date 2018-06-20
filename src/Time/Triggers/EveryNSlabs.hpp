@@ -46,7 +46,7 @@ class EveryNSlabs : public Trigger<KnownTriggers> {
   using argument_tags = tmpl::list<Tags::TimeId>;
 
   bool operator()(const TimeId& time_id) const noexcept {
-    const size_t slab_number = time_id.slab_number;
+    const size_t slab_number = time_id.slab_number();
     return slab_number >= offset_ and (slab_number - offset_) % interval_ == 0;
   }
 

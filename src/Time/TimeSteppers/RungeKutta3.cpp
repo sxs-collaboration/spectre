@@ -28,22 +28,24 @@ double RungeKutta3::stable_step() const noexcept {
 
 TimeId RungeKutta3::next_time_id(const TimeId& current_id,
                                  const TimeDelta& time_step) const noexcept {
-  TimeId next_id = current_id;
-  switch (current_id.substep) {
+  switch (current_id.substep()) {
     case 0:
-      next_id.time += time_step;
-      next_id.substep = 1;
-      return next_id;
+      ASSERT(current_id.time() == current_id.step_time(), "Wrong substep time");
+      return {current_id.time_runs_forward(), current_id.slab_number(),
+              current_id.step_time(), 1, current_id.step_time() + time_step};
     case 1:
-      next_id.time -= time_step / 2;
-      next_id.substep = 2;
-      return next_id;
+      ASSERT(current_id.time() == current_id.step_time() + time_step,
+             "Wrong substep time");
+      return {current_id.time_runs_forward(), current_id.slab_number(),
+              current_id.step_time(), 2,
+              current_id.step_time() + time_step / 2};
     case 2:
-      next_id.time += time_step / 2;
-      next_id.substep = 0;
-      return next_id;
+      ASSERT(current_id.time() == current_id.step_time() + time_step / 2,
+             "Wrong substep time");
+      return {current_id.time_runs_forward(), current_id.slab_number(),
+              current_id.step_time() + time_step};
     default:
-      ERROR("Bad substep value in RK3: " << current_id.substep);
+      ERROR("Bad substep value in RK3: " << current_id.substep());
   }
 }
 

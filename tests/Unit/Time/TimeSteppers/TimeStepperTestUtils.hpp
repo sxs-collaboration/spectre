@@ -28,15 +28,15 @@ void take_step(
     const Stepper& stepper,
     F&& rhs,
     const TimeDelta& step_size) noexcept {
-  TimeId time_id{0, *time, 0};
+  TimeId time_id(step_size.is_positive(), 0, *time);
   for (size_t substep = 0; substep < stepper.number_of_substeps(); ++substep) {
-    CHECK(time_id.substep == substep);
-    history->insert(time_id.time, *y, rhs(*y));
+    CHECK(time_id.substep() == substep);
+    history->insert(time_id.time(), *y, rhs(*y));
     stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
   }
-  CHECK(time_id.time - *time == step_size);
-  *time = time_id.time;
+  CHECK(time_id.time() - *time == step_size);
+  *time = time_id.time();
 }
 
 template <typename Stepper, typename F1, typename F2>
@@ -212,13 +212,13 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
   const Slab slab(0.875, 1.);
   const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
 
-  TimeId time_id{0, forward ? slab.start() : slab.end(), 0};
-  double y = analytic(time_id.time.value());
+  TimeId time_id(forward, 0, forward ? slab.start() : slab.end());
+  double y = analytic(time_id.time().value());
   TimeSteppers::History<double, double> volume_history;
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
 
   if (not stepper.is_self_starting()) {
-    Time history_time = time_id.time;
+    Time history_time = time_id.time();
     TimeDelta history_step_size = step_size;
     for (size_t j = 0; j < stepper.number_of_past_steps(); ++j) {
       ASSERT(history_time.slab() == history_step_size.slab(), "Slab mismatch");
@@ -244,10 +244,10 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
     for (size_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
-      volume_history.insert(time_id.time, y, 0.);
-      boundary_history.local_insert(time_id.time, unused_local_deriv);
-      boundary_history.remote_insert(time_id.time,
-                                     driver(time_id.time.value()));
+      volume_history.insert(time_id.time(), y, 0.);
+      boundary_history.local_insert(time_id.time(), unused_local_deriv);
+      boundary_history.remote_insert(time_id.time(),
+                                     driver(time_id.time().value()));
 
       stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
                        step_size);
@@ -255,7 +255,7 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
           coupling, make_not_null(&boundary_history), step_size);
       time_id = stepper.next_time_id(time_id, step_size);
     }
-    CHECK(y == approx(analytic(time_id.time.value())));
+    CHECK(y == approx(analytic(time_id.time().value())));
   }
   // Make sure history is being cleaned up.  The limit of 20 is
   // arbitrary, but much larger than the order of any integrators we

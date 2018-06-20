@@ -115,6 +115,11 @@ struct InverseJacobian : db::ComputeTag, db::PrefixTag {
 };
 
 /// \ingroup DataBoxTagsGroup
+/// \ingroup DomainGroup
+/// Base tag for boundary data needed for updating the variables.
+struct VariablesBoundaryData : db::BaseTag {};
+
+/// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions to neighboring Elements
 template <size_t VolumeDim>

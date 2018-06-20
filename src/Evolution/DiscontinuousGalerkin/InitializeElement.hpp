@@ -25,6 +25,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -93,15 +94,18 @@ struct InitializeElement {
   template <class Metavariables>
   using return_tag_list = tmpl::list<
       // Simple items
-      Tags::TimeId, Tags::TimeStep, Tags::Extents<Dim>, Tags::Element<Dim>,
-      Tags::ElementMap<Dim>, typename Metavariables::system::variables_tag,
+      Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
+      Tags::Extents<Dim>, Tags::Element<Dim>, Tags::ElementMap<Dim>,
+      typename Metavariables::system::variables_tag,
       Tags::HistoryEvolvedVariables<
           typename Metavariables::system::variables_tag,
           db::add_tag_prefix<Tags::dt,
                              typename Metavariables::system::variables_tag>>,
       db::add_tag_prefix<Tags::dt,
                          typename Metavariables::system::variables_tag>,
-      typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag,
+      typename dg::FluxCommunicationTypes<
+          Metavariables>::global_time_stepping_mortar_data_tag,
+      Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>,
       // Compute items
       Tags::Time, Tags::LogicalCoordinates<Dim>,
       Tags::Coordinates<Tags::ElementMap<Dim>, Tags::LogicalCoordinates<Dim>>,
@@ -159,6 +163,17 @@ struct InitializeElement {
     auto logical_coords = logical_coordinates(mesh);
     auto inertial_coords = map(logical_coords);
 
+    // Set up initial time
+    const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
+    const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
+    TimeId next_time_id = time_stepper.next_time_id(time_id, initial_dt);
+    if (next_time_id.is_at_slab_boundary()) {
+      const auto next_time = next_time_id.step_time();
+      next_time_id = TimeId(
+          initial_dt.is_positive(), 1,
+          next_time.with_slab(next_time.slab().advance_towards(initial_dt)));
+    }
+
     // Set initial data from analytic solution
     Variables<variables_tags> vars{num_grid_points};
     vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
@@ -168,7 +183,6 @@ struct InitializeElement {
         Tags::Variables<variables_tags>,
         Tags::dt<Tags::Variables<db::wrap_tags_in<Tags::dt, variables_tags>>>>::
         type history_dt_vars;
-    const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
     if (not time_stepper.is_self_starting()) {
       // We currently just put initial points at past slab boundaries.
       Time past_t = initial_time;
@@ -189,31 +203,31 @@ struct InitializeElement {
       }
     }
 
-    // Set up initial time
-    TimeId time_id{};
-    time_id.time = initial_time;
-
     // Set up boundary information
-    db::item_type<
-        typename dg::FluxCommunicationTypes<Metavariables>::mortar_data_tag>
+    db::item_type<typename dg::FluxCommunicationTypes<
+        Metavariables>::global_time_stepping_mortar_data_tag>
         boundary_data{};
+    typename Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>::type
+        mortar_next_time_ids{};
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
       const auto& neighbors = direction_neighbors.second;
       for (const auto& neighbor : neighbors) {
         const auto mortar_id = std::make_pair(direction, neighbor);
         boundary_data.insert({mortar_id, {}});
+        mortar_next_time_ids.insert({mortar_id, time_id});
       }
     }
 
     db::compute_databox_type<return_tag_list<Metavariables>> outbox =
         db::create<db::get_items<return_tag_list<Metavariables>>,
                    db::get_compute_items<return_tag_list<Metavariables>>>(
-            time_id, initial_dt, std::move(mesh), std::move(element),
-            std::move(map), std::move(vars), std::move(history_dt_vars),
+            time_id, next_time_id, initial_dt, std::move(mesh),
+            std::move(element), std::move(map), std::move(vars),
+            std::move(history_dt_vars),
             Variables<db::wrap_tags_in<Tags::dt, variables_tags>>{
                 num_grid_points, 0.0},
-            std::move(boundary_data));
+            std::move(boundary_data), std::move(mortar_next_time_ids));
 
     return std::make_tuple(std::move(outbox));
   }

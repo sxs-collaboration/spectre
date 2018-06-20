@@ -71,8 +71,8 @@ class AdamsBashforthN : public TimeStepper::Inherit {
       "desired order is reached."};
 
   AdamsBashforthN() = default;
-  AdamsBashforthN(size_t target_order, bool self_start,
-                  const OptionContext& context = {});
+  explicit AdamsBashforthN(size_t target_order, bool self_start = false,
+                           const OptionContext& context = {});
   AdamsBashforthN(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN& operator=(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN(AdamsBashforthN&&) noexcept = default;
