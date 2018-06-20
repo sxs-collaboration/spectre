@@ -24,6 +24,7 @@ module unload yaml-cpp-develop-gcc-7.3.0-wy6dpng
 module unload libxsmm/1.9
 module unload cmake-3.11.3-gcc-7.3.0-isxbgez
 module unload charm
+module unload zlib-1.2.11-gcc-7.3.0-qzvtd4j
 }
 
 spectre_load_modules() {
@@ -43,6 +44,7 @@ module load yaml-cpp-develop-gcc-7.3.0-wy6dpng
 module load libxsmm/1.9
 module load cmake-3.11.3-gcc-7.3.0-isxbgez
 module load charm
+module load zlib-1.2.11-gcc-7.3.0-qzvtd4j
 }
 
 spectre_run_cmake() {
