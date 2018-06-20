@@ -106,7 +106,7 @@ struct InitializeElement {
       db::add_tag_prefix<Tags::dt,
                          typename Metavariables::system::variables_tag>,
       typename dg::FluxCommunicationTypes<
-          Metavariables>::global_time_stepping_mortar_data_tag,
+          Metavariables>::simple_mortar_data_tag,
       Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>,
       // Compute items
       Tags::Time, Tags::LogicalCoordinates<Dim>,
@@ -209,7 +209,7 @@ struct InitializeElement {
 
     // Set up boundary information
     db::item_type<typename dg::FluxCommunicationTypes<
-        Metavariables>::global_time_stepping_mortar_data_tag>
+        Metavariables>::simple_mortar_data_tag>
         boundary_data{};
     typename Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>::type
         mortar_next_time_ids{};

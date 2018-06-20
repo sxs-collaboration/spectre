@@ -58,8 +58,8 @@ struct FluxCommunicationTypes {
 
  public:
   /// The DataBox tag for the data stored on the mortars for global
-  /// time stepping.
-  using global_time_stepping_mortar_data_tag =
+  /// stepping.
+  using simple_mortar_data_tag =
       BasedMortars<Tags::VariablesBoundaryData,
                    Tags::SimpleBoundaryData<
                        db::item_type<typename Metavariables::temporal_id>,

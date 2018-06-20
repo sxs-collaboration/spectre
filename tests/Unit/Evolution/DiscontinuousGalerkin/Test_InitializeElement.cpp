@@ -224,7 +224,7 @@ void test_initialize_element(const ElementId<Dim>& element_id,
       Variables<tmpl::list<Tags::dt<Var>>>(mesh.number_of_grid_points(), 0.0));
 
   CHECK(db::get<typename dg::FluxCommunicationTypes<
-            Metavariables<Dim>>::global_time_stepping_mortar_data_tag>(box)
+            Metavariables<Dim>>::simple_mortar_data_tag>(box)
             .size() == element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>>(box).size() ==
         element.number_of_neighbors());
