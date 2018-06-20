@@ -6,26 +6,32 @@
 
 #pragma once
 
-#include <deque>
-#include <tuple>
+#include <cstddef>
+#include <pup.h>
 #include <type_traits>
-#include <vector>
 
 #include "Parallel/CharmPupable.hpp"
-#include "Time/BoundaryHistory.hpp"
-#include "Time/History.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
+/// \cond
+class TimeDelta;
 struct TimeId;
+namespace TimeSteppers {
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+class BoundaryHistory;
+template <typename Vars, typename DerivVars>
+class History;
+}  // namespace TimeSteppers
+/// \endcond
 
 /// \ingroup TimeSteppersGroup
 ///
 /// Holds classes that take time steps.
 namespace TimeSteppers {
-class AdamsBashforthN;
-class RungeKutta3;
+class AdamsBashforthN;  // IWYU pragma: keep
+class RungeKutta3;  // IWYU pragma: keep
 }  // namespace TimeSteppers
 
 namespace TimeStepper_detail {
@@ -104,5 +110,5 @@ class TimeStepper : public PUP::able {
                               const TimeDelta& time_step) const noexcept = 0;
 };
 
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/AdamsBashforthN.hpp"  // IWYU pragma: keep
+#include "Time/TimeSteppers/RungeKutta3.hpp"  // IWYU pragma: keep

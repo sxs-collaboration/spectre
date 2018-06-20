@@ -13,7 +13,6 @@
 #include <map>
 #include <ostream>
 #include <pup.h>
-#include <set>
 #include <type_traits>
 #include <vector>
 
@@ -22,8 +21,6 @@
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/BoundaryHistory.hpp"  // IWYU pragma: keep
-#include "Time/History.hpp"          // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/CachedFunction.hpp"
@@ -34,6 +31,12 @@
 
 /// \cond
 struct TimeId;
+namespace TimeSteppers {
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+class BoundaryHistory;
+template <typename Vars, typename DerivVars>
+class History;
+}  // namespace TimeSteppers
 /// \endcond
 
 // IWYU pragma: no_include <sys/types.h>
@@ -81,34 +84,35 @@ class AdamsBashforthN : public TimeStepper::Inherit {
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
+  // This is defined as a separate type alias to keep the doxygen page
+  // width somewhat under control.
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  using BoundaryHistoryType =
+      BoundaryHistory<LocalVars, RemoteVars,
+                      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
+
   /*!
    * An explanation of the computation being performed by this
    * function:
-   * \f$\newcommand\tL{t^L}\newcommand\tR{t^R}\newcommand\tU{\tilde{t}}
-   * \newcommand\mat{\mathbf}\newcommand\of[1]{\!\!\left(#1\right)}\f$
+   * \f$\newcommand\tL{t^L}\newcommand\tR{t^R}\newcommand\tU{\tilde{t}\!}
+   * \newcommand\mat{\mathbf}\f$
    *
    * Suppose the local and remote sides of the interface are evaluated
    * at times \f$\ldots, \tL_{-1}, \tL_0, \tL_1, \ldots\f$ and
    * \f$\ldots, \tR_{-1}, \tR_0, \tR_1, \ldots\f$, respectively, with
    * the starting location of the numbering arbitrary in each case.
    * Let the step we wish to calculate the effect of be the step from
-   * \f$\tL_{m_S}\f$ to \f$\tL_{m_S+1}\f$.
-   *
-   * We call the sequence produced from the union of the local and
-   * remote time sequences \f$\ldots, \tU_{-1}, \tU_0, \tU_1,
-   * \ldots\f$, where for convenience we choose the numbering such
-   * that \f$\tU_n = \tR_n\f$ for times between \f$\tL_{m_S}\f$ and
-   * \f$\tL_{m_S+1}\f$.  (If there are no such times, give the union
-   * time matching \f$\tL_{m_S}\f$ the number of the last remote time
-   * not later than \f$\tL_{m_S}\f$).  For example, one possible
-   * sequence of times is:
+   * \f$\tL_{m_S}\f$ to \f$\tL_{m_S+1}\f$.  We call the sequence
+   * produced from the union of the local and remote time sequences
+   * \f$\ldots, \tU_{-1}, \tU_0, \tU_1, \ldots\f$.  For example, one
+   * possible sequence of times is:
    * \f{equation}
    *   \begin{aligned}
    *     \text{Local side:} \\ \text{Union times:} \\ \text{Remote side:}
    *   \end{aligned}
    *   \cdots
    *   \begin{gathered}
-   *     \, \\ \tU_1 \\ \tR_2
+   *     \, \\ \tU_1 \\ \tR_5
    *   \end{gathered}
    *   \leftarrow \Delta \tU_1 \rightarrow
    *   \begin{gathered}
@@ -116,11 +120,11 @@ class AdamsBashforthN : public TimeStepper::Inherit {
    *   \end{gathered}
    *   \leftarrow \Delta \tU_2 \rightarrow
    *   \begin{gathered}
-   *     \, \\ \tU_3 \\ \tR_3
+   *     \, \\ \tU_3 \\ \tR_6
    *   \end{gathered}
    *   \leftarrow \Delta \tU_3 \rightarrow
    *   \begin{gathered}
-   *    \, \\ \tU_4 \\ \tR_4
+   *    \, \\ \tU_4 \\ \tR_7
    *   \end{gathered}
    *   \leftarrow \Delta \tU_4 \rightarrow
    *   \begin{gathered}
@@ -129,57 +133,79 @@ class AdamsBashforthN : public TimeStepper::Inherit {
    *   \cdots
    * \f}
    * We call the indices of the step's start and end times in the
-   * union time sequence \f$n_S\f$ and \f$n_E\f$, respectively, so for
-   * the above example, if we wish to compute the step from
-   * \f$\tL_4\f$ to \f$\tL_5\f$, we would have \f$m_S = 4\f$, \f$n_S =
-   * 2\f$, and \f$n_E = 5\f$.
+   * union time sequence \f$n_S\f$ and \f$n_E\f$, respectively.  We
+   * define \f$n^L_m\f$ to be the union-time index corresponding to
+   * \f$\tL_m\f$ and \f$m^L_n\f$ to be the index of the last local
+   * time not later than \f$\tU_n\f$ and similarly for the remote
+   * side.  So for the above example, \f$n^L_4 = 2\f$ and \f$m^R_2 =
+   * 5\f$, and if we wish to compute the step from \f$\tL_4\f$ to
+   * \f$\tL_5\f$ we would have \f$m_S = 4\f$, \f$n_S = 2\f$, and
+   * \f$n_E = 5\f$.
    *
-   * Let \f$k\f$ be the order of the integrator.  For the sequences of
-   * evaluation times ending with \f$\tL_{j_L}\f$ and \f$\tR_{j_R}\f$,
-   * we can write the cardinal functions on those times as
-   * \f{equation}{
-   *   C_{a_L, a_R}(t_L, t_R; j_L, j_R) =
-   *   \ell_{a_L}\of{t_L; \tL_{j_L - (k-1)}, \ldots, \tL_{j_L}}
-   *   \ell_{a_R}\of{t_R; \tR_{j_R - (k-1)}, \ldots, \tR_{j_R}},
-   * \f}
-   * with \f$\ell_a(t; x_1, \ldots, x_k)\f$ the Lagrange interpolating
-   * polynomials with \f$a\f$ running from \f$1\f$ to \f$k\f$.  The
-   * cardinal function satisfies \f$ C_{a_L, a_R}(\tL_{i_L},
-   * \tR_{i_R}; j_L, j_R) = \delta_{i_L, j_L + a_L - k} \delta_{i_R,
-   * j_R + a_R - k} \f$.  We write the integral of a cardinal function
-   * using an Adams-Bashforth step based on the union times along the
-   * diagonal \f$\tL = \tR\f$ from \f$\tU_n\f$ to \f$\tU_{n+1}\f$ as
-   * \f{equation}{
-   *   I_{n,q^L,q^R} =
-   *   \Delta \tU_n
-   *   \sum_{j = 0}^{k-1}
-   *   \tilde{\alpha}_{nj}
-   *   C_{k-(m_S-q^L), k-(n-q^R)}\of{\tU_{n-j}, \tU_{n-j}; m_S, n},
-   * \f}
-   * where \f$\tilde{\alpha}_{nj}\f$ are the Adams-Bashforth
-   * coefficients derived from the union times.  The boundary delta
-   * for the step is then
+   * If we wish to evaluate the change over this step to \f$k\f$th
+   * order, we can write the change in the value as a linear
+   * combination of the values of the coupling between the elements at
+   * unequal times:
    * \f{equation}
    *   \mat{F}_{m_S} =
-   *   \mspace{-7mu}
+   *   \mspace{-10mu}
    *   \sum_{q^L = m_S-(k-1)}^{m_S}
-   *   \sum_{q^R = n_S-(k-1)}^{n_E-1}
-   *   \mspace{-4mu}
-   *   \mat{D}_{q^L,q^R}
-   *   \sum_{n = \max\left\{n_S, q^R \right\}
-   *   }^{\min\left\{n_E, q^R + k \right\} - 1}
-   *   I_{n,q^L,q^R}
+   *   \,
+   *   \sum_{q^R = m^R_{n_S}-(k-1)}^{m^R_{n_E-1}}
+   *   \mspace{-10mu}
+   *   \mat{D}_{q^Lq^R}
+   *   I_{q^Lq^R},
    * \f}
-   * where \f$\mat{D}_{q^L,q^R}\f$ is the coupling function evaluated
-   * at the indicated side values.
+   * where \f$\mat{D}_{q^Lq^R}\f$ is the coupling function evaluated
+   * between data from \f$\tL_{q^L}\f$ and \f$\tR_{q^R}\f$.  The
+   * coefficients can be written as the sum of three terms,
+   * \f{equation}
+   *   I_{q^Lq^R} = I^E_{q^Lq^R} + I^R_{q^Lq^R} + I^L_{q^Lq^R},
+   * \f}
+   * which can be interpreted as a contribution from equal-time
+   * evaluations and contributions related to the remote and local
+   * evaluation times.  These are given by
+   * \f{align}
+   *   I^E_{q^Lq^R} &=
+   *   \mspace{-10mu}
+   *   \sum_{n=n_S}^{\min\left\{n_E, n^L+k\right\}-1}
+   *   \mspace{-10mu}
+   *   \tilde{\alpha}_{n,n-n^L} \Delta \tU_n
+   *   &&\text{if $\tL_{q^L} = \tR_{q^R}$, otherwise 0}
+   *   \\
+   *   I^R_{q^Lq^R} &=
+   *   \ell_{q^L - m_S + k}\!\left(
+   *     \tU_{n^R}; \tL_{m_S - (k-1)}, \ldots, \tL_{m_S}\right)
+   *   \mspace{-10mu}
+   *   \sum_{n=\max\left\{n_S, n^R\right\}}
+   *       ^{\min\left\{n_E, n^R+k\right\}-1}
+   *   \mspace{-10mu}
+   *   \tilde{\alpha}_{n,n-n^R} \Delta \tU_n
+   *   &&\text{if $\tR_{q^R}$ is not in $\{\tL_{\vphantom{|}\cdots}\}$,
+   *     otherwise 0}
+   *   \\
+   *   I^L_{q^Lq^R} &=
+   *   \mspace{-10mu}
+   *   \sum_{n=\max\left\{n_S, n^R\right\}}
+   *       ^{\min\left\{n_E, n^L+k, n^R_{q^R+k}\right\}-1}
+   *   \mspace{-10mu}
+   *   \ell_{q^R - m^R_n + k}\!\left(\tU_{n^L};
+   *     \tR_{m^R_n - (k-1)}, \ldots, \tR_{m^R_n}\right)
+   *   \tilde{\alpha}_{n,n-n^L} \Delta \tU_n
+   *   &&\text{if $\tL_{q^L}$ is not in $\{\tR_{\vphantom{|}\cdots}\}$,
+   *     otherwise 0,}
+   * \f}
+   * where for brevity we write \f$n^L = n^L_{q^L}\f$ and \f$n^R =
+   * n^R_{q^R}\f$, and where \f$\ell_a(t; x_1, \ldots, x_k)\f$ a
+   * Lagrange interpolating polynomial and \f$\tilde{\alpha}_{nj}\f$
+   * is the \f$j\f$th coefficient for an Adams-Bashforth step over the
+   * union times from step \f$n\f$ to step \f$n+1\f$.
    */
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
   compute_boundary_delta(
       const Coupling& coupling,
-      gsl::not_null<BoundaryHistory<
-          LocalVars, RemoteVars,
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
+      gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
       const TimeDelta& time_step) const noexcept;
 
@@ -305,9 +331,7 @@ template <typename LocalVars, typename RemoteVars, typename Coupling>
 std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
 AdamsBashforthN::compute_boundary_delta(
     const Coupling& coupling,
-    const gsl::not_null<BoundaryHistory<
-        LocalVars, RemoteVars,
-        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
+    const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(not is_self_starting_, "Unimplemented");
@@ -316,33 +340,6 @@ AdamsBashforthN::compute_boundary_delta(
   const auto target_order_s = static_cast<ssize_t>(target_order_);
 
   const SimulationLess simulation_less(time_step.is_positive());
-
-  // Evaluate the cardinal function for a grid of points at a point on
-  // the diagonal.
-  const auto grid_cardinal_function =
-      [target_order_s, &history](const double evaluation_time,
-                                 const auto& local_index,
-                                 const auto& remote_index,
-                                 const auto& remote_times_start) noexcept {
-    // Makes an iterator with a map to give time as a double.
-    const auto make_lagrange_iterator = [](const auto& it) noexcept {
-      return boost::make_transform_iterator(
-          it, [](const Time& t) noexcept {
-            return t.value();
-          });
-    };
-
-    return lagrange_polynomial(
-        make_lagrange_iterator(local_index),
-        evaluation_time,
-        make_lagrange_iterator(history->local_begin()),
-        make_lagrange_iterator(history->local_end())) *
-    lagrange_polynomial(
-        make_lagrange_iterator(remote_index),
-        evaluation_time,
-        make_lagrange_iterator(remote_times_start),
-        make_lagrange_iterator(remote_times_start + target_order_s));
-  };
 
   ASSERT(history->local_size() == target_order_,
          "Local history has wrong length (" << history->local_size()
@@ -358,34 +355,60 @@ AdamsBashforthN::compute_boundary_delta(
   const Time start_time = *(history->local_end() - 1);
   const Time end_time = start_time + time_step;
 
+  // If a remote evaluation is done at the start of the step then that
+  // is part of the history for the first union step.  When we did
+  // history cleanup at the end of the previous step we didn't know we
+  // were going to get this point so we kept an extra remote history
+  // value.
+  if (history->remote_size() > target_order_ and
+      *(history->remote_begin() + target_order_s) == start_time) {
+    history->remote_mark_unneeded(history->remote_begin() + 1);
+  }
+
   ASSERT(simulation_less(*(history->remote_end() - 1), end_time),
          "Please supply only older data: " << *(history->remote_end() - 1)
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
   const auto union_times = [&end_time, &history, &simulation_less]() noexcept {
-    std::set<Time, SimulationLess> ret({end_time}, simulation_less);
-    ret.insert(history->local_begin(), history->local_end());
-    ret.insert(history->remote_begin(), history->remote_end());
+    std::vector<Time> ret;
+    ret.reserve(history->local_size() + history->remote_size() + 1);
+    std::set_union(history->local_begin(), history->local_end(),
+                   history->remote_begin(), history->remote_end(),
+                   std::back_inserter(ret), simulation_less);
+    ret.push_back(end_time);
     return ret;
   }();
 
+  using UnionIter = typename decltype(union_times)::const_iterator;
+
+  // Find the union times iterator for a given time.
+  const auto union_step =
+      [&union_times, &simulation_less](const Time& t) noexcept {
+    return std::lower_bound(union_times.cbegin(), union_times.cend(), t,
+                            simulation_less);
+  };
+
+  // The union time index for the step start and end.
+  const auto union_step_start = union_step(start_time);
+  const auto union_step_end = union_times.cend() - 1;
+
+  // min(union_step_end, it + target_order_s) except being careful not
+  // to create out-of-range iterators.
+  const auto advance_within_step =
+      [target_order_s, union_step_end](const UnionIter& it) noexcept {
+    return union_step_end - it > target_order_s ? it + target_order_s
+                                                : union_step_end;
+  };
+
   // Calculating the Adams-Bashforth coefficients is somewhat
   // expensive, so we cache them.  ab_coefs(it) returns the
-  // coefficients used to step from *(it - 1) to *it.
-  auto ab_coefs = [target_order_s]() noexcept {
-    using Iter = decltype(union_times.cbegin());
-    auto compare = [](const Iter& a, const Iter& b) noexcept {
-      return Time::StructuralCompare{}(*a, *b);
-    };
-    return make_cached_function<Iter, std::map, decltype(compare)>(
-        [target_order_s](const Iter& times_end) noexcept {
-          return get_coefficients(std::prev(times_end, target_order_s),
-                                  times_end,
-                                  *times_end - *std::prev(times_end));
-        },
-        std::move(compare));
-  }();
+  // coefficients used to step from it to *(it + 1).
+  auto ab_coefs = make_cached_function<UnionIter, std::map>([target_order_s](
+      const UnionIter& times_end) noexcept {
+    return get_coefficients(times_end - (target_order_s - 1), times_end + 1,
+                            *(times_end + 1) - *times_end);
+  });
 
   // Result variable.  We evaluate the coupling only for the
   // structure.  This evaluation may be expensive, but by choosing the
@@ -398,82 +421,106 @@ AdamsBashforthN::compute_boundary_delta(
               coupling, history->local_end() - 1, history->remote_end() - 1),
           0.);
 
-  const auto remote_start_step =
-      std::upper_bound(history->remote_begin(), history->remote_end(),
-                       start_time, simulation_less) - target_order_s;
   for (auto local_evaluation_step = history->local_begin();
        local_evaluation_step != history->local_end();
        ++local_evaluation_step) {
-    for (auto remote_evaluation_step = remote_start_step;
+    const auto union_local_evaluation_step = union_step(*local_evaluation_step);
+    for (auto remote_evaluation_step = history->remote_begin();
          remote_evaluation_step != history->remote_end();
          ++remote_evaluation_step) {
       double deriv_coef = 0.;
 
-      // Prepare to loop over the union times relevant for the current
-      // coupling evaluation.
+      // The value of the coefficient of `evaluation_step` when doing
+      // a standard Adams-Bashforth integration over the union times
+      // from `step` to `step + 1`.
+      const auto base_summand = [&ab_coefs](
+          const UnionIter& step, const UnionIter& evaluation_step) noexcept {
+        return ((step + 1)->value() - step->value()) *
+               ab_coefs(step)[static_cast<size_t>(step - evaluation_step)];
+      };
 
-      // Latest of the time at the start of current step (otherwise
-      // was computed in a previous call) and the times of the side
-      // data being coupled (since segments can't depend on later
-      // data).  It can be shown that it is only necessary to check
-      // the remote side.
-      const Time coupling_start_time =
-          std::max(start_time, *remote_evaluation_step, simulation_less);
-      // Earliest of the time at the end of the current step (since
-      // the step can't depend on later data), and the time
-      // target_order steps after the evaluation on each side (since
-      // AB only uses data for that long).  It can be shown that it is
-      // only necessary to check the remote side.
-      const Time coupling_end_time =
-          history->remote_end() - remote_evaluation_step > target_order_s
-              ? *(remote_evaluation_step + target_order_s)
-              : end_time;
-      const auto union_times_for_coupling_begin =
-          std::upper_bound(union_times.cbegin(), union_times.cend(),
-                           coupling_start_time, simulation_less);
-      const auto union_times_for_coupling_end =
-          std::upper_bound(union_times_for_coupling_begin, union_times.cend(),
-                           coupling_end_time, simulation_less);
-
-      // Iterator to the first time on the remote side relevant for the
-      // current union step
-      auto remote_interpolation_start =
-          std::max(remote_evaluation_step - (target_order_s - 1),
-                   remote_start_step);
-
-      // This loop computes the coefficient of the coupling evaluation,
-      // i.e., the sum over the I_{n,q}, as deriv_coef.  union_time
-      // points to the end of the current union step.
-      for (auto union_time = union_times_for_coupling_begin;
-           union_time != union_times_for_coupling_end;
-           ++union_time, ++remote_interpolation_start) {
-        // Perform a single step Adams-Bashforth integration of a grid
-        // cardinal function.  This computes the quantity called I_{n,q}
-        // in the documentation as integrated_cardinal_function.
-        const std::vector<double>& method_coefs = ab_coefs(union_time);
-        // This produces a reversed iterator pointing to the start of
-        // the current union step.
-        auto recent_time = std::make_reverse_iterator(union_time);
-        auto method_it = method_coefs.begin();
-        double integrated_cardinal_function = 0.;
-        for (; method_it != method_coefs.end(); ++method_it, ++recent_time) {
-          integrated_cardinal_function +=
-              *method_it * grid_cardinal_function(recent_time->value(),
-                                                  local_evaluation_step,
-                                                  remote_evaluation_step,
-                                                  remote_interpolation_start);
+      if (*local_evaluation_step == *remote_evaluation_step) {
+        // The two elements stepped at the same time.  This gives a
+        // standard Adams-Bashforth contribution to each segment
+        // making up the current step.
+        const auto union_step_upper_bound =
+            advance_within_step(union_local_evaluation_step);
+        for (auto step = union_step_start;
+             step < union_step_upper_bound;
+             ++step) {
+          deriv_coef += base_summand(step, union_local_evaluation_step);
         }
-        integrated_cardinal_function *=
-            union_time->value() - std::prev(union_time)->value();
+      } else {
+        // In this block we consider a coupling evaluation that is not
+        // performed at equal times on the two sides of the mortar.
 
-        deriv_coef += integrated_cardinal_function;
-      }  // for union_time
+        // Makes an iterator with a map to give time as a double.
+        const auto make_lagrange_iterator = [](const auto& it) noexcept {
+          return boost::make_transform_iterator(
+              it, [](const Time& t) noexcept { return t.value(); });
+        };
+
+        const auto union_remote_evaluation_step =
+            union_step(*remote_evaluation_step);
+        const auto union_step_lower_bound =
+            std::max(union_step_start, union_remote_evaluation_step);
+
+        // Compute the contribution to an interpolation over the local
+        // times to `remote_evaluation_step->value()`, which we will
+        // use as the coupling value for that time.  If there is an
+        // actual evaluation at that time then skip this because the
+        // Lagrange polynomial will be zero.
+        if (not std::binary_search(history->local_begin(), history->local_end(),
+                                   *remote_evaluation_step, simulation_less)) {
+          const auto union_step_upper_bound =
+              advance_within_step(union_remote_evaluation_step);
+          for (auto step = union_step_lower_bound;
+               step < union_step_upper_bound;
+               ++step) {
+            deriv_coef += base_summand(step, union_remote_evaluation_step);
+          }
+          deriv_coef *= lagrange_polynomial(
+              make_lagrange_iterator(local_evaluation_step),
+              remote_evaluation_step->value(),
+              make_lagrange_iterator(history->local_begin()),
+              make_lagrange_iterator(history->local_end()));
+        }
+
+        // Same qualitative calculation as the previous block, but
+        // interpolating over the remote times.  This case is somewhat
+        // more complicated because the latest remote time that can be
+        // used varies for the different segments making up the step.
+        if (not std::binary_search(history->remote_begin(),
+                                   history->remote_end(),
+                                   *local_evaluation_step, simulation_less)) {
+          auto union_step_upper_bound =
+              advance_within_step(union_local_evaluation_step);
+          if (history->remote_end() - remote_evaluation_step > target_order_s) {
+            union_step_upper_bound = std::min(
+                union_step_upper_bound,
+                union_step(*(remote_evaluation_step + target_order_s)));
+          }
+
+          auto control_points = make_lagrange_iterator(
+              remote_evaluation_step - history->remote_begin() >= target_order_s
+                  ? remote_evaluation_step - (target_order_s - 1)
+                  : history->remote_begin());
+          for (auto step = union_step_lower_bound;
+               step < union_step_upper_bound;
+               ++step, ++control_points) {
+            deriv_coef += base_summand(step, union_local_evaluation_step) *
+                          lagrange_polynomial(
+                              make_lagrange_iterator(remote_evaluation_step),
+                              local_evaluation_step->value(),
+                              control_points,
+                              control_points + target_order_s);
+          }
+        }
+      }
 
       if (deriv_coef != 0.) {
-        // We sometimes get exact zeros from the Lagrange polynomials.
-        // Skip the (potentially expensive) coupling calculation in that
-        // case.
-
+        // Skip the (potentially expensive) coupling calculation if
+        // the coefficient is zero.
         accumulated_change +=
             deriv_coef * history->coupling(coupling, local_evaluation_step,
                                            remote_evaluation_step);
@@ -487,8 +534,10 @@ AdamsBashforthN::compute_boundary_delta(
   // step containing that time will be the next step, which is not
   // currently in the history.
   history->local_mark_unneeded(history->local_end() - (target_order_s - 1));
-  // We don't know whether other sides will step at end_time,
-  // so we have to be conservative and assume they will not.
+  // We don't know whether the remote side will step at end_time, so
+  // we have to be conservative and assume they will not.  If it does
+  // we will remove the first value at the start of the next call to
+  // this function.
   history->remote_mark_unneeded(history->remote_end() - target_order_s);
 
   return accumulated_change;

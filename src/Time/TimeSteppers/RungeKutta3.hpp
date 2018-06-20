@@ -14,8 +14,6 @@
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/BoundaryHistory.hpp"  // IWYU pragma: keep
-#include "Time/History.hpp"          // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
@@ -23,6 +21,12 @@
 
 /// \cond
 struct TimeId;
+namespace TimeSteppers {
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+class BoundaryHistory;
+template <typename Vars, typename DerivVars>
+class History;
+}  // namespace TimeSteppers
 /// \endcond
 
 namespace TimeSteppers {
