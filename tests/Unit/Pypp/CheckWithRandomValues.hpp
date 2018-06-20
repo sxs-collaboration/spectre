@@ -12,7 +12,6 @@
 #include <boost/preprocessor/control/expr_iif.hpp>
 #include <boost/preprocessor/control/if.hpp>
 #include <boost/preprocessor/debug/assert.hpp>
-#include <boost/preprocessor/detail/check.hpp>
 #include <boost/preprocessor/list/adt.hpp>
 #include <boost/preprocessor/list/fold_right.hpp>
 #include <boost/preprocessor/list/for_each.hpp>

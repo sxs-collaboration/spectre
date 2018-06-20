@@ -9,7 +9,6 @@
 #include <boost/preprocessor/control/expr_iif.hpp>
 #include <boost/preprocessor/control/iif.hpp>
 #include <boost/preprocessor/control/while.hpp>
-#include <boost/preprocessor/detail/check.hpp>
 #include <boost/preprocessor/list/fold_left.hpp>
 #include <boost/preprocessor/list/fold_right.hpp>
 #include <boost/preprocessor/list/for_each_product.hpp>

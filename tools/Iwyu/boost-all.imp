@@ -5652,4 +5652,10 @@
                 "<boost/vmd/is_empty.hpp>", public]},
     { include: ["<boost/preprocessor/punctuation/detail/is_begin_parens.hpp>", private,
                 "<boost/preprocessor/punctuation/is_begin_parens.hpp>", public]},
+    { include: ["<boost/preprocessor/detail/check.hpp>", private,
+                "<boost/preprocessor/list/adt.hpp>", public]},
+    { include: ["<boost/preprocessor/detail/check.hpp>", private,
+                "<boost/preprocessor/facilities/apply.hpp>", public]},
+    { include: ["<boost/preprocessor/detail/check.hpp>", private,
+                "<boost/parameter/preprocessor.hpp>", public]},
 ]
