@@ -7,6 +7,7 @@
 
 #include "Parallel/Abort.hpp"
 #include "Parallel/Info.hpp"
+#include "Parallel/Printf.hpp"
 
 void abort_with_error_message(const char* expression, const char* file,
                               const int line, const char* pretty_function,
@@ -22,7 +23,11 @@ void abort_with_error_message(const char* expression, const char* file,
      << message << "\n"
      << "############ ASSERT FAILED ############\n"
      << "\n";
-  Parallel::abort(os.str());
+  // We use printf instead of abort to print the error message because in the
+  // case of an executable not using Charm++'s main function the call to abort
+  // will segfault before anything is printed.
+  Parallel::printf(os.str());
+  Parallel::abort("");
 }
 
 void abort_with_error_message(const char* file, const int line,
@@ -38,5 +43,9 @@ void abort_with_error_message(const char* file, const int line,
      << message << "\n"
      << "############ ERROR ############\n"
      << "\n";
-  Parallel::abort(os.str());
+  // We use printf instead of abort to print the error message because in the
+  // case of an executable not using Charm++'s main function the call to abort
+  // will segfault before anything is printed.
+  Parallel::printf(os.str());
+  Parallel::abort("");
 }
