@@ -5,6 +5,7 @@ set(LIBRARY "Test_ValenciaDivClean")
 
 set(LIBRARY_SOURCES
   Test_ConservativeFromPrimitive.cpp
+  Test_Fluxes.cpp
   Test_ValenciaDivClean.cpp
   )
 
