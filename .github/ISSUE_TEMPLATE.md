@@ -3,19 +3,18 @@
 ### Expected behavior:
 
 <!--
-describe the expected behavior
+Describe the expected behavior.
 -->
 
 ### Current behavior:
 
 <!--
-describe the current behavior and how to reproduce
+Describe the current behavior and how to reproduce the issue.
 -->
 
 ### Environment:
 
-Add as an attachment `$SPECTRE_BUILD_DIR/LibraryVersions.txt` or
-add its contents here.
+Add as an attachment `$SPECTRE_BUILD_DIR/LibraryVersions.txt` or add its contents here.
 
 # Feature request:
 
