@@ -5,6 +5,7 @@ set(LIBRARY Interpolation)
 
 set(LIBRARY_SOURCES
   BarycentricRational.cpp
+  IrregularInterpolant.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
