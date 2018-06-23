@@ -98,6 +98,12 @@ useful to perform at least the following tests locally:
   create a separate build directory and append `-D USE_PCH=OFF` to the usual
   `cmake` call. Note that it is very easy to incorrectly install IWYU (if not
   using the Docker container) and generate nonsense errors.
+- **Documentation:** To render the documentation for the current state
+  of the source tree the command `make doc` (or `make doc-check` to
+  highlight warnings) can be used, placing its result in the `docs`
+  directory in the build tree.  Once code has been made into a pull
+  request to GitHub, the documentation can be rendered locally using
+  the `tools/pr-docs` script.
 
 ## Travis setup
 
