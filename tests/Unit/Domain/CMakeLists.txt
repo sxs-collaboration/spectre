@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Block.cpp
   Test_BlockId.cpp
   Test_BlockNeighbor.cpp
+  Test_BlockVector.cpp
   Test_CoordinatesTag.cpp
   Test_CreateInitialElement.cpp
   Test_Direction.cpp
