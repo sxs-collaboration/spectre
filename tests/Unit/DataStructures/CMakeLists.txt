@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_DenseMatrix.cpp
   Test_DenseVector.cpp
   Test_GeneralIndexIterator.cpp
+  Test_IdPair.cpp
   Test_Index.cpp
   Test_IndexIterator.cpp
   Test_OrientVariablesOnSlice.cpp
