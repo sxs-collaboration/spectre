@@ -9,6 +9,7 @@ import re
 allowed_tags = [
                 "Actions",
                 "ApparentHorizons",
+                "Burgers",
                 "CompilationTest",
                 "ControlSystem",
                 "DataStructures",
