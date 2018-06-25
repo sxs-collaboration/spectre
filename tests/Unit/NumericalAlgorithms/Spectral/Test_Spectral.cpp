@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -16,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Math.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
                   "[NumericalAlgorithms][Spectral][Unit]") {
@@ -27,25 +29,45 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
 
 namespace {
 
+DataVector unit_polynomial(const size_t deg, const DataVector& x) {
+  // Simply choose all polynomial coefficients to one
+  const std::vector<double> coeffs(deg + 1, 1.);
+  return evaluate_polynomial(coeffs, x);
+};
+double unit_polynomial_integral(const size_t deg) {
+  std::vector<double> coeffs(deg + 2);
+  coeffs[0] = 0.;
+  for (size_t p = 1; p < coeffs.size(); p++) {
+    coeffs[p] = 1. / p;
+  }
+  const auto integrals = evaluate_polynomial(coeffs, DataVector{-1., 1.});
+  return integrals[1] - integrals[0];
+};
+
+}  // namespace
+
+namespace {
+
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_linear_filter(const size_t num_points) {
-  const Matrix& filter_matrix =
-      Spectral::linear_filter_matrix<BasisType, QuadratureType>(num_points);
-  const Matrix& grid_points_to_spectral_matrix =
-      Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(
-          num_points);
-  const DataVector& collocation_pts =
-      Spectral::collocation_points<BasisType, QuadratureType>(num_points);
-  const DataVector u = exp(collocation_pts);
-  DataVector u_filtered(num_points);
-  dgemv_('N', num_points, num_points, 1.0, filter_matrix.data(), num_points,
-         u.data(), 1, 0.0, u_filtered.data(), 1);
-  DataVector u_filtered_spectral(num_points);
-  dgemv_('N', num_points, num_points, 1.0,
-         grid_points_to_spectral_matrix.data(), num_points, u_filtered.data(),
-         1, 0.0, u_filtered_spectral.data(), 1);
-  for (size_t s = 2; s < num_points; ++s) {
-    CHECK(0.0 == approx(u_filtered_spectral[s]));
+void test_linear_filter() {
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    const auto& filter_matrix =
+        Spectral::linear_filter_matrix<BasisType, QuadratureType>(n);
+    const auto& grid_points_to_spectral_matrix =
+        Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(n);
+    const auto& collocation_pts =
+        Spectral::collocation_points<BasisType, QuadratureType>(n);
+    const DataVector u = exp(collocation_pts);
+    DataVector u_filtered(n);
+    dgemv_('N', n, n, 1.0, filter_matrix.data(), n, u.data(), 1, 0.0,
+           u_filtered.data(), 1);
+    DataVector u_filtered_spectral(n);
+    dgemv_('N', n, n, 1.0, grid_points_to_spectral_matrix.data(), n,
+           u_filtered.data(), 1, 0.0, u_filtered_spectral.data(), 1);
+    for (size_t s = 2; s < n; ++s) {
+      CHECK(0.0 == approx(u_filtered_spectral[s]));
+    }
   }
 }
 
@@ -54,49 +76,37 @@ void test_linear_filter(const size_t num_points) {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearFilter",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   SECTION("Legendre-Gauss") {
-    for (size_t n =
-             Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                                Spectral::Quadrature::Gauss>;
-         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-         ++n) {
-      test_linear_filter<Spectral::Basis::Legendre,
-                         Spectral::Quadrature::Gauss>(n);
-    }
+    test_linear_filter<Spectral::Basis::Legendre,
+                       Spectral::Quadrature::Gauss>();
   }
   SECTION("Legendre-Gauss-Lobatto") {
-    for (size_t n = Spectral::minimum_number_of_points<
-             Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-         ++n) {
-      test_linear_filter<Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto>(n);
-    }
+    test_linear_filter<Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto>();
   }
 }
 
 namespace {
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_exact_interpolation(size_t num_pts, int poly_deg) {
-  const DataVector& collocation_pts =
-      Spectral::collocation_points<BasisType, QuadratureType>(num_pts);
-  auto polynomial = [poly_deg](const DataVector& x) {
-    auto func_value = DataVector(x.size(), 1.);
-    for (int p = 1; p <= poly_deg; p++) {
-      func_value += pow(x, p);
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
+          typename Function>
+void test_exact_interpolation(const Function& max_poly_deg) {
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    for (size_t p = 0; p <= max_poly_deg(n); p++) {
+      const auto& collocation_pts =
+          Spectral::collocation_points<BasisType, QuadratureType>(n);
+      const DataVector u = unit_polynomial(p, collocation_pts);
+      const DataVector target_points{-0.5, -0.4837, 0.5, 0.9378, 1.};
+      DataVector interpolated_u(target_points.size(), 0.);
+      const auto interp_matrix =
+          Spectral::interpolation_matrix<BasisType, QuadratureType>(
+              n, target_points);
+      dgemv_('n', target_points.size(), n, 1.0, interp_matrix.data(),
+             target_points.size(), u.data(), 1, 0.0, interpolated_u.data(), 1);
+      CHECK(interpolated_u.size() == target_points.size());
+      CHECK_ITERABLE_APPROX(unit_polynomial(p, target_points), interpolated_u);
     }
-    return func_value;
-  };
-  const DataVector u = polynomial(collocation_pts);
-  const DataVector new_points{-0.5, -0.4837, 0.5, 0.9378, 1.0};
-  DataVector interpolated_u(new_points.size(), 0.0);
-  const Matrix interp_matrix =
-      Spectral::interpolation_matrix<BasisType, QuadratureType>(num_pts,
-                                                                new_points);
-  dgemv_('n', new_points.size(), num_pts, 1.0, interp_matrix.data(),
-         new_points.size(), u.data(), 1, 0.0, interpolated_u.data(), 1);
-  CHECK(interpolated_u.size() == new_points.size());
-  CHECK_ITERABLE_APPROX(polynomial(new_points), interpolated_u);
+  }
 }
 
 }  // namespace
@@ -106,60 +116,38 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactInterpolation",
   SECTION(
       "Legendre-Gauss interpolation is exact to polynomial order "
       "num_points-1") {
-    for (size_t n =
-             Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                                Spectral::Quadrature::Gauss>;
-         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-         n++) {
-      for (size_t p = 0; p <= n - 1; p++) {
-        test_exact_interpolation<Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::Gauss>(n, p);
-      }
-    }
+    test_exact_interpolation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::Gauss>(
+        [](const size_t n) { return n - 1; });
   }
   SECTION(
       "Legendre-Gauss-Lobatto interpolation is exact to polynomial "
       "order num_points-1") {
-    for (size_t n = Spectral::minimum_number_of_points<
-             Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-         n++) {
-      for (size_t p = 0; p <= n - 1; p++) {
-        test_exact_interpolation<Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto>(n, p);
-      }
-    }
+    test_exact_interpolation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>(
+        [](const size_t n) { return n - 1; });
   }
 }
 
 namespace {
 
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_exact_quadrature(size_t num_pts, int poly_deg) {
-  const DataVector& collocation_pts =
-      Spectral::collocation_points<BasisType, QuadratureType>(num_pts);
-  const DataVector& weights =
-      Spectral::quadrature_weights<BasisType, QuadratureType>(num_pts);
-  auto polynomial = [poly_deg](const DataVector& x) {
-    auto func_value = DataVector(x.size(), 1.);
-    for (int p = 1; p <= poly_deg; p++) {
-      func_value += pow(x, p);
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
+          typename Function>
+void test_exact_quadrature(const Function& max_poly_deg) {
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    for (size_t p = 0; p <= max_poly_deg(n); p++) {
+      const double analytic_quadrature = unit_polynomial_integral(p);
+      const auto& collocation_pts =
+          Spectral::collocation_points<BasisType, QuadratureType>(n);
+      const auto& weights =
+          Spectral::quadrature_weights<BasisType, QuadratureType>(n);
+      const DataVector u = unit_polynomial(p, collocation_pts);
+      const double numeric_quadrature =
+          ddot_(n, u.data(), 1, weights.data(), 1);
+      CHECK_ITERABLE_APPROX(analytic_quadrature, numeric_quadrature);
     }
-    return func_value;
-  };
-  auto polynomial_integral = [poly_deg](const double x) {
-    double func_value = 0.;
-    for (int p = 1; p <= poly_deg + 1; p++) {
-      func_value += pow(x, p) / double(p);
-    }
-    return func_value;
-  };
-  const DataVector u = polynomial(collocation_pts);
-  const double numeric_integral =
-      ddot_(num_pts, u.data(), 1, weights.data(), 1);
-  const double analytic_integral =
-      polynomial_integral(1.) - polynomial_integral(-1.);
-  CHECK_ITERABLE_APPROX(analytic_integral, numeric_integral);
+  }
 }
 
 }  // namespace
@@ -168,29 +156,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactQuadrature",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   SECTION(
       "Legendre-Gauss quadrature is exact to polynomial order 2*num_points-1") {
-    for (size_t n =
-             Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
-                                                Spectral::Quadrature::Gauss>;
-         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-         n++) {
-      for (size_t p = 0; p <= 2 * n - 1; p++) {
-        test_exact_quadrature<Spectral::Basis::Legendre,
-                              Spectral::Quadrature::Gauss>(n, p);
-      }
-    }
+    test_exact_quadrature<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>(
+        [](const size_t n) { return 2 * n - 1; });
   }
   SECTION(
       "Legendre-Gauss-Lobatto quadrature is exact to polynomial order "
       "2*num_points-3") {
-    for (size_t n = Spectral::minimum_number_of_points<
-             Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
-         n <= Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
-         n++) {
-      for (size_t p = 0; p <= 2 * n - 3; p++) {
-        test_exact_quadrature<Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto>(n, p);
-      }
-    }
+    test_exact_quadrature<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>(
+        [](const size_t n) { return 2 * n - 3; });
   }
 }
 
