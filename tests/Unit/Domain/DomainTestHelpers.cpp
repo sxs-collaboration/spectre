@@ -399,13 +399,12 @@ void test_initial_domain(const Domain<VolumeDim, Frame>& domain,
   test_refinement_levels_of_neighbors<0>(elements);
 }
 
-template <size_t SpatialDim, typename SpatialFrame>
-tnsr::i<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
+template <size_t SpatialDim, typename Fr>
+tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept {
   auto basis_vector =
-      make_with_value<tnsr::i<DataVector, SpatialDim, SpatialFrame>>(
-          used_for_size, 0.0);
+      make_with_value<tnsr::i<DataVector, SpatialDim, Fr>>(used_for_size, 0.0);
 
   basis_vector.get(direction.axis()) =
       make_with_value<DataVector>(used_for_size, direction.sign());

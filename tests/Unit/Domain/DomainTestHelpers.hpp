@@ -62,7 +62,7 @@ void test_initial_domain(const Domain<VolumeDim, Fr>& domain,
                              initial_refinement_levels) noexcept;
 
 // Euclidean basis vector along the given `Direction` and in the given `Frame`.
-template <size_t SpatialDim, typename SpatialFrame = Frame::Inertial>
-tnsr::i<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
+template <size_t SpatialDim, typename Fr = Frame::Inertial>
+tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept;
