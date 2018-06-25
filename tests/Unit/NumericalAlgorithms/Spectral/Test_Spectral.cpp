@@ -33,7 +33,14 @@ DataVector unit_polynomial(const size_t deg, const DataVector& x) {
   // Simply choose all polynomial coefficients to one
   const std::vector<double> coeffs(deg + 1, 1.);
   return evaluate_polynomial(coeffs, x);
-};
+}
+DataVector unit_polynomial_derivative(const size_t deg, const DataVector& x) {
+  std::vector<double> coeffs(deg);
+  for (size_t p = 0; p < coeffs.size(); p++) {
+    coeffs[p] = p + 1;
+  }
+  return evaluate_polynomial(coeffs, x);
+}
 double unit_polynomial_integral(const size_t deg) {
   std::vector<double> coeffs(deg + 2);
   coeffs[0] = 0.;
@@ -42,9 +49,48 @@ double unit_polynomial_integral(const size_t deg) {
   }
   const auto integrals = evaluate_polynomial(coeffs, DataVector{-1., 1.});
   return integrals[1] - integrals[0];
-};
+}
+
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
+          typename Function>
+void test_exact_differentiation(const Function& max_poly_deg) {
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    for (size_t p = 0; p <= max_poly_deg(n); p++) {
+      const auto& collocation_pts =
+          Spectral::collocation_points<BasisType, QuadratureType>(n);
+      const auto& diff_matrix =
+          Spectral::differentiation_matrix<BasisType, QuadratureType>(n);
+      const auto u = unit_polynomial(p, collocation_pts);
+      DataVector numeric_derivative{n};
+      dgemv_('N', n, n, 1., diff_matrix.data(), n, u.data(), 1, 0.0,
+             numeric_derivative.data(), 1);
+      const auto analytic_derivative =
+          unit_polynomial_derivative(p, collocation_pts);
+      CHECK_ITERABLE_APPROX(analytic_derivative, numeric_derivative);
+    }
+  }
+}
 
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactDifferentiation",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  SECTION(
+      "Legendre-Gauss differentiation is exact to polynomial order "
+      "num_points - 1") {
+    test_exact_differentiation<Spectral::Basis::Legendre,
+                               Spectral::Quadrature::Gauss>(
+        [](const size_t n) { return n - 1; });
+  }
+  SECTION(
+      "Legendre-Gauss-Lobatto differentiation is exact to polynomial order "
+      "num_points - 1") {
+    test_exact_differentiation<Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto>(
+        [](const size_t n) { return n - 1; });
+  }
+}
 
 namespace {
 
