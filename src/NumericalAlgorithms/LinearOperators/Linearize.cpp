@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "DataStructures/Mesh.hpp"  // IWYU pragma: keep
+#include "Domain/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"

@@ -5,9 +5,9 @@
 
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 
-#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Utilities/StdArrayHelpers.hpp"
 

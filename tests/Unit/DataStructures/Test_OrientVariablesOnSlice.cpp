@@ -11,20 +11,20 @@
 #include <pup.h>
 #include <vector>
 
-#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BlockNeighbor.cpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
-#include "Domain/BlockNeighbor.cpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Mesh.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"

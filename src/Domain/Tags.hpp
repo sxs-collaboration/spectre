@@ -14,7 +14,6 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
@@ -23,6 +22,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Mesh.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"

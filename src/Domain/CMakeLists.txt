@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
     FaceNormal.cpp
     InitialElementIds.cpp
     LogicalCoordinates.cpp
+    Mesh.cpp
     Neighbors.cpp
     OrientationMap.cpp
     SegmentId.cpp

@@ -6,8 +6,8 @@
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Mesh.hpp"
 #include "DataStructures/SliceIterator.hpp"
+#include "Domain/Mesh.hpp"
 #include "ErrorHandling/Assert.hpp"
 
 template <>

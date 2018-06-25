@@ -13,9 +13,9 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
+#include "Domain/Mesh.hpp"
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
