@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Valencia")
 
 set(LIBRARY_SOURCES
+  Test_Characteristics.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_Equations.cpp
   Test_Fluxes.cpp
