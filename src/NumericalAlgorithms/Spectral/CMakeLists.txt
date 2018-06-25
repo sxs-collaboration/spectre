@@ -5,7 +5,6 @@ set(LIBRARY Spectral)
 
 set(LIBRARY_SOURCES
     Legendre.cpp
-    LegendreGaussLobatto.cpp
     Spectral.cpp
     )
 

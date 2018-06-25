@@ -31,6 +31,5 @@ add_library(${LIBRARY} ${LIBRARY_SOURCES})
 target_link_libraries(
   ${LIBRARY}
   INTERFACE ErrorHandling
-  # For Basis::lgl
   INTERFACE Spectral
   )
