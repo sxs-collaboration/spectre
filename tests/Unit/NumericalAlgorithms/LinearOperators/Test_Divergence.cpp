@@ -141,8 +141,7 @@ void test_divergence(
     using DivFluxTag = Tags::div<FluxTag>;
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
-  const auto div_fluxes =
-      divergence<flux_tags>(fluxes, mesh.extents(), inv_jacobian);
+  const auto div_fluxes = divergence<flux_tags>(fluxes, mesh, inv_jacobian);
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
   CHECK(Dim * div_fluxes.size() == fluxes.size());
   for (size_t n = 0; n < div_fluxes.size(); ++n) {

@@ -127,8 +127,7 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
       }
     }
 
-    const auto du =
-        logical_partial_derivatives<GradientTags>(u, mesh.extents());
+    const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
 
     for (size_t n = 0;
          n < Variables<GradientTags>::number_of_independent_components; ++n) {
@@ -157,7 +156,7 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
     }
   }
 
-  const auto du = logical_partial_derivatives<GradientTags>(u, mesh.extents());
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
 
   for (size_t n = 0;
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
@@ -198,7 +197,7 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
     }
   }
 
-  const auto du = logical_partial_derivatives<GradientTags>(u, mesh.extents());
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
 
   for (size_t n = 0;
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
@@ -255,7 +254,7 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
     });
 
     const auto du =
-        partial_derivatives<GradientTags>(u, mesh.extents(), inverse_jacobian);
+        partial_derivatives<GradientTags>(u, mesh, inverse_jacobian);
 
     for (size_t n = 0; n < du.size(); ++n) {
       CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -295,8 +294,8 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
         get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
       });
 
-      const auto du = partial_derivatives<GradientTags>(u, mesh.extents(),
-                                                        inverse_jacobian);
+      const auto du =
+          partial_derivatives<GradientTags>(u, mesh, inverse_jacobian);
 
       for (size_t n = 0; n < du.size(); ++n) {
         CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -342,8 +341,8 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
-        const auto du = partial_derivatives<GradientTags>(u, mesh.extents(),
-                                                          inverse_jacobian);
+        const auto du =
+            partial_derivatives<GradientTags>(u, mesh, inverse_jacobian);
 
         for (size_t n = 0; n < du.size(); ++n) {
           CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT

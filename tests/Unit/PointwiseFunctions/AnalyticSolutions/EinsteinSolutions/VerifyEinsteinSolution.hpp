@@ -130,7 +130,7 @@ void verify_time_independent_einstein_solution(
   // here this is just a test.
   const auto gh_derivs =
       partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
-          gh_vars, mesh.extents(), coord_map.inv_jacobian(x_logical));
+          gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_psi =
       get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
           gh_derivs);

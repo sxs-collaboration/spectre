@@ -179,7 +179,7 @@ void test_with_numerical_derivatives(
   get<Var1>(u) = f(x);
   get<Var2<VolumeDim>>(u) = f.first_derivatives(x);
   const auto du =
-      partial_derivatives<TwoVars<VolumeDim>>(u, mesh.extents(), inv_jacobian);
+      partial_derivatives<TwoVars<VolumeDim>>(u, mesh, inv_jacobian);
   const auto& dVar1 =
       get<Tags::deriv<Var1, tmpl::size_t<VolumeDim>, Frame::Inertial>>(du);
   Approx custom_approx = Approx::custom().epsilon(1.e-6);

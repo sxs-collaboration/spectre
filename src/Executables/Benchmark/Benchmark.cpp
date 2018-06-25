@@ -97,8 +97,7 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
   Variables<VarTags> vars(mesh.number_of_grid_points(), 0.0);
 
   while (state.KeepRunning()) {
-    benchmark::DoNotOptimize(
-        partial_derivatives<VarTags>(vars, extents, inv_jac));
+    benchmark::DoNotOptimize(partial_derivatives<VarTags>(vars, mesh, inv_jac));
   }
 }
 BENCHMARK(bench_all_gradient);

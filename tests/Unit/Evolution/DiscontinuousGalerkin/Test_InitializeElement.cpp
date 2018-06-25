@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -216,7 +216,7 @@ void test_initialize_element(const ElementId<Dim>& element_id,
           vars.assign_subset(SystemAnalyticSolution{}.variables(
               inertial_coords, 0., tmpl::list<Var>{}));
           return partial_derivatives<tmpl::list<Var>>(
-              vars, mesh.extents(), map.inv_jacobian(logical_coords));
+              vars, mesh, map.inv_jacobian(logical_coords));
         }()));
   CHECK((db::get<
           db::add_tag_prefix<Tags::dt, typename System<Dim>::variables_tag>>(
