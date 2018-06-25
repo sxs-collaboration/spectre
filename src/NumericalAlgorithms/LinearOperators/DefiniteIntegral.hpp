@@ -11,7 +11,7 @@
 /// \cond
 class DataVector;
 template <size_t>
-class Index;
+class Mesh;
 /// \endcond
 
 /*!
@@ -19,13 +19,13 @@ class Index;
  * \brief Compute the definite integral of a grid-function over a manifold.
  *
  * The integral is computed on the reference element by multiplying the
- * DataVector with the Basis::lgl integration weights in that
+ * DataVector with the Spectral::quadrature_weights() in that
  * dimension.
- * \requires number of points in `integrand` and `extents` are equal.
+ * \requires number of points in `integrand` and `mesh` are equal.
  * \param integrand the grid function to integrate.
- * \param extents the extents of the manifold on which `integrand` is located.
+ * \param mesh the Mesh of the manifold on which `integrand` is located.
  * \returns the definite integral of `integrand` on the manifold.
  */
 template <size_t Dim>
 double definite_integral(const DataVector& integrand,
-                         const Index<Dim>& extents) noexcept;
+                         const Mesh<Dim>& mesh) noexcept;

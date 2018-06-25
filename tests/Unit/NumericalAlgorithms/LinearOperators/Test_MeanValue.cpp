@@ -10,29 +10,40 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  for (size_t nx = 2; nx < 7; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
-    for (size_t ny = 2; ny < 7; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
-      for (size_t nz = 2; nz < 7; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
-        const Index<3> extents(nx, ny, nz);
-        DataVector u(extents.product());
-        for (IndexIterator<3> i(extents); i; ++i) {
+  constexpr size_t min_extents =
+      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  for (size_t nx = min_extents; nx <= max_extents; ++nx) {
+    for (size_t ny = min_extents; ny <= max_extents; ++ny) {
+      for (size_t nz = min_extents; nz <= max_extents; ++nz) {
+        const Mesh<3> mesh{{{nx, ny, nz}},
+                           Spectral::Basis::Legendre,
+                           Spectral::Quadrature::GaussLobatto};
+        const DataVector& x =
+            Spectral::collocation_points(mesh.slice_through(0));
+        const DataVector& y =
+            Spectral::collocation_points(mesh.slice_through(1));
+        const DataVector& z =
+            Spectral::collocation_points(mesh.slice_through(2));
+        DataVector u(mesh.number_of_grid_points());
+        for (IndexIterator<3> i(mesh.extents()); i; ++i) {
           u[i.collapsed_index()] =
               exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
         }
-        const DataVector u_lin = linearize(u, extents);
-        size_t n_pts = extents.product();
+        const DataVector u_lin = linearize(u, mesh.extents());
         double sum = std::accumulate(u_lin.begin(), u_lin.end(), 0.0);
-        CHECK(sum / n_pts == approx(mean_value(u, extents)));
+        CHECK(sum / mesh.number_of_grid_points() ==
+              approx(mean_value(u, mesh)));
       }
     }
   }
@@ -40,59 +51,69 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  for (size_t nx = 2; nx < 7; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
-    for (size_t ny = 2; ny < 7; ++ny) {
-      const DataVector& y = Basis::lgl::collocation_points(ny);
-      for (size_t nz = 2; nz < 7; ++nz) {
-        const DataVector& z = Basis::lgl::collocation_points(nz);
-        const Index<3> extents(nx, ny, nz);
-        const DataVector u_lin = [&extents, &x, &y, &z]() {
-          DataVector temp(extents.product());
-          for (IndexIterator<3> i(extents); i; ++i) {
+  constexpr size_t min_extents =
+      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  for (size_t nx = min_extents; nx <= max_extents; ++nx) {
+    for (size_t ny = min_extents; ny <= max_extents; ++ny) {
+      for (size_t nz = min_extents; nz <= max_extents; ++nz) {
+        const Mesh<3> mesh{{{nx, ny, nz}},
+                           Spectral::Basis::Legendre,
+                           Spectral::Quadrature::GaussLobatto};
+        const DataVector& x =
+            Spectral::collocation_points(mesh.slice_through(0));
+        const DataVector& y =
+            Spectral::collocation_points(mesh.slice_through(1));
+        const DataVector& z =
+            Spectral::collocation_points(mesh.slice_through(2));
+        const DataVector u_lin = [&mesh, &x, &y, &z]() {
+          DataVector temp(mesh.number_of_grid_points());
+          for (IndexIterator<3> i(mesh.extents()); i; ++i) {
             temp[i.collapsed_index()] = x[i()[0]] + y[i()[1]] + z[i()[2]];
           }
           return temp;
         }();
-        const DataVector u_quad = [&extents, &x, &y]() {
-          DataVector temp(extents.product());
-          for (IndexIterator<3> i(extents); i; ++i) {
+        const DataVector u_quad = [&mesh, &x, &y]() {
+          DataVector temp(mesh.number_of_grid_points());
+          for (IndexIterator<3> i(mesh.extents()); i; ++i) {
             temp[i.collapsed_index()] = x[i()[0]] * y[i()[1]];
           }
           return temp;
         }();
         // slice away x
         CHECK(1.0 ==
-              approx(mean_value_on_boundary(u_lin, extents, 0, Side::Upper)));
+              approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
         CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, extents, 0, Side::Upper)));
+              approx(mean_value_on_boundary(u_quad, mesh, 0, Side::Upper)));
 
         CHECK(-1.0 ==
-              approx(mean_value_on_boundary(u_lin, extents, 0, Side::Lower)));
+              approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
         CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, extents, 0, Side::Lower)));
+              approx(mean_value_on_boundary(u_quad, mesh, 0, Side::Lower)));
 
         // slice away y
         CHECK(1.0 ==
-              approx(mean_value_on_boundary(u_lin, extents, 1, Side::Upper)));
+              approx(mean_value_on_boundary(u_lin, mesh, 1, Side::Upper)));
         CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, extents, 1, Side::Upper)));
+              approx(mean_value_on_boundary(u_quad, mesh, 1, Side::Upper)));
 
         CHECK(-1.0 ==
-              approx(mean_value_on_boundary(u_lin, extents, 1, Side::Lower)));
+              approx(mean_value_on_boundary(u_lin, mesh, 1, Side::Lower)));
         CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, extents, 1, Side::Lower)));
+              approx(mean_value_on_boundary(u_quad, mesh, 1, Side::Lower)));
 
         // slice away z
         CHECK(1.0 ==
-              approx(mean_value_on_boundary(u_lin, extents, 2, Side::Upper)));
+              approx(mean_value_on_boundary(u_lin, mesh, 2, Side::Upper)));
         CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, extents, 2, Side::Upper)));
+              approx(mean_value_on_boundary(u_quad, mesh, 2, Side::Upper)));
 
         CHECK(-1.0 ==
-              approx(mean_value_on_boundary(u_lin, extents, 2, Side::Lower)));
+              approx(mean_value_on_boundary(u_lin, mesh, 2, Side::Lower)));
         CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, extents, 2, Side::Lower)));
+              approx(mean_value_on_boundary(u_quad, mesh, 2, Side::Lower)));
       }
     }
   }
@@ -100,20 +121,24 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  for (size_t nx = 2; nx < 7; ++nx) {
-    const DataVector& x = Basis::lgl::collocation_points(nx);
-    const Index<1> extents(nx);
-    const DataVector u_lin = [&extents, &x]() {
-      DataVector temp(extents.product());
-      for (IndexIterator<1> i(extents); i; ++i) {
+  constexpr size_t min_extents =
+      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
+  constexpr size_t max_extents =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+  for (size_t nx = min_extents; nx < max_extents; ++nx) {
+    const Mesh<1> mesh{nx, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    const DataVector& x = Spectral::collocation_points(mesh);
+    const DataVector u_lin = [&mesh, &x]() {
+      DataVector temp(mesh.number_of_grid_points());
+      for (IndexIterator<1> i(mesh.extents()); i; ++i) {
         temp[i.collapsed_index()] = x[i()[0]];
       }
       return temp;
     }();
     // slice away x
-    CHECK(1.0 ==
-          approx(mean_value_on_boundary(u_lin, extents, 0, Side::Upper)));
-    CHECK(-1.0 ==
-          approx(mean_value_on_boundary(u_lin, extents, 0, Side::Lower)));
+    CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
+    CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
   }
 }

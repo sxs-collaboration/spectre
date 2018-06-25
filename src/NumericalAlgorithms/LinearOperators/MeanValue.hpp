@@ -15,7 +15,7 @@
 /// \cond
 class DataVector;
 template <size_t>
-class Index;
+class Mesh;
 /// \endcond
 
 /*!
@@ -30,11 +30,11 @@ class Index;
  *
  * \returns the mean value of `f` on the manifold
  * \param f the grid function of which to find the mean.
- * \param extents the extents of the manifold on which f is located.
+ * \param mesh the Mesh of the manifold on which f is located.
  */
 template <size_t Dim>
-double mean_value(const DataVector& f, const Index<Dim>& extents) {
-  return definite_integral(f, extents) / two_to_the(Dim);
+double mean_value(const DataVector& f, const Mesh<Dim>& mesh) {
+  return definite_integral(f, mesh) / two_to_the(Dim);
 }
 
 /*!
@@ -47,10 +47,10 @@ double mean_value(const DataVector& f, const Index<Dim>& extents) {
  * \returns the mean value of `f` on the boundary of the manifold
  *
  * \param f the grid function of which to find the mean.
- * \param extents the extents of the manifold on which f is located.
+ * \param mesh the Mesh of the manifold on which f is located.
  * \param d the dimension which is sliced away to get the boundary.
  * \param side whether it is the lower or upper boundary in the d-th dimension.
  */
 template <size_t Dim>
-double mean_value_on_boundary(const DataVector& f, const Index<Dim>& extents,
+double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
                               size_t d, Side side);
