@@ -7,11 +7,12 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -100,8 +101,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
   CHECK(jac_xi.get(1, 1) == jacobian_11);
 
   // Check Jacobians for DataVectors
-  const Index<2> extents(8);
-  const auto tensor_logical_coords = logical_coordinates(extents);
+  const Mesh<2> mesh{8, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto tensor_logical_coords = logical_coordinates(mesh);
   const std::array<DataVector, 2> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1)}};
   const auto volume_inv_jac = affine_map_xy.inv_jacobian(logical_coords);
@@ -267,8 +269,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   CHECK(jac_xi.get(2, 2) == jacobian_22);
 
   // Check Jacobians for DataVectors
-  const Index<3> extents(8);
-  const auto tensor_logical_coords = logical_coordinates(extents);
+  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto tensor_logical_coords = logical_coordinates(mesh);
   const std::array<DataVector, 3> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1),
        tensor_logical_coords.get(2)}};

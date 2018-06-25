@@ -47,7 +47,7 @@ See LICENSE.txt for details.
   in each logical coordinate axis.
 
 * Mesh:<br>
-  A regular set of grid points associated with an Element. Represented by the data structure Index
+  A regular set of grid points associated with an Element. Represented by the data structure Mesh.
 
 * External Boundary:<br>
   A face of a Block or Element that has no neighbor.

@@ -6,12 +6,12 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <stddef.h>
 #include <vector>
 
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
@@ -25,8 +25,9 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Utilities/Literals.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/TMPL.hpp"
 
 class DataVector;
 template <size_t VolumeDim>
@@ -52,35 +53,34 @@ void check_orient_variables_on_slice(
     const Block<SpatialDim, Frame::Grid>& my_block,
     const Block<SpatialDim, Frame::Grid>& neighbor_block,
     const Direction<SpatialDim>& direction_to_neighbor,
-    const Index<SpatialDim>& my_extents,
-    const Index<SpatialDim>& neighbor_extents) {
+    const Mesh<SpatialDim>& my_mesh, const Mesh<SpatialDim>& neighbor_mesh) {
   const size_t my_sliced_dim = direction_to_neighbor.dimension();
-  const Index<SpatialDim - 1> extents_on_my_slice(
-      my_extents.slice_away(my_sliced_dim));
+  const auto mesh_on_my_slice = my_mesh.slice_away(my_sliced_dim);
   Variables<tmpl::list<PhysicalCoords<SpatialDim>>> coords_on_my_slice(
-      extents_on_my_slice.product());
+      mesh_on_my_slice.number_of_grid_points());
 
   get<PhysicalCoords<SpatialDim>>(coords_on_my_slice) =
       my_block.coordinate_map()(interface_logical_coordinates(
-          extents_on_my_slice, direction_to_neighbor));
+          mesh_on_my_slice, direction_to_neighbor));
 
   const OrientationMap<SpatialDim>& orientation =
       my_block.neighbors().at(direction_to_neighbor).orientation();
-  const auto oriented_coords_on_neighbor_slice = orient_variables_on_slice(
-      coords_on_my_slice, extents_on_my_slice, my_sliced_dim, orientation);
+  const auto oriented_coords_on_neighbor_slice =
+      orient_variables_on_slice(coords_on_my_slice, mesh_on_my_slice.extents(),
+                                my_sliced_dim, orientation);
 
-  const Index<SpatialDim - 1> extents_on_neighbor_slice(
-      neighbor_extents.slice_away(orientation(my_sliced_dim)));
+  const auto mesh_on_neighbor_slice =
+      neighbor_mesh.slice_away(orientation(my_sliced_dim));
   const auto coords_on_neighbor_slice =
       neighbor_block.coordinate_map()(interface_logical_coordinates(
-          extents_on_neighbor_slice,
+          mesh_on_neighbor_slice,
           orientation(direction_to_neighbor).opposite()));
 
   const auto& computed_coords =
       get<PhysicalCoords<SpatialDim>>(oriented_coords_on_neighbor_slice);
   const auto& expected_coords = coords_on_neighbor_slice;
   for (size_t d = 0; d < SpatialDim; ++d) {
-    for (size_t s = 0; s < extents_on_my_slice.product(); ++s) {
+    for (size_t s = 0; s < mesh_on_my_slice.number_of_grid_points(); ++s) {
       INFO("d: " << d << "\t" << "s: " << s);
       CHECK(computed_coords.get(d)[s] == approx(expected_coords.get(d)[s]));
     }
@@ -105,16 +105,19 @@ void test_1d_aligned() {
   const Domain<1, Frame::Grid> domain(std::move(maps), corners);
   const auto& blocks = domain.blocks();
 
-  const Index<1> my_extents{4};
-  const Index<1> lower_xi_neighbor_extents{5};
-  const Index<1> upper_xi_neighbor_extents{6};
+  const Mesh<1> my_mesh{4, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> lower_xi_neighbor_mesh{5, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> upper_xi_neighbor_mesh{6, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
 
   check_orient_variables_on_slice(blocks[1], blocks[0],
-                                  Direction<1>::lower_xi(), my_extents,
-                                  lower_xi_neighbor_extents);
+                                  Direction<1>::lower_xi(), my_mesh,
+                                  lower_xi_neighbor_mesh);
   check_orient_variables_on_slice(blocks[1], blocks[2],
-                                  Direction<1>::upper_xi(), my_extents,
-                                  upper_xi_neighbor_extents);
+                                  Direction<1>::upper_xi(), my_mesh,
+                                  upper_xi_neighbor_mesh);
 }
 
 void test_1d_flipped() {
@@ -135,21 +138,24 @@ void test_1d_flipped() {
   const Domain<1, Frame::Grid> domain(std::move(maps), corners);
   const auto& blocks = domain.blocks();
 
-  const Index<1> my_extents{4};
-  const Index<1> lower_xi_neighbor_extents{5};
-  const Index<1> upper_xi_neighbor_extents{6};
+  const Mesh<1> my_mesh{4, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> lower_xi_neighbor_mesh{5, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> upper_xi_neighbor_mesh{6, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
 
   check_orient_variables_on_slice(blocks[1], blocks[0],
-                                  Direction<1>::lower_xi(), my_extents,
-                                  lower_xi_neighbor_extents);
+                                  Direction<1>::lower_xi(), my_mesh,
+                                  lower_xi_neighbor_mesh);
   check_orient_variables_on_slice(blocks[1], blocks[2],
-                                  Direction<1>::upper_xi(), my_extents,
-                                  upper_xi_neighbor_extents);
+                                  Direction<1>::upper_xi(), my_mesh,
+                                  upper_xi_neighbor_mesh);
 }
 
 template <typename Map>
 void test_2d_rotated(const Map& my_map, const std::array<size_t, 4>& my_corners,
-                     const Index<2>& my_extents) {
+                     const Mesh<2>& my_mesh) {
   const Affine lower_x_map(-1.0, 1.0, -2.0, 2.0);
   const Affine center_x_map(-1.0, 1.0, 2.0, 5.0);
   const Affine upper_x_map(-1.0, 1.0, 5.0, 6.0);
@@ -187,8 +193,8 @@ void test_2d_rotated(const Map& my_map, const std::array<size_t, 4>& my_corners,
   const Domain<2, Frame::Grid> domain(std::move(maps), corners);
   const auto& blocks = domain.blocks();
 
-  const auto extents = [&my_extents]() {
-    std::vector<Index<2>> ext;
+  const auto meshes = [&my_mesh]() {
+    std::vector<Mesh<2>> local_meshes;
 
     const size_t lower_x_extents = 5;
     const size_t center_x_extents = 4;
@@ -197,22 +203,30 @@ void test_2d_rotated(const Map& my_map, const std::array<size_t, 4>& my_corners,
     const size_t center_y_extents = 7;
     const size_t upper_y_extents = 8;
 
-    ext.emplace_back(center_x_extents, lower_y_extents);
-    ext.emplace_back(lower_x_extents, center_y_extents);
-    ext.emplace_back(my_extents);
-    ext.emplace_back(upper_x_extents, center_y_extents);
-    ext.emplace_back(center_x_extents, upper_y_extents);
-    return ext;
+    local_meshes.emplace_back(Mesh<2>{{{center_x_extents, lower_y_extents}},
+                                      Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(Mesh<2>{{{lower_x_extents, center_y_extents}},
+                                      Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(my_mesh);
+    local_meshes.emplace_back(Mesh<2>{{{upper_x_extents, center_y_extents}},
+                                      Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(Mesh<2>{{{center_x_extents, upper_y_extents}},
+                                      Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto});
+    return local_meshes;
   }();
 
   check_orient_variables_on_slice(
-      blocks[1], blocks[2], Direction<2>::upper_xi(), extents[1], extents[2]);
+      blocks[1], blocks[2], Direction<2>::upper_xi(), meshes[1], meshes[2]);
   check_orient_variables_on_slice(
-      blocks[0], blocks[2], Direction<2>::upper_eta(), extents[0], extents[2]);
+      blocks[0], blocks[2], Direction<2>::upper_eta(), meshes[0], meshes[2]);
   check_orient_variables_on_slice(
-      blocks[3], blocks[2], Direction<2>::lower_xi(), extents[3], extents[2]);
+      blocks[3], blocks[2], Direction<2>::lower_xi(), meshes[3], meshes[2]);
   check_orient_variables_on_slice(
-      blocks[4], blocks[2], Direction<2>::lower_eta(), extents[4], extents[2]);
+      blocks[4], blocks[2], Direction<2>::lower_eta(), meshes[4], meshes[2]);
 }
 
 void test_2d_aligned() {
@@ -223,8 +237,9 @@ void test_2d_aligned() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{3, 4, 7, 8}};
-  const Index<2> my_extents(4, 7);
-  test_2d_rotated(my_map, my_corners, my_extents);
+  const Mesh<2> my_mesh{
+      {{4, 7}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  test_2d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_2d_flipped() {
@@ -235,8 +250,9 @@ void test_2d_flipped() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{8, 7, 4, 3}};
-  const Index<2> my_extents(4, 7);
-  test_2d_rotated(my_map, my_corners, my_extents);
+  const Mesh<2> my_mesh{
+      {{4, 7}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  test_2d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_2d_rotated_by_90() {
@@ -247,8 +263,9 @@ void test_2d_rotated_by_90() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{4, 8, 3, 7}};
-  const Index<2> my_extents(7, 4);
-  test_2d_rotated(my_map, my_corners, my_extents);
+  const Mesh<2> my_mesh{
+      {{7, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  test_2d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_2d_rotated_by_270() {
@@ -259,13 +276,14 @@ void test_2d_rotated_by_270() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 4> my_corners{{7, 3, 8, 4}};
-  const Index<2> my_extents(7, 4);
-  test_2d_rotated(my_map, my_corners, my_extents);
+  const Mesh<2> my_mesh{
+      {{7, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  test_2d_rotated(my_map, my_corners, my_mesh);
 }
 
 template <typename Map>
 void test_3d_rotated(const Map& my_map, const std::array<size_t, 8>& my_corners,
-                     const Index<3>& my_extents) {
+                     const Mesh<3>& my_mesh) {
   const Affine lower_x_map(-1.0, 1.0, -2.0, 2.0);
   const Affine center_x_map(-1.0, 1.0, 2.0, 5.0);
   const Affine upper_x_map(-1.0, 1.0, 5.0, 6.0);
@@ -314,7 +332,7 @@ void test_3d_rotated(const Map& my_map, const std::array<size_t, 8>& my_corners,
   const Domain<3, Frame::Grid> domain(std::move(maps), corners);
   const auto& blocks = domain.blocks();
 
-  const auto extents = [&my_extents]() {
+  const auto meshes = [&my_mesh]() {
     const size_t lower_x_extents = 5;
     const size_t center_x_extents = 4;
     const size_t upper_x_extents = 6;
@@ -325,29 +343,47 @@ void test_3d_rotated(const Map& my_map, const std::array<size_t, 8>& my_corners,
     const size_t center_z_extents = 10;
     const size_t upper_z_extents = 9;
 
-    std::vector<Index<3>> ext;
-    ext.emplace_back(center_x_extents, center_y_extents, lower_z_extents);
-    ext.emplace_back(center_x_extents, lower_y_extents, center_z_extents);
-    ext.emplace_back(lower_x_extents, center_y_extents, center_z_extents);
-    ext.emplace_back(my_extents);
-    ext.emplace_back(upper_x_extents, center_y_extents, center_z_extents);
-    ext.emplace_back(center_x_extents, upper_y_extents, center_z_extents);
-    ext.emplace_back(center_x_extents, center_y_extents, upper_z_extents);
-    return ext;
+    std::vector<Mesh<3>> local_meshes;
+    local_meshes.emplace_back(
+        Mesh<3>{{{center_x_extents, center_y_extents, lower_z_extents}},
+                Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(
+        Mesh<3>{{{center_x_extents, lower_y_extents, center_z_extents}},
+                Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(
+        Mesh<3>{{{lower_x_extents, center_y_extents, center_z_extents}},
+                Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(my_mesh);
+    local_meshes.emplace_back(
+        Mesh<3>{{{upper_x_extents, center_y_extents, center_z_extents}},
+                Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(
+        Mesh<3>{{{center_x_extents, upper_y_extents, center_z_extents}},
+                Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto});
+    local_meshes.emplace_back(
+        Mesh<3>{{{center_x_extents, center_y_extents, upper_z_extents}},
+                Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto});
+    return local_meshes;
   }();
 
   check_orient_variables_on_slice(
-      blocks[0], blocks[3], Direction<3>::upper_zeta(), extents[0], extents[3]);
+      blocks[0], blocks[3], Direction<3>::upper_zeta(), meshes[0], meshes[3]);
   check_orient_variables_on_slice(
-      blocks[1], blocks[3], Direction<3>::upper_eta(), extents[1], extents[3]);
+      blocks[1], blocks[3], Direction<3>::upper_eta(), meshes[1], meshes[3]);
   check_orient_variables_on_slice(
-      blocks[2], blocks[3], Direction<3>::upper_xi(), extents[2], extents[3]);
+      blocks[2], blocks[3], Direction<3>::upper_xi(), meshes[2], meshes[3]);
   check_orient_variables_on_slice(
-      blocks[4], blocks[3], Direction<3>::lower_xi(), extents[4], extents[3]);
+      blocks[4], blocks[3], Direction<3>::lower_xi(), meshes[4], meshes[3]);
   check_orient_variables_on_slice(
-      blocks[5], blocks[3], Direction<3>::lower_eta(), extents[5], extents[3]);
+      blocks[5], blocks[3], Direction<3>::lower_eta(), meshes[5], meshes[3]);
   check_orient_variables_on_slice(
-      blocks[6], blocks[3], Direction<3>::lower_zeta(), extents[6], extents[3]);
+      blocks[6], blocks[3], Direction<3>::lower_zeta(), meshes[6], meshes[3]);
 }
 
 void test_3d_aligned() {
@@ -361,8 +397,10 @@ void test_3d_aligned() {
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
 
   const std::array<size_t, 8> my_corners{{7, 8, 11, 12, 19, 20, 23, 24}};
-  const Index<3> my_extents(4, 7, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 7, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_0_0() {
@@ -376,8 +414,10 @@ void test_3d_rotated_by_90_0_0() {
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
 
   const std::array<size_t, 8> my_corners{{8, 12, 7, 11, 20, 24, 19, 23}};
-  const Index<3> my_extents(7_st, 4_st, 10_st);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 4, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_180_0_0() {
@@ -391,8 +431,10 @@ void test_3d_rotated_by_180_0_0() {
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
 
   const std::array<size_t, 8> my_corners{{12, 11, 8, 7, 24, 23, 20, 19}};
-  const Index<3> my_extents(4, 7, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 7, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_270_0_0() {
@@ -404,8 +446,10 @@ void test_3d_rotated_by_270_0_0() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{11, 7, 12, 8, 23, 19, 24, 20}};
-  const Index<3> my_extents(7, 4, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 4, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_90_0() {
@@ -417,8 +461,10 @@ void test_3d_rotated_by_0_90_0() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{19, 7, 23, 11, 20, 8, 24, 12}};
-  const Index<3> my_extents(10, 7, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 7, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_90_90() {
@@ -430,8 +476,10 @@ void test_3d_rotated_by_0_90_90() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{7, 11, 19, 23, 8, 12, 20, 24}};
-  const Index<3> my_extents(7, 10, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 10, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_90_180() {
@@ -443,8 +491,10 @@ void test_3d_rotated_by_0_90_180() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{11, 23, 7, 19, 12, 24, 8, 20}};
-  const Index<3> my_extents(10, 7, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 7, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_90_270() {
@@ -456,8 +506,10 @@ void test_3d_rotated_by_0_90_270() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{23, 19, 11, 7, 24, 20, 12, 8}};
-  const Index<3> my_extents(7, 10, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 10, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_180_0() {
@@ -469,8 +521,10 @@ void test_3d_rotated_by_0_180_0() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{20, 19, 24, 23, 8, 7, 12, 11}};
-  const Index<3> my_extents(4, 7, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 7, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_180_90() {
@@ -482,8 +536,10 @@ void test_3d_rotated_by_0_180_90() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{19, 23, 20, 24, 7, 11, 8, 12}};
-  const Index<3> my_extents(7, 4, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 4, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_180_180() {
@@ -495,8 +551,10 @@ void test_3d_rotated_by_0_180_180() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{23, 24, 19, 20, 11, 12, 7, 8}};
-  const Index<3> my_extents(4, 7, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 7, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_180_270() {
@@ -508,8 +566,10 @@ void test_3d_rotated_by_0_180_270() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{24, 20, 23, 19, 12, 8, 11, 7}};
-  const Index<3> my_extents(7, 4, 10);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 4, 10}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_270_0() {
@@ -521,8 +581,10 @@ void test_3d_rotated_by_0_270_0() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{8, 20, 12, 24, 7, 19, 11, 23}};
-  const Index<3> my_extents(10, 7, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 7, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_270_90() {
@@ -534,8 +596,10 @@ void test_3d_rotated_by_0_270_90() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{20, 24, 8, 12, 19, 23, 7, 11}};
-  const Index<3> my_extents(7, 10, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 10, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_270_180() {
@@ -547,8 +611,10 @@ void test_3d_rotated_by_0_270_180() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{24, 12, 20, 8, 23, 11, 19, 7}};
-  const Index<3> my_extents(10, 7, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 7, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_0_270_270() {
@@ -560,8 +626,10 @@ void test_3d_rotated_by_0_270_270() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{12, 8, 24, 20, 11, 7, 23, 19}};
-  const Index<3> my_extents(7, 10, 4);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{7, 10, 4}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_90_0() {
@@ -573,8 +641,10 @@ void test_3d_rotated_by_90_90_0() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{20, 8, 19, 7, 24, 12, 23, 11}};
-  const Index<3> my_extents(10, 4, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 4, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_90_90() {
@@ -586,8 +656,10 @@ void test_3d_rotated_by_90_90_90() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{8, 7, 20, 19, 12, 11, 24, 23}};
-  const Index<3> my_extents(4, 10, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 10, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_90_180() {
@@ -599,8 +671,10 @@ void test_3d_rotated_by_90_90_180() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{7, 19, 8, 20, 11, 23, 12, 24}};
-  const Index<3> my_extents(10, 4, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 4, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_90_270() {
@@ -612,8 +686,10 @@ void test_3d_rotated_by_90_90_270() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{19, 20, 7, 8, 23, 24, 11, 12}};
-  const Index<3> my_extents(4, 10, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 10, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_270_0() {
@@ -625,8 +701,10 @@ void test_3d_rotated_by_90_270_0() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{12, 24, 11, 23, 8, 20, 7, 19}};
-  const Index<3> my_extents(10, 4, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 4, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_270_90() {
@@ -638,8 +716,10 @@ void test_3d_rotated_by_90_270_90() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{24, 23, 12, 11, 20, 19, 8, 7}};
-  const Index<3> my_extents(4, 10, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 10, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_270_180() {
@@ -651,8 +731,10 @@ void test_3d_rotated_by_90_270_180() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{23, 11, 24, 12, 19, 7, 20, 8}};
-  const Index<3> my_extents(10, 4, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{10, 4, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 
 void test_3d_rotated_by_90_270_270() {
@@ -664,8 +746,10 @@ void test_3d_rotated_by_90_270_270() {
   const auto my_map =
       make_coordinate_map<Frame::Logical, Frame::Grid>(rotation, product);
   const std::array<size_t, 8> my_corners{{11, 12, 23, 24, 7, 8, 19, 20}};
-  const Index<3> my_extents(4, 10, 7);
-  test_3d_rotated(my_map, my_corners, my_extents);
+  const Mesh<3> my_mesh{{{4, 10, 7}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_3d_rotated(my_map, my_corners, my_mesh);
 }
 }  // namespace
 

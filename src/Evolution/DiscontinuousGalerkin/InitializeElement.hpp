@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
@@ -27,6 +28,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 // IWYU pragma: no_include "Time/Slab.hpp"
@@ -95,8 +97,8 @@ struct InitializeElement {
   using return_tag_list = tmpl::list<
       // Simple items
       Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
-      Tags::Extents<Dim>, Tags::Element<Dim>, Tags::ElementMap<Dim>,
-      typename Metavariables::system::variables_tag,
+      Tags::Extents<Dim>, Tags::Mesh<Dim>, Tags::Element<Dim>,
+      Tags::ElementMap<Dim>, typename Metavariables::system::variables_tag,
       Tags::HistoryEvolvedVariables<
           typename Metavariables::system::variables_tag,
           db::add_tag_prefix<Tags::dt,
@@ -116,7 +118,7 @@ struct InitializeElement {
                   Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                         Tags::LogicalCoordinates<Dim>>>,
       Tags::InternalDirections<Dim>, interface_tag<Tags::Direction<Dim>>,
-      interface_tag<Tags::Extents<Dim - 1>>,
+      interface_tag<Tags::Extents<Dim - 1>>, interface_tag<Tags::Mesh<Dim - 1>>,
       interface_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       interface_tag<typename Metavariables::system::template magnitude_tag<
           Tags::UnnormalizedFaceNormal<Dim>>>,
@@ -127,7 +129,7 @@ struct InitializeElement {
       // superset.
       interface_tag<typename Metavariables::system::variables_tag>,
       Tags::BoundaryDirections<Dim>, boundary_tag<Tags::Direction<Dim>>,
-      boundary_tag<Tags::Extents<Dim - 1>>,
+      boundary_tag<Tags::Extents<Dim - 1>>, boundary_tag<Tags::Mesh<Dim - 1>>,
       boundary_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       boundary_tag<typename Metavariables::system::template magnitude_tag<
           Tags::UnnormalizedFaceNormal<Dim>>>,
@@ -158,8 +160,10 @@ struct InitializeElement {
 
     Element<Dim> element = create_initial_element(element_id, my_block);
 
-    ::Index<Dim> mesh{initial_extents[element_id.block_id()]};
-    const auto num_grid_points = mesh.product();
+    Mesh<Dim> mesh{initial_extents[element_id.block_id()],
+                   Spectral::Basis::Legendre,
+                   Spectral::Quadrature::GaussLobatto};
+    const auto num_grid_points = mesh.number_of_grid_points();
     auto logical_coords = logical_coordinates(mesh);
     auto inertial_coords = map(logical_coords);
 
@@ -222,7 +226,7 @@ struct InitializeElement {
     db::compute_databox_type<return_tag_list<Metavariables>> outbox =
         db::create<db::get_items<return_tag_list<Metavariables>>,
                    db::get_compute_items<return_tag_list<Metavariables>>>(
-            time_id, next_time_id, initial_dt, std::move(mesh),
+            time_id, next_time_id, initial_dt, mesh.extents(), std::move(mesh),
             std::move(element), std::move(map), std::move(vars),
             std::move(history_dt_vars),
             Variables<db::wrap_tags_in<Tags::dt, variables_tags>>{

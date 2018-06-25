@@ -12,6 +12,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -44,9 +45,10 @@ struct VectorTag {
 
 template <size_t Dim>
 Variables<tmpl::list<ScalarTag, VectorTag>> polynomial_data(
-    const Index<Dim>& extents, const Index<Dim>& powers) noexcept {
-  const auto coords = logical_coordinates(extents);
-  Variables<tmpl::list<ScalarTag, VectorTag>> result(extents.product(), 1.);
+    const Mesh<Dim>& mesh, const Index<Dim>& powers) noexcept {
+  const auto coords = logical_coordinates(mesh);
+  Variables<tmpl::list<ScalarTag, VectorTag>> result(
+      mesh.number_of_grid_points(), 1.);
   for (size_t i = 0; i < Dim; ++i) {
     get(get<ScalarTag>(result)) *= pow(coords.get(i), powers[i]);
     get<0>(get<VectorTag>(result)) *= 2.0 * pow(coords.get(i), powers[i]);
@@ -58,31 +60,31 @@ Variables<tmpl::list<ScalarTag, VectorTag>> polynomial_data(
 template <size_t Dim, size_t FilledDim = 0>
 struct CheckApply {
   static void apply(
-      const Index<Dim>& source_extents, const Index<Dim>& dest_extents,
+      const Mesh<Dim>& source_mesh, const Mesh<Dim>& dest_mesh,
       const Index<Dim>& powers,
       std::array<Matrix, Dim> matrices = std::array<Matrix, Dim>{}) noexcept {
-    if (source_extents[FilledDim] == dest_extents[FilledDim]) {
+    if (source_mesh.extents(FilledDim) == dest_mesh.extents(FilledDim)) {
       // Check implicit identity
-      CheckApply<Dim, FilledDim + 1>::apply(source_extents, dest_extents,
-                                            powers, matrices);
+      CheckApply<Dim, FilledDim + 1>::apply(source_mesh, dest_mesh, powers,
+                                            matrices);
     }
-    matrices[FilledDim] = Spectral::interpolation_matrix<basis, quadrature>(
-        source_extents[FilledDim],
-        Spectral::collocation_points<basis, quadrature>(
-            dest_extents[FilledDim]));
-    CheckApply<Dim, FilledDim + 1>::apply(source_extents, dest_extents, powers,
+    matrices[FilledDim] = Spectral::interpolation_matrix(
+        source_mesh.slice_through(FilledDim),
+        Spectral::collocation_points(dest_mesh.slice_through(FilledDim)));
+    CheckApply<Dim, FilledDim + 1>::apply(source_mesh, dest_mesh, powers,
                                           matrices);
   }
 };
 
 template <size_t Dim>
 struct CheckApply<Dim, Dim> {
-  static void apply(const Index<Dim>& source_extents,
-                    const Index<Dim>& dest_extents, const Index<Dim>& powers,
+  static void apply(const Mesh<Dim>& source_mesh, const Mesh<Dim>& dest_mesh,
+                    const Index<Dim>& powers,
                     const std::array<Matrix, Dim>& matrices = {}) noexcept {
-    const auto source_data = polynomial_data(source_extents, powers);
-    const auto result = apply_matrices(matrices, source_data, source_extents);
-    const auto expected = polynomial_data(dest_extents, powers);
+    const auto source_data = polynomial_data(source_mesh, powers);
+    const auto result =
+        apply_matrices(matrices, source_data, source_mesh.extents());
+    const auto expected = polynomial_data(dest_mesh, powers);
     // Using this over CHECK_ITERABLE_APPROX speeds the test up by a
     // factor of 6 or so.
     for (const auto& p : result - expected) {
@@ -90,14 +92,15 @@ struct CheckApply<Dim, Dim> {
     }
     const auto ref_matrices =
         make_array<std::reference_wrapper<const Matrix>, Dim>(matrices);
-    CHECK(apply_matrices(ref_matrices, source_data, source_extents) == result);
+    CHECK(apply_matrices(ref_matrices, source_data, source_mesh.extents()) ==
+          result);
     const auto datavector_result = apply_matrices(
-        matrices, get(get<ScalarTag>(source_data)), source_extents);
+        matrices, get(get<ScalarTag>(source_data)), source_mesh.extents());
     for (const auto& p : datavector_result - get(get<ScalarTag>(expected))) {
       CHECK(approx(p) == 0.);
     }
     CHECK(apply_matrices(ref_matrices, get(get<ScalarTag>(source_data)),
-                         source_extents) == datavector_result);
+                         source_mesh.extents()) == datavector_result);
   }
 };
 
@@ -127,7 +130,10 @@ void test_interpolation() noexcept {
       }
       for (IndexIterator<Dim> powers(max_powers); powers; ++powers) {
         CAPTURE(*powers);
-        CheckApply<Dim>::apply(*source_extents, *dest_extents, *powers);
+        Mesh<Dim> source_mesh{(*source_extents).indices(), basis, quadrature};
+        Mesh<Dim> dest_mesh{(*dest_extents).indices(), basis, quadrature};
+        CheckApply<Dim>::apply(std::move(source_mesh), std::move(dest_mesh),
+                               *powers);
       }
     }
   }

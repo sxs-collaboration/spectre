@@ -44,6 +44,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -151,7 +152,7 @@ using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, 2>;
 
 using compute_items = db::AddComputeTags<
     Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
-    interface_tag<Tags::Extents<1>>,
+    interface_tag<Tags::Extents<1>>, interface_tag<Tags::Mesh<1>>,
     interface_tag<Tags::UnnormalizedFaceNormal<2>>,
     interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
     interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
@@ -166,7 +167,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
 
-  const Index<2> extents{{{3, 3}}};
+  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   //      xi      Block       +- xi
   //      |     0   |   1     |
@@ -226,7 +228,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
        {Direction<2>::upper_eta(), Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
 
   auto start_box = [
-    &extents, &self_id, &west_id, &east_id, &south_id, &block_orientation,
+    &mesh, &self_id, &west_id, &east_id, &south_id, &block_orientation,
     &coordmap, &neighbor_directions, &neighbor_mortar_ids, &data
   ]() noexcept {
     const Element<2> element(
@@ -259,10 +261,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
     return db::create<
         db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
-                          Tags::Element<2>, Tags::ElementMap<2>,
+                          Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>,
                           normal_dot_fluxes_tag, other_data_tag,
                           mortar_data_tag, mortar_next_temporal_ids_tag>,
-        compute_items>(0, 1, extents, element, std::move(map),
+        compute_items>(0, 1, mesh.extents(), mesh, element, std::move(map),
                        std::move(normal_dot_fluxes), std::move(other_data),
                        std::move(mortar_history),
                        std::move(mortar_next_temporal_ids));
@@ -292,7 +294,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   }
 
   // Now check ReceiveDataForFluxes
-  const auto send_data = [&extents, &runner, &self_id, &coordmap](
+  const auto send_data = [&mesh, &runner, &self_id, &coordmap](
       const ElementId<2>& id, const Direction<2>& direction,
       const OrientationMap<2>& orientation,
       const Scalar<DataVector>& normal_dot_fluxes,
@@ -314,10 +316,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
     auto box = db::create<
         db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
-                          Tags::Element<2>, Tags::ElementMap<2>,
+                          Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>,
                           normal_dot_fluxes_tag, other_data_tag,
                           mortar_data_tag>,
-        compute_items>(0, 1, extents, element, std::move(map),
+        compute_items>(0, 1, mesh.extents(), mesh, element, std::move(map),
                        std::move(normal_dot_fluxes_map),
                        std::move(other_data_map), std::move(mortar_history));
 
@@ -423,7 +425,8 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{NumericalFlux{}}};
 
-  const Index<2> extents{{{3, 3}}};
+  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
 
@@ -437,10 +440,10 @@ SPECTRE_TEST_CASE(
 
   auto start_box = db::create<
       db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Extents<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
+                        Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>,
                         normal_dot_fluxes_tag, other_data_tag, mortar_data_tag,
                         mortar_next_temporal_ids_tag>,
-      compute_items>(0, 1, extents, element, std::move(map),
+      compute_items>(0, 1, mesh.extents(), mesh, element, std::move(map),
                      db::item_type<normal_dot_fluxes_tag>{},
                      db::item_type<other_data_tag>{},
                      db::item_type<mortar_data_tag>{},
@@ -502,12 +505,16 @@ void send_from_neighbor(
   db::item_type<MortarRecorderTag> recorders;
   recorders.insert({{send_direction, receiver_id}, {}});
 
+  const Mesh<2> mesh{2, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+
   auto box =
       db::create<db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
-                                   Tags::Extents<2>, Tags::Element<2>,
+                                   Tags::Extents<2>,
+                                   Tags::Mesh<2>, Tags::Element<2>,
                                    Tags::ElementMap<2>, normal_dot_fluxes_tag,
                                    other_data_tag, MortarRecorderTag>,
-                 compute_items>(start, end, Index<2>{{{2, 2}}}, element,
+                 compute_items>(start, end, mesh.extents(), mesh, element,
                                 std::move(map), std::move(fluxes),
                                 std::move(other_data), std::move(recorders));
 

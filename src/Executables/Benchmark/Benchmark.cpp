@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -16,7 +16,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 
 // Charm looks for this function but since we build without a main function or
@@ -81,7 +81,8 @@ struct Psi : db::SimpleTag {
 void bench_all_gradient(benchmark::State& state) {  // NOLINT
   constexpr const size_t pts_1d = 4;
   constexpr const size_t Dim = 3;
-  const Index<Dim> extents(pts_1d);
+  const Mesh<Dim> mesh{pts_1d, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
   CoordinateMaps::Affine map1d(-1.0, 1.0, -1.0, 1.0);
   using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                                CoordinateMaps::Affine,
@@ -91,9 +92,9 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
 
   using VarTags = tmpl::list<Kappa<Dim>, Psi<Dim>>;
   const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid> inv_jac =
-      map.inv_jacobian(logical_coordinates(extents));
-  const auto grid_coords = map(logical_coordinates(extents));
-  Variables<VarTags> vars(extents.product(), 0.0);
+      map.inv_jacobian(logical_coordinates(mesh));
+  const auto grid_coords = map(logical_coordinates(mesh));
+  Variables<VarTags> vars(mesh.number_of_grid_points(), 0.0);
 
   while (state.KeepRunning()) {
     benchmark::DoNotOptimize(

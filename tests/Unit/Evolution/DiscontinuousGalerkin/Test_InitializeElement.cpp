@@ -31,6 +31,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -152,11 +153,12 @@ void test_initialize_element(const ElementId<Dim>& element_id,
   ElementMap<Dim, Frame::Inertial> map{element_id,
                                        my_block.coordinate_map().get_clone()};
   Element<Dim> element = create_initial_element(element_id, my_block);
-  Index<Dim> extents{domain_creator.initial_extents()[element_id.block_id()]};
-  auto logical_coords = logical_coordinates(extents);
+  Mesh<Dim> mesh{domain_creator.initial_extents()[element_id.block_id()],
+                 Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  auto logical_coords = logical_coordinates(mesh);
   auto inertial_coords = map(logical_coords);
   CHECK(db::get<Tags::LogicalCoordinates<Dim>>(box) == logical_coords);
-  CHECK(db::get<Tags::Extents<Dim>>(box) == extents);
+  CHECK(db::get<Tags::Mesh<Dim>>(box) == mesh);
   CHECK(db::get<Tags::Element<Dim>>(box) == element);
   // Can't test ElementMap directly, only via inverse jacobian and grid
   // coordinates. We can check that we can retrieve it.
@@ -209,17 +211,17 @@ void test_initialize_element(const ElementId<Dim>& element_id,
                         typename System<Dim>::gradients_tags,
                         Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                               Tags::LogicalCoordinates<Dim>>>>(
-            box)) == ([&inertial_coords, &extents, &map, &logical_coords]() {
+            box)) == ([&inertial_coords, &mesh, &map, &logical_coords]() {
           Variables<tmpl::list<Var>> vars(inertial_coords.begin()->size(), 0.);
           vars.assign_subset(SystemAnalyticSolution{}.variables(
               inertial_coords, 0., tmpl::list<Var>{}));
           return partial_derivatives<tmpl::list<Var>>(
-              vars, extents, map.inv_jacobian(logical_coords));
+              vars, mesh.extents(), map.inv_jacobian(logical_coords));
         }()));
   CHECK((db::get<
-            db::add_tag_prefix<Tags::dt, typename System<Dim>::variables_tag>>(
-            box)) ==
-        Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
+          db::add_tag_prefix<Tags::dt, typename System<Dim>::variables_tag>>(
+          box)) ==
+      Variables<tmpl::list<Tags::dt<Var>>>(mesh.number_of_grid_points(), 0.0));
 
   CHECK(db::get<typename dg::FluxCommunicationTypes<
             Metavariables<Dim>>::global_time_stepping_mortar_data_tag>(box)

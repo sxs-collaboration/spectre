@@ -15,7 +15,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
-#include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -24,7 +24,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
@@ -122,18 +122,18 @@ using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence(
-    const Index<Dim>& extents,
+    const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
-  const size_t number_of_grid_points = extents.product();
-  const auto xi = logical_coordinates(extents);
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  const auto xi = logical_coordinates(mesh);
   const auto x = coordinate_map(xi);
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
   using flux_tags = two_fluxes<Dim, Frame>;
-  Variables<flux_tags> fluxes(number_of_grid_points);
+  Variables<flux_tags> fluxes(num_grid_points);
   Variables<db::wrap_tags_in<Tags::div, flux_tags>> expected_div_fluxes(
-      number_of_grid_points);
+      num_grid_points);
   tmpl::for_each<flux_tags>([&x, &f, &fluxes,
                              &expected_div_fluxes ](auto tag) noexcept {
     using FluxTag = tmpl::type_from<decltype(tag)>;
@@ -141,7 +141,8 @@ void test_divergence(
     using DivFluxTag = Tags::div<FluxTag>;
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
-  const auto div_fluxes = divergence<flux_tags>(fluxes, extents, inv_jacobian);
+  const auto div_fluxes =
+      divergence<flux_tags>(fluxes, mesh.extents(), inv_jacobian);
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
   CHECK(Dim * div_fluxes.size() == fluxes.size());
   for (size_t n = 0; n < div_fluxes.size(); ++n) {
@@ -163,27 +164,35 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
   CHECK(Tags::div<VariablesTag>::name() == "div(" + VariablesTag::name() + ")");
   /// [divergence_name]
 
-  const size_t n0 = Basis::lgl::maximum_number_of_pts / 2;
-  const size_t n1 = Basis::lgl::maximum_number_of_pts / 2 + 1;
-  const size_t n2 = Basis::lgl::maximum_number_of_pts / 2 - 1;
-  const Index<1> extents_1d(n0);
-  const Index<2> extents_2d(n0, n1);
-  const Index<3> extents_3d(n0, n1, n2);
+  const size_t n0 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+  const size_t n1 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+  const size_t n2 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+  const Mesh<1> mesh_1d{
+      {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh_2d{{{n0, n1}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh_3d{{{n0, n1, n2}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
         {std::make_unique<MathFunctions::PowX>(a)}};
-    test_divergence(extents_1d, std::move(functions_1d));
+    test_divergence(mesh_1d, std::move(functions_1d));
     for (size_t b = 0; b < 4; ++b) {
       std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
           {std::make_unique<MathFunctions::PowX>(a),
            std::make_unique<MathFunctions::PowX>(b)}};
-      test_divergence(extents_2d, std::move(functions_2d));
+      test_divergence(mesh_2d, std::move(functions_2d));
       for (size_t c = 0; c < 3; ++c) {
         std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
             {std::make_unique<MathFunctions::PowX>(a),
              std::make_unique<MathFunctions::PowX>(b),
              std::make_unique<MathFunctions::PowX>(c)}};
-        test_divergence(extents_3d, std::move(functions_3d));
+        test_divergence(mesh_3d, std::move(functions_3d));
       }
     }
   }
@@ -198,7 +207,7 @@ struct MapTag : db::SimpleTag {
 
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence_compute_item(
-    const Index<Dim>& extents,
+    const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
@@ -208,13 +217,13 @@ void test_divergence_compute_item(
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
 
-  const size_t number_of_grid_points = extents.product();
-  const auto xi = logical_coordinates(extents);
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  const auto xi = logical_coordinates(mesh);
   const auto x = coordinate_map(xi);
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
-  Variables<flux_tags> fluxes(number_of_grid_points);
-  Variables<div_tags> expected_div_fluxes(number_of_grid_points);
+  Variables<flux_tags> fluxes(num_grid_points);
+  Variables<div_tags> expected_div_fluxes(num_grid_points);
 
   tmpl::for_each<flux_tags>([&x, &f, &fluxes,
                              &expected_div_fluxes ](auto tag) noexcept {
@@ -225,10 +234,11 @@ void test_divergence_compute_item(
   });
 
   auto box =
-      db::create<db::AddSimpleTags<Tags::Extents<Dim>, flux_tag, map_tag>,
+      db::create<db::AddSimpleTags<Tags::Extents<Dim>,
+                                   Tags::Mesh<Dim>, flux_tag, map_tag>,
                  db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
                                     Tags::ComputeDiv<flux_tag, inv_jac_tag>>>(
-          extents, fluxes, coordinate_map);
+      mesh.extents(), mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =
       db::get<Tags::div<Tags::Variables<div_tags>>>(box);
@@ -246,27 +256,35 @@ void test_divergence_compute_item(
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence.ComputeItem",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  const size_t n0 = Basis::lgl::maximum_number_of_pts / 2;
-  const size_t n1 = Basis::lgl::maximum_number_of_pts / 2 + 1;
-  const size_t n2 = Basis::lgl::maximum_number_of_pts / 2 - 1;
-  const Index<1> extents_1d(n0);
-  const Index<2> extents_2d(n0, n1);
-  const Index<3> extents_3d(n0, n1, n2);
+  const size_t n0 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+  const size_t n1 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+  const size_t n2 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+  const Mesh<1> mesh_1d{
+      {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh_2d{{{n0, n1}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh_3d{{{n0, n1, n2}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
         {std::make_unique<MathFunctions::PowX>(a)}};
-    test_divergence_compute_item(extents_1d, std::move(functions_1d));
+    test_divergence_compute_item(mesh_1d, std::move(functions_1d));
     for (size_t b = 0; b < 4; ++b) {
       std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
           {std::make_unique<MathFunctions::PowX>(a),
            std::make_unique<MathFunctions::PowX>(b)}};
-      test_divergence_compute_item(extents_2d, std::move(functions_2d));
+      test_divergence_compute_item(mesh_2d, std::move(functions_2d));
       for (size_t c = 0; c < 3; ++c) {
         std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
             {std::make_unique<MathFunctions::PowX>(a),
              std::make_unique<MathFunctions::PowX>(b),
              std::make_unique<MathFunctions::PowX>(c)}};
-        test_divergence_compute_item(extents_3d, std::move(functions_3d));
+        test_divergence_compute_item(mesh_3d, std::move(functions_3d));
       }
     }
   }

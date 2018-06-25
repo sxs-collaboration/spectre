@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
@@ -26,7 +27,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -114,11 +115,11 @@ template <size_t Dim>
 using one_var = tmpl::list<Var1<Dim>>;
 
 template <typename VariableTags, typename GradientTags = VariableTags>
-void test_logical_partial_derivatives_1d(const Index<1>& extents) {
-  const size_t number_of_grid_points = extents.product();
-  const DataVector& xi = Basis::lgl::collocation_points(extents[0]);
+void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+  const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
   Variables<VariableTags> u(number_of_grid_points);
-  for (size_t a = 0; a < extents[0]; ++a) {
+  for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t n = 0; n < u.number_of_independent_components; ++n) {
       for (size_t s = 0; s < number_of_grid_points; ++s) {
         u.data()[s + n * number_of_grid_points]  // NOLINT
@@ -126,7 +127,8 @@ void test_logical_partial_derivatives_1d(const Index<1>& extents) {
       }
     }
 
-    const auto du = logical_partial_derivatives<GradientTags>(u, extents);
+    const auto du =
+        logical_partial_derivatives<GradientTags>(u, mesh.extents());
 
     for (size_t n = 0;
          n < Variables<GradientTags>::number_of_independent_components; ++n) {
@@ -141,25 +143,25 @@ void test_logical_partial_derivatives_1d(const Index<1>& extents) {
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
-void test_logical_partial_derivatives_2d(const Index<2>& extents) {
-  const size_t number_of_grid_points = extents.product();
-  const DataVector& xi = Basis::lgl::collocation_points(extents[0]);
-  const DataVector& eta = Basis::lgl::collocation_points(extents[1]);
-  Variables<VariableTags> u(number_of_grid_points);
-  const size_t a = extents[0] - 1;
-  const size_t b = extents[1] - 1;
+void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+  const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
+  const DataVector& eta = Spectral::collocation_points(mesh.slice_through(1));
+  Variables<VariableTags> u(mesh.number_of_grid_points());
+  const size_t a = mesh.extents(0) - 1;
+  const size_t b = mesh.extents(1) - 1;
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
-    for (IndexIterator<2> ii(extents); ii; ++ii) {
+    for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
       u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
           (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b);
     }
   }
 
-  const auto du = logical_partial_derivatives<GradientTags>(u, extents);
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh.extents());
 
   for (size_t n = 0;
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
-    for (IndexIterator<2> ii(extents); ii; ++ii) {
+    for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
       const double expected_dxi =
           (0 == a
                ? 0.0
@@ -179,28 +181,28 @@ void test_logical_partial_derivatives_2d(const Index<2>& extents) {
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
-void test_logical_partial_derivatives_3d(const Index<3>& extents) {
-  const size_t number_of_grid_points = extents.product();
-  const DataVector& xi = Basis::lgl::collocation_points(extents[0]);
-  const DataVector& eta = Basis::lgl::collocation_points(extents[1]);
-  const DataVector& zeta = Basis::lgl::collocation_points(extents[2]);
+void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+  const DataVector& xi = Spectral::collocation_points(mesh.slice_through(0));
+  const DataVector& eta = Spectral::collocation_points(mesh.slice_through(1));
+  const DataVector& zeta = Spectral::collocation_points(mesh.slice_through(2));
   Variables<VariableTags> u(number_of_grid_points);
-  const size_t a = extents[0] - 1;
-  const size_t b = extents[1] - 1;
-  const size_t c = extents[2] - 1;
+  const size_t a = mesh.extents(0) - 1;
+  const size_t b = mesh.extents(1) - 1;
+  const size_t c = mesh.extents(2) - 1;
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
-    for (IndexIterator<3> ii(extents); ii; ++ii) {
+    for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
       u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
           (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
           pow(zeta[ii()[2]], c);
     }
   }
 
-  const auto du = logical_partial_derivatives<GradientTags>(u, extents);
+  const auto du = logical_partial_derivatives<GradientTags>(u, mesh.extents());
 
   for (size_t n = 0;
        n < Variables<GradientTags>::number_of_independent_components; ++n) {
-    for (IndexIterator<3> ii(extents); ii; ++ii) {
+    for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
       const double expected_dxi =
           (0 == a ? 0.0
                   : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
@@ -228,20 +230,20 @@ void test_logical_partial_derivatives_3d(const Index<3>& extents) {
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
-void test_partial_derivatives_1d(const Index<1>& extents) {
-  const size_t number_of_grid_points = extents.product();
+void test_partial_derivatives_1d(const Mesh<1>& mesh) {
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
   const CoordinateMaps::Affine x_map{-1.0, 1.0, -0.3, 0.7};
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
       CoordinateMaps::Affine{x_map});
-  const auto x = map_1d(logical_coordinates(extents));
+  const auto x = map_1d(logical_coordinates(mesh));
   const InverseJacobian<DataVector, 1, Frame::Logical, Frame::Grid>
-      inverse_jacobian(extents.product(), 2.0);
+      inverse_jacobian(number_of_grid_points, 2.0);
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  for (size_t a = 0; a < extents[0]; ++a) {
+  for (size_t a = 0; a < mesh.extents(0); ++a) {
     tmpl::for_each<VariableTags>([&a, &x, &u ](auto tag) noexcept {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(u) = Tag::f({{a}}, x);
@@ -253,7 +255,7 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
     });
 
     const auto du =
-        partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
+        partial_derivatives<GradientTags>(u, mesh.extents(), inverse_jacobian);
 
     for (size_t n = 0; n < du.size(); ++n) {
       CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -263,14 +265,14 @@ void test_partial_derivatives_1d(const Index<1>& extents) {
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
-void test_partial_derivatives_2d(const Index<2>& extents) {
+void test_partial_derivatives_2d(const Mesh<2>& mesh) {
   using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
-  const size_t number_of_grid_points = extents.product();
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map2d =
       make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_2d{
           affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55}});
-  const auto x = prod_map2d(logical_coordinates(extents));
+  const auto x = prod_map2d(logical_coordinates(mesh));
   InverseJacobian<DataVector, 2, Frame::Logical, Frame::Grid> inverse_jacobian(
       number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
@@ -280,8 +282,8 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  for (size_t a = 0; a < extents[0]; ++a) {
-    for (size_t b = 0; b < extents[1]; ++b) {
+  for (size_t a = 0; a < mesh.extents(0); ++a) {
+    for (size_t b = 0; b < mesh.extents(1); ++b) {
       tmpl::for_each<VariableTags>([&a, &b, &x, &u ](auto tag) noexcept {
         using Tag = typename decltype(tag)::type;
         get<Tag>(u) = Tag::f({{a, b}}, x);
@@ -293,8 +295,8 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
         get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
       });
 
-      const auto du =
-          partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
+      const auto du = partial_derivatives<GradientTags>(u, mesh.extents(),
+                                                        inverse_jacobian);
 
       for (size_t n = 0; n < du.size(); ++n) {
         CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -306,18 +308,18 @@ void test_partial_derivatives_2d(const Index<2>& extents) {
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
-void test_partial_derivatives_3d(const Index<3>& extents) {
+void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   using affine_map = CoordinateMaps::Affine;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
-  const size_t number_of_grid_points = extents.product();
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map3d =
       make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_3d{
           affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55},
           affine_map{-1.0, 1.0, 2.3, 2.8}});
-  const auto x = prod_map3d(logical_coordinates(extents));
+  const auto x = prod_map3d(logical_coordinates(mesh));
   InverseJacobian<DataVector, 3, Frame::Logical, Frame::Grid> inverse_jacobian(
-      extents.product(), 0.0);
+      number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
   inverse_jacobian.get(2, 2) = 4.0;
@@ -326,9 +328,9 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  for (size_t a = 0; a < extents[0] / 2; ++a) {
-    for (size_t b = 0; b < extents[1] / 2; ++b) {
-      for (size_t c = 0; c < extents[2] / 2; ++c) {
+  for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
+    for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
+      for (size_t c = 0; c < mesh.extents(2) / 2; ++c) {
         tmpl::for_each<VariableTags>([&a, &b, &c, &x, &u ](auto tag) noexcept {
           using Tag = typename decltype(tag)::type;
           get<Tag>(u) = Tag::f({{a, b, c}}, x);
@@ -340,8 +342,8 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
-        const auto du =
-            partial_derivatives<GradientTags>(u, extents, inverse_jacobian);
+        const auto du = partial_derivatives<GradientTags>(u, mesh.extents(),
+                                                          inverse_jacobian);
 
         for (size_t n = 0; n < du.size(); ++n) {
           CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
@@ -356,19 +358,28 @@ void test_partial_derivatives_3d(const Index<3>& extents) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  for (size_t n0 = 2; n0 <= Basis::lgl::maximum_number_of_pts / 2; ++n0) {
-    const Index<1> extents_1d(n0);
-    test_logical_partial_derivatives_1d<two_vars<1>>(extents_1d);
-    test_logical_partial_derivatives_1d<two_vars<1>, one_var<1>>(extents_1d);
-    for (size_t n1 = 2; n1 <= Basis::lgl::maximum_number_of_pts / 2; ++n1) {
-      const Index<2> extents_2d(n0, n1);
-      test_logical_partial_derivatives_2d<two_vars<2>>(extents_2d);
-      test_logical_partial_derivatives_2d<two_vars<2>, one_var<2>>(extents_2d);
-      for (size_t n2 = 2; n2 <= Basis::lgl::maximum_number_of_pts / 2; ++n2) {
-        const Index<3> extents_3d(n0, n1, n2);
-        test_logical_partial_derivatives_3d<two_vars<3>>(extents_3d);
-        test_logical_partial_derivatives_3d<two_vars<3>, one_var<3>>(
-            extents_3d);
+  constexpr size_t min_points =
+      Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::GaussLobatto>;
+  constexpr size_t max_points =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+  for (size_t n0 = min_points; n0 <= max_points; ++n0) {
+    const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
+    test_logical_partial_derivatives_1d<two_vars<1>>(mesh_1d);
+    test_logical_partial_derivatives_1d<two_vars<1>, one_var<1>>(mesh_1d);
+    for (size_t n1 = min_points; n1 <= max_points; ++n1) {
+      const Mesh<2> mesh_2d{{{n0, n1}},
+                            Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto};
+      test_logical_partial_derivatives_2d<two_vars<2>>(mesh_2d);
+      test_logical_partial_derivatives_2d<two_vars<2>, one_var<2>>(mesh_2d);
+      for (size_t n2 = min_points; n2 <= max_points; ++n2) {
+        const Mesh<3> mesh_3d{{{n0, n1, n2}},
+                              Spectral::Basis::Legendre,
+                              Spectral::Quadrature::GaussLobatto};
+        test_logical_partial_derivatives_3d<two_vars<3>>(mesh_3d);
+        test_logical_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
       }
     }
   }
@@ -376,18 +387,26 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  const size_t n0 = Basis::lgl::maximum_number_of_pts / 2;
-  const size_t n1 = Basis::lgl::maximum_number_of_pts / 2 + 1;
-  const size_t n2 = Basis::lgl::maximum_number_of_pts / 2 - 1;
-  const Index<1> extents_1d(n0);
-  test_partial_derivatives_1d<two_vars<1>>(extents_1d);
-  test_partial_derivatives_1d<two_vars<1>, one_var<1>>(extents_1d);
-  const Index<2> extents_2d(n0, n1);
-  test_partial_derivatives_2d<two_vars<2>>(extents_2d);
-  test_partial_derivatives_2d<two_vars<2>, one_var<2>>(extents_2d);
-  const Index<3> extents_3d(n0, n1, n2);
-  test_partial_derivatives_3d<two_vars<3>>(extents_3d);
-  test_partial_derivatives_3d<two_vars<3>, one_var<3>>(extents_3d);
+  const size_t n0 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+  const size_t n1 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+  const size_t n2 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+  const Mesh<1> mesh_1d{n0, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_partial_derivatives_1d<two_vars<1>>(mesh_1d);
+  test_partial_derivatives_1d<two_vars<1>, one_var<1>>(mesh_1d);
+  const Mesh<2> mesh_2d{{{n0, n1}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_partial_derivatives_2d<two_vars<2>>(mesh_2d);
+  test_partial_derivatives_2d<two_vars<2>, one_var<2>>(mesh_2d);
+  const Mesh<3> mesh_3d{{{n0, n1, n2}},
+                        Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto};
+  test_partial_derivatives_3d<two_vars<3>>(mesh_3d);
+  test_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
 }
 
 namespace {
@@ -400,12 +419,14 @@ void test_logical_derivatives_compute_item(
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
-  const Index<Dim> extents{extents_array};
-  Variables<vars_tags> u(extents.product());
+  const Mesh<Dim> mesh{extents_array, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  Variables<vars_tags> u(num_grid_points);
   Variables<db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>,
                              Frame::Logical>>
-      expected_du(extents.product());
-  const auto x = logical_coordinates(extents);
+      expected_du(num_grid_points);
+  const auto x = logical_coordinates(mesh);
 
   tmpl::for_each<vars_tags>([&array_to_functions, &x, &u ](auto tag) noexcept {
     using Tag = tmpl::type_from<decltype(tag)>;
@@ -419,12 +440,14 @@ void test_logical_derivatives_compute_item(
   });
 
   auto box = db::create<
-      db::AddSimpleTags<Tags::Extents<Dim>, Tags::Variables<vars_tags>>,
-      db::AddComputeTags<Tags::LogicalCoordinates<Dim>, deriv_tag>>(extents, u);
+      db::AddSimpleTags<Tags::Extents<Dim>, Tags::Mesh<Dim>,
+                        Tags::Variables<vars_tags>>,
+      db::AddComputeTags<Tags::LogicalCoordinates<Dim>, deriv_tag>>(
+          mesh.extents(), mesh, u);
 
   const auto& du = db::get<deriv_tag>(box);
 
-  tmpl::for_each<vars_tags>([&du, &expected_du, &extents ](auto tag) noexcept {
+  tmpl::for_each<vars_tags>([&du, &expected_du, &mesh ](auto tag) noexcept {
     using Tag = tmpl::type_from<decltype(tag)>;
     using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Logical>;
     auto& expected_dvariable = get<DerivativeTag>(expected_du);
@@ -434,7 +457,7 @@ void test_logical_derivatives_compute_item(
       const size_t deriv_index = deriv_indices[0];
       const auto tensor_indices =
           all_but_specified_element_of<0>(deriv_indices);
-      for (size_t n = 0; n < extents.product(); ++n) {
+      for (size_t n = 0; n < mesh.number_of_grid_points(); ++n) {
         CAPTURE_PRECISE(get<Tag>(du[deriv_index]).get(tensor_indices)[n] -
                         (*it)[n]);
         CHECK(get<Tag>(du[deriv_index]).get(tensor_indices)[n] ==
@@ -461,13 +484,15 @@ void test_partial_derivatives_compute_item(
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
-  const Index<Dim> extents{extents_array};
-  Variables<vars_tags> u(extents.product());
+  const Mesh<Dim> mesh{extents_array, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  Variables<vars_tags> u(num_grid_points);
   Variables<
       db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>, Frame::Grid>>
-      expected_du(extents.product());
-  const auto x_logical = logical_coordinates(extents);
-  const auto x = map(logical_coordinates(extents));
+      expected_du(num_grid_points);
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = map(logical_coordinates(mesh));
 
   tmpl::for_each<vars_tags>([&array_to_functions, &x, &u ](auto tag) noexcept {
     using Tag = tmpl::type_from<decltype(tag)>;
@@ -481,10 +506,10 @@ void test_partial_derivatives_compute_item(
       });
 
   auto box =
-      db::create<db::AddSimpleTags<Tags::Extents<Dim>,
+      db::create<db::AddSimpleTags<Tags::Extents<Dim>, Tags::Mesh<Dim>,
                                    Tags::Variables<vars_tags>, map_tag>,
                  db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                                    deriv_tag>>(extents, u, map);
+                                    deriv_tag>>(mesh.extents(), mesh, u, map);
 
   const auto& du = db::get<deriv_tag>(box);
 
