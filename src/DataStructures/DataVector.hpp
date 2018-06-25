@@ -9,6 +9,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <functional>  // for std::reference_wrapper
 #include <initializer_list>
 #include <limits>
 #include <ostream>
@@ -50,7 +51,22 @@ using std::abs;  // NOLINT
 // IWYU pragma: no_include <blaze/math/expressions/Vector.h>
 // IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 // IWYU pragma: no_include <blaze/math/expressions/Forward.h>
-// IWYU pragma: no_forward_declare blaze::Vector
+// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
+// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
+// IWYU pragma: no_include <blaze/math/traits/AddTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/DivTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
+// IWYU pragma: no_include <blaze/system/TransposeFlag.h>
+// IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
+
+// IWYU pragma: no_forward_declare blaze::DenseVector
+// IWYU pragma: no_forward_declare blaze::UnaryMapTrait
+// IWYU pragma: no_forward_declare blaze::BinaryMapTrait
+// IWYU pragma: no_forward_declare blaze::IsVector
+// IWYU pragma: no_forward_declare blaze::TransposeFlag
 
 /*!
  * \ingroup DataStructuresGroup
@@ -82,6 +98,7 @@ using std::abs;  // NOLINT
  * - exp10
  * - fabs
  * - hypot
+ * - invcbrt
  * - invsqrt
  * - log
  * - log2
@@ -96,12 +113,13 @@ using std::abs;  // NOLINT
  * - tan
  * - tanh
  */
-class DataVector {
+class DataVector
+    : public PointerVector<double, blaze::unaligned, blaze::unpadded,
+                           blaze::defaultTransposeFlag, DataVector> {
   /// \cond HIDDEN_SYMBOLS
-  static constexpr int private_asserts() {
+  static constexpr void private_asserts() noexcept {
     static_assert(std::is_nothrow_move_constructible<DataVector>::value,
                   "Missing move semantics");
-    return 0;
   }
   /// \endcond
  public:
@@ -109,36 +127,48 @@ class DataVector {
   using allocator_type = std::allocator<value_type>;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
+  using BaseType = PointerVector<double, blaze::unaligned, blaze::unpadded,
+                                 blaze::defaultTransposeFlag, DataVector>;
+  static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
 
-  // The type alias ElementType is needed because blaze::IsInvertible<T> is not
-  // SFINAE friendly to an ElementType type alias
-  using ElementType = double;
+  using BaseType::ElementType;
+  using TransposeType = DataVector;
+  using CompositeType = const DataVector&;
 
- private:
-  /// The type of the "pointer" used internally
-  using InternalDataVector_t = PointerVector<double>;
-  /// The type used to store the data in
-  using InternalStorage_t = std::vector<double, allocator_type>;
+  using BaseType::operator[];
+  using BaseType::begin;
+  using BaseType::cbegin;
+  using BaseType::cend;
+  using BaseType::data;
+  using BaseType::end;
+  using BaseType::size;
 
- public:
+  // @{
+  // Upcast to `BaseType`
+  const BaseType& operator~() const noexcept {
+    return static_cast<const BaseType&>(*this);
+  }
+  BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
+  // @}
+
   /// Create with the given size and value.
   ///
   /// \param size number of values
   /// \param value the value to initialize each element.
   explicit DataVector(
-      size_t size, double value = std::numeric_limits<double>::signaling_NaN());
+      size_t size,
+      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
 
   /// Create a non-owning DataVector that points to `start`
-  DataVector(double* start, size_t size);
+  DataVector(double* start, size_t size) noexcept;
 
   /// Create from an initializer list of doubles. All elements in the
   /// `std::initializer_list` must have decimal points
-  // cppcheck-suppress syntaxError
   template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
-  DataVector(std::initializer_list<T> list);
+  DataVector(std::initializer_list<T> list) noexcept;
 
   /// Empty DataVector
-  DataVector() = default;
+  DataVector() noexcept = default;
   /// \cond HIDDEN_SYMBOLS
   ~DataVector() = default;
 
@@ -151,24 +181,30 @@ class DataVector {
   // explicit, but we want it to allow conversion.
   // clang-tidy: mark as explicit (we want conversion to DataVector)
   template <typename VT, bool VF>
-  DataVector(const blaze::Vector<VT, VF>& expression);  // NOLINT
+  DataVector(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
 
   template <typename VT, bool VF>
-  DataVector& operator=(const blaze::Vector<VT, VF>& expression);
+  DataVector& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
   /// \endcond
 
-  /// Number of values stored
-  size_t size() const noexcept { return size_; }
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, DataVector)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, DataVector)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, DataVector)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, DataVector)
+
+  DataVector& operator=(const double& rhs) noexcept {
+    ~*this = rhs;
+    return *this;
+  }
 
   // @{
   /// Set the DataVector to be a reference to another DataVector object
   void set_data_ref(gsl::not_null<DataVector*> rhs) noexcept {
-    set_data_ref(rhs->data(), rhs->size_);
+    set_data_ref(rhs->data(), rhs->size());
   }
   void set_data_ref(double* start, size_t size) noexcept {
-    size_ = size;
     owned_data_ = decltype(owned_data_){};
-    data_ = decltype(data_){start, size_};
+    (~*this).reset(start, size);
     owning_ = false;
   }
   // @}
@@ -176,370 +212,17 @@ class DataVector {
   /// Returns true if the class owns the data
   bool is_owning() const noexcept { return owning_; }
 
-  // @{
-  /// Access ith element
-  double& operator[](const size_type i) noexcept {
-    ASSERT(i < size_, "i = " << i << ", size = " << size_);
-    // clang-tidy: do not use pointer arithmetic
-    return data_[i];  // NOLINT
-  }
-  const double& operator[](const size_type i) const noexcept {
-    ASSERT(i < size_, "i = " << i << ", size = " << size_);
-    // clang-tidy: do not use pointer arithmetic
-    return data_[i];  // NOLINT
-  }
-  // @}
-
-  // @{
-  /// Access to the pointer
-  double* data() noexcept { return data_.data(); }
-  const double* data() const noexcept { return data_.data(); }
-  // @}
-
-  // @{
-  /// Returns iterator to beginning of data
-  decltype(auto) begin() noexcept { return data_.begin(); }
-  decltype(auto) begin() const noexcept { return data_.begin(); }
-  // @}
-  // @{
-  /// Returns iterator to end of data
-  decltype(auto) end() noexcept { return data_.end(); }
-  decltype(auto) end() const noexcept { return data_.end(); }
-  // @}
-
   /// Serialization for Charm++
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  // @{
-  /// See the Blaze library documentation for details on these functions since
-  /// they merely forward to Blaze.
-  /// https://bitbucket.org/blaze-lib/blaze/overview
-  DataVector& operator=(const double& rhs) noexcept {
-    data_ = rhs;
-    return *this;
-  }
-
-  DataVector& operator+=(const DataVector& rhs) noexcept {
-    data_ += rhs.data_;
-    return *this;
-  }
-  template <typename VT, bool VF>
-  DataVector& operator+=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ += rhs;
-    return *this;
-  }
-  DataVector& operator+=(const double& rhs) noexcept {
-    data_ += rhs;
-    return *this;
-  }
-
-  DataVector& operator-=(const DataVector& rhs) noexcept {
-    data_ -= rhs.data_;
-    return *this;
-  }
-  template <typename VT, bool VF>
-  DataVector& operator-=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ -= rhs;
-    return *this;
-  }
-  DataVector& operator-=(const double& rhs) noexcept {
-    data_ -= rhs;
-    return *this;
-  }
-
-  DataVector& operator*=(const DataVector& rhs) noexcept {
-    data_ *= rhs.data_;
-    return *this;
-  }
-  template <typename VT, bool VF>
-  DataVector& operator*=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ *= rhs;
-    return *this;
-  }
-  DataVector& operator*=(const double& rhs) noexcept {
-    data_ *= rhs;
-    return *this;
-  }
-
-  DataVector& operator/=(const DataVector& rhs) noexcept {
-    data_ /= rhs.data_;
-    return *this;
-  }
-  template <typename VT, bool VF>
-  DataVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ /= rhs;
-    return *this;
-  }
-  DataVector& operator/=(const double& rhs) noexcept {
-    data_ /= rhs;
-    return *this;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const DataVector& lhs, const DataVector& rhs) noexcept {
-    return lhs.data_ + rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
-    return ~lhs + rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ + ~rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const DataVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ + rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const double& lhs, const DataVector& rhs) noexcept {
-    return lhs + rhs.data_;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const DataVector& lhs, const DataVector& rhs) noexcept {
-    return lhs.data_ - rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
-    return ~lhs - rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ - ~rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const DataVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ - rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const double& lhs, const DataVector& rhs) noexcept {
-    return lhs - rhs.data_;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const DataVector& rhs) noexcept {
-    return -rhs.data_;
-  };
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const DataVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ * rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const double& lhs, const DataVector& rhs) noexcept {
-    return lhs * rhs.data_;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const DataVector& lhs, const DataVector& rhs) noexcept {
-    return lhs.data_ * rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
-    return ~lhs * rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ * ~rhs;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const double& lhs, const DataVector& rhs) noexcept {
-    return lhs / rhs.data_;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const DataVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ / rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const DataVector& lhs, const DataVector& rhs) noexcept {
-    return lhs.data_ / rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const blaze::Vector<VT, VF>& lhs, const DataVector& rhs) noexcept {
-    return ~lhs / rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const DataVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ / ~rhs;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) min(
-      const DataVector& t) noexcept {
-    return min(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) max(
-      const DataVector& t) noexcept {
-    return max(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) abs(
-      const DataVector& t) noexcept {
-    return abs(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) fabs(
-      const DataVector& t) noexcept {
-    return abs(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) sqrt(
-      const DataVector& t) noexcept {
-    return sqrt(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) invsqrt(
-      const DataVector& t) noexcept {
-    return invsqrt(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) cbrt(
-      const DataVector& t) noexcept {
-    return cbrt(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) invcbrt(
-      const DataVector& t) noexcept {
-    return invcbrt(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) pow(
-      const DataVector& t, const double exponent) noexcept {
-    return pow(t.data_, exponent);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) exp(
-      const DataVector& t) noexcept {
-    return exp(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) exp2(
-      const DataVector& t) noexcept {
-    return exp2(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) exp10(
-      const DataVector& t) noexcept {
-    return exp10(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) log(
-      const DataVector& t) noexcept {
-    return log(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) log2(
-      const DataVector& t) noexcept {
-    return log2(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) log10(
-      const DataVector& t) noexcept {
-    return log10(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) hypot(
-      const DataVector& x, const DataVector& y) noexcept {
-    return hypot(x.data_, y.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) sin(
-      const DataVector& t) noexcept {
-    return sin(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) cos(
-      const DataVector& t) noexcept {
-    return cos(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) tan(
-      const DataVector& t) noexcept {
-    return tan(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) asin(
-      const DataVector& t) noexcept {
-    return asin(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) acos(
-      const DataVector& t) noexcept {
-    return acos(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) atan(
-      const DataVector& t) noexcept {
-    return atan(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) atan2(
-      const DataVector& y, const DataVector& x) noexcept {
-    return atan2(~(y.data_), ~(x.data_));
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) sinh(
-      const DataVector& t) noexcept {
-    return sinh(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) cosh(
-      const DataVector& t) noexcept {
-    return cosh(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) tanh(
-      const DataVector& t) noexcept {
-    return tanh(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) asinh(
-      const DataVector& t) noexcept {
-    return asinh(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) acosh(
-      const DataVector& t) noexcept {
-    return acosh(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) atanh(
-      const DataVector& t) noexcept {
-    return atanh(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) erf(
-      const DataVector& t) noexcept {
-    return erf(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) erfc(
-      const DataVector& t) noexcept {
-    return erfc(t.data_);
-  }
-  // @}
-
-  /// If less than zero returns zero, otherwise returns one
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) step_function(
-      const DataVector& t) noexcept {
-    return step_function(t.data_);
-  }
-
  private:
+  SPECTRE_ALWAYS_INLINE void reset_pointer_vector() noexcept {
+    reset(owned_data_.data(), owned_data_.size());
+  }
+
   /// \cond HIDDEN_SYMBOLS
-  size_t size_ = 0;
-  InternalStorage_t owned_data_;
-  InternalDataVector_t data_;
+  std::vector<double, allocator_type> owned_data_;
   bool owning_{true};
   /// \endcond
 };
@@ -548,10 +231,115 @@ class DataVector {
 std::ostream& operator<<(std::ostream& os, const DataVector& d);
 
 /// Equivalence operator for DataVector
-bool operator==(const DataVector& lhs, const DataVector& rhs);
+bool operator==(const DataVector& lhs, const DataVector& rhs) noexcept;
 
 /// Inequivalence operator for DataVector
-bool operator!=(const DataVector& lhs, const DataVector& rhs);
+bool operator!=(const DataVector& lhs, const DataVector& rhs) noexcept;
+
+/// \cond
+// Used for comparing DataVector to an expression
+template <typename VT, bool VF>
+bool operator==(const DataVector& lhs,
+                const blaze::DenseVector<VT, VF>& rhs) noexcept {
+  return lhs == DataVector(rhs);
+}
+
+template <typename VT, bool VF>
+bool operator!=(const DataVector& lhs,
+                const blaze::DenseVector<VT, VF>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template <typename VT, bool VF>
+bool operator==(const blaze::DenseVector<VT, VF>& lhs,
+                const DataVector& rhs) noexcept {
+  return DataVector(lhs) == rhs;
+}
+
+template <typename VT, bool VF>
+bool operator!=(const blaze::DenseVector<VT, VF>& lhs,
+                const DataVector& rhs) noexcept {
+  return not(lhs == rhs);
+}
+/// \endcond
+
+// Specialize the Blaze type traits to correctly handle DataVector
+namespace blaze {
+template <>
+struct IsVector<DataVector> : std::true_type {};
+
+template <>
+struct TransposeFlag<DataVector> : BoolConstant<DataVector::transpose_flag> {};
+
+template <>
+struct AddTrait<DataVector, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct AddTrait<DataVector, double> {
+  using Type = DataVector;
+};
+
+template <>
+struct AddTrait<double, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct SubTrait<DataVector, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct SubTrait<DataVector, double> {
+  using Type = DataVector;
+};
+
+template <>
+struct SubTrait<double, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct MultTrait<DataVector, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct MultTrait<DataVector, double> {
+  using Type = DataVector;
+};
+
+template <>
+struct MultTrait<double, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct DivTrait<DataVector, DataVector> {
+  using Type = DataVector;
+};
+
+template <>
+struct DivTrait<DataVector, double> {
+  using Type = DataVector;
+};
+
+template <typename Operator>
+struct UnaryMapTrait<DataVector, Operator> {
+  using Type = DataVector;
+};
+
+template <typename Operator>
+struct BinaryMapTrait<DataVector, DataVector, Operator> {
+  using Type = DataVector;
+};
+}  // namespace blaze
+
+SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
+  return abs(~t);
+}
 
 template <typename T, size_t Dim>
 std::array<DataVector, Dim> operator+(
@@ -628,23 +416,28 @@ std::array<DataVector, Dim>& operator-=(
 
 /// \cond HIDDEN_SYMBOLS
 template <typename VT, bool VF>
-DataVector::DataVector(const blaze::Vector<VT, VF>& expression)
-    : size_((~expression).size()),
-      owned_data_((~expression).size()),
-      data_(owned_data_.data(), (~expression).size()) {
-  data_ = expression;
+DataVector::DataVector(const blaze::DenseVector<VT, VF>& expression) noexcept
+    : owned_data_((~expression).size()) {
+  static_assert(cpp17::is_same_v<typename VT::ResultType, DataVector>,
+                "You are attempting to assign the result of an expression that "
+                "is not a DataVector to a DataVector.");
+  reset_pointer_vector();
+  ~*this = expression;
 }
 
 template <typename VT, bool VF>
-DataVector& DataVector::operator=(const blaze::Vector<VT, VF>& expression) {
+DataVector& DataVector::operator=(
+    const blaze::DenseVector<VT, VF>& expression) noexcept {
+  static_assert(cpp17::is_same_v<typename VT::ResultType, DataVector>,
+                "You are attempting to assign the result of an expression that "
+                "is not a DataVector to a DataVector.");
   if (owning_ and (~expression).size() != size()) {
-    size_ = (~expression).size();
-    owned_data_ = InternalStorage_t(size_);
-    data_ = decltype(data_){owned_data_.data(), size_};
+    owned_data_.resize((~expression).size());
+    reset_pointer_vector();
   } else if (not owning_) {
     ASSERT((~expression).size() == size(), "Must copy into same size");
   }
-  data_ = expression;
+  ~*this = expression;
   return *this;
 }
 /// \endcond
@@ -664,6 +457,20 @@ namespace ConstantExpressions_detail {
 template <>
 struct pow<DataVector, 0, std::nullptr_t> {
   SPECTRE_ALWAYS_INLINE static constexpr double apply(const DataVector& /*t*/) {
+    return 1.0;
+  }
+};
+template <>
+struct pow<std::reference_wrapper<DataVector>, 0, std::nullptr_t> {
+  SPECTRE_ALWAYS_INLINE static constexpr double apply(
+      const std::reference_wrapper<DataVector>& /*t*/) {
+    return 1.0;
+  }
+};
+template <>
+struct pow<std::reference_wrapper<const DataVector>, 0, std::nullptr_t> {
+  SPECTRE_ALWAYS_INLINE static constexpr double apply(
+      const std::reference_wrapper<const DataVector>& /*t*/) {
     return 1.0;
   }
 };
