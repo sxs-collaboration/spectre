@@ -10,7 +10,7 @@
 
 class DataVector;
 template <size_t>
-class Index;
+class Mesh;
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
@@ -20,7 +20,7 @@ class Index;
  * \returns the linearization of `u`
  */
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Index<Dim>& extents);
+DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh);
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
@@ -28,9 +28,9 @@ DataVector linearize(const DataVector& u, const Index<Dim>& extents);
  *
  * \returns the linearization of `u`
  * \param u the function to linearize.
- * \param extents the extents of the grid on the manifold on which `u` is
+ * \param mesh the Mesh of the grid on the manifold on which `u` is
  * located.
  * \param d the dimension that is to be linearized.
  */
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Index<Dim>& extents, size_t d);
+DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh, size_t d);

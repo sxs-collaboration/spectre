@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
           u[i.collapsed_index()] =
               exp(x[i()[0]]) * exp(y[i()[1]]) * exp(z[i()[2]]);
         }
-        const DataVector u_lin = linearize(u, mesh.extents());
+        const DataVector u_lin = linearize(u, mesh);
         double sum = std::accumulate(u_lin.begin(), u_lin.end(), 0.0);
         CHECK(sum / mesh.number_of_grid_points() ==
               approx(mean_value(u, mesh)));
