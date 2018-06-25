@@ -103,7 +103,23 @@ const DataVector& collocation_points(size_t num_points) noexcept;
 const DataVector& collocation_points(const Mesh<1>& mesh) noexcept;
 
 /*!
- * \brief Quadrature weights
+ * \brief Weights to compute definite integrals.
+ *
+ * \details These are the coefficients to contract with the nodal
+ * function values \f$f_k\f$ to approximate the definite integral \f$I[f]=\int
+ * f(x)\mathrm{d}x\f$.
+ *
+ * Note that the term _quadrature_ also often refers to the quantity
+ * \f$Q[f]=\int f(x)w(x)\mathrm{d}x\approx \sum_k f_k w_k\f$. Here, \f$w(x)\f$
+ * denotes the basis-specific weight function w.r.t. to which the basis
+ * functions \f$\Phi_k\f$ are orthogonal, i.e \f$\int\Phi_i(x)\Phi_j(x)w(x)=0\f$
+ * for \f$i\neq j\f$. The weights \f$w_k\f$ approximate this inner product. To
+ * approximate the definite integral \f$I[f]\f$ we must employ the
+ * coefficients \f$\frac{w_k}{w(\xi_k)}\f$ instead, where the \f$\xi_k\f$ are
+ * the collocation points. These are the coefficients this function returns.
+ * Only for a unit weight function \f$w(x)=1\f$, i.e. a Legendre basis, is
+ * \f$I[f]=Q[f]\f$ so this function returns the \f$w_k\f$ identically.
+ *
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
@@ -122,8 +138,8 @@ const DataVector& quadrature_weights(const Mesh<1>& mesh) noexcept;
  * \details For a function represented by the nodal coefficients \f$u_j\f$ a
  * matrix multiplication with the differentiation matrix \f$D_{ij}\f$ gives the
  * coefficients of the function's derivative. Since \f$u(x)\f$ is expanded in
- * Lagrange polynomials \f$u(x)=u_j l_j(x)\f$ the differentiation matrix is
- * computed as \f$D_{ij}=l_j^\prime(\xi_i)\f$ where the \f$\xi_i\f$ are the
+ * Lagrange polynomials \f$u(x)=\sum_j u_j l_j(x)\f$ the differentiation matrix
+ * is computed as \f$D_{ij}=l_j^\prime(\xi_i)\f$ where the \f$\xi_i\f$ are the
  * collocation points.
  *
  * \param num_points The number of collocation points
@@ -168,11 +184,11 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
  * \details The Vandermonde matrix is computed as
  * \f$\mathcal{V}_{ij}=\Phi_j(\xi_i)\f$ where the \f$\Phi_j(x)\f$ are the
  * spectral basis functions used in the modal expansion
- * \f$u(x)=\widetilde{u}_j\Phi_j(x)\f$, e.g. normalized Legendre polynomials,
- * and the \f$\xi_i\f$ are the collocation points used to construct the
- * interpolating Lagrange polynomials in the nodal expansion
- * \f$u(x)=u_j l_j(x)\f$. Then the Vandermonde matrix arises as
- * \f$u(\xi_i)=u_i=\widetilde{u}_j\Phi_j(\xi_i)=
+ * \f$u(x)=\sum_j \widetilde{u}_j\Phi_j(x)\f$, e.g. normalized Legendre
+ * polynomials, and the \f$\xi_i\f$ are the collocation points used to construct
+ * the interpolating Lagrange polynomials in the nodal expansion
+ * \f$u(x)=\sum_j u_j l_j(x)\f$. Then the Vandermonde matrix arises as
+ * \f$u(\xi_i)=u_i=\sum_j \widetilde{u}_j\Phi_j(\xi_i)=\sum_j
  * \mathcal{V}_{ij}\widetilde{u}_j\f$.
  *
  * \param num_points The number of collocation points
@@ -198,7 +214,8 @@ const Matrix& spectral_to_grid_points_matrix(const Mesh<1>& mesh) noexcept;
  * \details This is the inverse to the Vandermonde matrix \f$\mathcal{V}\f$
  * computed in spectral_to_grid_points_matrix(size_t). It can be computed
  * analytically for Gauss quadrature by evaluating
- * \f$\mathcal{V}^{-1}_{ij}u_j=\widetilde{u}_i=\frac{(u,\Phi_i)}{\gamma_i}\f$
+ * \f$\sum_j\mathcal{V}^{-1}_{ij}u_j=\widetilde{u}_i=
+ * \frac{(u,\Phi_i)}{\gamma_i}\f$
  * for a Lagrange basis function \f$u(x)=l_k(x)\f$ to find
  * \f$\mathcal{V}^{-1}_{ij}=\mathcal{V}_{ji}\frac{w_j}{\gamma_i}\f$ where the
  * \f$w_j\f$ are the Gauss quadrature weights and \f$\gamma_i\f$ is the norm

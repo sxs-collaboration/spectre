@@ -19,6 +19,16 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Math.hpp"
 
+namespace Spectral {
+// For exact-quadrature test where we need the \f$w_k\f$. We don't provide a
+// public accessor since we only ever need them in Spectral.cpp.
+template <Basis, Quadrature>
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
+    size_t) noexcept;
+template <Basis>
+DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
+}  // namespace Spectral
+
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
@@ -177,21 +187,31 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactInterpolation",
 
 namespace {
 
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+void test_exact_quadrature(const size_t n, const size_t p,
+                           const double analytic_quadrature) {
+  const auto& collocation_pts =
+      Spectral::collocation_points<BasisType, QuadratureType>(n);
+  // Get the \f$w_k\f$, as opposed to the Spectral::quadrature_weights that are
+  // used to compute definite integrals (see test below).
+  const auto w_k =
+      Spectral::compute_collocation_points_and_weights<BasisType,
+                                                       QuadratureType>(n)
+          .second;
+  const DataVector u = unit_polynomial(p, collocation_pts);
+  const double numeric_quadrature = ddot_(n, u.data(), 1, w_k.data(), 1);
+  CHECK_ITERABLE_APPROX(analytic_quadrature, numeric_quadrature);
+}
+
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
-void test_exact_quadrature(const Function& max_poly_deg) {
+void test_exact_unit_weight_quadrature(const Function& max_poly_deg) {
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       const double analytic_quadrature = unit_polynomial_integral(p);
-      const auto& collocation_pts =
-          Spectral::collocation_points<BasisType, QuadratureType>(n);
-      const auto& weights =
-          Spectral::quadrature_weights<BasisType, QuadratureType>(n);
-      const DataVector u = unit_polynomial(p, collocation_pts);
-      const double numeric_quadrature =
-          ddot_(n, u.data(), 1, weights.data(), 1);
-      CHECK_ITERABLE_APPROX(analytic_quadrature, numeric_quadrature);
+      test_exact_quadrature<BasisType, QuadratureType>(n, p,
+                                                       analytic_quadrature);
     }
   }
 }
@@ -202,17 +222,50 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactQuadrature",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   SECTION(
       "Legendre-Gauss quadrature is exact to polynomial order 2*num_points-1") {
-    test_exact_quadrature<Spectral::Basis::Legendre,
-                          Spectral::Quadrature::Gauss>(
+    test_exact_unit_weight_quadrature<Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::Gauss>(
         [](const size_t n) { return 2 * n - 1; });
   }
   SECTION(
       "Legendre-Gauss-Lobatto quadrature is exact to polynomial order "
       "2*num_points-3") {
-    test_exact_quadrature<Spectral::Basis::Legendre,
-                          Spectral::Quadrature::GaussLobatto>(
+    test_exact_unit_weight_quadrature<Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto>(
         [](const size_t n) { return 2 * n - 3; });
   }
+}
+
+namespace {
+
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+void test_quadrature_weights() {
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    const auto& weights =
+        Spectral::quadrature_weights<BasisType, QuadratureType>(n);
+    const auto w_k =
+        Spectral::compute_collocation_points_and_weights<BasisType,
+                                                         QuadratureType>(n)
+            .second;
+    const auto& collocation_pts =
+        Spectral::collocation_points<BasisType, QuadratureType>(n);
+    const auto inverse_weight_function_values =
+        Spectral::compute_inverse_weight_function_values<BasisType>(
+            collocation_pts);
+    CHECK_ITERABLE_APPROX(weights, w_k * inverse_weight_function_values);
+  }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.QuadratureWeights",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  // Test that the Spectral::quadrature_weights are those used to compute
+  // definite integrals, as opposed to the weighted inner product.
+  test_quadrature_weights<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
+  test_quadrature_weights<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
 }
 
 namespace {

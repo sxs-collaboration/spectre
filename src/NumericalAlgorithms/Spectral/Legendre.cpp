@@ -21,20 +21,20 @@ namespace Spectral {
 
 /// \cond
 template <Basis>
-double compute_basis_function_value(size_t, double) noexcept;
+DataVector compute_basis_function_values(size_t, const DataVector&) noexcept;
 template <>
-double compute_basis_function_value<Basis::Legendre>(const size_t k,
-                                                     const double x) noexcept {
-  // Algorithm 20 from Kopriva's book, p. 60
+DataVector compute_basis_function_values<Basis::Legendre>(
+    const size_t k, const DataVector& x) noexcept {
+  // Algorithm 20 in Kopriva, p. 60
   switch (k) {
     case 0:
-      return 1.;
+      return DataVector(x.size(), 1.);
     case 1:
       return x;
     default:
-      double L_k_minus_2 = 1.;
-      double L_k_minus_1 = x;
-      double L_k = std::numeric_limits<double>::signaling_NaN();
+      DataVector L_k_minus_2(x.size(), 1.);
+      DataVector L_k_minus_1 = x;
+      DataVector L_k(x.size());
       for (size_t j = 2; j <= k; j++) {
         L_k = ((2. * j - 1.) * x * L_k_minus_1 - (j - 1.) * L_k_minus_2) / j;
         L_k_minus_2 = L_k_minus_1;
@@ -42,6 +42,14 @@ double compute_basis_function_value<Basis::Legendre>(const size_t k,
       }
       return L_k;
   }
+}
+
+template <Basis>
+DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
+template <>
+DataVector compute_inverse_weight_function_values<Basis::Legendre>(
+    const DataVector& x) noexcept {
+  return DataVector(x.size(), 1.);
 }
 
 template <Basis>
@@ -60,7 +68,6 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
 // Algorithms to compute Legendre-Gauss quadrature
 
 namespace {
-
 struct LegendrePolynomialAndDerivative {
   LegendrePolynomialAndDerivative(size_t poly_degree, double x) noexcept;
   double L;
@@ -69,7 +76,7 @@ struct LegendrePolynomialAndDerivative {
 
 LegendrePolynomialAndDerivative::LegendrePolynomialAndDerivative(
     const size_t poly_degree, const double x) noexcept {
-  // Algorithm 22 from Kopriva's book, p. 63
+  // Algorithm 22 in Kopriva, p. 63
   // The cases where `poly_degree` is `0` or `1` are omitted because they are
   // never used.
   double L_N_minus_2 = 1.;
@@ -97,7 +104,7 @@ template <>
 std::pair<DataVector, DataVector>
 compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
     const size_t num_points) noexcept {
-  // Algorithm 23 from Kopriva's book, p.64
+  // Algorithm 23 in Kopriva, p.64
   ASSERT(num_points >= 1,
          "Legendre-Gauss quadrature requires at least one collocation point.");
   const size_t poly_degree = num_points - 1;
@@ -147,7 +154,6 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
 // Algorithms to compute Legendre-Gauss-Lobatto quadrature
 
 namespace {
-
 struct EvaluateQandL {
   EvaluateQandL(size_t poly_degree, double x) noexcept;
   double q;
@@ -157,7 +163,7 @@ struct EvaluateQandL {
 
 EvaluateQandL::EvaluateQandL(const size_t poly_degree,
                              const double x) noexcept {
-  // Algorithm 24 from Kopriva's book, p. 65
+  // Algorithm 24 in Kopriva, p. 65
   // Note: Book has errors in last 4 lines, corrected in errata on website
   // https://www.math.fsu.edu/~kopriva/publications/errata.pdf
   ASSERT(poly_degree >= 2, "Polynomial degree must be at least two.");
@@ -189,7 +195,7 @@ template <>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
     Basis::Legendre, Quadrature::GaussLobatto>(
     const size_t num_points) noexcept {
-  // Algorithm 25 from Kopriva's book, p. 66
+  // Algorithm 25 in Kopriva, p. 66
   ASSERT(num_points >= 2,
          "Legendre-Gauss-Lobatto quadrature requires at least two collocation "
          "points.");
