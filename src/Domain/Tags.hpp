@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Mesh.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
@@ -64,11 +65,22 @@ struct Extents : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// \brief The computational grid of the Element in the DataBox
+/// \details The corresponding interface tag uses Mesh::slice_through to compute
+/// the mesh on the face of the element.
+template <size_t VolumeDim>
+struct Mesh : db::SimpleTag {
+  static std::string name() noexcept { return "Mesh"; }
+  using type = ::Mesh<VolumeDim>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The logical coordinates in the Element
 template <size_t VolumeDim>
 struct LogicalCoordinates : db::ComputeTag {
   static std::string name() noexcept { return "LogicalCoordinates"; }
-  using argument_tags = tmpl::list<Tags::Extents<VolumeDim>>;
+  using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
   static constexpr auto function = logical_coordinates<VolumeDim>;
 };
 
@@ -362,6 +374,16 @@ struct InterfaceExtents : db::ComputeTag {
   using argument_tags = tmpl::list<Direction<VolumeDim>, Extents<VolumeDim>>;
   using volume_tags = tmpl::list<Extents<VolumeDim>>;
 };
+template <size_t VolumeDim>
+struct InterfaceMesh : db::ComputeTag {
+  static constexpr auto function(
+      const ::Direction<VolumeDim>& direction,
+      const ::Mesh<VolumeDim>& volume_mesh) noexcept {
+    return volume_mesh.slice_away(direction.dimension());
+  }
+  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
+  using volume_tags = tmpl::list<Mesh<VolumeDim>>;
+};
 }  // namespace detail
 
 /// \cond
@@ -369,6 +391,10 @@ template <typename DirectionsTag, size_t InterfaceDim>
 struct Interface<DirectionsTag, Extents<InterfaceDim>>
     : InterfaceBase<DirectionsTag, Extents<InterfaceDim>,
                     detail::InterfaceExtents<InterfaceDim + 1>> {};
+template <typename DirectionsTag, size_t InterfaceDim>
+struct Interface<DirectionsTag, Mesh<InterfaceDim>>
+    : InterfaceBase<DirectionsTag, Mesh<InterfaceDim>,
+                    detail::InterfaceMesh<InterfaceDim + 1>> {};
 /// \endcond
 }  // namespace Tags
 
