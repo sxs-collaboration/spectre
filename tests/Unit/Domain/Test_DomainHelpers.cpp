@@ -946,12 +946,12 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
   CHECK(std::array<size_t, 4>{{1, 4, 0, 3}} ==
         discrete_rotation(
             OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}),
+                {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}),
             std::array<size_t, 4>{{0, 1, 3, 4}}));
   CHECK(std::array<size_t, 4>{{4, 0, 5, 1}} ==
         discrete_rotation(
             OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}),
+                {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}),
             std::array<size_t, 4>{{0, 1, 4, 5}}));
   CHECK(std::array<size_t, 4>{{3, 1, 2, 0}} ==
         discrete_rotation(
@@ -962,20 +962,20 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
   CHECK(std::array<size_t, 8>{{9, 0, 12, 3, 10, 1, 13, 4}} ==
         discrete_rotation(
             OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::lower_zeta(), Direction<3>::upper_eta(),
-                 Direction<3>::upper_xi()}}),
+                {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
+                 Direction<3>::lower_xi()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
   CHECK(std::array<size_t, 8>{{10, 13, 9, 12, 1, 4, 0, 3}} ==
         discrete_rotation(
             OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
+                {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
                  Direction<3>::lower_zeta()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
   CHECK(std::array<size_t, 8>{{12, 3, 13, 4, 9, 0, 10, 1}} ==
         discrete_rotation(
             OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
-                 Direction<3>::lower_eta()}}),
+                {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+                 Direction<3>::lower_xi()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
 }
 
@@ -995,7 +995,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
       affine_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
-          {Index<1>{0}}, false);
+          {Index<1>{0}}, {}, false);
   const auto expected_affine_maps_1d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.7, 2.0});
@@ -1008,7 +1008,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
       equiangular_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
-          {Index<1>{1}}, true);
+          {Index<1>{1}}, {}, true);
   const auto expected_equiangular_maps_1d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Equiangular{-1., 1., 0.0, 0.5}, Equiangular{-1., 1., 1.7, 2.0});
@@ -1022,7 +1022,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
-          {Index<2>{}}, false);
+          {Index<2>{}}, {}, false);
   const auto expected_affine_maps_2d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0}},
@@ -1041,7 +1041,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
-          {Index<2>{2, 1}}, true);
+          {Index<2>{2, 1}}, {}, true);
   const auto expected_equiangular_maps_2d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Equiangular2D{Equiangular{-1., 1., 0.0, 0.5},
@@ -1064,7 +1064,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
-          {Index<3>{}}, false);
+          {Index<3>{}}, {}, false);
   const auto expected_affine_maps_3d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0},
@@ -1085,7 +1085,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
-          {Index<3>{0, 0, 0}}, true);
+          {Index<3>{0, 0, 0}}, {}, true);
   const auto expected_equiangular_maps_3d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Equiangular3D{Equiangular{-1., 1., 0.5, 2.0},

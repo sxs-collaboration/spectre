@@ -12,10 +12,6 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Side.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArray.hpp"
 
 /// \cond
 template <size_t VolumeDim, typename TargetFrame>

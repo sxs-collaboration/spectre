@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
@@ -24,6 +25,7 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -137,3 +139,135 @@ void test_1d_domains() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") { test_1d_domains(); }
+SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
+  SECTION("Aligned domain.") {
+    const auto domain = rectilinear_domain<1, Frame::Inertial>(
+        Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
+        {}, {}, {}, true);
+    const OrientationMap<1> aligned{};
+    std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
+        expected_block_neighbors{{{Direction<1>::upper_xi(), {1, aligned}}},
+                                 {{Direction<1>::lower_xi(), {0, aligned}},
+                                  {Direction<1>::upper_xi(), {2, aligned}}},
+                                 {{Direction<1>::lower_xi(), {1, aligned}}}};
+    const std::vector<std::unordered_set<Direction<1>>>
+        expected_external_boundaries{
+            {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
+    for (size_t i = 0; i < domain.blocks().size(); i++) {
+      INFO(i);
+      CHECK(domain.blocks()[i].external_boundaries() ==
+            expected_external_boundaries[i]);
+    }
+    for (size_t i = 0; i < domain.blocks().size(); i++) {
+      INFO(i);
+      CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
+    }
+  }
+  SECTION("Antialigned domain.") {
+    const OrientationMap<1> aligned{};
+    const OrientationMap<1> antialigned{
+        std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
+    const auto domain = rectilinear_domain<1, Frame::Inertial>(
+        Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
+        {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned}, {},
+        true);
+    std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
+        expected_block_neighbors{
+            {{Direction<1>::upper_xi(), {1, antialigned}}},
+            {{Direction<1>::lower_xi(), {2, antialigned}},
+             {Direction<1>::upper_xi(), {0, antialigned}}},
+            {{Direction<1>::lower_xi(), {1, antialigned}}}};
+    const std::vector<std::unordered_set<Direction<1>>>
+        expected_external_boundaries{
+            {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
+    for (size_t i = 0; i < domain.blocks().size(); i++) {
+      INFO(i);
+      CHECK(domain.blocks()[i].external_boundaries() ==
+            expected_external_boundaries[i]);
+    }
+    for (size_t i = 0; i < domain.blocks().size(); i++) {
+      INFO(i);
+      CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
+    }
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
+  const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
+      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
+  const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
+      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  auto orientations_of_all_blocks =
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+  orientations_of_all_blocks[1] = half_turn;
+  orientations_of_all_blocks[2] = quarter_turn_cw;
+  orientations_of_all_blocks[3] = quarter_turn_ccw;
+
+  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+      {}, orientations_of_all_blocks);
+  std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
+      expected_block_neighbors{
+          {{Direction<2>::upper_xi(), {1, half_turn}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, half_turn}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {3, half_turn}}},
+          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {2, half_turn}}}};
+  const std::vector<std::unordered_set<Direction<2>>>
+      expected_external_boundaries{
+          {{Direction<2>::lower_xi(), Direction<2>::lower_eta()}},
+          {{Direction<2>::upper_eta(), Direction<2>::lower_xi()}},
+          {{Direction<2>::lower_xi(), Direction<2>::lower_eta()}},
+          {{Direction<2>::upper_xi(), Direction<2>::lower_eta()}}};
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
+  const OrientationMap<3> aligned{};
+  const OrientationMap<3> quarter_turn_cw_xi{std::array<Direction<3>, 3>{
+      {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+       Direction<3>::lower_eta()}}};
+  auto orientations_of_all_blocks =
+      std::vector<OrientationMap<3>>{aligned, quarter_turn_cw_xi};
+
+  const auto domain = rectilinear_domain<3, Frame::Inertial>(
+      Index<3>{2, 1, 1},
+      std::array<std::vector<double>, 3>{
+          {{0.0, 1.0, 2.0}, {0.0, 1.0}, {0.0, 1.0}}},
+      {}, orientations_of_all_blocks);
+  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
+      expected_block_neighbors{
+          {{Direction<3>::upper_xi(), {1, quarter_turn_cw_xi}}},
+          {{Direction<3>::lower_xi(), {0, quarter_turn_cw_xi.inverse_map()}}}};
+  const std::vector<std::unordered_set<Direction<3>>>
+      expected_external_boundaries{
+          {{Direction<3>::lower_xi(), Direction<3>::lower_eta(),
+            Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+            Direction<3>::upper_zeta()}},
+          {{Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+            Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
+            Direction<3>::upper_zeta()}}};
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
+  }
+}
