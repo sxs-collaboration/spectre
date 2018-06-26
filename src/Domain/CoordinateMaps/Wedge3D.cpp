@@ -3,6 +3,7 @@
 
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 
+#include <boost/none.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -13,6 +14,7 @@
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -46,14 +48,14 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
          "The arguments passed into the constructor for Wedge3D result in an "
          "object where the "
          "outer surface is pierced by the inner surface.");
-  scaled_frustum_zero_ = 0.5 / sqrt(3.0) *
-                         ((1.0 - sphericity_outer_) * radius_outer +
-                          (1.0 - sphericity_inner) * radius_inner);
+  scaled_frustum_zero_ =
+      0.5 / sqrt(3.0) * ((1.0 - sphericity_outer_) * radius_outer +
+                         (1.0 - sphericity_inner) * radius_inner);
   sphere_zero_ = 0.5 * (sphericity_outer_ * radius_outer +
                         sphericity_inner * radius_inner);
-  scaled_frustum_rate_ = 0.5 / sqrt(3.0) *
-                         ((1.0 - sphericity_outer_) * radius_outer -
-                          (1.0 - sphericity_inner) * radius_inner);
+  scaled_frustum_rate_ =
+      0.5 / sqrt(3.0) * ((1.0 - sphericity_outer_) * radius_outer -
+                         (1.0 - sphericity_inner) * radius_inner);
   sphere_rate_ = 0.5 * (sphericity_outer_ * radius_outer -
                         sphericity_inner * radius_inner);
 }
@@ -98,31 +100,45 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::operator()(
   return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::inverse(
-    const std::array<T, 3>& target_coords) const noexcept {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
-  const std::array<ReturnType, 3> physical_coords =
+boost::optional<std::array<double, 3>> Wedge3D::inverse(
+    const std::array<double, 3>& target_coords) const noexcept {
+  const std::array<double, 3> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
-  const ReturnType& physical_x = physical_coords[0];
-  const ReturnType& physical_y = physical_coords[1];
-  const ReturnType& physical_z = physical_coords[2];
+  const double& physical_x = physical_coords[0];
+  const double& physical_y = physical_coords[1];
+  const double& physical_z = physical_coords[2];
 
-  const ReturnType cap_xi = physical_x / physical_z;
-  const ReturnType cap_eta = physical_y / physical_z;
-  const ReturnType one_over_rho =
+  if (physical_z < 0.0 or equal_within_roundoff(physical_z, 0.0)) {
+    return boost::none;
+  }
+
+  const double cap_xi = physical_x / physical_z;
+  const double cap_eta = physical_y / physical_z;
+  const double one_over_rho =
       1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
 
-  // Using auto keeps this as a blaze expression.
-  const auto zeta_coefficient =
+  const double zeta_coefficient =
       (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
+  // If -sphere_rate_/scaled_frustum_rate_ > 1, then
+  // there exists a cone in x,y,z space given by the surface
+  // zeta_coefficient=0; the map is singular on this surface.
+  // We return boost::none if we are on or outside this cone.
+  // If scaled_frustum_rate_ > 0, then outside the cone
+  // corresponds to zeta_coefficient > 0, and if scaled_frustum_rate_
+  // < 0, then outside the cone corresponds to zeta_coefficient < 0.
+  // We test in two cases, and avoid division.
+  if ((scaled_frustum_rate_ > 0.0 and scaled_frustum_rate_ < -sphere_rate_ and
+       zeta_coefficient > 0.0) or
+      (scaled_frustum_rate_ < 0.0 and scaled_frustum_rate_ > -sphere_rate_ and
+       zeta_coefficient < 0.0) or
+      equal_within_roundoff(zeta_coefficient, 0.0)) {
+    return boost::none;
+  }
   const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
-  ReturnType zeta = (physical_z - z_zero) / zeta_coefficient;
-  ReturnType xi =
-      with_equiangular_map_ ? atan(cap_xi) / M_PI_4 : std::move(cap_xi);
-  ReturnType eta =
-      with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : std::move(cap_eta);
+  double zeta = (physical_z - z_zero) / zeta_coefficient;
+  double xi = with_equiangular_map_ ? atan(cap_xi) / M_PI_4 : cap_xi;
+  double eta =
+      with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : cap_eta;
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi *= 2.0;
     xi -= 1.0;
@@ -130,8 +146,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::inverse(
     xi *= 2.0;
     xi += 1.0;
   }
-  return std::array<ReturnType, 3>{
-      {std::move(xi), std::move(eta), std::move(zeta)}};
+  return std::array<double, 3>{
+      {xi, eta, zeta}};
 }
 
 template <typename T>
@@ -333,9 +349,6 @@ bool operator!=(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
 #define INSTANTIATE(_, data)                                                  \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> Wedge3D::      \
   operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  Wedge3D::inverse(const std::array<DTYPE(data), 3>& target_coords)           \
-      const noexcept;                                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
   Wedge3D::jacobian(const std::array<DTYPE(data), 3>& source_coords)          \
       const noexcept;                                                         \

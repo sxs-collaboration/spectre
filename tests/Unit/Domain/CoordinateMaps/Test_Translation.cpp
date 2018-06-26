@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <string>
 #include <unordered_map>
@@ -47,15 +48,16 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
 
     CHECK_ITERABLE_APPROX(trans_map(point_xi, t, f_of_t_list),
                           point_xi + trans_x);
-    CHECK_ITERABLE_APPROX(trans_map.inverse(point_xi + trans_x, t, f_of_t_list),
-                          point_xi);
+    CHECK_ITERABLE_APPROX(
+        trans_map.inverse(point_xi + trans_x, t, f_of_t_list).get(), point_xi);
     CHECK_ITERABLE_APPROX(trans_map.frame_velocity(point_xi, t, f_of_t_list),
                           frame_vel);
 
     CHECK_ITERABLE_APPROX(trans_map_deserialized(point_xi, t, f_of_t_list),
                           point_xi + trans_x);
     CHECK_ITERABLE_APPROX(
-        trans_map_deserialized.inverse(point_xi + trans_x, t, f_of_t_list),
+        trans_map_deserialized.inverse(point_xi + trans_x, t, f_of_t_list)
+            .get(),
         point_xi);
     CHECK_ITERABLE_APPROX(trans_map_deserialized.frame_velocity(
                               point_xi + trans_x, t, f_of_t_list),

@@ -4,6 +4,7 @@
 #include "Domain/CoordinateMaps/Frustum.hpp"
 
 #include <algorithm>
+#include <boost/none.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -15,6 +16,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -93,29 +95,36 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
   return discrete_rotation(orientation_of_frustum_, std::move(physical_coords));
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::inverse(
-    const std::array<T, 3>& target_coords) const noexcept {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-
+boost::optional<std::array<double, 3>> Frustum::inverse(
+    const std::array<double, 3>& target_coords) const noexcept {
   // physical coords {x,y,z}
-  std::array<ReturnType, 3> coords =
+  std::array<double, 3> physical_coords =
       discrete_rotation(orientation_of_frustum_.inverse_map(), target_coords);
 
-  // We reuse `coords` to avoid an allocation. This is now the
   // logical coords {xi,eta,zeta}
-  coords[2] = (coords[2] - midpoint_z_) / half_length_z_;
-  coords[0] =
-      (2.0 * coords[0] - sum_midpoint_x_ - dif_midpoint_x_ * coords[2]) /
-      (sum_half_length_x_ + dif_half_length_x_ * coords[2]);
-  coords[1] =
-      (2.0 * coords[1] - sum_midpoint_y_ - dif_midpoint_y_ * coords[2]) /
-      (sum_half_length_y_ + dif_half_length_y_ * coords[2]);
-  if (with_equiangular_map_) {
-    coords[0] = atan(coords[0]) / M_PI_4;
-    coords[1] = atan(coords[1]) / M_PI_4;
+  std::array<double, 3> logical_coords{};
+  logical_coords[2] = (physical_coords[2] - midpoint_z_) / half_length_z_;
+  const auto denom0 =
+      sum_half_length_x_ + dif_half_length_x_ * logical_coords[2];
+  const auto denom1 =
+      sum_half_length_y_ + dif_half_length_y_ * logical_coords[2];
+  // denom0 and denom1 are always positive inside the frustum.
+  if (denom0 < 0.0 or equal_within_roundoff(denom0, 0.0) or denom1 < 0.0 or
+      equal_within_roundoff(denom1, 0.0)) {
+    return boost::none;
   }
-  return coords;
+
+  logical_coords[0] = (2.0 * physical_coords[0] - sum_midpoint_x_ -
+                       dif_midpoint_x_ * logical_coords[2]) /
+                      denom0;
+  logical_coords[1] = (2.0 * physical_coords[1] - sum_midpoint_y_ -
+                       dif_midpoint_y_ * logical_coords[2]) /
+                      denom1;
+  if (with_equiangular_map_) {
+    logical_coords[0] = atan(logical_coords[0]) / M_PI_4;
+    logical_coords[1] = atan(logical_coords[1]) / M_PI_4;
+  }
+  return logical_coords;
 }
 
 template <typename T>
@@ -225,9 +234,6 @@ bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept {
 #define INSTANTIATE(_, data)                                                  \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> Frustum::      \
   operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  Frustum::inverse(const std::array<DTYPE(data), 3>& target_coords)           \
-      const noexcept;                                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
   Frustum::jacobian(const std::array<DTYPE(data), 3>& source_coords)          \
       const noexcept;                                                         \
@@ -238,7 +244,6 @@ bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept {
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,
                                       std::reference_wrapper<const DataVector>))
-
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond

@@ -4,7 +4,7 @@
 #include "Domain/CoordinateMaps/CubicScale.hpp"
 
 #include <array>
-#include <functional>
+#include <boost/none.hpp>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
@@ -23,7 +23,11 @@
 namespace CoordMapsTimeDependent {
 
 CubicScale::CubicScale(const double outer_boundary) noexcept
-    : outer_boundary_(outer_boundary) {}
+    : outer_boundary_(outer_boundary) {
+  if (outer_boundary_ <= 0.0) {
+    ERROR("For invertability, we require outer_boundary to be positive.\n");
+  }
+}
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::operator()(
@@ -38,7 +42,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::operator()(
 }
 
 template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::inverse(
+boost::optional<std::array<tt::remove_cvref_wrap_t<T>, 1>> CubicScale::inverse(
     const std::array<T, 1>& target_coords, const double time,
     const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
     noexcept {
@@ -54,14 +58,20 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::inverse(
     ERROR("We require expansion_a > 0 for invertibility, however expansion_a = "
           << a_of_t << ".");
   }
-  if (b_of_t < 2.0 / 3.0 * a_of_t) {
-    ERROR("The map is only invertible if expansion_b < expansion_a*2/3, however"
-          << " expansion_b = " << b_of_t << " and expansion_a = " << a_of_t
-          << " does not satisfy this criterion.");
+  if (b_of_t < 2.0 / 3.0 * a_of_t or b_of_t <= 0.0) {
+    ERROR("The map is invertible only if 0 < expansion_b < expansion_a*2/3, "
+          << " but expansion_b = " << b_of_t << " and expansion_a = " << a_of_t
+          << ".");
   }
 
   // Make the coordinates dimensionless
   const tt::remove_cvref_wrap_t<T> x_bar = target_coords[0] / outer_boundary_;
+
+  // Check if x_bar is outside of the range of the map
+  if (x_bar < 0.0 or x_bar > b_of_t) {
+    return boost::none;
+  }
+
   // with the assumptions above:
   // x_bar lies within the range [0,b]
   // and \xi_bar = \xi/X is restricted to the domain [0,1]
@@ -89,35 +99,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::inverse(
   // additional checks for zero derivative, checks on bounds, and can implement
   // bisection if necessary.
   return {
-      {outer_boundary_ * RootFinder::newton_raphson(
-                             cubic_and_deriv, initial_guess, 0.0, 1.0, 14)}};
-}
-
-template <>
-std::array<tt::remove_cvref_wrap_t<DataVector>, 1> CubicScale::inverse(
-    const std::array<DataVector, 1>& target_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
-    noexcept {
-  DataVector solutions{target_coords[0]};
-  for (auto& solution : solutions) {
-    solution = inverse<double>({{solution}}, time, map_list)[0];
-  }
-  return {{solutions}};
-}
-
-template <>
-std::array<tt::remove_cvref_wrap_t<std::reference_wrapper<const DataVector>>, 1>
-CubicScale::inverse(
-    const std::array<std::reference_wrapper<const DataVector>, 1>&
-        target_coords,
-    const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
-    noexcept {
-  DataVector solutions{target_coords[0]};
-  for (auto& solution : solutions) {
-    solution = inverse<double>({{solution}}, time, map_list)[0];
-  }
-  return {{solutions}};
+      {{outer_boundary_ * RootFinder::newton_raphson(
+                              cubic_and_deriv, initial_guess, 0.0, 1.0, 14)}}};
 }
 
 template <typename T>
@@ -214,12 +197,13 @@ bool operator==(const CoordMapsTimeDependent::CubicScale& lhs,
 
 // Explicit instantiations
 /// \cond
-template std::array<tt::remove_cvref_wrap_t<double>, 1> CubicScale::inverse(
+template boost::optional<std::array<tt::remove_cvref_wrap_t<double>, 1>>
+CubicScale::inverse(
     const std::array<double, 1>& target_coords, const double time,
     const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
     noexcept;
-template std::array<
-    tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>, 1>
+template boost::optional<std::array<
+    tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>, 1>>
 CubicScale::inverse(
     const std::array<std::reference_wrapper<const double>, 1>& target_coords,
     const double time,

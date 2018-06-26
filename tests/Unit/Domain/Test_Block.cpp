@@ -47,7 +47,7 @@ void test_block() {
   const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
   const tnsr::I<double, Dim, Frame::Grid> x(1.0);
   CHECK(map(xi) == x);
-  CHECK(map.inverse(x) == xi);
+  CHECK(map.inverse(x).get() == xi);
 
   // Test PUP
   test_serialization(block);

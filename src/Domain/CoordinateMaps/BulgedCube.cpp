@@ -3,32 +3,30 @@
 
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
 
+#include <boost/none.hpp>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <exception>
 #include <functional>  // for std::reference_wrapper
 #include <limits>
-#include <ostream>
 #include <pup.h>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace {
-template <typename DType>
 class RootFunction {
  public:
   RootFunction(const double radius, const double sphericity,
-               const DType& physical_r_squared, const DType& x_sq,
-               const DType& y_sq, const DType& z_sq) noexcept
+               const double physical_r_squared, const double x_sq,
+               const double y_sq, const double z_sq) noexcept
       : radius_(radius),
         sphericity_(sphericity),
         physical_r_squared_(physical_r_squared),
@@ -36,24 +34,24 @@ class RootFunction {
         y_sq_(y_sq),
         z_sq_(z_sq) {}
 
-  double operator()(const double rho, const size_t i = 0) const noexcept {
-    if (not(equal_within_roundoff(get_element(physical_r_squared_, i), 0.0))) {
-      const double x_sq_over_r_sq =
-          get_element(x_sq_, i) / get_element(physical_r_squared_, i);
-      const double y_sq_over_r_sq =
-          get_element(y_sq_, i) / get_element(physical_r_squared_, i);
-      const double z_sq_over_r_sq =
-          get_element(z_sq_, i) / get_element(physical_r_squared_, i);
-      return sqrt(get_element(physical_r_squared_, i)) -
+  double operator()(const double rho) const noexcept {
+    if (LIKELY(physical_r_squared_ != 0.0)) {
+      const double x_sq_over_r_sq = x_sq_ / physical_r_squared_;
+      const double y_sq_over_r_sq = y_sq_ / physical_r_squared_;
+      const double z_sq_over_r_sq = z_sq_ / physical_r_squared_;
+      return sqrt(physical_r_squared_) -
              radius_ * rho *
                  (1.0 / sqrt(3.0) +
                   sphericity_ *
-                      (1.0 / sqrt(1.0 + square(rho) *
-                                            (x_sq_over_r_sq + y_sq_over_r_sq)) +
-                       1.0 / sqrt(1.0 + square(rho) *
-                                            (x_sq_over_r_sq + z_sq_over_r_sq)) +
-                       1.0 / sqrt(1.0 + square(rho) *
-                                            (y_sq_over_r_sq + z_sq_over_r_sq)) -
+                      (1.0 / sqrt(1.0 +
+                                  square(rho) *
+                                      (x_sq_over_r_sq + y_sq_over_r_sq)) +
+                       1.0 / sqrt(1.0 +
+                                  square(rho) *
+                                      (x_sq_over_r_sq + z_sq_over_r_sq)) +
+                       1.0 / sqrt(1.0 +
+                                  square(rho) *
+                                      (y_sq_over_r_sq + z_sq_over_r_sq)) -
                        1.0 / sqrt(2.0 + square(rho) * x_sq_over_r_sq) -
                        1.0 / sqrt(2.0 + square(rho) * y_sq_over_r_sq) -
                        1.0 / sqrt(2.0 + square(rho) * z_sq_over_r_sq)));
@@ -61,39 +59,37 @@ class RootFunction {
       return 0.0;
     }
   }
-  const DType& get_x_sq() noexcept { return x_sq_; }
-  const DType& get_r_sq() noexcept { return physical_r_squared_; }
+  const double& get_r_sq() noexcept { return physical_r_squared_; }
 
  private:
   const double radius_;
   const double sphericity_;
-  const DType& physical_r_squared_;
-  const DType& x_sq_;
-  const DType& y_sq_;
-  const DType& z_sq_;
+  const double physical_r_squared_;
+  const double x_sq_;
+  const double y_sq_;
+  const double z_sq_;
 };
 
-template <typename DType>
-DType scaling_factor(RootFunction<DType>&& rootfunction) noexcept {
-  const DType& x_sq = rootfunction.get_x_sq();
-  const DType& physical_r_squared = rootfunction.get_r_sq();
+boost::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
+  const double& physical_r_squared = rootfunction.get_r_sq();
   try {
     const double tol = 10.0 * std::numeric_limits<double>::epsilon();
-    // NOLINTNEXTLINE(clang-analyzer-core)
-    DType rho = RootFinder::toms748(
-        rootfunction, make_with_value<DType>(x_sq, 0.0),
-        make_with_value<DType>(x_sq, sqrt(3.0) + tol), tol, tol);
-    for (size_t i = 0; i < get_size(rho); i++) {
-      if (not(equal_within_roundoff(get_element(physical_r_squared, i), 0.0))) {
-        get_element(rho, i) /= sqrt(get_element(physical_r_squared, i));
-      } else {
-        ASSERT(equal_within_roundoff(get_element(rho, i), 0.0),
-               "r == 0 must imply rho == 0. This has failed.");
-      }
+    double rho =
+        // NOLINTNEXTLINE(clang-analyzer-core)
+        RootFinder::toms748(rootfunction, 0.0, sqrt(3.0) + tol, tol, tol);
+    if (LIKELY(physical_r_squared != 0.0)) {
+      rho /= sqrt(physical_r_squared);
     }
+    // There is no 'else' covering the case physical_r_squared==0.
+    // This is because for physical_r_squared==0, we know that we
+    // are at the origin x=y=z=0, and we know analytically that this
+    // map maps the origin to itself.  In the inverse map function,
+    // rho appears only in the combination rho*(x,y,z), so we don't
+    // care what we return for rho because x,y,z are zero.  So we
+    // don't touch rho here for the case physical_r_squared==0.
     return rho;
   } catch (std::exception& exception) {
-    ERROR("Error in BulgedCube root find:" << exception.what());
+    return boost::none;
   }
 }
 }  // namespace
@@ -149,38 +145,39 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
                               dereference_wrapper(source_coords[2]));
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::inverse(
-    const std::array<T, 3>& target_coords) const noexcept {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType& physical_x = target_coords[0];
-  const ReturnType& physical_y = target_coords[1];
-  const ReturnType& physical_z = target_coords[2];
-  const ReturnType x_sq = square(physical_x);
-  const ReturnType y_sq = square(physical_y);
-  const ReturnType z_sq = square(physical_z);
-  const ReturnType physical_r_squared = x_sq + y_sq + z_sq;
+boost::optional<std::array<double, 3>> BulgedCube::inverse(
+    const std::array<double, 3>& target_coords) const noexcept {
+  const double& physical_x = target_coords[0];
+  const double& physical_y = target_coords[1];
+  const double& physical_z = target_coords[2];
+  const double x_sq = square(physical_x);
+  const double y_sq = square(physical_y);
+  const double z_sq = square(physical_z);
+  const double physical_r_squared = x_sq + y_sq + z_sq;
   const auto scaling_factor =
       // NOLINTNEXTLINE(clang-analyzer-core)
-      ::scaling_factor<ReturnType>(RootFunction<ReturnType>{
-          radius_, sphericity_, physical_r_squared, x_sq, y_sq, z_sq});
-  if (use_equiangular_map_) {
-    return {{2.0 * M_2_PI * atan(physical_x * scaling_factor),
-             2.0 * M_2_PI * atan(physical_y * scaling_factor),
-             2.0 * M_2_PI * atan(physical_z * scaling_factor)}};
+      ::scaling_factor(
+      RootFunction{radius_, sphericity_, physical_r_squared, x_sq, y_sq, z_sq});
+  if (not scaling_factor) {
+    return boost::none;
   }
-  return {{physical_x * scaling_factor, physical_y * scaling_factor,
-           physical_z * scaling_factor}};
+  if (use_equiangular_map_) {
+    return {{{2.0 * M_2_PI * atan(physical_x * scaling_factor.get()),
+              2.0 * M_2_PI * atan(physical_y * scaling_factor.get()),
+              2.0 * M_2_PI * atan(physical_z * scaling_factor.get())}}};
+  }
+  return {
+      {{physical_x * scaling_factor.get(), physical_y * scaling_factor.get(),
+        physical_z * scaling_factor.get()}}};
 }
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::xi_derivative(
     const std::array<T, 3>& source_coords) const noexcept {
   using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const auto derivative_lambda = [this](const ReturnType& cap_xi,
-                                        const ReturnType& cap_eta,
-                                        const ReturnType& cap_zeta,
-                                        const auto& cap_xi_deriv) {
+  const auto derivative_lambda = [this](
+      const ReturnType& cap_xi, const ReturnType& cap_eta,
+      const ReturnType& cap_zeta, const auto& cap_xi_deriv) {
     const ReturnType one_over_rho_xi_cubed =
         pow<3>(1.0 / sqrt(2.0 + square(cap_xi)));
     const ReturnType one_over_rho_eta = 1.0 / sqrt(2.0 + square(cap_eta));
@@ -282,9 +279,6 @@ bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {
 #define INSTANTIATE(_, data)                                                  \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> BulgedCube::   \
   operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                \
-  BulgedCube::inverse(const std::array<DTYPE(data), 3>& target_coords)        \
-      const noexcept;                                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>  \
   BulgedCube::jacobian(const std::array<DTYPE(data), 3>& source_coords)       \
       const noexcept;                                                         \

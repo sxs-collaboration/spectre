@@ -26,10 +26,9 @@ operator()(const std::array<T, VolumeDim>& source_coords) const noexcept {
 }
 
 template <size_t VolumeDim>
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, VolumeDim>
+boost::optional<std::array<double, VolumeDim>>
 DiscreteRotation<VolumeDim>::inverse(
-    const std::array<T, VolumeDim>& target_coords) const noexcept {
+    const std::array<double, VolumeDim>& target_coords) const noexcept {
   return discrete_rotation(orientation_.inverse_map(), target_coords);
 }
 
@@ -85,9 +84,6 @@ template class DiscreteRotation<3>;
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
   DiscreteRotation<DIM(data)>::operator()(                                     \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  DiscreteRotation<DIM(data)>::inverse(                                        \
-      const std::array<DTYPE(data), DIM(data)>& target_coords) const noexcept; \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
                     Frame::NoFrame>                                            \
   DiscreteRotation<DIM(data)>::jacobian(                                       \

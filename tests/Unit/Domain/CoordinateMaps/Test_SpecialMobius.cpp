@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional/optional.hpp>
 #include <cmath>
 #include <random>
 
@@ -26,7 +27,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Suite",
   const double mu = mu_dis(gen);
   CAPTURE_PRECISE(mu);
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
-  test_suite_for_map_on_unit_cube(special_mobius_map);
+  test_suite_for_map_on_sphere(special_mobius_map);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",
@@ -79,6 +80,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",
   // The points (1,0,0) and (-1,0,0) are fixed points:
   CHECK_ITERABLE_APPROX((plus_one), (special_mobius_map(plus_one)));
   CHECK_ITERABLE_APPROX((minus_one), (special_mobius_map(minus_one)));
+
+  // Point at which the map is singular.
+  // Since |mu|<1, this point also has x outside [-1,1].
+  const std::array<double, 3> bad_point{{-1.0 / mu, 0.0, 0.0}};
+  CHECK_FALSE(static_cast<bool>(special_mobius_map.inverse(bad_point)));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.LargeMu",
@@ -89,7 +95,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.LargeMu",
   const std::array<double, 3> input_point{{0.0, 0.6, 0.8}};
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
   const auto result_point = special_mobius_map(input_point);
-  const auto expected_input_point = special_mobius_map.inverse(result_point);
+  const auto expected_input_point =
+      special_mobius_map.inverse(result_point).get();
   const auto& result_y = result_point[1];
   const auto& result_z = result_point[2];
   // The SpecialMobius map should map the unit sphere to itself:

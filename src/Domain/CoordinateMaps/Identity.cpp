@@ -18,10 +18,9 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Identity<Dim>::operator()(
 }
 
 template <size_t Dim>
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, Dim> Identity<Dim>::inverse(
-    const std::array<T, Dim>& target_coords) const noexcept {
-  return make_array<tt::remove_cvref_wrap_t<T>, Dim>(target_coords);
+boost::optional<std::array<double, Dim>> Identity<Dim>::inverse(
+    const std::array<double, Dim>& target_coords) const noexcept {
+  return make_array<double, Dim>(target_coords);
 }
 
 template <size_t Dim>
@@ -53,9 +52,6 @@ template class Identity<3>;
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
   Identity<DIM(data)>::operator()(                                             \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  Identity<DIM(data)>::inverse(                                                \
-      const std::array<DTYPE(data), DIM(data)>& target_coords) const noexcept; \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
                     Frame::NoFrame>                                            \
   Identity<DIM(data)>::jacobian(                                               \

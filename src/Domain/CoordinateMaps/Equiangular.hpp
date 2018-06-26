@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <cstddef>
 
@@ -63,9 +64,8 @@ class Equiangular {
   std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
       const std::array<T, 1>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 1> inverse(
-      const std::array<T, 1>& target_coords) const noexcept;
+  boost::optional<std::array<double, 1>> inverse(
+      const std::array<double, 1>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> jacobian(
@@ -87,7 +87,7 @@ class Equiangular {
   double a_{-1.0};
   double b_{1.0};
   double length_of_domain_over_m_pi_4_{(B_ - A_) / M_PI_4};  // 4(B-A)/\pi
-  double length_of_range_{2.0};                             // b-a
+  double length_of_range_{2.0};                              // b-a
   double m_pi_4_over_length_of_domain_{M_PI_4 / (B_ - A_)};
   double one_over_length_of_range_{0.5};
   // The jacobian for the affine map with the same parameters.

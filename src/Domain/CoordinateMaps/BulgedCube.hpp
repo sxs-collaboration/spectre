@@ -6,6 +6,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -473,9 +474,8 @@ class BulgedCube {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
-      const std::array<T, 3>& target_coords) const noexcept;
+  boost::optional<std::array<double, 3>> inverse(
+      const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(

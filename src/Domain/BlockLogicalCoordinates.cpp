@@ -40,7 +40,12 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
     // the smallest block_id).
     bool found_block = false;
     for (const auto& block : domain.blocks()) {
-      x_logical = block.coordinate_map().inverse(x_frame);
+      const auto inv = block.coordinate_map().inverse(x_frame);
+      if(inv) {
+        x_logical = inv.get();
+      } else {
+        continue; // Not in this block
+      }
       bool is_contained = true;
       for (size_t d = 0; d < Dim; ++d) {
         // Assumes that logical coordinates go from -1 to +1 in each

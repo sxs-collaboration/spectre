@@ -3,7 +3,7 @@
 
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 
-#include <cmath>
+#include <cmath>  // IWYU pragma: keep
 #include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -37,12 +37,21 @@ EquatorialCompression::angular_distortion(const std::array<T, 3>& coords,
       sqrt(square(x) + square(y) + square(inverse_alpha * z));
   ReturnType radius_over_rho = sqrt(square(x) + square(y) + square(z));
   for (size_t i = 0; i < get_size(rho); i++) {
-    if (LIKELY(not equal_within_roundoff(get_element(rho, i), 0.0))) {
+    if (LIKELY(get_element(rho, i) != 0.0)) {
       get_element(radius_over_rho, i) /= get_element(rho, i);
-    } else {
-      ASSERT(equal_within_roundoff(get_element(radius_over_rho, i), 0.0),
-             "r == 0 must imply rho == 0. This has failed.");
     }
+    // There is no 'else' covering the case rho==0.  The only way that
+    // rho can be zero is if x=y=z=0 (because inverse_alpha is
+    // nonzero).  So in that case, what value do we choose for radius_over_rho?
+    // Note that radius_over_rho^2 = (x^2+y^2+z^2)/(x^2+y^2+inverse_alpha^2 z^2)
+    // does not tend to a limit at the origin. (The limit is
+    // 1/inverse_alpha^2 if you approach the origin along the z axis;
+    // the limit is 1 if you approach the origin along any path in the
+    // xy plane).  But all is ok: notice that radius_over_rho is
+    // finite at the origin, and notice that the value returned by this
+    // function is multiplied by (x,y,z) below so it will be zero at the
+    // origin. Therefore we just leave radius_over_rho unchanged (with
+    // a value of zero) in the case rho==0.
   }
   return std::array<ReturnType, 3>{{radius_over_rho * x, radius_over_rho * y,
                                     inverse_alpha * radius_over_rho * z}};
@@ -115,9 +124,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> EquatorialCompression::operator()(
   return angular_distortion(source_coords, inverse_aspect_ratio_);
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> EquatorialCompression::inverse(
-    const std::array<T, 3>& target_coords) const noexcept {
+boost::optional<std::array<double, 3>> EquatorialCompression::inverse(
+    const std::array<double, 3>& target_coords) const noexcept {
   return angular_distortion(target_coords, aspect_ratio_);
 }
 
@@ -159,9 +167,6 @@ bool operator!=(const EquatorialCompression& lhs,
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
   EquatorialCompression::operator()(                                         \
       const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>               \
-  EquatorialCompression::inverse(                                            \
-      const std::array<DTYPE(data), 3>& target_coords) const noexcept;       \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame> \
   EquatorialCompression::jacobian(                                           \
       const std::array<DTYPE(data), 3>& source_coords) const noexcept;       \
@@ -172,7 +177,6 @@ bool operator!=(const EquatorialCompression& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,
                                       std::reference_wrapper<const DataVector>))
-
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond

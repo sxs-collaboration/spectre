@@ -172,8 +172,8 @@ void test_coordinate_map_argument_types(
     const Args&... args) {
   const auto make_array_data_vector = [](const auto& double_array) noexcept {
     std::array<DataVector, Map::dim> result;
-    std::transform(double_array.begin(), double_array.end(), result.begin(),
-                   [](const double x) noexcept {
+    std::transform(double_array.begin(), double_array.end(),
+                   result.begin(), [](const double x) noexcept {
                      return DataVector{x, x};
                    });
     return result;
@@ -193,17 +193,6 @@ void test_coordinate_map_argument_types(
     CHECK_ITERABLE_APPROX(
         map(add_reference_wrapper(make_array_data_vector(test_point)), args...),
         make_array_data_vector(mapped_point));
-
-    const auto expected = map.inverse(mapped_point, args...);
-    CHECK_ITERABLE_APPROX(
-        map.inverse(add_reference_wrapper(mapped_point), args...), expected);
-    CHECK_ITERABLE_APPROX(
-        map.inverse(make_array_data_vector(mapped_point), args...),
-        make_array_data_vector(expected));
-    CHECK_ITERABLE_APPROX(
-        map.inverse(add_reference_wrapper(make_array_data_vector(mapped_point)),
-                    args...),
-        make_array_data_vector(expected));
   }
 
   // Here, time_args is a const auto& not const Args& because time_args
@@ -287,7 +276,7 @@ void test_coordinate_map_argument_types(
 template <typename Map, typename T>
 void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) {
-  CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)));
+  CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).get());
 }
 
 /*!

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -43,9 +44,8 @@ class DiscreteRotation {
   std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> operator()(
       const std::array<T, VolumeDim>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> inverse(
-      const std::array<T, VolumeDim>& target_coords) const noexcept;
+  boost::optional<std::array<double, VolumeDim>> inverse(
+      const std::array<double, VolumeDim>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, VolumeDim, Frame::NoFrame> jacobian(

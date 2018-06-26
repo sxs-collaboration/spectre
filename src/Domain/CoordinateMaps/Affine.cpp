@@ -30,11 +30,10 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::operator()(
            length_of_domain_}};
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::inverse(
-    const std::array<T, 1>& target_coords) const noexcept {
-  return {{(length_of_domain_ * target_coords[0] - a_ * B_ + b_ * A_) /
-           length_of_range_}};
+boost::optional<std::array<double, 1>> Affine::inverse(
+    const std::array<double, 1>& target_coords) const noexcept {
+  return {{{(length_of_domain_ * target_coords[0] - a_ * B_ + b_ * A_) /
+            length_of_range_}}};
 }
 
 template <typename T>
@@ -80,9 +79,6 @@ bool operator==(const CoordinateMaps::Affine& lhs,
 #define INSTANTIATE(_, data)                                                  \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> Affine::       \
   operator()(const std::array<DTYPE(data), 1>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                \
-  Affine::inverse(const std::array<DTYPE(data), 1>& target_coords)            \
-      const noexcept;                                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
   Affine::jacobian(const std::array<DTYPE(data), 1>& source_coords)           \
       const noexcept;                                                         \
@@ -93,7 +89,6 @@ bool operator==(const CoordinateMaps::Affine& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,
                                       std::reference_wrapper<const DataVector>))
-
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond

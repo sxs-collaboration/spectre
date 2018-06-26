@@ -4,17 +4,57 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+namespace {
+void test_product_two_maps_fail() {
+  const CoordinateMaps::Affine affine(-1.0, 1.0, 3.0, 4.0);
+  const CoordinateMaps::Wedge2D wedge(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{},
+                                      true);
+  {
+    const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                         CoordinateMaps::Wedge2D>
+        map(affine, wedge);
+    // Should fail wedge map
+    const std::array<double, 3> mapped_point1{{3.5, -1.0, -1.0}};
+
+    // Should be ok
+    const std::array<double, 3> mapped_point2{{3.5, 3.0, -1.0}};
+
+    CHECK_FALSE(static_cast<bool>(map.inverse(mapped_point1)));
+    CHECK(static_cast<bool>(map.inverse(mapped_point2)));
+    CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).get()), mapped_point2);
+  }
+
+  {
+    const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge2D,
+                                         CoordinateMaps::Affine>
+        map(wedge, affine);
+    // Should fail wedge map
+    const std::array<double, 3> mapped_point1{{-1.0, -1.0, 3.5}};
+
+    // Should be ok
+    const std::array<double, 3> mapped_point2{{3.0, -1.0, 3.5}};
+
+    CHECK_FALSE(static_cast<bool>(map.inverse(mapped_point1)));
+    CHECK(static_cast<bool>(map.inverse(mapped_point2)));
+    CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).get()), mapped_point2);
+  }
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
                   "[Domain][Unit]") {
@@ -52,9 +92,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
   CHECK(affine_map_xy(point_B) == point_b);
   CHECK(affine_map_xy(point_xi) == point_x);
 
-  CHECK(affine_map_xy.inverse(point_a) == point_A);
-  CHECK(affine_map_xy.inverse(point_b) == point_B);
-  CHECK(affine_map_xy.inverse(point_x) == point_xi);
+  CHECK(affine_map_xy.inverse(point_a).get() == point_A);
+  CHECK(affine_map_xy.inverse(point_b).get() == point_B);
+  CHECK(affine_map_xy.inverse(point_x).get() == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
   const double inv_jacobian_11 = (yB - yA) / (yb - ya);
@@ -130,6 +170,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
   test_serialization(affine_map_xy);
 
   test_coordinate_map_argument_types(affine_map_xy, point_xi);
+  test_product_two_maps_fail();
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
@@ -178,9 +219,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   CHECK(affine_map_xyz(point_B) == point_b);
   CHECK(affine_map_xyz(point_xi) == point_x);
 
-  CHECK(affine_map_xyz.inverse(point_a) == point_A);
-  CHECK(affine_map_xyz.inverse(point_b) == point_B);
-  CHECK(affine_map_xyz.inverse(point_x) == point_xi);
+  CHECK(affine_map_xyz.inverse(point_a).get() == point_A);
+  CHECK(affine_map_xyz.inverse(point_b).get() == point_B);
+  CHECK(affine_map_xyz.inverse(point_x).get() == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
   const double inv_jacobian_11 = (yB - yA) / (yb - ya);

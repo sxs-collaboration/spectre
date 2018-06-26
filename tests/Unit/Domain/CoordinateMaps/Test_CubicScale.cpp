@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <string>
 #include <unordered_map>
@@ -18,6 +19,41 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+namespace {
+// We will call with this function with arguments that are designed
+// to fail in a certain way.
+void cubic_scale_non_invertible(const double a0, const double b0,
+                                const double outer_boundary) noexcept {
+  double t = 4.0;
+  constexpr size_t deriv_order = 2;
+
+  const std::array<DataVector, deriv_order + 1> init_func_a{
+      {{a0}, {0.0}, {0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(t, init_func_a);
+  FunctionOfTime& expansion_a_base = expansion_a;
+
+  const std::array<DataVector, deriv_order + 1> init_func_b{
+      {{b0}, {0.0}, {0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(t, init_func_b);
+  FunctionOfTime& expansions_b_base = expansion_b;
+
+  const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
+      {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
+
+  const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
+  const std::array<double, 1> point_xi{{19.2}};
+
+  const std::array<double, 1> mapped_point{
+      {point_xi[0] *
+       (expansion_a_base.func(t)[0][0] +
+        (expansions_b_base.func(t)[0][0] - expansion_a_base.func(t)[0][0]) *
+            square(point_xi[0] / outer_boundary))}};
+
+  // this call should fail.
+  scale_map.inverse(mapped_point, t, f_of_t_list);
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
                   "[Domain][Unit]") {
@@ -56,13 +92,20 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
           {point_xi[0] * (a + (b - a) * square(point_xi[0] / outer_boundary))}};
 
       CHECK_ITERABLE_APPROX(scale_map(point_xi, t, f_of_t_list), mapped_point);
-      CHECK_ITERABLE_APPROX(scale_map.inverse(mapped_point, t, f_of_t_list),
-                            point_xi);
+      CHECK_ITERABLE_APPROX(
+          scale_map.inverse(mapped_point, t, f_of_t_list).get(), point_xi);
       CHECK_ITERABLE_APPROX(scale_map_deserialized(point_xi, t, f_of_t_list),
                             mapped_point);
       CHECK_ITERABLE_APPROX(
-          scale_map_deserialized.inverse(mapped_point, t, f_of_t_list),
+          scale_map_deserialized.inverse(mapped_point, t, f_of_t_list).get(),
           point_xi);
+
+      // Check that inverse map returns invalid for mapped point outside
+      // the outer boundary and inside the inner boundary.
+      const std::array<double, 1> bad_mapped_point_1{{1.1 * outer_boundary}};
+      const std::array<double, 1> bad_mapped_point_2{{-0.1 * outer_boundary}};
+      CHECK(not scale_map.inverse(bad_mapped_point_1, t, f_of_t_list));
+      CHECK(not scale_map.inverse(bad_mapped_point_2, t, f_of_t_list));
 
       const double jacobian =
           a + 3.0 * (b - a) * square(point_xi[0] / outer_boundary);
@@ -181,8 +224,8 @@ SPECTRE_TEST_CASE(
           {point_xi[0] * (a + (b - a) * square(point_xi[0] / outer_boundary))}};
 
       CHECK_ITERABLE_APPROX(scale_map(point_xi, t, f_of_t_list), mapped_point);
-      CHECK_ITERABLE_APPROX(scale_map.inverse(mapped_point, t, f_of_t_list),
-                            point_xi);
+      CHECK_ITERABLE_APPROX(
+          scale_map.inverse(mapped_point, t, f_of_t_list).get(), point_xi);
       t += dt;
     }
   };
@@ -192,41 +235,14 @@ SPECTRE_TEST_CASE(
   run_tests(20.0);
 }
 
-// [[OutputRegex, The map is only invertible if expansion_b < expansion_a\*2/3]]
+// [[OutputRegex, The map is invertible only if 0 < expansion_b <
+// expansion_a\*2/3]]
 SPECTRE_TEST_CASE(
     "Unit.Domain.CoordMapsTimeDependent.CubicScale.NonInvertible1",
     "[Domain][Unit]") {
   ERROR_TEST();
   // the two expansion factors are chosen such that the map is non-invertible
-  double t = 4.0;
-  constexpr size_t deriv_order = 2;
-
-  const std::array<DataVector, deriv_order + 1> init_func_a{
-      {{0.96}, {0.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(t, init_func_a);
-  FunctionOfTime& expansion_a_base = expansion_a;
-
-  const std::array<DataVector, deriv_order + 1> init_func_b{
-      {{0.58}, {0.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(t, init_func_b);
-  FunctionOfTime& expansions_b_base = expansion_b;
-
-  const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
-      {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
-
-  const double outer_boundary = 20.0;
-  const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
-  const std::array<double, 1> point_xi{{19.2}};
-
-  const std::array<double, 1> mapped_point{
-      {point_xi[0] *
-       (expansion_a_base.func(t)[0][0] +
-        (expansions_b_base.func(t)[0][0] - expansion_a_base.func(t)[0][0]) *
-            square(point_xi[0] / outer_boundary))}};
-
-  // this call should fail since this specific choice of expansion factors makes
-  // the map non-invertible
-  scale_map.inverse(mapped_point, t, f_of_t_list);
+  cubic_scale_non_invertible(0.96, 0.58, 20.0);
 }
 
 // [[OutputRegex, We require expansion_a > 0 for invertibility]]
@@ -234,32 +250,24 @@ SPECTRE_TEST_CASE(
     "Unit.Domain.CoordMapsTimeDependent.CubicScale.NonInvertible2",
     "[Domain][Unit]") {
   ERROR_TEST();
-  double t = 4.0;
-  constexpr size_t deriv_order = 2;
+  // Make a<0
+  cubic_scale_non_invertible(-0.0001, 1.0, 20.0);
+}
 
-  const std::array<DataVector, deriv_order + 1> init_func_a{
-      {{-0.0001}, {0.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(t, init_func_a);
-  FunctionOfTime& expansion_a_base = expansion_a;
+// [[OutputRegex, The map is invertible only if 0 < expansion_b <
+// expansion_a\*2/3]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.CoordMapsTimeDependent.CubicScale.NonInvertible3",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  // Make b==0
+  cubic_scale_non_invertible(0.96, 0.0, 20.0);
+}
 
-  const std::array<DataVector, deriv_order + 1> init_func_b{
-      {{1.0}, {0.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(t, init_func_b);
-  FunctionOfTime& expansions_b_base = expansion_b;
-
-  const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
-      {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
-
-  const double outer_boundary = 20.0;
-  const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
-  const std::array<double, 1> point_xi{{19.2}};
-
-  const std::array<double, 1> mapped_point{
-      {point_xi[0] *
-       (expansion_a_base.func(t)[0][0] +
-        (expansions_b_base.func(t)[0][0] - expansion_a_base.func(t)[0][0]) *
-            square(point_xi[0] / outer_boundary))}};
-
-  // fails due to a_of_t <= 0.0
-  scale_map.inverse(mapped_point, t, f_of_t_list);
+// [[OutputRegex, For invertability, we require outer_boundary to be positive]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.CoordMapsTimeDependent.CubicScale.NonInvertible4",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  cubic_scale_non_invertible(0.96, 1.0, 0.0);
 }

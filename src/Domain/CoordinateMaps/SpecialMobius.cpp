@@ -3,6 +3,8 @@
 
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
 
+#include <boost/none.hpp>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -11,8 +13,10 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace CoordinateMaps {
 
@@ -79,10 +83,14 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::operator()(
   return mobius_distortion(source_coords, mu_);
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::inverse(
-    const std::array<T, 3>& target_coords) const noexcept {
-  return mobius_distortion(target_coords, -mu_);
+boost::optional<std::array<double, 3>> SpecialMobius::inverse(
+    const std::array<double, 3>& target_coords) const noexcept {
+  // Invert only points inside or on the unit sphere.
+  const auto r_squared = magnitude(target_coords);
+  if (r_squared <= 1.0 or equal_within_roundoff(r_squared,1.0)) {
+    return mobius_distortion(target_coords, -mu_);
+  }
+  return boost::none;
 }
 
 template <typename T>
@@ -115,9 +123,6 @@ bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept {
 #define INSTANTIATE(_, data)                                                   \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3> SpecialMobius:: \
   operator()(const std::array<DTYPE(data), 3>& source_coords) const noexcept;  \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
-  SpecialMobius::inverse(const std::array<DTYPE(data), 3>& target_coords)      \
-      const noexcept;                                                          \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 3, Frame::NoFrame>   \
   SpecialMobius::jacobian(const std::array<DTYPE(data), 3>& source_coords)     \
       const noexcept;                                                          \
