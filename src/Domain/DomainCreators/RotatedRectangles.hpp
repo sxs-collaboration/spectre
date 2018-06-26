@@ -6,11 +6,8 @@
 #include <array>
 #include <cstddef>
 #include <limits>
-#include <memory>
-#include <pup.h>
 #include <vector>
 
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
@@ -22,12 +19,15 @@ namespace DomainCreators {
 /// Create a 2D Domain consisting of four rotated Blocks.
 /// - The lower left block has its logical \f$\xi\f$-axis aligned with
 /// the grid x-axis.
-/// - The upper left block has its logical \f$\xi\f$-axis opposite to
-/// the grid x-axis.
-/// - The lower right block has its logical \f$\xi\f$-axis aligned with
-/// the grid y-axis.
-/// - The upper right block has its logical \f$\xi\f$-axis opposite to
-/// the grid y-axis.
+///
+/// - The lower right block is rotated a half-turn (180 degrees) relative to the
+/// lower left block.
+///
+/// - The upper left block is rotated a quarter-turn counterclockwise
+/// (+90 degrees) relative to the lower left block.
+//
+/// - The upper right block is rotated a quarter-turn clockwise
+/// (-90 degrees) relative to the lower left block.
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.

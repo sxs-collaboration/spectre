@@ -3,15 +3,16 @@
 
 #include "Domain/DomainCreators/RotatedRectangles.hpp"
 
-#include <algorithm>
-
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "DataStructures/Index.hpp"  // for Index
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
+
+namespace Frame {
+struct Grid;
+struct Inertial;
+}  // namespace Frame
 
 namespace DomainCreators {
 
@@ -35,34 +36,20 @@ RotatedRectangles<TargetFrame>::RotatedRectangles(
 template <typename TargetFrame>
 Domain<2, TargetFrame> RotatedRectangles<TargetFrame>::create_domain() const
     noexcept {
-  using Affine = CoordinateMaps::Affine;
-  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  using DiscreteRotation2D = CoordinateMaps::DiscreteRotation<2>;
-
-  const Affine lower_x_map(-1.0, 1.0, lower_xy_[0], midpoint_xy_[0]);
-  const Affine upper_x_map(-1.0, 1.0, midpoint_xy_[0], upper_xy_[0]);
-  const Affine lower_y_map(-1.0, 1.0, lower_xy_[1], midpoint_xy_[1]);
-  const Affine upper_y_map(-1.0, 1.0, midpoint_xy_[1], upper_xy_[1]);
-  std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 2>>>
-      coord_maps;
-  coord_maps.emplace_back(make_coordinate_map_base<Frame::Logical, TargetFrame>(
-      Affine2D(lower_x_map, lower_y_map)));
-  coord_maps.emplace_back(make_coordinate_map_base<Frame::Logical, TargetFrame>(
-      Affine2D(lower_x_map, upper_y_map),
-      DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}}));
-  coord_maps.emplace_back(make_coordinate_map_base<Frame::Logical, TargetFrame>(
-      Affine2D(upper_x_map, lower_y_map),
-      DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}}));
-  coord_maps.emplace_back(make_coordinate_map_base<Frame::Logical, TargetFrame>(
-      Affine2D(upper_x_map, upper_y_map),
-      DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}}));
-  std::vector<std::array<size_t, 4>> corners{
-      {{0, 1, 3, 4}}, {{7, 6, 4, 3}}, {{2, 5, 1, 4}}, {{7, 4, 8, 5}}};
-  return Domain<2, TargetFrame>(std::move(coord_maps), std::move(corners));
+  return rectilinear_domain<2, TargetFrame>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{
+          {{lower_xy_[0], midpoint_xy_[0], upper_xy_[0]},
+           {lower_xy_[1], midpoint_xy_[1], upper_xy_[1]}}},
+      {},
+      std::vector<OrientationMap<2>>{
+          OrientationMap<2>{},
+          OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+          OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+          OrientationMap<2>{std::array<Direction<2>, 2>{
+              {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}});
 }
 
 template <typename TargetFrame>
@@ -72,7 +59,7 @@ RotatedRectangles<TargetFrame>::initial_extents() const noexcept {
   const size_t& x_1 = initial_number_of_grid_points_in_xy_[0][1];
   const size_t& y_0 = initial_number_of_grid_points_in_xy_[1][0];
   const size_t& y_1 = initial_number_of_grid_points_in_xy_[1][1];
-  return {{{x_0, y_0}}, {{x_0, y_1}}, {{y_0, x_1}}, {{y_1, x_1}}};
+  return {{{x_0, y_0}}, {{x_1, y_0}}, {{y_1, x_0}}, {{y_1, x_1}}};
 }
 
 template <typename TargetFrame>
