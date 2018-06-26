@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <cstddef>
-
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,7 +22,8 @@ class Tensor;
  * g^{ab}\f$ is the inverse metric, which is either a spatial or spacetime
  * metric. If a tensor \f$ S^a_{bc} \f$ is passed as an argument than the
  * corresponding tensor \f$ S_{abc} \f$ is calculated with respect to the metric
- * \f$g_{ab}\f$.
+ * \f$g_{ab}\f$.  You may have to add a new instantiation of this template if
+ * you need a new use case.
  */
 template <typename DataType, typename Index0, typename Index1>
 Tensor<DataType, Symmetry<2, 1, 1>,
@@ -59,26 +58,31 @@ raise_or_lower_index(
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes trace of a rank 3 tensor, which is symmetric in its last two
- * indices with all indices lower.
+ * indices, tracing the symmetric indices.
  *
- * \details If \f$ T_{abc} \f$ is a tensor such that \f$T_{abc} = T_{acb} \f$
- * then \f$ T_a = g^{bc}T_{abc} \f$ is computed, where \f$ g^{bc} \f$ is the
- * inverse metric. The indices \f$ a,b,c...\f$ can be spatial or spacetime.
+ * \details For example, if \f$ T_{abc} \f$ is a tensor such that \f$T_{abc} =
+ * T_{acb} \f$ then \f$ T_a = g^{bc}T_{abc} \f$ is computed, where \f$ g^{bc}
+ * \f$ is the inverse metric.  Note that indices \f$a,b,c,...\f$ can represent
+ * either spatial or spacetime indices, and can have either valence.  You may
+ * have to add a new instantiation of this template if you need a new use case.
  */
-template <size_t Dim, typename Frame, IndexType TypeOfIndex, typename DataType>
-tnsr::a<DataType, Dim, Frame, TypeOfIndex> trace_last_indices(
-    const tnsr::abb<DataType, Dim, Frame, TypeOfIndex>& tensor,
-    const tnsr::AA<DataType, Dim, Frame, TypeOfIndex>& upper_metric) noexcept;
+template <typename DataType, typename Index0, typename Index1>
+Tensor<DataType, Symmetry<1>, index_list<Index0>> trace_last_indices(
+    const Tensor<DataType, Symmetry<2, 1, 1>,
+                 index_list<Index0, Index1, Index1>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index1>,
+                            change_index_up_lo<Index1>>>& metric) noexcept;
 
 /*!
  * \ingroup GeneralRelativityGroup
- * \brief Computes trace of a rank-2 symmetric lower-index tensor.
- * \details Computes \f$g^{ab}T_{ab}\f$ where \f$(a,b)\f$ can be spatial or
- * spacetime indices.
+ * \brief Computes trace of a rank-2 symmetric tensor.
+ * \details Computes \f$g^{ab}T_{ab}\f$ or \f$g_{ab}T^{ab}\f$ where \f$(a,b)\f$
+ * can be spatial or spacetime indices.
  */
-template <size_t SpatialDim, typename Frame, IndexType TypeOfIndex,
-          typename DataType>
+template <typename DataType, typename Index0>
 Scalar<DataType> trace(
-    const tnsr::aa<DataType, SpatialDim, Frame, TypeOfIndex>& tensor,
-    const tnsr::AA<DataType, SpatialDim, Frame, TypeOfIndex>&
-        upper_metric) noexcept;
+    const Tensor<DataType, Symmetry<1, 1>, index_list<Index0, Index0>>& tensor,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index0>,
+                            change_index_up_lo<Index0>>>& metric) noexcept;
