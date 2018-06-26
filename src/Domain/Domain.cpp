@@ -37,8 +37,8 @@ Domain<VolumeDim, TargetFrame>::Domain(
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(corners_of_all_blocks,
                                      &neighbors_of_all_blocks);
-  set_periodic_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
-                                     &neighbors_of_all_blocks);
+  set_identified_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
+                                       &neighbors_of_all_blocks);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
     blocks_.emplace_back(std::move(maps[i]), i,
                          std::move(neighbors_of_all_blocks[i]));

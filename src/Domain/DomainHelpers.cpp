@@ -285,7 +285,7 @@ void set_internal_boundaries(
 }
 
 template <size_t VolumeDim>
-void set_periodic_boundaries(
+void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
@@ -849,19 +849,19 @@ template void set_internal_boundaries(
         std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks);
 
-template void set_periodic_boundaries(
+template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks);
-template void set_periodic_boundaries(
+template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks);
-template void set_periodic_boundaries(
+template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
     gsl::not_null<

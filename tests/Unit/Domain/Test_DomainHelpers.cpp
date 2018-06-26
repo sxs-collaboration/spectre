@@ -45,8 +45,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
   const PairOfFaces x_faces{{1, 3, 5, 7}, {0, 2, 4, 6}};
 
   const std::vector<PairOfFaces> identifications{x_faces};
-  set_periodic_boundaries<3>(identifications, corners_of_all_blocks,
-                             &neighbors_of_all_blocks);
+  set_identified_boundaries<3>(identifications, corners_of_all_blocks,
+                               &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
 
@@ -74,8 +74,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
   const PairOfFaces x_faces_on_different_blocks{{1, 3, 5, 7}, {8, 10, 0, 2}};
 
   const std::vector<PairOfFaces> identifications{x_faces_on_different_blocks};
-  set_periodic_boundaries<3>(identifications, corners_of_all_blocks,
-                             &neighbors_of_all_blocks);
+  set_identified_boundaries<3>(identifications, corners_of_all_blocks,
+                               &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
   const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>

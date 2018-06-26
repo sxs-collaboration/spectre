@@ -183,8 +183,8 @@ Block2: 4-0=4  => +zeta
 It is also possible to identify faces of a Block using the subset CNS. For
 example, to identify the lower zeta face with the upper zeta face of a Block
 where the corners are labeled `{3,0,4,1,9,6,10,7}`, one may supply the lists
-`{3,0,4,1}` and `{9,6,10,7}` to the `set_periodic_boundaries` function.
-\note The `set_periodic_boundaries` function is sensitive to the order of the
+`{3,0,4,1}` and `{9,6,10,7}` to the `set_identified_boundaries` function.
+\note The `set_identified_boundaries` function is sensitive to the order of the
 corners in the lists supplied as arguments. This is because the function
 identifies corners and edges with each other as opposed to simply faces. This
 allows the user to specify more peculiar boundary conditions. For example,

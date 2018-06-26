@@ -59,10 +59,10 @@ void set_internal_boundaries(
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up additional BlockNeighbors corresponding to any
-/// periodic boundary condtions provided by the user. These are
-/// stored in identifications.
+/// identifications of faces provided by the user. Can be used
+/// for manually setting up periodic boundary conditions.
 template <size_t VolumeDim>
-void set_periodic_boundaries(
+void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
