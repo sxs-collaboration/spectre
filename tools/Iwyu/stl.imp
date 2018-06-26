@@ -4,6 +4,7 @@
 [
   { symbol: ["size_t", private, "<cstddef>", public]},
   { symbol: ["ssize_t", private, "<cstddef>", public]},
+  { symbol: ["ptrdiff_t", private, "<cstddef>", public]},
   { symbol: ["std::abs", private, "<cmath>", public]},
   { symbol: ["abs", private, "<cmath>", public]},
   { symbol: ["std::hash", private, "<functional>", public]},
