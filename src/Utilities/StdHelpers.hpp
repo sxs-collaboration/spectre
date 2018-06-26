@@ -6,89 +6,27 @@
 
 #pragma once
 
-#include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstdio>
 #include <ctime>
 #include <deque>
-#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
-#include <numeric>
 #include <set>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-/*!
- * \ingroup UtilitiesGroup
- * \brief Applies the function f(out, it) to each item from begin to
- * end, separated by commas and surrounded by parens.
- */
-template <typename ForwardIt, typename Func>
-inline void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
-                                  ForwardIt&& end, Func f) {
-  out << "(";
-  if (begin != end) {
-    while (true) {
-      f(out, begin++);
-      if (begin == end) {
-        break;
-      }
-      out << ",";
-    }
-  }
-  out << ")";
-}
-
-/*!
- * \ingroup UtilitiesGroup
- * \brief Prints all the items as a comma separated list surrounded by parens.
- */
-template <typename ForwardIt>
-inline void sequence_print_helper(std::ostream& out, ForwardIt&& begin,
-                                  ForwardIt&& end) {
-  sequence_print_helper(
-      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
-      [](std::ostream& os, const ForwardIt& it) { os << *it; });
-}
-
-/*!
- * \ingroup UtilitiesGroup
- * Like sequence_print_helper, but sorts the string representations.
- */
-//@{
-template <typename ForwardIt, typename Func>
-inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
-                                   ForwardIt&& end, Func f) {
-  std::vector<std::string> entries;
-  while (begin != end) {
-    std::ostringstream ss;
-    f(ss, begin++);
-    entries.push_back(ss.str());
-  }
-  std::sort(entries.begin(), entries.end());
-  sequence_print_helper(out, entries.begin(), entries.end());
-}
-
-template <typename ForwardIt>
-inline void unordered_print_helper(std::ostream& out, ForwardIt&& begin,
-                                   ForwardIt&& end) {
-  unordered_print_helper(
-      out, std::forward<ForwardIt>(begin), std::forward<ForwardIt>(end),
-      [](std::ostream& os, const ForwardIt& it) { os << *it; });
-}
-//@}
 
 namespace StdHelpers_detail {
 // Helper classes for operator<< for tuples
