@@ -3,14 +3,7 @@
 
 #pragma once
 
-// What incorrect header IWYU wants to pull ptrdiff_t from seems to be
-// very sensitive to the other includes.  I've left pragmas for all
-// the ones it has requested during development to defend against
-// problems from changes to the include list, even though not all of
-// them are requested with the current include list.
 #include <algorithm>
-// For ptrdiff_t (actually in cstddef)
-// IWYU pragma: no_include <alloca.h>
 #include <array>
 #include <boost/none.hpp>
 #include <boost/optional.hpp>
@@ -19,10 +12,6 @@
 #include <iterator>
 #include <ostream>
 #include <stdexcept>
-// For ptrdiff_t (actually in cstddef)
-// IWYU pragma: no_include <stdlib.h>
-// For ptrdiff_t (actually in cstddef)
-// IWYU pragma: no_include <sys/types.h>
 #include <utility>
 
 #include "Domain/Direction.hpp"
@@ -33,7 +22,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/PrintHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -50,7 +39,11 @@ class DirectionMapIterator;
 
 /// \ingroup DataStructuresGroup
 /// \ingroup ComputationalDomainGroup
-/// An optimized map with Direction keys
+/// An optimized map with Direction keys.
+///
+/// Behaves like a `std::unordered_map<Direction<Dim>, T>` except that
+/// all items are stored on the stack.  %DirectionMap should be faster
+/// than unordered_map in most cases.
 template <size_t Dim, typename T>
 class DirectionMap {
  public:
@@ -262,6 +255,10 @@ DirectionMap<Dim, T>& DirectionMap<Dim, T>::operator=(
   for (size_t i = 0; i < data_.size(); ++i) {
     const auto& other_optional = gsl::at(other.data_, i);
     if (other_optional) {
+      // The boost::optionals cannot be assigned to because they
+      // contain the map keys, which are const, so we have to replace
+      // the contents instead, since that counts as a destroy +
+      // initialize.
       gsl::at(data_, i).emplace(*other_optional);
     }
   }
@@ -275,6 +272,10 @@ DirectionMap<Dim, T>& DirectionMap<Dim, T>::operator=(
   for (size_t i = 0; i < data_.size(); ++i) {
     auto& other_optional = gsl::at(other.data_, i);
     if (other_optional) {
+      // The boost::optionals cannot be assigned to because they
+      // contain the map keys, which are const, so we have to replace
+      // the contents instead, since that counts as a destroy +
+      // initialize.
       gsl::at(data_, i).emplace(std::move(*other_optional));
     }
   }
