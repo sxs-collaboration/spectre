@@ -3,19 +3,28 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <memory>
+// IWYU pragma: no_include <pup.h>
 #include <string>
+#include <tuple>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
@@ -48,7 +57,7 @@
 // IWYU pragma: no_forward_declare ElementIndex
 // IWYU pragma: no_forward_declare Variables
 namespace PUP {
-class er;
+class er;  // IWYU pragma: keep
 }  // namespace PUP
 namespace Tags {
 template <typename Tag, size_t VolumeDim, typename Fr>
@@ -278,6 +287,8 @@ void test_initialize_element(
             .size() == element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(box).size() ==
         element.number_of_neighbors());
+  CHECK(db::get<Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(box).size() ==
+        element.number_of_neighbors());
 
   (void)db::get<Tags::Interface<Tags::InternalDirections<dim>,
                                 Tags::UnnormalizedFaceNormal<dim>>>(box);
@@ -302,6 +313,32 @@ void test_initialize_element(
 
   TestConservativeOrNonconservativeParts<system::is_conservative>::
       template apply<Metavariables>(make_not_null(&box));
+}
+
+void test_mortar_orientation() noexcept {
+  ActionTesting::ActionRunner<Metavariables<3, false>> runner{
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+       SystemAnalyticSolution{}}};
+  const Slab slab(0., 1.);
+
+  // This is the domain from the OrientationMap and corner numbering
+  // tutorial.
+  Domain<3, Frame::Inertial> domain(
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          CoordinateMaps::Identity<3>{}, CoordinateMaps::Identity<3>{}),
+      {{{0, 1, 3, 4, 6, 7, 9, 10}}, {{1, 4, 7, 10, 2, 5, 8, 11}}});
+  const auto neighbor_direction = Direction<3>::upper_xi();
+  const auto mortar_id = std::make_pair(neighbor_direction, ElementId<3>(1));
+  const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
+
+  db::DataBox<tmpl::list<>> empty_box{};
+  const auto box = std::get<0>(
+      runner.apply<component<3, false>, dg::Actions::InitializeElement<3>>(
+          empty_box, ElementId<3>(0), extents, std::move(domain), slab.start(),
+          slab.duration()));
+
+  CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
+        Index<2>{{{3, 4}}});
 }
 }  // namespace
 
@@ -329,4 +366,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}},
       DomainCreators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
+
+  test_mortar_orientation();
 }

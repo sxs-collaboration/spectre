@@ -4,6 +4,7 @@
 set(LIBS_TO_LINK
   Burgers
   BurgersSolutions
+  DiscontinuousGalerkin
   DomainCreators
   Informer
   Time
