@@ -4,6 +4,7 @@
 set(LIBRARY "Test_BurgersSolutions")
 
 set(LIBRARY_SOURCES
+  Test_Bump.cpp
   Test_Linear.cpp
   )
 

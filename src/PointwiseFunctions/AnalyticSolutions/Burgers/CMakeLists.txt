@@ -4,6 +4,7 @@
 set(LIBRARY BurgersSolutions)
 
 set(LIBRARY_SOURCES
+  Bump.cpp
   Linear.cpp
   )
 
