@@ -62,9 +62,9 @@ bool is_a_neighbor_of_my_neighbor_me(
   return 1 == number_of_matches;
 }
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Fr>
 void test_domain_connectivity(
-    const Domain<VolumeDim, Frame::Inertial>& domain,
+    const Domain<VolumeDim, Fr>& domain,
     const std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>>&
         elements_in_domain) noexcept {
   boost::rational<size_t> volume_of_elements{0};
@@ -329,16 +329,16 @@ double physical_separation(
 }
 }  // namespace
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Fr>
 void test_domain_construction(
-    const Domain<VolumeDim, Frame::Inertial>& domain,
+    const Domain<VolumeDim, Fr>& domain,
     const std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<std::unique_ptr<
-        CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+    const std::vector<
+        std::unique_ptr<CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
         expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
@@ -382,8 +382,8 @@ boost::rational<size_t> fraction_of_block_volume(
   return {1, two_to_the(sum_of_refinement_levels)};
 }
 
-template <size_t VolumeDim>
-void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
+template <size_t VolumeDim, typename Frame>
+void test_initial_domain(const Domain<VolumeDim, Frame>& domain,
                          const std::vector<std::array<size_t, VolumeDim>>&
                              initial_refinement_levels) noexcept {
   const auto element_ids = initial_element_ids(initial_refinement_levels);
@@ -399,13 +399,12 @@ void test_initial_domain(const Domain<VolumeDim, Frame::Inertial>& domain,
   test_refinement_levels_of_neighbors<0>(elements);
 }
 
-template <size_t SpatialDim, typename SpatialFrame>
-tnsr::i<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
+template <size_t SpatialDim, typename Fr>
+tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept {
   auto basis_vector =
-      make_with_value<tnsr::i<DataVector, SpatialDim, SpatialFrame>>(
-          used_for_size, 0.0);
+      make_with_value<tnsr::i<DataVector, SpatialDim, Fr>>(used_for_size, 0.0);
 
   basis_vector.get(direction.axis()) =
       make_with_value<DataVector>(used_for_size, direction.sign());
@@ -417,25 +416,25 @@ tnsr::i<DataVector, SpatialDim, SpatialFrame> euclidean_basis_vector(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE1(_, data)                                                  \
+#define INSTANTIATE1(_, data)                                \
+  template boost::rational<size_t> fraction_of_block_volume( \
+      const ElementId<DIM(data)>& element_id) noexcept;
+
+#define INSTANTIATE2(_, data)                                                  \
   template void test_domain_construction<DIM(data)>(                           \
-      const Domain<DIM(data), Frame::Inertial>& domain,                        \
+      const Domain<DIM(data), FRAME(data)>& domain,                            \
       const std::vector<                                                       \
           std::unordered_map<Direction<DIM(data)>, BlockNeighbor<DIM(data)>>>& \
           expected_block_neighbors,                                            \
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&             \
           expected_external_boundaries,                                        \
       const std::vector<std::unique_ptr<                                       \
-          CoordinateMapBase<Frame::Logical, Frame::Inertial, DIM(data)>>>&     \
+          CoordinateMapBase<Frame::Logical, FRAME(data), DIM(data)>>>&         \
           expected_maps) noexcept;                                             \
-  template boost::rational<size_t> fraction_of_block_volume(                   \
-      const ElementId<DIM(data)>& element_id) noexcept;                        \
   template void test_initial_domain(                                           \
-      const Domain<DIM(data), Frame::Inertial>& domain,                        \
+      const Domain<DIM(data), FRAME(data)>& domain,                            \
       const std::vector<std::array<size_t, DIM(data)>>&                        \
-          initial_refinement_levels) noexcept;
-
-#define INSTANTIATE2(_, data)                                                  \
+          initial_refinement_levels) noexcept;                                 \
   template void test_physical_separation(                                      \
       const std::vector<Block<DIM(data), FRAME(data)>>& blocks) noexcept;      \
   template tnsr::i<DataVector, DIM(data), FRAME(data)> euclidean_basis_vector( \
