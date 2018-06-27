@@ -445,7 +445,9 @@ DataVector& DataVector::operator=(
     owned_data_.resize((~expression).size());
     reset_pointer_vector();
   } else if (not owning_) {
-    ASSERT((~expression).size() == size(), "Must copy into same size");
+    ASSERT((~expression).size() == size(), "Must copy into same size, not "
+                                               << (~expression).size()
+                                               << " into " << size());
   }
   ~*this = expression;
   return *this;
