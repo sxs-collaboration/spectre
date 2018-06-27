@@ -9,7 +9,9 @@
 
 #pragma once
 
+#ifndef SPECTRE_DEBUG
 #include <libxsmm.h>
+#endif  // ifndef SPECTRE_DEBUG
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -103,6 +105,9 @@ inline void dgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
       gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC));
 }
 
+// libxsmm is disabled in DEBUG builds because backtraces (from, for
+// example, FPEs) do not work when the error occurs in libxsmm code.
+#ifndef SPECTRE_DEBUG
 template <>
 inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
                          const size_t& M, const size_t& N, const size_t& K,
@@ -123,6 +128,7 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
   libxsmm_dgemm(&TRANSA, &TRANSB, &m, &n, &k, &ALPHA, A, &lda, B, &ldb, &BETA,
                 C, &ldc);
 }
+#endif  // ifndef SPECTRE_DEBUG
 // @}
 
 // @{
