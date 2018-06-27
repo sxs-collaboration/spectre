@@ -20,7 +20,7 @@ template <size_t Dim, IndexType TypeOfIndex, typename DataType>
 void test_ricci(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &gr::ricci_tensor<Dim, Frame::Inertial, TypeOfIndex, DataType>, "GrTests",
-      "ricci_tensor", {{{-10., 10.}}}, used_for_size);
+      "ricci_tensor", {{{-1., 1.}}}, used_for_size);
 }
 }  // namespace
 
