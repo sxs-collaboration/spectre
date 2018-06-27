@@ -37,7 +37,6 @@ void ComputeDuDt<Dim>::apply(
     dt_phi->get(d) = -d_pi.get(d);
   }
 }
-/// \endcond
 
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
@@ -130,6 +129,7 @@ void UpwindFlux<Dim>::operator()(
                normal_times_flux_pi_exterior.get(d));
   }
 }
+/// \endcond
 }  // namespace ScalarWave
 
 // Generate explicit instantiations of partial_derivatives function as well as
