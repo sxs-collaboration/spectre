@@ -30,6 +30,8 @@ installation_on_clusters "Installation on clusters" page.
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) built from a commit more
   recent than November 2016 (versions newer than 0.5.3 should work once any
   are released)
+* [Python](https://www.python.org/) 2.7, or 3.5 or later
+* [NumPy](http://www.numpy.org/) 1.10 or later
 
 #### Optional:
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate

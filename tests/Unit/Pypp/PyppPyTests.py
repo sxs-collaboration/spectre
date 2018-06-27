@@ -60,8 +60,12 @@ def ndarray_of_floats():
 # These are used to check converting to a Tensor works
 
 
-def scalar():
+def scalar_from_double():
     return 0.8
+
+
+def scalar_from_ndarray():
+    return np.array(0.8)
 
 
 def vector():
@@ -96,8 +100,12 @@ def tnsr_aBcc():
 # Test conversion from Tensor to numpy array works
 
 
-def convert_scalar_successful(a):
-    return a == scalar()
+def convert_scalar_to_ndarray_successful(a):
+    return bool(np.all(a == scalar_from_ndarray()))
+
+
+def convert_scalar_to_double_unsuccessful(a):
+    return not isinstance(scalar_from_double(), type(a))
 
 
 def convert_vector_successful(a):
