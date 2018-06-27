@@ -46,6 +46,7 @@ function(add_scalar_wave_executable DIM)
     DiscontinuousGalerkin
     DomainCreators
     Informer
+    LinearOperators
     MathFunctions
     ScalarWave
     Time

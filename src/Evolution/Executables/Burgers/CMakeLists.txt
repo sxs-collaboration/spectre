@@ -7,6 +7,7 @@ set(LIBS_TO_LINK
   DiscontinuousGalerkin
   DomainCreators
   Informer
+  LinearOperators
   Time
   Utilities
   )

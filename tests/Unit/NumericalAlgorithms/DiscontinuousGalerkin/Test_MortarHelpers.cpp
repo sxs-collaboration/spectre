@@ -7,16 +7,21 @@
 #include <cstddef>
 #include <initializer_list>  // IWYU pragma: keep
 // IWYU pragma: no_include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -145,4 +150,69 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
           func(face_coords));
     }
   }
+}
+
+namespace {
+struct ComputeBoundaryFluxContributionMetavars {
+  using temporal_id = size_t;
+
+  struct system {
+    static constexpr size_t volume_dim = 1;
+    using variables_tag = Tags::Variables<tmpl::list<Var>>;
+  };
+
+  struct normal_dot_numerical_flux {
+    struct type {
+      using package_tags = tmpl::list<Var>;
+      void operator()(const gsl::not_null<Scalar<DataVector>*> numerical_flux,
+                      const Scalar<DataVector>& local_var,
+                      const Scalar<DataVector>& remote_var) const noexcept {
+        CHECK(get(local_var) == DataVector{1., 2., 3.});
+        CHECK(get(remote_var) == DataVector{6., 5., 4.});
+        get(*numerical_flux) = DataVector{0., 3., 0.};
+      }
+    };
+  };
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.compute_boundary_flux_contribution",
+                  "[Unit][NumericalAlgorithms]") {
+  using flux_comm_types =
+      dg::FluxCommunicationTypes<ComputeBoundaryFluxContributionMetavars>;
+  const typename ComputeBoundaryFluxContributionMetavars::
+      normal_dot_numerical_flux::type flux_computer{};
+
+  const Mesh<1> face_mesh(2, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto);
+  const Mesh<1> mortar_mesh(3, Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto);
+  const size_t extent_perpendicular_to_boundary = 4;
+
+  flux_comm_types::LocalData local_data{};
+  local_data.mortar_data.initialize(mortar_mesh.number_of_grid_points());
+  get(get<Var>(local_data.mortar_data)) = DataVector{1., 2., 3.};
+  get(get<Tags::NormalDotFlux<Var>>(local_data.mortar_data)) =
+      DataVector{-3., 0., 3.};
+  get(local_data.magnitude_of_face_normal) = DataVector{2., 5.};
+
+  flux_comm_types::PackagedData remote_data(
+      mortar_mesh.number_of_grid_points());
+  get(get<Var>(remote_data)) = DataVector{6., 5., 4.};
+
+  // projected F* - F = {5., -1.}
+  Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> fstar_minus_f(2);
+  get(get<Tags::NormalDotNumericalFlux<Var>>(fstar_minus_f)) =
+      DataVector{5., -1.};
+  const auto expected =
+      dg::lift_flux(fstar_minus_f, extent_perpendicular_to_boundary,
+                    local_data.magnitude_of_face_normal);
+
+  const auto result = dg::compute_boundary_flux_contribution<flux_comm_types>(
+      flux_computer, local_data, remote_data, face_mesh, mortar_mesh,
+      extent_perpendicular_to_boundary);
+  CHECK_ITERABLE_APPROX(get<Var>(result), get<Var>(expected));
+  CHECK(dg::compute_boundary_flux_contribution<flux_comm_types>(
+            flux_computer, std::move(local_data), remote_data, face_mesh,
+            mortar_mesh, extent_perpendicular_to_boundary) == result);
 }
