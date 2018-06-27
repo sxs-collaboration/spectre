@@ -26,6 +26,9 @@ class er;
  * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
  * host, an `OrientationMap` will give the corresponding value in the neighbor.
  * \tparam VolumeDim the dimension of the blocks.
+ *
+ * See the [tutorial](@ref tutorial_orientations) for information on how
+ * OrientationMaps are used and constructed.
  */
 template <size_t VolumeDim>
 class OrientationMap {

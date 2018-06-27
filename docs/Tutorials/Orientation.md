@@ -2,50 +2,64 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Orientation {#tutorial_orientations}
+# OrientationMap {#tutorial_orientations}
 
-### %Orientations between %Blocks
-The Orientations between Blocks are used to properly communicate fluxes
-across boundaries between adjacent Blocks that do not necessarily have their
-logical axes aligned. The `Orientation` class is used to keep track of which
-pair of axes in a pair of adjacent Blocks lie along the same physical
-direction at a boundary.
+### Introduction
+Each element in a domain has a set of internal directions which it uses
+for computations in its own local coordinate system. These are referred to
+as the logical directions \f$\xi\f$, \f$\eta\f$, and \f$\zeta\f$, where
+\f$\xi\f$ is the first dimension, \f$\eta\f$ is the second dimension, and
+\f$\zeta\f$ is the third dimension. In a
+domain with multiple elements, the logical directions are not necessarily
+aligned on the interfaces between two elements, as shown in the figure below.
+As fluxes need to be communicated across the boundaries of adjacent elements,
+there needs to be a system in place that organizes the relative orientations of
+elements with respect to their neighbors. This is handled by OrientationMap.
 
-### Algorithms for determining the %Orientation of %Blocks given corners
-DomainHelpers is a collection of algorithms that are used to determine the
-Orientations between Blocks in a Domain using a set of corner numbering
-schemes. The corner numberings must be determined and provided by the user.
-This tutorial will explain the corner numbering schemes used, and how to
-determine the correct corner numbering for a Domain. We assume the user has
-a Domain that has that has already been partitioned
-into Blocks in the form of a schematic diagram, and that the orientation of
-the logical axes within each Block has been determined before proceeding with
-this tutorial.
+### %OrientationMaps between %Blocks
+Each Block in a Domain has a set of BlockNeighbors, which each hold an
+OrientationMap. In this scenario, the Block is referred to as the host, and
+the OrientationMap held by each BlockNeighbor is referred to as "the
+orientation the host Block has with respect to this BlockNeighbor." This is
+a convention, so we give an example of constructing and assigning the correct
+OrientationMaps:
 
-### Global Corner Numbering Scheme (Global CNS)
-The partitioning of the Domain defines a global unordered set
-of corners. For example, a cubical Domain which is partitioned equally into
-two Blocks has 12 corners; although each Block has 8 corners, 4 are shared
-among them. To assign a Global CNS to the Domain, one may arbitrarily assign
-corner ids to each of the twelve corners in the Domain, so long as each corner
-has a single, unique id.
+\image html twocubes.png "Two neighboring blocks."
 
-\note This Global CNS assumes that there is no additional identifying of faces
-with one another for periodic boundary conditions. That is, that no block has
-itself as a neighbor. If you wish to additionally identify faces of the same
-block with each other, that must be done in an additional step. This step is
-explained in the "Setting Periodic Boundary Conditions" section.
+In the image above, we see a domain decomposition into two Blocks, which have
+their logical axes rotated relative to one another. With the left block as
+the host Block, we see that it has a neighbor in the \f$+\xi\f$ direction.
+The host Block holds a `std::unordered_map` from Directions to BlockNeighbors;
+the BlockNeighbor itself holds an OrientationMap that determines the mapping
+from each logical direction in the host Block to that in the neighboring Block.
+That is, the OrientationMap takes as input local information (i.e. logical
+directions in the host's coordinate system) and returns neighbor information
+(i.e. logical directions in the neighbor's coordinate system). An
+OrientationMap is constructed by passing in the block neighbor directions that
+correspond to the \f$+\xi\f$, \f$+\eta\f$, \f$+\zeta\f$ directions in the host.
+In this case, these directions in the host map to the \f$+\zeta\f$,
+\f$+\xi\f$, \f$+\eta\f$ directions in the neighbor, respectively.
+This BlockNeighbor thus holds the OrientationMap constructed with the list
+(\f$+\zeta\f$, \f$+\xi\f$, \f$+\eta\f$). With the right block as the host
+block, we see that it has a BlockNeighbor in the \f$-\zeta\f$ direction, and
+the OrientationMap held by this BlockNeighbor is the one constructed with the
+array (\f$+\eta\f$, \f$+\zeta\f$, \f$+\xi\f$). For convenience, OrientationMap
+has a method `inverse_map` which returns the OrientationMap that takes as input
+neighbor information and returns local information.
 
-### Local Corner Numbering Scheme (Local CNS)
-The orientation of the logical axes in each Block define an ordered set of
-corners. Once the logical axes in each Block are determined, it is possible
-to write down a Local CNS:
+OrientationMaps need to be provided for each BlockNeighbor in each direction
+for each Block. This quickly becomes too large of a number to determine by
+hand as the number of Blocks and the number of dimensions increases. A remedy
+to this problem is the corner numbering scheme.
 
-Each Block has \f$2^{dim}\f$ local corners, numbered from \f$0\f$ to
-\f$2^{dim} - 1\f$. We will take the three-dimensional cube as an example:
-This Block has 8 local corners (regardless how many of these are
-shared), numbered from 0 to 7. The corners are labelled according to the
-CoordinateMap corresponding to the Block, as follows:
+### Encoding BlockNeighbor information using Corner Orderings and Numberings
+The orientation of the \f${dim}\f$ logical directions within each element
+determines an ordering of the \f$2^{dim}\f$ vertices of that element. This is
+called the local corner numbering scheme (Local CNS) with respect to that
+element. We give the ordering of the local corners below for the case of a
+three-dimensional element:
+
+\image html onecube_numbered.png "The local corner numbering."
 
 ```
 Corner 0 is the location of the lower xi, lower eta, lower zeta corner.
@@ -58,38 +72,36 @@ Corner 6 is the location of the lower xi, upper eta, upper zeta corner.
 Corner 7 is the location of the upper xi, upper eta, upper zeta corner.
 ```
 
-   We can summarize this information:
+What remains is to endow the domain decomposition with a global corner
+numbering (Global CNS). We give an example below:
 
-```
-Corner 0: 000
-Corner 1: 001
-Corner 2: 010
-Corner 3: 011
-Corner 4: 100
-Corner 5: 101
-Corner 6: 110
-Corner 7: 111
-```
+\image html twocubes_numbered.png "A global corner numbering."
 
-Where 0 and 1 indicate lower and upper in the corresponding axis (zeta,
-eta, xi), respectively, and the ordering has been reversed so that the
-rightmost column corresponds to the xi position and the leftmost column
-to the zeta position.
+In the image above, we see that each vertex of the two-block domain has
+been assigned a number. Although each block has eight corners, four are
+shared among them, so there are only twelve unique corners in this domain.
+Any numbering may be used in the global corner numbering, so long as the
+each distinct corner is given a single distinct corner number.
 
-\note This Local CNS is independent of the Global CNS above.
+\note This Global CNS assumes that there is no additional identifying of faces
+with one another for periodic boundary conditions. That is, each element must
+have \f$2^{dim}\f$ distinct corner numbers. If you wish to additionally
+identify faces of the same block with each other, that must be done in an
+additional step. This step is explained in the "Setting Periodic Boundary
+Conditions" section.
 
 ### The Ordered Subset of the Global CNS (Subset CNS):
-With the Global CNS in hand, each Block inherits a ordered subset of Global
-CNS, the order determined by the ordering of the Local CNS, and the elements
-of the set determined by how one assigned the Global CNS to the Domain.
-For example, if in a Global CNS one had assigned the id "7" to the lower xi,
-lower eta, lower zeta corner of a Block,
-then the Subset CNS corresponding to this Block will begin as {7, ..., ...}.
-The Subset CNS encodes the relative Orientations between
-each Block.
-
-The algorithms in DomainHelpers take these Subset CNSs as input, and from them
-determines the proper relative orientations between blocks.
+With the Global CNS in hand, each Block inherits an ordered subset of Global
+CNS. The ordering in this set is determined by the ordering of the Local CNS,
+and the elements of the set determined by how one assigned the Global CNS to
+the Domain. For the image above, the Subset CNS corresponding to the left block
+is {0, 1, 3, 4, 6, 7, 9, 10}, while the Subset CNS corresponding to the right
+block is {1, 4, 7, 10, 2, 5, 8, 11}. This ordering of the Subset CNS encodes
+the relative orientations between each Block. Subset CNSs need to be provided
+for each Block in a Domain. It turns out that for very regular domains,
+(i.e. spherical or rectilinear) we can generate the appropriate Subset CNSs.
+As this is a conceptual tutorial, how to construct these domains in SpECTRE
+is described in the \ref tutorial_domain_creation tutorial.
 
 ### Explanation of the Algorithms in DomainHelpers:
 
@@ -103,8 +115,8 @@ Here is one possible result, given some relative orientation between the
 blocks:
 
 ```
-Block1: {3,0,4,1,9,6,10,7}
-Block2: {1,2,4,5,7,8,10,11}
+Block1: {0, 1, 3, 4, 6, 7, 9, 10}
+Block2: {1, 4, 7, 10, 2, 5, 8, 11}
 ```
 
 The values of the ids only serve to identify which corners are unique and which
@@ -117,54 +129,72 @@ The algorithm begins by determining the shared corners between the
 Blocks:
 
 ```
-result: {4,1,10,7}
+result: {1, 4, 7, 10}
 ```
 
 The next step is to determine the local ids of these shared global ids:
 
 ```
-Block1 result: {2,3,6,7}
-Block2 result: {2,0,6,4}
+Block1 result: {1,3,5,7}
+Block2 result: {0,1,2,3}
 ```
 
- The next step is to convert these ids into their binary representation:
+The next step is to convert these ids into their binary representation.
+For reference, we give the binary representation for each number 0-7:
 
 ```
-Block1 result: {010,011,110,111}
-Block2 result: {010,000,110,100}
+Corner 0: 000
+Corner 1: 001
+Corner 2: 010
+Corner 3: 011
+Corner 4: 100
+Corner 5: 101
+Corner 6: 110
+Corner 7: 111
+```
+
+Here 0 and 1 indicate lower and upper in the corresponding axis (zeta,
+eta, xi), respectively, and the ordering has been reversed so that the
+rightmost column corresponds to the xi position and the leftmost column
+to the zeta position. Returning to the example at hand, we have:
+
+
+```
+Block1 result: {001,011,101,111}
+Block2 result: {000,001,010,011}
 ```
 
  Note that we can now read off the shared face relative to each Block
  easily:
 
 ```
-Block1 result: Upper eta (All binary Block1 ids have a 1 in the second position)
-Block2 result: Lower xi (All binary Block2 ids have a 0 in the third position)
+Block1 result: Upper xi (All binary Block1 ids have a 1 in the third position)
+Block2 result: Lower zeta (All binary Block2 ids have a 0 in the first position)
 ```
 
-Now we know that `Direction<3>::%upper_eta()`
-in Block1 corresponds to `Direction<3>::%lower_xi().%opposite()` in Block2.
+Now we know that `Direction<3>::%upper_xi()`
+in Block1 corresponds to `Direction<3>::%lower_zeta().%opposite()` in Block2.
 
 The use of `.%opposite()` is a result of the Directions to a Block face being
 anti-parallel because each Block lies on the opposite side of the shared face.<br>
 
-The remaining two correspondences are given by the Alignment of the shared
+The remaining two correspondences are given by the alignment of the shared
 face. It is useful to know the following information:<br>
 In the Local CNS, if an edge lies along the xi direction, if one takes the
 two corners making up that edge and takes the difference of their ids, one
  always gets the result \f$ \pm 1\f$. Similarly, if the edge lies in the eta
  direction, the result will be \f$ \pm 2\f$. Finally, if the edge lies in the
  zeta direction, the result will be \f$ \pm 4\f$. We use this information to
- determine the Alignment of the shared face:
+ determine the alignment of the shared face:
 
 ```
-Block1: 3-2=1  => This edge is in the +xi direction.
-Block2: 0-2=-2 => This edge is in the -eta direction.
-Then, +xi in Block1 corresponds to -eta in Block2.
+Block1: 3-1=2  => This edge is in the +eta direction.
+Block2: 1-0=1 => This edge is in the +xi direction.
+Then, +eta in Block1 corresponds to +xi in Block2.
 
-Block1: 6-2=4 => This edge is in the +zeta direction.
-Block2: 6-2=4 => This edge is in the +zeta direction.
-Then, +zeta in Block1 corresponds to +zeta in Block2.
+Block1: 5-1=4 => This edge is in the +zeta direction.
+Block2: 2-0=2 => This edge is in the +eta direction.
+Then, +zeta in Block1 corresponds to +eta in Block2.
 ```
 
 The corresponding directions in each Block have now been deduced.
@@ -172,11 +202,11 @@ The corresponding directions in each Block have now been deduced.
 To confirm, we can use the other ids as well and arrive at the same result:<br>
 
 ```
-Block1: 7-6-1  => +xi
-Block2: 4-6=-2 => -eta
+Block1: 7-5=2  => +eta
+Block2: 3-2=1 => +xi
 
 Block1: 7-3=4  => +zeta
-Block2: 4-0=4  => +zeta
+Block2: 3-1=2  => +eta
 ```
 
 ### Setting Periodic Boundary Conditions
@@ -204,5 +234,3 @@ upper eta| `{2,3,6,7}`
 lower eta| `{0,1,4,5}`
 upper zeta| `{4,5,6,7}`
 lower zeta| `{0,1,2,3}`
-
-
