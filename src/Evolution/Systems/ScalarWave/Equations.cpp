@@ -71,7 +71,6 @@ void UpwindFlux<Dim>::package_data(
     const gsl::not_null<Variables<package_tags>*> packaged_data,
     const Scalar<DataVector>& normal_dot_flux_pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
-    const Scalar<DataVector>& /*normal_dot_flux_psi*/,
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
     const noexcept {

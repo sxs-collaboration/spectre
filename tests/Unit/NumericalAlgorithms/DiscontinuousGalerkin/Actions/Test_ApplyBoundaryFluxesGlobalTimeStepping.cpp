@@ -53,6 +53,7 @@ class NumericalFlux {
     using type = tnsr::I<DataVector, 1>;
   };
 
+  using target_fields = tmpl::list<Var>;
   using package_tags = tmpl::list<ExtraData, Var>;
 
   void operator()(const gsl::not_null<Scalar<DataVector>*> numerical_flux_var,
@@ -81,18 +82,17 @@ struct Metavariables;
 
 using component = ActionTesting::MockArrayComponent<
     Metavariables, ElementIndex<2>, tmpl::list<NumericalFluxTag>,
-    tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>>;
+    tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping<
+        TemporalId, NumericalFluxTag>>>;
 
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component>;
-  using temporal_id = TemporalId;
   using const_global_cache_tag_list = tmpl::list<>;
-
-  using normal_dot_numerical_flux = NumericalFluxTag;
 };
 
-using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
+using flux_comm_types =
+    dg::FluxCommunicationTypes<2, TemporalId, NumericalFluxTag>;
 using mortar_data_tag =
     typename flux_comm_types::global_time_stepping_mortar_data_tag;
 using LocalData = typename flux_comm_types::LocalData;
@@ -158,8 +158,8 @@ SPECTRE_TEST_CASE(
 
   const auto out_box = get<0>(
       runner
-          .apply<component, dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-              box, id));
+          .apply<component, dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping<
+                                TemporalId, NumericalFluxTag>>(box, id));
 
   // F* - F = 10 * local_var + 1000 * remote_var - local_flux
   const DataVector xi_flux = {0., 0., 7011.,

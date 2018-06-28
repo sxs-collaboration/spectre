@@ -45,39 +45,36 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - Metavariables::temporal_id
+///   - TemporalIdTag
 ///   - Tags::Next<Metavariables::temporal_id>
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - Tags::Mortars<Tags::Next<Metavariables::temporal_id>, volume_dim>
+///   - Tags::Mortars<Tags::Next<TemporalIdTag>, Dim>
 ///   - Tags::VariablesBoundaryData
 ///
 /// \see SendDataForFluxes
-template <typename Metavariables>
+template <size_t Dim, typename TemporalIdTag, typename NumericalFluxTag>
 struct ReceiveDataForFluxes {
-  using const_global_cache_tags =
-      tmpl::list<typename Metavariables::normal_dot_numerical_flux>;
-
  private:
-  using flux_comm_types = FluxCommunicationTypes<Metavariables>;
+  using flux_comm_types =
+      FluxCommunicationTypes<Dim, TemporalIdTag, NumericalFluxTag>;
 
  public:
   using inbox_tags = tmpl::list<typename flux_comm_types::FluxesTag>;
 
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    constexpr size_t volume_dim = Metavariables::system::volume_dim;
-    using temporal_id_tag = typename Metavariables::temporal_id;
     using neighbor_temporal_id_tag =
-        Tags::Mortars<Tags::Next<temporal_id_tag>, volume_dim>;
+        Tags::Mortars<Tags::Next<TemporalIdTag>, Dim>;
     db::mutate<Tags::VariablesBoundaryData, neighbor_temporal_id_tag>(
         make_not_null(&box),
         [&inboxes](const gsl::not_null<
@@ -85,7 +82,7 @@ struct ReceiveDataForFluxes {
                        mortar_data,
                    const gsl::not_null<db::item_type<neighbor_temporal_id_tag>*>
                        neighbor_next_temporal_ids,
-                   const db::item_type<Tags::Next<temporal_id_tag>>&
+                   const db::item_type<Tags::Next<TemporalIdTag>>&
                        local_next_temporal_id) noexcept {
           auto& inbox =
               tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
@@ -129,26 +126,25 @@ struct ReceiveDataForFluxes {
               "taken: Received data at " << inbox.begin()->first
               << " while stepping to " << local_next_temporal_id);
         },
-        db::get<Tags::Next<temporal_id_tag>>(box));
+        db::get<Tags::Next<TemporalIdTag>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
 
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex>
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex>
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
-    constexpr size_t volume_dim = Metavariables::system::volume_dim;
-    using temporal_id = typename Metavariables::temporal_id;
-
     const auto& inbox =
         tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
 
-    const auto& local_next_temporal_id = db::get<Tags::Next<temporal_id>>(box);
+    const auto& local_next_temporal_id =
+        db::get<Tags::Next<TemporalIdTag>>(box);
     const auto& mortars_next_temporal_id =
-        db::get<Tags::Mortars<Tags::Next<temporal_id>, volume_dim>>(box);
+        db::get<Tags::Mortars<Tags::Next<TemporalIdTag>, Dim>>(box);
     for (const auto& mortar_id_next_temporal_id : mortars_next_temporal_id) {
       const auto& mortar_id = mortar_id_next_temporal_id.first;
       auto next_temporal_id = mortar_id_next_temporal_id.second;
@@ -174,34 +170,33 @@ struct ReceiveDataForFluxes {
 ///
 /// With:
 /// - `Interface<Tag> =
-///   Tags::Interface<Tags::InternalDirections<volume_dim>, Tag>`
+///   Tags::Interface<Tags::InternalDirections<Dim>, Tag>`
 ///
 /// Uses:
-/// - ConstGlobalCache: Metavariables::normal_dot_numerical_flux
+/// - ConstGlobalCache: NumericalFluxTag
 /// - DataBox:
-///   - Tags::Element<volume_dim>
+///   - Tags::Element<Dim>
 ///   - Interface<Tags listed in
-///               Metavariables::normal_dot_numerical_flux::type::slice_tags>
-///   - Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
-///   - Interface<Tags::Extents<volume_dim - 1>>
-///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>
-///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
-///   - Metavariables::temporal_id
+///               NumericalFluxTag::type::argument_tags>
+///   - Interface<Tags::Extents<Dim - 1>>
+///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>
+///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
+///   - TemporalIdTag
 ///   - Tags::Next<Metavariables::temporal_id>
+///   - Interface<FluxCommunicationTypes::normal_fluxes_tag>
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes:
-///   Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
+///   Interface<FluxCommunicationTypes::normal_dot_fluxes_tag>
 /// - Modifies: Tags::VariablesBoundaryData
 ///
 /// \see ReceiveDataForFluxes
-template <typename Metavariables>
+template <size_t Dim, typename TemporalIdTag, typename NumericalFluxTag>
 struct SendDataForFluxes {
-  using const_global_cache_tags =
-      tmpl::list<typename Metavariables::normal_dot_numerical_flux>;
+  using const_global_cache_tags = tmpl::list<NumericalFluxTag>;
 
-  template <typename DbTags, typename... InboxTags,
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
@@ -210,25 +205,21 @@ struct SendDataForFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    constexpr size_t volume_dim = system::volume_dim;
-
-    using flux_comm_types = FluxCommunicationTypes<Metavariables>;
-
+    using flux_comm_types =
+        FluxCommunicationTypes<Dim, TemporalIdTag, NumericalFluxTag>;
     using interface_normal_dot_fluxes_tag =
-        Tags::Interface<Tags::InternalDirections<volume_dim>,
+        Tags::Interface<Tags::InternalDirections<Dim>,
                         typename flux_comm_types::normal_dot_fluxes_tag>;
 
     const auto& normal_dot_numerical_flux_computer =
-        get<typename Metavariables::normal_dot_numerical_flux>(cache);
+        get<NumericalFluxTag>(cache);
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
-    const auto& element = db::get<Tags::Element<volume_dim>>(box);
-    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
-    const auto& next_temporal_id =
-        db::get<Tags::Next<typename Metavariables::temporal_id>>(box);
+    const auto& element = db::get<Tags::Element<Dim>>(box);
+    const auto& temporal_id = db::get<TemporalIdTag>(box);
+    const auto& next_temporal_id = db::get<Tags::Next<TemporalIdTag>>(box);
 
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
@@ -241,8 +232,8 @@ struct SendDataForFluxes {
                  << neighbors_in_direction);
       const auto& orientation = neighbors_in_direction.orientation();
       const auto& boundary_extents =
-          db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
-                                  Tags::Extents<volume_dim - 1>>>(box)
+          db::get<Tags::Interface<Tags::InternalDirections<Dim>,
+                                  Tags::Extents<Dim - 1>>>(box)
               .at(direction);
 
       // Everything below here needs to be fixed for
@@ -253,14 +244,12 @@ struct SendDataForFluxes {
       // We store one copy of the Variables and send another, since we need
       // the data on both sides of the mortar.
       using package_arguments = tmpl::append<
-          typename db::item_type<
-              typename flux_comm_types::normal_dot_fluxes_tag>::tags_list,
-          typename Metavariables::normal_dot_numerical_flux::type::slice_tags,
+          typename flux_comm_types::numerical_flux::argument_tags,
           tmpl::list<
-              Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
+              Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
       const auto packaged_data = db::apply<tmpl::transform<
           package_arguments,
-          tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
+          tmpl::bind<Tags::Interface, Tags::InternalDirections<Dim>,
                      tmpl::_1>>>(
           [&boundary_extents, &direction, &normal_dot_numerical_flux_computer](
               const auto&... args) noexcept {
@@ -279,8 +268,8 @@ struct SendDataForFluxes {
       local_data.assign_subset(packaged_data);
       get<typename flux_comm_types::MagnitudeOfFaceNormal>(local_data) =
           db::get<Tags::Interface<
-              Tags::InternalDirections<volume_dim>,
-              Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
+              Tags::InternalDirections<Dim>,
+              Tags::Magnitude<Tags::UnnormalizedFaceNormal<Dim>>>>(box)
               .at(direction);
 
       const auto direction_from_neighbor = orientation(direction.opposite());

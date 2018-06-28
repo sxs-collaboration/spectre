@@ -59,32 +59,24 @@ struct OtherArg : db::SimpleTag {
   using type = double;
 };
 
-struct System {
-  static constexpr const size_t volume_dim = 2;
-  using variables_tag = Tags::Variables<tmpl::list<Var, Var2>>;
-
-  template <typename Tag>
-  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
-
-  struct normal_dot_fluxes {
-    using argument_tags = tmpl::list<Var, OtherArg, Var2>;
-    static void apply(
-        const gsl::not_null<Scalar<DataVector>*> var_normal_dot_flux,
-        const gsl::not_null<tnsr::ii<DataVector, 2>*> var2_normal_dot_flux,
-        const Scalar<DataVector>& var,
-        const double other_arg,
-        const tnsr::ii<DataVector, 2>& var2,
-        const tnsr::i<DataVector, 2>& unit_face_normal) noexcept {
-      get(*var_normal_dot_flux) =
-          get(var) + other_arg * get<0>(unit_face_normal);
-      for (size_t i = 0; i < 2; ++i) {
-        for (size_t j = i; j < 2; ++j) {
-          var2_normal_dot_flux->get(i, j) =
-              var2.get(i, j) + other_arg * get<1>(unit_face_normal);
-        }
+struct NormalDotFluxes {
+  using target_fields = tmpl::list<Var, Var2>;
+  using argument_tags = tmpl::list<Var, OtherArg, Var2>;
+  static void apply(
+      const gsl::not_null<Scalar<DataVector>*> var_normal_dot_flux,
+      const gsl::not_null<tnsr::ii<DataVector, 2>*> var2_normal_dot_flux,
+      const Scalar<DataVector>& var, const double other_arg,
+      const tnsr::ii<DataVector, 2>& var2,
+      const tnsr::i<DataVector, 2>& unit_face_normal) noexcept {
+    get(*var_normal_dot_flux) =
+        get(var) + other_arg * get<0>(unit_face_normal);
+    for (size_t i = 0; i < 2; ++i) {
+      for (size_t j = i; j < 2; ++j) {
+        var2_normal_dot_flux->get(i, j) =
+            var2.get(i, j) + other_arg * get<1>(unit_face_normal);
       }
     }
-  };
+  }
 };
 
 struct Metavariables;
@@ -94,7 +86,6 @@ using component =
                                       tmpl::list<>>;
 
 struct Metavariables {
-  using system = System;
   using component_list = tmpl::list<component>;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -134,9 +125,9 @@ auto run_action(
       element, extents, std::move(element_map), vars, other_arg);
 
   return std::get<0>(
-      runner
-          .apply<component, dg::Actions::ComputeNonconservativeBoundaryFluxes>(
-              start_box, element.id()));
+      runner.apply<component, dg::Actions::ComputeNonconservativeBoundaryFluxes<
+                                  2, NormalDotFluxes>>(start_box,
+                                                       element.id()));
 }
 }  // namespace
 
@@ -176,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
   for (const auto& direction :
        {Direction<2>::upper_xi(), Direction<2>::lower_eta()}) {
     expected[direction].initialize(3);
-    System::normal_dot_fluxes::apply(
+    NormalDotFluxes::apply(
         &get<Tags::NormalDotFlux<Var>>(expected[direction]),
         &get<Tags::NormalDotFlux<Var2>>(expected[direction]),
         get<Var>(vars.at(direction)), other_arg.at(direction),

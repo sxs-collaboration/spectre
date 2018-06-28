@@ -91,6 +91,10 @@ struct InitializeElement {
   template <typename Tag>
   using boundary_tag = Tags::Interface<Tags::BoundaryDirections<Dim>, Tag>;
 
+  template <typename Metavariables>
+  using flux_comm_types = dg::FluxCommunicationTypes<
+      Dim, Tags::TimeId, typename Metavariables::normal_dot_numerical_flux>;
+
   template <class Metavariables>
   using return_tag_list = tmpl::list<
       // Simple items
@@ -103,7 +107,7 @@ struct InitializeElement {
                              typename Metavariables::system::variables_tag>>,
       db::add_tag_prefix<Tags::dt,
                          typename Metavariables::system::variables_tag>,
-      typename dg::FluxCommunicationTypes<
+      typename flux_comm_types<
           Metavariables>::global_time_stepping_mortar_data_tag,
       Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>,
       // Compute items
@@ -204,7 +208,7 @@ struct InitializeElement {
     }
 
     // Set up boundary information
-    db::item_type<typename dg::FluxCommunicationTypes<
+    db::item_type<typename flux_comm_types<
         Metavariables>::global_time_stepping_mortar_data_tag>
         boundary_data{};
     typename Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>::type

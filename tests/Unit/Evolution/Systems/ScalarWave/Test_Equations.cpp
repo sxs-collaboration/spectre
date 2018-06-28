@@ -199,11 +199,11 @@ void check_upwind_flux(const size_t npts, const double t) {
   ScalarWave::UpwindFlux<Dim> flux_computer{};
   flux_computer.package_data(
       make_not_null(&packaged_data_int), solution.dpsi_dt(x, t + 1.0),
-      solution.dpsi_dx(x, t + 2.0), solution.psi(x, t + 3.0),
+      solution.dpsi_dx(x, t + 2.0),
       solution.psi(x, t + 4.0), unit_normal);
   flux_computer.package_data(
       make_not_null(&packaged_data_ext), solution.dpsi_dt(x, 2.0 * t + 10.0),
-      solution.dpsi_dx(x, 2.0 * t + 9.0), solution.psi(x, 2.0 * t + 8.0),
+      solution.dpsi_dx(x, 2.0 * t + 9.0),
       solution.psi(x, 2.0 * t + 7.0), unit_normal);
 
   Scalar<DataVector> normal_dot_numerical_flux_pi(pow<Dim>(npts), 0.0);
