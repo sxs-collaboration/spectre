@@ -90,6 +90,32 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
         [](const auto& /*meta*/, const auto& /*meta*/) {})(
         std::integral_constant<size_t, ThermodynamicDim>{},
         std::add_pointer_t<EoS>{nullptr});
+    INFO(
+        "Done\nTesting that rest_mass_density_from_enthalpy and "
+        "specific_enthalpy_from_density are inverses of each other...")
+    make_overloader(
+        [&](const std::integral_constant<size_t, 1>& /*thermodynamic_dim*/,
+            auto eos_for_type) {
+          std::random_device r;
+          const auto seed = r();
+          CAPTURE(seed);
+          std::mt19937 generator(seed);
+          std::uniform_real_distribution<> distribution(1.0, 1.0e+04);
+          const auto nn_generator = make_not_null(&generator);
+          const auto nn_distribution = make_not_null(&distribution);
+          const auto specific_enthalpy = make_with_random_values<Scalar<T>>(
+              nn_generator, nn_distribution, used_for_size);
+          const auto& eos_base =
+              dynamic_cast<std::remove_pointer_t<decltype(eos_for_type)>&>(
+                  *eos);
+          CHECK_ITERABLE_APPROX(
+              specific_enthalpy,
+              eos_base.specific_enthalpy_from_density(
+                  eos_base.rest_mass_density_from_enthalpy(specific_enthalpy)));
+        },
+        [](const auto& /*meta*/, const auto& /*meta*/) {})(
+        std::integral_constant<size_t, ThermodynamicDim>{},
+        std::add_pointer_t<EoS>{nullptr});
     INFO("Done\nTesting specific_enthalpy_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
         func = &EoS::specific_enthalpy_from_density, *eos, "TestFunctions",
@@ -98,31 +124,27 @@ void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
                        : std::string(python_function_prefix +
                                      "_newt_specific_enthalpy_from_density"),
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(member_args...),
-        used_for_size);
+        std::make_tuple(member_args...), used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
         func = &EoS::specific_internal_energy_from_density, *eos,
         "TestFunctions",
         python_function_prefix + "_specific_internal_energy_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(member_args...),
-        used_for_size);
+        std::make_tuple(member_args...), used_for_size);
     INFO("Done\nTesting chi_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
         func = &EoS::chi_from_density, *eos, "TestFunctions",
         python_function_prefix + "_chi_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(member_args...),
-        used_for_size);
+        std::make_tuple(member_args...), used_for_size);
     INFO("Done\nTesting kappa_times_p_over_rho_squared_from_density...")
     pypp::check_with_random_values<sizeof...(Is) + 1>(
         func = &EoS::kappa_times_p_over_rho_squared_from_density, *eos,
         "TestFunctions",
         python_function_prefix + "_kappa_times_p_over_rho_squared_from_density",
         {{random_value_bounds[0], random_value_bounds[Is + 1]...}},
-        std::make_tuple(member_args...),
-        used_for_size);
+        std::make_tuple(member_args...), used_for_size);
     INFO("Done\n\n")
   };
   helper(in_eos);
