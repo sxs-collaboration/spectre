@@ -5,6 +5,7 @@ set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
   Test_LiftFlux.cpp
+  Test_MortarHelpers.cpp
   Test_SimpleBoundaryData.cpp
   )
 
@@ -14,5 +15,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;DataStructures;Domain;ErrorHandling;Utilities"
+  "CoordinateMaps;DataStructures;Domain;DiscontinuousGalerkin;ErrorHandling;Utilities"
   )

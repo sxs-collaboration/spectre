@@ -43,6 +43,7 @@ function(add_scalar_wave_executable DIM)
   target_link_libraries(
     ${EXECUTABLE_NAME}
     CoordinateMaps
+    DiscontinuousGalerkin
     DomainCreators
     Informer
     MathFunctions
