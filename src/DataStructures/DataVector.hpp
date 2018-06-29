@@ -70,15 +70,25 @@ using std::abs;  // NOLINT
 
 /*!
  * \ingroup DataStructuresGroup
- * \brief A class for storing data on a mesh.
+ * \brief Stores a collection of function values.
  *
- * A Data holds an array of contiguous data and can be either owning (the array
- * is deleted when the Data goes out of scope) or non-owning, meaning it just
- * has a pointer to an array.
+ * \details Use DataVector to represent function values on the computational
+ * domain. Note that interpreting the data also requires knowledge of the points
+ * that these function values correspond to.
  *
- * A variety of mathematical operations are supported with DataVectors. In
- * addition to the addition, subtraction, multiplication, division, etc. there
- * are the following element-wise operations:
+ * A DataVector holds an array of contiguous data. The DataVector can be owning,
+ * meaning the array is deleted when the DataVector goes out of scope, or
+ * non-owning, meaning it just has a pointer to an array.
+ *
+ * Refer to the \ref DataStructuresGroup documentation for a list of other
+ * available types. In particular, to represent a generic vector that supports
+ * common vector and matrix operations and whose meaning may not be of function
+ * values at points, use DenseVector instead.
+ *
+ * DataVectors support a variety of mathematical operations that are applicable
+ * to nodal coefficients. In addition to common arithmetic operations such as
+ * elementwise addition, subtraction, multiplication and division the following
+ * elementwise operations are implemented:
  *
  * - abs
  * - acos

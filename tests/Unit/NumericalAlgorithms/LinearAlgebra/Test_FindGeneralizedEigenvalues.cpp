@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -58,8 +57,8 @@ void test_find_generalized_eigenvalues(const Matrix& matrix_a,
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
                   "[NumericalAlgorithms][LinearAlgebra][Unit]") {
-  Matrix matrix_a({{1.0, 2.0}, {-3.0, -4.0}});
-  Matrix matrix_b({{4.0, -3.0}, {-2.0, 1.0}});
+  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
   test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
 }
 
@@ -69,8 +68,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
     "[NumericalAlgorithms][LinearAlgebra][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Matrix matrix_a(std::vector<std::vector<double>>({{1.0}, {-3.0}}));
-  Matrix matrix_b({{4.0, -3.0}, {-2.0, 1.0}});
+  Matrix matrix_a{{1.0}, {-3.0}};
+  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
   test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -82,8 +81,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
     "[NumericalAlgorithms][LinearAlgebra][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Matrix matrix_a({{1.0, 2.0}, {-3.0, -4.0}});
-  Matrix matrix_b(std::vector<std::vector<double>>{{4.0}});
+  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+  Matrix matrix_b{{4.0}};
   test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -95,8 +94,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
     "[NumericalAlgorithms][LinearAlgebra][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Matrix matrix_a({{1.0, 2.0}, {-3.0, -4.0}});
-  Matrix matrix_b({{4.0, -3.0}, {-2.0, 1.0}});
+  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
   test_find_generalized_eigenvalues(matrix_a, matrix_b, 1, 2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -108,8 +107,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearAlgebra.GeneralizedEigenvalue",
     "[NumericalAlgorithms][LinearAlgebra][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Matrix matrix_a({{1.0, 2.0}, {-3.0, -4.0}});
-  Matrix matrix_b({{4.0, -3.0}, {-2.0, 1.0}});
+  Matrix matrix_a{{1.0, 2.0}, {-3.0, -4.0}};
+  Matrix matrix_b{{4.0, -3.0}, {-2.0, 1.0}};
   test_find_generalized_eigenvalues(matrix_a, matrix_b, 2, 1);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

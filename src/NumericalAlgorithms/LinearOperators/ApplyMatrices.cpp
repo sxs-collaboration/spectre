@@ -57,7 +57,7 @@ Scratch get_scratch(const std::array<MatrixType, Dim>& matrices,
   size_t size = number_of_independent_components;
   for (size_t i = 0; i < Dim; ++i) {
     const auto& matrix = gsl::at(matrices, i);
-    if (matrix == Matrix{}) {
+    if (dereference_wrapper(matrix) == Matrix{}) {
       size *= extents[i];
     } else {
       size *= std::max(dereference_wrapper(matrix).rows(),
@@ -78,7 +78,7 @@ std::array<size_t, Dim> matrix_rows(const std::array<MatrixType, Dim>& matrices,
                                     const Index<Dim>& extents) noexcept {
   std::array<size_t, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
-    if (gsl::at(matrices, i) == Matrix{}) {
+    if (dereference_wrapper(gsl::at(matrices, i)) == Matrix{}) {
       gsl::at(result, i) = extents[i];
     } else {
       gsl::at(result, i) = dereference_wrapper(gsl::at(matrices, i)).rows();
@@ -96,7 +96,8 @@ void Impl<Dim, DimensionIsIdentity...>::apply(
     const std::array<MatrixType, Dim>& matrices, const double* const data,
     const Index<Dim>& extents,
     const size_t number_of_independent_components) noexcept {
-  if (matrices[sizeof...(DimensionIsIdentity)] == Matrix{}) {
+  if (dereference_wrapper(matrices[sizeof...(DimensionIsIdentity)]) ==
+      Matrix{}) {
     Impl<Dim, DimensionIsIdentity..., true>::apply(
         result, matrices, data, extents, number_of_independent_components);
   } else {
