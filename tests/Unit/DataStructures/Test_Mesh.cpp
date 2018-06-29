@@ -7,9 +7,11 @@
 #include <cstddef>
 #include <functional>
 #include <numeric>
+#include <string>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Mesh.hpp"
+#include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
@@ -220,6 +222,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
           Spectral::Basis::Legendre}},
         {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
           Spectral::Quadrature::GaussLobatto}}});
+  }
+
+  SECTION("Tag") {
+    CHECK(Tags::Mesh<1>::name() == "Mesh");
+    CHECK(Tags::Mesh<2>::name() == "Mesh");
+    CHECK(Tags::Mesh<3>::name() == "Mesh");
   }
 }
 

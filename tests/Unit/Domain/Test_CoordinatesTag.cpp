@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Mesh.hpp"
@@ -20,6 +21,9 @@ namespace {
 template <size_t Dim, typename T>
 void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
   using map_tag = Tags::ElementMap<Dim, Frame::Grid>;
+  using coordinates_tag =
+      Tags::Coordinates<map_tag, Tags::LogicalCoordinates<Dim>>;
+  CHECK(coordinates_tag::name() == "Coordinates");
   const auto box = db::create<
       db::AddSimpleTags<Tags::Mesh<Dim>, map_tag>,
       db::AddComputeTags<

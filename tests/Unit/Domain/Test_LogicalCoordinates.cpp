@@ -6,6 +6,7 @@
 #include <array>
 #include <memory>
 #include <pup.h>
+#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Mesh.hpp"
@@ -15,6 +16,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
@@ -71,6 +73,10 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
 
   CHECK(x_3d[2][0] == -32.0);
   CHECK(x_3d[2][15] == 74.0);
+
+  CHECK(Tags::LogicalCoordinates<1>::name() == "LogicalCoordinates");
+  CHECK(Tags::LogicalCoordinates<2>::name() == "LogicalCoordinates");
+  CHECK(Tags::LogicalCoordinates<3>::name() == "LogicalCoordinates");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
