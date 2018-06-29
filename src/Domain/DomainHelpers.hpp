@@ -131,12 +131,19 @@ auto wedge_coordinate_maps(double inner_radius, double outer_radius,
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
-/// objects. The cubes enveloping the two Shells each have a side length of
-/// `length_inner_cube`. The ten frustums also make up a cube of their own,
-/// of side length `length_outer_cube`.
+/// objects. The Frustums partition the volume defined by two bounding
+/// surfaces: The inner surface is the surface of the two joined inner cubes
+/// enveloping the two compact objects, while the outer is the surface of the
+/// outer cube. The cubes enveloping the two Shells each have a side length of
+/// `length_inner_cube`. The outer cube has a side length of
+/// `length_outer_cube`. `origin_preimage` is a parameter
+/// that moves the center of the two joined inner cubes away from the origin
+/// and to `-origin_preimage`.
 template <typename TargetFrame>
-auto frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
-                             bool use_equiangular_map) noexcept
+auto frustum_coordinate_maps(
+    double length_inner_cube, double length_outer_cube,
+    bool use_equiangular_map,
+    const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}}) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
