@@ -162,6 +162,7 @@ before_install:
       brew install jemalloc;
       brew install gsl;
       brew install hdf5;
+      brew install openblas;
 
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
       chmod +x miniconda.sh;
@@ -311,6 +312,8 @@ script:
              -D LIBXSMM_ROOT=$HOME/libxsmm/build
              -D YAMLCPP_ROOT=$HOME/yaml-cpp/
              -D MACOSX_MIN=10.11
+             -D BLAS_openblas_LIBRARY=/usr/local/opt/openblas/lib/libopenblas.dylib
+             -D LAPACK_openblas_LIBRARY=/usr/local/opt/openblas/lib/libopenblas.dylib
              -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
              ${TRAVIS_BUILD_DIR}
     && make test-executables -j2
