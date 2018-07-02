@@ -413,18 +413,22 @@ enum class DispatchTagType {
   Other,
 };
 
+template <typename Tag>
+constexpr DispatchTagType tag_type =
+    tt::is_a_v<Tags::Variables, Tag>
+        ? DispatchTagType::Variables
+        : cpp17::is_base_of_v<db::PrefixTag, Tag> ? DispatchTagType::Prefix
+                                                  : DispatchTagType::Other;
+
 template <DispatchTagType TagType>
 struct add_tag_prefix_impl;
 
 // Call the appropriate impl based on the type of the tag being
 // prefixed.
 template <template <typename...> class Prefix, typename Tag, typename... Args>
-using dispatch_add_tag_prefix_impl = typename add_tag_prefix_impl<
-    tt::is_a_v<Tags::Variables, Tag>
-        ? DispatchTagType::Variables
-        : cpp17::is_base_of_v<db::PrefixTag, Tag>
-              ? DispatchTagType::Prefix
-              : DispatchTagType::Other>::template f<Prefix, Tag, Args...>;
+using dispatch_add_tag_prefix_impl =
+    typename add_tag_prefix_impl<tag_type<Tag>>::template f<Prefix, Tag,
+                                                            Args...>;
 
 template <>
 struct add_tag_prefix_impl<DispatchTagType::Other> {
@@ -462,23 +466,50 @@ struct add_tag_prefix_impl<DispatchTagType::Variables> {
       Tags::Variables<wrap_tags_in<Prefix, typename Tag::tags_list, Args...>>;
 };
 
+// Implementation of remove_tag_prefix
 template <typename>
 struct remove_tag_prefix_impl;
+
+template <DispatchTagType TagType>
+struct remove_variables_prefix;
+
+template <typename Tag>
+using dispatch_remove_variables_prefix =
+    typename remove_variables_prefix<tag_type<Tag>>::template f<Tag>;
+
+template <>
+struct remove_variables_prefix<DispatchTagType::Other> {
+  template <typename Tag>
+  using f = Tag;
+};
+
+template <>
+struct remove_variables_prefix<DispatchTagType::Prefix> {
+  template <typename Tag>
+  struct helper;
+
+  template <template <typename...> class Prefix, typename Tag, typename... Args>
+  struct helper<Prefix<Tag, Args...>> {
+    using type = Prefix<dispatch_remove_variables_prefix<Tag>, Args...>;
+  };
+
+  template <typename Tag>
+  using f = typename helper<Tag>::type;
+};
+
+template <>
+struct remove_variables_prefix<DispatchTagType::Variables> {
+  template <typename Tag>
+  using f = Tags::Variables<tmpl::transform<typename Tag::tags_list,
+                                            remove_tag_prefix_impl<tmpl::_1>>>;
+};
 
 template <typename UnprefixedTag, template <typename...> class Prefix,
           typename... Args>
 struct remove_tag_prefix_impl<Prefix<UnprefixedTag, Args...>> {
   static_assert(cpp17::is_base_of_v<db::SimpleTag, UnprefixedTag>,
                 "Unwrapped tag is not a DataBoxTag");
-  using type = UnprefixedTag;
-};
-
-template <typename... VariablesTags, template <typename...> class Prefix,
-          typename... Args>
-struct remove_tag_prefix_impl<
-    Prefix<Tags::Variables<tmpl::list<VariablesTags...>>, Args...>> {
-  using type = Tags::Variables<
-      tmpl::list<typename remove_tag_prefix_impl<VariablesTags>::type...>>;
+  using type = dispatch_remove_variables_prefix<UnprefixedTag>;
 };
 }  // namespace detail
 

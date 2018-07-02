@@ -90,6 +90,13 @@ static_assert(
             double>>,
         Tags::Variables<tmpl::list<Var>>>,
     "Failed testing remove_tag_prefix");
+static_assert(
+    cpp17::is_same_v<db::remove_tag_prefix<PrefixWithArgs<
+                         Prefix<Tags::Variables<tmpl::list<
+                             PrefixWithArgs<Prefix<Var>, int, double>>>>,
+                         int, double>>,
+                     Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
+    "Failed testing remove_tag_prefix");
 
 static_assert(
     cpp17::is_same_v<db::remove_all_prefixes<PrefixWithArgs<
