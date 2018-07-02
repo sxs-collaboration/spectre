@@ -4,8 +4,8 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -26,13 +26,10 @@ namespace Tags {
 template <typename, typename, typename>
 struct deriv;
 template <typename>
-struct dt;
-template <typename>
 struct NormalDotFlux;
 }  // namespace Tags
 
 namespace ScalarWave {
-struct Psi;
 struct Pi;
 template <size_t Dim>
 struct Phi;

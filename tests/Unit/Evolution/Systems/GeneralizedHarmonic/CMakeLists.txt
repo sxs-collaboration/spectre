@@ -5,6 +5,7 @@ set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
   Test_DuDt.cpp
+  Test_Fluxes.cpp
   )
 
 add_test_library(

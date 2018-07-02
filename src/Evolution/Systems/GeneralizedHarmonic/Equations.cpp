@@ -6,6 +6,7 @@
 #include <array>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 
@@ -248,9 +249,71 @@ void ComputeDuDt<Dim>::apply(
     }
   }
 }
+
+template <size_t Dim>
+void ComputeNormalDotFluxes<Dim>::apply(
+    const gsl::not_null<tnsr::aa<DataVector, Dim>*>
+        spacetime_metric_normal_dot_flux,
+    const gsl::not_null<tnsr::aa<DataVector, Dim>*> pi_normal_dot_flux,
+    const gsl::not_null<tnsr::iaa<DataVector, Dim>*> phi_normal_dot_flux,
+    const tnsr::aa<DataVector, Dim>& spacetime_metric,
+    const tnsr::aa<DataVector, Dim>& pi, const tnsr::iaa<DataVector, Dim>& phi,
+    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
+    const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
+    const tnsr::i<DataVector, Dim>& unit_normal) noexcept {
+  const auto shift_dot_normal = get(dot_product(shift, unit_normal));
+
+  auto normal_dot_phi =
+      make_with_value<tnsr::aa<DataVector, Dim>>(gamma1, 0.);
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      for (size_t i = 0; i < Dim; ++i) {
+        for (size_t j = 0; j < Dim; ++j) {
+          normal_dot_phi.get(mu, nu) += inverse_spatial_metric.get(i, j) *
+                                              unit_normal.get(j) *
+                                              phi.get(i, mu, nu);
+        }
+      }
+    }
+  }
+
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      spacetime_metric_normal_dot_flux->get(mu, nu) =
+          -(1. + get(gamma1)) * spacetime_metric.get(mu, nu) * shift_dot_normal;
+    }
+  }
+
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      pi_normal_dot_flux->get(mu, nu) =
+          -shift_dot_normal *
+              (get(gamma1) * get(gamma2) * spacetime_metric.get(mu, nu) +
+               pi.get(mu, nu)) +
+          get(lapse) * normal_dot_phi.get(mu, nu);
+    }
+  }
+
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+        phi_normal_dot_flux->get(i, mu, nu) =
+            get(lapse) * (unit_normal.get(i) * pi.get(mu, nu) -
+                          get(gamma2) * unit_normal.get(i) *
+                              spacetime_metric.get(mu, nu)) -
+            shift_dot_normal * phi.get(i, mu, nu);
+      }
+    }
+  }
+}
 /// \endcond
 }  // namespace GeneralizedHarmonic
 
 template struct GeneralizedHarmonic::ComputeDuDt<1>;
 template struct GeneralizedHarmonic::ComputeDuDt<2>;
 template struct GeneralizedHarmonic::ComputeDuDt<3>;
+
+template struct GeneralizedHarmonic::ComputeNormalDotFluxes<1>;
+template struct GeneralizedHarmonic::ComputeNormalDotFluxes<2>;
+template struct GeneralizedHarmonic::ComputeNormalDotFluxes<3>;
