@@ -527,23 +527,27 @@ template <typename Tag>
 using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
 
 namespace databox_detail {
-template <class Tag, bool IsPrefix = false>
-struct remove_all_prefixes {
-  using type = Tag;
-};
-
-template <template <class...> class F, class Tag, class... Args>
-struct remove_all_prefixes<F<Tag, Args...>, true> {
-  using type = typename remove_all_prefixes<
-      Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
-};
+template <class Tag, bool IsPrefix>
+struct remove_all_prefixes_impl;
 }  // namespace databox_detail
 
 /// \ingroup DataBoxGroup
 /// Completely remove all prefix tags from a Tag
 template <typename Tag>
-using remove_all_prefixes = typename databox_detail::remove_all_prefixes<
+using remove_all_prefixes = typename databox_detail::remove_all_prefixes_impl<
     Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
+
+namespace databox_detail {
+template <class Tag>
+struct remove_all_prefixes_impl<Tag, false> {
+  using type = Tag;
+};
+
+template <class Tag>
+struct remove_all_prefixes_impl<Tag, true> {
+  using type = remove_all_prefixes<remove_tag_prefix<Tag>>;
+};
+}  // namespace databox_detail
 
 /// \ingroup DataBoxGroup
 /// Struct that can be specialized to allow DataBox items to have
