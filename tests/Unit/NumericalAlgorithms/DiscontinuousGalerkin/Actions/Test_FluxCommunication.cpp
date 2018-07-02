@@ -45,11 +45,13 @@
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -139,8 +141,8 @@ using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
 using LocalData = typename flux_comm_types::LocalData;
+using LocalMortarData = typename flux_comm_types::LocalMortarData;
 using PackagedData = typename flux_comm_types::PackagedData;
-using MagnitudeOfFaceNormal = typename flux_comm_types::MagnitudeOfFaceNormal;
 using normal_dot_fluxes_tag =
     interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>;
 
@@ -352,71 +354,69 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
           1);
   };
 
-  db::mutate<mortar_data_tag>(make_not_null(&received_box), [
-    &west_id, &east_id, &south_id, &data
-  ](const gsl::not_null<db::item_type<mortar_data_tag>*>
-        mortar_history) noexcept {
-    CHECK(mortar_history->size() == 3);
-    const auto check_mortar = [&mortar_history](
-        const std::pair<Direction<2>, ElementId<2>>& mortar_id,
-        const Scalar<DataVector>& local_flux,
-        const Scalar<DataVector>& remote_flux,
-        const Scalar<DataVector>& local_other,
-        const Scalar<DataVector>& remote_other,
-        const tnsr::i<DataVector, 2>& local_normal,
-        const tnsr::i<DataVector, 2>& remote_normal) noexcept {
-      LocalData local_data(3);
-      get<Tags::NormalDotFlux<Var>>(local_data) = local_flux;
-      get<MagnitudeOfFaceNormal>(local_data) = magnitude(local_normal);
-      auto normalized_local_normal = local_normal;
-      for (auto& x : normalized_local_normal) {
-        x /= get(get<MagnitudeOfFaceNormal>(local_data));
-      }
-      PackagedData local_packaged(3);
-      NumericalFlux{}.package_data(&local_packaged, local_flux,
-                                   local_other, normalized_local_normal);
-      local_data.assign_subset(local_packaged);
+  auto mortar_history =
+      serialize_and_deserialize(db::get<mortar_data_tag>(received_box));
+  CHECK(mortar_history.size() == 3);
+  const auto check_mortar = [&mortar_history](
+      const std::pair<Direction<2>, ElementId<2>>& mortar_id,
+      const Scalar<DataVector>& local_flux,
+      const Scalar<DataVector>& remote_flux,
+      const Scalar<DataVector>& local_other,
+      const Scalar<DataVector>& remote_other,
+      const tnsr::i<DataVector, 2>& local_normal,
+      const tnsr::i<DataVector, 2>& remote_normal) noexcept {
+    LocalMortarData local_mortar_data(3);
+    get<Tags::NormalDotFlux<Var>>(local_mortar_data) = local_flux;
+    const auto magnitude_local_normal = magnitude(local_normal);
+    auto normalized_local_normal = local_normal;
+    for (auto& x : normalized_local_normal) {
+      x /= get(magnitude_local_normal);
+    }
+    PackagedData local_packaged(3);
+    NumericalFlux{}.package_data(&local_packaged, local_flux, local_other,
+                                 normalized_local_normal);
+    local_mortar_data.assign_subset(local_packaged);
 
-      const auto magnitude_remote_normal = magnitude(remote_normal);
-      auto normalized_remote_normal = remote_normal;
-      for (auto& x : normalized_remote_normal) {
-        x /= get(magnitude_remote_normal);
-      }
-      PackagedData remote_packaged(3);
-      NumericalFlux{}.package_data(&remote_packaged, remote_flux,
-                                   remote_other, normalized_remote_normal);
-      // Cannot be inlined because of CHECK implementation.
-      const auto expected =
-          std::make_pair(std::move(local_data), std::move(remote_packaged));
-      CHECK(mortar_history->at(mortar_id).extract() == expected);
-    };
+    const auto magnitude_remote_normal = magnitude(remote_normal);
+    auto normalized_remote_normal = remote_normal;
+    for (auto& x : normalized_remote_normal) {
+      x /= get(magnitude_remote_normal);
+    }
+    PackagedData remote_packaged(3);
+    NumericalFlux{}.package_data(&remote_packaged, remote_flux, remote_other,
+                                 normalized_remote_normal);
 
-    // Remote side is inverted
-    check_mortar(
-        std::make_pair(Direction<2>::lower_xi(), west_id),
-        data.fluxes.at(Direction<2>::lower_xi()),
-        reverse(data.remote_fluxes.at(Direction<2>::lower_xi())),
-        data.other_data.at(Direction<2>::lower_xi()),
-        reverse(data.remote_other_data.at(Direction<2>::lower_xi())),
-        tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}},
-        tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 0.5}}}});
-    check_mortar(
-        std::make_pair(Direction<2>::upper_xi(), east_id),
-        data.fluxes.at(Direction<2>::upper_xi()),
-        data.remote_fluxes.at(Direction<2>::upper_xi()),
-        data.other_data.at(Direction<2>::upper_xi()),
-        data.remote_other_data.at(Direction<2>::upper_xi()),
-        tnsr::i<DataVector, 2>{{{DataVector{3, 2.0}, DataVector{3, 0.0}}}},
-        tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}});
-    check_mortar(
-        std::make_pair(Direction<2>::upper_eta(), south_id),
-        data.fluxes.at(Direction<2>::upper_eta()),
-        data.remote_fluxes.at(Direction<2>::upper_eta()),
-        data.other_data.at(Direction<2>::upper_eta()),
-        data.remote_other_data.at(Direction<2>::upper_eta()),
-        tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, -1.0}}}},
-        tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 1.0}}}});
-  });
+    const auto result = mortar_history.at(mortar_id).extract();
+    CHECK(result.first.mortar_data == local_mortar_data);
+    CHECK(result.first.magnitude_of_face_normal == magnitude_local_normal);
+    CHECK(result.second == remote_packaged);
+  };
+
+  // Remote side is inverted
+  check_mortar(
+      std::make_pair(Direction<2>::lower_xi(), west_id),
+      data.fluxes.at(Direction<2>::lower_xi()),
+      reverse(data.remote_fluxes.at(Direction<2>::lower_xi())),
+      data.other_data.at(Direction<2>::lower_xi()),
+      reverse(data.remote_other_data.at(Direction<2>::lower_xi())),
+      tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}},
+      tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 0.5}}}});
+  check_mortar(
+      std::make_pair(Direction<2>::upper_xi(), east_id),
+      data.fluxes.at(Direction<2>::upper_xi()),
+      data.remote_fluxes.at(Direction<2>::upper_xi()),
+      data.other_data.at(Direction<2>::upper_xi()),
+      data.remote_other_data.at(Direction<2>::upper_xi()),
+      tnsr::i<DataVector, 2>{{{DataVector{3, 2.0}, DataVector{3, 0.0}}}},
+      tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}});
+  check_mortar(
+      std::make_pair(Direction<2>::upper_eta(), south_id),
+      data.fluxes.at(Direction<2>::upper_eta()),
+      data.remote_fluxes.at(Direction<2>::upper_eta()),
+      data.other_data.at(Direction<2>::upper_eta()),
+      data.remote_other_data.at(Direction<2>::upper_eta()),
+      tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, -1.0}}}},
+      tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 1.0}}}});
 }
 
 SPECTRE_TEST_CASE(

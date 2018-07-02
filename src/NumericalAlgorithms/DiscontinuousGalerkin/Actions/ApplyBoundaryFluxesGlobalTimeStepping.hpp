@@ -51,8 +51,7 @@ namespace Actions {
 struct ApplyBoundaryFluxesGlobalTimeStepping {
  private:
   template <typename Flux, typename... NumericalFluxTags, typename... SelfTags,
-            typename... PackagedTags, typename... ArgumentTags,
-            typename... Args>
+            typename... PackagedTags>
   static void apply_normal_dot_numerical_flux(
       const gsl::not_null<Variables<tmpl::list<NumericalFluxTags...>>*>
           numerical_fluxes,
@@ -100,8 +99,8 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             const auto& direction = mortar_id.first;
             const size_t dimension = direction.dimension();
 
-            const auto data = this_mortar_data.second.extract();
-            const auto& local_mortar_data = data.first;
+            auto data = this_mortar_data.second.extract();
+            auto& local_mortar_data = data.first;
             const auto& remote_mortar_data = data.second;
 
             // Compute numerical flux
@@ -110,16 +109,15 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
                     mesh.slice_away(dimension).number_of_grid_points(), 0.0);
             apply_normal_dot_numerical_flux(
                 make_not_null(&normal_dot_numerical_fluxes),
-                normal_dot_numerical_flux_computer, local_mortar_data,
-                remote_mortar_data);
+                normal_dot_numerical_flux_computer,
+                local_mortar_data.mortar_data, remote_mortar_data);
 
             // Projections need to happen here.
 
             db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
-                local_mortar_data, std::move(normal_dot_numerical_fluxes),
-                mesh.extents(dimension),
-                get<typename flux_comm_types::MagnitudeOfFaceNormal>(
-                    local_mortar_data)));
+                local_mortar_data.mortar_data,
+                std::move(normal_dot_numerical_fluxes), mesh.extents(dimension),
+                std::move(local_mortar_data.magnitude_of_face_normal)));
 
             add_slice_to_data(dt_vars, lifted_data, mesh.extents(), dimension,
                               index_to_slice_at(mesh.extents(), direction));

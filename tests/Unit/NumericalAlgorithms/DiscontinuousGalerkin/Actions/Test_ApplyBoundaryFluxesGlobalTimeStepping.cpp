@@ -97,7 +97,6 @@ using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
 using LocalData = typename flux_comm_types::LocalData;
 using PackagedData = typename flux_comm_types::PackagedData;
-using MagnitudeOfFaceNormal = typename flux_comm_types::MagnitudeOfFaceNormal;
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -121,11 +120,12 @@ SPECTRE_TEST_CASE(
       const Scalar<DataVector>& local_magnitude_face_normal) noexcept {
     dg::SimpleBoundaryData<size_t, LocalData, PackagedData> data;
 
-    LocalData local_data(3);
-    get<Tags::NormalDotFlux<Var>>(local_data) = local_flux;
-    get<NumericalFlux::ExtraData>(local_data) = local_extra_data;
-    get<Var>(local_data) = local_var;
-    get<MagnitudeOfFaceNormal>(local_data) = local_magnitude_face_normal;
+    LocalData local_data{};
+    local_data.mortar_data.initialize(3);
+    get<Tags::NormalDotFlux<Var>>(local_data.mortar_data) = local_flux;
+    get<NumericalFlux::ExtraData>(local_data.mortar_data) = local_extra_data;
+    get<Var>(local_data.mortar_data) = local_var;
+    local_data.magnitude_of_face_normal = local_magnitude_face_normal;
     data.local_insert(0, std::move(local_data));
 
     PackagedData remote_data(3);

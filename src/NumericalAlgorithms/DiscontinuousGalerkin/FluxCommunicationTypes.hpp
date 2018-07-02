@@ -21,6 +21,12 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 namespace dg {
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Types related to flux communication.
@@ -39,18 +45,27 @@ struct FluxCommunicationTypes {
   using normal_dot_fluxes_tag =
       db::add_tag_prefix<Tags::NormalDotFlux, typename system::variables_tag>;
 
-  /// Variables tag for storing the magnitude of the face normal in
-  /// the LocalData.
-  struct MagnitudeOfFaceNormal {
-    using type = Scalar<DataVector>;
-  };
+  /// The type of the local data stored on the mortar.  Contains the
+  /// packaged data and the local flux.
+  using LocalMortarData = Variables<tmpl::remove_duplicates<tmpl::append<
+      typename db::item_type<normal_dot_fluxes_tag>::tags_list,
+      typename PackagedData::tags_list>>>;
 
-  /// The type of the Variables needed for the local part of the flux
+  /// The type of the data needed for the local part of the flux
   /// numerical flux computations.  Contains the PackagedData, the
   /// normal fluxes, and MagnitudeOfFaceNormal.
-  using LocalData = Variables<tmpl::remove_duplicates<tmpl::append<
-      typename db::item_type<normal_dot_fluxes_tag>::tags_list,
-      typename PackagedData::tags_list, tmpl::list<MagnitudeOfFaceNormal>>>>;
+  struct LocalData {
+    /// Data on the mortar mesh
+    LocalMortarData mortar_data;
+    /// Magnitude of the face normal on the face mesh
+    Scalar<DataVector> magnitude_of_face_normal;
+
+    // NOLINTNEXTLINE(google-runtime-references)
+    void pup(PUP::er& p) noexcept {
+      p | mortar_data;
+      p | magnitude_of_face_normal;
+    }
+  };
 
  private:
   template <typename Base, typename Tag, size_t VolumeDim>

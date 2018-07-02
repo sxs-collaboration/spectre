@@ -263,16 +263,15 @@ struct SendDataForFluxes {
           },
           box);
 
-      typename flux_comm_types::LocalData local_data(
-          boundary_mesh.number_of_grid_points());
-      local_data.assign_subset(
+      typename flux_comm_types::LocalData local_data{};
+      local_data.mortar_data.initialize(boundary_mesh.number_of_grid_points());
+      local_data.mortar_data.assign_subset(
           db::get<interface_normal_dot_fluxes_tag>(box).at(direction));
-      local_data.assign_subset(packaged_data);
-      get<typename flux_comm_types::MagnitudeOfFaceNormal>(local_data) =
-          db::get<Tags::Interface<
-              Tags::InternalDirections<volume_dim>,
-              Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
-              .at(direction);
+      local_data.mortar_data.assign_subset(packaged_data);
+      local_data.magnitude_of_face_normal = db::get<Tags::Interface<
+          Tags::InternalDirections<volume_dim>,
+          Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
+                                                .at(direction);
 
       const auto direction_from_neighbor = orientation(direction.opposite());
 
