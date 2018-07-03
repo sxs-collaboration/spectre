@@ -55,6 +55,6 @@ template Variables<tmpl::list<
 divergence(
     const Variables<tmpl::list<
         Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>>& F,
-    const Index<1>& extents,
+    const Mesh<1>& mesh,
     const InverseJacobian<DataVector, 1, Frame::Logical,
                           Frame::Inertial>& inverse_jacobian) noexcept;
