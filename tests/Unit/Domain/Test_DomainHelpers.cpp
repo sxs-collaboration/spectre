@@ -862,6 +862,170 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
 #endif
 }
 
+namespace {
+void test_fci_1d() {
+  FaceCornerIterator<1> fci{Direction<1>::upper_xi()};
+  CHECK(fci);
+  CHECK(fci.volume_index() == 1);
+  CHECK(fci.face_index() == 0);
+  ++fci;
+  CHECK(not fci);
+
+  FaceCornerIterator<1> fci2{Direction<1>::lower_xi()};
+  CHECK(fci2);
+  CHECK(fci2.volume_index() == 0);
+  CHECK(fci2.face_index() == 0);
+  ++fci2;
+  CHECK(not fci2);
+}
+
+void test_fci_2d() {
+  FaceCornerIterator<2> fci{Direction<2>::upper_xi()};
+  CHECK(fci);
+  CHECK(fci.volume_index() == 1);
+  CHECK(fci.face_index() == 0);
+  ++fci;
+  CHECK(fci.volume_index() == 3);
+  CHECK(fci.face_index() == 1);
+  ++fci;
+  CHECK(not fci);
+
+  FaceCornerIterator<2> fci2{Direction<2>::lower_xi()};
+  CHECK(fci2);
+  CHECK(fci2.volume_index() == 0);
+  CHECK(fci2.face_index() == 0);
+  ++fci2;
+  CHECK(fci2.volume_index() == 2);
+  CHECK(fci2.face_index() == 1);
+  ++fci2;
+  CHECK(not fci2);
+
+  FaceCornerIterator<2> fci3{Direction<2>::upper_eta()};
+  CHECK(fci3);
+  CHECK(fci3.volume_index() == 2);
+  CHECK(fci3.face_index() == 0);
+  ++fci3;
+  CHECK(fci3.volume_index() == 3);
+  CHECK(fci3.face_index() == 1);
+  ++fci3;
+  CHECK(not fci3);
+
+  FaceCornerIterator<2> fci4{Direction<2>::lower_eta()};
+  CHECK(fci4);
+  CHECK(fci4.volume_index() == 0);
+  CHECK(fci4.face_index() == 0);
+  ++fci4;
+  CHECK(fci4.volume_index() == 1);
+  CHECK(fci4.face_index() == 1);
+  ++fci4;
+  CHECK(not fci4);
+}
+void test_fci_3d() {
+  FaceCornerIterator<3> fci{Direction<3>::upper_xi()};
+  CHECK(fci);
+  CHECK(fci.volume_index() == 1);
+  CHECK(fci.face_index() == 0);
+  ++fci;
+  CHECK(fci.volume_index() == 3);
+  CHECK(fci.face_index() == 1);
+  ++fci;
+  CHECK(fci.volume_index() == 5);
+  CHECK(fci.face_index() == 2);
+  ++fci;
+  CHECK(fci.volume_index() == 7);
+  CHECK(fci.face_index() == 3);
+  ++fci;
+  CHECK(not fci);
+
+  FaceCornerIterator<3> fci2{Direction<3>::lower_xi()};
+  CHECK(fci2);
+  CHECK(fci2.volume_index() == 0);
+  CHECK(fci2.face_index() == 0);
+  ++fci2;
+  CHECK(fci2.volume_index() == 2);
+  CHECK(fci2.face_index() == 1);
+  ++fci2;
+  CHECK(fci2.volume_index() == 4);
+  CHECK(fci2.face_index() == 2);
+  ++fci2;
+  CHECK(fci2.volume_index() == 6);
+  CHECK(fci2.face_index() == 3);
+  ++fci2;
+  CHECK(not fci2);
+
+  FaceCornerIterator<3> fci3{Direction<3>::upper_eta()};
+  CHECK(fci3);
+  CHECK(fci3.volume_index() == 2);
+  CHECK(fci3.face_index() == 0);
+  ++fci3;
+  CHECK(fci3.volume_index() == 3);
+  CHECK(fci3.face_index() == 1);
+  ++fci3;
+  CHECK(fci3.volume_index() == 6);
+  CHECK(fci3.face_index() == 2);
+  ++fci3;
+  CHECK(fci3.volume_index() == 7);
+  CHECK(fci3.face_index() == 3);
+  ++fci3;
+  CHECK(not fci3);
+
+  FaceCornerIterator<3> fci4{Direction<3>::lower_eta()};
+  CHECK(fci4);
+  CHECK(fci4.volume_index() == 0);
+  CHECK(fci4.face_index() == 0);
+  ++fci4;
+  CHECK(fci4.volume_index() == 1);
+  CHECK(fci4.face_index() == 1);
+  ++fci4;
+  CHECK(fci4.volume_index() == 4);
+  CHECK(fci4.face_index() == 2);
+  ++fci4;
+  CHECK(fci4.volume_index() == 5);
+  CHECK(fci4.face_index() == 3);
+  ++fci4;
+  CHECK(not fci4);
+
+  FaceCornerIterator<3> fci5{Direction<3>::upper_zeta()};
+  CHECK(fci5);
+  CHECK(fci5.volume_index() == 4);
+  CHECK(fci5.face_index() == 0);
+  ++fci5;
+  CHECK(fci5.volume_index() == 5);
+  CHECK(fci5.face_index() == 1);
+  ++fci5;
+  CHECK(fci5.volume_index() == 6);
+  CHECK(fci5.face_index() == 2);
+  ++fci5;
+  CHECK(fci5.volume_index() == 7);
+  CHECK(fci5.face_index() == 3);
+  ++fci5;
+  CHECK(not fci5);
+
+  FaceCornerIterator<3> fci6{Direction<3>::lower_zeta()};
+  CHECK(fci6);
+  CHECK(fci6.volume_index() == 0);
+  CHECK(fci6.face_index() == 0);
+  ++fci6;
+  CHECK(fci6.volume_index() == 1);
+  CHECK(fci6.face_index() == 1);
+  ++fci6;
+  CHECK(fci6.volume_index() == 2);
+  CHECK(fci6.face_index() == 2);
+  ++fci6;
+  CHECK(fci6.volume_index() == 3);
+  CHECK(fci6.face_index() == 3);
+  ++fci6;
+  CHECK(not fci6);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.FaceCornerIterator",
+                  "[Domain][Unit]") {
+  test_fci_1d();
+  test_fci_2d();
+  test_fci_3d();
+}
+
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
                   "[Domain][Unit]") {
   std::vector<std::array<size_t, 2>> corners_for_a_1d_road{

@@ -301,20 +301,20 @@ class FaceCornerIterator {
       corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
     }
   }
-  explicit operator bool() noexcept {
+  explicit operator bool() const noexcept {
     return face_index_ < two_to_the(VolumeDim - 1);
   }
-  tnsr::I<double, VolumeDim, Frame::Logical> operator()() noexcept {
+  tnsr::I<double, VolumeDim, Frame::Logical> operator()() const noexcept {
     return corner_;
   }
-  tnsr::I<double, VolumeDim, Frame::Logical> operator*() noexcept {
+  tnsr::I<double, VolumeDim, Frame::Logical> operator*() const noexcept {
     return corner_;
   }
 
   // Returns the value used to construct the logical corner.
-  size_t volume_index() noexcept { return index_; }
+  size_t volume_index() const noexcept { return index_; }
   // Returns the number of times operator++ has been called.
-  size_t face_index() noexcept { return face_index_; }
+  size_t face_index() const noexcept { return face_index_; }
 
  private:
   const Direction<VolumeDim> direction_;
