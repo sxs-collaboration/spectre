@@ -76,19 +76,17 @@ class NumericalFlux {
     static std::string name() noexcept { return "ExtraTag"; }
     using type = tnsr::I<DataVector, 1>;
   };
-
+  using target_fields = tmpl::list<Var>;
   using package_tags = tmpl::list<ExtraData, Var>;
   // This is a silly set of things to request, but it tests not
   // requesting the evolved variables and requesting multiple other
   // things.
-  using slice_tags = tmpl::list<Tags::NormalDotFlux<Var>, OtherData>;
+  using argument_tags = tmpl::list<Tags::NormalDotFlux<Var>, OtherData>;
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
-                    const Scalar<DataVector>& var_flux2,
                     const Scalar<DataVector>& other_data,
                     const tnsr::i<DataVector, 2, Frame::Inertial>&
                         interface_unit_normal) const noexcept {
-    CHECK(var_flux == var_flux2);
     get(get<Var>(*packaged_data)) = 10. * get(var_flux);
     get<0>(get<ExtraData>(*packaged_data)) =
         get(other_data) + 2. * get<0>(interface_unit_normal) +
@@ -105,18 +103,11 @@ struct NumericalFluxTag {
   using type = NumericalFlux;
 };
 
-struct System {
-  static constexpr const size_t volume_dim = 2;
-  using variables_tag = Tags::Variables<tmpl::list<Var>>;
-
-  template <typename Tag>
-  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
-};
-
 struct Metavariables;
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables>;
+using send_data_for_fluxes =
+    dg::Actions::SendDataForFluxes<2, TemporalId, NumericalFluxTag>;
 using receive_data_for_fluxes =
-    dg::Actions::ReceiveDataForFluxes<Metavariables>;
+    dg::Actions::ReceiveDataForFluxes<2, TemporalId, NumericalFluxTag>;
 
 using component =
     ActionTesting::MockArrayComponent<Metavariables, ElementIndex<2>,
@@ -124,18 +115,15 @@ using component =
                                       tmpl::list<receive_data_for_fluxes>>;
 
 struct Metavariables {
-  using system = System;
   using component_list = tmpl::list<component>;
-  using temporal_id = TemporalId;
   using const_global_cache_tag_list = tmpl::list<>;
-
-  using normal_dot_numerical_flux = NumericalFluxTag;
 };
 
 template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 
-using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
+using flux_comm_types =
+    dg::FluxCommunicationTypes<2, TemporalId, NumericalFluxTag>;
 using mortar_data_tag =
     typename flux_comm_types::global_time_stepping_mortar_data_tag;
 using LocalData = typename flux_comm_types::LocalData;
@@ -372,7 +360,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         x /= get(get<MagnitudeOfFaceNormal>(local_data));
       }
       PackagedData local_packaged(3);
-      NumericalFlux{}.package_data(&local_packaged, local_flux, local_flux,
+      NumericalFlux{}.package_data(&local_packaged, local_flux,
                                    local_other, normalized_local_normal);
       local_data.assign_subset(local_packaged);
 
@@ -382,7 +370,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         x /= get(magnitude_remote_normal);
       }
       PackagedData remote_packaged(3);
-      NumericalFlux{}.package_data(&remote_packaged, remote_flux, remote_flux,
+      NumericalFlux{}.package_data(&remote_packaged, remote_flux,
                                    remote_other, normalized_remote_normal);
       // Cannot be inlined because of CHECK implementation.
       const auto expected =

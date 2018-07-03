@@ -47,7 +47,8 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   db::add_tag_prefix<Tags::dt, variables_tag>,
-///   FluxCommunicationTypes<Metavariables>::mortar_data_tag
+///   FluxCommunicationTypes::mortar_data_tag
+template <typename TemporalIdTag, typename NumericalFluxTag>
 struct ApplyBoundaryFluxesGlobalTimeStepping {
  private:
   template <typename Flux, typename... NumericalFluxTags, typename... SelfTags,
@@ -80,10 +81,8 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
     using variables_tag = typename system::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
-    using flux_comm_types = FluxCommunicationTypes<Metavariables>;
-
-    using normal_dot_numerical_flux_tag =
-        db::add_tag_prefix<Tags::NormalDotNumericalFlux, variables_tag>;
+    using flux_comm_types =
+        FluxCommunicationTypes<volume_dim, TemporalIdTag, NumericalFluxTag>;
 
     using mortar_data_tag =
         typename flux_comm_types::global_time_stepping_mortar_data_tag;
@@ -94,7 +93,7 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
             const db::item_type<Tags::Extents<volume_dim>>& extents) noexcept {
           const auto& normal_dot_numerical_flux_computer =
-              get<typename Metavariables::normal_dot_numerical_flux>(cache);
+              get<NumericalFluxTag>(cache);
 
           for (auto& this_mortar_data : *mortar_data) {
             const auto& mortar_id = this_mortar_data.first;
@@ -106,7 +105,8 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             const auto& remote_mortar_data = data.second;
 
             // Compute numerical flux
-            db::item_type<normal_dot_numerical_flux_tag>
+            db::item_type<
+                typename flux_comm_types::normal_dot_numerical_fluxes_tag>
                 normal_dot_numerical_fluxes(
                     extents.slice_away(dimension).product(), 0.0);
             apply_normal_dot_numerical_flux(

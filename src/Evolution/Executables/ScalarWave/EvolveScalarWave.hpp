@@ -37,9 +37,10 @@ template <size_t Dim>
 struct EvolutionMetavars {
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
-  using temporal_id = Tags::TimeId;
   using analytic_solution_tag =
       CacheTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
+  // This could be private if not for the dependence of InitializeElement on
+  // this type being exposed here.
   using normal_dot_numerical_flux =
       CacheTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
@@ -50,10 +51,14 @@ struct EvolutionMetavars {
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
       tmpl::list<Actions::ComputeVolumeDuDt<Dim>,
-                 dg::Actions::ComputeNonconservativeBoundaryFluxes,
-                 dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-                 dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-                 dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
+                 dg::Actions::ComputeNonconservativeBoundaryFluxes<
+                     Dim, ScalarWave::ComputeNormalDotFluxes<Dim>>,
+                 dg::Actions::SendDataForFluxes<Dim, Tags::TimeId,
+                                                normal_dot_numerical_flux>,
+                 dg::Actions::ReceiveDataForFluxes<Dim, Tags::TimeId,
+                                                   normal_dot_numerical_flux>,
+                 dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping<
+                     Tags::TimeId, normal_dot_numerical_flux>,
                  Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;
 
   static constexpr OptionString help{

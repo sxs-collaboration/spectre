@@ -95,7 +95,10 @@ struct System {
 };
 
 struct NormalDotNumericalFluxTag {
-  using type = struct { using package_tags = tmpl::list<Var>; };
+  using type = struct {
+    using target_fields = tmpl::list<Var>;
+    using package_tags = tmpl::list<Var>;
+  };
 };
 
 template <size_t Dim>
@@ -112,7 +115,6 @@ template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<component<Dim>>;
   using system = System<Dim>;
-  using temporal_id = Tags::TimeId;
   using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -222,7 +224,8 @@ void test_initialize_element(const ElementId<Dim>& element_id,
         Variables<tmpl::list<Tags::dt<Var>>>(extents.product(), 0.0));
 
   CHECK(db::get<typename dg::FluxCommunicationTypes<
-            Metavariables<Dim>>::global_time_stepping_mortar_data_tag>(box)
+          Dim, Tags::TimeId,
+          NormalDotNumericalFluxTag>::global_time_stepping_mortar_data_tag>(box)
             .size() == element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, Dim>>(box).size() ==
         element.number_of_neighbors());
