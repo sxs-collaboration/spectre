@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Interval.cpp
   Rectangle.cpp
   RegisterDerivedWithCharm.cpp
+  RotatedBricks.cpp
   RotatedIntervals.cpp
   RotatedRectangles.cpp
   Shell.cpp

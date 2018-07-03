@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Disk.cpp
   Test_Interval.cpp
   Test_Rectangle.cpp
+  Test_RotatedBricks.cpp
   Test_RotatedIntervals.cpp
   Test_RotatedRectangles.cpp
   Test_Shell.cpp

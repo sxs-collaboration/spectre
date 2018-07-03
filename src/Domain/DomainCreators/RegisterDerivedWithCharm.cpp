@@ -64,6 +64,9 @@ void register_with_charm<3>() {
   PUPable_reg(
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
   PUPable_reg(SINGLE_ARG(
+      ::CoordinateMap<Frame::Logical, Frame::Inertial,
+                      CoordinateMaps::DiscreteRotation<3>, Affine3D>));
+  PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3DPrism>));
