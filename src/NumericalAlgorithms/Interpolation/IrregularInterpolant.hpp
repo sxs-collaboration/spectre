@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -13,9 +14,8 @@
 #include "Utilities/Gsl.hpp"
 
 /// \cond
-class DataVector;
 template <size_t Dim>
-class Index;
+class Mesh;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -30,7 +30,7 @@ template <size_t Dim>
 class Irregular {
  public:
   Irregular(
-      const Index<Dim>& source_mesh,
+      const Mesh<Dim>& source_mesh,
       const tnsr::I<DataVector, Dim, Frame::Logical>& target_points) noexcept;
   Irregular();
 
@@ -40,7 +40,7 @@ class Irregular {
 
   //@{
   /// Performs the interpolation on a `Variables` with grid points corresponding
-  /// to the `Index<Dim>` specified in the constructor.
+  /// to the `Mesh<Dim>` specified in the constructor.
   /// The result is a `Variables` whose internal `DataVector` goes over the
   /// list of target_points that were specified in the constructor.
   /// \note for the void function, `result` will be resized to the proper size.

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/Mesh.hpp"
+#include "Domain/Mesh.hpp"
 
 #include <algorithm>
 #include <ostream>

@@ -11,7 +11,6 @@
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -19,9 +18,11 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
@@ -60,7 +61,8 @@ void verify_time_independent_einstein_solution(
 
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Index<3> extents(grid_size_each_dimension);
+  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+               Spectral::Quadrature::GaussLobatto};
 
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -72,7 +74,7 @@ void verify_time_independent_einstein_solution(
       });
 
   // Set up coordinates
-  const auto x_logical = logical_coordinates(extents);
+  const auto x_logical = logical_coordinates(mesh);
   const auto x = coord_map(x_logical);
   const double t = 1.3;  // Arbitrary time for time-independent solution.
 
@@ -128,7 +130,7 @@ void verify_time_independent_einstein_solution(
   // here this is just a test.
   const auto gh_derivs =
       partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
-          gh_vars, extents, coord_map.inv_jacobian(x_logical));
+          gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_psi =
       get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
           gh_derivs);

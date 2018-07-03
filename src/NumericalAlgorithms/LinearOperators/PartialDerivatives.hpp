@@ -18,11 +18,11 @@
 
 /// \cond
 template <size_t Dim>
-class Index;
+class Mesh;
 
 namespace Tags {
 template <size_t Dim>
-struct Extents;
+struct Mesh;
 template <class TagList>
 struct Variables;
 
@@ -74,7 +74,7 @@ struct deriv : Tags_detail::deriv_impl<T, S, U> {};
 /// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
 auto logical_partial_derivatives(const Variables<VariableTags>& u,
-                                 const Index<Dim>& extents) noexcept
+                                 const Mesh<Dim>& mesh) noexcept
     -> std::array<Variables<DerivativeTags>, Dim>;
 
 /// \ingroup NumericalAlgorithmsGroup
@@ -91,7 +91,7 @@ auto logical_partial_derivatives(const Variables<VariableTags>& u,
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 auto partial_derivatives(
-    const Variables<VariableTags>& u, const Index<Dim>& extents,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
@@ -130,7 +130,7 @@ struct deriv_impl<
                           derivative_frame_index::dim,
                           typename derivative_frame_index::Frame>;
   using argument_tags = tmpl::list<Tags::Variables<variables_tags>,
-                                   Tags::Extents<derivative_frame_index::dim>,
+                                   Tags::Mesh<derivative_frame_index::dim>,
                                    InverseJacobianTag>;
 };
 
@@ -146,7 +146,7 @@ struct deriv_impl<tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
       logical_partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                                   Dim>;
   using argument_tags =
-      tmpl::list<Tags::Variables<variables_tags>, Tags::Extents<Dim>>;
+      tmpl::list<Tags::Variables<variables_tags>, Tags::Mesh<Dim>>;
 };
 }  // namespace Tags_detail
 }  // namespace Tags

@@ -11,13 +11,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Mesh.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -37,7 +38,8 @@ void check_du_dt(const size_t npts, const double time) {
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
 
   tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Index<Dim>(3));
+    auto logical_coords = logical_coordinates(Mesh<Dim>{
+        3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {
       coords.get(i) = std::move(logical_coords.get(i));
@@ -106,7 +108,8 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
 
   const tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Index<Dim>(3));
+    auto logical_coords = logical_coordinates(Mesh<Dim>{
+        3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {
       coords.get(i) = std::move(logical_coords.get(i));
@@ -177,7 +180,8 @@ void check_upwind_flux(const size_t npts, const double t) {
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
 
   const tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Index<Dim>(3));
+    auto logical_coords = logical_coordinates(Mesh<Dim>{
+        3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {
       coords.get(i) = std::move(logical_coords.get(i));

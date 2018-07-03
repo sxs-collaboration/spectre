@@ -18,8 +18,6 @@ class Tensor;
 namespace Tags {
 template <typename, typename, typename>
 struct deriv;
-template <typename>
-struct dt;
 }  // namespace Tags
 
 namespace CurvedScalarWave {

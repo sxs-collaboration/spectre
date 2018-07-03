@@ -26,7 +26,7 @@ class ConstGlobalCache;
 }  // namespace Parallel
 namespace Tags {
 template <size_t VolumeDim>
-struct Extents;
+struct Mesh;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -40,7 +40,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache: Metavariables::normal_dot_numerical_flux
-/// - DataBox: Tags::Extents<volume_dim>,
+/// - DataBox: Tags::Mesh<volume_dim>,
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -92,7 +92,7 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
         [&cache](
             const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::item_type<Tags::Extents<volume_dim>>& extents) noexcept {
+            const db::item_type<Tags::Mesh<volume_dim>>& mesh) noexcept {
           const auto& normal_dot_numerical_flux_computer =
               get<typename Metavariables::normal_dot_numerical_flux>(cache);
 
@@ -108,7 +108,7 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             // Compute numerical flux
             db::item_type<normal_dot_numerical_flux_tag>
                 normal_dot_numerical_fluxes(
-                    extents.slice_away(dimension).product(), 0.0);
+                    mesh.slice_away(dimension).number_of_grid_points(), 0.0);
             apply_normal_dot_numerical_flux(
                 make_not_null(&normal_dot_numerical_fluxes),
                 normal_dot_numerical_flux_computer, local_mortar_data,
@@ -118,15 +118,15 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
 
             db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
                 local_mortar_data, std::move(normal_dot_numerical_fluxes),
-                extents[dimension],
+                mesh.extents(dimension),
                 get<typename flux_comm_types::MagnitudeOfFaceNormal>(
                     local_mortar_data)));
 
-            add_slice_to_data(dt_vars, lifted_data, extents,
-                              dimension, index_to_slice_at(extents, direction));
+            add_slice_to_data(dt_vars, lifted_data, mesh.extents(), dimension,
+                              index_to_slice_at(mesh.extents(), direction));
           }
         },
-        db::get<Tags::Extents<volume_dim>>(box));
+        db::get<Tags::Mesh<volume_dim>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

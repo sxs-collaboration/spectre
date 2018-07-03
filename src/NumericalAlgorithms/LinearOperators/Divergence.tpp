@@ -5,19 +5,19 @@
 
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
-    const Variables<FluxTags>& F, const Index<Dim>& extents,
+    const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept {
   const auto logical_partial_derivatives_of_F =
-      logical_partial_derivatives<FluxTags>(F, extents);
+      logical_partial_derivatives<FluxTags>(F, mesh);
 
   Variables<db::wrap_tags_in<Tags::div, FluxTags>>
       divergence_of_F(F.number_of_grid_points(), 0.0);

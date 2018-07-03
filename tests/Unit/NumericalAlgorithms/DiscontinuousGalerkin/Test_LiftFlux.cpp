@@ -4,14 +4,12 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-#include <cstddef>
 #include <memory>
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -20,8 +18,9 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
-#include "NumericalAlgorithms/Spectral/LegendreGaussLobatto.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -34,7 +33,8 @@ struct Var : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
                   "[Unit][NumericalAlgorithms]") {
-  const size_t perpendicular_extent = 5;
+  const Mesh<2> mesh{
+      {{3, 5}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
   const CoordinateMaps::Affine xi_map(-1., 1., -5., 7.);
   const CoordinateMaps::Affine eta_map(-1., 1., 2., 5.);
@@ -44,29 +44,28 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const double element_length = (eta_map(std::array<double, 1>{{1.}}) -
                                  eta_map(std::array<double, 1>{{-1.}}))[0];
 
-  const double weight = Basis::lgl::quadrature_weights(perpendicular_extent)[0];
+  const double weight = Spectral::quadrature_weights(mesh.slice_through(1))[0];
+  const auto boundary_mesh = mesh.slice_through(0);
 
-  const Index<1> boundary_extents{{{3}}};
   const auto magnitude_of_face_normal = magnitude(unnormalized_face_normal(
-      boundary_extents, coordinate_map, Direction<2>::lower_eta()));
+      boundary_mesh, coordinate_map, Direction<2>::lower_eta()));
 
   Variables<tmpl::list<Tags::NormalDotFlux<Var>>> local_flux(
-      boundary_extents.product());
+      boundary_mesh.number_of_grid_points());
   get(get<Tags::NormalDotFlux<Var>>(local_flux)) = {1., 2., 3.};
   Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> numerical_flux(
-      boundary_extents.product());
+      boundary_mesh.number_of_grid_points());
   get(get<Tags::NormalDotNumericalFlux<Var>>(numerical_flux)) = {2., 3., 5.};
 
   const Variables<tmpl::list<Var>> expected =
       -2. / (element_length * weight) * (numerical_flux - local_flux);
 
   Variables<tmpl::list<Var, Tags::NormalDotFlux<Var>>> local_data(
-      boundary_extents.product());
+      boundary_mesh.number_of_grid_points());
   get(get<Tags::NormalDotFlux<Var>>(local_data)) =
       get(get<Tags::NormalDotFlux<Var>>(local_flux));
   get(get<Var>(local_data)) = {123., 456., 789.};  // Should be ignored
 
-  CHECK(dg::lift_flux(local_data, numerical_flux, perpendicular_extent,
-                      magnitude_of_face_normal) ==
-        expected);
+  CHECK(dg::lift_flux(local_data, numerical_flux, mesh.extents(1),
+                      magnitude_of_face_normal) == expected);
 }

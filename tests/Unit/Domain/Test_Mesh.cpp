@@ -7,9 +7,11 @@
 #include <cstddef>
 #include <functional>
 #include <numeric>
+#include <string>
 
 #include "DataStructures/Index.hpp"
-#include "DataStructures/Mesh.hpp"
+#include "Domain/Mesh.hpp"
+#include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,7 +37,7 @@ void test_extents_basis_and_quadrature(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
   SECTION("Uniform LGL mesh") {
     const Mesh<1> mesh1d_lgl{3, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
@@ -221,12 +223,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
         {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
           Spectral::Quadrature::GaussLobatto}}});
   }
+
+  SECTION("Tag") {
+    CHECK(Tags::Mesh<1>::name() == "Mesh");
+    CHECK(Tags::Mesh<2>::name() == "Mesh");
+    CHECK(Tags::Mesh<3>::name() == "Mesh");
+  }
 }
 
 // [[OutputRegex, Tried to slice through non-existing dimension]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Mesh.SliceThroughNonExistingDimension",
-    "[DataStructures][Unit]") {
+    "Unit.Domain.Mesh.SliceThroughNonExistingDimension",
+    "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
@@ -238,8 +246,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
 
 // [[OutputRegex, Tried to slice away non-existing dimension]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Mesh.SliceAwayNonExistingDimension",
-    "[DataStructures][Unit]") {
+    "Unit.Domain.Mesh.SliceAwayNonExistingDimension",
+    "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
@@ -251,8 +259,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Mesh", "[DataStructures][Unit]") {
 
 // [[OutputRegex, Dimensions to slice through contain duplicates]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Mesh.SliceThroughDuplicateDimensions",
-    "[DataStructures][Unit]") {
+    "Unit.Domain.Mesh.SliceThroughDuplicateDimensions",
+    "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Mesh<3> mesh3d{2, Spectral::Basis::Legendre,

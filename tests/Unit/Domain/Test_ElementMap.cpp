@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -22,6 +23,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"
+#include "Domain/Tags.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -117,6 +119,8 @@ void test_element_map<1>() {
   test_element_impl(true, element_id, affine_map, first_map,
                     Affine{2.0, 8.0, 2.0, -1.0}, logical_point_double,
                     logical_point_dv);
+
+  CHECK(Tags::ElementMap<1>::name() == "ElementMap");
 }
 
 template <>
@@ -150,6 +154,8 @@ void test_element_map<2>() {
                   {Direction<2>::lower_eta(), Direction<2>::lower_xi()}}},
               false),
       logical_point_double, logical_point_dv);
+
+  CHECK(Tags::ElementMap<2>::name() == "ElementMap");
 }
 
 template <>
@@ -182,6 +188,8 @@ void test_element_map<3>() {
       true, element_id, affine_map, first_map,
       CoordinateMaps::Wedge3D{3.0, 7.0, OrientationMap<3>{}, 0.8, 0.9, true},
       logical_point_double, logical_point_dv);
+
+  CHECK(Tags::ElementMap<3>::name() == "ElementMap");
 }
 }  // namespace
 

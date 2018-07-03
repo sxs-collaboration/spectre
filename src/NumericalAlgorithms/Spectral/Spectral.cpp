@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "DataStructures/Mesh.hpp"
+#include "Domain/Mesh.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Blas.hpp"

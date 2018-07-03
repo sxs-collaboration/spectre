@@ -17,7 +17,6 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -30,9 +29,11 @@
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -109,7 +110,8 @@ auto run_action(
     const std::unordered_map<Direction<2>, double>& other_arg) noexcept {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
 
-  const Index<2> extents{{{3, 3}}};
+  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
   const CoordinateMaps::Affine eta_map{-1., 1., -2., 4.};
@@ -121,17 +123,17 @@ auto run_action(
                             xi_map, eta_map)));
 
   auto start_box = db::create<
-      db::AddSimpleTags<Tags::Element<2>, Tags::Extents<2>, Tags::ElementMap<2>,
+      db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
                         interface_tag<OtherArg>>,
       db::AddComputeTags<
           Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
-          interface_tag<Tags::Extents<1>>,
+          interface_tag<Tags::Mesh<1>>,
           interface_tag<Tags::UnnormalizedFaceNormal<2>>,
           interface_tag<
               Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
           interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>>(
-      element, extents, std::move(element_map), vars, other_arg);
+      element, mesh, std::move(element_map), vars, other_arg);
 
   return std::get<0>(
       runner

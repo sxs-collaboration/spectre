@@ -23,7 +23,7 @@ class Direction;
 template <size_t Dim, typename Frame>
 class ElementMap;
 template <size_t>
-class Index;
+class Mesh;
 /// \endcond
 
 // @{
@@ -43,13 +43,13 @@ class Index;
  */
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
-    const Index<VolumeDim - 1>& interface_extents,
+    const Mesh<VolumeDim - 1>& interface_mesh,
     const ElementMap<VolumeDim, TargetFrame>& map,
     const Direction<VolumeDim>& direction) noexcept;
 
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
-    const Index<VolumeDim - 1>& interface_extents,
+    const Mesh<VolumeDim - 1>& interface_mesh,
     const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept;
 // @}
@@ -62,10 +62,11 @@ template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct UnnormalizedFaceNormal : db::ComputeTag {
   static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
-      const ::Index<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
+      const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
       const ::Direction<VolumeDim>&) = unnormalized_face_normal;
-  using argument_tags = tmpl::list<
-    Extents<VolumeDim - 1>, ElementMap<VolumeDim, Frame>, Direction<VolumeDim>>;
+  using argument_tags =
+      tmpl::list<Mesh<VolumeDim - 1>, ElementMap<VolumeDim, Frame>,
+                 Direction<VolumeDim>>;
   using volume_tags = tmpl::list<ElementMap<VolumeDim, Frame>>;
 };
 }  // namespace Tags
