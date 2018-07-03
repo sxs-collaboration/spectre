@@ -32,7 +32,7 @@ struct ConservativeDuDt {
   struct apply_helper<tmpl::list<TensorTags...>, tmpl::list<SourcedTags...>> {
     static void function(
         const gsl::not_null<db::item_type<TensorTags>*>... dt_u,
-        const db::item_type<TensorTags>&... div_u,
+        const db::item_type<TensorTags>&... div_flux,
         const db::item_type<SourcedTags>&... sources) noexcept {
       const auto negate = [](const auto a, const auto& b) noexcept {
         for (size_t i = 0; i < a->size(); ++i) {
@@ -40,7 +40,7 @@ struct ConservativeDuDt {
         }
         return nullptr;
       };
-      expand_pack(negate(dt_u, div_u)...);
+      expand_pack(negate(dt_u, div_flux)...);
       const auto add = [](const auto a, const auto& b) noexcept {
         for (size_t i = 0; i < a->size(); ++i) {
           (*a)[i] += b[i];
