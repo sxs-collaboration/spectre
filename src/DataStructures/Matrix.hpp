@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DenseMatrix.hpp"  // IWYU pragma: export
 
 /*!
  * \ingroup DataStructuresGroup
