@@ -6,6 +6,7 @@ set(LIBRARY ValenciaDivClean)
 set(LIBRARY_SOURCES
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
+  Sources.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
