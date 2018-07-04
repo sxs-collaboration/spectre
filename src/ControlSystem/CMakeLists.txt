@@ -4,6 +4,7 @@
 set(LIBRARY ControlSystem)
 
 set(LIBRARY_SOURCES
+    Controller.cpp
     PiecewisePolynomial.cpp
     SettleToConstant.cpp
     TimescaleTuner.cpp
