@@ -7,6 +7,7 @@
 #include <ostream>
 #include <pup.h>
 
+namespace domain {
 SegmentId::SegmentId(const size_t refinement_level, const size_t index)
     : refinement_level_(refinement_level), index_(index) {
   ASSERT(index < two_to_the(refinement_level),
@@ -31,3 +32,4 @@ size_t hash_value(const SegmentId& s) noexcept {
   return h;
 }
 // LCOV_EXCL_STOP
+}  // namespace domain

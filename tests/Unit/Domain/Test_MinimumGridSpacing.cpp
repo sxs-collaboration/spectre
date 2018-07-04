@@ -49,7 +49,7 @@ void check(const Matrix& transform, const double squeeze_factor) noexcept {
       }
     }
 
-    CHECK(minimum_grid_spacing(extents, coordinates) ==
+    CHECK(domain::minimum_grid_spacing(extents, coordinates) ==
           approx(small_segment * squeeze_factor));
   }
 }

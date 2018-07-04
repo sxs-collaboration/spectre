@@ -16,11 +16,14 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 template <size_t Dim, typename Frame>
 class DomainCreator;  // IWYU pragma: keep
+}  // namespace domain
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 1D Domain consisting of two rotated Blocks.
@@ -111,4 +114,5 @@ class RotatedIntervals : public DomainCreator<1, TargetFrame> {
   typename InitialGridPoints::type initial_number_of_grid_points_in_x_{
       {{{std::numeric_limits<size_t>::max()}}}};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

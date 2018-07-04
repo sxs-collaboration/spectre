@@ -15,12 +15,12 @@ namespace {
 
 template <size_t Dim>
 Matrix interpolation_matrix(
-    const Mesh<Dim>& mesh,
+    const domain::Mesh<Dim>& mesh,
     const tnsr::I<DataVector, Dim, Frame::Logical>& points) noexcept;
 
 template <>
 Matrix interpolation_matrix(
-    const Mesh<1>& mesh,
+    const domain::Mesh<1>& mesh,
     const tnsr::I<DataVector, 1, Frame::Logical>& points) noexcept {
   // For 1d interpolation matrix, simply return the legendre-gauss-lobatto
   // matrix.
@@ -29,7 +29,7 @@ Matrix interpolation_matrix(
 
 template <>
 Matrix interpolation_matrix(
-    const Mesh<2>& mesh,
+    const domain::Mesh<2>& mesh,
     const tnsr::I<DataVector, 2, Frame::Logical>& points) noexcept {
   const std::array<Matrix, 2> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
@@ -51,7 +51,7 @@ Matrix interpolation_matrix(
 
 template <>
 Matrix interpolation_matrix(
-    const Mesh<3>& mesh,
+    const domain::Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::Logical>& points) noexcept {
   const std::array<Matrix, 3> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
@@ -83,7 +83,7 @@ Irregular<Dim>::Irregular() = default;
 
 template <size_t Dim>
 Irregular<Dim>::Irregular(
-    const Mesh<Dim>& source_mesh,
+    const domain::Mesh<Dim>& source_mesh,
     const tnsr::I<DataVector, Dim, Frame::Logical>& target_points) noexcept
     : interpolation_matrix_(interpolation_matrix(source_mesh, target_points)) {}
 

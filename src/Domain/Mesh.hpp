@@ -24,6 +24,7 @@ enum class Quadrature;
 }  // namespace Spectral
 /// \endcond
 
+namespace domain {
 /*!
  * \ingroup DataStructuresGroup
  * \brief Holds the number of grid points, basis, and quadrature in each
@@ -33,7 +34,7 @@ enum class Quadrature;
  * placement of grid points in the computational domain. It does so through a
  * choice of basis functions, quadrature and number of points \f$N\f$ in each
  * dimension. The grid points are the associated collocation points and can be
- * obtained from Spectral::collocation_points(const Mesh<1>&):
+ * obtained from Spectral::collocation_points(const domain::Mesh<1>&):
  *
  * \snippet Test_Spectral.cpp get_points_for_mesh
  *
@@ -212,3 +213,4 @@ bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept;
 template <size_t Dim>
 bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept;
 /// \endcond
+}  // namespace domain

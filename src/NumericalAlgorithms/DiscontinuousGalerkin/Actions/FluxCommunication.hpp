@@ -77,15 +77,16 @@ struct ReceiveDataForFluxes {
     using temporal_id_tag = typename Metavariables::temporal_id;
     using neighbor_temporal_id_tag =
         Tags::Mortars<Tags::Next<temporal_id_tag>, volume_dim>;
-    db::mutate<Tags::VariablesBoundaryData, neighbor_temporal_id_tag>(
+    db::mutate<domain::Tags::VariablesBoundaryData, neighbor_temporal_id_tag>(
         make_not_null(&box),
-        [&inboxes](const gsl::not_null<
-                       db::item_type<Tags::VariablesBoundaryData, DbTags>*>
-                       mortar_data,
-                   const gsl::not_null<db::item_type<neighbor_temporal_id_tag>*>
-                       neighbor_next_temporal_ids,
-                   const db::item_type<Tags::Next<temporal_id_tag>>&
-                       local_next_temporal_id) noexcept {
+        [&inboxes](
+            const gsl::not_null<
+                db::item_type<domain::Tags::VariablesBoundaryData, DbTags>*>
+                mortar_data,
+            const gsl::not_null<db::item_type<neighbor_temporal_id_tag>*>
+                neighbor_next_temporal_ids,
+            const db::item_type<Tags::Next<temporal_id_tag>>&
+                local_next_temporal_id) noexcept {
           auto& inbox =
               tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
           for (auto received_data = inbox.begin();
@@ -213,9 +214,9 @@ struct SendDataForFluxes {
 
     using flux_comm_types = FluxCommunicationTypes<Metavariables>;
 
-    using interface_normal_dot_fluxes_tag =
-        Tags::Interface<Tags::InternalDirections<volume_dim>,
-                        typename flux_comm_types::normal_dot_fluxes_tag>;
+    using interface_normal_dot_fluxes_tag = domain::Tags::Interface<
+        domain::Tags::InternalDirections<volume_dim>,
+        typename flux_comm_types::normal_dot_fluxes_tag>;
 
     const auto& normal_dot_numerical_flux_computer =
         get<typename Metavariables::normal_dot_numerical_flux>(cache);
@@ -223,7 +224,7 @@ struct SendDataForFluxes {
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
 
-    const auto& element = db::get<Tags::Element<volume_dim>>(box);
+    const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
     const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
     const auto& next_temporal_id =
         db::get<Tags::Next<typename Metavariables::temporal_id>>(box);
@@ -233,10 +234,10 @@ struct SendDataForFluxes {
       const size_t dimension = direction.dimension();
       const auto& neighbors_in_direction = direction_neighbors.second;
       const auto& orientation = neighbors_in_direction.orientation();
-      const auto& boundary_mesh =
-          db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
-                                  Tags::Mesh<volume_dim - 1>>>(box)
-              .at(direction);
+      const auto& boundary_mesh = db::get<domain::Tags::Interface<
+          domain::Tags::InternalDirections<volume_dim>,
+          domain::Tags::Mesh<volume_dim - 1>>>(box)
+                                      .at(direction);
 
       // We compute the parts of the numerical flux that only depend on data
       // from this side of the mortar now, then package it into a Variables.
@@ -246,8 +247,8 @@ struct SendDataForFluxes {
           normal_dot_numerical_flux::type::argument_tags;
       const auto packaged_data = db::apply<tmpl::transform<
           package_arguments,
-          tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
-                     tmpl::_1>>>(
+          tmpl::bind<domain::Tags::Interface,
+                     domain::Tags::InternalDirections<volume_dim>, tmpl::_1>>>(
           [&boundary_mesh, &direction,
            &normal_dot_numerical_flux_computer ](const auto&... args) noexcept {
             typename flux_comm_types::PackagedData ret(
@@ -263,7 +264,9 @@ struct SendDataForFluxes {
       for (const auto& neighbor : neighbors_in_direction) {
         const auto mortar_id = std::make_pair(direction, neighbor);
         const auto& mortar_mesh =
-            db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box)
+            db::get<
+                Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
+                box)
                 .at(mortar_id);
         const auto& mortar_size = db::get<
             Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(box)
@@ -273,9 +276,10 @@ struct SendDataForFluxes {
             packaged_data, boundary_mesh, mortar_mesh, mortar_size);
 
         typename flux_comm_types::LocalData local_data{};
-        local_data.magnitude_of_face_normal = db::get<Tags::Interface<
-            Tags::InternalDirections<volume_dim>,
-            Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
+        local_data.magnitude_of_face_normal = db::get<domain::Tags::Interface<
+            domain::Tags::InternalDirections<volume_dim>,
+            Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
+                                                  box)
                                                   .at(direction);
 
         local_data.mortar_data.initialize(mortar_mesh.number_of_grid_points());
@@ -309,11 +313,11 @@ struct SendDataForFluxes {
                 std::make_pair(next_temporal_id,
                                std::move(projected_packaged_data))));
 
-        db::mutate<Tags::VariablesBoundaryData>(
+        db::mutate<domain::Tags::VariablesBoundaryData>(
             make_not_null(&box),
-            [&mortar_id, &temporal_id, &local_data](
+            [&mortar_id, &temporal_id, &local_data ](
                 const gsl::not_null<
-                    db::item_type<Tags::VariablesBoundaryData, DbTags>*>
+                    db::item_type<domain::Tags::VariablesBoundaryData, DbTags>*>
                     mortar_data) noexcept {
               mortar_data->at(mortar_id).local_insert(temporal_id,
                                                       std::move(local_data));

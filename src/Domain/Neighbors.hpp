@@ -16,10 +16,13 @@
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace domain {
 template <size_t VolumeDim>
 class ElementId;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbors of an Element in a particular direction.
 ///
@@ -37,7 +40,7 @@ class Neighbors {
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
   ~Neighbors() = default;
-  Neighbors(const Neighbors<VolumeDim>& neighbor)  = default;
+  Neighbors(const Neighbors<VolumeDim>& neighbor) = default;
   Neighbors(Neighbors<VolumeDim>&&) noexcept = default;
   Neighbors& operator=(const Neighbors& rhs) = default;
   Neighbors& operator=(Neighbors&&) noexcept = default;
@@ -110,3 +113,5 @@ bool operator==(const Neighbors<VolumeDim>& lhs,
 template <size_t VolumeDim>
 bool operator!=(const Neighbors<VolumeDim>& lhs,
                 const Neighbors<VolumeDim>& rhs) noexcept;
+
+}  // namespace domain

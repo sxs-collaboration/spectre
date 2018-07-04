@@ -50,7 +50,7 @@ struct System {
   using volume_fluxes = ComputeFluxes;
 };
 
-using ElementIndexType = ElementIndex<dim>;
+using ElementIndexType = domain::ElementIndex<dim>;
 
 struct Metavariables;
 using component =
@@ -68,7 +68,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
                   "[Unit][Evolution][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<dim> self(1);
+  const domain::ElementId<dim> self(1);
 
   using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Inertial>;
   auto start_box = db::create<db::AddSimpleTags<Var1, Var2, flux_tag>>(

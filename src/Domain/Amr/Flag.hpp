@@ -8,6 +8,7 @@
 
 #include <iosfwd>
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// Items for adaptive mesh refinement
 namespace amr {
@@ -29,3 +30,4 @@ enum class Flag {
 /// Output operator for a Flag.
 std::ostream& operator<<(std::ostream& os, const Flag& flag);
 }  // namespace amr
+}  // namespace domain

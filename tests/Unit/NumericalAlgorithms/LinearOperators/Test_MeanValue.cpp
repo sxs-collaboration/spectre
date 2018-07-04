@@ -26,9 +26,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
   for (size_t nx = min_extents; nx <= max_extents; ++nx) {
     for (size_t ny = min_extents; ny <= max_extents; ++ny) {
       for (size_t nz = min_extents; nz <= max_extents; ++nz) {
-        const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+        const domain::Mesh<3> mesh{{{nx, ny, nz}},
+                                   Spectral::Basis::Legendre,
+                                   Spectral::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =
@@ -59,9 +59,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
   for (size_t nx = min_extents; nx <= max_extents; ++nx) {
     for (size_t ny = min_extents; ny <= max_extents; ++ny) {
       for (size_t nz = min_extents; nz <= max_extents; ++nz) {
-        const Mesh<3> mesh{{{nx, ny, nz}},
-                           Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto};
+        const domain::Mesh<3> mesh{{{nx, ny, nz}},
+                                   Spectral::Basis::Legendre,
+                                   Spectral::Quadrature::GaussLobatto};
         const DataVector& x =
             Spectral::collocation_points(mesh.slice_through(0));
         const DataVector& y =
@@ -83,37 +83,37 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
           return temp;
         }();
         // slice away x
-        CHECK(1.0 ==
-              approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
-        CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, mesh, 0, Side::Upper)));
+        CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0,
+                                                   domain::Side::Upper)));
+        CHECK(0.0 == approx(mean_value_on_boundary(u_quad, mesh, 0,
+                                                   domain::Side::Upper)));
 
-        CHECK(-1.0 ==
-              approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
-        CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, mesh, 0, Side::Lower)));
+        CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0,
+                                                    domain::Side::Lower)));
+        CHECK(0.0 == approx(mean_value_on_boundary(u_quad, mesh, 0,
+                                                   domain::Side::Lower)));
 
         // slice away y
-        CHECK(1.0 ==
-              approx(mean_value_on_boundary(u_lin, mesh, 1, Side::Upper)));
-        CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, mesh, 1, Side::Upper)));
+        CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 1,
+                                                   domain::Side::Upper)));
+        CHECK(0.0 == approx(mean_value_on_boundary(u_quad, mesh, 1,
+                                                   domain::Side::Upper)));
 
-        CHECK(-1.0 ==
-              approx(mean_value_on_boundary(u_lin, mesh, 1, Side::Lower)));
-        CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, mesh, 1, Side::Lower)));
+        CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 1,
+                                                    domain::Side::Lower)));
+        CHECK(0.0 == approx(mean_value_on_boundary(u_quad, mesh, 1,
+                                                   domain::Side::Lower)));
 
         // slice away z
-        CHECK(1.0 ==
-              approx(mean_value_on_boundary(u_lin, mesh, 2, Side::Upper)));
-        CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, mesh, 2, Side::Upper)));
+        CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 2,
+                                                   domain::Side::Upper)));
+        CHECK(0.0 == approx(mean_value_on_boundary(u_quad, mesh, 2,
+                                                   domain::Side::Upper)));
 
-        CHECK(-1.0 ==
-              approx(mean_value_on_boundary(u_lin, mesh, 2, Side::Lower)));
-        CHECK(0.0 ==
-              approx(mean_value_on_boundary(u_quad, mesh, 2, Side::Lower)));
+        CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 2,
+                                                    domain::Side::Lower)));
+        CHECK(0.0 == approx(mean_value_on_boundary(u_quad, mesh, 2,
+                                                   domain::Side::Lower)));
       }
     }
   }
@@ -127,8 +127,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
   constexpr size_t max_extents =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
   for (size_t nx = min_extents; nx < max_extents; ++nx) {
-    const Mesh<1> mesh{nx, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+    const domain::Mesh<1> mesh{nx, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
     const DataVector& x = Spectral::collocation_points(mesh);
     const DataVector u_lin = [&mesh, &x]() {
       DataVector temp(mesh.number_of_grid_points());
@@ -138,7 +138,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
       return temp;
     }();
     // slice away x
-    CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
-    CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
+    CHECK(1.0 ==
+          approx(mean_value_on_boundary(u_lin, mesh, 0, domain::Side::Upper)));
+    CHECK(-1.0 ==
+          approx(mean_value_on_boundary(u_lin, mesh, 0, domain::Side::Lower)));
   }
 }

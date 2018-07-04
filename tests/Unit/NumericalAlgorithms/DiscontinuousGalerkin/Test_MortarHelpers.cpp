@@ -35,7 +35,7 @@
 
 namespace {
 template <size_t Dim>
-Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) noexcept {
+domain::Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) noexcept {
   return {extents, Spectral::Basis::Legendre,
           Spectral::Quadrature::GaussLobatto};
 }
@@ -52,24 +52,24 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_mesh",
 
 SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
                   "[Unit][NumericalAlgorithms]") {
-  CHECK(dg::mortar_size(ElementId<1>(0, {{{0, 0}}}),
-                        ElementId<1>(0, {{{5, 2}}}), 0, {}) ==
-        std::array<Spectral::MortarSize, 0>{});
+  CHECK(dg::mortar_size(domain::ElementId<1>(0, {{{0, 0}}}),
+                        domain::ElementId<1>(0, {{{5, 2}}}), 0,
+                        {}) == std::array<Spectral::MortarSize, 0>{});
 
   // Check the root segment to make sure the code doesn't try to get
   // its parent.
-  CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
+  CHECK(dg::mortar_size(domain::ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                        domain::ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
-  CHECK(dg::mortar_size(ElementId<2>(0, {{{1, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
+  CHECK(dg::mortar_size(domain::ElementId<2>(0, {{{1, 0}, {0, 0}}}),
+                        domain::ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
-  CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1, {}) ==
+  CHECK(dg::mortar_size(domain::ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                        domain::ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1, {}) ==
         std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::LowerHalf}});
 
   // Check all the aligned cases in 3D
-  const auto test_segment = [](const SegmentId& base,
+  const auto test_segment = [](const domain::SegmentId& base,
                                const size_t test) noexcept {
     switch (test) {
       case 0:
@@ -77,9 +77,9 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
       case 1:
         return base.id_of_parent();
       case 2:
-        return base.id_of_child(Side::Lower);
+        return base.id_of_child(domain::Side::Lower);
       case 3:
-        return base.id_of_child(Side::Upper);
+        return base.id_of_child(domain::Side::Upper);
       default:
         ERROR("Test logic error");
     }
@@ -98,23 +98,23 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
     }
   };
 
-  const SegmentId segment0(1, 1);
-  const SegmentId segment1(2, 0);
+  const domain::SegmentId segment0(1, 1);
+  const domain::SegmentId segment1(2, 0);
   // We do not expect to actually have abutting elements with
   // difference greater than one in perpendicular refinement levels,
   // but this function should work even in that situation, so we test
   // it here.
-  const SegmentId perp0(5, 1);
-  const SegmentId perp1(7, 20);
+  const domain::SegmentId perp0(5, 1);
+  const domain::SegmentId perp1(7, 20);
 
   for (size_t dimension = 0; dimension < 3; ++dimension) {
-    using SegArray = std::array<SegmentId, 2>;
-    const ElementId<3> self(
+    using SegArray = std::array<domain::SegmentId, 2>;
+    const domain::ElementId<3> self(
         0, insert_element(SegArray{{segment0, segment1}}, dimension, perp0));
 
     for (size_t test0 = 0; test0 < 4; ++test0) {
       for (size_t test1 = 0; test1 < 4; ++test1) {
-        const ElementId<3> neighbor(
+        const domain::ElementId<3> neighbor(
             0, insert_element(SegArray{{test_segment(segment0, test0),
                                         test_segment(segment1, test1)}},
                               dimension, perp1));
@@ -127,11 +127,12 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
   }
 
   // Check an orientation case
-  CHECK(dg::mortar_size(ElementId<3>(1, {{{0, 0}, {3, 2}, {7, 5}}}),
-                        ElementId<3>(4, {{{6, 61}, {3, 0}, {4, 5}}}), 0,
-                        OrientationMap<3>{{{Direction<3>::upper_eta(),
-                                            Direction<3>::upper_zeta(),
-                                            Direction<3>::lower_xi()}}}) ==
+  CHECK(dg::mortar_size(
+            domain::ElementId<3>(1, {{{0, 0}, {3, 2}, {7, 5}}}),
+            domain::ElementId<3>(4, {{{6, 61}, {3, 0}, {4, 5}}}), 0,
+            domain::OrientationMap<3>{{{domain::Direction<3>::upper_eta(),
+                                        domain::Direction<3>::upper_zeta(),
+                                        domain::Direction<3>::lower_xi()}}}) ==
         std::array<Spectral::MortarSize, 2>{
             {Spectral::MortarSize::UpperHalf, Spectral::MortarSize::Full}});
 }
@@ -360,10 +361,10 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.compute_boundary_flux_contribution",
 
   // p-refinement
   {
-    const Mesh<1> face_mesh(2, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-    const Mesh<1> mortar_mesh(3, Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto);
+    const domain::Mesh<1> face_mesh(2, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto);
+    const domain::Mesh<1> mortar_mesh(3, Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto);
     const size_t extent_perpendicular_to_boundary = 4;
     const std::array<Spectral::MortarSize, 1> mortar_size{
         {Spectral::MortarSize::Full}};
@@ -403,8 +404,8 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.compute_boundary_flux_contribution",
     const auto compute_contribution = [](
         const std::array<Spectral::MortarSize, 1>& mortar_size,
         const DataVector& numerical_flux) noexcept {
-      const Mesh<1> mesh(3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto);
+      const domain::Mesh<1> mesh(3, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto);
 
       // These are all arbitrary
       const size_t extent_perpendicular_to_boundary = 4;

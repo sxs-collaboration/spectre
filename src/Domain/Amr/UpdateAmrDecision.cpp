@@ -12,6 +12,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace domain {
 template <size_t VolumeDim>
 class OrientationMap;
 
@@ -118,3 +119,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 /// \endcond
 }  // namespace amr
+}  // namespace domain

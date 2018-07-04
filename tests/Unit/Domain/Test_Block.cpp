@@ -25,13 +25,15 @@
 
 template <size_t Dim>
 void test_block() {
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Grid,
-                                       CoordinateMaps::Identity<Dim>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                                       domain::CoordinateMaps::Identity<Dim>>));
 
   using coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<Dim>>;
-  const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
-  Block<Dim, Frame::Grid> block(identity_map.get_clone(), 7, {});
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<Dim>>;
+  const coordinate_map identity_map{domain::CoordinateMaps::Identity<Dim>{}};
+  domain::Block<Dim, Frame::Grid> block(identity_map.get_clone(), 7, {});
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2 * Dim);
@@ -53,7 +55,8 @@ void test_block() {
   test_serialization(block);
 
   // Test move semantics:
-  const Block<Dim, Frame::Grid> block_copy(identity_map.get_clone(), 7, {});
+  const domain::Block<Dim, Frame::Grid> block_copy(identity_map.get_clone(), 7,
+                                                   {});
   test_move_semantics(std::move(block), block_copy);
 }
 
@@ -63,23 +66,27 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Identity", "[Domain][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
-  // Create std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
+  // Create std::unordered_map<domain::Direction<VolumeDim>,
+  // domain::BlockNeighbor<VolumeDim>>
 
-  // Each BlockNeighbor is an id and an OrientationMap:
-  const BlockNeighbor<2> block_neighbor1(
-      1, OrientationMap<2>(std::array<Direction<2>, 2>{
-             {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}));
-  const BlockNeighbor<2> block_neighbor2(
-      2, OrientationMap<2>(std::array<Direction<2>, 2>{
-             {Direction<2>::lower_xi(), Direction<2>::upper_eta()}}));
-  std::unordered_map<Direction<2>, BlockNeighbor<2>> neighbors = {
-      {Direction<2>::upper_xi(), block_neighbor1},
-      {Direction<2>::lower_eta(), block_neighbor2}};
+  // Each domain::BlockNeighbor is an id and an domain::OrientationMap:
+  const domain::BlockNeighbor<2> block_neighbor1(
+      1, domain::OrientationMap<2>(std::array<domain::Direction<2>, 2>{
+             {domain::Direction<2>::upper_xi(),
+              domain::Direction<2>::upper_eta()}}));
+  const domain::BlockNeighbor<2> block_neighbor2(
+      2, domain::OrientationMap<2>(std::array<domain::Direction<2>, 2>{
+             {domain::Direction<2>::lower_xi(),
+              domain::Direction<2>::upper_eta()}}));
+  std::unordered_map<domain::Direction<2>, domain::BlockNeighbor<2>> neighbors =
+      {{domain::Direction<2>::upper_xi(), block_neighbor1},
+       {domain::Direction<2>::lower_eta(), block_neighbor2}};
   using coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<2>>;
-  const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
-  const Block<2, Frame::Grid> block(identity_map.get_clone(), 3,
-                                    std::move(neighbors));
+      domain::CoordinateMap<Frame::Logical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<2>>;
+  const coordinate_map identity_map{domain::CoordinateMaps::Identity<2>{}};
+  const domain::Block<2, Frame::Grid> block(identity_map.get_clone(), 3,
+                                            std::move(neighbors));
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2);
@@ -99,8 +106,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
         "External boundaries: (+1,-0)\n");
 
   // Test comparison:
-  const Block<2, Frame::Grid> neighborless_block(identity_map.get_clone(), 7,
-                                                 {});
+  const domain::Block<2, Frame::Grid> neighborless_block(
+      identity_map.get_clone(), 7, {});
   CHECK(block == block);
   CHECK(block != neighborless_block);
   CHECK(neighborless_block == neighborless_block);

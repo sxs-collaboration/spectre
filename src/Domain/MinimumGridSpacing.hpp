@@ -15,10 +15,13 @@
 class DataVector;
 template <size_t Dim>
 class Index;
+namespace domain {
 template <size_t Dim>
 class Mesh;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// Finds the minimum coordinate distance between grid points.
 template <size_t Dim, typename Frame>
@@ -34,10 +37,11 @@ template <size_t Dim, typename Frame>
 struct MinimumGridSpacing : db::ComputeTag {
   static std::string name() noexcept { return "MinimumGridSpacing"; }
   static auto function(
-      const ::Mesh<Dim>& mesh,
+      const domain::Mesh<Dim>& mesh,
       const tnsr::I<DataVector, Dim, Frame>& coordinates) noexcept {
     return minimum_grid_spacing(mesh.extents(), coordinates);
   }
   using argument_tags = tmpl::list<Mesh<Dim>, Coordinates<Dim, Frame>>;
 };
 }  // namespace Tags
+}  // namespace domain

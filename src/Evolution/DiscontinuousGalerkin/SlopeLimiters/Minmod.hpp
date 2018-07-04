@@ -20,10 +20,12 @@
 
 /// \cond
 class DataVector;
+namespace domain {
 template <size_t VolumeDim>
 class Direction;
 template <size_t>
 class Mesh;
+}  // namespace domain
 
 namespace PUP {
 class er;
@@ -68,14 +70,16 @@ template <size_t VolumeDim>
 bool limit_one_tensor(
     gsl::not_null<DataVector*> tensor_begin,
     gsl::not_null<DataVector*> tensor_end,
-    const std::unordered_map<Direction<VolumeDim>,
+    const std::unordered_map<domain::Direction<VolumeDim>,
                              gsl::not_null<const double*>>&
         neighbor_tensor_begin,
     const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const domain::Element<VolumeDim>& element,
+    const domain::Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const tnsr::I<double, VolumeDim>& element_size,
-    const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
+    const std::unordered_map<domain::Direction<VolumeDim>,
+                             tnsr::I<double, VolumeDim>>&
         neighbor_sizes) noexcept;
 
 template <typename TensorType>
@@ -203,8 +207,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   void data_for_neighbors(
       const gsl::not_null<std::add_pointer_t<
           Minmod_detail::tensor_double_from<db::item_type<Tags>>>>... means,
-      const db::item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh) const
-      noexcept {
+      const db::item_type<Tags>&... tensors,
+      const domain::Mesh<VolumeDim>& mesh) const noexcept {
     const auto wrap_compute_mean = [&mesh](const auto& mean,
                                            const auto& tensor) noexcept {
       for (size_t i = 0; i < tensor.size(); ++i) {
@@ -243,13 +247,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///   test cases with very clean initial data.
   bool apply(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-      const std::unordered_map<Direction<VolumeDim>,
+      const std::unordered_map<domain::Direction<VolumeDim>,
                                Minmod_detail::tensor_double_from<
                                    db::item_type<Tags>>>&... neighbor_tensors,
-      const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+      const domain::Element<VolumeDim>& element,
+      const domain::Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
       const tnsr::I<double, VolumeDim>& element_size,
-      const std::unordered_map<Direction<VolumeDim>,
+      const std::unordered_map<domain::Direction<VolumeDim>,
                                tnsr::I<double, VolumeDim>>& neighbor_sizes)
       const noexcept {
     bool limiter_activated = false;
@@ -262,7 +267,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const auto tensor_begin = make_not_null(tensor->begin());
       const auto tensor_end = make_not_null(tensor->end());
       const auto neighbor_tensor_begin = [&neighbor_tensor]() noexcept {
-        std::unordered_map<Direction<VolumeDim>, gsl::not_null<const double*>>
+        std::unordered_map<domain::Direction<VolumeDim>,
+                           gsl::not_null<const double*>>
             result;
         for (const auto& dir_and_tensor : neighbor_tensor) {
           result.insert(

@@ -17,6 +17,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// A particular Side along a particular coordinate Axis.
 template <size_t VolumeDim>
@@ -140,7 +141,7 @@ inline Direction<VolumeDim> Direction<VolumeDim>::upper_zeta() noexcept {
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
-  return Direction<VolumeDim>(axis_, ::opposite(side_));
+  return Direction<VolumeDim>(axis_, ::domain::opposite(side_));
 }
 
 /// \cond NEVER
@@ -188,11 +189,12 @@ template <size_t VolumeDim>
 size_t hash_value(const Direction<VolumeDim>& d) noexcept {
   return std::hash<size_t>{}(d.dimension()) xor std::hash<double>{}(d.sign());
 }
+}  // namespace domain
 
 namespace std {
 template <size_t VolumeDim>
-struct hash<Direction<VolumeDim>> {
-  size_t operator()(const Direction<VolumeDim>& d) const noexcept {
+struct hash<domain::Direction<VolumeDim>> {
+  size_t operator()(const domain::Direction<VolumeDim>& d) const noexcept {
     return hash_value(d);
   }
 };

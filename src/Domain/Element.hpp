@@ -21,6 +21,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// A spectral element with knowledge of its neighbors.
 ///
@@ -84,3 +85,4 @@ bool operator==(const Element<VolumeDim>& lhs,
 template <size_t VolumeDim>
 bool operator!=(const Element<VolumeDim>& lhs,
                 const Element<VolumeDim>& rhs) noexcept;
+}  // namespace domain

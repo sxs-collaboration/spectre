@@ -37,15 +37,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.mortar_to_element",
          num_points_dest <=
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
-                              quadrature_dest);
+      const domain::Mesh<1> mesh_dest(
+          num_points_dest, Spectral::Basis::Legendre, quadrature_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = num_points_dest;
              num_points_source <=
                  Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
+          const domain::Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
@@ -91,15 +91,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.element_to_mortar",
          num_points_dest <=
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
-                              quadrature_dest);
+      const domain::Mesh<1> mesh_dest(
+          num_points_dest, Spectral::Basis::Legendre, quadrature_dest);
       CAPTURE(mesh_dest);
       const auto& points_dest = Spectral::collocation_points(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = 2;
              num_points_source <= num_points_dest;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
+          const domain::Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
@@ -136,8 +136,8 @@ DataVector to_lower_half(const DataVector& p) noexcept {
 // from.
 template <typename F1, typename F2>
 void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
-                                        const Mesh<1>& mesh_element,
-                                        const Mesh<1>& mesh_self_mortar,
+                                        const domain::Mesh<1>& mesh_element,
+                                        const domain::Mesh<1>& mesh_self_mortar,
                                         F1&& to_element_self,
                                         F2&& to_element_other) noexcept {
   // Notation for variables in this function:
@@ -170,16 +170,16 @@ void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
     // Test points for each half in each coordinate system.  These
     // have to have one extra point because LGL quadrature is not
     // sufficiently good.
-    const Mesh<1> test_mesh_self_mortar(mesh_self_mortar.extents(0) + 1,
-                                        mesh_self_mortar.basis(0),
-                                        mesh_self_mortar.quadrature(0));
+    const domain::Mesh<1> test_mesh_self_mortar(mesh_self_mortar.extents(0) + 1,
+                                                mesh_self_mortar.basis(0),
+                                                mesh_self_mortar.quadrature(0));
     const auto& test_points_self_mortar =
         Spectral::collocation_points(test_mesh_self_mortar);
     // We don't need to represent the initial function on the other
     // mortar.
-    const Mesh<1> test_mesh_element(mesh_element.extents(0) + 1,
-                                    mesh_element.basis(0),
-                                    mesh_element.quadrature(0));
+    const domain::Mesh<1> test_mesh_element(mesh_element.extents(0) + 1,
+                                            mesh_element.basis(0),
+                                            mesh_element.quadrature(0));
     const auto& test_points_other_mortar =
         Spectral::collocation_points(test_mesh_element);
     const auto& test_points_self_element =
@@ -229,8 +229,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.mortar_to_element",
          num_points_dest <=
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
-                              quadrature_dest);
+      const domain::Mesh<1> mesh_dest(
+          num_points_dest, Spectral::Basis::Legendre, quadrature_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = num_points_dest;
@@ -238,7 +238,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.mortar_to_element",
                  Spectral::maximum_number_of_points<Spectral::Basis::Legendre> -
                  1;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
+          const domain::Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           check_mortar_to_element_projection(Spectral::MortarSize::UpperHalf,
@@ -260,15 +260,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.h.element_to_mortar",
          num_points_dest <=
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
          ++num_points_dest) {
-      const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
-                              quadrature_dest);
+      const domain::Mesh<1> mesh_dest(
+          num_points_dest, Spectral::Basis::Legendre, quadrature_dest);
       CAPTURE(mesh_dest);
       const auto& points_dest = Spectral::collocation_points(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = 2;
              num_points_source <= num_points_dest;
              ++num_points_source) {
-          const Mesh<1> mesh_source(
+          const domain::Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);

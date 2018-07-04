@@ -38,9 +38,9 @@
 
 namespace {
 
-using Affine = CoordinateMaps::Affine;
-using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Affine = domain::CoordinateMaps::Affine;
+using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 const double inertial_coord_min = -0.3;
 const double inertial_coord_max = 0.7;
@@ -50,20 +50,20 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
@@ -106,7 +106,7 @@ struct SymmetricTensor : db::SimpleTag {
 }  // namespace TestTags
 
 template <size_t Dim>
-void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
+void test_interpolate_to_points(const domain::Mesh<Dim>& mesh) noexcept {
   // Fill target interpolation coordinates with random values
   std::random_device r;
   const auto seed = r();
@@ -153,7 +153,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   }
 
   // Coordinates on the grid
-  const auto src_x = coordinate_map(logical_coordinates(mesh));
+  const auto src_x = coordinate_map(domain::logical_coordinates(mesh));
 
   // Set up variables
   using tags =
@@ -203,18 +203,18 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   const size_t start_points = 4;
   const size_t end_points = 6;
   for (size_t n0 = start_points; n0 < end_points; ++n0) {
-    test_interpolate_to_points<1>(Mesh<1>{n0, Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto});
+    test_interpolate_to_points<1>(domain::Mesh<1>{
+        n0, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     for (size_t n1 = start_points; n1 < end_points; ++n1) {
       test_interpolate_to_points<2>(
-          Mesh<2>{{{n0, n1}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          domain::Mesh<2>{{{n0, n1}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
       for (size_t n2 = start_points; n2 < end_points; ++n2) {
         test_interpolate_to_points<3>(
-            Mesh<3>{{{n0, n1, n2}},
-                    Spectral::Basis::Legendre,
-                    Spectral::Quadrature::GaussLobatto});
+            domain::Mesh<3>{{{n0, n1, n2}},
+                            Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto});
       }
     }
   }
@@ -225,20 +225,21 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant.Meshes",
   const size_t start_points = 4;
   const size_t end_points = 6;
   for (size_t n0 = start_points; n0 < end_points; ++n0) {
-    test_interpolate_to_points<1>(
-        Mesh<1>{n0, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+    test_interpolate_to_points<1>(domain::Mesh<1>{n0, Spectral::Basis::Legendre,
+                                                  Spectral::Quadrature::Gauss});
     for (size_t n1 = start_points; n1 < end_points; ++n1) {
-      test_interpolate_to_points<2>(Mesh<2>{
+      test_interpolate_to_points<2>(domain::Mesh<2>{
           {{n0, n1}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
-      test_interpolate_to_points<2>(Mesh<2>{
+      test_interpolate_to_points<2>(domain::Mesh<2>{
           {{n0, n1}},
           {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
           {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}}});
       for (size_t n2 = start_points; n2 < end_points; ++n2) {
-        test_interpolate_to_points<3>(Mesh<3>{{{n0, n1, n2}},
-                                              Spectral::Basis::Legendre,
-                                              Spectral::Quadrature::Gauss});
-        test_interpolate_to_points<3>(Mesh<3>{
+        test_interpolate_to_points<3>(
+            domain::Mesh<3>{{{n0, n1, n2}},
+                            Spectral::Basis::Legendre,
+                            Spectral::Quadrature::Gauss});
+        test_interpolate_to_points<3>(domain::Mesh<3>{
             {{n0, n1, n2}},
             {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
               Spectral::Basis::Legendre}},

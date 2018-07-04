@@ -41,8 +41,8 @@ void check_quadrature_supported(const Quadrature quadrature) noexcept {
 }  // namespace
 
 const Matrix& projection_matrix_mortar_to_element(
-    const MortarSize size, const Mesh<1>& element_mesh,
-    const Mesh<1>& mortar_mesh) noexcept {
+    const MortarSize size, const domain::Mesh<1>& element_mesh,
+    const domain::Mesh<1>& mortar_mesh) noexcept {
   ASSERT(element_mesh.basis(0) == Basis::Legendre and
              mortar_mesh.basis(0) == Basis::Legendre,
          "Projections only implemented on Legendre basis");
@@ -71,10 +71,10 @@ const Matrix& projection_matrix_mortar_to_element(
             if (extents_element > extents_mortar) {
               return Matrix{};
             }
-            const Mesh<1> mesh_element(
+            const domain::Mesh<1> mesh_element(
                 extents_element, Basis::Legendre,
                 decode_quadrature(encoded_quadrature_element));
-            const Mesh<1> mesh_mortar(
+            const domain::Mesh<1> mesh_mortar(
                 extents_mortar, Basis::Legendre,
                 decode_quadrature(encoded_quadrature_mortar));
 
@@ -115,10 +115,10 @@ const Matrix& projection_matrix_mortar_to_element(
             if (extents_element > extents_mortar) {
               return Matrix{};
             }
-            const Mesh<1> mesh_element(
+            const domain::Mesh<1> mesh_element(
                 extents_element, Basis::Legendre,
                 decode_quadrature(encoded_quadrature_element));
-            const Mesh<1> mesh_mortar(
+            const domain::Mesh<1> mesh_mortar(
                 extents_mortar, Basis::Legendre,
                 decode_quadrature(encoded_quadrature_mortar));
 
@@ -197,10 +197,10 @@ const Matrix& projection_matrix_mortar_to_element(
             if (extents_element > extents_mortar) {
               return Matrix{};
             }
-            const Mesh<1> mesh_element(
+            const domain::Mesh<1> mesh_element(
                 extents_element, Basis::Legendre,
                 decode_quadrature(encoded_quadrature_element));
-            const Mesh<1> mesh_mortar(
+            const domain::Mesh<1> mesh_mortar(
                 extents_mortar, Basis::Legendre,
                 decode_quadrature(encoded_quadrature_mortar));
 
@@ -232,8 +232,8 @@ const Matrix& projection_matrix_mortar_to_element(
 }
 
 const Matrix& projection_matrix_element_to_mortar(
-    const MortarSize size, const Mesh<1>& mortar_mesh,
-    const Mesh<1>& element_mesh) noexcept {
+    const MortarSize size, const domain::Mesh<1>& mortar_mesh,
+    const domain::Mesh<1>& element_mesh) noexcept {
   ASSERT(mortar_mesh.basis(0) == Basis::Legendre and
              element_mesh.basis(0) == Basis::Legendre,
          "Projections only implemented on Legendre basis");
@@ -258,10 +258,12 @@ const Matrix& projection_matrix_element_to_mortar(
       if (extents_mortar < extents_element) {
         return Matrix{};
       }
-      const Mesh<1> mesh_element(extents_element, Basis::Legendre,
-                                 decode_quadrature(encoded_quadrature_element));
-      const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
-                                decode_quadrature(encoded_quadrature_mortar));
+      const domain::Mesh<1> mesh_element(
+          extents_element, Basis::Legendre,
+          decode_quadrature(encoded_quadrature_element));
+      const domain::Mesh<1> mesh_mortar(
+          extents_mortar, Basis::Legendre,
+          decode_quadrature(encoded_quadrature_mortar));
       return interpolation_matrix(
           mesh_element, interval_transform(collocation_points(mesh_mortar)));
     };

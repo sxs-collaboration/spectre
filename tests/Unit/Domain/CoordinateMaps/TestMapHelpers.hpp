@@ -26,14 +26,15 @@
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Given a Map and a CoordinateMapBase, checks that the maps are equal by
- * downcasting `map_base` and then comparing to `map`. Returns false if the
- * downcast fails.
+ * \brief Given a Map and a domain::CoordinateMapBase, checks that the maps are
+ * equal by downcasting `map_base` and then comparing to `map`. Returns false if
+ * the downcast fails.
  */
 template <typename Map>
-bool are_maps_equal(const Map& map,
-                    const CoordinateMapBase<Frame::Logical, Frame::Inertial,
-                                            Map::dim>& map_base) {
+bool are_maps_equal(
+    const Map& map,
+    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
+        map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }
@@ -43,8 +44,10 @@ bool are_maps_equal(const Map& map,
 /// are equal by evaluating them at a random set of points.
 template <typename SourceFrame, typename TargetFrame, size_t VolumeDim>
 void check_if_maps_are_equal(
-    const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_one,
-    const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_two) {
+    const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
+        map_one,
+    const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
+        map_two) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> real_dis(-1, 1);
@@ -119,12 +122,13 @@ void test_inv_jacobian(const Map& map,
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Checks that the CoordinateMap `map` functions as expected when used as
- * the template parameter to the `CoordinateMap` type.
+ * \brief Checks that the domain::CoordinateMap `map` functions as expected when
+ * used as the template parameter to the `CoordinateMap` type.
  */
 template <typename Map, typename... Args>
 void test_coordinate_map_implementation(const Map& map) {
-  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Grid>(map);
+  const auto coord_map =
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map);
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> real_dis(-1, 1);
@@ -163,8 +167,8 @@ void test_coordinate_map_implementation(const Map& map) {
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Checks that the CoordinateMap `map` functions as expected when used
- * with different argument types.
+ * \brief Checks that the domain::CoordinateMap `map` functions as expected when
+ * used with different argument types.
  */
 template <typename Map, typename... Args>
 void test_coordinate_map_argument_types(
@@ -264,8 +268,8 @@ void test_coordinate_map_argument_types(
 
   jac_overloader(
       make_array_data_vector, add_reference_wrapper, map, test_point,
-      CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                         double>{},
+      domain::CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                                 double>{},
       args...);
 }
 
@@ -311,7 +315,7 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
     test_inv_jacobian(map_to_test, origin);
     test_inverse_map(map_to_test, origin);
 
-    for (VolumeCornerIterator<Map::dim> vci{}; vci; ++vci) {
+    for (domain::VolumeCornerIterator<Map::dim> vci{}; vci; ++vci) {
       test_jacobian(map_to_test, vci.coords_of_corner());
       test_inv_jacobian(map_to_test, vci.coords_of_corner());
       test_inverse_map(map_to_test, vci.coords_of_corner());
@@ -324,8 +328,8 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
   test_helper(map2);
 }
 
@@ -407,8 +411,8 @@ void test_suite_for_map_on_sphere(const Map& map,
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
   test_helper(map2);
 }
 
@@ -428,51 +432,60 @@ class OrientationMapIterator {
     ++vci_;
     if (not vci_) {
       not_at_end_ = std::next_permutation(dims_.begin(), dims_.end());
-      vci_ = VolumeCornerIterator<VolumeDim>{};
+      vci_ = domain::VolumeCornerIterator<VolumeDim>{};
     }
     set_map();
   }
   explicit operator bool() const noexcept { return not_at_end_; }
-  const OrientationMap<VolumeDim>& operator()() const noexcept { return map_; }
-  const OrientationMap<VolumeDim>& operator*() const noexcept { return map_; }
+  const domain::OrientationMap<VolumeDim>& operator()() const noexcept {
+    return map_;
+  }
+  const domain::OrientationMap<VolumeDim>& operator*() const noexcept {
+    return map_;
+  }
   void set_map() noexcept {
     for (size_t i = 0; i < VolumeDim; i++) {
       gsl::at(directions_, i) =
-          Direction<VolumeDim>{gsl::at(dims_, i), gsl::at(vci_(), i)};
+          domain::Direction<VolumeDim>{gsl::at(dims_, i), gsl::at(vci_(), i)};
     }
-    map_ = OrientationMap<VolumeDim>{directions_};
+    map_ = domain::OrientationMap<VolumeDim>{directions_};
   }
 
  private:
   bool not_at_end_ = true;
   std::array<size_t, VolumeDim> dims_{};
-  std::array<Direction<VolumeDim>, VolumeDim> directions_{};
-  VolumeCornerIterator<VolumeDim> vci_{};
-  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>{};
+  std::array<domain::Direction<VolumeDim>, VolumeDim> directions_{};
+  domain::VolumeCornerIterator<VolumeDim> vci_{};
+  domain::OrientationMap<VolumeDim> map_{};
 };
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Wedge OrientationMap in each of the six directions used in the
+ * \brief Wedge domain::OrientationMap in each of the six directions used in the
  * Shell and Sphere domain creators.
  */
-inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
-  const OrientationMap<3> upper_zeta_rotation{};
-  const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-       Direction<3>::lower_zeta()}});
-  const OrientationMap<3> upper_eta_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
-       Direction<3>::upper_xi()}});
-  const OrientationMap<3> lower_eta_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
-       Direction<3>::lower_xi()}});
-  const OrientationMap<3> upper_xi_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-       Direction<3>::upper_eta()}});
-  const OrientationMap<3> lower_xi_rotation(std::array<Direction<3>, 3>{
-      {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-       Direction<3>::upper_eta()}});
+inline std::array<domain::OrientationMap<3>, 6> all_wedge_directions() {
+  const domain::OrientationMap<3> upper_zeta_rotation{};
+  const domain::OrientationMap<3> lower_zeta_rotation(
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()}});
+  const domain::OrientationMap<3> upper_eta_rotation(
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_eta(),
+                                           domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::upper_xi()}});
+  const domain::OrientationMap<3> lower_eta_rotation(
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_eta(),
+                                           domain::Direction<3>::lower_zeta(),
+                                           domain::Direction<3>::lower_xi()}});
+  const domain::OrientationMap<3> upper_xi_rotation(
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::upper_xi(),
+                                           domain::Direction<3>::upper_eta()}});
+  const domain::OrientationMap<3> lower_xi_rotation(
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::lower_zeta(),
+                                           domain::Direction<3>::lower_xi(),
+                                           domain::Direction<3>::upper_eta()}});
   return {{upper_zeta_rotation, lower_zeta_rotation, upper_eta_rotation,
            lower_eta_rotation, upper_xi_rotation, lower_xi_rotation}};
 }

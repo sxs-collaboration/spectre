@@ -70,7 +70,7 @@ struct System {
   struct normal_dot_fluxes {
     using argument_tags =
         tmpl::list<Var, OtherArg, Var2,
-                   Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>;
+                   Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<2>>>;
     static void apply(
         const gsl::not_null<Scalar<DataVector>*> var_normal_dot_flux,
         const gsl::not_null<tnsr::ii<DataVector, 2>*> var2_normal_dot_flux,
@@ -92,7 +92,7 @@ struct System {
 struct Metavariables;
 
 using component =
-    ActionTesting::MockArrayComponent<Metavariables, ElementIndex<2>,
+    ActionTesting::MockArrayComponent<Metavariables, domain::ElementIndex<2>,
                                       tmpl::list<>>;
 
 struct Metavariables {
@@ -102,29 +102,31 @@ struct Metavariables {
 };
 
 template <typename Tag>
-using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
+using interface_tag =
+    domain::Tags::Interface<domain::Tags::InternalDirections<2>, Tag>;
 
 using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
     tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;
 
 using VarsType = Variables<tmpl::list<Var, Var2>>;
-auto run_action(
-    const Element<2>& element,
-    const std::unordered_map<Direction<2>, VarsType>& vars,
-    const std::unordered_map<Direction<2>, double>& other_arg) noexcept {
+auto run_action(const domain::Element<2>& element,
+                const std::unordered_map<domain::Direction<2>, VarsType>& vars,
+                const std::unordered_map<domain::Direction<2>, double>&
+                    other_arg) noexcept {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
 
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto};
 
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., -2., 4.};
+  const domain::CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
+  const domain::CoordinateMaps::Affine eta_map{-1., 1., -2., 4.};
 
-  auto element_map = ElementMap<2, Frame::Inertial>(
-      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                       CoordinateMaps::Affine>(
-                            xi_map, eta_map)));
+  auto element_map = domain::ElementMap<2, Frame::Inertial>(
+      element.id(),
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<
+              domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
+              xi_map, eta_map)));
 
   n_dot_f_tag::type n_dot_f_storage{};
   for (const auto& direction_neighbors : element.neighbors()) {
@@ -132,16 +134,18 @@ auto run_action(
   }
 
   auto start_box = db::create<
-      db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
+      db::AddSimpleTags<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+                        domain::Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
                         interface_tag<OtherArg>, n_dot_f_tag>,
-      db::AddComputeTags<
-          Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
-          interface_tag<Tags::Mesh<1>>,
-          interface_tag<Tags::UnnormalizedFaceNormal<2>>,
-          interface_tag<
-              Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
-          interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>>(
+      db::AddComputeTags<domain::Tags::InternalDirections<2>,
+                         interface_tag<domain::Tags::Direction<2>>,
+                         interface_tag<domain::Tags::Mesh<1>>,
+                         interface_tag<domain::Tags::UnnormalizedFaceNormal<2>>,
+                         interface_tag<Tags::EuclideanMagnitude<
+                             domain::Tags::UnnormalizedFaceNormal<2>>>,
+                         interface_tag<Tags::Normalized<
+                             domain::Tags::UnnormalizedFaceNormal<2>>>>>(
       element, mesh, std::move(element_map), vars, other_arg,
       std::move(n_dot_f_storage));
 
@@ -154,36 +158,41 @@ auto run_action(
 
 SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
                   "[Unit][NumericalAlgorithms][Actions]") {
-  const Element<2> element(
-      ElementId<2>(0), {{Direction<2>::upper_xi(), {{ElementId<2>(1)}, {}}},
-                        {Direction<2>::lower_eta(), {{ElementId<2>(1)}, {}}}});
+  const domain::Element<2> element(
+      domain::ElementId<2>(0),
+      {{domain::Direction<2>::upper_xi(), {{domain::ElementId<2>(1)}, {}}},
+       {domain::Direction<2>::lower_eta(), {{domain::ElementId<2>(1)}, {}}}});
 
-  std::unordered_map<Direction<2>, VarsType> vars;
-  vars[Direction<2>::upper_xi()] = VarsType(3);
-  get(get<Var>(vars[Direction<2>::upper_xi()])) = DataVector{0., 1., 2.};
+  std::unordered_map<domain::Direction<2>, VarsType> vars;
+  vars[domain::Direction<2>::upper_xi()] = VarsType(3);
+  get(get<Var>(vars[domain::Direction<2>::upper_xi()])) =
+      DataVector{0., 1., 2.};
   {
-    auto& var2 = get<Var2>(vars[Direction<2>::upper_xi()]);
+    auto& var2 = get<Var2>(vars[domain::Direction<2>::upper_xi()]);
     get<0, 0>(var2) = DataVector{3., 4., 5.};
     get<0, 1>(var2) = DataVector{6., 7., 8.};
     get<1, 1>(var2) = DataVector{9., 10., 11.};
   }
-  vars[Direction<2>::lower_eta()] = -10. * vars[Direction<2>::upper_xi()];
+  vars[domain::Direction<2>::lower_eta()] =
+      -10. * vars[domain::Direction<2>::upper_xi()];
 
-  const std::unordered_map<Direction<2>, double> other_arg{
-      {Direction<2>::upper_xi(), 5.}, {Direction<2>::lower_eta(), 7.}};
+  const std::unordered_map<domain::Direction<2>, double> other_arg{
+      {domain::Direction<2>::upper_xi(), 5.},
+      {domain::Direction<2>::lower_eta(), 7.}};
 
   auto box = run_action(element, vars, other_arg);
 
-  const auto& unit_face_normal = db::get<interface_tag<Tags::Normalized<
-      Tags::UnnormalizedFaceNormal<2>>>>(box);
+  const auto& unit_face_normal = db::get<
+      interface_tag<Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<2>>>>(
+      box);
   const auto& n_dot_f = db::get<n_dot_f_tag>(box);
 
-  std::unordered_map<Direction<2>,
+  std::unordered_map<domain::Direction<2>,
                      Variables<tmpl::list<Tags::NormalDotFlux<Var>,
                                           Tags::NormalDotFlux<Var2>>>>
       expected;
   for (const auto& direction :
-       {Direction<2>::upper_xi(), Direction<2>::lower_eta()}) {
+       {domain::Direction<2>::upper_xi(), domain::Direction<2>::lower_eta()}) {
     expected[direction].initialize(3);
     System::normal_dot_fluxes::apply(
         &get<Tags::NormalDotFlux<Var>>(expected[direction]),
@@ -198,10 +207,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
 SPECTRE_TEST_CASE(
     "Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes.NoNeighbors",
     "[Unit][NumericalAlgorithms][Actions]") {
-  const Element<2> element(ElementId<2>(0), {});
+  const domain::Element<2> element(domain::ElementId<2>(0), {});
 
-  const std::unordered_map<Direction<2>, VarsType> vars{};
-  const std::unordered_map<Direction<2>, double> other_arg{};
+  const std::unordered_map<domain::Direction<2>, VarsType> vars{};
+  const std::unordered_map<domain::Direction<2>, double> other_arg{};
 
   auto box = run_action(element, vars, other_arg);
 

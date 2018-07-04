@@ -22,6 +22,7 @@
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
+namespace domain {
 template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
@@ -30,8 +31,10 @@ template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// Each member in `PairOfFaces` holds the global corner ids of a block face.
 /// `PairOfFaces` is used in setting up periodic boundary conditions by
@@ -334,3 +337,4 @@ FaceCornerIterator<VolumeDim>::FaceCornerIterator(
     corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
   }
 }
+}  // namespace domain

@@ -17,12 +17,19 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
+namespace domain {
 template <size_t Dim>
 class Mesh;
+}  // namespace domain
 
+namespace domain {
 namespace Tags {
 template <size_t Dim>
 struct Mesh;
+}  // namespace Tags
+}  // namespace domain
+
+namespace Tags {
 template <class TagList>
 struct Variables;
 
@@ -74,7 +81,7 @@ struct deriv : Tags_detail::deriv_impl<T, S, U> {};
 /// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
 auto logical_partial_derivatives(const Variables<VariableTags>& u,
-                                 const Mesh<Dim>& mesh) noexcept
+                                 const domain::Mesh<Dim>& mesh) noexcept
     -> std::array<Variables<DerivativeTags>, Dim>;
 
 /// \ingroup NumericalAlgorithmsGroup
@@ -91,7 +98,7 @@ auto logical_partial_derivatives(const Variables<VariableTags>& u,
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 auto partial_derivatives(
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const Variables<VariableTags>& u, const domain::Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
@@ -129,9 +136,10 @@ struct deriv_impl<
       partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                           derivative_frame_index::dim,
                           typename derivative_frame_index::Frame>;
-  using argument_tags = tmpl::list<Tags::Variables<variables_tags>,
-                                   Tags::Mesh<derivative_frame_index::dim>,
-                                   InverseJacobianTag>;
+  using argument_tags =
+      tmpl::list<Tags::Variables<variables_tags>,
+                 domain::Tags::Mesh<derivative_frame_index::dim>,
+                 InverseJacobianTag>;
 };
 
 // Logical partial derivatives
@@ -146,7 +154,7 @@ struct deriv_impl<tmpl::list<VariablesTags...>, tmpl::list<DerivativeTags...>,
       logical_partial_derivatives<tmpl::list<DerivativeTags...>, variables_tags,
                                   Dim>;
   using argument_tags =
-      tmpl::list<Tags::Variables<variables_tags>, Tags::Mesh<Dim>>;
+      tmpl::list<Tags::Variables<variables_tags>, domain::Tags::Mesh<Dim>>;
 };
 }  // namespace Tags_detail
 }  // namespace Tags

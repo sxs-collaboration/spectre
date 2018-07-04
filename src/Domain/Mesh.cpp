@@ -11,6 +11,7 @@
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
+namespace domain {
 template <size_t Dim>
 // clang-tidy: incorrectly reported redundancy in template expression
 template <size_t N, Requires<(N > 0 and N == Dim)>>  // NOLINT
@@ -120,3 +121,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SLICE_AWAY, (1, 2, 3))
 #undef INSTANTIATE_MESH
 #undef INSTANTIATE_SLICE_AWAY
 /// \endcond
+}  // namespace domain

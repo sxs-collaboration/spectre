@@ -23,10 +23,12 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class OrientationMap;
+}  // namespace domain
 // IWYU pragma: no_forward_declare Variables
 /// \endcond
 
@@ -35,8 +37,8 @@ namespace dg {
 /// Find a mesh for a mortar capable of representing data from either
 /// of two faces.
 template <size_t Dim>
-Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
-                      const Mesh<Dim>& face_mesh2) noexcept;
+domain::Mesh<Dim> mortar_mesh(const domain::Mesh<Dim>& face_mesh1,
+                              const domain::Mesh<Dim>& face_mesh2) noexcept;
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Determine the size of the mortar (i.e., the part of the face it
@@ -45,16 +47,15 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
 /// that determined by \p neighbor.
 template <size_t Dim>
 std::array<Spectral::MortarSize, Dim - 1> mortar_size(
-    const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
-    size_t dimension, const OrientationMap<Dim>& orientation) noexcept;
+    const domain::ElementId<Dim>& self, const domain::ElementId<Dim>& neighbor,
+    size_t dimension, const domain::OrientationMap<Dim>& orientation) noexcept;
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.
 template <typename Tags, size_t Dim>
 Variables<Tags> project_to_mortar(
-    const Variables<Tags>& vars,
-    const Mesh<Dim>& face_mesh,
-    const Mesh<Dim>& mortar_mesh,
+    const Variables<Tags>& vars, const domain::Mesh<Dim>& face_mesh,
+    const domain::Mesh<Dim>& mortar_mesh,
     const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
   const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
@@ -78,9 +79,8 @@ Variables<Tags> project_to_mortar(
 /// Project variables from a mortar to a face.
 template <typename Tags, size_t Dim>
 Variables<Tags> project_from_mortar(
-    const Variables<Tags>& vars,
-    const Mesh<Dim>& face_mesh,
-    const Mesh<Dim>& mortar_mesh,
+    const Variables<Tags>& vars, const domain::Mesh<Dim>& face_mesh,
+    const domain::Mesh<Dim>& mortar_mesh,
     const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
   const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
@@ -139,7 +139,7 @@ auto compute_boundary_flux_contribution(
     const NormalDotNumericalFluxComputer& normal_dot_numerical_flux_computer,
     LocalData&& local_data,
     const typename FluxCommTypes::PackagedData& remote_data,
-    const Mesh<Dim>& face_mesh, const Mesh<Dim>& mortar_mesh,
+    const domain::Mesh<Dim>& face_mesh, const domain::Mesh<Dim>& mortar_mesh,
     const size_t extent_perpendicular_to_boundary,
     const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept
     -> db::item_type<

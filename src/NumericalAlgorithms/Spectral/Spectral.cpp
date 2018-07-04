@@ -320,8 +320,8 @@ Matrix interpolation_matrix(const size_t num_points,
 namespace {
 
 template <typename F>
-decltype(auto) get_spectral_quantity_for_mesh(F&& f,
-                                              const Mesh<1>& mesh) noexcept {
+decltype(auto) get_spectral_quantity_for_mesh(
+    F&& f, const domain::Mesh<1>& mesh) noexcept {
   const auto num_points = mesh.extents(0);
   // Switch on runtime values of basis and quadrature to select
   // corresponding template specialization. For basis functions spanning
@@ -355,15 +355,15 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
 /// \cond
 // clang-tidy: Macro arguments should be in parentheses, but we want to append
 // template parameters here.
-#define SPECTRAL_QUANTITY_FOR_MESH(function_name, return_type)           \
-  const return_type& function_name(const Mesh<1>& mesh) noexcept {       \
-    return get_spectral_quantity_for_mesh(                               \
-        [](const auto basis, const auto quadrature,                      \
-           const size_t num_points) noexcept->const return_type& {       \
-          return function_name</* NOLINT */ decltype(basis)::value,      \
-                               decltype(quadrature)::value>(num_points); \
-        },                                                               \
-        mesh);                                                           \
+#define SPECTRAL_QUANTITY_FOR_MESH(function_name, return_type)             \
+  const return_type& function_name(const domain::Mesh<1>& mesh) noexcept { \
+    return get_spectral_quantity_for_mesh(                                 \
+        [](const auto basis, const auto quadrature,                        \
+           const size_t num_points) noexcept->const return_type& {         \
+          return function_name</* NOLINT */ decltype(basis)::value,        \
+                               decltype(quadrature)::value>(num_points);   \
+        },                                                                 \
+        mesh);                                                             \
   }
 
 SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
@@ -377,7 +377,7 @@ SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
 /// \endcond
 
 template <typename T>
-Matrix interpolation_matrix(const Mesh<1>& mesh,
+Matrix interpolation_matrix(const domain::Mesh<1>& mesh,
                             const T& target_points) noexcept {
   return get_spectral_quantity_for_mesh(
       [target_points](const auto basis, const auto quadrature,
@@ -415,10 +415,10 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
       size_t, const DataVector&) noexcept;                                    \
   template Matrix Spectral::interpolation_matrix<BASIS(data), QUAD(data)>(    \
       size_t, const std::vector<double>&) noexcept;
-template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
+template Matrix Spectral::interpolation_matrix(const domain::Mesh<1>&,
                                                const DataVector&) noexcept;
 template Matrix Spectral::interpolation_matrix(
-    const Mesh<1>&, const std::vector<double>&) noexcept;
+    const domain::Mesh<1>&, const std::vector<double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Spectral::Basis::Chebyshev, Spectral::Basis::Legendre),

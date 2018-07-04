@@ -27,16 +27,17 @@
 
 namespace {
 void test_rotated_rectangles_construction(
-    const DomainCreators::RotatedRectangles<Frame::Inertial>&
+    const domain::creators::RotatedRectangles<Frame::Inertial>&
         rotated_rectangles,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& midpoint,
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
-    const std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>&
+    const std::vector<
+        std::unordered_map<domain::Direction<2>, domain::BlockNeighbor<2>>>&
         expected_block_neighbors,
-    const std::vector<std::unordered_set<Direction<2>>>&
+    const std::vector<std::unordered_set<domain::Direction<2>>>&
         expected_external_boundaries) noexcept {
   const auto domain = rotated_rectangles.create_domain();
 
@@ -46,34 +47,40 @@ void test_rotated_rectangles_construction(
   CHECK(rotated_rectangles.initial_refinement_levels() ==
         expected_refinement_level);
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  using DiscreteRotation2D = CoordinateMaps::DiscreteRotation<2>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using DiscreteRotation2D = domain::CoordinateMaps::DiscreteRotation<2>;
 
   const Affine lower_x_map(-1.0, 1.0, lower_bound[0], midpoint[0]);
   const Affine upper_x_map(-1.0, 1.0, midpoint[0], upper_bound[0]);
   const Affine lower_y_map(-1.0, 1.0, lower_bound[1], midpoint[1]);
   const Affine upper_y_map(-1.0, 1.0, midpoint[1], upper_bound[1]);
-  std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine2D(lower_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation2D{
+              domain::OrientationMap<2>{std::array<domain::Direction<2>, 2>{
+                  {domain::Direction<2>::lower_xi(),
+                   domain::Direction<2>::lower_eta()}}}},
           Affine2D(upper_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation2D{
+              domain::OrientationMap<2>{std::array<domain::Direction<2>, 2>{
+                  {domain::Direction<2>::lower_eta(),
+                   domain::Direction<2>::upper_xi()}}}},
           Affine2D(lower_x_map, upper_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation2D{
+              domain::OrientationMap<2>{std::array<domain::Direction<2>, 2>{
+                  {domain::Direction<2>::upper_eta(),
+                   domain::Direction<2>::lower_xi()}}}},
           Affine2D(upper_x_map, upper_y_map)));
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps);
@@ -88,14 +95,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
       refinement_level{{{0, 1}}, {{0, 1}}, {{1, 0}}, {{1, 0}}};
   const std::array<double, 2> lower_bound{{-1.2, -2.0}}, midpoint{{-0.6, 0.2}},
       upper_bound{{0.8, 3.0}};
-  const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
-      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
-  const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
-      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
-  const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
-      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  const domain::OrientationMap<2> half_turn{std::array<domain::Direction<2>, 2>{
+      {domain::Direction<2>::lower_xi(), domain::Direction<2>::lower_eta()}}};
+  const domain::OrientationMap<2> quarter_turn_cw{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::upper_eta(),
+                                           domain::Direction<2>::lower_xi()}}};
+  const domain::OrientationMap<2> quarter_turn_ccw{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::lower_eta(),
+                                           domain::Direction<2>::upper_xi()}}};
 
-  const DomainCreators::RotatedRectangles<Frame::Inertial> rotated_rectangles{
+  const domain::creators::RotatedRectangles<Frame::Inertial> rotated_rectangles{
       lower_bound,
       midpoint,
       upper_bound,
@@ -106,23 +115,25 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
   test_rotated_rectangles_construction(
       rotated_rectangles, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
-          {{Direction<2>::upper_xi(), {1, half_turn}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
-          {{Direction<2>::upper_xi(), {0, half_turn}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
-          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {3, half_turn}}},
-          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{
-          {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+      std::vector<
+          std::unordered_map<domain::Direction<2>, domain::BlockNeighbor<2>>>{
+          {{domain::Direction<2>::upper_xi(), {1, half_turn}},
+           {domain::Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
+          {{domain::Direction<2>::upper_xi(), {0, half_turn}},
+           {domain::Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
+          {{domain::Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {domain::Direction<2>::lower_eta(), {3, half_turn}}},
+          {{domain::Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {domain::Direction<2>::lower_eta(), {2, half_turn}}}},
+      std::vector<std::unordered_set<domain::Direction<2>>>{
+          {domain::Direction<2>::lower_xi(), domain::Direction<2>::lower_eta()},
+          {domain::Direction<2>::lower_xi(), domain::Direction<2>::upper_eta()},
+          {domain::Direction<2>::upper_xi(), domain::Direction<2>::upper_eta()},
+          {domain::Direction<2>::lower_xi(),
+           domain::Direction<2>::upper_eta()}});
   test_physical_separation(rotated_rectangles.create_domain().blocks());
 
-  const DomainCreators::RotatedRectangles<Frame::Inertial>
+  const domain::creators::RotatedRectangles<Frame::Inertial>
       rotated_periodic_rectangles{
           lower_bound,
           midpoint,
@@ -134,37 +145,40 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
   test_rotated_rectangles_construction(
       rotated_periodic_rectangles, lower_bound, midpoint, upper_bound,
       grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
-          {{Direction<2>::upper_xi(), {1, half_turn}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
-           {Direction<2>::lower_xi(), {1, half_turn}},
-           {Direction<2>::lower_eta(), {2, quarter_turn_ccw}}},
-          {{Direction<2>::upper_xi(), {0, half_turn}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}},
-           {Direction<2>::lower_xi(), {0, half_turn}},
-           {Direction<2>::upper_eta(), {3, quarter_turn_ccw}}},
-          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {3, half_turn}},
-           {Direction<2>::upper_xi(), {0, quarter_turn_cw}},
-           {Direction<2>::upper_eta(), {3, half_turn}}},
-          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {2, half_turn}},
-           {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
-           {Direction<2>::upper_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
+      std::vector<
+          std::unordered_map<domain::Direction<2>, domain::BlockNeighbor<2>>>{
+          {{domain::Direction<2>::upper_xi(), {1, half_turn}},
+           {domain::Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
+           {domain::Direction<2>::lower_xi(), {1, half_turn}},
+           {domain::Direction<2>::lower_eta(), {2, quarter_turn_ccw}}},
+          {{domain::Direction<2>::upper_xi(), {0, half_turn}},
+           {domain::Direction<2>::lower_eta(), {3, quarter_turn_ccw}},
+           {domain::Direction<2>::lower_xi(), {0, half_turn}},
+           {domain::Direction<2>::upper_eta(), {3, quarter_turn_ccw}}},
+          {{domain::Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {domain::Direction<2>::lower_eta(), {3, half_turn}},
+           {domain::Direction<2>::upper_xi(), {0, quarter_turn_cw}},
+           {domain::Direction<2>::upper_eta(), {3, half_turn}}},
+          {{domain::Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {domain::Direction<2>::lower_eta(), {2, half_turn}},
+           {domain::Direction<2>::lower_xi(), {1, quarter_turn_cw}},
+           {domain::Direction<2>::upper_eta(), {2, half_turn}}}},
+      std::vector<std::unordered_set<domain::Direction<2>>>{{}, {}, {}, {}});
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles.Factory",
                   "[Domain][Unit]") {
-  const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
-      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
-  const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
-      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
-  const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
-      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  const domain::OrientationMap<2> half_turn{std::array<domain::Direction<2>, 2>{
+      {domain::Direction<2>::lower_xi(), domain::Direction<2>::lower_eta()}}};
+  const domain::OrientationMap<2> quarter_turn_cw{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::upper_eta(),
+                                           domain::Direction<2>::lower_xi()}}};
+  const domain::OrientationMap<2> quarter_turn_ccw{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::lower_eta(),
+                                           domain::Direction<2>::upper_xi()}}};
 
   const auto domain_creator =
-      test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<2, Frame::Inertial>>(
           "  RotatedRectangles:\n"
           "    LowerBound: [0.1, -0.4]\n"
           "    Midpoint:   [2.6, 3.2]\n"
@@ -173,24 +187,26 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles.Factory",
           "    InitialGridPoints: [[3,2],[1,4]]\n"
           "    InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
-      dynamic_cast<const DomainCreators::RotatedRectangles<Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::RotatedRectangles<Frame::Inertial>*>(
           domain_creator.get());
   test_rotated_rectangles_construction(
       *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
       {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
       {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
-          {{Direction<2>::upper_xi(), {1, half_turn}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
-          {{Direction<2>::upper_xi(), {0, half_turn}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
-          {{Direction<2>::lower_xi(), {0, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {3, half_turn}}},
-          {{Direction<2>::upper_xi(), {1, quarter_turn_cw}},
-           {Direction<2>::lower_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{
-          {Direction<2>::lower_xi(), Direction<2>::lower_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
-          {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+      std::vector<
+          std::unordered_map<domain::Direction<2>, domain::BlockNeighbor<2>>>{
+          {{domain::Direction<2>::upper_xi(), {1, half_turn}},
+           {domain::Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
+          {{domain::Direction<2>::upper_xi(), {0, half_turn}},
+           {domain::Direction<2>::lower_eta(), {3, quarter_turn_ccw}}},
+          {{domain::Direction<2>::lower_xi(), {0, quarter_turn_cw}},
+           {domain::Direction<2>::lower_eta(), {3, half_turn}}},
+          {{domain::Direction<2>::upper_xi(), {1, quarter_turn_cw}},
+           {domain::Direction<2>::lower_eta(), {2, half_turn}}}},
+      std::vector<std::unordered_set<domain::Direction<2>>>{
+          {domain::Direction<2>::lower_xi(), domain::Direction<2>::lower_eta()},
+          {domain::Direction<2>::lower_xi(), domain::Direction<2>::upper_eta()},
+          {domain::Direction<2>::upper_xi(), domain::Direction<2>::upper_eta()},
+          {domain::Direction<2>::lower_xi(),
+           domain::Direction<2>::upper_eta()}});
 }

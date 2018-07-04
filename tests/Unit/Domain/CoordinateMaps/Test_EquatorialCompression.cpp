@@ -22,7 +22,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
 
   const double aspect_ratio = aspect_ratio_dis(gen);
   CAPTURE_PRECISE(aspect_ratio);
-  const CoordinateMaps::EquatorialCompression angular_compression_map(
+  const domain::CoordinateMaps::EquatorialCompression angular_compression_map(
       aspect_ratio);
   test_suite_for_map_on_unit_cube(angular_compression_map);
 }
@@ -44,7 +44,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression.Radius",
   const double aspect_ratio = aspect_ratio_dis(gen);
   CAPTURE_PRECISE(aspect_ratio);
   const std::array<double, 3> input_point{{x, y, z}};
-  const CoordinateMaps::EquatorialCompression angular_compression_map(
+  const domain::CoordinateMaps::EquatorialCompression angular_compression_map(
       aspect_ratio);
   const auto result_point = angular_compression_map(input_point);
   const auto& result_x = result_point[0];
@@ -82,7 +82,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression.Radius",
     "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_angular_compression = CoordinateMaps::EquatorialCompression(-0.2);
+  auto failed_angular_compression =
+      domain::CoordinateMaps::EquatorialCompression(-0.2);
   static_cast<void>(failed_angular_compression);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

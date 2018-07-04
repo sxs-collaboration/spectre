@@ -36,7 +36,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
 
   const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
       {"trans", f_of_t}};
-  const CoordMapsTimeDependent::Translation trans_map{};
+  const domain::CoordMapsTimeDependent::Translation trans_map{};
   // test serialized/deserialized map
   const auto trans_map_deserialized = serialize_and_deserialize(trans_map);
 

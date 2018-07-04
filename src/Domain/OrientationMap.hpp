@@ -7,18 +7,17 @@
 #include <cstddef>
 #include <iosfwd>
 
-
 #include "Domain/Direction.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-class SegmentId;
 namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 /*!
  * \ingroup DomainCreatorsGroup
  * \brief A mapping of the logical coordinate axes of a host to the logical
@@ -147,3 +146,4 @@ std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
   }
   return new_coords;
 }
+}  // namespace domain

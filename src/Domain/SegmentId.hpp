@@ -18,6 +18,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 /*!
  *  \ingroup ComputationalDomainGroup
  *  \brief A SegmentId labels a segment of the interval [-1,1] and is used to
@@ -183,3 +184,4 @@ inline bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept {
 inline bool operator!=(const SegmentId& lhs, const SegmentId& rhs) noexcept {
   return not(lhs == rhs);
 }
+}  // namespace domain

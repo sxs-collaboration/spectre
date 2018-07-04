@@ -17,15 +17,15 @@
 namespace {
 template <size_t VolumeDim>
 void check(const size_t block1,
-           const std::array<SegmentId, VolumeDim>& segments1,
+           const std::array<domain::SegmentId, VolumeDim>& segments1,
            const size_t block2,
-           const std::array<SegmentId, VolumeDim>& segments2) {
-  using Hash = std::hash<ElementIndex<VolumeDim>>;
+           const std::array<domain::SegmentId, VolumeDim>& segments2) {
+  using Hash = std::hash<domain::ElementIndex<VolumeDim>>;
 
-  const ElementId<VolumeDim> id1(block1, segments1);
-  const ElementId<VolumeDim> id2(block2, segments2);
+  const domain::ElementId<VolumeDim> id1(block1, segments1);
+  const domain::ElementId<VolumeDim> id2(block2, segments2);
 
-  ElementIndex<VolumeDim> element_index1{}, element_index2{};
+  domain::ElementIndex<VolumeDim> element_index1{}, element_index2{};
   // Check for nondeterminacy due to previous memory state.
   std::memset(&element_index1, 0, sizeof(element_index1));
 #if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
@@ -36,8 +36,8 @@ void check(const size_t block1,
 #if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
-  new (&element_index1) ElementIndex<VolumeDim>(id1);
-  new (&element_index2) ElementIndex<VolumeDim>(id2);
+  new (&element_index1) domain::ElementIndex<VolumeDim>(id1);
+  new (&element_index2) domain::ElementIndex<VolumeDim>(id2);
 
   CHECK((element_index1 == element_index2) == (id1 == id2));
   CHECK((element_index1 != element_index2) == (id1 != id2));
@@ -47,7 +47,8 @@ void check(const size_t block1,
 
 SPECTRE_TEST_CASE("Unit.Domain.ElementIndex", "[Domain][Unit]") {
   const std::array<size_t, 3> blocks{{0, 1, 4}};
-  const std::array<SegmentId, 4> segments{{{0, 0}, {1, 0}, {1, 1}, {8, 4}}};
+  const std::array<domain::SegmentId, 4> segments{
+      {{0, 0}, {1, 0}, {1, 1}, {8, 4}}};
 
   for (const auto& block1 : blocks) {
     for (const auto& block2 : blocks) {
@@ -71,10 +72,10 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementIndex", "[Domain][Unit]") {
     }
   }
 
-  CHECK(get_output(ElementIndex<1>(ElementId<1>(3, {{{4, 5}}})))
-        == "[3:4:5]");
-  CHECK(get_output(ElementIndex<2>(ElementId<2>(3, {{{4, 5}, {6, 7}}})))
-        == "[3:4:5][3:6:7]");
-  CHECK(get_output(ElementIndex<3>(ElementId<3>(3, {{{4, 5}, {6, 7}, {8, 9}}})))
-        == "[3:4:5][3:6:7][3:8:9]");
+  CHECK(get_output(domain::ElementIndex<1>(
+            domain::ElementId<1>(3, {{{4, 5}}}))) == "[3:4:5]");
+  CHECK(get_output(domain::ElementIndex<2>(
+            domain::ElementId<2>(3, {{{4, 5}, {6, 7}}}))) == "[3:4:5][3:6:7]");
+  CHECK(get_output(domain::ElementIndex<3>(domain::ElementId<3>(
+            3, {{{4, 5}, {6, 7}, {8, 9}}}))) == "[3:4:5][3:6:7][3:8:9]");
 }

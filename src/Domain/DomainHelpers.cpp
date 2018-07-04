@@ -31,6 +31,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace domain {
 namespace {
 
 // returns the common corners in the global corner numbering scheme.
@@ -405,10 +406,10 @@ void set_identified_boundaries(
     const auto& face2 = pair.second;
     ASSERT(face1.size() == face2.size(),
            "Each set must have the same number of corners.");
-    size_t id1 = ::find_block_id_of_external_face<VolumeDim>(
-        face1, corners_of_all_blocks);
-    size_t id2 = ::find_block_id_of_external_face<VolumeDim>(
-        face2, corners_of_all_blocks);
+    size_t id1 =
+        find_block_id_of_external_face<VolumeDim>(face1, corners_of_all_blocks);
+    size_t id2 =
+        find_block_id_of_external_face<VolumeDim>(face2, corners_of_all_blocks);
     const auto face1_canon =
         get_common_local_corners<VolumeDim>(corners_of_all_blocks[id1], face1);
     const auto face2_canon =
@@ -894,7 +895,8 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
       gsl::at(result, vci.local_corner_number()) = mapped_corner;
     }
     return result;
-      }();
+  }
+  ();
 
   std::array<size_t, two_to_the(VolumeDim)> result{};
   for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
@@ -1026,7 +1028,7 @@ template std::vector<
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map) noexcept;
-// Explicit instantiations
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -1056,4 +1058,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
+}  // namespace domain
 /// \endcond

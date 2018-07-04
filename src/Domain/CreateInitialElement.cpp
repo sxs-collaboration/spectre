@@ -23,6 +23,7 @@ struct Grid;      // IWYU pragma: keep
 struct Inertial;  // IWYU pragma: keep
 }  // namespace Frame
 
+namespace domain {
 template <size_t VolumeDim, typename TargetFrame>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id,
@@ -106,3 +107,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef FRAME
 #undef INSTANTIATE
 /// \endcond
+}  // namespace domain

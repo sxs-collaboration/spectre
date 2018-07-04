@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+namespace domain {
 std::ostream& operator<<(std::ostream& os, const Side& side) {
   switch (side) {
     case Side::Lower:
@@ -23,3 +24,4 @@ std::ostream& operator<<(std::ostream& os, const Side& side) {
   }
   return os;
 }
+}  // namespace domain

@@ -33,14 +33,16 @@ struct Var : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
                   "[Unit][NumericalAlgorithms]") {
-  const Mesh<2> mesh{
+  const domain::Mesh<2> mesh{
       {{3, 5}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
-  const CoordinateMaps::Affine xi_map(-1., 1., -5., 7.);
-  const CoordinateMaps::Affine eta_map(-1., 1., 2., 5.);
-  const auto coordinate_map = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                     CoordinateMaps::Affine>(xi_map, eta_map));
+  const domain::CoordinateMaps::Affine xi_map(-1., 1., -5., 7.);
+  const domain::CoordinateMaps::Affine eta_map(-1., 1., 2., 5.);
+  const auto coordinate_map =
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+          domain::CoordinateMaps::ProductOf2Maps<
+              domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
+              xi_map, eta_map));
   const double element_length = (eta_map(std::array<double, 1>{{1.}}) -
                                  eta_map(std::array<double, 1>{{-1.}}))[0];
 
@@ -48,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const auto boundary_mesh = mesh.slice_through(0);
 
   const auto magnitude_of_face_normal = magnitude(unnormalized_face_normal(
-      boundary_mesh, coordinate_map, Direction<2>::lower_eta()));
+      boundary_mesh, coordinate_map, domain::Direction<2>::lower_eta()));
 
   Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> flux(
       boundary_mesh.number_of_grid_points());

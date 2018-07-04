@@ -22,10 +22,12 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
+namespace domain {
 namespace Tags {
 template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
+}  // namespace domain
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -72,10 +74,9 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
         [&cache](
             const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::item_type<Tags::Mesh<volume_dim>>& mesh,
-            const db::item_type<
-                Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>&
-                mortar_meshes,
+            const db::item_type<domain::Tags::Mesh<volume_dim>>& mesh,
+            const db::item_type<Tags::Mortars<
+                domain::Tags::Mesh<volume_dim - 1>, volume_dim>>& mortar_meshes,
             const db::item_type<
                 Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>&
                 mortar_sizes) noexcept {
@@ -102,8 +103,9 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
                               index_to_slice_at(mesh.extents(), direction));
           }
         },
-        db::get<Tags::Mesh<volume_dim>>(box),
-        db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box),
+        db::get<domain::Tags::Mesh<volume_dim>>(box),
+        db::get<Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
+            box),
         db::get<Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(
             box));
 

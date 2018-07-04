@@ -38,7 +38,7 @@ void check_du_dt(const size_t npts, const double time) {
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
 
   tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Mesh<Dim>{
+    auto logical_coords = domain::logical_coordinates(domain::Mesh<Dim>{
         3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {
@@ -108,7 +108,7 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
 
   const tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Mesh<Dim>{
+    auto logical_coords = domain::logical_coordinates(domain::Mesh<Dim>{
         3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {
@@ -180,7 +180,7 @@ void check_upwind_flux(const size_t npts, const double t) {
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
 
   const tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Mesh<Dim>{
+    auto logical_coords = domain::logical_coordinates(domain::Mesh<Dim>{
         3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
     tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
     for (size_t i = 0; i < Dim; ++i) {

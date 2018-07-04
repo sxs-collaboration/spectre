@@ -157,7 +157,7 @@ using derivative_frame = Frame::Inertial;
   partial_derivatives<derivative_tags<DIM(data)>, variables_tags<DIM(data)>, \
                       DIM(data), derivative_frame>(                          \
       const Variables<variables_tags<DIM(data)>>& u,                         \
-      const Mesh<DIM(data)>& mesh,                                           \
+      const domain::Mesh<DIM(data)>& mesh,                                   \
       const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
                             derivative_frame>& inverse_jacobian) noexcept;
 

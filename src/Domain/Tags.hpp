@@ -40,19 +40,20 @@ namespace OptionTags {
 /// The input file tag for the DomainCreator to use
 template <size_t Dim, typename TargetFrame>
 struct DomainCreator {
-  using type = std::unique_ptr<::DomainCreator<Dim, TargetFrame>>;
+  using type = std::unique_ptr<domain::DomainCreator<Dim, TargetFrame>>;
   static constexpr OptionString help = {"The domain to create initially"};
 };
 }  // namespace OptionTags
 
+namespace domain {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The ::Element associated with the DataBox
+/// The domain::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::SimpleTag {
   static std::string name() noexcept { return "Element"; }
-  using type = ::Element<VolumeDim>;
+  using type = domain::Element<VolumeDim>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -63,7 +64,7 @@ struct Element : db::SimpleTag {
 template <size_t VolumeDim>
 struct Mesh : db::SimpleTag {
   static std::string name() noexcept { return "Mesh"; }
-  using type = ::Mesh<VolumeDim>;
+  using type = domain::Mesh<VolumeDim>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -72,7 +73,7 @@ struct Mesh : db::SimpleTag {
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::SimpleTag {
   static std::string name() noexcept { return "ElementMap"; }
-  using type = ::ElementMap<VolumeDim, Frame>;
+  using type = domain::ElementMap<VolumeDim, Frame>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -134,8 +135,9 @@ template <size_t VolumeDim>
 struct InternalDirections : db::ComputeTag {
   static std::string name() noexcept { return "InternalDirections"; }
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    std::unordered_set<::Direction<VolumeDim>> result;
+  static constexpr auto function(
+      const domain::Element<VolumeDim>& element) noexcept {
+    std::unordered_set<domain::Direction<VolumeDim>> result;
     for (const auto& direction_neighbors : element.neighbors()) {
       result.insert(direction_neighbors.first);
     }
@@ -150,7 +152,8 @@ template <size_t VolumeDim>
 struct BoundaryDirections : db::ComputeTag {
   static std::string name() noexcept { return "BoundaryDirections"; }
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
+  static constexpr auto function(
+      const domain::Element<VolumeDim>& element) noexcept {
     return element.external_boundaries();
   }
 };
@@ -169,7 +172,7 @@ struct InterfaceBase;
 /// \ingroup ComputationalDomainGroup
 /// \brief Prefix for an object on interfaces.
 ///
-/// The contained object will be a map from ::Direction to the item
+/// The contained object will be a map from domain::Direction to the item
 /// type of `Tag`, with the set of directions being those produced by
 /// `DirectionsTag`.  If `Tag` is a compute item, its function will be
 /// applied separately to the data on each interface.  If some of the
@@ -238,7 +241,8 @@ template <>
 struct unmap_interface_args<true> {
   template <size_t VolumeDim, typename T>
   static constexpr decltype(auto) apply(
-      const ::Direction<VolumeDim>& /*direction*/, const T& arg) noexcept {
+      const domain::Direction<VolumeDim>& /*direction*/,
+      const T& arg) noexcept {
     return arg;
   }
 };
@@ -246,8 +250,8 @@ struct unmap_interface_args<true> {
 template <>
 struct unmap_interface_args<false> {
   template <size_t VolumeDim, typename T>
-  static constexpr decltype(auto) apply(const ::Direction<VolumeDim>& direction,
-                                        const T& arg) noexcept {
+  static constexpr decltype(auto) apply(
+      const domain::Direction<VolumeDim>& direction, const T& arg) noexcept {
     return arg.at(direction);
   }
 };
@@ -319,8 +323,9 @@ struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
       interface_compute_item_argument_tags<DirectionsTag, FunctionTag>;
   using argument_tags =
       tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
-  static constexpr auto function = evaluate_compute_item<
-    DirectionsTag, FunctionTag, forwarded_argument_tags>::apply;
+  static constexpr auto function =
+      evaluate_compute_item<DirectionsTag, FunctionTag,
+                            forwarded_argument_tags>::apply;
 };
 }  // namespace Interface_detail
 
@@ -334,11 +339,11 @@ struct InterfaceBase
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// ::Direction to an interface
+/// domain::Direction to an interface
 template <size_t VolumeDim>
 struct Direction : db::SimpleTag {
   static std::string name() noexcept { return "Direction"; }
-  using type = ::Direction<VolumeDim>;
+  using type = domain::Direction<VolumeDim>;
 };
 
 /// \cond
@@ -348,8 +353,11 @@ struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
   static std::string name() noexcept { return "Interface"; }
   using tag = Direction<VolumeDim>;
   static constexpr auto function(
-      const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {
-    std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>> result;
+      const std::unordered_set<domain::Direction<VolumeDim>>&
+          directions) noexcept {
+    std::unordered_map<domain::Direction<VolumeDim>,
+                       domain::Direction<VolumeDim>>
+        result;
     for (const auto& d : directions) {
       result.emplace(d, d);
     }
@@ -363,8 +371,8 @@ namespace detail {
 template <size_t VolumeDim>
 struct InterfaceMesh : db::ComputeTag {
   static constexpr auto function(
-      const ::Direction<VolumeDim>& direction,
-      const ::Mesh<VolumeDim>& volume_mesh) noexcept {
+      const domain::Direction<VolumeDim>& direction,
+      const domain::Mesh<VolumeDim>& volume_mesh) noexcept {
     return volume_mesh.slice_away(direction.dimension());
   }
   using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
@@ -379,17 +387,18 @@ struct Interface<DirectionsTag, Mesh<InterfaceDim>>
                     detail::InterfaceMesh<InterfaceDim + 1>> {};
 /// \endcond
 }  // namespace Tags
+}  // namespace domain
 
 namespace db {
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
-    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
+    TagList, domain::Tags::Interface<DirectionsTag, VariablesTag>,
     Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>> {
   using type = tmpl::transform<
       typename item_type<VariablesTag>::tags_list,
-      tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
+      tmpl::bind<domain::Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
 
-  using tag = Tags::Interface<DirectionsTag, VariablesTag>;
+  using tag = domain::Tags::Interface<DirectionsTag, VariablesTag>;
 
   template <typename Subtag>
   static void create_item(
@@ -416,8 +425,8 @@ struct Subitems<
           get<typename Subtag::tag>(direction_vars.second);
       auto& sub_var = sub_value[direction];
       auto sub_var_it = sub_var.begin();
-      for (auto vars_it = parent_vars.begin();
-           vars_it != parent_vars.end(); ++vars_it, ++sub_var_it) {
+      for (auto vars_it = parent_vars.begin(); vars_it != parent_vars.end();
+           ++vars_it, ++sub_var_it) {
         // clang-tidy: do not use const_cast
         // The DataBox will only give out a const reference to the
         // result of a compute item.  Here, that is a reference to a
@@ -434,6 +443,7 @@ struct Subitems<
 };
 }  // namespace db
 
+namespace domain {
 namespace Tags {
 namespace detail {
 template <size_t VolumeDim, typename>
@@ -442,7 +452,8 @@ struct Slice;
 template <size_t VolumeDim, typename... SlicedTags>
 struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeTag {
   static constexpr auto function(
-      const ::Mesh<VolumeDim>& mesh, const ::Direction<VolumeDim>& direction,
+      const domain::Mesh<VolumeDim>& mesh,
+      const domain::Direction<VolumeDim>& direction,
       const db::item_type<SlicedTags>&... tensors) noexcept {
     return data_on_slice<SlicedTags...>(
         mesh.extents(), direction.dimension(),
@@ -486,3 +497,4 @@ struct Interface<
 };
 /// \endcond
 }  // namespace Tags
+}  // namespace domain

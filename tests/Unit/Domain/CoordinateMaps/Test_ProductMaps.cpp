@@ -21,12 +21,12 @@
 
 namespace {
 void test_product_two_maps_fail() {
-  const CoordinateMaps::Affine affine(-1.0, 1.0, 3.0, 4.0);
-  const CoordinateMaps::Wedge2D wedge(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{},
-                                      true);
+  const domain::CoordinateMaps::Affine affine(-1.0, 1.0, 3.0, 4.0);
+  const domain::CoordinateMaps::Wedge2D wedge(
+      0.2, 4.0, 0.0, 1.0, domain::OrientationMap<2>{}, true);
   {
-    const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Wedge2D>
+    const domain::CoordinateMaps::ProductOf2Maps<
+        domain::CoordinateMaps::Affine, domain::CoordinateMaps::Wedge2D>
         map(affine, wedge);
     // Should fail wedge map
     const std::array<double, 3> mapped_point1{{3.5, -1.0, -1.0}};
@@ -40,8 +40,8 @@ void test_product_two_maps_fail() {
   }
 
   {
-    const CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge2D,
-                                         CoordinateMaps::Affine>
+    const domain::CoordinateMaps::ProductOf2Maps<
+        domain::CoordinateMaps::Wedge2D, domain::CoordinateMaps::Affine>
         map(wedge, affine);
     // Should fail wedge map
     const std::array<double, 3> mapped_point1{{-1.0, -1.0, 3.5}};
@@ -58,8 +58,9 @@ void test_product_two_maps_fail() {
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
                   "[Domain][Unit]") {
-  using affine_map = CoordinateMaps::Affine;
-  using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
+  using affine_map = domain::CoordinateMaps::Affine;
+  using affine_map_2d =
+      domain::CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
 
   const double xA = -1.0;
   const double xB = 1.0;
@@ -141,9 +142,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
   CHECK(jac_xi.get(1, 1) == jacobian_11);
 
   // Check Jacobians for DataVectors
-  const Mesh<2> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
-  const auto tensor_logical_coords = logical_coordinates(mesh);
+  const domain::Mesh<2> mesh{8, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto};
+  const auto tensor_logical_coords = domain::logical_coordinates(mesh);
   const std::array<DataVector, 2> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1)}};
   const auto volume_inv_jac = affine_map_xy.inv_jacobian(logical_coords);
@@ -175,9 +176,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
                   "[Domain][Unit]") {
-  using affine_map = CoordinateMaps::Affine;
+  using affine_map = domain::CoordinateMaps::Affine;
   using affine_map_3d =
-      CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
+      domain::CoordinateMaps::ProductOf3Maps<affine_map, affine_map,
+                                             affine_map>;
 
   const double xA = -1.0;
   const double xB = 1.0;
@@ -310,9 +312,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   CHECK(jac_xi.get(2, 2) == jacobian_22);
 
   // Check Jacobians for DataVectors
-  const Mesh<3> mesh{8, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
-  const auto tensor_logical_coords = logical_coordinates(mesh);
+  const domain::Mesh<3> mesh{8, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto};
+  const auto tensor_logical_coords = domain::logical_coordinates(mesh);
   const std::array<DataVector, 3> logical_coords{
       {tensor_logical_coords.get(0), tensor_logical_coords.get(1),
        tensor_logical_coords.get(2)}};

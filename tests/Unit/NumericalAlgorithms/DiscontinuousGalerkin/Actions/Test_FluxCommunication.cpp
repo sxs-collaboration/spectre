@@ -91,7 +91,7 @@ class NumericalFlux {
   // things.
   using argument_tags =
       tmpl::list<Tags::NormalDotFlux<Var>, OtherData,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+                 Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
                     const Scalar<DataVector>& other_data,
@@ -133,7 +133,8 @@ using receive_data_for_fluxes =
 
 template <size_t Dim>
 using component =
-    ActionTesting::MockArrayComponent<Metavariables<Dim>, ElementIndex<Dim>,
+    ActionTesting::MockArrayComponent<Metavariables<Dim>,
+                                      domain::ElementIndex<Dim>,
                                       tmpl::list<NumericalFluxTag<Dim>>,
                                       tmpl::list<receive_data_for_fluxes<Dim>>>;
 
@@ -148,7 +149,8 @@ struct Metavariables {
 };
 
 template <size_t Dim, typename Tag>
-using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+using interface_tag =
+    domain::Tags::Interface<domain::Tags::InternalDirections<Dim>, Tag>;
 
 template <size_t Dim>
 using flux_comm_types = dg::FluxCommunicationTypes<Metavariables<Dim>>;
@@ -173,18 +175,20 @@ using other_data_tag =
 template <size_t Dim>
 using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, Dim>;
 template <size_t Dim>
-using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>;
+using mortar_meshes_tag = Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>;
 template <size_t Dim>
 using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>;
 
 template <size_t Dim>
 using compute_items = db::AddComputeTags<
-    Tags::InternalDirections<Dim>, interface_tag<Dim, Tags::Direction<Dim>>,
-    interface_tag<Dim, Tags::Mesh<Dim - 1>>,
-    interface_tag<Dim, Tags::UnnormalizedFaceNormal<Dim>>,
+    domain::Tags::InternalDirections<Dim>,
+    interface_tag<Dim, domain::Tags::Direction<Dim>>,
+    interface_tag<Dim, domain::Tags::Mesh<Dim - 1>>,
+    interface_tag<Dim, domain::Tags::UnnormalizedFaceNormal<Dim>>,
+    interface_tag<Dim, Tags::EuclideanMagnitude<
+                           domain::Tags::UnnormalizedFaceNormal<Dim>>>,
     interface_tag<Dim,
-                  Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
-    interface_tag<Dim, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+                  Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>>;
 
 Scalar<DataVector> reverse(Scalar<DataVector> x) noexcept {
   std::reverse(get(x).begin(), get(x).end());
@@ -196,8 +200,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
 
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto};
 
   //      xi      Block       +- xi
   //      |     0   |   1     |
@@ -207,65 +211,78 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   //        |       | | |   |
   //        +-------+-+-+---+
   // We run the actions on the indicated element.  The blocks are square.
-  const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
-  const ElementId<2> west_id(0);
-  const ElementId<2> east_id(1, {{{2, 1}, {1, 0}}});
-  const ElementId<2> south_id(1, {{{2, 0}, {1, 1}}});
+  const domain::ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
+  const domain::ElementId<2> west_id(0);
+  const domain::ElementId<2> east_id(1, {{{2, 1}, {1, 0}}});
+  const domain::ElementId<2> south_id(1, {{{2, 0}, {1, 1}}});
 
   // OrientationMap from block 1 to block 0
-  const OrientationMap<2> block_orientation(
-      {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}},
-      {{Direction<2>::lower_eta(), Direction<2>::lower_xi()}});
+  const domain::OrientationMap<2> block_orientation(
+      {{domain::Direction<2>::upper_xi(), domain::Direction<2>::upper_eta()}},
+      {{domain::Direction<2>::lower_eta(), domain::Direction<2>::lower_xi()}});
 
   // Since we're lazy and use the same map for both blocks (the
   // actions are only sensitive to the ElementMap, which does differ),
   // we need to make the xi and eta maps line up along the block
   // interface.
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
+  const domain::CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
+  const domain::CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
 
   const auto coordmap =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>(xi_map,
-                                                                 eta_map));
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<
+              domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
+              xi_map, eta_map));
 
-  const auto neighbor_directions = {Direction<2>::lower_xi(),
-                                    Direction<2>::upper_xi(),
-                                    Direction<2>::upper_eta()};
+  const auto neighbor_directions = {domain::Direction<2>::lower_xi(),
+                                    domain::Direction<2>::upper_xi(),
+                                    domain::Direction<2>::upper_eta()};
   const auto neighbor_mortar_ids = {
-      std::make_pair(Direction<2>::lower_xi(), west_id),
-      std::make_pair(Direction<2>::upper_xi(), east_id),
-      std::make_pair(Direction<2>::upper_eta(), south_id)};
+      std::make_pair(domain::Direction<2>::lower_xi(), west_id),
+      std::make_pair(domain::Direction<2>::upper_xi(), east_id),
+      std::make_pair(domain::Direction<2>::upper_eta(), south_id)};
   const struct {
-    std::unordered_map<Direction<2>, Scalar<DataVector>> fluxes;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> other_data;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> remote_fluxes;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> remote_other_data;
+    std::unordered_map<domain::Direction<2>, Scalar<DataVector>> fluxes;
+    std::unordered_map<domain::Direction<2>, Scalar<DataVector>> other_data;
+    std::unordered_map<domain::Direction<2>, Scalar<DataVector>> remote_fluxes;
+    std::unordered_map<domain::Direction<2>, Scalar<DataVector>>
+        remote_other_data;
   } data{
-      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{1., 2., 3.}}}}},
-       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{4., 5., 6.}}}}},
-       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{7., 8., 9.}}}}}},
-      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{10., 11., 12.}}}}},
-       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{13., 14., 15.}}}}},
-       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{16., 17., 18.}}}}}},
-      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{19., 20., 21.}}}}},
-       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{22., 23., 24.}}}}},
-       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{25., 26., 27.}}}}}},
-      {{Direction<2>::lower_xi(), Scalar<DataVector>{{{{28., 29., 30.}}}}},
-       {Direction<2>::upper_xi(), Scalar<DataVector>{{{{31., 32., 33.}}}}},
-       {Direction<2>::upper_eta(), Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
+      {{domain::Direction<2>::lower_xi(), Scalar<DataVector>{{{{1., 2., 3.}}}}},
+       {domain::Direction<2>::upper_xi(), Scalar<DataVector>{{{{4., 5., 6.}}}}},
+       {domain::Direction<2>::upper_eta(),
+        Scalar<DataVector>{{{{7., 8., 9.}}}}}},
+      {{domain::Direction<2>::lower_xi(),
+        Scalar<DataVector>{{{{10., 11., 12.}}}}},
+       {domain::Direction<2>::upper_xi(),
+        Scalar<DataVector>{{{{13., 14., 15.}}}}},
+       {domain::Direction<2>::upper_eta(),
+        Scalar<DataVector>{{{{16., 17., 18.}}}}}},
+      {{domain::Direction<2>::lower_xi(),
+        Scalar<DataVector>{{{{19., 20., 21.}}}}},
+       {domain::Direction<2>::upper_xi(),
+        Scalar<DataVector>{{{{22., 23., 24.}}}}},
+       {domain::Direction<2>::upper_eta(),
+        Scalar<DataVector>{{{{25., 26., 27.}}}}}},
+      {{domain::Direction<2>::lower_xi(),
+        Scalar<DataVector>{{{{28., 29., 30.}}}}},
+       {domain::Direction<2>::upper_xi(),
+        Scalar<DataVector>{{{{31., 32., 33.}}}}},
+       {domain::Direction<2>::upper_eta(),
+        Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
 
   auto start_box = [
     &mesh, &self_id, &west_id, &east_id, &south_id, &block_orientation,
     &coordmap, &neighbor_directions, &neighbor_mortar_ids, &data
   ]() noexcept {
-    const Element<2> element(
-        self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
-                  {Direction<2>::upper_xi(), {{east_id}, {}}},
-                  {Direction<2>::upper_eta(), {{south_id}, {}}}});
+    const domain::Element<2> element(
+        self_id,
+        {{domain::Direction<2>::lower_xi(), {{west_id}, block_orientation}},
+         {domain::Direction<2>::upper_xi(), {{east_id}, {}}},
+         {domain::Direction<2>::upper_eta(), {{south_id}, {}}}});
 
-    auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
+    auto map =
+        domain::ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
 
     db::item_type<normal_dot_fluxes_tag<2>> normal_dot_fluxes;
     for (const auto& direction : neighbor_directions) {
@@ -293,11 +310,12 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     }
 
     return db::create<
-        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                          Tags::Element<2>, Tags::ElementMap<2>,
-                          normal_dot_fluxes_tag<2>, other_data_tag<2>,
-                          mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
-                          mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
+                          domain::Tags::Mesh<2>, domain::Tags::Element<2>,
+                          domain::Tags::ElementMap<2>, normal_dot_fluxes_tag<2>,
+                          other_data_tag<2>, mortar_data_tag<2>,
+                          mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+                          mortar_sizes_tag<2>>,
         compute_items<2>>(0, 1, mesh, element, std::move(map),
                           std::move(normal_dot_fluxes), std::move(other_data),
                           std::move(mortar_history),
@@ -312,9 +330,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   // We will check the received values on the central element later.
   {
     CHECK(runner.nonempty_inboxes<component<2>, fluxes_tag<2>>() ==
-          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
-    const auto check_sent_data = [&runner, &self_id](
-        const ElementId<2>& id, const Direction<2>& direction) noexcept {
+          std::unordered_set<domain::ElementIndex<2>>{west_id, east_id,
+                                                      south_id});
+    const auto check_sent_data =
+        [&runner, &self_id ](const domain::ElementId<2>& id,
+                             const domain::Direction<2>& direction) noexcept {
       const auto& inboxes = runner.inboxes<component<2>>();
       const auto& flux_inbox = tuples::get<fluxes_tag<2>>(inboxes.at(id));
       CHECK(flux_inbox.size() == 1);
@@ -323,19 +343,21 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       CHECK(flux_inbox_at_time.size() == 1);
       CHECK(flux_inbox_at_time.count({direction, self_id}) == 1);
     };
-    check_sent_data(west_id, Direction<2>::lower_eta());
-    check_sent_data(east_id, Direction<2>::lower_xi());
-    check_sent_data(south_id, Direction<2>::lower_eta());
+    check_sent_data(west_id, domain::Direction<2>::lower_eta());
+    check_sent_data(east_id, domain::Direction<2>::lower_xi());
+    check_sent_data(south_id, domain::Direction<2>::lower_eta());
   }
 
   // Now check ReceiveDataForFluxes
-  const auto send_data = [&mesh, &runner, &self_id, &coordmap](
-      const ElementId<2>& id, const Direction<2>& direction,
-      const OrientationMap<2>& orientation,
+  const auto send_data = [&mesh, &runner, &self_id, &coordmap ](
+      const domain::ElementId<2>& id, const domain::Direction<2>& direction,
+      const domain::OrientationMap<2>& orientation,
       const Scalar<DataVector>& normal_dot_fluxes,
       const Scalar<DataVector>& other_data) noexcept {
-    const Element<2> element(id, {{direction, {{self_id}, orientation}}});
-    auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
+    const domain::Element<2> element(id,
+                                     {{direction, {{self_id}, orientation}}});
+    auto map =
+        domain::ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
 
     db::item_type<normal_dot_fluxes_tag<2>> normal_dot_fluxes_map{};
     normal_dot_fluxes_map[direction].initialize(get(normal_dot_fluxes).size());
@@ -356,10 +378,11 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     mortar_sizes.insert({{direction, self_id}, {{Spectral::MortarSize::Full}}});
 
     auto box = db::create<
-        db::AddSimpleTags<
-            TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-            Tags::ElementMap<2>, normal_dot_fluxes_tag<2>, other_data_tag<2>,
-            mortar_data_tag<2>, mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
+                          domain::Tags::Mesh<2>, domain::Tags::Element<2>,
+                          domain::Tags::ElementMap<2>, normal_dot_fluxes_tag<2>,
+                          other_data_tag<2>, mortar_data_tag<2>,
+                          mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
         compute_items<2>>(0, 1, mesh, element, std::move(map),
                           std::move(normal_dot_fluxes_map),
                           std::move(other_data_map), std::move(mortar_history),
@@ -370,19 +393,20 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
   CHECK_FALSE(runner.is_ready<component<2>, receive_data_for_fluxes<2>>(
       sent_box, self_id));
-  send_data(south_id, Direction<2>::lower_eta(), {},
-            data.remote_fluxes.at(Direction<2>::upper_eta()),
-            data.remote_other_data.at(Direction<2>::upper_eta()));
+  send_data(south_id, domain::Direction<2>::lower_eta(), {},
+            data.remote_fluxes.at(domain::Direction<2>::upper_eta()),
+            data.remote_other_data.at(domain::Direction<2>::upper_eta()));
   CHECK_FALSE(runner.is_ready<component<2>, receive_data_for_fluxes<2>>(
       sent_box, self_id));
-  send_data(east_id, Direction<2>::lower_xi(), {},
-            data.remote_fluxes.at(Direction<2>::upper_xi()),
-            data.remote_other_data.at(Direction<2>::upper_xi()));
+  send_data(east_id, domain::Direction<2>::lower_xi(), {},
+            data.remote_fluxes.at(domain::Direction<2>::upper_xi()),
+            data.remote_other_data.at(domain::Direction<2>::upper_xi()));
   CHECK_FALSE(runner.is_ready<component<2>, receive_data_for_fluxes<2>>(
       sent_box, self_id));
-  send_data(west_id, Direction<2>::lower_eta(), block_orientation.inverse_map(),
-            data.remote_fluxes.at(Direction<2>::lower_xi()),
-            data.remote_other_data.at(Direction<2>::lower_xi()));
+  send_data(west_id, domain::Direction<2>::lower_eta(),
+            block_orientation.inverse_map(),
+            data.remote_fluxes.at(domain::Direction<2>::lower_xi()),
+            data.remote_other_data.at(domain::Direction<2>::lower_xi()));
   CHECK(runner.is_ready<component<2>, receive_data_for_fluxes<2>>(sent_box,
                                                                   self_id));
 
@@ -403,7 +427,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       serialize_and_deserialize(db::get<mortar_data_tag<2>>(received_box));
   CHECK(mortar_history.size() == 3);
   const auto check_mortar = [&mortar_history](
-      const std::pair<Direction<2>, ElementId<2>>& mortar_id,
+      const std::pair<domain::Direction<2>, domain::ElementId<2>>& mortar_id,
       const Scalar<DataVector>& local_flux,
       const Scalar<DataVector>& remote_flux,
       const Scalar<DataVector>& local_other,
@@ -439,27 +463,27 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
   // Remote side is inverted
   check_mortar(
-      std::make_pair(Direction<2>::lower_xi(), west_id),
-      data.fluxes.at(Direction<2>::lower_xi()),
-      reverse(data.remote_fluxes.at(Direction<2>::lower_xi())),
-      data.other_data.at(Direction<2>::lower_xi()),
-      reverse(data.remote_other_data.at(Direction<2>::lower_xi())),
+      std::make_pair(domain::Direction<2>::lower_xi(), west_id),
+      data.fluxes.at(domain::Direction<2>::lower_xi()),
+      reverse(data.remote_fluxes.at(domain::Direction<2>::lower_xi())),
+      data.other_data.at(domain::Direction<2>::lower_xi()),
+      reverse(data.remote_other_data.at(domain::Direction<2>::lower_xi())),
       tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}},
       tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 0.5}}}});
   check_mortar(
-      std::make_pair(Direction<2>::upper_xi(), east_id),
-      data.fluxes.at(Direction<2>::upper_xi()),
-      data.remote_fluxes.at(Direction<2>::upper_xi()),
-      data.other_data.at(Direction<2>::upper_xi()),
-      data.remote_other_data.at(Direction<2>::upper_xi()),
+      std::make_pair(domain::Direction<2>::upper_xi(), east_id),
+      data.fluxes.at(domain::Direction<2>::upper_xi()),
+      data.remote_fluxes.at(domain::Direction<2>::upper_xi()),
+      data.other_data.at(domain::Direction<2>::upper_xi()),
+      data.remote_other_data.at(domain::Direction<2>::upper_xi()),
       tnsr::i<DataVector, 2>{{{DataVector{3, 2.0}, DataVector{3, 0.0}}}},
       tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}});
   check_mortar(
-      std::make_pair(Direction<2>::upper_eta(), south_id),
-      data.fluxes.at(Direction<2>::upper_eta()),
-      data.remote_fluxes.at(Direction<2>::upper_eta()),
-      data.other_data.at(Direction<2>::upper_eta()),
-      data.remote_other_data.at(Direction<2>::upper_eta()),
+      std::make_pair(domain::Direction<2>::upper_eta(), south_id),
+      data.fluxes.at(domain::Direction<2>::upper_eta()),
+      data.remote_fluxes.at(domain::Direction<2>::upper_eta()),
+      data.other_data.at(domain::Direction<2>::upper_eta()),
+      data.remote_other_data.at(domain::Direction<2>::upper_eta()),
       tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, -1.0}}}},
       tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 1.0}}}});
 }
@@ -469,32 +493,35 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
 
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto};
 
-  const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
+  const domain::ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
 
-  const Element<2> element(self_id, {});
+  const domain::Element<2> element(self_id, {});
 
-  auto map = ElementMap<2, Frame::Inertial>(
-      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                  CoordinateMaps::Affine>(
-                       {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
+  auto map = domain::ElementMap<2, Frame::Inertial>(
+      self_id,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<
+              domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
+              {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
-  auto start_box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
-                        normal_dot_fluxes_tag<2>, other_data_tag<2>,
-                        mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
-                        mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
-      compute_items<2>>(0, 1, mesh, element, std::move(map),
-                        db::item_type<normal_dot_fluxes_tag<2>>{},
-                        db::item_type<other_data_tag<2>>{},
-                        db::item_type<mortar_data_tag<2>>{},
-                        db::item_type<mortar_next_temporal_ids_tag<2>>{},
-                        db::item_type<mortar_meshes_tag<2>>{},
-                        db::item_type<mortar_sizes_tag<2>>{});
+  auto start_box =
+      db::create<db::AddSimpleTags<
+                     TemporalId, Tags::Next<TemporalId>, domain::Tags::Mesh<2>,
+                     domain::Tags::Element<2>, domain::Tags::ElementMap<2>,
+                     normal_dot_fluxes_tag<2>, other_data_tag<2>,
+                     mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
+                     mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
+                 compute_items<2>>(
+          0, 1, mesh, element, std::move(map),
+          db::item_type<normal_dot_fluxes_tag<2>>{},
+          db::item_type<other_data_tag<2>>{},
+          db::item_type<mortar_data_tag<2>>{},
+          db::item_type<mortar_next_temporal_ids_tag<2>>{},
+          db::item_type<mortar_meshes_tag<2>>{},
+          db::item_type<mortar_sizes_tag<2>>{});
 
   auto sent_box = std::get<0>(
       runner.apply<component<2>, send_data_for_fluxes<2>>(start_box, self_id));
@@ -531,23 +558,25 @@ struct DataRecorderTag : db::SimpleTag {
   using type = DataRecorder;
 };
 
-struct MortarRecorderTag : Tags::VariablesBoundaryData,
+struct MortarRecorderTag : domain::Tags::VariablesBoundaryData,
                            Tags::Mortars<DataRecorderTag, 2> {};
 
 void send_from_neighbor(
     const gsl::not_null<ActionTesting::ActionRunner<Metavariables<2>>*> runner,
-    const Element<2>& element, const int start, const int end,
+    const domain::Element<2>& element, const int start, const int end,
     const double n_dot_f) noexcept {
-  const Direction<2>& send_direction = element.neighbors().begin()->first;
-  const ElementId<2>& receiver_id =
+  const domain::Direction<2>& send_direction =
+      element.neighbors().begin()->first;
+  const domain::ElementId<2>& receiver_id =
       *element.neighbors().begin()->second.begin();
 
-  const Mesh<2> mesh{2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<2> mesh{2, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto};
 
-  ElementMap<2, Frame::Inertial> map(
-      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Identity<2>{}));
+  domain::ElementMap<2, Frame::Inertial> map(
+      element.id(),
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}));
 
   db::item_type<normal_dot_fluxes_tag<2>> fluxes;
   fluxes[send_direction].initialize(2, n_dot_f);
@@ -566,10 +595,11 @@ void send_from_neighbor(
   recorders.insert({{send_direction, receiver_id}, {}});
 
   auto box = db::create<
-      db::AddSimpleTags<
-          TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-          Tags::ElementMap<2>, normal_dot_fluxes_tag<2>, other_data_tag<2>,
-          mortar_meshes_tag<2>, mortar_sizes_tag<2>, MortarRecorderTag>,
+      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
+                        domain::Tags::Mesh<2>, domain::Tags::Element<2>,
+                        domain::Tags::ElementMap<2>, normal_dot_fluxes_tag<2>,
+                        other_data_tag<2>, mortar_meshes_tag<2>,
+                        mortar_sizes_tag<2>, MortarRecorderTag>,
       compute_items<2>>(start, end, mesh, element, std::move(map),
                         std::move(fluxes), std::move(other_data),
                         std::move(mortar_meshes), std::move(mortar_sizes),
@@ -584,17 +614,17 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
                   const std::vector<int>& right_steps) noexcept {
   ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
 
-  const ElementId<2> left_id(0);
-  const ElementId<2> self_id(1);
-  const ElementId<2> right_id(2);
+  const domain::ElementId<2> left_id(0);
+  const domain::ElementId<2> self_id(1);
+  const domain::ElementId<2> right_id(2);
 
-  using MortarId = std::pair<Direction<2>, ElementId<2>>;
-  const MortarId left_mortar_id(Direction<2>::lower_xi(), left_id);
-  const MortarId right_mortar_id(Direction<2>::upper_xi(), right_id);
+  using MortarId = std::pair<domain::Direction<2>, domain::ElementId<2>>;
+  const MortarId left_mortar_id(domain::Direction<2>::lower_xi(), left_id);
+  const MortarId right_mortar_id(domain::Direction<2>::upper_xi(), right_id);
 
   db::item_type<MortarRecorderTag> initial_recorders;
-  initial_recorders.insert({{Direction<2>::lower_xi(), left_id}, {}});
-  initial_recorders.insert({{Direction<2>::upper_xi(), right_id}, {}});
+  initial_recorders.insert({{domain::Direction<2>::lower_xi(), left_id}, {}});
+  initial_recorders.insert({{domain::Direction<2>::upper_xi(), right_id}, {}});
   db::item_type<mortar_next_temporal_ids_tag<2>> initial_mortar_temporal_ids{
       {left_mortar_id, left_steps.front()},
       {right_mortar_id, right_steps.front()}};
@@ -605,10 +635,10 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
           self_step_end, std::move(initial_recorders),
           std::move(initial_mortar_temporal_ids));
 
-  const Element<2> left_element(left_id,
-                                {{Direction<2>::upper_xi(), {{self_id}, {}}}});
-  const Element<2> right_element(right_id,
-                                 {{Direction<2>::lower_xi(), {{self_id}, {}}}});
+  const domain::Element<2> left_element(
+      left_id, {{domain::Direction<2>::upper_xi(), {{self_id}, {}}}});
+  const domain::Element<2> right_element(
+      right_id, {{domain::Direction<2>::lower_xi(), {{self_id}, {}}}});
 
   std::vector<int> relevant_left_steps{left_steps.front()};
   for (size_t step = 1; step < left_steps.size(); ++step) {
@@ -691,29 +721,32 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   ActionTesting::ActionRunner<Metavariables<3>> runner{{NumericalFlux<3>{}}};
 
-  const ElementId<3> self_id(1);
-  const ElementId<3> neighbor_id(2);
+  const domain::ElementId<3> self_id(1);
+  const domain::ElementId<3> neighbor_id(2);
 
-  const auto mortar_id = std::make_pair(Direction<3>::upper_eta(), neighbor_id);
-  const Element<3> element(
-      self_id, {{mortar_id.first,
-                 {{neighbor_id},
-                  OrientationMap<3>{
-                      {{Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
-                        Direction<3>::lower_eta()}}}}}});
-
-  ElementMap<3, Frame::Inertial> map(
+  const auto mortar_id =
+      std::make_pair(domain::Direction<3>::upper_eta(), neighbor_id);
+  const domain::Element<3> element(
       self_id,
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Identity<3>{}));
+      {{mortar_id.first,
+        {{neighbor_id},
+         domain::OrientationMap<3>{{{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::lower_xi(),
+                                     domain::Direction<3>::lower_eta()}}}}}});
 
-  const Mesh<3> mesh({{2, 3, 4}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
-  const Mesh<2> face_mesh = mesh.slice_away(mortar_id.first.dimension());
-  const Mesh<2> mortar_mesh({{5, 6}}, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const Mesh<2> rotated_mortar_mesh({{6, 5}}, Spectral::Basis::Legendre,
+  domain::ElementMap<3, Frame::Inertial> map(
+      self_id,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{}));
+
+  const domain::Mesh<3> mesh({{2, 3, 4}}, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto);
+  const domain::Mesh<2> face_mesh =
+      mesh.slice_away(mortar_id.first.dimension());
+  const domain::Mesh<2> mortar_mesh({{5, 6}}, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::GaussLobatto);
+  const domain::Mesh<2> rotated_mortar_mesh({{6, 5}}, Spectral::Basis::Legendre,
+                                            Spectral::Quadrature::GaussLobatto);
 
   const auto face_coords = logical_coordinates(face_mesh);
   const auto mortar_coords = logical_coordinates(mortar_mesh);
@@ -740,20 +773,22 @@ SPECTRE_TEST_CASE(
   db::item_type<other_data_tag<3>> other_data;
   other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(), 0.);
 
-  auto start_box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<3>,
-                        Tags::Element<3>, Tags::ElementMap<3>,
-                        normal_dot_fluxes_tag<3>, other_data_tag<3>,
-                        mortar_data_tag<3>, mortar_next_temporal_ids_tag<3>,
-                        mortar_meshes_tag<3>, mortar_sizes_tag<3>>,
-      compute_items<3>>(
-      0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
-      std::move(other_data), db::item_type<mortar_data_tag<3>>{{mortar_id, {}}},
-      db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
-      db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
-      db::item_type<mortar_sizes_tag<3>>{
-          {mortar_id,
-           {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}}});
+  auto start_box =
+      db::create<db::AddSimpleTags<
+                     TemporalId, Tags::Next<TemporalId>, domain::Tags::Mesh<3>,
+                     domain::Tags::Element<3>, domain::Tags::ElementMap<3>,
+                     normal_dot_fluxes_tag<3>, other_data_tag<3>,
+                     mortar_data_tag<3>, mortar_next_temporal_ids_tag<3>,
+                     mortar_meshes_tag<3>, mortar_sizes_tag<3>>,
+                 compute_items<3>>(
+          0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
+          std::move(other_data),
+          db::item_type<mortar_data_tag<3>>{{mortar_id, {}}},
+          db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
+          db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
+          db::item_type<mortar_sizes_tag<3>>{
+              {mortar_id,
+               {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}}});
 
   auto sent_box = std::get<0>(
       runner.apply<component<3>, send_data_for_fluxes<3>>(start_box, self_id));
@@ -786,7 +821,7 @@ SPECTRE_TEST_CASE(
         runner.inboxes<component<3>>().at(neighbor_id));
 
     const auto& received_flux =
-        inbox.at(0).at({Direction<3>::upper_xi(), self_id}).second;
+        inbox.at(0).at({domain::Direction<3>::upper_xi(), self_id}).second;
     CHECK_ITERABLE_APPROX(
         get<Var>(received_flux),
         get<Var>(packaged_data(flux(get<1>(rotated_mortar_coords),
@@ -806,26 +841,29 @@ SPECTRE_TEST_CASE(
         std::make_pair(Spectral::MortarSize::UpperHalf, DataVector{2.5, 3.})}) {
     CAPTURE(test.first);
 
-    const ElementId<2> self_id(1);
-    const ElementId<2> neighbor_id(2);
+    const domain::ElementId<2> self_id(1);
+    const domain::ElementId<2> neighbor_id(2);
 
     const auto mortar_id =
-        std::make_pair(Direction<2>::upper_xi(), neighbor_id);
-    const Element<2> element(
-        self_id, {{mortar_id.first,
-                   {{neighbor_id},
-                    OrientationMap<2>{{{Direction<2>::upper_xi(),
-                                        Direction<2>::lower_eta()}}}}}});
+        std::make_pair(domain::Direction<2>::upper_xi(), neighbor_id);
+    const domain::Element<2> element(
+        self_id,
+        {{mortar_id.first,
+          {{neighbor_id},
+           domain::OrientationMap<2>{{{domain::Direction<2>::upper_xi(),
+                                       domain::Direction<2>::lower_eta()}}}}}});
 
-    ElementMap<2, Frame::Inertial> map(
-        self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                    CoordinateMaps::Affine>(
-                         {-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
+    domain::ElementMap<2, Frame::Inertial> map(
+        self_id,
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            domain::CoordinateMaps::ProductOf2Maps<
+                domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
+                {-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
 
-    const Mesh<2> mesh(2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto);
-    const Mesh<1> face_mesh = mesh.slice_away(mortar_id.first.dimension());
+    const domain::Mesh<2> mesh(2, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto);
+    const domain::Mesh<1> face_mesh =
+        mesh.slice_away(mortar_id.first.dimension());
 
     const auto packaged_data = [](const DataVector& var_flux) noexcept {
       const Scalar<DataVector> scalar_flux(var_flux);
@@ -847,11 +885,12 @@ SPECTRE_TEST_CASE(
                                            0.);
 
     auto start_box = db::create<
-        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                          Tags::Element<2>, Tags::ElementMap<2>,
-                          normal_dot_fluxes_tag<2>, other_data_tag<2>,
-                          mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
-                          mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>,
+                          domain::Tags::Mesh<2>, domain::Tags::Element<2>,
+                          domain::Tags::ElementMap<2>, normal_dot_fluxes_tag<2>,
+                          other_data_tag<2>, mortar_data_tag<2>,
+                          mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+                          mortar_sizes_tag<2>>,
         compute_items<2>>(
         0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
         std::move(other_data),
@@ -890,7 +929,7 @@ SPECTRE_TEST_CASE(
           runner.inboxes<component<2>>().at(neighbor_id));
 
       const auto& received_flux =
-          inbox.at(0).at({Direction<2>::lower_xi(), self_id}).second;
+          inbox.at(0).at({domain::Direction<2>::lower_xi(), self_id}).second;
       // The interface has an inverting orientation.
       CHECK_ITERABLE_APPROX(
           get<Var>(received_flux),

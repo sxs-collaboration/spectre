@@ -18,6 +18,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 namespace CoordinateMaps {
 
 /// \ingroup CoordinateMapsGroup
@@ -89,3 +90,4 @@ class Frustum {
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept;
 }  // namespace CoordinateMaps
+}  // namespace domain

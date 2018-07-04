@@ -27,15 +27,16 @@
 
 namespace {
 void test_rotated_bricks_construction(
-    const DomainCreators::RotatedBricks<Frame::Inertial>& rotated_bricks,
+    const domain::creators::RotatedBricks<Frame::Inertial>& rotated_bricks,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& midpoint,
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>&
+    const std::vector<
+        std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>&
         expected_block_neighbors,
-    const std::vector<std::unordered_set<Direction<3>>>&
+    const std::vector<std::unordered_set<domain::Direction<3>>>&
         expected_external_boundaries) noexcept {
   const auto domain = rotated_bricks.create_domain();
 
@@ -45,9 +46,10 @@ void test_rotated_bricks_construction(
   CHECK(rotated_bricks.initial_refinement_levels() ==
         expected_refinement_level);
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using DiscreteRotation3D = CoordinateMaps::DiscreteRotation<3>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using DiscreteRotation3D = domain::CoordinateMaps::DiscreteRotation<3>;
 
   const Affine lower_x_map(-1.0, 1.0, lower_bound[0], midpoint[0]);
   const Affine upper_x_map(-1.0, 1.0, midpoint[0], upper_bound[0]);
@@ -56,50 +58,62 @@ void test_rotated_bricks_construction(
   const Affine lower_z_map(-1.0, 1.0, lower_bound[2], midpoint[2]);
   const Affine upper_z_map(-1.0, 1.0, midpoint[2], upper_bound[2]);
 
-  std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D(lower_x_map, lower_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
-              {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
-               Direction<3>::lower_xi()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation3D{
+              domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                  {domain::Direction<3>::upper_zeta(),
+                   domain::Direction<3>::upper_eta(),
+                   domain::Direction<3>::lower_xi()}}}},
           Affine3D(upper_x_map, lower_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
-              {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-               Direction<3>::lower_eta()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation3D{
+              domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                  {domain::Direction<3>::upper_xi(),
+                   domain::Direction<3>::upper_zeta(),
+                   domain::Direction<3>::lower_eta()}}}},
           Affine3D(lower_x_map, upper_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
-              {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
-               Direction<3>::lower_eta()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation3D{
+              domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                  {domain::Direction<3>::upper_zeta(),
+                   domain::Direction<3>::lower_xi(),
+                   domain::Direction<3>::lower_eta()}}}},
           Affine3D(upper_x_map, upper_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
-              {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
-               Direction<3>::upper_zeta()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation3D{
+              domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                  {domain::Direction<3>::upper_eta(),
+                   domain::Direction<3>::lower_xi(),
+                   domain::Direction<3>::upper_zeta()}}}},
           Affine3D(lower_x_map, lower_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
-              {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
-               Direction<3>::lower_xi()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation3D{
+              domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                  {domain::Direction<3>::upper_eta(),
+                   domain::Direction<3>::lower_zeta(),
+                   domain::Direction<3>::lower_xi()}}}},
           Affine3D(upper_x_map, lower_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
-              {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
-               Direction<3>::lower_eta()}}}},
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          DiscreteRotation3D{
+              domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                  {domain::Direction<3>::upper_zeta(),
+                   domain::Direction<3>::lower_xi(),
+                   domain::Direction<3>::lower_eta()}}}},
           Affine3D(lower_x_map, upper_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D(upper_x_map, upper_y_map, upper_z_map)));
 
   test_domain_construction(domain, expected_block_neighbors,
@@ -117,23 +131,28 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
                        {{1, 0, 2}}, {{2, 0, 1}}, {{1, 2, 0}}, {{0, 1, 2}}};
   const std::array<double, 3> lower_bound{{-1.3, -3.0, 2.0}},
       midpoint{{-0.6, 0.3, 3.2}}, upper_bound{{0.8, 3.0, 4.7}};
-  const OrientationMap<3> aligned{};
-  const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{
-      {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
-       Direction<3>::lower_xi()}}};
-  const OrientationMap<3> rotation_R{std::array<Direction<3>, 3>{
-      {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-       Direction<3>::lower_eta()}}};
-  const OrientationMap<3> rotation_U{std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
-       Direction<3>::upper_zeta()}}};
-  const OrientationMap<3> rotation_R_then_U{std::array<Direction<3>, 3>{
-      {Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
-       Direction<3>::upper_xi()}}};
-  const OrientationMap<3> rotation_F_then_U{std::array<Direction<3>, 3>{
-      {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
-       Direction<3>::lower_eta()}}};
-  const DomainCreators::RotatedBricks<Frame::Inertial> rotated_bricks{
+  const domain::OrientationMap<3> aligned{};
+  const domain::OrientationMap<3> rotation_F{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::upper_eta(),
+                                           domain::Direction<3>::lower_xi()}}};
+  const domain::OrientationMap<3> rotation_R{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_xi(),
+                                           domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::lower_eta()}}};
+  const domain::OrientationMap<3> rotation_U{
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_eta(), domain::Direction<3>::lower_xi(),
+           domain::Direction<3>::upper_zeta()}}};
+  const domain::OrientationMap<3> rotation_R_then_U{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::lower_eta(),
+                                           domain::Direction<3>::lower_zeta(),
+                                           domain::Direction<3>::upper_xi()}}};
+  const domain::OrientationMap<3> rotation_F_then_U{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::lower_zeta(),
+                                           domain::Direction<3>::upper_xi(),
+                                           domain::Direction<3>::lower_eta()}}};
+  const domain::creators::RotatedBricks<Frame::Inertial> rotated_bricks{
       lower_bound,
       midpoint,
       upper_bound,
@@ -146,136 +165,152 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
   test_rotated_bricks_construction(
       rotated_bricks, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::upper_xi(), {1, rotation_F}},
-           {Direction<3>::upper_eta(), {2, rotation_R}},
-           {Direction<3>::upper_zeta(), {4, rotation_U}}},
-          {{Direction<3>::lower_xi(), {5, rotation_R.inverse_map()}},
-           {Direction<3>::upper_eta(), {3, rotation_U}},
-           {Direction<3>::lower_zeta(), {0, rotation_F.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {3, rotation_F}},
-           {Direction<3>::lower_eta(), {6, rotation_F}},
-           {Direction<3>::lower_zeta(), {0, rotation_R.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {1, rotation_U.inverse_map()}},
-           {Direction<3>::lower_eta(), {7, rotation_R_then_U}},
-           {Direction<3>::lower_zeta(), {2, rotation_F.inverse_map()}}},
-          {{Direction<3>::lower_xi(), {6, rotation_R}},
-           {Direction<3>::upper_eta(), {5, rotation_F}},
-           {Direction<3>::lower_zeta(), {0, rotation_U.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {1, rotation_R}},
-           {Direction<3>::lower_eta(), {4, rotation_F.inverse_map()}},
-           {Direction<3>::lower_zeta(), {7, rotation_F_then_U}}},
-          {{Direction<3>::upper_xi(), {4, rotation_R.inverse_map()}},
-           {Direction<3>::upper_eta(), {2, rotation_F.inverse_map()}},
-           {Direction<3>::upper_zeta(), {7, rotation_R_then_U}}},
-          {{Direction<3>::lower_xi(), {6, rotation_R_then_U.inverse_map()}},
-           {Direction<3>::lower_eta(), {5, rotation_F_then_U.inverse_map()}},
-           {Direction<3>::lower_zeta(), {3, rotation_R_then_U.inverse_map()}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-           Direction<3>::lower_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-           Direction<3>::lower_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::upper_xi(), {1, rotation_F}},
+           {domain::Direction<3>::upper_eta(), {2, rotation_R}},
+           {domain::Direction<3>::upper_zeta(), {4, rotation_U}}},
+          {{domain::Direction<3>::lower_xi(), {5, rotation_R.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {3, rotation_U}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_F.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {3, rotation_F}},
+           {domain::Direction<3>::lower_eta(), {6, rotation_F}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_R.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {1, rotation_U.inverse_map()}},
+           {domain::Direction<3>::lower_eta(), {7, rotation_R_then_U}},
+           {domain::Direction<3>::lower_zeta(), {2, rotation_F.inverse_map()}}},
+          {{domain::Direction<3>::lower_xi(), {6, rotation_R}},
+           {domain::Direction<3>::upper_eta(), {5, rotation_F}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_U.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {1, rotation_R}},
+           {domain::Direction<3>::lower_eta(), {4, rotation_F.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(), {7, rotation_F_then_U}}},
+          {{domain::Direction<3>::upper_xi(), {4, rotation_R.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {2, rotation_F.inverse_map()}},
+           {domain::Direction<3>::upper_zeta(), {7, rotation_R_then_U}}},
+          {{domain::Direction<3>::lower_xi(),
+            {6, rotation_R_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_eta(),
+            {5, rotation_F_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(),
+            {3, rotation_R_then_U.inverse_map()}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()},
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()},
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()}});
   test_physical_separation(rotated_bricks.create_domain().blocks());
 
-  const DomainCreators::RotatedBricks<Frame::Inertial> rotated_periodic_bricks{
-      lower_bound,
-      midpoint,
-      upper_bound,
-      {{true, true, true}},
-      {{refinement_level[0][0], refinement_level[0][1],
-        refinement_level[0][2]}},
-      {{{{grid_points[0][0], grid_points[1][2]}},
-        {{grid_points[0][1], grid_points[2][2]}},
-        {{grid_points[0][2], grid_points[4][2]}}}}};
+  const domain::creators::RotatedBricks<Frame::Inertial>
+      rotated_periodic_bricks{lower_bound,
+                              midpoint,
+                              upper_bound,
+                              {{true, true, true}},
+                              {{refinement_level[0][0], refinement_level[0][1],
+                                refinement_level[0][2]}},
+                              {{{{grid_points[0][0], grid_points[1][2]}},
+                                {{grid_points[0][1], grid_points[2][2]}},
+                                {{grid_points[0][2], grid_points[4][2]}}}}};
   test_rotated_bricks_construction(
       rotated_periodic_bricks, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::upper_xi(), {1, rotation_F}},
-           {Direction<3>::upper_eta(), {2, rotation_R}},
-           {Direction<3>::upper_zeta(), {4, rotation_U}},
-           {Direction<3>::lower_xi(), {1, rotation_F}},
-           {Direction<3>::lower_eta(), {2, rotation_R}},
-           {Direction<3>::lower_zeta(), {4, rotation_U}}},
-          {{Direction<3>::lower_xi(), {5, rotation_R.inverse_map()}},
-           {Direction<3>::upper_eta(), {3, rotation_U}},
-           {Direction<3>::lower_zeta(), {0, rotation_F.inverse_map()}},
-           {Direction<3>::upper_xi(), {5, rotation_R.inverse_map()}},
-           {Direction<3>::lower_eta(), {3, rotation_U}},
-           {Direction<3>::upper_zeta(), {0, rotation_F.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {3, rotation_F}},
-           {Direction<3>::lower_eta(), {6, rotation_F}},
-           {Direction<3>::lower_zeta(), {0, rotation_R.inverse_map()}},
-           {Direction<3>::lower_xi(), {3, rotation_F}},
-           {Direction<3>::upper_eta(), {6, rotation_F}},
-           {Direction<3>::upper_zeta(), {0, rotation_R.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {1, rotation_U.inverse_map()}},
-           {Direction<3>::lower_eta(), {7, rotation_R_then_U}},
-           {Direction<3>::lower_zeta(), {2, rotation_F.inverse_map()}},
-           {Direction<3>::lower_xi(), {1, rotation_U.inverse_map()}},
-           {Direction<3>::upper_eta(), {7, rotation_R_then_U}},
-           {Direction<3>::upper_zeta(), {2, rotation_F.inverse_map()}}},
-          {{Direction<3>::lower_xi(), {6, rotation_R}},
-           {Direction<3>::upper_eta(), {5, rotation_F}},
-           {Direction<3>::lower_zeta(), {0, rotation_U.inverse_map()}},
-           {Direction<3>::upper_xi(), {6, rotation_R}},
-           {Direction<3>::lower_eta(), {5, rotation_F}},
-           {Direction<3>::upper_zeta(), {0, rotation_U.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {1, rotation_R}},
-           {Direction<3>::lower_eta(), {4, rotation_F.inverse_map()}},
-           {Direction<3>::lower_zeta(), {7, rotation_F_then_U}},
-           {Direction<3>::lower_xi(), {1, rotation_R}},
-           {Direction<3>::upper_eta(), {4, rotation_F.inverse_map()}},
-           {Direction<3>::upper_zeta(), {7, rotation_F_then_U}}},
-          {{Direction<3>::upper_xi(), {4, rotation_R.inverse_map()}},
-           {Direction<3>::upper_eta(), {2, rotation_F.inverse_map()}},
-           {Direction<3>::upper_zeta(), {7, rotation_R_then_U}},
-           {Direction<3>::lower_xi(), {4, rotation_R.inverse_map()}},
-           {Direction<3>::lower_eta(), {2, rotation_F.inverse_map()}},
-           {Direction<3>::lower_zeta(), {7, rotation_R_then_U}}},
-          {{Direction<3>::upper_xi(), {6, rotation_R_then_U.inverse_map()}},
-           {Direction<3>::upper_eta(), {5, rotation_F_then_U.inverse_map()}},
-           {Direction<3>::upper_zeta(), {3, rotation_R_then_U.inverse_map()}},
-           {Direction<3>::lower_xi(), {6, rotation_R_then_U.inverse_map()}},
-           {Direction<3>::lower_eta(), {5, rotation_F_then_U.inverse_map()}},
-           {Direction<3>::lower_zeta(), {3, rotation_R_then_U.inverse_map()}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::upper_xi(), {1, rotation_F}},
+           {domain::Direction<3>::upper_eta(), {2, rotation_R}},
+           {domain::Direction<3>::upper_zeta(), {4, rotation_U}},
+           {domain::Direction<3>::lower_xi(), {1, rotation_F}},
+           {domain::Direction<3>::lower_eta(), {2, rotation_R}},
+           {domain::Direction<3>::lower_zeta(), {4, rotation_U}}},
+          {{domain::Direction<3>::lower_xi(), {5, rotation_R.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {3, rotation_U}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_F.inverse_map()}},
+           {domain::Direction<3>::upper_xi(), {5, rotation_R.inverse_map()}},
+           {domain::Direction<3>::lower_eta(), {3, rotation_U}},
+           {domain::Direction<3>::upper_zeta(), {0, rotation_F.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {3, rotation_F}},
+           {domain::Direction<3>::lower_eta(), {6, rotation_F}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_R.inverse_map()}},
+           {domain::Direction<3>::lower_xi(), {3, rotation_F}},
+           {domain::Direction<3>::upper_eta(), {6, rotation_F}},
+           {domain::Direction<3>::upper_zeta(), {0, rotation_R.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {1, rotation_U.inverse_map()}},
+           {domain::Direction<3>::lower_eta(), {7, rotation_R_then_U}},
+           {domain::Direction<3>::lower_zeta(), {2, rotation_F.inverse_map()}},
+           {domain::Direction<3>::lower_xi(), {1, rotation_U.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {7, rotation_R_then_U}},
+           {domain::Direction<3>::upper_zeta(), {2, rotation_F.inverse_map()}}},
+          {{domain::Direction<3>::lower_xi(), {6, rotation_R}},
+           {domain::Direction<3>::upper_eta(), {5, rotation_F}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_U.inverse_map()}},
+           {domain::Direction<3>::upper_xi(), {6, rotation_R}},
+           {domain::Direction<3>::lower_eta(), {5, rotation_F}},
+           {domain::Direction<3>::upper_zeta(), {0, rotation_U.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {1, rotation_R}},
+           {domain::Direction<3>::lower_eta(), {4, rotation_F.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(), {7, rotation_F_then_U}},
+           {domain::Direction<3>::lower_xi(), {1, rotation_R}},
+           {domain::Direction<3>::upper_eta(), {4, rotation_F.inverse_map()}},
+           {domain::Direction<3>::upper_zeta(), {7, rotation_F_then_U}}},
+          {{domain::Direction<3>::upper_xi(), {4, rotation_R.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {2, rotation_F.inverse_map()}},
+           {domain::Direction<3>::upper_zeta(), {7, rotation_R_then_U}},
+           {domain::Direction<3>::lower_xi(), {4, rotation_R.inverse_map()}},
+           {domain::Direction<3>::lower_eta(), {2, rotation_F.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(), {7, rotation_R_then_U}}},
+          {{domain::Direction<3>::upper_xi(),
+            {6, rotation_R_then_U.inverse_map()}},
+           {domain::Direction<3>::upper_eta(),
+            {5, rotation_F_then_U.inverse_map()}},
+           {domain::Direction<3>::upper_zeta(),
+            {3, rotation_R_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_xi(),
+            {6, rotation_R_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_eta(),
+            {5, rotation_F_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(),
+            {3, rotation_R_then_U.inverse_map()}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
           {}, {}, {}, {}, {}, {}, {}, {}});
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks.Factory",
                   "[Domain][Unit]") {
-  const OrientationMap<3> aligned{};
-  const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{
-      {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
-       Direction<3>::lower_xi()}}};
-  const OrientationMap<3> rotation_R{std::array<Direction<3>, 3>{
-      {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-       Direction<3>::lower_eta()}}};
-  const OrientationMap<3> rotation_U{std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
-       Direction<3>::upper_zeta()}}};
-  const OrientationMap<3> rotation_R_then_U{std::array<Direction<3>, 3>{
-      {Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
-       Direction<3>::upper_xi()}}};
-  const OrientationMap<3> rotation_F_then_U{std::array<Direction<3>, 3>{
-      {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
-       Direction<3>::lower_eta()}}};
+  const domain::OrientationMap<3> aligned{};
+  const domain::OrientationMap<3> rotation_F{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::upper_eta(),
+                                           domain::Direction<3>::lower_xi()}}};
+  const domain::OrientationMap<3> rotation_R{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_xi(),
+                                           domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::lower_eta()}}};
+  const domain::OrientationMap<3> rotation_U{
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_eta(), domain::Direction<3>::lower_xi(),
+           domain::Direction<3>::upper_zeta()}}};
+  const domain::OrientationMap<3> rotation_R_then_U{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::lower_eta(),
+                                           domain::Direction<3>::lower_zeta(),
+                                           domain::Direction<3>::upper_xi()}}};
+  const domain::OrientationMap<3> rotation_F_then_U{
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::lower_zeta(),
+                                           domain::Direction<3>::upper_xi(),
+                                           domain::Direction<3>::lower_eta()}}};
   const auto domain_creator =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<3, Frame::Inertial>>(
           "  RotatedBricks:\n"
           "    LowerBound: [0.1, -0.4, -0.2]\n"
           "    Midpoint:   [2.6, 3.2, 1.7]\n"
@@ -284,7 +319,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks.Factory",
           "    InitialGridPoints: [[3,2],[1,4],[5,6]]\n"
           "    InitialRefinement: [2,1,0]\n");
   const auto* rotated_bricks_creator =
-      dynamic_cast<const DomainCreators::RotatedBricks<Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::RotatedBricks<Frame::Inertial>*>(
           domain_creator.get());
   test_rotated_bricks_construction(
       *rotated_bricks_creator, {{0.1, -0.4, -0.2}}, {{2.6, 3.2, 1.7}},
@@ -305,46 +340,50 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks.Factory",
        {{0, 2, 1}},
        {{1, 0, 2}},
        {{2, 1, 0}}},
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::upper_xi(), {1, rotation_F}},
-           {Direction<3>::upper_eta(), {2, rotation_R}},
-           {Direction<3>::upper_zeta(), {4, rotation_U}}},
-          {{Direction<3>::lower_xi(), {5, rotation_R.inverse_map()}},
-           {Direction<3>::upper_eta(), {3, rotation_U}},
-           {Direction<3>::lower_zeta(), {0, rotation_F.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {3, rotation_F}},
-           {Direction<3>::lower_eta(), {6, rotation_F}},
-           {Direction<3>::lower_zeta(), {0, rotation_R.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {1, rotation_U.inverse_map()}},
-           {Direction<3>::lower_eta(), {7, rotation_R_then_U}},
-           {Direction<3>::lower_zeta(), {2, rotation_F.inverse_map()}}},
-          {{Direction<3>::lower_xi(), {6, rotation_R}},
-           {Direction<3>::upper_eta(), {5, rotation_F}},
-           {Direction<3>::lower_zeta(), {0, rotation_U.inverse_map()}}},
-          {{Direction<3>::upper_xi(), {1, rotation_R}},
-           {Direction<3>::lower_eta(), {4, rotation_F.inverse_map()}},
-           {Direction<3>::lower_zeta(), {7, rotation_F_then_U}}},
-          {{Direction<3>::upper_xi(), {4, rotation_R.inverse_map()}},
-           {Direction<3>::upper_eta(), {2, rotation_F.inverse_map()}},
-           {Direction<3>::upper_zeta(), {7, rotation_R_then_U}}},
-          {{Direction<3>::lower_xi(), {6, rotation_R_then_U.inverse_map()}},
-           {Direction<3>::lower_eta(), {5, rotation_F_then_U.inverse_map()}},
-           {Direction<3>::lower_zeta(), {3, rotation_R_then_U.inverse_map()}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-           Direction<3>::lower_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-           Direction<3>::lower_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::upper_xi(), {1, rotation_F}},
+           {domain::Direction<3>::upper_eta(), {2, rotation_R}},
+           {domain::Direction<3>::upper_zeta(), {4, rotation_U}}},
+          {{domain::Direction<3>::lower_xi(), {5, rotation_R.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {3, rotation_U}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_F.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {3, rotation_F}},
+           {domain::Direction<3>::lower_eta(), {6, rotation_F}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_R.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {1, rotation_U.inverse_map()}},
+           {domain::Direction<3>::lower_eta(), {7, rotation_R_then_U}},
+           {domain::Direction<3>::lower_zeta(), {2, rotation_F.inverse_map()}}},
+          {{domain::Direction<3>::lower_xi(), {6, rotation_R}},
+           {domain::Direction<3>::upper_eta(), {5, rotation_F}},
+           {domain::Direction<3>::lower_zeta(), {0, rotation_U.inverse_map()}}},
+          {{domain::Direction<3>::upper_xi(), {1, rotation_R}},
+           {domain::Direction<3>::lower_eta(), {4, rotation_F.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(), {7, rotation_F_then_U}}},
+          {{domain::Direction<3>::upper_xi(), {4, rotation_R.inverse_map()}},
+           {domain::Direction<3>::upper_eta(), {2, rotation_F.inverse_map()}},
+           {domain::Direction<3>::upper_zeta(), {7, rotation_R_then_U}}},
+          {{domain::Direction<3>::lower_xi(),
+            {6, rotation_R_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_eta(),
+            {5, rotation_F_then_U.inverse_map()}},
+           {domain::Direction<3>::lower_zeta(),
+            {3, rotation_R_then_U.inverse_map()}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()},
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()},
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()},
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()}});
 }

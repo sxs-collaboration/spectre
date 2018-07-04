@@ -78,7 +78,7 @@ struct System {
 struct Metavariables;
 
 using component = ActionTesting::MockArrayComponent<
-    Metavariables, ElementIndex<2>,
+    Metavariables, domain::ElementIndex<2>,
     tmpl::list<CacheTags::TimeStepper, NumericalFluxTag>>;
 
 struct Metavariables {
@@ -100,17 +100,19 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   const auto time_step = slab.duration() / 2;
   const auto now = slab.start() + time_step;
 
-  const ElementId<2> id(0);
-  const auto face_direction = Direction<2>::upper_xi();
+  const domain::ElementId<2> id(0);
+  const auto face_direction = domain::Direction<2>::upper_xi();
   const auto face_dimension = face_direction.dimension();
-  const Mesh<2> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
-  const auto slow_mortar = std::make_pair(Direction<2>::upper_xi(),
-                                          ElementId<2>(1, {{{0, 0}, {1, 0}}}));
-  const auto fast_mortar = std::make_pair(Direction<2>::upper_xi(),
-                                          ElementId<2>(1, {{{0, 0}, {1, 1}}}));
+  const domain::Mesh<2> mesh(3, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto);
+  const auto slow_mortar =
+      std::make_pair(domain::Direction<2>::upper_xi(),
+                     domain::ElementId<2>(1, {{{0, 0}, {1, 0}}}));
+  const auto fast_mortar =
+      std::make_pair(domain::Direction<2>::upper_xi(),
+                     domain::ElementId<2>(1, {{{0, 0}, {1, 1}}}));
 
-  typename Tags::Mortars<Tags::Mesh<1>, 2>::type mortar_meshes{
+  typename Tags::Mortars<domain::Tags::Mesh<1>, 2>::type mortar_meshes{
       {slow_mortar, mesh.slice_away(face_dimension)},
       {fast_mortar, mesh.slice_away(face_dimension)}};
   typename Tags::Mortars<Tags::MortarSize<1>, 2>::type mortar_sizes{
@@ -157,10 +159,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
                                          gsl::at(remote_data, 2));
 
-  auto box = db::create<
-      db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
-                        Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
-                        System::variables_tag, mortar_data_tag>>(
+  auto box = db::create<db::AddSimpleTags<
+      domain::Tags::Mesh<2>, Tags::Mortars<domain::Tags::Mesh<1>, 2>,
+      Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
+      System::variables_tag, mortar_data_tag>>(
       mesh, mortar_meshes, mortar_sizes, time_step, variables,
       std::move(mortar_data));
 

@@ -22,7 +22,8 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Interval<TargetFrame>::Interval(
@@ -61,7 +62,8 @@ std::vector<std::array<size_t, 1>>
 Interval<TargetFrame>::initial_refinement_levels() const noexcept {
   return {{{initial_refinement_level_x_}}};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Interval<Frame::Inertial>;
-template class DomainCreators::Interval<Frame::Grid>;
+template class Interval<Frame::Inertial>;
+template class Interval<Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

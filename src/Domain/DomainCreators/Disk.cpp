@@ -26,7 +26,8 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Disk<TargetFrame>::Disk(
@@ -116,7 +117,8 @@ std::vector<std::array<size_t, 2>>
 Disk<TargetFrame>::initial_refinement_levels() const noexcept {
   return {5, make_array<2>(initial_refinement_)};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Disk<Frame::Grid>;
-template class DomainCreators::Disk<Frame::Inertial>;
+template class Disk<Frame::Grid>;
+template class Disk<Frame::Inertial>;
+}  // namespace creators
+}  // namespace domain

@@ -11,20 +11,22 @@
 #include "ErrorHandling/Assert.hpp"
 
 template <>
-double mean_value_on_boundary(const DataVector& f, const Mesh<1>& mesh,
-                              size_t d, Side side) {
+double mean_value_on_boundary(const DataVector& f, const domain::Mesh<1>& mesh,
+                              size_t d, domain::Side side) {
   ASSERT(d == 0, "d = " << d);
-  return Side::Lower == side ? f[0] : f[mesh.extents(0) - 1];
+  return domain::Side::Lower == side ? f[0] : f[mesh.extents(0) - 1];
 }
 
 template <size_t Dim>
-double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
-                              size_t d, Side side) {
+double mean_value_on_boundary(const DataVector& f,
+                              const domain::Mesh<Dim>& mesh, size_t d,
+                              domain::Side side) {
   ASSERT(d < Dim, "d = " << d << ", Dim = " << Dim);
   const size_t N = mesh.extents(d);
-  const Mesh<Dim - 1> mesh_on_boundary = mesh.slice_away(d);
+  const domain::Mesh<Dim - 1> mesh_on_boundary = mesh.slice_away(d);
   DataVector f_on_boundary(mesh_on_boundary.number_of_grid_points());
-  for (SliceIterator si(mesh.extents(), d, (Side::Lower == side ? 0 : N - 1));
+  for (SliceIterator si(mesh.extents(), d,
+                        (domain::Side::Lower == side ? 0 : N - 1));
        si; ++si) {
     f_on_boundary[si.slice_offset()] = f[si.volume_offset()];
   }
@@ -32,7 +34,9 @@ double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
          two_to_the(Dim - 1);
 }
 
-template double mean_value_on_boundary(const DataVector&, const Mesh<2>&,
-                                       size_t, Side);
-template double mean_value_on_boundary(const DataVector&, const Mesh<3>&,
-                                       size_t, Side);
+template double mean_value_on_boundary(const DataVector&,
+                                       const domain::Mesh<2>&, size_t,
+                                       domain::Side);
+template double mean_value_on_boundary(const DataVector&,
+                                       const domain::Mesh<3>&, size_t,
+                                       domain::Side);

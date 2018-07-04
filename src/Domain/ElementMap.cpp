@@ -8,6 +8,7 @@
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 
 /// \cond
+namespace domain {
 template <size_t Dim, typename TargetFrame>
 ElementMap<Dim, TargetFrame>::ElementMap(
     ElementId<Dim> element_id,
@@ -70,4 +71,5 @@ template class ElementMap<3, Frame::Inertial>;
 template class ElementMap<1, Frame::Grid>;
 template class ElementMap<2, Frame::Grid>;
 template class ElementMap<3, Frame::Grid>;
+}  // namespace domain
 /// \endcond

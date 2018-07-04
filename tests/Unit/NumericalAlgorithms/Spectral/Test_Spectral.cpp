@@ -341,7 +341,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.QuadratureWeights",
 namespace {
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_spectral_quantities_for_mesh(const Mesh<1>& slice) {
+void test_spectral_quantities_for_mesh(const domain::Mesh<1>& slice) {
   const auto num_points = slice.extents(0);
   const auto& expected_points =
       Spectral::collocation_points<BasisType, QuadratureType>(num_points);
@@ -378,7 +378,7 @@ void test_spectral_quantities_for_mesh(const Mesh<1>& slice) {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Mesh",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   /// [get_points_for_mesh]
-  const Mesh<2> mesh2d{
+  const domain::Mesh<2> mesh2d{
       {{3, 4}},
       {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
       {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}};

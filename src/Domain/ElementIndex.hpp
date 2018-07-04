@@ -14,11 +14,14 @@
 #include "Utilities/ConstantExpressions.hpp"
 
 /// \cond
+namespace domain {
 template <size_t>
 struct ElementId;
-/// \endcond
 struct SegmentId;
+}  // namespace domain
+/// \endcond
 
+namespace domain {
 namespace ElementIndex_detail {
 constexpr size_t block_id_bits = 7;
 constexpr size_t refinement_bits = 5;
@@ -72,15 +75,16 @@ bool operator!=(const ElementIndex<VolumeDim>& a,
                 const ElementIndex<VolumeDim>& b) noexcept;
 
 template <size_t VolumeDim>
+std::ostream& operator<<(std::ostream& s,
+                         const ElementIndex<VolumeDim>& index) noexcept;
+
+template <size_t VolumeDim>
 size_t hash_value(const ElementIndex<VolumeDim>& index) noexcept;
+}  // namespace domain
 
 namespace std {
 template <size_t VolumeDim>
-struct hash<ElementIndex<VolumeDim>> {
-  size_t operator()(const ElementIndex<VolumeDim>& x) const noexcept;
+struct hash<domain::ElementIndex<VolumeDim>> {
+  size_t operator()(const domain::ElementIndex<VolumeDim>& x) const noexcept;
 };
 }  // namespace std
-
-template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& s,
-                         const ElementIndex<VolumeDim>& index) noexcept;

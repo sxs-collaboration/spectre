@@ -19,20 +19,21 @@
 SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
-  BlockNeighbor<3> test_block_neighbor;
+  domain::BlockNeighbor<3> test_block_neighbor;
 
   // Test constructor:
-  OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
-       Direction<3>::upper_xi()}});
-  BlockNeighbor<3> custom_neighbor(0, custom_orientation);
+  domain::OrientationMap<3> custom_orientation(
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_eta(),
+                                           domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::upper_xi()}});
+  domain::BlockNeighbor<3> custom_neighbor(0, custom_orientation);
   CHECK(custom_neighbor.id() == 0);
-  CHECK(custom_neighbor.orientation()(Direction<3>::upper_xi()) ==
-        Direction<3>::upper_eta());
-  CHECK(custom_neighbor.orientation()(Direction<3>::upper_eta()) ==
-        Direction<3>::upper_zeta());
-  CHECK(custom_neighbor.orientation()(Direction<3>::upper_zeta()) ==
-        Direction<3>::upper_xi());
+  CHECK(custom_neighbor.orientation()(domain::Direction<3>::upper_xi()) ==
+        domain::Direction<3>::upper_eta());
+  CHECK(custom_neighbor.orientation()(domain::Direction<3>::upper_eta()) ==
+        domain::Direction<3>::upper_zeta());
+  CHECK(custom_neighbor.orientation()(domain::Direction<3>::upper_zeta()) ==
+        domain::Direction<3>::upper_xi());
 
   // Test output operator:
   CHECK(get_output(custom_neighbor) == "Id = 0; orientation = (+1, +2, +0)");

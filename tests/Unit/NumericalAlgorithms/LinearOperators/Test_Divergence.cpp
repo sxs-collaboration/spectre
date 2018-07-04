@@ -36,31 +36,30 @@
 // IWYU pragma: no_forward_declare Tags::div
 
 namespace {
-using Affine = CoordinateMaps::Affine;
-using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Affine3D =
-    CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Affine = domain::CoordinateMaps::Affine;
+using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
 auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine2D{
-      Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-      Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
-      Affine{-1.0, 1.0, 2.3, 2.8}});
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+               Affine{-1.0, 1.0, 2.3, 2.8}});
 }
 
 template <size_t Dim, typename Frame>
@@ -122,11 +121,11 @@ using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence(
-    const Mesh<Dim>& mesh,
+    const domain::Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   const size_t num_grid_points = mesh.number_of_grid_points();
-  const auto xi = logical_coordinates(mesh);
+  const auto xi = domain::logical_coordinates(mesh);
   const auto x = coordinate_map(xi);
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
@@ -169,14 +168,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
   const size_t n2 =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
-  const Mesh<1> mesh_1d{
+  const domain::Mesh<1> mesh_1d{
       {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
-  const Mesh<2> mesh_2d{{{n0, n1}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> mesh_3d{{{n0, n1, n2}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<2> mesh_2d{{{n0, n1}},
+                                Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<3> mesh_3d{{{n0, n1, n2}},
+                                Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
         {std::make_unique<MathFunctions::PowX>(a)}};
@@ -206,18 +205,19 @@ struct MapTag : db::SimpleTag {
 
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence_compute_item(
-    const Mesh<Dim>& mesh,
+    const domain::Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
   using inv_jac_tag =
-      Tags::InverseJacobian<map_tag, Tags::LogicalCoordinates<Dim>>;
+      domain::Tags::InverseJacobian<map_tag,
+                                    domain::Tags::LogicalCoordinates<Dim>>;
   using flux_tags = two_fluxes<Dim, Frame>;
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
 
   const size_t num_grid_points = mesh.number_of_grid_points();
-  const auto xi = logical_coordinates(mesh);
+  const auto xi = domain::logical_coordinates(mesh);
   const auto x = coordinate_map(xi);
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
@@ -232,10 +232,10 @@ void test_divergence_compute_item(
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::Mesh<Dim>, flux_tag, map_tag>,
-                 db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                                    Tags::ComputeDiv<flux_tag, inv_jac_tag>>>(
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                         Tags::ComputeDiv<flux_tag, inv_jac_tag>>>(
       mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =
@@ -260,14 +260,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence.ComputeItem",
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
   const size_t n2 =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
-  const Mesh<1> mesh_1d{
+  const domain::Mesh<1> mesh_1d{
       {{n0}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
-  const Mesh<2> mesh_2d{{{n0, n1}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
-  const Mesh<3> mesh_3d{{{n0, n1, n2}},
-                        Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<2> mesh_2d{{{n0, n1}},
+                                Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<3> mesh_3d{{{n0, n1, n2}},
+                                Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
         {std::make_unique<MathFunctions::PowX>(a)}};

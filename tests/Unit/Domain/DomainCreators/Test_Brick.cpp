@@ -31,17 +31,18 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-using Affine = CoordinateMaps::Affine;
-using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Affine = domain::CoordinateMaps::Affine;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 void test_brick_construction(
-    const DomainCreators::Brick<Frame::Inertial>& brick,
+    const domain::creators::Brick<Frame::Inertial>& brick,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>&
+    const std::vector<
+        std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>&
         expected_block_neighbors,
-    const std::vector<std::unordered_set<Direction<3>>>&
+    const std::vector<std::unordered_set<domain::Direction<3>>>&
         expected_external_boundaries) {
   const auto domain = brick.create_domain();
 
@@ -50,10 +51,11 @@ void test_brick_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
-                   Affine{-1., 1., lower_bound[1], upper_bound[1]},
-                   Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
+      make_vector(
+          domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+              Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
+                       Affine{-1., 1., lower_bound[1], upper_bound[1]},
+                       Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
 
   test_initial_domain(domain, brick.initial_refinement_levels());
 }
@@ -64,133 +66,144 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
       refinement_level{{{3, 2, 4}}};
   const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}},
       upper_bound{{0.8, 5.0, 3.0}};
-  // Default OrientationMap is aligned.
-  const OrientationMap<3> aligned_orientation{};
+  // Default domain::OrientationMap is aligned.
+  const domain::OrientationMap<3> aligned_orientation{};
 
-  const DomainCreators::Brick<Frame::Inertial> brick{
+  const domain::creators::Brick<Frame::Inertial> brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, false, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{{}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_xi()},
+           {domain::Direction<3>::upper_xi()},
+           {domain::Direction<3>::lower_eta()},
+           {domain::Direction<3>::upper_eta()},
+           {domain::Direction<3>::lower_zeta()},
+           {domain::Direction<3>::upper_zeta()}}});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_x_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_x_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_x_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_xi(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_eta()},
+           {domain::Direction<3>::upper_eta()},
+           {domain::Direction<3>::lower_zeta()},
+           {domain::Direction<3>::upper_zeta()}}});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_y_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_y_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, true, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_y_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_eta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_eta(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_xi()},
+           {domain::Direction<3>::upper_xi()},
+           {domain::Direction<3>::lower_zeta()},
+           {domain::Direction<3>::upper_zeta()}}});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_z_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_z_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, false, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_z_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_zeta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_xi()},
+           {domain::Direction<3>::upper_xi()},
+           {domain::Direction<3>::lower_eta()},
+           {domain::Direction<3>::upper_eta()}}});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_xy_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_xy_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, true, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_xy_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::lower_eta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_eta(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_zeta()},
+           {domain::Direction<3>::upper_zeta()}}});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_yz_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_yz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, true, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_yz_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{{
-          {Direction<3>::lower_xi()},
-          {Direction<3>::upper_xi()},
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_eta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_eta(), {0, aligned_orientation}},
+           {domain::Direction<3>::lower_zeta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{{
+          {domain::Direction<3>::lower_xi()},
+          {domain::Direction<3>::upper_xi()},
       }});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_xz_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_xz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_xz_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::lower_zeta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_eta()},
+           {domain::Direction<3>::upper_eta()}}});
 
-  const DomainCreators::Brick<Frame::Inertial> periodic_xyz_brick{
+  const domain::creators::Brick<Frame::Inertial> periodic_xyz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, true, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_xyz_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{{}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_xi(), {0, aligned_orientation}},
+           {domain::Direction<3>::lower_eta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_eta(), {0, aligned_orientation}},
+           {domain::Direction<3>::lower_zeta(), {0, aligned_orientation}},
+           {domain::Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{{}});
 
   // Test serialization of the map
-  DomainCreators::register_derived_with_charm();
+  domain::creators::register_derived_with_charm();
 
   const auto base_map =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]},
                    Affine{-1., 1., lower_bound[2], upper_bound[2]}});
-  are_maps_equal(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  are_maps_equal(domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
                      Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                               Affine{-1., 1., lower_bound[1], upper_bound[1]},
                               Affine{-1., 1., lower_bound[2], upper_bound[2]}}),
@@ -200,7 +213,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",
                   "[Domain][Unit]") {
   const auto domain_creator =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<3, Frame::Inertial>>(
           "  Brick:\n"
           "    LowerBound: [0,0,0]\n"
           "    UpperBound: [1,2,3]\n"
@@ -208,16 +221,18 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",
           "    InitialGridPoints: [3,4,3]\n"
           "    InitialRefinement: [2,3,2]\n");
   const auto* brick_creator =
-      dynamic_cast<const DomainCreators::Brick<Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::Brick<Frame::Inertial>*>(
           domain_creator.get());
   test_brick_construction(
       *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
       {{{2, 3, 2}}},
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, {}}},
-           {Direction<3>::upper_xi(), {0, {}}},
-           {Direction<3>::lower_zeta(), {0, {}}},
-           {Direction<3>::upper_zeta(), {0, {}}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
+      std::vector<
+          std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+          {{domain::Direction<3>::lower_xi(), {0, {}}},
+           {domain::Direction<3>::upper_xi(), {0, {}}},
+           {domain::Direction<3>::lower_zeta(), {0, {}}},
+           {domain::Direction<3>::upper_zeta(), {0, {}}}}},
+      std::vector<std::unordered_set<domain::Direction<3>>>{
+          {{domain::Direction<3>::lower_eta()},
+           {domain::Direction<3>::upper_eta()}}});
 }

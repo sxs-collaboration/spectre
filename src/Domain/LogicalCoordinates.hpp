@@ -14,13 +14,16 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <size_t Dim>
-class Mesh;
 class DataVector;
+namespace domain {
 template <size_t Dim>
 class Direction;
+template <size_t Dim>
+class Mesh;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the logical coordinates in an Element.
@@ -62,3 +65,4 @@ struct LogicalCoordinates : Coordinates<VolumeDim, Frame::Logical>,
   static constexpr auto function = logical_coordinates<VolumeDim>;
 };
 }  // namespace Tags
+}  // namespace domain

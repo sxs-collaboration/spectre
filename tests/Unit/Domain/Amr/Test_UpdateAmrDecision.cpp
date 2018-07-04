@@ -28,41 +28,48 @@ namespace {
 
 template <size_t VolumeDim>
 void check_amr_decision_is_unchanged(
-    std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
-    const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept {
+    std::array<domain::amr::Flag, VolumeDim> my_initial_amr_flags,
+    const domain::Element<VolumeDim>& element,
+    const domain::ElementId<VolumeDim>& neighbor_id,
+    const std::array<domain::amr::Flag, VolumeDim>&
+        neighbor_amr_flags) noexcept {
   const auto expected_updated_flags = my_initial_amr_flags;
   std::stringstream os;
   os << neighbor_amr_flags;
   INFO(os.str());
-  CHECK_FALSE(amr::update_amr_decision(make_not_null(&my_initial_amr_flags),
-                                       element, neighbor_id,
-                                       neighbor_amr_flags));
+  CHECK_FALSE(domain::amr::update_amr_decision(
+      make_not_null(&my_initial_amr_flags), element, neighbor_id,
+      neighbor_amr_flags));
   CHECK(expected_updated_flags == my_initial_amr_flags);
 }
 
 template <size_t VolumeDim>
 void check_amr_decision_is_changed(
-    std::array<amr::Flag, VolumeDim> my_initial_amr_flags,
-    const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags,
-    const std::array<amr::Flag, VolumeDim>& expected_updated_flags) noexcept {
+    std::array<domain::amr::Flag, VolumeDim> my_initial_amr_flags,
+    const domain::Element<VolumeDim>& element,
+    const domain::ElementId<VolumeDim>& neighbor_id,
+    const std::array<domain::amr::Flag, VolumeDim>& neighbor_amr_flags,
+    const std::array<domain::amr::Flag, VolumeDim>&
+        expected_updated_flags) noexcept {
   std::stringstream os;
   os << my_initial_amr_flags << " " << neighbor_amr_flags;
   INFO(os.str());
-  CHECK(amr::update_amr_decision(make_not_null(&my_initial_amr_flags), element,
-                                 neighbor_id, neighbor_amr_flags));
+  CHECK(domain::amr::update_amr_decision(make_not_null(&my_initial_amr_flags),
+                                         element, neighbor_id,
+                                         neighbor_amr_flags));
   CHECK(expected_updated_flags == my_initial_amr_flags);
 }
 
 template <size_t VolumeDim>
-using changed_flags_t = std::map<std::pair<std::array<amr::Flag, VolumeDim>,
-                                           std::array<amr::Flag, VolumeDim>>,
-                                 std::array<amr::Flag, VolumeDim>>;
+using changed_flags_t =
+    std::map<std::pair<std::array<domain::amr::Flag, VolumeDim>,
+                       std::array<domain::amr::Flag, VolumeDim>>,
+             std::array<domain::amr::Flag, VolumeDim>>;
 template <size_t VolumeDim>
 void check_update_amr_decision(
-    const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
-    const std::vector<std::array<amr::Flag, VolumeDim>>& all_flags,
+    const domain::Element<VolumeDim>& element,
+    const domain::ElementId<VolumeDim>& neighbor_id,
+    const std::vector<std::array<domain::amr::Flag, VolumeDim>>& all_flags,
     const changed_flags_t<VolumeDim>& changed_flags) noexcept {
   for (const auto& my_flags : all_flags) {
     for (const auto& neighbor_flags : all_flags) {
@@ -79,60 +86,63 @@ void check_update_amr_decision(
   }
 }
 
-Element<1> make_element(
-    const ElementId<1>& element_id,
-    const std::unordered_set<ElementId<1>>& lower_xi_neighbor_ids,
-    const std::unordered_set<ElementId<1>>& upper_xi_neighbor_ids) noexcept {
-  std::unordered_map<Direction<1>, Neighbors<1>> neighbors;
+domain::Element<1> make_element(
+    const domain::ElementId<1>& element_id,
+    const std::unordered_set<domain::ElementId<1>>& lower_xi_neighbor_ids,
+    const std::unordered_set<domain::ElementId<1>>&
+        upper_xi_neighbor_ids) noexcept {
+  std::unordered_map<domain::Direction<1>, domain::Neighbors<1>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
-    neighbors.emplace(Direction<1>::lower_xi(),
-                      Neighbors<1>{{lower_xi_neighbor_ids}, {}});
+    neighbors.emplace(domain::Direction<1>::lower_xi(),
+                      domain::Neighbors<1>{{lower_xi_neighbor_ids}, {}});
   }
   if (not upper_xi_neighbor_ids.empty()) {
-    neighbors.emplace(Direction<1>::upper_xi(),
-                      Neighbors<1>{{upper_xi_neighbor_ids}, {}});
+    neighbors.emplace(domain::Direction<1>::upper_xi(),
+                      domain::Neighbors<1>{{upper_xi_neighbor_ids}, {}});
   }
-  return Element<1>{element_id, std::move(neighbors)};
+  return {element_id, std::move(neighbors)};
 }
 
-Element<2> make_element(
-    const ElementId<2>& element_id,
-    const std::unordered_set<ElementId<2>>& lower_xi_neighbor_ids,
-    const std::unordered_set<ElementId<2>>& upper_xi_neighbor_ids,
-    const std::unordered_set<ElementId<2>>& lower_eta_neighbor_ids,
-    const std::unordered_set<ElementId<2>>& upper_eta_neighbor_ids) noexcept {
-  std::unordered_map<Direction<2>, Neighbors<2>> neighbors;
+domain::Element<2> make_element(
+    const domain::ElementId<2>& element_id,
+    const std::unordered_set<domain::ElementId<2>>& lower_xi_neighbor_ids,
+    const std::unordered_set<domain::ElementId<2>>& upper_xi_neighbor_ids,
+    const std::unordered_set<domain::ElementId<2>>& lower_eta_neighbor_ids,
+    const std::unordered_set<domain::ElementId<2>>&
+        upper_eta_neighbor_ids) noexcept {
+  std::unordered_map<domain::Direction<2>, domain::Neighbors<2>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
-    neighbors.emplace(Direction<2>::lower_xi(),
-                      Neighbors<2>{{lower_xi_neighbor_ids}, {}});
+    neighbors.emplace(domain::Direction<2>::lower_xi(),
+                      domain::Neighbors<2>{{lower_xi_neighbor_ids}, {}});
   }
   if (not upper_xi_neighbor_ids.empty()) {
-    neighbors.emplace(Direction<2>::upper_xi(),
-                      Neighbors<2>{{upper_xi_neighbor_ids}, {}});
+    neighbors.emplace(domain::Direction<2>::upper_xi(),
+                      domain::Neighbors<2>{{upper_xi_neighbor_ids}, {}});
   }
   if (not lower_eta_neighbor_ids.empty()) {
-    neighbors.emplace(Direction<2>::lower_eta(),
-                      Neighbors<2>{{lower_eta_neighbor_ids}, {}});
+    neighbors.emplace(domain::Direction<2>::lower_eta(),
+                      domain::Neighbors<2>{{lower_eta_neighbor_ids}, {}});
   }
   if (not upper_eta_neighbor_ids.empty()) {
-    neighbors.emplace(Direction<2>::upper_eta(),
-                      Neighbors<2>{{upper_eta_neighbor_ids}, {}});
+    neighbors.emplace(domain::Direction<2>::upper_eta(),
+                      domain::Neighbors<2>{{upper_eta_neighbor_ids}, {}});
   }
-  return Element<2>{element_id, std::move(neighbors)};
+  return {element_id, std::move(neighbors)};
 }
 
 void test_update_amr_decision_1d() noexcept {
-  const std::array<amr::Flag, 1> split{{amr::Flag::Split}};
-  const std::array<amr::Flag, 1> join{{amr::Flag::Join}};
-  const std::array<amr::Flag, 1> stay{{amr::Flag::DoNothing}};
-  const std::vector<std::array<amr::Flag, 1>> all_flags{split, join, stay};
+  const std::array<domain::amr::Flag, 1> split{{domain::amr::Flag::Split}};
+  const std::array<domain::amr::Flag, 1> join{{domain::amr::Flag::Join}};
+  const std::array<domain::amr::Flag, 1> stay{{domain::amr::Flag::DoNothing}};
+  const std::vector<std::array<domain::amr::Flag, 1>> all_flags{split, join,
+                                                                stay};
 
-  const SegmentId x_segment{3, 5};
-  const SegmentId x_cousin{3, 6};
+  const domain::SegmentId x_segment{3, 5};
+  const domain::SegmentId x_cousin{3, 6};
 
-  const ElementId<1> element_id{0, {{x_segment}}};
-  const ElementId<1> id_lx_s{0, {{x_segment.id_of_sibling()}}};
-  const ElementId<1> id_ux_c{0, {{x_cousin}}};
+  const domain::ElementId<1> element_id{0, {{x_segment}}};
+  const domain::ElementId<1> id_lx_s{0, {{x_segment.id_of_sibling()}}};
+  const domain::ElementId<1> id_ux_c{0, {{x_cousin}}};
 
   auto element = make_element(element_id, {id_lx_s}, {id_ux_c});
   // changed flags: first flags of pair is initial_amr_flags
@@ -144,8 +154,8 @@ void test_update_amr_decision_1d() noexcept {
   check_update_amr_decision(element, id_ux_c, all_flags,
                             changed_flags_t<1>{{{join, split}, stay}});
 
-  const ElementId<1> id_lx_n{0, {{x_segment.id_of_abutting_nibling()}}};
-  const ElementId<1> id_ux_cp{0, {{x_cousin.id_of_parent()}}};
+  const domain::ElementId<1> id_lx_n{0, {{x_segment.id_of_abutting_nibling()}}};
+  const domain::ElementId<1> id_ux_cp{0, {{x_cousin.id_of_parent()}}};
   element = make_element(element_id, {id_lx_n}, {id_ux_cp});
   check_update_amr_decision(element, id_lx_n, all_flags,
                             changed_flags_t<1>{{{join, join}, stay},
@@ -155,7 +165,8 @@ void test_update_amr_decision_1d() noexcept {
   check_update_amr_decision(element, id_ux_cp, all_flags, changed_flags_t<1>{});
 
   // note having no lower neighbor is okay for this test
-  const ElementId<1> id_ux_cc{0, {{x_cousin.id_of_child(Side::Lower)}}};
+  const domain::ElementId<1> id_ux_cc{
+      0, {{x_cousin.id_of_child(domain::Side::Lower)}}};
   element = make_element(element_id, {}, {id_ux_cc});
   check_update_amr_decision(element, id_ux_cc, all_flags,
                             changed_flags_t<1>{{{join, stay}, stay},
@@ -164,40 +175,43 @@ void test_update_amr_decision_1d() noexcept {
 }
 
 void test_update_amr_decision_2d() noexcept {
-  const std::array<amr::Flag, 2> split_split{
-      {amr::Flag::Split, amr::Flag::Split}};
-  const std::array<amr::Flag, 2> join_split{
-      {amr::Flag::Join, amr::Flag::Split}};
-  const std::array<amr::Flag, 2> stay_split{
-      {amr::Flag::DoNothing, amr::Flag::Split}};
-  const std::array<amr::Flag, 2> split_stay{
-      {amr::Flag::Split, amr::Flag::DoNothing}};
-  const std::array<amr::Flag, 2> join_stay{
-      {amr::Flag::Join, amr::Flag::DoNothing}};
-  const std::array<amr::Flag, 2> stay_stay{
-      {amr::Flag::DoNothing, amr::Flag::DoNothing}};
-  const std::array<amr::Flag, 2> split_join{
-      {amr::Flag::Split, amr::Flag::Join}};
-  const std::array<amr::Flag, 2> join_join{{amr::Flag::Join, amr::Flag::Join}};
-  const std::array<amr::Flag, 2> stay_join{
-      {amr::Flag::DoNothing, amr::Flag::Join}};
+  const std::array<domain::amr::Flag, 2> split_split{
+      {domain::amr::Flag::Split, domain::amr::Flag::Split}};
+  const std::array<domain::amr::Flag, 2> join_split{
+      {domain::amr::Flag::Join, domain::amr::Flag::Split}};
+  const std::array<domain::amr::Flag, 2> stay_split{
+      {domain::amr::Flag::DoNothing, domain::amr::Flag::Split}};
+  const std::array<domain::amr::Flag, 2> split_stay{
+      {domain::amr::Flag::Split, domain::amr::Flag::DoNothing}};
+  const std::array<domain::amr::Flag, 2> join_stay{
+      {domain::amr::Flag::Join, domain::amr::Flag::DoNothing}};
+  const std::array<domain::amr::Flag, 2> stay_stay{
+      {domain::amr::Flag::DoNothing, domain::amr::Flag::DoNothing}};
+  const std::array<domain::amr::Flag, 2> split_join{
+      {domain::amr::Flag::Split, domain::amr::Flag::Join}};
+  const std::array<domain::amr::Flag, 2> join_join{
+      {domain::amr::Flag::Join, domain::amr::Flag::Join}};
+  const std::array<domain::amr::Flag, 2> stay_join{
+      {domain::amr::Flag::DoNothing, domain::amr::Flag::Join}};
 
-  const std::vector<std::array<amr::Flag, 2>> all_flags{
+  const std::vector<std::array<domain::amr::Flag, 2>> all_flags{
       split_split, join_split, stay_split, split_stay, join_stay,
       stay_stay,   split_join, join_join,  stay_join};
 
-  const SegmentId x_segment{3, 5};
-  const SegmentId x_cousin{3, 6};
-  const SegmentId y_segment{6, 15};
-  const SegmentId y_cousin{6, 16};
+  const domain::SegmentId x_segment{3, 5};
+  const domain::SegmentId x_cousin{3, 6};
+  const domain::SegmentId y_segment{6, 15};
+  const domain::SegmentId y_cousin{6, 16};
 
-  const ElementId<2> element_id{0, {{x_segment, y_segment}}};
+  const domain::ElementId<2> element_id{0, {{x_segment, y_segment}}};
 
-  const ElementId<2> id_lx_s_s{0, {{x_segment.id_of_sibling(), y_segment}}};
-  const ElementId<2> id_ux_c_s{0, {{x_cousin, y_segment}}};
-  const ElementId<2> id_ly_s_n{
+  const domain::ElementId<2> id_lx_s_s{
+      0, {{x_segment.id_of_sibling(), y_segment}}};
+  const domain::ElementId<2> id_ux_c_s{0, {{x_cousin, y_segment}}};
+  const domain::ElementId<2> id_ly_s_n{
       0, {{x_segment, y_segment.id_of_abutting_nibling()}}};
-  const ElementId<2> id_uy_s_cp{0, {{x_segment, y_cousin.id_of_parent()}}};
+  const domain::ElementId<2> id_uy_s_cp{0,
+                                        {{x_segment, y_cousin.id_of_parent()}}};
   auto element = make_element(element_id, {id_lx_s_s}, {id_ux_c_s}, {id_ly_s_n},
                               {id_uy_s_cp});
 
@@ -315,12 +329,13 @@ void test_update_amr_decision_2d() noexcept {
                          {{join_join, split_stay}, stay_join},
                          {{join_join, split_join}, stay_join}});
 
-  const ElementId<2> id_lx_s_p{
+  const domain::ElementId<2> id_lx_s_p{
       0, {{x_segment.id_of_sibling(), y_segment.id_of_parent()}}};
-  const ElementId<2> id_ly_p_n{
+  const domain::ElementId<2> id_ly_p_n{
       0, {{x_segment.id_of_parent(), y_segment.id_of_abutting_nibling()}}};
-  const ElementId<2> id_ux_c_p{0, {{x_cousin, y_segment.id_of_parent()}}};
-  const ElementId<2> id_uy_p_cp{
+  const domain::ElementId<2> id_ux_c_p{0,
+                                       {{x_cousin, y_segment.id_of_parent()}}};
+  const domain::ElementId<2> id_uy_p_cp{
       0, {{x_segment.id_of_parent(), y_cousin.id_of_parent()}}};
   element = make_element(element_id, {id_lx_s_p}, {id_ux_c_p}, {id_ly_p_n},
                          {id_uy_p_cp});
@@ -407,24 +422,32 @@ void test_update_amr_decision_2d() noexcept {
   check_update_amr_decision<2>(element, id_uy_p_cp, all_flags,
                                changed_flags_t<2>{});
 
-  const ElementId<2> id_lx_s_cl{
-      0, {{x_segment.id_of_sibling(), y_segment.id_of_child(Side::Lower)}}};
-  const ElementId<2> id_lx_s_cu{
-      0, {{x_segment.id_of_sibling(), y_segment.id_of_child(Side::Upper)}}};
-  const ElementId<2> id_ly_cl_n{0,
-                                {{x_segment.id_of_child(Side::Lower),
-                                  y_segment.id_of_abutting_nibling()}}};
-  const ElementId<2> id_ly_cu_n{0,
-                                {{x_segment.id_of_child(Side::Upper),
-                                  y_segment.id_of_abutting_nibling()}}};
-  const ElementId<2> id_ux_c_cl{
-      0, {{x_cousin, y_segment.id_of_child(Side::Lower)}}};
-  const ElementId<2> id_ux_c_cu{
-      0, {{x_cousin, y_segment.id_of_child(Side::Upper)}}};
-  const ElementId<2> id_uy_cl_cp{
-      0, {{x_segment.id_of_child(Side::Lower), y_cousin.id_of_parent()}}};
-  const ElementId<2> id_uy_cu_cp{
-      0, {{x_segment.id_of_child(Side::Upper), y_cousin.id_of_parent()}}};
+  const domain::ElementId<2> id_lx_s_cl{
+      0,
+      {{x_segment.id_of_sibling(),
+        y_segment.id_of_child(domain::Side::Lower)}}};
+  const domain::ElementId<2> id_lx_s_cu{
+      0,
+      {{x_segment.id_of_sibling(),
+        y_segment.id_of_child(domain::Side::Upper)}}};
+  const domain::ElementId<2> id_ly_cl_n{
+      0,
+      {{x_segment.id_of_child(domain::Side::Lower),
+        y_segment.id_of_abutting_nibling()}}};
+  const domain::ElementId<2> id_ly_cu_n{
+      0,
+      {{x_segment.id_of_child(domain::Side::Upper),
+        y_segment.id_of_abutting_nibling()}}};
+  const domain::ElementId<2> id_ux_c_cl{
+      0, {{x_cousin, y_segment.id_of_child(domain::Side::Lower)}}};
+  const domain::ElementId<2> id_ux_c_cu{
+      0, {{x_cousin, y_segment.id_of_child(domain::Side::Upper)}}};
+  const domain::ElementId<2> id_uy_cl_cp{
+      0,
+      {{x_segment.id_of_child(domain::Side::Lower), y_cousin.id_of_parent()}}};
+  const domain::ElementId<2> id_uy_cu_cp{
+      0,
+      {{x_segment.id_of_child(domain::Side::Upper), y_cousin.id_of_parent()}}};
   element = make_element(element_id, {id_lx_s_cl, id_lx_s_cu},
                          {id_ux_c_cl, id_ux_c_cu}, {id_ly_cl_n, id_ly_cu_n},
                          {id_uy_cl_cp, id_uy_cu_cp});
@@ -595,14 +618,16 @@ void test_update_amr_decision_2d() noexcept {
                          {{stay_join, split_stay}, split_join},
                          {{stay_join, split_join}, split_join}});
 
-  const ElementId<2> id_ux_cc_s{
-      0, {{x_cousin.id_of_child(Side::Lower), y_segment}}};
-  const ElementId<2> id_uy_cl_cc{0,
-                                 {{x_segment.id_of_child(Side::Lower),
-                                   y_cousin.id_of_child(Side::Lower)}}};
-  const ElementId<2> id_uy_cu_cc{0,
-                                 {{x_segment.id_of_child(Side::Upper),
-                                   y_cousin.id_of_child(Side::Lower)}}};
+  const domain::ElementId<2> id_ux_cc_s{
+      0, {{x_cousin.id_of_child(domain::Side::Lower), y_segment}}};
+  const domain::ElementId<2> id_uy_cl_cc{
+      0,
+      {{x_segment.id_of_child(domain::Side::Lower),
+        y_cousin.id_of_child(domain::Side::Lower)}}};
+  const domain::ElementId<2> id_uy_cu_cc{
+      0,
+      {{x_segment.id_of_child(domain::Side::Upper),
+        y_cousin.id_of_child(domain::Side::Lower)}}};
 
   element = make_element(element_id, {}, {id_ux_cc_s}, {},
                          {id_uy_cl_cc, id_uy_cu_cc});
@@ -691,8 +716,9 @@ void test_update_amr_decision_2d() noexcept {
                          {{stay_join, stay_stay}, stay_stay},
                          {{stay_join, split_join}, split_join}});
 
-  const ElementId<2> id_uy_p_cc{
-      0, {{x_segment.id_of_parent(), y_cousin.id_of_child(Side::Lower)}}};
+  const domain::ElementId<2> id_uy_p_cc{
+      0,
+      {{x_segment.id_of_parent(), y_cousin.id_of_child(domain::Side::Lower)}}};
   element = make_element(element_id, {}, {}, {}, {id_uy_p_cc});
   // neighbor coarser in x, finer in y, non-sibling side of y
   check_update_amr_decision<2>(

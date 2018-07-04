@@ -11,8 +11,11 @@
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+/// \cond
+namespace domain {
 SegmentIndex::SegmentIndex(size_t block_id,
                            const SegmentId& segment_id) noexcept
     : block_id_(block_id),
@@ -68,22 +71,6 @@ bool operator!=(const ElementIndex<VolumeDim>& a,
 }
 
 template <size_t VolumeDim>
-size_t hash_value(const ElementIndex<VolumeDim>& index) noexcept {
-  // ElementIndex is used as an opaque array of bytes by Charm, so we
-  // treat it that way as well.
-  // clang-tidy: do not use reinterpret_cast
-  const auto bytes = reinterpret_cast<const char*>(&index);  // NOLINT
-  // clang-tidy: do not use pointer arithmetic
-  return boost::hash_range(bytes, bytes + sizeof(index));  // NOLINT
-}
-
-template <size_t VolumeDim>
-size_t std::hash<ElementIndex<VolumeDim>>::operator()(
-    const ElementIndex<VolumeDim>& x) const noexcept {
-  return hash_value(x);
-}
-
-template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& s,
                          const ElementIndex<VolumeDim>& index) noexcept {
   for (const auto si : index.segments()) {
@@ -92,38 +79,42 @@ std::ostream& operator<<(std::ostream& s,
   return s;
 }
 
-template struct ElementIndex<1>;
-template struct ElementIndex<2>;
-template struct ElementIndex<3>;
+template <size_t VolumeDim>
+size_t hash_value(const ElementIndex<VolumeDim>& index) noexcept {
+  // ElementIndex is used as an opaque array of bytes by Charm, so we
+  // treat it that way as well.
+  // clang-tidy: do not use reinterpret_cast
+  const auto bytes = reinterpret_cast<const char*>(&index);  // NOLINT
+  // clang-tidy: do not use pointer arithmetic
+  return boost::hash_range(bytes, bytes + sizeof(index));  // NOLINT
+}
+}  // namespace domain
 
-template bool operator==(const ElementIndex<1>& a,
-                         const ElementIndex<1>& b) noexcept;
-template bool operator==(const ElementIndex<2>& a,
-                         const ElementIndex<2>& b) noexcept;
-template bool operator==(const ElementIndex<3>& a,
-                         const ElementIndex<3>& b) noexcept;
+template <size_t VolumeDim>
+size_t std::hash<domain::ElementIndex<VolumeDim>>::operator()(
+    const domain::ElementIndex<VolumeDim>& x) const noexcept {
+  return hash_value(x);
+}
 
-template bool operator!=(const ElementIndex<1>& a,
-                         const ElementIndex<1>& b) noexcept;
-template bool operator!=(const ElementIndex<2>& a,
-                         const ElementIndex<2>& b) noexcept;
-template bool operator!=(const ElementIndex<3>& a,
-                         const ElementIndex<3>& b) noexcept;
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template size_t hash_value(const ElementIndex<1>& index) noexcept;
-template size_t hash_value(const ElementIndex<2>& index) noexcept;
-template size_t hash_value(const ElementIndex<3>& index) noexcept;
+#define INSTANTIATE(_, data)                                              \
+  template struct domain::ElementIndex<DIM(data)>;                        \
+  template bool domain::operator==(                                       \
+      const domain::ElementIndex<DIM(data)>& a,                           \
+      const domain::ElementIndex<DIM(data)>& b) noexcept;                 \
+  template bool domain::operator!=(                                       \
+      const domain::ElementIndex<DIM(data)>& a,                           \
+      const domain::ElementIndex<DIM(data)>& b) noexcept;                 \
+  template size_t domain::hash_value(                                     \
+      const domain::ElementIndex<DIM(data)>& index) noexcept;             \
+  template size_t std::hash<domain::ElementIndex<DIM(data)>>::operator()( \
+      const domain::ElementIndex<DIM(data)>& x) const noexcept;           \
+  template std::ostream& domain::operator<<(                              \
+      std::ostream& s, const domain::ElementIndex<DIM(data)>& index) noexcept;
 
-template size_t std::hash<ElementIndex<1>>::operator()(
-    const ElementIndex<1>& x) const noexcept;
-template size_t std::hash<ElementIndex<2>>::operator()(
-    const ElementIndex<2>& x) const noexcept;
-template size_t std::hash<ElementIndex<3>>::operator()(
-    const ElementIndex<3>& x) const noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
-template std::ostream& operator<<(std::ostream& s,
-                                  const ElementIndex<1>& index) noexcept;
-template std::ostream& operator<<(std::ostream& s,
-                                  const ElementIndex<2>& index) noexcept;
-template std::ostream& operator<<(std::ostream& s,
-                                  const ElementIndex<3>& index) noexcept;
+#undef DIM
+#undef INSTANTIATE
+/// \endcond

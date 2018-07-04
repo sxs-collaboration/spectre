@@ -13,7 +13,7 @@
 
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
-    const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
+    const Variables<FluxTags>& F, const domain::Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept {
   const auto logical_partial_derivatives_of_F =

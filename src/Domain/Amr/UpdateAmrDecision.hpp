@@ -14,13 +14,16 @@ template <typename T>
 class not_null;
 }  // namespace gsl
 
+namespace domain {
 template <size_t VolumeDim>
 class Element;
 
 template <size_t VolumeDim>
 class ElementId;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 namespace amr {
 /// \ingroup ComputationalDomainGroup
 /// \brief Updates the AMR decisions `my_current_amr_flags` of the Element
@@ -47,3 +50,4 @@ bool update_amr_decision(
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept;
 }  // namespace amr
+}  // namespace domain

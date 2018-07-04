@@ -31,7 +31,7 @@
 
 namespace {
 void test_cylinder_construction(
-    const DomainCreators::Cylinder<Frame::Inertial>& cylinder,
+    const domain::creators::Cylinder<Frame::Inertial>& cylinder,
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
     const bool is_periodic_in_z,
@@ -39,85 +39,94 @@ void test_cylinder_construction(
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
     const bool use_equiangular_map) {
   const auto domain = cylinder.create_domain();
-  const OrientationMap<3> aligned_orientation{};
-  const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
-      {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
-       Direction<3>::upper_zeta()}});
-  const OrientationMap<3> half_turn(std::array<Direction<3>, 3>{
-      {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-       Direction<3>::upper_zeta()}});
-  const OrientationMap<3> quarter_turn_cw(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
-       Direction<3>::upper_zeta()}});
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
+  const domain::OrientationMap<3> aligned_orientation{};
+  const domain::OrientationMap<3> quarter_turn_ccw(
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::lower_eta(), domain::Direction<3>::upper_xi(),
+           domain::Direction<3>::upper_zeta()}});
+  const domain::OrientationMap<3> half_turn(std::array<domain::Direction<3>, 3>{
+      {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+       domain::Direction<3>::upper_zeta()}});
+  const domain::OrientationMap<3> quarter_turn_cw(
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_eta(), domain::Direction<3>::lower_xi(),
+           domain::Direction<3>::upper_zeta()}});
+  std::vector<
+      std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>
       expected_block_neighbors{};
-  std::vector<std::unordered_set<Direction<3>>> expected_external_boundaries{};
+  std::vector<std::unordered_set<domain::Direction<3>>>
+      expected_external_boundaries{};
   if (not is_periodic_in_z) {
-    expected_block_neighbors =
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_eta(), {3, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {2, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_cw}}},
-            {{Direction<3>::lower_eta(), {1, aligned_orientation}},
-             {Direction<3>::upper_eta(), {3, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, half_turn}}},
-            {{Direction<3>::lower_eta(), {2, aligned_orientation}},
-             {Direction<3>::upper_eta(), {0, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_ccw}}},
-            {{Direction<3>::upper_xi(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
-             {Direction<3>::lower_xi(), {2, half_turn}},
-             {Direction<3>::lower_eta(), {3, quarter_turn_cw}}}};
+    expected_block_neighbors = std::vector<
+        std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+        {{domain::Direction<3>::lower_eta(), {3, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {1, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, aligned_orientation}}},
+        {{domain::Direction<3>::lower_eta(), {0, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {2, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, quarter_turn_cw}}},
+        {{domain::Direction<3>::lower_eta(), {1, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {3, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, half_turn}}},
+        {{domain::Direction<3>::lower_eta(), {2, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {0, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, quarter_turn_ccw}}},
+        {{domain::Direction<3>::upper_xi(), {0, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
+         {domain::Direction<3>::lower_xi(), {2, half_turn}},
+         {domain::Direction<3>::lower_eta(), {3, quarter_turn_cw}}}};
     expected_external_boundaries =
-        std::vector<std::unordered_set<Direction<3>>>{
-            {{Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-              Direction<3>::lower_zeta()}},
-            {{Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-              Direction<3>::lower_zeta()}},
-            {{Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-              Direction<3>::lower_zeta()}},
-            {{Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-              Direction<3>::lower_zeta()}},
-            {Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}};
+        std::vector<std::unordered_set<domain::Direction<3>>>{
+            {{domain::Direction<3>::upper_xi(),
+              domain::Direction<3>::upper_zeta(),
+              domain::Direction<3>::lower_zeta()}},
+            {{domain::Direction<3>::upper_xi(),
+              domain::Direction<3>::upper_zeta(),
+              domain::Direction<3>::lower_zeta()}},
+            {{domain::Direction<3>::upper_xi(),
+              domain::Direction<3>::upper_zeta(),
+              domain::Direction<3>::lower_zeta()}},
+            {{domain::Direction<3>::upper_xi(),
+              domain::Direction<3>::upper_zeta(),
+              domain::Direction<3>::lower_zeta()}},
+            {domain::Direction<3>::upper_zeta(),
+             domain::Direction<3>::lower_zeta()}};
   } else {
-    expected_block_neighbors =
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_eta(), {3, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, aligned_orientation}},
-             {Direction<3>::upper_zeta(), {0, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {0, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {2, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_cw}},
-             {Direction<3>::upper_zeta(), {1, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {1, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {1, aligned_orientation}},
-             {Direction<3>::upper_eta(), {3, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, half_turn}},
-             {Direction<3>::upper_zeta(), {2, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {2, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {2, aligned_orientation}},
-             {Direction<3>::upper_eta(), {0, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_ccw}},
-             {Direction<3>::upper_zeta(), {3, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {3, aligned_orientation}}},
-            {{Direction<3>::upper_xi(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
-             {Direction<3>::lower_xi(), {2, half_turn}},
-             {Direction<3>::lower_eta(), {3, quarter_turn_cw}},
-             {Direction<3>::upper_zeta(), {4, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {4, aligned_orientation}}}};
+    expected_block_neighbors = std::vector<
+        std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>{
+        {{domain::Direction<3>::lower_eta(), {3, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {1, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, aligned_orientation}},
+         {domain::Direction<3>::upper_zeta(), {0, aligned_orientation}},
+         {domain::Direction<3>::lower_zeta(), {0, aligned_orientation}}},
+        {{domain::Direction<3>::lower_eta(), {0, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {2, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, quarter_turn_cw}},
+         {domain::Direction<3>::upper_zeta(), {1, aligned_orientation}},
+         {domain::Direction<3>::lower_zeta(), {1, aligned_orientation}}},
+        {{domain::Direction<3>::lower_eta(), {1, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {3, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, half_turn}},
+         {domain::Direction<3>::upper_zeta(), {2, aligned_orientation}},
+         {domain::Direction<3>::lower_zeta(), {2, aligned_orientation}}},
+        {{domain::Direction<3>::lower_eta(), {2, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {0, aligned_orientation}},
+         {domain::Direction<3>::lower_xi(), {4, quarter_turn_ccw}},
+         {domain::Direction<3>::upper_zeta(), {3, aligned_orientation}},
+         {domain::Direction<3>::lower_zeta(), {3, aligned_orientation}}},
+        {{domain::Direction<3>::upper_xi(), {0, aligned_orientation}},
+         {domain::Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
+         {domain::Direction<3>::lower_xi(), {2, half_turn}},
+         {domain::Direction<3>::lower_eta(), {3, quarter_turn_cw}},
+         {domain::Direction<3>::upper_zeta(), {4, aligned_orientation}},
+         {domain::Direction<3>::lower_zeta(), {4, aligned_orientation}}}};
 
     expected_external_boundaries =
-        std::vector<std::unordered_set<Direction<3>>>{
-            {{Direction<3>::upper_xi()}},
-            {{Direction<3>::upper_xi()}},
-            {{Direction<3>::upper_xi()}},
-            {{Direction<3>::upper_xi()}},
+        std::vector<std::unordered_set<domain::Direction<3>>>{
+            {{domain::Direction<3>::upper_xi()}},
+            {{domain::Direction<3>::upper_xi()}},
+            {{domain::Direction<3>::upper_xi()}},
+            {{domain::Direction<3>::upper_xi()}},
             {}};
   }
   const std::vector<std::array<size_t, 3>>& expected_extents{
@@ -131,44 +140,49 @@ void test_cylinder_construction(
   CHECK(cylinder.initial_extents() == expected_extents);
   CHECK(cylinder.initial_refinement_levels() == expected_refinement_level);
   using TargetFrame = Frame::Inertial;
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Equiangular = domain::CoordinateMaps::Equiangular;
   using Equiangular3DPrism =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = CoordinateMaps::Wedge2D;
-  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+      domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+  using Wedge2D = domain::CoordinateMaps::Wedge2D;
+  using Wedge3DPrism = domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
 
   auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
           Wedge3DPrism{Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::upper_xi(),
-                                    Direction<2>::upper_eta()}}},
+                               domain::OrientationMap<2>{
+                                   std::array<domain::Direction<2>, 2>{
+                                       {domain::Direction<2>::upper_xi(),
+                                        domain::Direction<2>::upper_eta()}}},
                                use_equiangular_map},
                        Affine{-1.0, 1.0, lower_bound, upper_bound}},
           Wedge3DPrism{Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::lower_eta(),
-                                    Direction<2>::upper_xi()}}},
+                               domain::OrientationMap<2>{
+                                   std::array<domain::Direction<2>, 2>{
+                                       {domain::Direction<2>::lower_eta(),
+                                        domain::Direction<2>::upper_xi()}}},
                                use_equiangular_map},
                        Affine{-1.0, 1.0, lower_bound, upper_bound}},
           Wedge3DPrism{Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::lower_xi(),
-                                    Direction<2>::lower_eta()}}},
+                               domain::OrientationMap<2>{
+                                   std::array<domain::Direction<2>, 2>{
+                                       {domain::Direction<2>::lower_xi(),
+                                        domain::Direction<2>::lower_eta()}}},
                                use_equiangular_map},
                        Affine{-1.0, 1.0, lower_bound, upper_bound}},
           Wedge3DPrism{Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::upper_eta(),
-                                    Direction<2>::lower_xi()}}},
+                               domain::OrientationMap<2>{
+                                   std::array<domain::Direction<2>, 2>{
+                                       {domain::Direction<2>::upper_eta(),
+                                        domain::Direction<2>::lower_xi()}}},
                                use_equiangular_map},
                        Affine{-1.0, 1.0, lower_bound, upper_bound}});
 
   if (use_equiangular_map) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Equiangular3DPrism{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
                             inner_radius / sqrt(2.0)),
@@ -177,7 +191,7 @@ void test_cylinder_construction(
                 Affine{-1.0, 1.0, lower_bound, upper_bound}}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
                             inner_radius / sqrt(2.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
@@ -199,7 +213,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       true,         refinement_level, grid_points, true};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -211,7 +225,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equiangular",
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular",
                   "[Domain][Unit]") {
   const auto cylinder =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
           "    InnerRadius: 1.0\n"
           "    OuterRadius: 3.0\n"
@@ -226,7 +240,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, true, grid_points,
       {5, make_array<3>(refinement_level)}, true);
 }
@@ -238,7 +253,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       true,         refinement_level, grid_points, false};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -250,7 +265,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equidistant",
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant",
                   "[Domain][Unit]") {
   const auto cylinder =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
           "    InnerRadius: 1.0\n"
           "    OuterRadius: 3.0\n"
@@ -265,7 +280,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, true, grid_points,
       {5, make_array<3>(refinement_level)}, false);
 }
@@ -278,7 +294,7 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       false,        refinement_level, grid_points, true};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -291,7 +307,7 @@ SPECTRE_TEST_CASE(
     "Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular.NotPeriodicInZ",
     "[Domain][Unit]") {
   const auto cylinder =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
           "    InnerRadius: 1.0\n"
           "    OuterRadius: 3.0\n"
@@ -307,7 +323,8 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, true);
 }
@@ -320,7 +337,7 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       false,        refinement_level, grid_points, false};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -333,7 +350,7 @@ SPECTRE_TEST_CASE(
     "Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant.NotPeriodicInZ",
     "[Domain][Unit]") {
   const auto cylinder =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<domain::DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
           "    InnerRadius: 1.0\n"
           "    OuterRadius: 3.0\n"
@@ -349,7 +366,8 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, false);
 }

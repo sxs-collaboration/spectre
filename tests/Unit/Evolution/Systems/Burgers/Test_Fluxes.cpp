@@ -30,8 +30,8 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
   // Check that the time derivative calculated from the fluxes is the
   // same as from the non-conservative form: d_t u = - u d_x u
   constexpr size_t num_points = 10;
-  const Mesh<1> mesh(num_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const domain::Mesh<1> mesh(num_points, Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto);
   const auto coords = get<0>(logical_coordinates(mesh));
   const auto identity = make_with_value<
       InverseJacobian<DataVector, 1, Frame::Logical, Frame::Inertial>>(coords,

@@ -15,17 +15,20 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class DataVector;
+namespace domain {
 template <typename, typename, size_t>
 class CoordinateMapBase;
-class DataVector;
 template <size_t>
 class Direction;
 template <size_t Dim, typename Frame>
 class ElementMap;
 template <size_t>
 class Mesh;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 // @{
 /*!
  * \ingroup ComputationalDomainGroup
@@ -62,11 +65,13 @@ template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct UnnormalizedFaceNormal : db::ComputeTag {
   static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
-      const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
-      const ::Direction<VolumeDim>&) = unnormalized_face_normal;
+      const domain::Mesh<VolumeDim - 1>&,
+      const domain::ElementMap<VolumeDim, Frame>&,
+      const domain::Direction<VolumeDim>&) = domain::unnormalized_face_normal;
   using argument_tags =
       tmpl::list<Mesh<VolumeDim - 1>, ElementMap<VolumeDim, Frame>,
                  Direction<VolumeDim>>;
   using volume_tags = tmpl::list<ElementMap<VolumeDim, Frame>>;
 };
 }  // namespace Tags
+}  // namespace domain

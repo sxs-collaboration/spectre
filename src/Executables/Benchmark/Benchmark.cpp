@@ -15,7 +15,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 
@@ -81,13 +81,14 @@ struct Psi : db::SimpleTag {
 void bench_all_gradient(benchmark::State& state) {  // NOLINT
   constexpr const size_t pts_1d = 4;
   constexpr const size_t Dim = 3;
-  const Mesh<Dim> mesh{pts_1d, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-  CoordinateMaps::Affine map1d(-1.0, 1.0, -1.0, 1.0);
-  using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
-                                               CoordinateMaps::Affine,
-                                               CoordinateMaps::Affine>;
-  CoordinateMap<Frame::Logical, Frame::Grid, Map3d> map(
+  const domain::Mesh<Dim> mesh{pts_1d, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
+  domain::CoordinateMaps::Affine map1d(-1.0, 1.0, -1.0, 1.0);
+  using Map3d =
+      domain::CoordinateMaps::ProductOf3Maps<domain::CoordinateMaps::Affine,
+                                             domain::CoordinateMaps::Affine,
+                                             domain::CoordinateMaps::Affine>;
+  domain::CoordinateMap<Frame::Logical, Frame::Grid, Map3d> map(
       Map3d{map1d, map1d, map1d});
 
   using VarTags = tmpl::list<Kappa<Dim>, Psi<Dim>>;

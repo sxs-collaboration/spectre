@@ -55,14 +55,16 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
   const Parallel::ConstGlobalCache<Metavariables> cache{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)}};
   const auto box = db::create<
-      db::AddSimpleTags<CharacteristicSpeed, Tags::Coordinates<dim, frame>,
-                        Tags::Mesh<dim>>,
-      db::AddComputeTags<Tags::MinimumGridSpacing<dim, frame>>>(
+      db::AddSimpleTags<CharacteristicSpeed,
+                        domain::Tags::Coordinates<dim, frame>,
+                        domain::Tags::Mesh<dim>>,
+      db::AddComputeTags<domain::Tags::MinimumGridSpacing<dim, frame>>>(
       characteristic_speed, tnsr::I<DataVector, dim, frame>{{{coordinates}}},
-      Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto));
+      domain::Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto));
 
-  const double grid_spacing = get<Tags::MinimumGridSpacing<dim, frame>>(box);
+  const double grid_spacing =
+      get<domain::Tags::MinimumGridSpacing<dim, frame>>(box);
 
   const Cfl cfl{safety_factor};
   const std::unique_ptr<StepChooser<registrars>> cfl_base =

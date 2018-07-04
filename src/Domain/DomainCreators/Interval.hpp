@@ -16,11 +16,14 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 template <size_t Dim, typename Frame>
 class DomainCreator;  // IWYU pragma: keep
+}  // namespace domain
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 1D Domain consisting of a single Block.
@@ -29,13 +32,11 @@ class Interval : public DomainCreator<1, TargetFrame> {
  public:
   struct LowerBound {
     using type = std::array<double, 1>;
-    static constexpr OptionString help = {
-        "Sequence of [x] for lower bounds."};
+    static constexpr OptionString help = {"Sequence of [x] for lower bounds."};
   };
   struct UpperBound {
     using type = std::array<double, 1>;
-    static constexpr OptionString help = {
-        "Sequence of [x] for upper bounds."};
+    static constexpr OptionString help = {"Sequence of [x] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 1>;
@@ -85,4 +86,5 @@ class Interval : public DomainCreator<1, TargetFrame> {
   typename InitialRefinement::type initial_refinement_level_x_{};
   typename InitialGridPoints::type initial_number_of_grid_points_in_x_{};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

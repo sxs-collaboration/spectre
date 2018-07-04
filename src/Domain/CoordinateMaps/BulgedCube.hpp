@@ -16,6 +16,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /*!
@@ -525,3 +526,4 @@ class BulgedCube {
 
 bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept;
 }  // namespace CoordinateMaps
+}  // namespace domain

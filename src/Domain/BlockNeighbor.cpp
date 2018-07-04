@@ -3,10 +3,11 @@
 
 #include "Domain/BlockNeighbor.hpp"
 
-#include "Utilities/GenerateInstantiations.hpp"
-
 #include <ostream>
 
+#include "Utilities/GenerateInstantiations.hpp"
+
+namespace domain {
 template <size_t VolumeDim>
 BlockNeighbor<VolumeDim>::BlockNeighbor(size_t id,
                                         OrientationMap<VolumeDim> orientation)
@@ -38,20 +39,19 @@ bool operator!=(const BlockNeighbor<VolumeDim>& lhs,
   return not(lhs == rhs);
 }
 
-// Explicit instantiations
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                          \
-  template class BlockNeighbor<DIM(data)>;                            \
-  template std::ostream& operator<<(std::ostream&,                    \
-                                    const BlockNeighbor<DIM(data)>&); \
-  template bool operator==(const BlockNeighbor<DIM(data)>& lhs,       \
-                           const BlockNeighbor<DIM(data)>& rhs);      \
-  template bool operator!=(const BlockNeighbor<DIM(data)>& lhs,       \
-                           const BlockNeighbor<DIM(data)>& rhs);
+#define INSTANTIATE(_, data)                                                \
+  template class BlockNeighbor<DIM(data)>;                                  \
+  template std::ostream& operator<<(std::ostream& os,                       \
+                                    const BlockNeighbor<DIM(data)>& block); \
+  template bool operator==(const BlockNeighbor<DIM(data)>& lhs,             \
+                           const BlockNeighbor<DIM(data)>& rhs) noexcept;   \
+  template bool operator!=(const BlockNeighbor<DIM(data)>& lhs,             \
+                           const BlockNeighbor<DIM(data)>& rhs) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
+}  // namespace domain

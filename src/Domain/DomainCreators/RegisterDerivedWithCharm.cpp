@@ -17,7 +17,8 @@
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 namespace DomainCreators_detail {
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -38,46 +39,49 @@ void register_with_charm();
 
 template <>
 void register_with_charm<1>() {
-  PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine>));
-  PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                 CoordinateMaps::DiscreteRotation<1>, Affine>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::DiscreteRotation<1>, Affine>));
 }
 
 template <>
 void register_with_charm<2>() {
-  PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
   PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial,
-                      CoordinateMaps::DiscreteRotation<2>, Affine2D>));
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
   PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
-  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::Identity<2>>));
-  PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge2D>));
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::DiscreteRotation<2>, Affine2D>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
+  PUPable_reg(SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                               CoordinateMaps::Identity<2>>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge2D>));
 }
 template <>
 void register_with_charm<3>() {
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            domain::CoordinateMaps::DiscreteRotation<3>,
+                            Affine3D>));
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
+  PUPable_reg(SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                               Equiangular3DPrism>));
   PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Frustum>));
   PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial,
-                      CoordinateMaps::DiscreteRotation<3>, Affine3D>));
-  PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
-  PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3DPrism>));
-  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         CoordinateMaps::Frustum>));
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D>));
   PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D>));
-  PUPable_reg(SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         Wedge3D, EquatorialCompression>));
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D,
+                                       EquatorialCompression>));
   PUPable_reg(SINGLE_ARG(
-      ::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3DPrism>));
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3DPrism>));
 }
 }  // namespace DomainCreators_detail
 
@@ -86,4 +90,5 @@ void register_derived_with_charm() {
   DomainCreators_detail::register_with_charm<2>();
   DomainCreators_detail::register_with_charm<3>();
 }
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

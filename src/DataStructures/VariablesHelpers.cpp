@@ -19,16 +19,17 @@ namespace OrientVariablesOnSlice_detail {
 
 std::vector<size_t> oriented_offset(
     const Index<1>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<2>& orientation_of_neighbor) noexcept {
+    const domain::OrientationMap<2>& orientation_of_neighbor) noexcept {
   // The slice of a 2D mesh is either aligned or anti-aligned
-  const Direction<2> my_slice_axis =
-      (0 == sliced_dim ? Direction<2>::upper_eta() : Direction<2>::upper_xi());
-  const Direction<2> neighbor_slice_axis =
+  const domain::Direction<2> my_slice_axis =
+      (0 == sliced_dim ? domain::Direction<2>::upper_eta()
+                       : domain::Direction<2>::upper_xi());
+  const domain::Direction<2> neighbor_slice_axis =
       orientation_of_neighbor(my_slice_axis);
   std::vector<size_t> oriented_offsets(slice_extents.product());
   std::iota(oriented_offsets.begin(), oriented_offsets.end(), 0);
 
-  if (neighbor_slice_axis.side() == Side::Lower) {
+  if (neighbor_slice_axis.side() == domain::Side::Lower) {
     std::reverse(oriented_offsets.begin(), oriented_offsets.end());
   }
   return oriented_offsets;
@@ -41,21 +42,21 @@ std::vector<size_t> oriented_offset(
 // anti-aligned.
 std::vector<size_t> oriented_offset(
     const Index<2>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<3>& orientation_of_neighbor) noexcept {
+    const domain::OrientationMap<3>& orientation_of_neighbor) noexcept {
   const std::array<size_t, 2> dims_of_slice =
       (0 == sliced_dim ? make_array(1_st, 2_st)
                        : (1 == sliced_dim) ? make_array(0_st, 2_st)
                                            : make_array(0_st, 1_st));
   const bool transpose_needed = (orientation_of_neighbor(dims_of_slice[0]) >
                                  orientation_of_neighbor(dims_of_slice[1]));
-  const Direction<3> neighbor_first_axis =
-      orientation_of_neighbor(Direction<3>(dims_of_slice[0], Side::Upper));
-  const Direction<3> neighbor_second_axis =
-      orientation_of_neighbor(Direction<3>(dims_of_slice[1], Side::Upper));
+  const domain::Direction<3> neighbor_first_axis = orientation_of_neighbor(
+      domain::Direction<3>(dims_of_slice[0], domain::Side::Upper));
+  const domain::Direction<3> neighbor_second_axis = orientation_of_neighbor(
+      domain::Direction<3>(dims_of_slice[1], domain::Side::Upper));
   const bool neighbor_first_axis_flipped =
-      (Side::Lower == neighbor_first_axis.side());
+      (domain::Side::Lower == neighbor_first_axis.side());
   const bool neighbor_second_axis_flipped =
-      (Side::Lower == neighbor_second_axis.side());
+      (domain::Side::Lower == neighbor_second_axis.side());
 
   std::vector<size_t> oriented_offsets(slice_extents.product());
   const size_t num_pts_1 = slice_extents[0];

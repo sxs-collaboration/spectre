@@ -76,7 +76,7 @@ struct FluxCommunicationTypes {
   /// The DataBox tag for the data stored on the mortars for global
   /// stepping.
   using simple_mortar_data_tag =
-      BasedMortars<Tags::VariablesBoundaryData,
+      BasedMortars<domain::Tags::VariablesBoundaryData,
                    Tags::SimpleBoundaryData<
                        db::item_type<typename Metavariables::temporal_id>,
                        LocalData, PackagedData>,
@@ -85,7 +85,7 @@ struct FluxCommunicationTypes {
   /// The DataBox tag for the data stored on the mortars for local
   /// stepping.
   using local_time_stepping_mortar_data_tag = BasedMortars<
-      Tags::VariablesBoundaryData,
+      domain::Tags::VariablesBoundaryData,
       Tags::BoundaryHistory<LocalData, PackagedData,
                             db::item_type<typename system::variables_tag>>,
       volume_dim>;
@@ -93,13 +93,14 @@ struct FluxCommunicationTypes {
   /// The inbox tag for flux communication.
   struct FluxesTag {
     using temporal_id = db::item_type<typename Metavariables::temporal_id>;
-    using type = std::map<
-        temporal_id,
-        std::unordered_map<
-            std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-            std::pair<temporal_id, PackagedData>,
-            boost::hash<
-                std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>>;
+    using type =
+        std::map<temporal_id,
+                 std::unordered_map<
+                     std::pair<domain::Direction<volume_dim>,
+                               domain::ElementId<volume_dim>>,
+                     std::pair<temporal_id, PackagedData>,
+                     boost::hash<std::pair<domain::Direction<volume_dim>,
+                                           domain::ElementId<volume_dim>>>>>;
   };
 };
 }  // namespace dg

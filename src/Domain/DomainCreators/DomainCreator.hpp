@@ -14,16 +14,19 @@
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
+namespace domain {
 template <size_t, typename>
 class Block;
 template <typename, typename, size_t>
 class CoordinateMapBase;
 template <size_t, typename>
 class Domain;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 /// Defines classes that create Domains.
-namespace DomainCreators {
+namespace creators {
 /// \cond
 template <typename TargetFrame>
 class Brick;
@@ -46,7 +49,7 @@ class Shell;
 template <typename TargetFrame>
 class Sphere;
 /// \endcond
-}  // namespace DomainCreators
+}  // namespace creators
 
 namespace DomainCreators_detail {
 template <size_t>
@@ -55,23 +58,23 @@ struct domain_creators;
 template <>
 struct domain_creators<1> {
   template <typename Frame>
-  using creators = tmpl::list<DomainCreators::Interval<Frame>,
-                              DomainCreators::RotatedIntervals<Frame>>;
+  using creators = tmpl::list<domain::creators::Interval<Frame>,
+                              domain::creators::RotatedIntervals<Frame>>;
 };
 template <>
 struct domain_creators<2> {
   template <typename Frame>
-  using creators =
-      tmpl::list<DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>,
-                 DomainCreators::RotatedRectangles<Frame>>;
+  using creators = tmpl::list<domain::creators::Disk<Frame>,
+                              domain::creators::Rectangle<Frame>,
+                              domain::creators::RotatedRectangles<Frame>>;
 };
 template <>
 struct domain_creators<3> {
   template <typename Frame>
-  using creators =
-      tmpl::list<DomainCreators::Brick<Frame>, DomainCreators::Cylinder<Frame>,
-                 DomainCreators::RotatedBricks<Frame>,
-                 DomainCreators::Shell<Frame>, DomainCreators::Sphere<Frame>>;
+  using creators = tmpl::list<
+      domain::creators::Brick<Frame>, domain::creators::Cylinder<Frame>,
+      domain::creators::RotatedBricks<Frame>, domain::creators::Shell<Frame>,
+      domain::creators::Sphere<Frame>>;
 };
 }  // namespace DomainCreators_detail
 
@@ -101,6 +104,7 @@ class DomainCreator {
   virtual std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels()
       const noexcept = 0;
 };
+}  // namespace domain
 
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Domain/DomainCreators/Cylinder.hpp"

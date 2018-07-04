@@ -9,8 +9,10 @@
 #include <cstddef>
 
 class DataVector;
+namespace domain {
 template <size_t>
 class Mesh;
+}  // namespace domain
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
@@ -20,7 +22,7 @@ class Mesh;
  * \returns the linearization of `u`
  */
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh);
+DataVector linearize(const DataVector& u, const domain::Mesh<Dim>& mesh);
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
@@ -33,4 +35,5 @@ DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh);
  * \param d the dimension that is to be linearized.
  */
 template <size_t Dim>
-DataVector linearize(const DataVector& u, const Mesh<Dim>& mesh, size_t d);
+DataVector linearize(const DataVector& u, const domain::Mesh<Dim>& mesh,
+                     size_t d);

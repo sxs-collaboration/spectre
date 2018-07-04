@@ -21,35 +21,35 @@
 SPECTRE_TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
-  Neighbors<1> test_neighbors;
+  domain::Neighbors<1> test_neighbors;
 
   // Test constructor:
-  OrientationMap<1> custom_orientation(
-      std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
+  domain::OrientationMap<1> custom_orientation(
+      std::array<domain::Direction<1>, 1>{{domain::Direction<1>::lower_xi()}});
 
-  const std::unordered_set<ElementId<1>> custom_ids = []() {
-    std::unordered_set<ElementId<1>> temp;
-    std::array<SegmentId, 1> segment1_ids{{SegmentId(2, 3)}};
-    ElementId<1> element1_id(2, segment1_ids);
+  const std::unordered_set<domain::ElementId<1>> custom_ids = []() {
+    std::unordered_set<domain::ElementId<1>> temp;
+    std::array<domain::SegmentId, 1> segment1_ids{{domain::SegmentId(2, 3)}};
+    domain::ElementId<1> element1_id(2, segment1_ids);
     temp.insert(element1_id);
-    std::array<SegmentId, 1> segment2_ids{{SegmentId(2, 2)}};
-    ElementId<1> element2_id(3, segment2_ids);
+    std::array<domain::SegmentId, 1> segment2_ids{{domain::SegmentId(2, 2)}};
+    domain::ElementId<1> element2_id(3, segment2_ids);
     temp.insert(element2_id);
-    std::array<SegmentId, 1> segment3_ids{{SegmentId(2, 1)}};
-    ElementId<1> element3_id(1, segment3_ids);
+    std::array<domain::SegmentId, 1> segment3_ids{{domain::SegmentId(2, 1)}};
+    domain::ElementId<1> element3_id(1, segment3_ids);
     temp.insert(element3_id);
     return temp;
   }();
 
-  Neighbors<1> custom_neighbors(custom_ids, custom_orientation);
+  domain::Neighbors<1> custom_neighbors(custom_ids, custom_orientation);
 
   // Test size
   CHECK(custom_neighbors.size() == 3);
 
-  const std::unordered_set<ElementId<1>> more_custom_ids = []() {
-    std::unordered_set<ElementId<1>> temp;
-    std::array<SegmentId, 1> segment4_ids{{SegmentId(2, 3)}};
-    ElementId<1> element4_id(0, segment4_ids);
+  const std::unordered_set<domain::ElementId<1>> more_custom_ids = []() {
+    std::unordered_set<domain::ElementId<1>> temp;
+    std::array<domain::SegmentId, 1> segment4_ids{{domain::SegmentId(2, 3)}};
+    domain::ElementId<1> element4_id(0, segment4_ids);
     temp.insert(element4_id);
     return temp;
   }();
@@ -77,35 +77,40 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
 SPECTRE_TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
-  Neighbors<2> test_neighbors;
+  domain::Neighbors<2> test_neighbors;
 
   // Test constructor:
-  OrientationMap<2> custom_orientation(std::array<Direction<2>, 2>{
-      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}});
+  domain::OrientationMap<2> custom_orientation(
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::upper_eta(),
+                                           domain::Direction<2>::lower_xi()}});
 
-  const std::unordered_set<ElementId<2>> custom_ids = []() {
-    std::unordered_set<ElementId<2>> temp;
-    std::array<SegmentId, 2> segment1_ids{{SegmentId(2, 3), SegmentId(1, 0)}};
-    ElementId<2> element1_id(2, segment1_ids);
+  const std::unordered_set<domain::ElementId<2>> custom_ids = []() {
+    std::unordered_set<domain::ElementId<2>> temp;
+    std::array<domain::SegmentId, 2> segment1_ids{
+        {domain::SegmentId(2, 3), domain::SegmentId(1, 0)}};
+    domain::ElementId<2> element1_id(2, segment1_ids);
     temp.insert(element1_id);
-    std::array<SegmentId, 2> segment2_ids{{SegmentId(2, 2), SegmentId(1, 1)}};
-    ElementId<2> element2_id(3, segment2_ids);
+    std::array<domain::SegmentId, 2> segment2_ids{
+        {domain::SegmentId(2, 2), domain::SegmentId(1, 1)}};
+    domain::ElementId<2> element2_id(3, segment2_ids);
     temp.insert(element2_id);
-    std::array<SegmentId, 2> segment3_ids{{SegmentId(2, 1), SegmentId(1, 0)}};
-    ElementId<2> element3_id(1, segment3_ids);
+    std::array<domain::SegmentId, 2> segment3_ids{
+        {domain::SegmentId(2, 1), domain::SegmentId(1, 0)}};
+    domain::ElementId<2> element3_id(1, segment3_ids);
     temp.insert(element3_id);
     return temp;
   }();
 
-  Neighbors<2> custom_neighbors(custom_ids, custom_orientation);
+  domain::Neighbors<2> custom_neighbors(custom_ids, custom_orientation);
 
   // Test size
   CHECK(custom_neighbors.size() == 3);
 
-  const std::unordered_set<ElementId<2>> more_custom_ids = []() {
-    std::unordered_set<ElementId<2>> temp;
-    std::array<SegmentId, 2> segment4_ids{{SegmentId(2, 3), SegmentId(1, 0)}};
-    ElementId<2> element4_id(0, segment4_ids);
+  const std::unordered_set<domain::ElementId<2>> more_custom_ids = []() {
+    std::unordered_set<domain::ElementId<2>> temp;
+    std::array<domain::SegmentId, 2> segment4_ids{
+        {domain::SegmentId(2, 3), domain::SegmentId(1, 0)}};
+    domain::ElementId<2> element4_id(0, segment4_ids);
     temp.insert(element4_id);
     return temp;
   }();
@@ -138,31 +143,35 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
 SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
-  Neighbors<3> test_neighbors;
+  domain::Neighbors<3> test_neighbors;
 
   // Test constructor:
-  OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
-      {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
-       Direction<3>::upper_xi()}});
+  domain::OrientationMap<3> custom_orientation(
+      std::array<domain::Direction<3>, 3>{{domain::Direction<3>::upper_eta(),
+                                           domain::Direction<3>::upper_zeta(),
+                                           domain::Direction<3>::upper_xi()}});
 
-  const std::unordered_set<ElementId<3>> custom_ids = []() {
-    std::unordered_set<ElementId<3>> temp;
-    std::array<SegmentId, 3> segment1_ids{
-        {SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}};
-    ElementId<3> element1_id(2, segment1_ids);
+  const std::unordered_set<domain::ElementId<3>> custom_ids = []() {
+    std::unordered_set<domain::ElementId<3>> temp;
+    std::array<domain::SegmentId, 3> segment1_ids{{domain::SegmentId(2, 3),
+                                                   domain::SegmentId(1, 0),
+                                                   domain::SegmentId(1, 1)}};
+    domain::ElementId<3> element1_id(2, segment1_ids);
     temp.insert(element1_id);
-    std::array<SegmentId, 3> segment2_ids{
-        {SegmentId(2, 2), SegmentId(1, 1), SegmentId(1, 0)}};
-    ElementId<3> element2_id(3, segment2_ids);
+    std::array<domain::SegmentId, 3> segment2_ids{{domain::SegmentId(2, 2),
+                                                   domain::SegmentId(1, 1),
+                                                   domain::SegmentId(1, 0)}};
+    domain::ElementId<3> element2_id(3, segment2_ids);
     temp.insert(element2_id);
-    std::array<SegmentId, 3> segment3_ids{
-        {SegmentId(2, 1), SegmentId(1, 0), SegmentId(1, 1)}};
-    ElementId<3> element3_id(1, segment3_ids);
+    std::array<domain::SegmentId, 3> segment3_ids{{domain::SegmentId(2, 1),
+                                                   domain::SegmentId(1, 0),
+                                                   domain::SegmentId(1, 1)}};
+    domain::ElementId<3> element3_id(1, segment3_ids);
     temp.insert(element3_id);
     return temp;
   }();
 
-  Neighbors<3> custom_neighbors(custom_ids, custom_orientation);
+  domain::Neighbors<3> custom_neighbors(custom_ids, custom_orientation);
 
   // Test size
   CHECK(custom_neighbors.size() == 3);
@@ -175,11 +184,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
 
   // Test add_ids
 
-  const std::unordered_set<ElementId<3>> more_custom_ids = []() {
-    std::unordered_set<ElementId<3>> temp;
-    std::array<SegmentId, 3> segment4_ids{
-        {SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}};
-    ElementId<3> element4_id(0, segment4_ids);
+  const std::unordered_set<domain::ElementId<3>> more_custom_ids = []() {
+    std::unordered_set<domain::ElementId<3>> temp;
+    std::array<domain::SegmentId, 3> segment4_ids{{domain::SegmentId(2, 3),
+                                                   domain::SegmentId(1, 0),
+                                                   domain::SegmentId(1, 1)}};
+    domain::ElementId<3> element4_id(0, segment4_ids);
     temp.insert(element4_id);
     return temp;
   }();

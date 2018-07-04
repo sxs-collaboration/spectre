@@ -34,11 +34,11 @@
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -123,7 +123,7 @@ struct Metavariables;
 
 template <size_t Dim, bool IsConservative>
 using component = ActionTesting::MockArrayComponent<
-    Metavariables<Dim, IsConservative>, ElementIndex<Dim>,
+    Metavariables<Dim, IsConservative>, domain::ElementIndex<Dim>,
     tmpl::list<CacheTags::TimeStepper,
                CacheTags::AnalyticSolution<SystemAnalyticSolution>>,
     tmpl::list<dg::Actions::InitializeElement<Dim>>>;
@@ -149,11 +149,11 @@ struct TestConservativeOrNonconservativeParts {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
 
-    CHECK(box_contains<
-          Tags::deriv<typename system::variables_tag::tags_list,
-                      typename system::gradients_tags,
-                      Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                            Tags::LogicalCoordinates<dim>>>>(
+    CHECK(box_contains<Tags::deriv<typename system::variables_tag::tags_list,
+                                   typename system::gradients_tags,
+                                   domain::Tags::InverseJacobian<
+                                       domain::Tags::ElementMap<dim>,
+                                       domain::Tags::LogicalCoordinates<dim>>>>(
         *box));
   }
 };
@@ -167,7 +167,7 @@ struct TestConservativeOrNonconservativeParts<true> {
     using variables_tag = typename system::variables_tag;
 
     const size_t number_of_grid_points =
-        get<Tags::Mesh<dim>>(*box).number_of_grid_points();
+        get<domain::Tags::Mesh<dim>>(*box).number_of_grid_points();
 
     CHECK(
         db::get<db::add_tag_prefix<Tags::Flux, Tags::Variables<tmpl::list<Var>>,
@@ -179,11 +179,12 @@ struct TestConservativeOrNonconservativeParts<true> {
     CHECK(box_contains<Tags::ComputeDiv<
               db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<dim>,
                                  Frame::Inertial>,
-              Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                    Tags::LogicalCoordinates<dim>>>>(*box));
+              domain::Tags::InverseJacobian<
+                  domain::Tags::ElementMap<dim>,
+                  domain::Tags::LogicalCoordinates<dim>>>>(*box));
 
-    CHECK(box_contains<Tags::Interface<
-              Tags::InternalDirections<dim>,
+    CHECK(box_contains<domain::Tags::Interface<
+              domain::Tags::InternalDirections<dim>,
               Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>>(
         *box));
   }
@@ -191,7 +192,7 @@ struct TestConservativeOrNonconservativeParts<true> {
 
 template <typename Metavariables, typename DomainCreatorType>
 void test_initialize_element(
-    const ElementId<Metavariables::system::volume_dim>& element_id,
+    const domain::ElementId<Metavariables::system::volume_dim>& element_id,
     const DomainCreatorType& domain_creator) noexcept {
   using system = typename Metavariables::system;
   constexpr size_t dim = system::volume_dim;
@@ -219,17 +220,18 @@ void test_initialize_element(
   CHECK(db::get<Tags::TimeStep>(box) == slab.duration());
 
   const auto& my_block = domain.blocks()[element_id.block_id()];
-  ElementMap<dim, Frame::Inertial> map{element_id,
-                                       my_block.coordinate_map().get_clone()};
-  Element<dim> element = create_initial_element(element_id, my_block);
-  Mesh<dim> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                 Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  domain::ElementMap<dim, Frame::Inertial> map{
+      element_id, my_block.coordinate_map().get_clone()};
+  domain::Element<dim> element = create_initial_element(element_id, my_block);
+  domain::Mesh<dim> mesh{
+      domain_creator.initial_extents()[element_id.block_id()],
+      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   auto logical_coords = logical_coordinates(mesh);
   auto inertial_coords = map(logical_coords);
-  CHECK(db::get<Tags::LogicalCoordinates<dim>>(box) == logical_coords);
-  CHECK(db::get<Tags::Mesh<dim>>(box) == mesh);
-  CHECK(db::get<Tags::Element<dim>>(box) == element);
-  CHECK(box_contains<Tags::ElementMap<dim>>(box));
+  CHECK(db::get<domain::Tags::LogicalCoordinates<dim>>(box) == logical_coords);
+  CHECK(db::get<domain::Tags::Mesh<dim>>(box) == mesh);
+  CHECK(db::get<domain::Tags::Element<dim>>(box) == element);
+  CHECK(box_contains<domain::Tags::ElementMap<dim>>(box));
   CHECK(db::get<Var>(box) == ([&inertial_coords, &slab]() {
           double time = slab.start().value();
           Scalar<DataVector> var{inertial_coords.get(0) + time};
@@ -267,12 +269,14 @@ void test_initialize_element(
       });
     }
   }
-  CHECK((db::get<Tags::MappedCoordinates<Tags::ElementMap<dim>,
-                                         Tags::LogicalCoordinates<dim>>>(
-            box)) == inertial_coords);
-  CHECK((db::get<Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                       Tags::LogicalCoordinates<dim>>>(box)) ==
-        map.inv_jacobian(logical_coords));
+  CHECK((db::get<domain::Tags::MappedCoordinates<
+             domain::Tags::ElementMap<dim>,
+             domain::Tags::LogicalCoordinates<dim>>>(box)) == inertial_coords);
+  CHECK(
+      (db::get<
+          domain::Tags::InverseJacobian<domain::Tags::ElementMap<dim>,
+                                        domain::Tags::LogicalCoordinates<dim>>>(
+          box)) == map.inv_jacobian(logical_coords));
   CHECK(db::get<
             db::add_tag_prefix<Tags::dt, typename system::variables_tag>>(
             box)
@@ -283,33 +287,37 @@ void test_initialize_element(
             .size() == element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(box).size() ==
         element.number_of_neighbors());
-  CHECK(db::get<Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(box).size() ==
+  CHECK(db::get<Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>>(box).size() ==
         element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(box).size() ==
         element.number_of_neighbors());
 
-  CHECK(box_contains<Tags::Interface<Tags::InternalDirections<dim>,
-                                     Tags::UnnormalizedFaceNormal<dim>>>(box));
+  CHECK(box_contains<
+        domain::Tags::Interface<domain::Tags::InternalDirections<dim>,
+                                domain::Tags::UnnormalizedFaceNormal<dim>>>(
+      box));
   using magnitude_tag =
-      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<dim>>;
+      Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<dim>>;
+  CHECK(box_contains<domain::Tags::Interface<
+            domain::Tags::InternalDirections<dim>, magnitude_tag>>(box));
+  CHECK(box_contains<domain::Tags::Interface<
+            domain::Tags::InternalDirections<dim>,
+            Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<dim>>>>(box));
   CHECK(box_contains<
-        Tags::Interface<Tags::InternalDirections<dim>, magnitude_tag>>(box));
+        domain::Tags::Interface<domain::Tags::InternalDirections<dim>,
+                                typename system::variables_tag>>(box));
   CHECK(box_contains<
-        Tags::Interface<Tags::InternalDirections<dim>,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
+        domain::Tags::Interface<domain::Tags::BoundaryDirections<dim>,
+                                domain::Tags::UnnormalizedFaceNormal<dim>>>(
       box));
-  CHECK(box_contains<Tags::Interface<Tags::InternalDirections<dim>,
-                                     typename system::variables_tag>>(box));
-  CHECK(box_contains<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                     Tags::UnnormalizedFaceNormal<dim>>>(box));
+  CHECK(box_contains<domain::Tags::Interface<
+            domain::Tags::BoundaryDirections<dim>, magnitude_tag>>(box));
+  CHECK(box_contains<domain::Tags::Interface<
+            domain::Tags::BoundaryDirections<dim>,
+            Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<dim>>>>(box));
   CHECK(box_contains<
-        Tags::Interface<Tags::BoundaryDirections<dim>, magnitude_tag>>(box));
-  CHECK(box_contains<
-        Tags::Interface<Tags::BoundaryDirections<dim>,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
-      box));
-  CHECK(box_contains<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                     typename system::variables_tag>>(box));
+        domain::Tags::Interface<domain::Tags::BoundaryDirections<dim>,
+                                typename system::variables_tag>>(box));
 
   TestConservativeOrNonconservativeParts<system::is_conservative>::
       template apply<Metavariables>(make_not_null(&box));
@@ -323,48 +331,55 @@ void test_mortar_orientation() noexcept {
 
   // This is the domain from the OrientationMap and corner numbering
   // tutorial.
-  Domain<3, Frame::Inertial> domain(
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Identity<3>{}, CoordinateMaps::Identity<3>{}),
+  domain::Domain<3, Frame::Inertial> domain(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{},
+          domain::CoordinateMaps::Identity<3>{}),
       {{{0, 1, 3, 4, 6, 7, 9, 10}}, {{1, 4, 7, 10, 2, 5, 8, 11}}});
-  const auto neighbor_direction = Direction<3>::upper_xi();
-  const auto mortar_id = std::make_pair(neighbor_direction, ElementId<3>(1));
+  const auto neighbor_direction = domain::Direction<3>::upper_xi();
+  const auto mortar_id =
+      std::make_pair(neighbor_direction, domain::ElementId<3>(1));
   const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
 
   db::DataBox<tmpl::list<>> empty_box{};
   const auto box = std::get<0>(
       runner.apply<component<3, false>, dg::Actions::InitializeElement<3>>(
-          empty_box, ElementId<3>(0), extents, std::move(domain), slab.start(),
-          slab.duration()));
+          empty_box, domain::ElementId<3>(0), extents, std::move(domain),
+          slab.start(), slab.duration()));
 
-  CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
-        Index<2>{{{3, 4}}});
+  CHECK(db::get<Tags::Mortars<domain::Tags::Mesh<2>, 3>>(box)
+            .at(mortar_id)
+            .extents() == Index<2>{{{3, 4}}});
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                   "[Unit][Evolution][Actions]") {
   test_initialize_element<Metavariables<1, false>>(
-      ElementId<1>{0, {{SegmentId{2, 1}}}},
-      DomainCreators::Interval<Frame::Inertial>{
+      domain::ElementId<1>{0, {{domain::SegmentId{2, 1}}}},
+      domain::creators::Interval<Frame::Inertial>{
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
   test_initialize_element<Metavariables<2, false>>(
-      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}},
-      DomainCreators::Rectangle<Frame::Inertial>{
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 1}, domain::SegmentId{3, 2}}}},
+      domain::creators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   test_initialize_element<Metavariables<3, false>>(
-      ElementId<3>{0, {{SegmentId{2, 1}, SegmentId{3, 2}, SegmentId{1, 0}}}},
-      DomainCreators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
-                                             {{1.5, 2.4, 1.2}},
-                                             {{false, false, true}},
-                                             {{2, 3, 1}},
-                                             {{4, 5, 3}}});
+      domain::ElementId<3>{0,
+                           {{domain::SegmentId{2, 1}, domain::SegmentId{3, 2},
+                             domain::SegmentId{1, 0}}}},
+      domain::creators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
+                                               {{1.5, 2.4, 1.2}},
+                                               {{false, false, true}},
+                                               {{2, 3, 1}},
+                                               {{4, 5, 3}}});
 
   test_initialize_element<Metavariables<2, true>>(
-      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}},
-      DomainCreators::Rectangle<Frame::Inertial>{
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 1}, domain::SegmentId{3, 2}}}},
+      domain::creators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   test_mortar_orientation();

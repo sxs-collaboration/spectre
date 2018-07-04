@@ -14,12 +14,15 @@ namespace domain {
 class BlockId;
 }  // namespace domain
 class DataVector;
+namespace domain {
 template <size_t VolumeDim>
 class ElementId;
+}  // namespace domain
 template <typename IdType, typename DataType>
 class IdPair;
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 ///
 /// Holds element logical coordinates of an arbitrary set of points on
@@ -89,5 +92,6 @@ std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
 element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
     const std::vector<
-        IdPair<domain::BlockId, tnsr::I<double, Dim, typename Frame::Logical>>>&
+        IdPair<BlockId, tnsr::I<double, Dim, typename Frame::Logical>>>&
         block_coord_holders) noexcept;
+}  // namespace domain

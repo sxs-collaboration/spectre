@@ -14,7 +14,8 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 RotatedBricks<TargetFrame>::RotatedBricks(
@@ -95,7 +96,8 @@ RotatedBricks<TargetFrame>::initial_refinement_levels() const noexcept {
           {{y_0, z_0, x_0}}, {{y_0, x_0, z_0}}, {{z_0, x_0, y_0}},
           {{y_0, z_0, x_0}}, {{x_0, y_0, z_0}}};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::RotatedBricks<Frame::Inertial>;
-template class DomainCreators::RotatedBricks<Frame::Grid>;
+template class RotatedBricks<Frame::Inertial>;
+template class RotatedBricks<Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

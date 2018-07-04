@@ -23,7 +23,8 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Brick<TargetFrame>::Brick(
@@ -76,7 +77,8 @@ std::vector<std::array<size_t, 3>>
 Brick<TargetFrame>::initial_refinement_levels() const noexcept {
   return {initial_refinement_level_xyz_};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Brick<Frame::Inertial>;
-template class DomainCreators::Brick<Frame::Grid>;
+template class Brick<Frame::Inertial>;
+template class Brick<Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

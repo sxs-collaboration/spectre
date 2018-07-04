@@ -12,6 +12,7 @@
 #include "Domain/Mesh.hpp"                          // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
+namespace domain {
 namespace {
 template <typename TargetFrame, size_t VolumeDim, typename Map>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal_impl(
@@ -75,3 +76,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
 #undef GET_DIM
 #undef GET_FRAME
 #undef INSTANTIATION
+}  // namespace domain

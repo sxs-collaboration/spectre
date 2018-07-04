@@ -17,8 +17,10 @@
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
+namespace domain {
 template <size_t>
 class ElementIndex;
+}  // namespace domain
 namespace Parallel {
 template <class>
 class ArrayIndex;
@@ -28,6 +30,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// An ElementId uniquely labels an Element.
 /// It is constructed from the BlockId of the Block to which the Element belongs
@@ -94,14 +97,6 @@ bool operator!=(const ElementId<VolumeDim>& lhs,
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& c) noexcept;
 
-// clang-tidy: do not modify namespace std
-namespace std {  // NOLINT
-template <size_t VolumeDim>
-struct hash<ElementId<VolumeDim>> {
-  size_t operator()(const ElementId<VolumeDim>& c) const noexcept;
-};
-}  // namespace std
-
 template <size_t VolumeDim>
 inline bool operator==(const ElementId<VolumeDim>& lhs,
                        const ElementId<VolumeDim>& rhs) noexcept {
@@ -114,3 +109,12 @@ inline bool operator!=(const ElementId<VolumeDim>& lhs,
                        const ElementId<VolumeDim>& rhs) noexcept {
   return not(lhs == rhs);
 }
+}  // namespace domain
+
+// clang-tidy: do not modify namespace std
+namespace std {  // NOLINT
+template <size_t VolumeDim>
+struct hash<domain::ElementId<VolumeDim>> {
+  size_t operator()(const domain::ElementId<VolumeDim>& c) const noexcept;
+};
+}  // namespace std

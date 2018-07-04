@@ -25,6 +25,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// A Block<VolumeDim> is a region of a VolumeDim-dimensional computational
 /// domain that defines the root node of a tree which is used to construct the
@@ -102,3 +103,4 @@ bool operator==(const Block<VolumeDim, TargetFrame>& lhs,
 template <size_t VolumeDim, typename TargetFrame>
 bool operator!=(const Block<VolumeDim, TargetFrame>& lhs,
                 const Block<VolumeDim, TargetFrame>& rhs) noexcept;
+}  // namespace domain

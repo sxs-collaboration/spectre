@@ -34,7 +34,8 @@ template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept { return "Mortars"; }
   using tag = Tag;
-  using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
+  using Key =
+      std::pair<::domain::Direction<VolumeDim>, ::domain::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;
 };
 

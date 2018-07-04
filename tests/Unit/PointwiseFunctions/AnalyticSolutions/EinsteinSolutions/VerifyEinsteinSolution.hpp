@@ -61,20 +61,21 @@ void verify_time_independent_einstein_solution(
 
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  domain::Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
       });
 
   // Set up coordinates
-  const auto x_logical = logical_coordinates(mesh);
+  const auto x_logical = domain::logical_coordinates(mesh);
   const auto x = coord_map(x_logical);
   const double t = 1.3;  // Arbitrary time for time-independent solution.
 

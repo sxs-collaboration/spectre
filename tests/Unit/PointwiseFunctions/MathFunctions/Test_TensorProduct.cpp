@@ -37,28 +37,28 @@ template <size_t VolumeDim>
 class MathFunction;
 
 namespace {
-using Affine = CoordinateMaps::Affine;
-using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Affine = domain::CoordinateMaps::Affine;
+using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
 auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }
@@ -131,11 +131,11 @@ tnsr::ii<T, VolumeDim> expected_second_derivs(
 
 template <size_t VolumeDim>
 void test_tensor_product(
-    const Mesh<VolumeDim>& mesh, const double scale,
+    const domain::Mesh<VolumeDim>& mesh, const double scale,
     std::array<std::unique_ptr<MathFunction<1>>, VolumeDim>&& functions,
     const std::array<size_t, VolumeDim>& powers) noexcept {
   const auto coordinate_map = make_affine_map<VolumeDim>();
-  const auto x = coordinate_map(logical_coordinates(mesh));
+  const auto x = coordinate_map(domain::logical_coordinates(mesh));
   MathFunctions::TensorProduct<VolumeDim> f(scale, std::move(functions));
   CHECK_ITERABLE_APPROX(f(x), expected_value(x, powers, scale));
   CHECK_ITERABLE_APPROX(f.first_derivatives(x),
@@ -169,12 +169,12 @@ using TwoVars = tmpl::list<Var1, Var2<VolumeDim>>;
 
 template <size_t VolumeDim>
 void test_with_numerical_derivatives(
-    const Mesh<VolumeDim>& mesh, const double scale,
+    const domain::Mesh<VolumeDim>& mesh, const double scale,
     std::array<std::unique_ptr<MathFunction<1>>, VolumeDim>&&
         functions) noexcept {
   const auto coordinate_map = make_affine_map<VolumeDim>();
   Variables<TwoVars<VolumeDim>> u(mesh.number_of_grid_points());
-  const auto xi = logical_coordinates(mesh);
+  const auto xi = domain::logical_coordinates(mesh);
   const auto x = coordinate_map(xi);
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
   MathFunctions::TensorProduct<VolumeDim> f(scale, std::move(functions));
@@ -205,25 +205,25 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions{
         {std::make_unique<MathFunctions::PowX>(a)}};
-    test_tensor_product(Mesh<1>{4, Spectral::Basis::Legendre,
-                                Spectral::Quadrature::GaussLobatto},
+    test_tensor_product(domain::Mesh<1>{4, Spectral::Basis::Legendre,
+                                        Spectral::Quadrature::GaussLobatto},
                         1.5, std::move(functions), {{a}});
     for (size_t b = 0; b < 4; ++b) {
       std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
           {std::make_unique<MathFunctions::PowX>(a),
            std::make_unique<MathFunctions::PowX>(b)}};
-      test_tensor_product(Mesh<2>{{{4, 3}},
-                                  Spectral::Basis::Legendre,
-                                  Spectral::Quadrature::GaussLobatto},
+      test_tensor_product(domain::Mesh<2>{{{4, 3}},
+                                          Spectral::Basis::Legendre,
+                                          Spectral::Quadrature::GaussLobatto},
                           2.5, std::move(functions_2d), {{a, b}});
       for (size_t c = 0; c < 3; ++c) {
         std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
             {std::make_unique<MathFunctions::PowX>(a),
              std::make_unique<MathFunctions::PowX>(b),
              std::make_unique<MathFunctions::PowX>(c)}};
-        test_tensor_product(Mesh<3>{{{4, 3, 5}},
-                                    Spectral::Basis::Legendre,
-                                    Spectral::Quadrature::GaussLobatto},
+        test_tensor_product(domain::Mesh<3>{{{4, 3, 5}},
+                                            Spectral::Basis::Legendre,
+                                            Spectral::Quadrature::GaussLobatto},
                             3.5, std::move(functions_3d), {{a, b, c}});
       }
     }
@@ -233,7 +233,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
       {std::make_unique<MathFunctions::Sinusoid>(1.0, 1.0, -1.0)}};
 
   test_with_numerical_derivatives(
-      Mesh<1>{8, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      domain::Mesh<1>{8, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto},
       1.5, std::move(sinusoid));
 
   std::array<std::unique_ptr<MathFunction<1>>, 3> generic_3d{
@@ -242,6 +243,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
        std::make_unique<MathFunctions::PowX>(2)}};
 
   test_with_numerical_derivatives(
-      Mesh<3>{8, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      domain::Mesh<3>{8, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto},
       1.5, std::move(generic_3d));
 }

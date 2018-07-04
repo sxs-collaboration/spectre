@@ -12,11 +12,14 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 template <size_t, class>
 class DomainCreator;  // IWYU pragma: keep
+}  // namespace domain
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /*!
  * \ingroup DomainCreatorsGroup
@@ -116,4 +119,5 @@ class Shell : public DomainCreator<3, TargetFrame> {
   typename AspectRatio::type aspect_ratio_ = 1.0;
   typename UseLogarithmicMap::type use_logarithmic_map_ = false;
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

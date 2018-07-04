@@ -33,7 +33,7 @@ struct System {
   using du_dt = ComputeDuDt;
 };
 
-using ElementIndexType = ElementIndex<2>;
+using ElementIndexType = domain::ElementIndex<2>;
 
 struct Metavariables;
 using component = ActionTesting::MockArrayComponent<
@@ -50,7 +50,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
                   "[Unit][Evolution][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
+  const domain::ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
   auto start_box =
       db::create<db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>(3, -100);
 

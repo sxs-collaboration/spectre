@@ -19,7 +19,7 @@
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Identity",
                   "[Domain][Unit]") {
-  const CoordinateMaps::BulgedCube map(sqrt(3.0), 0, false);
+  const domain::CoordinateMaps::BulgedCube map(sqrt(3.0), 0, false);
   const std::array<double, 3> lower_corner{{-1.0, -1.0, -1.0}};
   const std::array<double, 3> upper_corner{{1.0, 1.0, 1.0}};
   const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Identity",
   test_inv_jacobian(map, test_point2);
   test_inv_jacobian(map, test_point3);
 
-  test_coordinate_map_implementation<CoordinateMaps::BulgedCube>(map);
+  test_coordinate_map_implementation<domain::CoordinateMaps::BulgedCube>(map);
 
   CHECK(serialize_and_deserialize(map) == map);
   CHECK_FALSE(serialize_and_deserialize(map) != map);
@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Identity",
 }
 
 void test_bulged_cube_fail() {
-  const CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5, false);
+  const domain::CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5, false);
 
   // The corners of the mapped cube have coordinates +/- 2 in each
   // dimension.  If we inverse-map points that are sufficiently
@@ -80,8 +80,8 @@ void test_bulged_cube_fail() {
 void test_bulged_cube(bool with_equiangular_map) {
   const std::array<double, 3> lower_corner{{-1.0, -1.0, -1.0}};
   const std::array<double, 3> upper_corner{{1.0, 1.0, 1.0}};
-  const CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5,
-                                       with_equiangular_map);
+  const domain::CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5,
+                                               with_equiangular_map);
 
   CHECK(map(lower_corner)[0] == approx(-2.0));
   CHECK(map(lower_corner)[1] == approx(-2.0));
@@ -113,7 +113,7 @@ void test_bulged_cube(bool with_equiangular_map) {
   test_inv_jacobian(map, test_point3);
   test_inv_jacobian(map, test_point4);
 
-  test_coordinate_map_implementation<CoordinateMaps::BulgedCube>(map);
+  test_coordinate_map_implementation<domain::CoordinateMaps::BulgedCube>(map);
 
   CHECK(serialize_and_deserialize(map) == map);
   CHECK_FALSE(serialize_and_deserialize(map) != map);

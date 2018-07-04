@@ -8,6 +8,7 @@
 
 #include <iosfwd>
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// A label for the side of a manifold.
 ///
@@ -23,3 +24,4 @@ constexpr inline Side opposite(const Side side) {
 
 /// Output operator for a Side.
 std::ostream& operator<<(std::ostream& os, const Side& side);
+}  // namespace domain

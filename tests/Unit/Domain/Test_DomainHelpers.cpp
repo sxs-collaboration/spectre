@@ -13,7 +13,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockNeighbor.hpp"
+#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
@@ -30,33 +30,37 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
-#include "Utilities/StdHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
+  std::vector<
+      std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>
       neighbors_of_all_blocks;
-  set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
+  domain::set_internal_boundaries<3>(corners_of_all_blocks,
+                                     &neighbors_of_all_blocks);
 
-  const OrientationMap<3> aligned{};
-  CHECK(neighbors_of_all_blocks[0][Direction<3>::lower_zeta()].orientation() ==
-        aligned);
+  const domain::OrientationMap<3> aligned{};
+  CHECK(neighbors_of_all_blocks[0][domain::Direction<3>::lower_zeta()]
+            .orientation() == aligned);
 
-  const PairOfFaces x_faces{{1, 3, 5, 7}, {0, 2, 4, 6}};
+  const domain::PairOfFaces x_faces{{1, 3, 5, 7}, {0, 2, 4, 6}};
 
-  const std::vector<PairOfFaces> identifications{x_faces};
-  set_identified_boundaries<3>(identifications, corners_of_all_blocks,
-                               &neighbors_of_all_blocks);
-  CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
-        aligned);
+  const std::vector<domain::PairOfFaces> identifications{x_faces};
+  domain::set_identified_boundaries<3>(identifications, corners_of_all_blocks,
+                                       &neighbors_of_all_blocks);
+  CHECK(neighbors_of_all_blocks[0][domain::Direction<3>::upper_xi()]
+            .orientation() == aligned);
 
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{{{Direction<3>::upper_xi(), {0, aligned}},
-                                {Direction<3>::lower_xi(), {0, aligned}},
-                                {Direction<3>::lower_zeta(), {1, aligned}}},
-                               {{Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<
+      std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>
+      expected_block_neighbors{
+          {{domain::Direction<3>::upper_xi(), {0, aligned}},
+           {domain::Direction<3>::lower_xi(), {0, aligned}},
+           {domain::Direction<3>::lower_zeta(), {1, aligned}}},
+          {{domain::Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
@@ -65,223 +69,265 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
+  std::vector<
+      std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>
       neighbors_of_all_blocks;
-  set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
+  domain::set_internal_boundaries<3>(corners_of_all_blocks,
+                                     &neighbors_of_all_blocks);
 
-  const OrientationMap<3> aligned{};
-  CHECK(neighbors_of_all_blocks[0][Direction<3>::lower_zeta()].orientation() ==
-        aligned);
+  const domain::OrientationMap<3> aligned{};
+  CHECK(neighbors_of_all_blocks[0][domain::Direction<3>::lower_zeta()]
+            .orientation() == aligned);
 
-  const PairOfFaces x_faces_on_different_blocks{{1, 3, 5, 7}, {8, 10, 0, 2}};
+  const domain::PairOfFaces x_faces_on_different_blocks{{1, 3, 5, 7},
+                                                        {8, 10, 0, 2}};
 
-  const std::vector<PairOfFaces> identifications{x_faces_on_different_blocks};
-  set_identified_boundaries<3>(identifications, corners_of_all_blocks,
-                               &neighbors_of_all_blocks);
-  CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
-        aligned);
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{{{Direction<3>::upper_xi(), {1, aligned}},
-                                {Direction<3>::lower_zeta(), {1, aligned}}},
-                               {{Direction<3>::lower_xi(), {0, aligned}},
-                                {Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<domain::PairOfFaces> identifications{
+      x_faces_on_different_blocks};
+  domain::set_identified_boundaries<3>(identifications, corners_of_all_blocks,
+                                       &neighbors_of_all_blocks);
+  CHECK(neighbors_of_all_blocks[0][domain::Direction<3>::upper_xi()]
+            .orientation() == aligned);
+  const std::vector<
+      std::unordered_map<domain::Direction<3>, domain::BlockNeighbor<3>>>
+      expected_block_neighbors{
+          {{domain::Direction<3>::upper_xi(), {1, aligned}},
+           {domain::Direction<3>::lower_zeta(), {1, aligned}}},
+          {{domain::Direction<3>::lower_xi(), {0, aligned}},
+           {domain::Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
 
 namespace {
-std::vector<
-    std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 test_wedge_map_generation(double inner_radius, double outer_radius,
                           double inner_sphericity, double outer_sphericity,
                           bool use_equiangular_map,
                           double x_coord_of_shell_center = 0.0,
                           bool use_half_wedges = false,
                           double aspect_ratio = 1.0) {
-  using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Wedge3DMap = domain::CoordinateMaps::Wedge3D;
   if (use_half_wedges) {
     using Halves = Wedge3DMap::WedgeHalves;
-    return make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-        Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+    return domain::make_vector_coordinate_map_base<Frame::Logical,
+                                                   Frame::Inertial>(
+        Wedge3DMap{inner_radius, outer_radius, domain::OrientationMap<3>{},
                    inner_sphericity, outer_sphericity, use_equiangular_map,
                    Halves::LowerOnly},
-        Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+        Wedge3DMap{inner_radius, outer_radius, domain::OrientationMap<3>{},
                    inner_sphericity, outer_sphericity, use_equiangular_map,
                    Halves::UpperOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                        Direction<3>::lower_zeta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map,
-                   Halves::LowerOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                        Direction<3>::lower_zeta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map,
-                   Halves::UpperOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                        Direction<3>::lower_eta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map,
-                   Halves::LowerOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                        Direction<3>::lower_eta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map,
-                   Halves::UpperOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                        Direction<3>::upper_eta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map,
-                   Halves::LowerOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                        Direction<3>::upper_eta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map,
-                   Halves::UpperOnly},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                        Direction<3>::upper_eta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map},
-        Wedge3DMap{inner_radius, outer_radius,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                        Direction<3>::upper_eta()}}},
-                   inner_sphericity, outer_sphericity, use_equiangular_map});
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::lower_eta(),
+                 domain::Direction<3>::lower_zeta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map,
+            Halves::LowerOnly},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::lower_eta(),
+                 domain::Direction<3>::lower_zeta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map,
+            Halves::UpperOnly},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::upper_zeta(),
+                 domain::Direction<3>::lower_eta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map,
+            Halves::LowerOnly},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::upper_zeta(),
+                 domain::Direction<3>::lower_eta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map,
+            Halves::UpperOnly},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::lower_zeta(),
+                 domain::Direction<3>::upper_eta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map,
+            Halves::LowerOnly},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::lower_zeta(),
+                 domain::Direction<3>::upper_eta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map,
+            Halves::UpperOnly},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_zeta(),
+                 domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::upper_eta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map},
+        Wedge3DMap{
+            inner_radius, outer_radius,
+            domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::lower_zeta(),
+                 domain::Direction<3>::lower_xi(),
+                 domain::Direction<3>::upper_eta()}}},
+            inner_sphericity, outer_sphericity, use_equiangular_map});
   }
   if (x_coord_of_shell_center != 0.0) {
-    using Identity2D = CoordinateMaps::Identity<2>;
-    using Affine = CoordinateMaps::Affine;
-    const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
-        Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
-               1.0 + x_coord_of_shell_center},
-        Identity2D{});
+    using Identity2D = domain::CoordinateMaps::Identity<2>;
+    using Affine = domain::CoordinateMaps::Affine;
+    const auto translation =
+        domain::CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
+            Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
+                   1.0 + x_coord_of_shell_center},
+            Identity2D{});
     return make_vector(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            Wedge3DMap{inner_radius, outer_radius, domain::OrientationMap<3>{},
                        inner_sphericity, outer_sphericity, use_equiangular_map},
             translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius,
-                       OrientationMap<3>{std::array<Direction<3>, 3>{
-                           {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                            Direction<3>::lower_zeta()}}},
-                       inner_sphericity, outer_sphericity, use_equiangular_map},
-            translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                     Direction<3>::lower_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_eta(),
+                     domain::Direction<3>::lower_zeta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                     Direction<3>::upper_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::lower_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                     Direction<3>::upper_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::upper_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                     Direction<3>::upper_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_eta()}}},
+                inner_sphericity, outer_sphericity, use_equiangular_map},
+            translation),
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            Wedge3DMap{
+                inner_radius, outer_radius,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::lower_xi(),
+                     domain::Direction<3>::upper_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             translation));
   }
   if (aspect_ratio != 1.0) {
     const auto compression =
-        CoordinateMaps::EquatorialCompression{aspect_ratio};
+        domain::CoordinateMaps::EquatorialCompression{aspect_ratio};
     return make_vector(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            Wedge3DMap{inner_radius, outer_radius, domain::OrientationMap<3>{},
                        inner_sphericity, outer_sphericity, use_equiangular_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Wedge3DMap{inner_radius, outer_radius,
-                       OrientationMap<3>{std::array<Direction<3>, 3>{
-                           {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                            Direction<3>::lower_zeta()}}},
-                       inner_sphericity, outer_sphericity, use_equiangular_map},
-            compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                     Direction<3>::lower_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_eta(),
+                     domain::Direction<3>::lower_zeta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                     Direction<3>::upper_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::lower_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                     Direction<3>::upper_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::upper_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                     Direction<3>::upper_eta()}}},
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_eta()}}},
+                inner_sphericity, outer_sphericity, use_equiangular_map},
+            compression),
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            Wedge3DMap{
+                inner_radius, outer_radius,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::lower_xi(),
+                     domain::Direction<3>::upper_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             compression));
   }
-  return make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-      Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
+  return domain::make_vector_coordinate_map_base<Frame::Logical,
+                                                 Frame::Inertial>(
+      Wedge3DMap{inner_radius, outer_radius, domain::OrientationMap<3>{},
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                      Direction<3>::lower_zeta()}}},
+                 domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                     {domain::Direction<3>::upper_xi(),
+                      domain::Direction<3>::lower_eta(),
+                      domain::Direction<3>::lower_zeta()}}},
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                      Direction<3>::lower_eta()}}},
+                 domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                     {domain::Direction<3>::upper_xi(),
+                      domain::Direction<3>::upper_zeta(),
+                      domain::Direction<3>::lower_eta()}}},
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                      Direction<3>::upper_eta()}}},
+                 domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                     {domain::Direction<3>::upper_xi(),
+                      domain::Direction<3>::lower_zeta(),
+                      domain::Direction<3>::upper_eta()}}},
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                      Direction<3>::upper_eta()}}},
+                 domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                     {domain::Direction<3>::upper_zeta(),
+                      domain::Direction<3>::upper_xi(),
+                      domain::Direction<3>::upper_eta()}}},
                  inner_sphericity, outer_sphericity, use_equiangular_map},
       Wedge3DMap{inner_radius, outer_radius,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                      Direction<3>::upper_eta()}}},
+                 domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                     {domain::Direction<3>::lower_zeta(),
+                      domain::Direction<3>::lower_xi(),
+                      domain::Direction<3>::upper_eta()}}},
                  inner_sphericity, outer_sphericity, use_equiangular_map});
 }
 
@@ -294,7 +340,7 @@ void test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio);
-  const auto maps = wedge_coordinate_maps<Frame::Inertial>(
+  const auto maps = domain::wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio);
@@ -417,114 +463,131 @@ SPECTRE_TEST_CASE(
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
                   "[Domain][Unit]") {
-  using FrustumMap = CoordinateMaps::Frustum;
+  using FrustumMap = domain::CoordinateMaps::Frustum;
   // half of the length of the inner cube in the binary compact object domain:
   const double lower = 1.7;
   // half of the length of the outer cube in the binary compact object domain:
   const double top = 5.2;
   for (const bool use_equiangular_map : {true, false}) {
-    const auto expected_coord_maps = make_vector_coordinate_map_base<
-        Frame::Logical, Frame::Inertial>(
-        FrustumMap{{{{{-2.0 * lower, -lower}},
-                     {{0.0, lower}},
-                     {{-top, -top}},
-                     {{0.0, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{},
-                   use_equiangular_map},
-        FrustumMap{{{{{0.0, -lower}},
-                     {{2.0 * lower, lower}},
-                     {{0.0, -top}},
-                     {{top, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{},
-                   use_equiangular_map},
-        FrustumMap{{{{{-2.0 * lower, -lower}},
-                     {{0.0, lower}},
-                     {{-top, -top}},
-                     {{0.0, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                        Direction<3>::lower_zeta()}}},
-                   use_equiangular_map},
-        FrustumMap{{{{{0.0, -lower}},
-                     {{2.0 * lower, lower}},
-                     {{0.0, -top}},
-                     {{top, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                        Direction<3>::lower_zeta()}}},
-                   use_equiangular_map},
-        FrustumMap{{{{{-2.0 * lower, -lower}},
-                     {{0.0, lower}},
-                     {{-top, -top}},
-                     {{0.0, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                        Direction<3>::lower_eta()}}},
-                   use_equiangular_map},
-        FrustumMap{{{{{0.0, -lower}},
-                     {{2.0 * lower, lower}},
-                     {{0.0, -top}},
-                     {{top, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                        Direction<3>::lower_eta()}}},
-                   use_equiangular_map},
-        FrustumMap{{{{{-2.0 * lower, -lower}},
-                     {{0.0, lower}},
-                     {{-top, -top}},
-                     {{0.0, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                        Direction<3>::upper_eta()}}},
-                   use_equiangular_map},
-        FrustumMap{{{{{0.0, -lower}},
-                     {{2.0 * lower, lower}},
-                     {{0.0, -top}},
-                     {{top, top}}}},
-                   lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                        Direction<3>::upper_eta()}}},
-                   use_equiangular_map},
-        // Frustum on right half in the +x direction
-        FrustumMap{{{{{-lower, -lower}},
-                     {{lower, lower}},
-                     {{-top, -top}},
-                     {{top, top}}}},
-                   2.0 * lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                        Direction<3>::upper_eta()}}},
-                   use_equiangular_map},
-        // Frustum on left half in the -x direction
-        FrustumMap{{{{{-lower, -lower}},
-                     {{lower, lower}},
-                     {{-top, -top}},
-                     {{top, top}}}},
-                   2.0 * lower,
-                   top,
-                   OrientationMap<3>{std::array<Direction<3>, 3>{
-                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                        Direction<3>::upper_eta()}}},
-                   use_equiangular_map});
+    const auto expected_coord_maps =
+        domain::make_vector_coordinate_map_base<Frame::Logical,
+                                                Frame::Inertial>(
+            FrustumMap{{{{{-2.0 * lower, -lower}},
+                         {{0.0, lower}},
+                         {{-top, -top}},
+                         {{0.0, top}}}},
+                       lower,
+                       top,
+                       domain::OrientationMap<3>{},
+                       use_equiangular_map},
+            FrustumMap{{{{{0.0, -lower}},
+                         {{2.0 * lower, lower}},
+                         {{0.0, -top}},
+                         {{top, top}}}},
+                       lower,
+                       top,
+                       domain::OrientationMap<3>{},
+                       use_equiangular_map},
+            FrustumMap{
+                {{{{-2.0 * lower, -lower}},
+                  {{0.0, lower}},
+                  {{-top, -top}},
+                  {{0.0, top}}}},
+                lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_eta(),
+                     domain::Direction<3>::lower_zeta()}}},
+                use_equiangular_map},
+            FrustumMap{
+                {{{{0.0, -lower}},
+                  {{2.0 * lower, lower}},
+                  {{0.0, -top}},
+                  {{top, top}}}},
+                lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_eta(),
+                     domain::Direction<3>::lower_zeta()}}},
+                use_equiangular_map},
+            FrustumMap{
+                {{{{-2.0 * lower, -lower}},
+                  {{0.0, lower}},
+                  {{-top, -top}},
+                  {{0.0, top}}}},
+                lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::lower_eta()}}},
+                use_equiangular_map},
+            FrustumMap{
+                {{{{0.0, -lower}},
+                  {{2.0 * lower, lower}},
+                  {{0.0, -top}},
+                  {{top, top}}}},
+                lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::lower_eta()}}},
+                use_equiangular_map},
+            FrustumMap{
+                {{{{-2.0 * lower, -lower}},
+                  {{0.0, lower}},
+                  {{-top, -top}},
+                  {{0.0, top}}}},
+                lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::upper_eta()}}},
+                use_equiangular_map},
+            FrustumMap{
+                {{{{0.0, -lower}},
+                  {{2.0 * lower, lower}},
+                  {{0.0, -top}},
+                  {{top, top}}}},
+                lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::upper_eta()}}},
+                use_equiangular_map},
+            // Frustum on right half in the +x direction
+            FrustumMap{
+                {{{{-lower, -lower}},
+                  {{lower, lower}},
+                  {{-top, -top}},
+                  {{top, top}}}},
+                2.0 * lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::upper_zeta(),
+                     domain::Direction<3>::upper_xi(),
+                     domain::Direction<3>::upper_eta()}}},
+                use_equiangular_map},
+            // Frustum on left half in the -x direction
+            FrustumMap{
+                {{{{-lower, -lower}},
+                  {{lower, lower}},
+                  {{-top, -top}},
+                  {{top, top}}}},
+                2.0 * lower,
+                top,
+                domain::OrientationMap<3>{std::array<domain::Direction<3>, 3>{
+                    {domain::Direction<3>::lower_zeta(),
+                     domain::Direction<3>::lower_xi(),
+                     domain::Direction<3>::upper_eta()}}},
+                use_equiangular_map});
 
-    const auto maps = frustum_coordinate_maps<Frame::Inertial>(
+    const auto maps = domain::frustum_coordinate_maps<Frame::Inertial>(
         2.0 * lower, 2.0 * top, use_equiangular_map);
     for (size_t i = 0; i < maps.size(); i++) {
       CHECK(*expected_coord_maps[i] == *maps[i]);
@@ -541,7 +604,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.ShellGraph", "[Domain][Unit]") {
       {{1, 2, 5, 6, 9, 10, 13, 14}} /*-y*/,
       {{2, 4, 6, 8, 10, 12, 14, 16}} /*+x*/,
       {{3, 1, 7, 5, 11, 9, 15, 13}} /*-x*/};
-  const auto generated_corners = corners_for_radially_layered_domains(1, false);
+  const auto generated_corners =
+      domain::corners_for_radially_layered_domains(1, false);
   for (size_t i = 0; i < expected_corners.size(); i++) {
     INFO(i);
     CHECK(generated_corners[i] == expected_corners[i]);
@@ -559,7 +623,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SphereGraph", "[Domain][Unit]") {
       {{2, 4, 6, 8, 10, 12, 14, 16}} /*+x*/,
       {{3, 1, 7, 5, 11, 9, 15, 13}} /*-x*/,
       {{1, 2, 3, 4, 5, 6, 7, 8}} /*central block*/};
-  const auto generated_corners = corners_for_radially_layered_domains(1, true);
+  const auto generated_corners =
+      domain::corners_for_radially_layered_domains(1, true);
   for (size_t i = 0; i < expected_corners.size(); i++) {
     INFO(i);
     CHECK(generated_corners[i] == expected_corners[i]);
@@ -624,7 +689,7 @@ std::vector<std::array<size_t, 8>> expected_bbh_corners() {
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BBHCorners", "[Domain][Unit]") {
   const auto generated_corners =
-      corners_for_biradially_layered_domains(2, 2, false, false);
+      domain::corners_for_biradially_layered_domains(2, 2, false, false);
   for (size_t i = 0; i < expected_bbh_corners().size(); i++) {
     INFO(i);
     CHECK(generated_corners[i] == expected_bbh_corners()[i]);
@@ -636,7 +701,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.NSBHCorners", "[Domain][Unit]") {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
   const auto generated_corners =
-      corners_for_biradially_layered_domains(2, 2, true, false);
+      domain::corners_for_biradially_layered_domains(2, 2, true, false);
   for (size_t i = 0; i < expected_corners.size(); i++) {
     INFO(i);
     CHECK(generated_corners[i] == expected_corners[i]);
@@ -649,7 +714,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BHNSCorners", "[Domain][Unit]") {
   expected_corners.push_back(
       std::array<size_t, 8>{{41, 42, 43, 44, 45, 46, 47, 48}});
   const auto generated_corners =
-      corners_for_biradially_layered_domains(2, 2, false, true);
+      domain::corners_for_biradially_layered_domains(2, 2, false, true);
   for (size_t i = 0; i < expected_corners.size(); i++) {
     INFO(i);
     CHECK(generated_corners[i] == expected_corners[i]);
@@ -663,7 +728,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BNSCorners", "[Domain][Unit]") {
   expected_corners.push_back(
       std::array<size_t, 8>{{41, 42, 43, 44, 45, 46, 47, 48}});
   const auto generated_corners =
-      corners_for_biradially_layered_domains(2, 2, true, true);
+      domain::corners_for_biradially_layered_domains(2, 2, true, true);
   for (size_t i = 0; i < expected_corners.size(); i++) {
     INFO(i);
     CHECK(generated_corners[i] == expected_corners[i]);
@@ -673,21 +738,21 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BNSCorners", "[Domain][Unit]") {
 
 namespace {
 void test_vci_1d() {
-  VolumeCornerIterator<1> vci{};
+  domain::VolumeCornerIterator<1> vci{};
   CHECK(vci);
-  CHECK(vci() == std::array<Side, 1>{{Side::Lower}});
+  CHECK(vci() == std::array<domain::Side, 1>{{domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 1>{{-1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
+  CHECK(vci.directions_of_corner() == std::array<domain::Direction<1>, 1>{
+                                          {domain::Direction<1>::lower_xi()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 1>{{Side::Upper}});
+  CHECK(vci() == std::array<domain::Side, 1>{{domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 1>{{1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<1>, 1>{{Direction<1>::upper_xi()}});
+  CHECK(vci.directions_of_corner() == std::array<domain::Direction<1>, 1>{
+                                          {domain::Direction<1>::upper_xi()}});
   ++vci;
   CHECK(not vci);
 
-  VolumeCornerIterator<1> vci2{Index<1>{2}, Index<1>{7}};
+  domain::VolumeCornerIterator<1> vci2{Index<1>{2}, Index<1>{7}};
   CHECK(vci2);
   CHECK(vci2.global_corner_number() == 2);
   ++vci2;
@@ -696,43 +761,47 @@ void test_vci_1d() {
   CHECK(not vci2);
 
   // Check setup_from_local_corner_number
-  VolumeCornerIterator<1> vci3{1};
-  CHECK(vci3() == std::array<Side, 1>{{Side::Upper}});
+  domain::VolumeCornerIterator<1> vci3{1};
+  CHECK(vci3() == std::array<domain::Side, 1>{{domain::Side::Upper}});
   CHECK(vci3.coords_of_corner() == std::array<double, 1>{{1.0}});
-  CHECK(vci3.directions_of_corner() ==
-        std::array<Direction<1>, 1>{{Direction<1>::upper_xi()}});
+  CHECK(vci3.directions_of_corner() == std::array<domain::Direction<1>, 1>{
+                                           {domain::Direction<1>::upper_xi()}});
 }
 
 void test_vci_2d() {
-  VolumeCornerIterator<2> vci{};
+  domain::VolumeCornerIterator<2> vci{};
   CHECK(vci);
-  CHECK(vci() == std::array<Side, 2>{{Side::Lower, Side::Lower}});
+  CHECK(vci() == std::array<domain::Side, 2>{
+                     {domain::Side::Lower, domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 2>{{-1.0, -1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<2>, 2>{
-            {Direction<2>::lower_xi(), Direction<2>::lower_eta()}});
+  CHECK(vci.directions_of_corner() == std::array<domain::Direction<2>, 2>{
+                                          {domain::Direction<2>::lower_xi(),
+                                           domain::Direction<2>::lower_eta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 2>{{Side::Upper, Side::Lower}});
+  CHECK(vci() == std::array<domain::Side, 2>{
+                     {domain::Side::Upper, domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 2>{{1.0, -1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<2>, 2>{
-            {Direction<2>::upper_xi(), Direction<2>::lower_eta()}});
+  CHECK(vci.directions_of_corner() == std::array<domain::Direction<2>, 2>{
+                                          {domain::Direction<2>::upper_xi(),
+                                           domain::Direction<2>::lower_eta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 2>{{Side::Lower, Side::Upper}});
+  CHECK(vci() == std::array<domain::Side, 2>{
+                     {domain::Side::Lower, domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 2>{{-1.0, 1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<2>, 2>{
-            {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+  CHECK(vci.directions_of_corner() == std::array<domain::Direction<2>, 2>{
+                                          {domain::Direction<2>::lower_xi(),
+                                           domain::Direction<2>::upper_eta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 2>{{Side::Upper, Side::Upper}});
+  CHECK(vci() == std::array<domain::Side, 2>{
+                     {domain::Side::Upper, domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 2>{{1.0, 1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<2>, 2>{
-            {Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
+  CHECK(vci.directions_of_corner() == std::array<domain::Direction<2>, 2>{
+                                          {domain::Direction<2>::upper_xi(),
+                                           domain::Direction<2>::upper_eta()}});
   ++vci;
   CHECK(not vci);
 
-  VolumeCornerIterator<2> vci2{Index<2>{1, 2}, Index<2>{3, 4}};
+  domain::VolumeCornerIterator<2> vci2{Index<2>{1, 2}, Index<2>{3, 4}};
   CHECK(vci2);
   CHECK(vci2.global_corner_number() == 7);
   ++vci2;
@@ -745,76 +814,102 @@ void test_vci_2d() {
   CHECK(not vci2);
 
   // Check setup_from_local_corner_number
-  VolumeCornerIterator<2> vci3{2};
-  CHECK(vci3() == std::array<Side, 2>{{Side::Lower, Side::Upper}});
+  domain::VolumeCornerIterator<2> vci3{2};
+  CHECK(vci3() == std::array<domain::Side, 2>{
+                      {domain::Side::Lower, domain::Side::Upper}});
   CHECK(vci3.coords_of_corner() == std::array<double, 2>{{-1.0, 1.0}});
-  CHECK(vci3.directions_of_corner() ==
-        std::array<Direction<2>, 2>{
-            {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
+  CHECK(
+      vci3.directions_of_corner() ==
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::lower_xi(),
+                                           domain::Direction<2>::upper_eta()}});
 }
 
 void test_vci_3d() {
-  VolumeCornerIterator<3> vci{};
+  domain::VolumeCornerIterator<3> vci{};
   CHECK(vci);
-  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Lower, Side::Lower}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Lower, domain::Side::Lower, domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, -1.0, -1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::lower_xi(),
-                                     Direction<3>::lower_eta(),
-                                     Direction<3>::lower_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Lower, Side::Lower}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Upper, domain::Side::Lower, domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, -1.0, -1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                     Direction<3>::lower_eta(),
-                                     Direction<3>::lower_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::lower_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Upper, Side::Lower}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Lower, domain::Side::Upper, domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, 1.0, -1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::lower_xi(),
-                                     Direction<3>::upper_eta(),
-                                     Direction<3>::lower_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::lower_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Upper, Side::Lower}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Upper, domain::Side::Upper, domain::Side::Lower}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, 1.0, -1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                     Direction<3>::upper_eta(),
-                                     Direction<3>::lower_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::lower_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Lower, Side::Upper}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Lower, domain::Side::Lower, domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, -1.0, 1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::lower_xi(),
-                                     Direction<3>::lower_eta(),
-                                     Direction<3>::upper_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Lower, Side::Upper}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Upper, domain::Side::Lower, domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, -1.0, 1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                     Direction<3>::lower_eta(),
-                                     Direction<3>::upper_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Lower, Side::Upper, Side::Upper}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Lower, domain::Side::Upper, domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{-1.0, 1.0, 1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::lower_xi(),
-                                     Direction<3>::upper_eta(),
-                                     Direction<3>::upper_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::lower_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()}});
   ++vci;
-  CHECK(vci() == std::array<Side, 3>{{Side::Upper, Side::Upper, Side::Upper}});
+  CHECK(vci() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Upper, domain::Side::Upper, domain::Side::Upper}});
   CHECK(vci.coords_of_corner() == std::array<double, 3>{{1.0, 1.0, 1.0}});
-  CHECK(vci.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                     Direction<3>::upper_eta(),
-                                     Direction<3>::upper_zeta()}});
+  CHECK(
+      vci.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::upper_eta(),
+           domain::Direction<3>::upper_zeta()}});
   ++vci;
   CHECK(not vci);
 
-  VolumeCornerIterator<3> vci2{Index<3>{1, 1, 1}, Index<3>{4, 4, 4}};
+  domain::VolumeCornerIterator<3> vci2{Index<3>{1, 1, 1}, Index<3>{4, 4, 4}};
   CHECK(vci2);
   CHECK(vci2.global_corner_number() == 21);
   ++vci2;
@@ -835,13 +930,16 @@ void test_vci_3d() {
   CHECK(not vci2);
 
   // Check setup_from_local_corner_number
-  VolumeCornerIterator<3> vci3{5};
-  CHECK(vci3() == std::array<Side, 3>{{Side::Upper, Side::Lower, Side::Upper}});
+  domain::VolumeCornerIterator<3> vci3{5};
+  CHECK(vci3() ==
+        std::array<domain::Side, 3>{
+            {domain::Side::Upper, domain::Side::Lower, domain::Side::Upper}});
   CHECK(vci3.coords_of_corner() == std::array<double, 3>{{1.0, -1.0, 1.0}});
-  CHECK(vci3.directions_of_corner() ==
-        std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                     Direction<3>::lower_eta(),
-                                     Direction<3>::upper_zeta()}});
+  CHECK(
+      vci3.directions_of_corner() ==
+      std::array<domain::Direction<3>, 3>{
+          {domain::Direction<3>::upper_xi(), domain::Direction<3>::lower_eta(),
+           domain::Direction<3>::upper_zeta()}});
 }
 }  // namespace
 
@@ -859,21 +957,22 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
 #ifdef SPECTRE_DEBUG
   auto extents = Index<3>{4, 4, 4};
   auto failed_index_with = Index<3>{2, 3, 4};
-  static_cast<void>(VolumeCornerIterator<3>{failed_index_with, extents});
+  static_cast<void>(
+      domain::VolumeCornerIterator<3>{failed_index_with, extents});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
 namespace {
 void test_fci_1d() {
-  FaceCornerIterator<1> fci{Direction<1>::upper_xi()};
+  domain::FaceCornerIterator<1> fci{domain::Direction<1>::upper_xi()};
   CHECK(fci);
   CHECK(fci.volume_index() == 1);
   CHECK(fci.face_index() == 0);
   ++fci;
   CHECK(not fci);
 
-  FaceCornerIterator<1> fci2{Direction<1>::lower_xi()};
+  domain::FaceCornerIterator<1> fci2{domain::Direction<1>::lower_xi()};
   CHECK(fci2);
   CHECK(fci2.volume_index() == 0);
   CHECK(fci2.face_index() == 0);
@@ -882,7 +981,7 @@ void test_fci_1d() {
 }
 
 void test_fci_2d() {
-  FaceCornerIterator<2> fci{Direction<2>::upper_xi()};
+  domain::FaceCornerIterator<2> fci{domain::Direction<2>::upper_xi()};
   CHECK(fci);
   CHECK(fci.volume_index() == 1);
   CHECK(fci.face_index() == 0);
@@ -892,7 +991,7 @@ void test_fci_2d() {
   ++fci;
   CHECK(not fci);
 
-  FaceCornerIterator<2> fci2{Direction<2>::lower_xi()};
+  domain::FaceCornerIterator<2> fci2{domain::Direction<2>::lower_xi()};
   CHECK(fci2);
   CHECK(fci2.volume_index() == 0);
   CHECK(fci2.face_index() == 0);
@@ -902,7 +1001,7 @@ void test_fci_2d() {
   ++fci2;
   CHECK(not fci2);
 
-  FaceCornerIterator<2> fci3{Direction<2>::upper_eta()};
+  domain::FaceCornerIterator<2> fci3{domain::Direction<2>::upper_eta()};
   CHECK(fci3);
   CHECK(fci3.volume_index() == 2);
   CHECK(fci3.face_index() == 0);
@@ -912,7 +1011,7 @@ void test_fci_2d() {
   ++fci3;
   CHECK(not fci3);
 
-  FaceCornerIterator<2> fci4{Direction<2>::lower_eta()};
+  domain::FaceCornerIterator<2> fci4{domain::Direction<2>::lower_eta()};
   CHECK(fci4);
   CHECK(fci4.volume_index() == 0);
   CHECK(fci4.face_index() == 0);
@@ -923,7 +1022,7 @@ void test_fci_2d() {
   CHECK(not fci4);
 }
 void test_fci_3d() {
-  FaceCornerIterator<3> fci{Direction<3>::upper_xi()};
+  domain::FaceCornerIterator<3> fci{domain::Direction<3>::upper_xi()};
   CHECK(fci);
   CHECK(fci.volume_index() == 1);
   CHECK(fci.face_index() == 0);
@@ -939,7 +1038,7 @@ void test_fci_3d() {
   ++fci;
   CHECK(not fci);
 
-  FaceCornerIterator<3> fci2{Direction<3>::lower_xi()};
+  domain::FaceCornerIterator<3> fci2{domain::Direction<3>::lower_xi()};
   CHECK(fci2);
   CHECK(fci2.volume_index() == 0);
   CHECK(fci2.face_index() == 0);
@@ -955,7 +1054,7 @@ void test_fci_3d() {
   ++fci2;
   CHECK(not fci2);
 
-  FaceCornerIterator<3> fci3{Direction<3>::upper_eta()};
+  domain::FaceCornerIterator<3> fci3{domain::Direction<3>::upper_eta()};
   CHECK(fci3);
   CHECK(fci3.volume_index() == 2);
   CHECK(fci3.face_index() == 0);
@@ -971,7 +1070,7 @@ void test_fci_3d() {
   ++fci3;
   CHECK(not fci3);
 
-  FaceCornerIterator<3> fci4{Direction<3>::lower_eta()};
+  domain::FaceCornerIterator<3> fci4{domain::Direction<3>::lower_eta()};
   CHECK(fci4);
   CHECK(fci4.volume_index() == 0);
   CHECK(fci4.face_index() == 0);
@@ -987,7 +1086,7 @@ void test_fci_3d() {
   ++fci4;
   CHECK(not fci4);
 
-  FaceCornerIterator<3> fci5{Direction<3>::upper_zeta()};
+  domain::FaceCornerIterator<3> fci5{domain::Direction<3>::upper_zeta()};
   CHECK(fci5);
   CHECK(fci5.volume_index() == 4);
   CHECK(fci5.face_index() == 0);
@@ -1003,7 +1102,7 @@ void test_fci_3d() {
   ++fci5;
   CHECK(not fci5);
 
-  FaceCornerIterator<3> fci6{Direction<3>::lower_zeta()};
+  domain::FaceCornerIterator<3> fci6{domain::Direction<3>::lower_zeta()};
   CHECK(fci6);
   CHECK(fci6.volume_index() == 0);
   CHECK(fci6.face_index() == 0);
@@ -1021,7 +1120,7 @@ void test_fci_3d() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.FaceCornerIterator",
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.domain::FaceCornerIterator",
                   "[Domain][Unit]") {
   test_fci_1d();
   test_fci_2d();
@@ -1078,22 +1177,23 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
       {{41, 42, 45, 46, 57, 58, 61, 62}},
       {{42, 43, 46, 47, 58, 59, 62, 63}}};
 
-  CHECK(corners_for_rectilinear_domains(Index<1>{3}) == corners_for_a_1d_road);
-  CHECK(corners_for_rectilinear_domains(Index<2>{1, 3}) ==
+  CHECK(domain::corners_for_rectilinear_domains(Index<1>{3}) ==
+        corners_for_a_1d_road);
+  CHECK(domain::corners_for_rectilinear_domains(Index<2>{1, 3}) ==
         corners_for_a_2d_vertical_tower);
-  CHECK(corners_for_rectilinear_domains(Index<2>{3, 1}) ==
+  CHECK(domain::corners_for_rectilinear_domains(Index<2>{3, 1}) ==
         corners_for_a_2d_horizontal_wall);
-  CHECK(corners_for_rectilinear_domains(Index<2>{2, 2}) ==
+  CHECK(domain::corners_for_rectilinear_domains(Index<2>{2, 2}) ==
         corners_for_a_2d_field);
-  CHECK(corners_for_rectilinear_domains(
+  CHECK(domain::corners_for_rectilinear_domains(
             Index<2>{3, 4},
             std::vector<Index<2>>{Index<2>{0, 0}, Index<2>{2, 0},
                                   Index<2>{0, 1}, Index<2>{2, 1},
                                   Index<2>{0, 3}, Index<2>{2, 3}}) ==
         corners_for_a_2d_net_of_a_cube);
-  CHECK(corners_for_rectilinear_domains(Index<3>{2, 2, 2}) ==
+  CHECK(domain::corners_for_rectilinear_domains(Index<3>{2, 2, 2}) ==
         corners_for_a_3d_cube);
-  CHECK(corners_for_rectilinear_domains(
+  CHECK(domain::corners_for_rectilinear_domains(
             Index<3>{3, 3, 3}, std::vector<Index<3>>{Index<3>{1, 1, 1}}) ==
         corners_for_a_rubiks_cube_with_hole);
 }
@@ -1101,96 +1201,107 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
                   "[Domain][Unit]") {
   CHECK(std::array<size_t, 2>{{0, 1}} ==
-        discrete_rotation(OrientationMap<1>{std::array<Direction<1>, 1>{
-                              {Direction<1>::upper_xi()}}},
-                          std::array<size_t, 2>{{0, 1}}));
+        discrete_rotation(
+            domain::OrientationMap<1>{std::array<domain::Direction<1>, 1>{
+                {domain::Direction<1>::upper_xi()}}},
+            std::array<size_t, 2>{{0, 1}}));
   CHECK(std::array<size_t, 2>{{1, 0}} ==
-        discrete_rotation(OrientationMap<1>{std::array<Direction<1>, 1>{
-                              {Direction<1>::lower_xi()}}},
-                          std::array<size_t, 2>{{0, 1}}));
+        discrete_rotation(
+            domain::OrientationMap<1>{std::array<domain::Direction<1>, 1>{
+                {domain::Direction<1>::lower_xi()}}},
+            std::array<size_t, 2>{{0, 1}}));
 
   CHECK(std::array<size_t, 4>{{1, 4, 0, 3}} ==
         discrete_rotation(
-            OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}),
+            domain::OrientationMap<2>(std::array<domain::Direction<2>, 2>{
+                {domain::Direction<2>::lower_eta(),
+                 domain::Direction<2>::upper_xi()}}),
             std::array<size_t, 4>{{0, 1, 3, 4}}));
   CHECK(std::array<size_t, 4>{{4, 0, 5, 1}} ==
         discrete_rotation(
-            OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}),
+            domain::OrientationMap<2>(std::array<domain::Direction<2>, 2>{
+                {domain::Direction<2>::upper_eta(),
+                 domain::Direction<2>::lower_xi()}}),
             std::array<size_t, 4>{{0, 1, 4, 5}}));
   CHECK(std::array<size_t, 4>{{3, 1, 2, 0}} ==
         discrete_rotation(
-            OrientationMap<2>(std::array<Direction<2>, 2>{
-                {Direction<2>::lower_eta(), Direction<2>::lower_xi()}}),
+            domain::OrientationMap<2>(std::array<domain::Direction<2>, 2>{
+                {domain::Direction<2>::lower_eta(),
+                 domain::Direction<2>::lower_xi()}}),
             std::array<size_t, 4>{{0, 1, 2, 3}}));
 
   CHECK(std::array<size_t, 8>{{9, 0, 12, 3, 10, 1, 13, 4}} ==
         discrete_rotation(
-            OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
-                 Direction<3>::lower_xi()}}),
+            domain::OrientationMap<3>(std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_zeta(),
+                 domain::Direction<3>::upper_eta(),
+                 domain::Direction<3>::lower_xi()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
   CHECK(std::array<size_t, 8>{{10, 13, 9, 12, 1, 4, 0, 3}} ==
         discrete_rotation(
-            OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
-                 Direction<3>::lower_zeta()}}),
+            domain::OrientationMap<3>(std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::lower_eta(),
+                 domain::Direction<3>::upper_xi(),
+                 domain::Direction<3>::lower_zeta()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
   CHECK(std::array<size_t, 8>{{12, 3, 13, 4, 9, 0, 10, 1}} ==
         discrete_rotation(
-            OrientationMap<3>(std::array<Direction<3>, 3>{
-                {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
-                 Direction<3>::lower_xi()}}),
+            domain::OrientationMap<3>(std::array<domain::Direction<3>, 3>{
+                {domain::Direction<3>::upper_eta(),
+                 domain::Direction<3>::lower_zeta(),
+                 domain::Direction<3>::lower_xi()}}),
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
                   "[Domain][Unit]") {
-  using Affine = CoordinateMaps::Affine;
-  using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Equiangular = domain::CoordinateMaps::Equiangular;
   using Equiangular2D =
-      CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
+      domain::CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
   using Equiangular3D =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+      domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular,
+                                             Equiangular>;
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>
-      affine_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
+  const std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>
+      affine_maps_1d = domain::maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
           {Index<1>{0}}, {}, false);
   const auto expected_affine_maps_1d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.7, 2.0});
   for (size_t i = 0; i < affine_maps_1d.size(); i++) {
     CHECK(*affine_maps_1d[i] == *expected_affine_maps_1d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>
-      equiangular_maps_1d = maps_for_rectilinear_domains<Frame::Inertial>(
-          Index<1>{3},
-          std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
-          {Index<1>{1}}, {}, true);
+  const std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>
+      equiangular_maps_1d =
+          domain::maps_for_rectilinear_domains<Frame::Inertial>(
+              Index<1>{3},
+              std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
+              {Index<1>{1}}, {}, true);
   const auto expected_equiangular_maps_1d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Equiangular{-1., 1., 0.0, 0.5}, Equiangular{-1., 1., 1.7, 2.0});
   for (size_t i = 0; i < equiangular_maps_1d.size(); i++) {
     CHECK(*equiangular_maps_1d[i] == *expected_equiangular_maps_1d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
-      affine_maps_2d = maps_for_rectilinear_domains<Frame::Inertial>(
+  const std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      affine_maps_2d = domain::maps_for_rectilinear_domains<Frame::Inertial>(
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
           {Index<2>{}}, {}, false);
   const auto expected_affine_maps_2d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0}},
           Affine2D{Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 0.0, 1.0}},
           Affine2D{Affine{-1., 1., 1.7, 2.0}, Affine{-1., 1., 0.0, 1.0}},
@@ -1201,15 +1312,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*affine_maps_2d[i] == *expected_affine_maps_2d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
-      equiangular_maps_2d = maps_for_rectilinear_domains<Frame::Inertial>(
-          Index<2>{3, 2},
-          std::array<std::vector<double>, 2>{
-              {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
-          {Index<2>{2, 1}}, {}, true);
+  const std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      equiangular_maps_2d =
+          domain::maps_for_rectilinear_domains<Frame::Inertial>(
+              Index<2>{3, 2},
+              std::array<std::vector<double>, 2>{
+                  {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
+              {Index<2>{2, 1}}, {}, true);
   const auto expected_equiangular_maps_2d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Equiangular2D{Equiangular{-1., 1., 0.0, 0.5},
                         Equiangular{-1., 1., 0.0, 1.0}},
           Equiangular2D{Equiangular{-1., 1., 0.5, 1.7},
@@ -1224,15 +1336,15 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*equiangular_maps_2d[i] == *expected_equiangular_maps_2d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-      affine_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
+  const std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      affine_maps_3d = domain::maps_for_rectilinear_domains<Frame::Inertial>(
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
           {Index<3>{}}, {}, false);
   const auto expected_affine_maps_3d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0},
                    Affine{-1., 1., -0.4, 0.3}},
           Affine3D{Affine{-1., 1., 0.5, 2.0}, Affine{-1., 1., 0.0, 1.0},
@@ -1245,15 +1357,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*affine_maps_3d[i] == *expected_affine_maps_3d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-      equiangular_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
-          Index<3>{2, 2, 1},
-          std::array<std::vector<double>, 3>{
-              {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
-          {Index<3>{0, 0, 0}}, {}, true);
+  const std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      equiangular_maps_3d =
+          domain::maps_for_rectilinear_domains<Frame::Inertial>(
+              Index<3>{2, 2, 1},
+              std::array<std::vector<double>, 3>{
+                  {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
+              {Index<3>{0, 0, 0}}, {}, true);
   const auto expected_equiangular_maps_3d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Equiangular3D{Equiangular{-1., 1., 0.5, 2.0},
                         Equiangular{-1., 1., 0.0, 1.0},
                         Equiangular{-1., 1., -0.4, 0.3}},
@@ -1270,39 +1383,54 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
                   "[Domain][Unit]") {
-  const auto domain = rectilinear_domain<3, Frame::Inertial>(
+  const auto domain = domain::rectilinear_domain<3, Frame::Inertial>(
       Index<3>{3, 3, 3},
       std::array<std::vector<double>, 3>{
           {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
       {Index<3>{1, 1, 1}}, {}, std::array<bool, 3>{{true, false, false}}, {});
-  const std::vector<std::unordered_set<Direction<3>>>
-      expected_external_boundaries{
-          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::lower_zeta()}},
-          {{Direction<3>::lower_zeta(), Direction<3>::upper_zeta()}},
-          {{Direction<3>::lower_zeta()}},
-          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
-          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
-          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
-          {{Direction<3>::lower_eta()}},
-          {{Direction<3>::lower_eta(), Direction<3>::upper_eta()}},
-          {{Direction<3>::lower_eta()}},
-          {},
-          {},
-          {{Direction<3>::upper_eta()}},
-          {{Direction<3>::upper_eta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::upper_eta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
-          {{Direction<3>::upper_zeta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}},
-          {{Direction<3>::upper_zeta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
-          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}}};
+  const std::vector<std::unordered_set<domain::Direction<3>>>
+      expected_external_boundaries{{{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::lower_zeta()}},
+                                   {{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::upper_zeta()}},
+                                   {{domain::Direction<3>::lower_zeta()}},
+                                   {{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::lower_zeta(),
+                                     domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::lower_eta(),
+                                     domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::lower_eta()}},
+                                   {},
+                                   {},
+                                   {{domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::upper_eta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::lower_eta()}},
+                                   {{domain::Direction<3>::upper_zeta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::lower_zeta()}},
+                                   {{domain::Direction<3>::upper_zeta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::upper_eta()}},
+                                   {{domain::Direction<3>::upper_zeta(),
+                                     domain::Direction<3>::upper_eta()}}};
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
@@ -1312,22 +1440,23 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
                   "[Domain][Unit]") {
-  const auto rotation = OrientationMap<2>{std::array<Direction<2>, 2>{
-      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  const auto rotation = domain::OrientationMap<2>{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::upper_eta(),
+                                           domain::Direction<2>::lower_xi()}}};
   auto orientations_of_all_blocks =
-      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+      std::vector<domain::OrientationMap<2>>{4, domain::OrientationMap<2>{}};
   orientations_of_all_blocks[0] = rotation;
-  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+  const auto domain = domain::rectilinear_domain<2, Frame::Inertial>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
       false);
 
-  const std::vector<std::unordered_set<Direction<2>>>
-      expected_external_boundaries{{{Direction<2>::upper_xi()}},
-                                   {{Direction<2>::lower_eta()}},
-                                   {{Direction<2>::upper_eta()}},
-                                   {{Direction<2>::upper_eta()}}};
+  const std::vector<std::unordered_set<domain::Direction<2>>>
+      expected_external_boundaries{{{domain::Direction<2>::upper_xi()}},
+                                   {{domain::Direction<2>::lower_eta()}},
+                                   {{domain::Direction<2>::upper_eta()}},
+                                   {{domain::Direction<2>::upper_eta()}}};
 
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
@@ -1338,43 +1467,46 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
                   "[Domain][Unit]") {
-  const OrientationMap<2> flipped{std::array<Direction<2>, 2>{
-      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
-  const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
-      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
-  const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
-      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  const domain::OrientationMap<2> flipped{std::array<domain::Direction<2>, 2>{
+      {domain::Direction<2>::lower_xi(), domain::Direction<2>::lower_eta()}}};
+  const domain::OrientationMap<2> quarter_turn_cw{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::upper_eta(),
+                                           domain::Direction<2>::lower_xi()}}};
+  const domain::OrientationMap<2> quarter_turn_ccw{
+      std::array<domain::Direction<2>, 2>{{domain::Direction<2>::lower_eta(),
+                                           domain::Direction<2>::upper_xi()}}};
   auto orientations_of_all_blocks =
-      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+      std::vector<domain::OrientationMap<2>>{4, domain::OrientationMap<2>{}};
   orientations_of_all_blocks[1] = flipped;
   orientations_of_all_blocks[2] = quarter_turn_cw;
   orientations_of_all_blocks[3] = quarter_turn_ccw;
-  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+  const auto domain = domain::rectilinear_domain<2, Frame::Inertial>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
       false);
 
-  std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
+  std::vector<
+      std::unordered_map<domain::Direction<2>, domain::BlockNeighbor<2>>>
       expected_block_neighbors{
-          {{Direction<2>::upper_xi(), {1, flipped}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
-           {Direction<2>::lower_xi(), {1, flipped}},
-           {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
-          {{Direction<2>::upper_xi(), {0, flipped}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
-           {Direction<2>::lower_xi(), {0, flipped}},
-           {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
-          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
-           {Direction<2>::upper_eta(), {3, flipped}},
-           {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
-           {Direction<2>::lower_eta(), {3, flipped}}},
-          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
-           {Direction<2>::upper_eta(), {2, flipped}},
-           {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
-           {Direction<2>::lower_eta(), {2, flipped}}}};
-  std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
-      {}, {}, {}, {}};
+          {{domain::Direction<2>::upper_xi(), {1, flipped}},
+           {domain::Direction<2>::upper_eta(), {2, quarter_turn_cw}},
+           {domain::Direction<2>::lower_xi(), {1, flipped}},
+           {domain::Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
+          {{domain::Direction<2>::upper_xi(), {0, flipped}},
+           {domain::Direction<2>::lower_eta(), {3, quarter_turn_cw}},
+           {domain::Direction<2>::lower_xi(), {0, flipped}},
+           {domain::Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
+          {{domain::Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+           {domain::Direction<2>::upper_eta(), {3, flipped}},
+           {domain::Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
+           {domain::Direction<2>::lower_eta(), {3, flipped}}},
+          {{domain::Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+           {domain::Direction<2>::upper_eta(), {2, flipped}},
+           {domain::Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
+           {domain::Direction<2>::lower_eta(), {2, flipped}}}};
+  std::vector<std::unordered_set<domain::Direction<2>>>
+      expected_external_boundaries{{}, {}, {}, {}};
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==

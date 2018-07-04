@@ -11,6 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace domain {
 namespace amr {
 template <size_t VolumeDim>
 std::array<size_t, VolumeDim> desired_refinement_levels(
@@ -84,3 +85,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 /// \endcond
 }  // namespace amr
+}  // namespace domain

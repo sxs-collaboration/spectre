@@ -14,11 +14,12 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
+namespace domain {
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
 using block_logical_coord_holder =
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>;
+    IdPair<BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>;
 }  // namespace
 
 template <size_t Dim, typename Frame>
@@ -56,7 +57,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
       if (is_contained) {
         // Point is in this block.  Don't bother checking subsequent
         // blocks.
-        block_coord_holders[s].id = domain::BlockId(block.id());
+        block_coord_holders[s].id = BlockId(block.id());
         found_block = true;
         break;
       }
@@ -90,3 +91,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef FRAME
 #undef INSTANTIATE
 /// \endcond
+}  // namespace domain

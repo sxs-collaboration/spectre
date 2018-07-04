@@ -12,6 +12,7 @@
 #include "Domain/Amr/Flag.hpp"
 
 /// \cond
+namespace domain {
 template <size_t VolumeDim>
 class Direction;
 
@@ -20,8 +21,10 @@ class ElementId;
 
 template <size_t VolumeDim>
 class OrientationMap;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 namespace amr {
 /// \ingroup ComputationalDomainGroup
 /// \brief Computes the desired refinement level of the Element with ElementId
@@ -51,3 +54,4 @@ template <size_t VolumeDim>
 bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
                            const Direction<VolumeDim>& direction) noexcept;
 }  // namespace amr
+}  // namespace domain

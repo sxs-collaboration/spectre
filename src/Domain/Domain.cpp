@@ -20,6 +20,7 @@ struct Inertial;
 struct Logical;
 }  // namespace Frame
 
+namespace domain {
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>::Domain(
     std::vector<Block<VolumeDim, TargetFrame>> blocks)
@@ -96,7 +97,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef FRAME
 #undef INSTANTIATE
 /// \endcond
+}  // namespace domain
 
 // Some compilers (clang 3.9.1) don't instantiate the default argument
 // to the second Domain constructor.
-template class std::vector<PairOfFaces>;
+template class std::vector<domain::PairOfFaces>;

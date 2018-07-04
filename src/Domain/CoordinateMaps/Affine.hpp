@@ -17,6 +17,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /*!
@@ -81,3 +82,4 @@ inline bool operator!=(const CoordinateMaps::Affine& lhs,
 }
 
 }  // namespace CoordinateMaps
+}  // namespace domain

@@ -15,6 +15,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /*!
@@ -96,3 +97,4 @@ class EquatorialCompression {
 bool operator!=(const EquatorialCompression& lhs,
                 const EquatorialCompression& rhs) noexcept;
 }  // namespace CoordinateMaps
+}  // namespace domain

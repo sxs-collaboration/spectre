@@ -19,6 +19,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 namespace CoordMapsTimeDependent {
 /*!
  * \ingroup CoordMapsTimeDependentGroup
@@ -73,3 +74,4 @@ inline bool operator!=(
 }
 
 }  // namespace CoordMapsTimeDependent
+}  // namespace domain

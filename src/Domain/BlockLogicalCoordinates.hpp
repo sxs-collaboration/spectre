@@ -13,12 +13,15 @@ namespace domain {
 class BlockId;
 }  // namespace domain
 class DataVector;
+namespace domain {
 template <size_t VolumeDim, typename TargetFrame>
 class Domain;
+}  // namespace domain
 template <typename IdType, typename DataType>
 class IdPair;
 /// \endcond
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 ///
 /// Computes the block logical coordinates and the containing `BlockId`
@@ -33,7 +36,7 @@ class IdPair;
 /// returned only once, and is considered to belong to the `Block`
 /// with the smaller `BlockId`.
 template <size_t Dim, typename Frame>
-std::vector<
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>
+std::vector<IdPair<BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>
 block_logical_coordinates(const Domain<Dim, Frame>& domain,
                           const tnsr::I<DataVector, Dim, Frame>& x) noexcept;
+}  // namespace domain

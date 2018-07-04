@@ -17,16 +17,22 @@
 
 /// \cond
 class DataVector;
+namespace domain {
 template <size_t Dim>
 class Mesh;
+}  // namespace domain
 template <typename TagsList>
 class Variables;
 
+namespace domain {
 namespace Tags {
 template <size_t Dim>
 struct Mesh;
+}  // namespace Tags
+}  // namespace domain
 /// \endcond
 
+namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating the divergence
 ///
@@ -62,7 +68,7 @@ struct div<Tag, Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
 /// \brief Compute the (Euclidean) divergence of fluxes
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 auto divergence(
-    const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
+    const Variables<FluxTags>& F, const domain::Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
@@ -90,6 +96,7 @@ struct ComputeDiv : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   static constexpr auto function =
       divergence<typename db::item_type<Tag>::tags_list, dim,
                  typename tmpl::back<inv_jac_indices>::Frame>;
-  using argument_tags = tmpl::list<Tag, Tags::Mesh<dim>, InverseJacobianTag>;
+  using argument_tags =
+      tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;
 };
 }  // namespace Tags

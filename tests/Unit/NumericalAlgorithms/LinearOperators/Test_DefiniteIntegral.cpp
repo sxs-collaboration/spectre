@@ -16,7 +16,7 @@
 #include "Utilities/Literals.hpp"
 
 namespace {
-void test_definite_integral_1d(const Mesh<1>& mesh) {
+void test_definite_integral_1d(const domain::Mesh<1>& mesh) {
   const DataVector& x = Spectral::collocation_points(mesh);
   DataVector integrand(mesh.number_of_grid_points());
   for (size_t a = 0; a < mesh.extents(0); ++a) {
@@ -31,7 +31,7 @@ void test_definite_integral_1d(const Mesh<1>& mesh) {
   }
 }
 
-void test_definite_integral_2d(const Mesh<2>& mesh) {
+void test_definite_integral_2d(const domain::Mesh<2>& mesh) {
   const DataVector& x = Spectral::collocation_points(mesh.slice_through(0));
   const DataVector& y = Spectral::collocation_points(mesh.slice_through(1));
   DataVector integrand(mesh.number_of_grid_points());
@@ -51,7 +51,7 @@ void test_definite_integral_2d(const Mesh<2>& mesh) {
   }
 }
 
-void test_definite_integral_3d(const Mesh<3>& mesh) {
+void test_definite_integral_3d(const domain::Mesh<3>& mesh) {
   const DataVector& x = Spectral::collocation_points(mesh.slice_through(0));
   const DataVector& y = Spectral::collocation_points(mesh.slice_through(1));
   const DataVector& z = Spectral::collocation_points(mesh.slice_through(2));
@@ -84,22 +84,24 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
   constexpr size_t max_extents =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
   for (size_t n0 = min_extents; n0 <= max_extents; ++n0) {
-    test_definite_integral_1d(Mesh<1>{n0, Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto});
+    test_definite_integral_1d(domain::Mesh<1>{
+        n0, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
   }
   for (size_t n0 = min_extents; n0 <= max_extents; ++n0) {
     for (size_t n1 = min_extents; n1 <= max_extents - 1; ++n1) {
-      test_definite_integral_2d(Mesh<2>{{{n0, n1}},
-                                        Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto});
+      test_definite_integral_2d(
+          domain::Mesh<2>{{{n0, n1}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
     }
   }
   for (size_t n0 = min_extents; n0 <= std::min(6_st, max_extents); ++n0) {
     for (size_t n1 = min_extents; n1 <= std::min(7_st, max_extents); ++n1) {
       for (size_t n2 = min_extents; n2 <= std::min(8_st, max_extents); ++n2) {
-        test_definite_integral_3d(Mesh<3>{{{n0, n1, n2}},
-                                          Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto});
+        test_definite_integral_3d(
+            domain::Mesh<3>{{{n0, n1, n2}},
+                            Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto});
       }
     }
   }

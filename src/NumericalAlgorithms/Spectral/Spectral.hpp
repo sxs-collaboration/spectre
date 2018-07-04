@@ -17,8 +17,10 @@
 /// \cond
 class Matrix;
 class DataVector;
+namespace domain {
 template <size_t>
 class Mesh;
+}  // namespace domain
 /// \endcond
 
 /*!
@@ -140,7 +142,7 @@ const DataVector& collocation_points(size_t num_points) noexcept;
  *
  * \see collocation_points(size_t)
  */
-const DataVector& collocation_points(const Mesh<1>& mesh) noexcept;
+const DataVector& collocation_points(const domain::Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief Weights to compute definite integrals.
@@ -170,7 +172,7 @@ const DataVector& quadrature_weights(size_t num_points) noexcept;
  *
  * \see quadrature_weights(size_t)
  */
-const DataVector& quadrature_weights(const Mesh<1>& mesh) noexcept;
+const DataVector& quadrature_weights(const domain::Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief %Matrix used to compute the derivative of a function.
@@ -192,7 +194,7 @@ const Matrix& differentiation_matrix(size_t num_points) noexcept;
  *
  * \see differentiation_matrix(size_t)
  */
-const Matrix& differentiation_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& differentiation_matrix(const domain::Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief %Matrix used to interpolate to the \p target_points.
@@ -213,7 +215,7 @@ Matrix interpolation_matrix(size_t num_points, const T& target_points) noexcept;
  * \see interpolation_matrix(size_t, const T&)
  */
 template <typename T>
-Matrix interpolation_matrix(const Mesh<1>& mesh,
+Matrix interpolation_matrix(const domain::Mesh<1>& mesh,
                             const T& target_points) noexcept;
 
 /*!
@@ -244,7 +246,8 @@ const Matrix& spectral_to_grid_points_matrix(size_t num_points) noexcept;
  *
  * \see spectral_to_grid_points_matrix(size_t)
  */
-const Matrix& spectral_to_grid_points_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& spectral_to_grid_points_matrix(
+    const domain::Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief %Matrix used to transform from the nodal coefficients of a function to
@@ -274,7 +277,8 @@ const Matrix& grid_points_to_spectral_matrix(size_t num_points) noexcept;
  *
  * \see grid_points_to_spectral_matrix(size_t)
  */
-const Matrix& grid_points_to_spectral_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& grid_points_to_spectral_matrix(
+    const domain::Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief %Matrix used to linearize a function.
@@ -297,6 +301,6 @@ const Matrix& linear_filter_matrix(size_t num_points) noexcept;
  *
  * \see linear_filter_matrix(size_t)
  */
-const Matrix& linear_filter_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& linear_filter_matrix(const domain::Mesh<1>& mesh) noexcept;
 
 }  // namespace Spectral

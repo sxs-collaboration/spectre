@@ -9,10 +9,12 @@
 #include "Domain/ElementIndex.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
+namespace domain {
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id) noexcept
     : block_id_{block_id},
@@ -68,7 +70,7 @@ void ElementId<VolumeDim>::pup(PUP::er& p) noexcept {
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id) {
-  os << "[B" << id.block_id() << ',' << id.segment_ids() << ']';
+  ::operator<<(os << "[B" << id.block_id() << ',', id.segment_ids()) << ']';
   return os;
 }
 
@@ -80,32 +82,31 @@ size_t hash_value(const ElementId<VolumeDim>& c) noexcept {
   boost::hash_combine(h, c.segment_ids());
   return h;
 }
+}  // namespace domain
 
 // clang-tidy: do not modify namespace std
 namespace std {  // NOLINT
 template <size_t VolumeDim>
-size_t hash<ElementId<VolumeDim>>::operator()(
-    const ElementId<VolumeDim>& c) const noexcept {
+size_t hash<domain::ElementId<VolumeDim>>::operator()(
+    const domain::ElementId<VolumeDim>& c) const noexcept {
   return hash_value(c);
 }
 }  // namespace std
 // LCOV_EXCL_STOP
 
-template class ElementId<1>;
-template class ElementId<2>;
-template class ElementId<3>;
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template std::ostream& operator<<(std::ostream&, const ElementId<1>&);
-template std::ostream& operator<<(std::ostream&, const ElementId<2>&);
-template std::ostream& operator<<(std::ostream&, const ElementId<3>&);
+#define INSTANTIATE(_, data)                                        \
+  template class domain::ElementId<DIM(data)>;                      \
+  template std::ostream& domain::operator<<(                        \
+      std::ostream& os, const domain::ElementId<DIM(data)>& block); \
+  template size_t domain::hash_value(                               \
+      const domain::ElementId<DIM(data)>&) noexcept;                \
+  namespace std { /* NOLINT */                                      \
+  template struct hash<domain::ElementId<DIM(data)>>;               \
+  }
 
-template size_t hash_value(const ElementId<1>&) noexcept;
-template size_t hash_value(const ElementId<2>&) noexcept;
-template size_t hash_value(const ElementId<3>&) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
-// clang-tidy: do not modify namespace std
-namespace std {  // NOLINT
-template struct hash<ElementId<1>>;
-template struct hash<ElementId<2>>;
-template struct hash<ElementId<3>>;
-}  // namespace std
+#undef DIM
+#undef INSTANTIATE

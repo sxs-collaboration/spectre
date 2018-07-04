@@ -33,14 +33,14 @@ void test_wedge3d_all_directions() {
   const double outer_sphericity = unit_dis(gen);
   CAPTURE_PRECISE(outer_sphericity);
 
-  using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
+  using WedgeHalves = domain::CoordinateMaps::Wedge3D::WedgeHalves;
   const std::array<WedgeHalves, 3> halves_array = {
       {WedgeHalves::UpperOnly, WedgeHalves::LowerOnly, WedgeHalves::Both}};
   for (const auto& halves : halves_array) {
     for (const auto& direction : all_wedge_directions()) {
       for (const auto& with_equiangular_map : {true, false}) {
         for (const auto& with_logarithmic_map : {true, false}) {
-          const CoordinateMaps::Wedge3D wedge_map(
+          const domain::CoordinateMaps::Wedge3D wedge_map(
               inner_radius, outer_radius, direction,
               with_logarithmic_map ? 1.0 : inner_sphericity,
               with_logarithmic_map ? 1.0 : outer_sphericity,
@@ -59,33 +59,33 @@ void test_wedge3d_alignment() {
   const double inner_r = sqrt(3.0);
   const double outer_r = 2.0 * sqrt(3.0);
 
-  using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
+  using WedgeHalves = domain::CoordinateMaps::Wedge3D::WedgeHalves;
   const auto wedge_directions = all_wedge_directions();
 
   for (const auto& with_equiangular_map : {true, false}) {
     for (const auto& with_logarithmic_map : {true, false}) {
       const double inner_sphericity = with_logarithmic_map ? 1.0 : 0.0;
-      const CoordinateMaps::Wedge3D map_upper_zeta(
+      const domain::CoordinateMaps::Wedge3D map_upper_zeta(
           inner_r, outer_r, wedge_directions[0], inner_sphericity, 1.0,
           with_equiangular_map, WedgeHalves::Both,
           with_logarithmic_map);  // Upper Z wedge
-      const CoordinateMaps::Wedge3D map_upper_eta(
+      const domain::CoordinateMaps::Wedge3D map_upper_eta(
           inner_r, outer_r, wedge_directions[2], inner_sphericity, 1.0,
           with_equiangular_map, WedgeHalves::Both,
           with_logarithmic_map);  // Upper Y wedge
-      const CoordinateMaps::Wedge3D map_upper_xi(
+      const domain::CoordinateMaps::Wedge3D map_upper_xi(
           inner_r, outer_r, wedge_directions[4], inner_sphericity, 1.0,
           with_equiangular_map, WedgeHalves::Both,
           with_logarithmic_map);  // Upper X Wedge
-      const CoordinateMaps::Wedge3D map_lower_zeta(
+      const domain::CoordinateMaps::Wedge3D map_lower_zeta(
           inner_r, outer_r, wedge_directions[1], inner_sphericity, 1.0,
           with_equiangular_map, WedgeHalves::Both,
           with_logarithmic_map);  // Lower Z wedge
-      const CoordinateMaps::Wedge3D map_lower_eta(
+      const domain::CoordinateMaps::Wedge3D map_lower_eta(
           inner_r, outer_r, wedge_directions[3], inner_sphericity, 1.0,
           with_equiangular_map, WedgeHalves::Both,
           with_logarithmic_map);  // Lower Y wedge
-      const CoordinateMaps::Wedge3D map_lower_xi(
+      const domain::CoordinateMaps::Wedge3D map_lower_xi(
           inner_r, outer_r, wedge_directions[5], inner_sphericity, 1.0,
           with_equiangular_map, WedgeHalves::Both,
           with_logarithmic_map);  // Lower X wedge
@@ -191,32 +191,32 @@ void test_wedge3d_random_radii() {
   const double random_outer_radius_upper_zeta = outer_dis(gen);
   CAPTURE_PRECISE(random_outer_radius_upper_zeta);
 
-  using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
+  using WedgeHalves = domain::CoordinateMaps::Wedge3D::WedgeHalves;
   const auto wedge_directions = all_wedge_directions();
   for (const auto& with_equiangular_map : {true, false}) {
     for (const auto& with_logarithmic_map : {true, false}) {
       const double inner_sphericity = with_logarithmic_map ? 1.0 : 0.0;
-      const CoordinateMaps::Wedge3D map_lower_xi(
+      const domain::CoordinateMaps::Wedge3D map_lower_xi(
           random_inner_radius_lower_xi, random_outer_radius_lower_xi,
           wedge_directions[5], inner_sphericity, 1.0, with_equiangular_map,
           WedgeHalves::Both, with_logarithmic_map);
-      const CoordinateMaps::Wedge3D map_lower_eta(
+      const domain::CoordinateMaps::Wedge3D map_lower_eta(
           random_inner_radius_lower_eta, random_outer_radius_lower_eta,
           wedge_directions[3], inner_sphericity, 1.0, with_equiangular_map,
           WedgeHalves::Both, with_logarithmic_map);
-      const CoordinateMaps::Wedge3D map_lower_zeta(
+      const domain::CoordinateMaps::Wedge3D map_lower_zeta(
           random_inner_radius_lower_zeta, random_outer_radius_lower_zeta,
           wedge_directions[1], inner_sphericity, 1.0, with_equiangular_map,
           WedgeHalves::Both, with_logarithmic_map);
-      const CoordinateMaps::Wedge3D map_upper_xi(
+      const domain::CoordinateMaps::Wedge3D map_upper_xi(
           random_inner_radius_upper_xi, random_outer_radius_upper_xi,
           wedge_directions[4], inner_sphericity, 1.0, with_equiangular_map,
           WedgeHalves::Both, with_logarithmic_map);
-      const CoordinateMaps::Wedge3D map_upper_eta(
+      const domain::CoordinateMaps::Wedge3D map_upper_eta(
           random_inner_radius_upper_eta, random_outer_radius_upper_eta,
           wedge_directions[2], inner_sphericity, 1.0, with_equiangular_map,
           WedgeHalves::Both, with_logarithmic_map);
-      const CoordinateMaps::Wedge3D map_upper_zeta(
+      const domain::CoordinateMaps::Wedge3D map_upper_zeta(
           random_inner_radius_upper_zeta, random_outer_radius_upper_zeta,
           wedge_directions[0], inner_sphericity, 1.0, with_equiangular_map,
           WedgeHalves::Both, with_logarithmic_map);
@@ -269,8 +269,8 @@ void test_wedge3d_random_radii() {
 }
 
 void test_wedge3d_fail() noexcept {
-  const CoordinateMaps::Wedge3D map(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
-                                    true);
+  const domain::CoordinateMaps::Wedge3D map(
+      0.2, 4.0, domain::OrientationMap<3>{}, 0.0, 1.0, true);
   // Any point with z=0 should fail the inverse map.
   const std::array<double, 3> test_mapped_point1{{3.0, 3.0, 0.0}};
   const std::array<double, 3> test_mapped_point2{{-3.0, 3.0, 0.0}};
@@ -318,8 +318,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d =
-      CoordinateMaps::Wedge3D(-0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true);
+  auto failed_wedge3d = domain::CoordinateMaps::Wedge3D(
+      -0.2, 4.0, domain::OrientationMap<3>{}, 0.0, 1.0, true);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -330,8 +330,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d =
-      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, -0.2, 1.0, true);
+  auto failed_wedge3d = domain::CoordinateMaps::Wedge3D(
+      0.2, 4.0, domain::OrientationMap<3>{}, -0.2, 1.0, true);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -342,8 +342,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d =
-      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, -0.2, true);
+  auto failed_wedge3d = domain::CoordinateMaps::Wedge3D(
+      0.2, 4.0, domain::OrientationMap<3>{}, 0.0, -0.2, true);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -355,8 +355,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d =
-      CoordinateMaps::Wedge3D(4.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true);
+  auto failed_wedge3d = domain::CoordinateMaps::Wedge3D(
+      4.2, 4.0, domain::OrientationMap<3>{}, 0.0, 1.0, true);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -368,8 +368,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d =
-      CoordinateMaps::Wedge3D(3.0, 4.0, OrientationMap<3>{}, 1.0, 0.0, true);
+  auto failed_wedge3d = domain::CoordinateMaps::Wedge3D(
+      3.0, 4.0, domain::OrientationMap<3>{}, 1.0, 0.0, true);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -380,9 +380,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d =
-      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.8, 0.9, true,
-                              CoordinateMaps::Wedge3D::WedgeHalves::Both, true);
+  auto failed_wedge3d = domain::CoordinateMaps::Wedge3D(
+      0.2, 4.0, domain::OrientationMap<3>{}, 0.8, 0.9, true,
+      domain::CoordinateMaps::Wedge3D::WedgeHalves::Both, true);
   static_cast<void>(failed_wedge3d);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

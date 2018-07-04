@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 
+namespace domain {
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
     const Mesh<VolumeDim>& mesh) noexcept {
@@ -84,3 +85,4 @@ template tnsr::I<DataVector, 2, Frame::Logical> interface_logical_coordinates(
     const Mesh<1>&, const Direction<2>&) noexcept;
 template tnsr::I<DataVector, 3, Frame::Logical> interface_logical_coordinates(
     const Mesh<2>&, const Direction<3>&) noexcept;
+}  // namespace domain

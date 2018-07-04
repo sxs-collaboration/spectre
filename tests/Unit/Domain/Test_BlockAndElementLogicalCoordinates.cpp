@@ -37,16 +37,17 @@ namespace {
 
 template <size_t Dim, typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates(
-    const Domain<Dim, TargetFrame>& domain,
+    const domain::Domain<Dim, TargetFrame>& domain,
     const std::vector<std::array<size_t, Dim>>& refinement_levels,
     const size_t n_pts) noexcept {
-  const auto all_element_ids = initial_element_ids<Dim>(refinement_levels);
+  const auto all_element_ids =
+      domain::initial_element_ids<Dim>(refinement_levels);
 
   // Random element_id for each point.
   const auto element_ids = [&all_element_ids, &n_pts ]() noexcept {
     std::uniform_int_distribution<size_t> ran(0, all_element_ids.size()-1);
     std::mt19937 gen;
-    std::vector<ElementId<Dim>> ids(n_pts);
+    std::vector<domain::ElementId<Dim>> ids(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       ids[s] = all_element_ids[ran(gen)];
     }
@@ -84,7 +85,8 @@ void fuzzy_test_block_and_element_logical_coordinates(
       std::vector<std::array<double, Dim>> coords;
       std::vector<size_t> offsets;
     };
-    std::unordered_map<ElementId<Dim>, coords_plus_offset> coords_plus_offsets;
+    std::unordered_map<domain::ElementId<Dim>, coords_plus_offset>
+        coords_plus_offsets;
     for (size_t s = 0; s < n_pts; ++s) {
       auto new_coords = make_array<Dim>(0.0);
       for (size_t d = 0; d < Dim; ++d) {
@@ -101,7 +103,9 @@ void fuzzy_test_block_and_element_logical_coordinates(
     }
 
     // The second pass fills the desired structure.
-    std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>> holders;
+    std::unordered_map<domain::ElementId<Dim>,
+                       domain::ElementLogicalCoordHolder<Dim>>
+        holders;
     for (const auto& coord_holder : coords_plus_offsets) {
       const size_t num_grid_pts = coord_holder.second.offsets.size();
       tnsr::I<DataVector, Dim, Frame::Logical> coords(num_grid_pts);
@@ -110,9 +114,9 @@ void fuzzy_test_block_and_element_logical_coordinates(
           coords.get(d)[s] = gsl::at(coord_holder.second.coords[s], d);
         }
       }
-      holders.emplace(
-          coord_holder.first,
-          ElementLogicalCoordHolder<Dim>{coords, coord_holder.second.offsets});
+      holders.emplace(coord_holder.first,
+                      domain::ElementLogicalCoordHolder<Dim>{
+                          coords, coord_holder.second.offsets});
     }
     return holders;
   }
@@ -124,8 +128,8 @@ void fuzzy_test_block_and_element_logical_coordinates(
     tnsr::I<DataVector, Dim, TargetFrame> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       const auto& my_block = domain.blocks()[element_ids[s].block_id()];
-      ElementMap<Dim, TargetFrame> map{element_ids[s],
-                                       my_block.coordinate_map().get_clone()};
+      domain::ElementMap<Dim, TargetFrame> map{
+          element_ids[s], my_block.coordinate_map().get_clone()};
       const auto coord_one_point = map(element_coords[s]);
       for (size_t d = 0; d < Dim; ++d) {
         coords.get(d)[s] = coord_one_point.get(d);
@@ -170,7 +174,8 @@ void fuzzy_test_block_and_element_logical_coordinates(
 
 template <size_t Dim, typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates_unrefined(
-    const Domain<Dim, TargetFrame>& domain, const size_t n_pts) noexcept {
+    const domain::Domain<Dim, TargetFrame>& domain,
+    const size_t n_pts) noexcept {
   const size_t n_blocks = domain.blocks().size();
 
   // Random block_id for each point.
@@ -232,7 +237,7 @@ template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates_shell(
     const size_t n_pts) noexcept {
   const auto shell =
-      DomainCreators::Shell<TargetFrame>(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
+      domain::creators::Shell<TargetFrame>(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
@@ -242,13 +247,13 @@ void fuzzy_test_block_and_element_logical_coordinates_shell(
 template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates3(
     const size_t n_pts) noexcept {
-  Domain<3, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  domain::Domain<3, TargetFrame> domain(
+      domain::maps_for_rectilinear_domains<TargetFrame>(
           Index<3>{2, 2, 2},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}}},
           {Index<3>{}}),
-      corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
+      domain::corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(domain,
                                                    {{{0, 1, 2}},
@@ -265,13 +270,13 @@ void fuzzy_test_block_and_element_logical_coordinates3(
 template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates2(
     const size_t n_pts) noexcept {
-  Domain<2, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  domain::Domain<2, TargetFrame> domain(
+      domain::maps_for_rectilinear_domains<TargetFrame>(
           Index<2>{2, 3},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.0}, {0.0, 0.33, 0.66, 1.0}}},
           {Index<2>{}}),
-      corners_for_rectilinear_domains(Index<2>{2, 3}));
+      domain::corners_for_rectilinear_domains(Index<2>{2, 3}));
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
       domain, {{{0, 1}}, {{2, 1}}, {{2, 2}}, {{3, 2}}, {{0, 0}}, {{2, 0}}},
@@ -281,11 +286,11 @@ void fuzzy_test_block_and_element_logical_coordinates2(
 template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates1(
     const size_t n_pts) noexcept {
-  Domain<1, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  domain::Domain<1, TargetFrame> domain(
+      domain::maps_for_rectilinear_domains<TargetFrame>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
           {Index<1>{}}),
-      corners_for_rectilinear_domains(Index<1>{2}));
+      domain::corners_for_rectilinear_domains(Index<1>{2}));
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(domain, {{{0}}, {{3}}},
                                                    n_pts);
@@ -293,11 +298,11 @@ void fuzzy_test_block_and_element_logical_coordinates1(
 
 template <size_t Dim, typename TargetFrame>
 void test_block_and_element_logical_coordinates(
-    const Domain<Dim, TargetFrame>& domain,
+    const domain::Domain<Dim, TargetFrame>& domain,
     const std::vector<std::array<double, Dim>>& x_frame,
     const std::vector<size_t>& expected_block_ids,
     const std::vector<std::array<double, Dim>>& expected_block_logical,
-    const std::vector<ElementId<Dim>>& element_ids,
+    const std::vector<domain::ElementId<Dim>>& element_ids,
     const std::vector<size_t>& expected_element_id_indices,
     const std::vector<std::vector<size_t>>& expected_offset,
     const std::vector<std::vector<std::array<double, Dim>>>&
@@ -336,7 +341,7 @@ void test_block_and_element_logical_coordinates(
     expected_elem_logical.emplace_back(std::move(dum));
   }
 
-  std::vector<ElementId<Dim>> expected_ids;
+  std::vector<domain::ElementId<Dim>> expected_ids;
   expected_ids.reserve(expected_element_id_indices.size());
   for (const auto& index : expected_element_id_indices) {
     expected_ids.push_back(element_ids[index]);
@@ -362,11 +367,11 @@ void test_block_and_element_logical_coordinates(
 
 template <typename TargetFrame>
 void test_block_and_element_logical_coordinates1() noexcept {
-  Domain<1, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  domain::Domain<1, TargetFrame> domain(
+      domain::maps_for_rectilinear_domains<TargetFrame>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
           {Index<1>{}}),
-      corners_for_rectilinear_domains(Index<1>{2}));
+      domain::corners_for_rectilinear_domains(Index<1>{2}));
 
   std::vector<std::array<double, 1>> x_frame{
       {{0.1}},
@@ -383,7 +388,7 @@ void test_block_and_element_logical_coordinates1() noexcept {
   };
 
   // Create some Elements.  I (Mark) did this by hand.
-  auto element_ids = initial_element_ids<1>({{{2}}, {{3}}});
+  auto element_ids = domain::initial_element_ids<1>({{{2}}, {{3}}});
 
   // I (Mark) computed these expected quantities by hand, given the
   // points above and the choices of elements.
@@ -405,11 +410,11 @@ void test_block_and_element_logical_coordinates1() noexcept {
 
 template <typename TargetFrame>
 void test_block_logical_coordinates1fail() noexcept {
-  Domain<1, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  domain::Domain<1, TargetFrame> domain(
+      domain::maps_for_rectilinear_domains<TargetFrame>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
           {Index<1>{}}),
-      corners_for_rectilinear_domains(Index<1>{2}));
+      domain::corners_for_rectilinear_domains(Index<1>{2}));
 
   std::vector<std::array<double, 1>> x_frame{
       {{0.1}}, {{1.1}}, {{-0.2}}, {{0.5}}};
@@ -420,18 +425,18 @@ void test_block_logical_coordinates1fail() noexcept {
     }
   }
   const auto block_logical_result =
-      block_logical_coordinates(domain, frame_coords);
+      domain::block_logical_coordinates(domain, frame_coords);
 }
 
 template <typename TargetFrame>
 void test_block_and_element_logical_coordinates3() noexcept {
-  Domain<3, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  domain::Domain<3, TargetFrame> domain(
+      domain::maps_for_rectilinear_domains<TargetFrame>(
           Index<3>{2, 2, 2},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}}},
           {Index<3>{}}),
-      corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
+      domain::corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
 
   std::vector<std::array<double, 3>> x_frame{
       {{0.1, 0.1, 0.1}},   {{0.05, 0.05, 0.05}}, {{0.24, 0.24, 0.24}},
@@ -449,14 +454,14 @@ void test_block_and_element_logical_coordinates3() noexcept {
       {{0.6, 0.6, 0.6}},     {{1.0, 0.0, 1.0}}};
 
   // Create some Elements.  I (Mark) did this by hand.
-  auto element_ids = initial_element_ids<3>(4, {{0, 1, 2}});
-  auto element_ids_0 = initial_element_ids<3>(0, {{2, 2, 2}});
-  auto element_ids_1 = initial_element_ids<3>(1, {{2, 1, 1}});
-  auto element_ids_2 = initial_element_ids<3>(2, {{0, 2, 1}});
-  auto element_ids_3 = initial_element_ids<3>(3, {{2, 2, 2}});
-  auto element_ids_6 = initial_element_ids<3>(6, {{2, 2, 2}});
-  auto element_ids_5 = initial_element_ids<3>(5, {{1, 2, 0}});
-  auto element_ids_7 = initial_element_ids<3>(7, {{2, 0, 1}});
+  auto element_ids = domain::initial_element_ids<3>(4, {{0, 1, 2}});
+  auto element_ids_0 = domain::initial_element_ids<3>(0, {{2, 2, 2}});
+  auto element_ids_1 = domain::initial_element_ids<3>(1, {{2, 1, 1}});
+  auto element_ids_2 = domain::initial_element_ids<3>(2, {{0, 2, 1}});
+  auto element_ids_3 = domain::initial_element_ids<3>(3, {{2, 2, 2}});
+  auto element_ids_6 = domain::initial_element_ids<3>(6, {{2, 2, 2}});
+  auto element_ids_5 = domain::initial_element_ids<3>(5, {{1, 2, 0}});
+  auto element_ids_7 = domain::initial_element_ids<3>(7, {{2, 0, 1}});
   std::copy(element_ids_0.begin(), element_ids_0.end(),
             std::back_inserter(element_ids));
   std::copy(element_ids_1.begin(), element_ids_1.end(),

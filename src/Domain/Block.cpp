@@ -14,6 +14,7 @@ struct Inertial;
 struct Logical;
 }  // namespace Frame
 
+namespace domain {
 template <size_t VolumeDim, typename TargetFrame>
 Block<VolumeDim, TargetFrame>::Block(
     std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>&&
@@ -48,7 +49,8 @@ std::ostream& operator<<(std::ostream& os,
     os << direction_to_neighbors.first << ": " << direction_to_neighbors.second
        << "\n";
   }
-  os << "External boundaries: " << block.external_boundaries() << "\n";
+  ::operator<<(os << "External boundaries: ", block.external_boundaries())
+      << "\n";
   return os;
 }
 
@@ -83,3 +85,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
+}  // namespace domain

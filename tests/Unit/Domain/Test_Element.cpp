@@ -19,36 +19,36 @@
 namespace {
 template <size_t VolumeDim>
 void check_element() {
-  const ElementId<VolumeDim> id{5};
+  const domain::ElementId<VolumeDim> id{5};
 
-  const Neighbors<VolumeDim> neighbors(
-      std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(7),
-                                               ElementId<VolumeDim>(4)},
-      OrientationMap<VolumeDim>{});
-  const typename Element<VolumeDim>::Neighbors_t two_neighbors{
-    {Direction<VolumeDim>::lower_xi(), neighbors},
-    {Direction<VolumeDim>::upper_xi(), neighbors}};
+  const domain::Neighbors<VolumeDim> neighbors(
+      std::unordered_set<domain::ElementId<VolumeDim>>{
+          domain::ElementId<VolumeDim>(7), domain::ElementId<VolumeDim>(4)},
+      domain::OrientationMap<VolumeDim>{});
+  const typename domain::Element<VolumeDim>::Neighbors_t two_neighbors{
+      {domain::Direction<VolumeDim>::lower_xi(), neighbors},
+      {domain::Direction<VolumeDim>::upper_xi(), neighbors}};
 
-  const Element<VolumeDim> element(id, two_neighbors);
+  const domain::Element<VolumeDim> element(id, two_neighbors);
 
   CHECK(element.id() == id);
   CHECK(element.neighbors() == two_neighbors);
   CHECK(element.number_of_neighbors() == 4);
-  for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+  for (const auto& direction : domain::Direction<VolumeDim>::all_directions()) {
     // Either a xi direction or an external boundary, but not both.
-    CHECK((direction.axis() == Direction<VolumeDim>::Axis::Xi) !=
+    CHECK((direction.axis() == domain::Direction<VolumeDim>::Axis::Xi) !=
           (element.external_boundaries().count(direction) == 1));
   }
 
   CHECK(element == element);
   CHECK_FALSE(element != element);
-  const Element<VolumeDim> element_diff_id(ElementId<VolumeDim>(3),
-                                           two_neighbors);
+  const domain::Element<VolumeDim> element_diff_id(
+      domain::ElementId<VolumeDim>(3), two_neighbors);
   CHECK(element != element_diff_id);
   CHECK_FALSE(element == element_diff_id);
-  const Element<VolumeDim> element_diff_neighbors(
-      id, typename Element<VolumeDim>::Neighbors_t{
-        {Direction<VolumeDim>::lower_xi(), neighbors}});
+  const domain::Element<VolumeDim> element_diff_neighbors(
+      id, typename domain::Element<VolumeDim>::Neighbors_t{
+              {domain::Direction<VolumeDim>::lower_xi(), neighbors}});
   CHECK(element != element_diff_neighbors);
   CHECK_FALSE(element == element_diff_neighbors);
 
@@ -60,7 +60,7 @@ void check_element() {
 
   test_serialization(element);
 
-  CHECK(Tags::Element<VolumeDim>::name() == "Element");
+  CHECK(domain::Tags::Element<VolumeDim>::name() == "Element");
 }
 }  // namespace
 

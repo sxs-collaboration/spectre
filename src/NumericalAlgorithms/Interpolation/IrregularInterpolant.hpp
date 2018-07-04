@@ -5,7 +5,6 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -14,11 +13,14 @@
 #include "Utilities/Gsl.hpp"
 
 /// \cond
-template <size_t Dim>
-class Mesh;
+class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace domain {
+template <size_t Dim>
+class Mesh;
+}  // namespace domain
 // IWYU pragma: no_forward_declare Variables
 /// \endcond
 
@@ -30,7 +32,7 @@ template <size_t Dim>
 class Irregular {
  public:
   Irregular(
-      const Mesh<Dim>& source_mesh,
+      const domain::Mesh<Dim>& source_mesh,
       const tnsr::I<DataVector, Dim, Frame::Logical>& target_points) noexcept;
   Irregular();
 
@@ -97,4 +99,3 @@ bool operator!=(const Irregular<Dim>& lhs,
                 const Irregular<Dim>& rhs) noexcept;
 
 }  // namespace intrp
-

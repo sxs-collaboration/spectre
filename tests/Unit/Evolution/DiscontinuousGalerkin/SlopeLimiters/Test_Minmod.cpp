@@ -94,102 +94,104 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Serialization",
 
 namespace {
 template <size_t VolumeDim>
-Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
-  return {std::unordered_set<ElementId<VolumeDim>>{id},
-          OrientationMap<VolumeDim>{}};
+domain::Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
+  return {std::unordered_set<domain::ElementId<VolumeDim>>{id},
+          domain::OrientationMap<VolumeDim>{}};
 }
 
 // Construct an element with one neighbor in each direction.
 template <size_t VolumeDim>
-Element<VolumeDim> make_element() noexcept;
+domain::Element<VolumeDim> make_element() noexcept;
 
 template <>
-Element<1> make_element() noexcept {
-  return Element<1>{
-      ElementId<1>{0},
-      Element<1>::Neighbors_t{
-          {Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)},
-          {Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
+domain::Element<1> make_element() noexcept {
+  return domain::Element<1>{
+      domain::ElementId<1>{0},
+      domain::Element<1>::Neighbors_t{
+          {domain::Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)},
+          {domain::Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
 }
 
 template <>
-Element<2> make_element() noexcept {
-  return Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
-          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)},
-          {Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
-          {Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
+domain::Element<2> make_element() noexcept {
+  return domain::Element<2>{
+      domain::ElementId<2>{0},
+      domain::Element<2>::Neighbors_t{
+          {domain::Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
+          {domain::Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)},
+          {domain::Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
+          {domain::Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
 }
 
 template <>
-Element<3> make_element() noexcept {
-  return Element<3>{
-      ElementId<3>{0},
-      Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
-          {Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
-          {Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
-          {Direction<3>::lower_zeta(), make_neighbor_with_id<3>(5)},
-          {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
+domain::Element<3> make_element() noexcept {
+  return domain::Element<3>{
+      domain::ElementId<3>{0},
+      domain::Element<3>::Neighbors_t{
+          {domain::Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
+          {domain::Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
+          {domain::Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
+          {domain::Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
+          {domain::Direction<3>::lower_zeta(), make_neighbor_with_id<3>(5)},
+          {domain::Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
 }
 
-std::unordered_map<Direction<1>, Scalar<double>> make_neighbor_means(
+std::unordered_map<domain::Direction<1>, Scalar<double>> make_neighbor_means(
     const double left, const double right) noexcept {
-  return std::unordered_map<Direction<1>, Scalar<double>>{
-      {Direction<1>::lower_xi(), Scalar<double>(left)},
-      {Direction<1>::upper_xi(), Scalar<double>(right)}};
+  return std::unordered_map<domain::Direction<1>, Scalar<double>>{
+      {domain::Direction<1>::lower_xi(), Scalar<double>(left)},
+      {domain::Direction<1>::upper_xi(), Scalar<double>(right)}};
 }
 
 // Set neighbor sizes to local size, corresponding to uniform elements.
 template <size_t VolumeDim>
-std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>
+std::unordered_map<domain::Direction<VolumeDim>, tnsr::I<double, VolumeDim>>
 make_neighbor_sizes_from_local_size(
     const tnsr::I<double, VolumeDim>& local_size) noexcept;
 
 template <>
-std::unordered_map<Direction<1>, tnsr::I<double, 1>>
+std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>
 make_neighbor_sizes_from_local_size(
     const tnsr::I<double, 1>& local_size) noexcept {
-  return std::unordered_map<Direction<1>, tnsr::I<double, 1>>{
-      {Direction<1>::lower_xi(), local_size},
-      {Direction<1>::upper_xi(), local_size}};
+  return std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>{
+      {domain::Direction<1>::lower_xi(), local_size},
+      {domain::Direction<1>::upper_xi(), local_size}};
 }
 
 template <>
-std::unordered_map<Direction<2>, tnsr::I<double, 2>>
+std::unordered_map<domain::Direction<2>, tnsr::I<double, 2>>
 make_neighbor_sizes_from_local_size(
     const tnsr::I<double, 2>& local_size) noexcept {
-  return std::unordered_map<Direction<2>, tnsr::I<double, 2>>{
-      {Direction<2>::lower_xi(), local_size},
-      {Direction<2>::upper_xi(), local_size},
-      {Direction<2>::lower_eta(), local_size},
-      {Direction<2>::upper_eta(), local_size}};
+  return std::unordered_map<domain::Direction<2>, tnsr::I<double, 2>>{
+      {domain::Direction<2>::lower_xi(), local_size},
+      {domain::Direction<2>::upper_xi(), local_size},
+      {domain::Direction<2>::lower_eta(), local_size},
+      {domain::Direction<2>::upper_eta(), local_size}};
 }
 
 template <>
-std::unordered_map<Direction<3>, tnsr::I<double, 3>>
+std::unordered_map<domain::Direction<3>, tnsr::I<double, 3>>
 make_neighbor_sizes_from_local_size(
     const tnsr::I<double, 3>& local_size) noexcept {
-  return std::unordered_map<Direction<3>, tnsr::I<double, 3>>{
-      {Direction<3>::lower_xi(), local_size},
-      {Direction<3>::upper_xi(), local_size},
-      {Direction<3>::lower_eta(), local_size},
-      {Direction<3>::upper_eta(), local_size},
-      {Direction<3>::lower_zeta(), local_size},
-      {Direction<3>::upper_zeta(), local_size}};
+  return std::unordered_map<domain::Direction<3>, tnsr::I<double, 3>>{
+      {domain::Direction<3>::lower_xi(), local_size},
+      {domain::Direction<3>::upper_xi(), local_size},
+      {domain::Direction<3>::lower_eta(), local_size},
+      {domain::Direction<3>::upper_eta(), local_size},
+      {domain::Direction<3>::lower_zeta(), local_size},
+      {domain::Direction<3>::upper_zeta(), local_size}};
 }
 
 void test_limiter_activates_work(
     const SlopeLimiters::Minmod<1, tmpl::list<scalar>>& minmod,
     const scalar::type& input,
-    const std::unordered_map<Direction<1>, Scalar<double>>& neighbor_means,
-    const Element<1>& element, const Mesh<1>& mesh,
+    const std::unordered_map<domain::Direction<1>, Scalar<double>>&
+        neighbor_means,
+    const domain::Element<1>& element, const domain::Mesh<1>& mesh,
     const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
     const tnsr::I<double, 1>& element_size,
-    const std::unordered_map<Direction<1>, tnsr::I<double, 1>>& neighbor_sizes,
+    const std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>&
+        neighbor_sizes,
     const double expected_slope) noexcept {
   auto input_to_limit = input;
   const bool limiter_activated =
@@ -208,11 +210,12 @@ void test_limiter_activates_work(
 void test_limiter_does_not_activate_work(
     const SlopeLimiters::Minmod<1, tmpl::list<scalar>>& minmod,
     const scalar::type& input,
-    const std::unordered_map<Direction<1>, Scalar<double>>& neighbor_means,
-    const Element<1>& element, const Mesh<1>& mesh,
+    const std::unordered_map<domain::Direction<1>, Scalar<double>>&
+        neighbor_means,
+    const domain::Element<1>& element, const domain::Mesh<1>& mesh,
     const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
     const tnsr::I<double, 1>& element_size,
-    const std::unordered_map<Direction<1>, tnsr::I<double, 1>>&
+    const std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>&
         neighbor_sizes) noexcept {
   auto input_to_limit = input;
   const bool limiter_activated =
@@ -250,8 +253,9 @@ void test_limiter_action_on_constant_function(
   INFO("Testing constant function...");
   CAPTURE(number_of_grid_points);
   const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const double value = 0.3;
   const auto input =
@@ -273,8 +277,9 @@ void test_limiter_action_on_linear_function(
   INFO("Testing linear function...");
   CAPTURE(number_of_grid_points);
   const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 1>{2.0};
   const auto neighbor_sizes = make_neighbor_sizes_from_local_size(element_size);
@@ -364,8 +369,9 @@ void test_limiter_action_on_quadratic_function(
   INFO("Testing quadratic function...");
   CAPTURE(number_of_grid_points);
   const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 1>{2.0};
   const auto neighbor_sizes = make_neighbor_sizes_from_local_size(element_size);
@@ -440,8 +446,9 @@ void test_limiter_action_with_tvbm_correction(
   INFO("Testing TVBM correction...");
   CAPTURE(number_of_grid_points);
   const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 1>{2.0};
   const auto neighbor_sizes = make_neighbor_sizes_from_local_size(element_size);
@@ -498,8 +505,9 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
   INFO("Testing LambdaPiN-TVBM correction...");
   CAPTURE(number_of_grid_points);
   const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 1>{2.0};
   const auto neighbor_sizes = make_neighbor_sizes_from_local_size(element_size);
@@ -566,8 +574,9 @@ void test_limiter_action_at_boundary(
     const SlopeLimiters::Minmod<1, tmpl::list<scalar>>& minmod) noexcept {
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 1>{2.0};
 
@@ -578,25 +587,29 @@ void test_limiter_action_at_boundary(
   const auto input = scalar::type(func(logical_coords));
 
   // Test with element that has external lower-xi boundary
-  const auto element_at_lower_xi_boundary = Element<1>{
-      ElementId<1>{0}, Element<1>::Neighbors_t{{Direction<1>::upper_xi(),
-                                                make_neighbor_with_id<1>(2)}}};
+  const auto element_at_lower_xi_boundary = domain::Element<1>{
+      domain::ElementId<1>{0},
+      domain::Element<1>::Neighbors_t{
+          {domain::Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_limiter_activates_work(
-        minmod, input, {{Direction<1>::upper_xi(), Scalar<double>{neighbor}}},
+        minmod, input,
+        {{domain::Direction<1>::upper_xi(), Scalar<double>{neighbor}}},
         element_at_lower_xi_boundary, mesh, logical_coords, element_size,
-        {{Direction<1>::upper_xi(), element_size}}, 0.0);
+        {{domain::Direction<1>::upper_xi(), element_size}}, 0.0);
   }
 
   // Test with element that has external upper-xi boundary
-  const auto element_at_upper_xi_boundary = Element<1>{
-      ElementId<1>{0}, Element<1>::Neighbors_t{{Direction<1>::lower_xi(),
-                                                make_neighbor_with_id<1>(1)}}};
+  const auto element_at_upper_xi_boundary = domain::Element<1>{
+      domain::ElementId<1>{0},
+      domain::Element<1>::Neighbors_t{
+          {domain::Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)}}};
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_limiter_activates_work(
-        minmod, input, {{Direction<1>::lower_xi(), Scalar<double>{neighbor}}},
+        minmod, input,
+        {{domain::Direction<1>::lower_xi(), Scalar<double>{neighbor}}},
         element_at_upper_xi_boundary, mesh, logical_coords, element_size,
-        {{Direction<1>::lower_xi(), element_size}}, 0.0);
+        {{domain::Direction<1>::lower_xi(), element_size}}, 0.0);
   }
 }
 
@@ -606,8 +619,9 @@ void test_limiter_action_with_different_size_neighbor(
   INFO("Testing limiter with neighboring elements of different size...");
   CAPTURE(number_of_grid_points);
   const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
+  const auto mesh =
+      domain::Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const double dx = 1.0;
   const auto element_size = tnsr::I<double, 1>{dx};
@@ -616,7 +630,7 @@ void test_limiter_action_with_different_size_neighbor(
       [&minmod, &element, &mesh, &logical_coords, &element_size ](
           const scalar::type& local_input, const double left,
           const double right,
-          const std::unordered_map<Direction<1>, tnsr::I<double, 1>>&
+          const std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>&
               neighbor_sizes,
           const double expected_slope) noexcept {
     test_limiter_activates_work(
@@ -627,7 +641,7 @@ void test_limiter_action_with_different_size_neighbor(
       [&minmod, &element, &mesh, &logical_coords, &element_size ](
           const scalar::type& local_input, const double left,
           const double right,
-          const std::unordered_map<Direction<1>, tnsr::I<double, 1>>&
+          const std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>&
               neighbor_sizes) noexcept {
     test_limiter_does_not_activate_work(
         minmod, local_input, make_neighbor_means(left, right), element, mesh,
@@ -635,9 +649,9 @@ void test_limiter_action_with_different_size_neighbor(
   };
   const auto make_neighbor_sizes = [](const double left,
                                       const double right) noexcept {
-    return std::unordered_map<Direction<1>, tnsr::I<double, 1>>{
-        {Direction<1>::lower_xi(), tnsr::I<double, 1>(left)},
-        {Direction<1>::upper_xi(), tnsr::I<double, 1>(right)}};
+    return std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>{
+        {domain::Direction<1>::lower_xi(), tnsr::I<double, 1>(left)},
+        {domain::Direction<1>::upper_xi(), tnsr::I<double, 1>(right)}};
   };
 
   const double muscl_slope_factor =
@@ -760,7 +774,7 @@ template <size_t VolumeDim>
 void test_data_for_neighbors_work(
     const Scalar<DataVector>& input_scalar,
     const tnsr::I<DataVector, VolumeDim>& input_vector,
-    const Mesh<VolumeDim>& mesh,
+    const domain::Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>&
         logical_coords) noexcept {
   // To streamline the testing of the apply function, the test sets up
@@ -792,15 +806,15 @@ void test_data_for_neighbors_work(
 template <size_t VolumeDim>
 void test_apply_work(
     const Scalar<DataVector>& input_scalar,
-    const std::unordered_map<Direction<VolumeDim>, Scalar<double>>&
+    const std::unordered_map<domain::Direction<VolumeDim>, Scalar<double>>&
         neighbor_scalars,
     const std::array<double, VolumeDim>& target_scalar_slope,
     const tnsr::I<DataVector, VolumeDim>& input_vector,
-    const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
-        neighbor_vectors,
+    const std::unordered_map<domain::Direction<VolumeDim>,
+                             tnsr::I<double, VolumeDim>>& neighbor_vectors,
     const std::array<std::array<double, VolumeDim>, VolumeDim>&
         target_vector_slope,
-    const Mesh<VolumeDim>& mesh,
+    const domain::Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const tnsr::I<double, VolumeDim>& element_size) noexcept {
   auto scalar_to_limit = input_scalar;
@@ -855,8 +869,8 @@ SPECTRE_TEST_CASE(
   // See comments in the 3D test for full details.
   //
   // a. Generate data to fill all tensor components.
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto mesh = domain::Mesh<1>(3, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 1>{{{0.5}}};
   const auto true_slope = std::array<double, 1>{{2.0}};
@@ -877,10 +891,10 @@ SPECTRE_TEST_CASE(
   // The scalar we treat as a shock: we want the slope to be reduced
   const auto target_scalar_slope = std::array<double, 1>{{1.2}};
   const auto neighbor_scalars =
-      std::unordered_map<Direction<1>, Scalar<double>>{
-          {Direction<1>::lower_xi(),
+      std::unordered_map<domain::Direction<1>, Scalar<double>>{
+          {domain::Direction<1>::lower_xi(),
            Scalar<double>(mean - target_scalar_slope[0])},
-          {Direction<1>::upper_xi(),
+          {domain::Direction<1>::upper_xi(),
            Scalar<double>(mean + target_scalar_slope[0])},
       };
 
@@ -888,10 +902,10 @@ SPECTRE_TEST_CASE(
   const auto target_vector_slope =
       std::array<std::array<double, 1>, 1>{{true_slope}};
   const auto neighbor_vectors =
-      std::unordered_map<Direction<1>, tnsr::I<double, 1>>{
-          {Direction<1>::lower_xi(),
+      std::unordered_map<domain::Direction<1>, tnsr::I<double, 1>>{
+          {domain::Direction<1>::lower_xi(),
            tnsr::I<double, 1>{{{mean - 2.0 * true_slope[0]}}}},
-          {Direction<1>::upper_xi(),
+          {domain::Direction<1>::upper_xi(),
            tnsr::I<double, 1>{{{mean + 2.0 * true_slope[0]}}}}};
 
   test_apply_work(input_scalar, neighbor_scalars, target_scalar_slope,
@@ -910,8 +924,8 @@ SPECTRE_TEST_CASE(
   //
   // a. Generate data to fill all tensor components.
   const auto mesh =
-      Mesh<2>(std::array<size_t, 2>{{3, 3}}, Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+      domain::Mesh<2>(std::array<size_t, 2>{{3, 3}}, Spectral::Basis::Legendre,
+                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 2>{{{0.5, 1.0}}};
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
@@ -938,11 +952,11 @@ SPECTRE_TEST_CASE(
     return Scalar<double>(mean + sign * gsl::at(target_scalar_slope, dim));
   };
   const auto neighbor_scalars =
-      std::unordered_map<Direction<2>, Scalar<double>>{
-          {Direction<2>::lower_xi(), neighbor_scalar_func(0, -1)},
-          {Direction<2>::upper_xi(), neighbor_scalar_func(0, 1)},
-          {Direction<2>::lower_eta(), neighbor_scalar_func(1, -1)},
-          {Direction<2>::upper_eta(), neighbor_scalar_func(1, 1)}};
+      std::unordered_map<domain::Direction<2>, Scalar<double>>{
+          {domain::Direction<2>::lower_xi(), neighbor_scalar_func(0, -1)},
+          {domain::Direction<2>::upper_xi(), neighbor_scalar_func(0, 1)},
+          {domain::Direction<2>::lower_eta(), neighbor_scalar_func(1, -1)},
+          {domain::Direction<2>::upper_eta(), neighbor_scalar_func(1, 1)}};
 
   // The vector we treat differently in each component, to check the limiter
   // acts independently on each:
@@ -964,11 +978,11 @@ SPECTRE_TEST_CASE(
           mean + sign * gsl::at(neighbor_vector_slope[1], dim)}}};
   };
   const auto neighbor_vectors =
-      std::unordered_map<Direction<2>, tnsr::I<double, 2>>{
-          {Direction<2>::lower_xi(), neighbor_vector_func(0, -1)},
-          {Direction<2>::upper_xi(), neighbor_vector_func(0, 1)},
-          {Direction<2>::lower_eta(), neighbor_vector_func(1, -1)},
-          {Direction<2>::upper_eta(), neighbor_vector_func(1, 1)}};
+      std::unordered_map<domain::Direction<2>, tnsr::I<double, 2>>{
+          {domain::Direction<2>::lower_xi(), neighbor_vector_func(0, -1)},
+          {domain::Direction<2>::upper_xi(), neighbor_vector_func(0, 1)},
+          {domain::Direction<2>::lower_eta(), neighbor_vector_func(1, -1)},
+          {domain::Direction<2>::upper_eta(), neighbor_vector_func(1, 1)}};
 
   test_apply_work(input_scalar, neighbor_scalars, target_scalar_slope,
                   input_vector, neighbor_vectors, target_vector_slope, mesh,
@@ -996,9 +1010,9 @@ SPECTRE_TEST_CASE(
   //   component, because the neighbor states (and limiter action) will differ.
   // - Quadratic terms are centered on the element so they don't affect the
   //   mean slope on the element.
-  const auto mesh =
-      Mesh<3>(std::array<size_t, 3>{{3, 3, 4}}, Spectral::Basis::Legendre,
-              Spectral::Quadrature::GaussLobatto);
+  const auto mesh = domain::Mesh<3>(std::array<size_t, 3>{{3, 3, 4}},
+                                    Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = tnsr::I<double, 3>{{{0.5, 1.0, 0.8}}};
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};
@@ -1033,13 +1047,13 @@ SPECTRE_TEST_CASE(
     return Scalar<double>(mean + sign * gsl::at(target_scalar_slope, dim));
   };
   const auto neighbor_scalars =
-      std::unordered_map<Direction<3>, Scalar<double>>{
-          {Direction<3>::lower_xi(), neighbor_scalar_func(0, -1)},
-          {Direction<3>::upper_xi(), neighbor_scalar_func(0, 1)},
-          {Direction<3>::lower_eta(), neighbor_scalar_func(1, -1)},
-          {Direction<3>::upper_eta(), neighbor_scalar_func(1, 1)},
-          {Direction<3>::lower_zeta(), neighbor_scalar_func(2, -1)},
-          {Direction<3>::upper_zeta(), neighbor_scalar_func(2, 1)}};
+      std::unordered_map<domain::Direction<3>, Scalar<double>>{
+          {domain::Direction<3>::lower_xi(), neighbor_scalar_func(0, -1)},
+          {domain::Direction<3>::upper_xi(), neighbor_scalar_func(0, 1)},
+          {domain::Direction<3>::lower_eta(), neighbor_scalar_func(1, -1)},
+          {domain::Direction<3>::upper_eta(), neighbor_scalar_func(1, 1)},
+          {domain::Direction<3>::lower_zeta(), neighbor_scalar_func(2, -1)},
+          {domain::Direction<3>::upper_zeta(), neighbor_scalar_func(2, 1)}};
 
   // The vector we treat differently in each component, to verify that the
   // limiter acts independently on each:
@@ -1070,13 +1084,13 @@ SPECTRE_TEST_CASE(
           mean - 1.1 - dim - sign}}};  // arbitrary, but smaller than mean
   };
   const auto neighbor_vectors =
-      std::unordered_map<Direction<3>, tnsr::I<double, 3>>{
-          {Direction<3>::lower_xi(), neighbor_vector_func(0, -1)},
-          {Direction<3>::upper_xi(), neighbor_vector_func(0, 1)},
-          {Direction<3>::lower_eta(), neighbor_vector_func(1, -1)},
-          {Direction<3>::upper_eta(), neighbor_vector_func(1, 1)},
-          {Direction<3>::lower_zeta(), neighbor_vector_func(2, -1)},
-          {Direction<3>::upper_zeta(), neighbor_vector_func(2, 1)}};
+      std::unordered_map<domain::Direction<3>, tnsr::I<double, 3>>{
+          {domain::Direction<3>::lower_xi(), neighbor_vector_func(0, -1)},
+          {domain::Direction<3>::upper_xi(), neighbor_vector_func(0, 1)},
+          {domain::Direction<3>::lower_eta(), neighbor_vector_func(1, -1)},
+          {domain::Direction<3>::upper_eta(), neighbor_vector_func(1, 1)},
+          {domain::Direction<3>::lower_zeta(), neighbor_vector_func(2, -1)},
+          {domain::Direction<3>::upper_zeta(), neighbor_vector_func(2, 1)}};
 
   test_apply_work(input_scalar, neighbor_scalars, target_scalar_slope,
                   input_vector, neighbor_vectors, target_vector_slope, mesh,

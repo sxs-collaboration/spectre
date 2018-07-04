@@ -13,7 +13,7 @@
 
 template <size_t Dim>
 void test_identity() {
-  CoordinateMaps::Identity<Dim> identity_map;
+  domain::CoordinateMaps::Identity<Dim> identity_map;
   const auto xi = make_array<Dim>(1.0);
   const auto x = make_array<Dim>(1.0);
   CHECK(identity_map(xi) == x);

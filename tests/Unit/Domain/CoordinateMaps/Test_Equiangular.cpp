@@ -19,7 +19,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Equiangular", "[Domain][Unit]") {
   const double xa = -3.0;
   const double xb = 2.0;
 
-  CoordinateMaps::Equiangular equiangular_map(xA, xB, xa, xb);
+  domain::CoordinateMaps::Equiangular equiangular_map(xA, xB, xa, xb);
 
   const double xi = 0.5 * (xA + xB);
   const double x = xb * (xi - xA) / (xB - xA) + xa * (xB - xi) / (xB - xA);

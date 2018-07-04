@@ -29,6 +29,7 @@ std::array<double, Dim> nth_point(const tnsr::I<DataVector, Dim, Frame>& tensor,
 }
 }  // namespace
 
+namespace domain {
 template <size_t Dim, typename Frame>
 double minimum_grid_spacing(
     const Index<Dim>& extents,
@@ -79,3 +80,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
+}  // namespace domain

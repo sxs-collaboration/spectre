@@ -8,8 +8,10 @@
 
 #include "Domain/ElementId.hpp"      // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
+namespace domain {
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
                                 OrientationMap<VolumeDim> orientation)
@@ -25,7 +27,8 @@ void Neighbors<VolumeDim>::add_ids(
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n) {
-  os << "Ids = " << n.ids() << "; orientation = " << n.orientation();
+  ::operator<<(os << "Ids = ", n.ids())
+      << "; orientation = " << n.orientation();
   return os;
 }
 
@@ -48,18 +51,19 @@ void Neighbors<VolumeDim>::pup(PUP::er& p) noexcept {
 }
 
 // Explicit instantiations
-template class Neighbors<1>;
-template class Neighbors<2>;
-template class Neighbors<3>;
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template std::ostream& operator<<(std::ostream&, const Neighbors<1>&);
-template std::ostream& operator<<(std::ostream&, const Neighbors<2>&);
-template std::ostream& operator<<(std::ostream&, const Neighbors<3>&);
+#define INSTANTIATE(_, data)                                            \
+  template class Neighbors<DIM(data)>;                                  \
+  template std::ostream& operator<<(std::ostream& os,                   \
+                                    const Neighbors<DIM(data)>& block); \
+  template bool operator==(const Neighbors<DIM(data)>& lhs,             \
+                           const Neighbors<DIM(data)>& rhs) noexcept;   \
+  template bool operator!=(const Neighbors<DIM(data)>& lhs,             \
+                           const Neighbors<DIM(data)>& rhs) noexcept;
 
-template bool operator==(const Neighbors<1>&, const Neighbors<1>&) noexcept;
-template bool operator==(const Neighbors<2>&, const Neighbors<2>&) noexcept;
-template bool operator==(const Neighbors<3>&, const Neighbors<3>&) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
-template bool operator!=(const Neighbors<1>&, const Neighbors<1>&) noexcept;
-template bool operator!=(const Neighbors<2>&, const Neighbors<2>&) noexcept;
-template bool operator!=(const Neighbors<3>&, const Neighbors<3>&) noexcept;
+#undef DIM
+#undef INSTANTIATE
+}  // namespace domain

@@ -17,10 +17,13 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \cond
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+}  // namespace domain
 /// \endcond
 
+namespace domain {
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief The CoordinateMap for the Element from the Logical frame to the
@@ -136,3 +139,4 @@ class ElementMap {
   std::array<double, Dim> jacobian_{map_slope_};
   std::array<double, Dim> inverse_jacobian_{map_inverse_slope_};
 };
+}  // namespace domain

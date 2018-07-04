@@ -17,7 +17,7 @@
 namespace {
 template <size_t VolumeDim>
 void test_initial_element_ids(
-    const std::vector<ElementId<VolumeDim>>& element_ids,
+    const std::vector<domain::ElementId<VolumeDim>>& element_ids,
     const std::vector<std::array<size_t, VolumeDim>>&
         initial_refinement_levels) noexcept {
   size_t expected_number_of_elements = 0;
@@ -44,16 +44,19 @@ void test_initial_element_ids(
 SPECTRE_TEST_CASE("Unit.Domain.InitialElementIds", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 1>> initial_refinement_levels_1d{{{2}},
                                                                         {{3}}};
-  const auto element_ids_1d = initial_element_ids(initial_refinement_levels_1d);
+  const auto element_ids_1d =
+      domain::initial_element_ids(initial_refinement_levels_1d);
   test_initial_element_ids(element_ids_1d, initial_refinement_levels_1d);
 
   const std::vector<std::array<size_t, 2>> initial_refinement_levels_2d{
       {{2, 0}}, {{3, 1}}};
-  const auto element_ids_2d = initial_element_ids(initial_refinement_levels_2d);
+  const auto element_ids_2d =
+      domain::initial_element_ids(initial_refinement_levels_2d);
   test_initial_element_ids(element_ids_2d, initial_refinement_levels_2d);
 
   const std::vector<std::array<size_t, 3>> initial_refinement_levels_3d{
       {{4, 2, 1}}, {{0, 3, 2}}};
-  const auto element_ids_3d = initial_element_ids(initial_refinement_levels_3d);
+  const auto element_ids_3d =
+      domain::initial_element_ids(initial_refinement_levels_3d);
   test_initial_element_ids(element_ids_3d, initial_refinement_levels_3d);
 }

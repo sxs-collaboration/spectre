@@ -48,7 +48,7 @@ void test_with_normal_along_coordinate_axes(
   const auto sound_speed_squared = make_with_random_values<Scalar<DataVector>>(
       nn_generator, nn_distribution, used_for_size);
 
-  for (const auto& direction : Direction<Dim>::all_directions()) {
+  for (const auto& direction : domain::Direction<Dim>::all_directions()) {
     const auto normal = euclidean_basis_vector(direction, used_for_size);
 
     CHECK_ITERABLE_APPROX(NewtonianEuler::characteristic_speeds(

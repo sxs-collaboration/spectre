@@ -44,8 +44,8 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
          {{upper_x_lower_base, upper_y_lower_base}},
          {{lower_x_upper_base, lower_y_upper_base}},
          {{upper_x_upper_base, upper_y_upper_base}}}};
-    const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
-                                              with_equiangular_map);
+    const domain::CoordinateMaps::Frustum frustum_map(
+        face_vertices, -1.0, 2.0, map_i(), with_equiangular_map);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
@@ -53,8 +53,8 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
 void test_frustum_fail() noexcept {
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
-  const CoordinateMaps::Frustum map(face_vertices, 2.0, 5.0,
-                                    OrientationMap<3>{});
+  const domain::CoordinateMaps::Frustum map(face_vertices, 2.0, 5.0,
+                                            domain::OrientationMap<3>{});
 
   // For the choice of params above, any point with z<=-1 should fail.
   const std::array<double, 3> test_mapped_point1{{3.0, 3.0, -1.0}};
@@ -102,22 +102,22 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   const double upper_bound = 5.0;
 
   const auto wedge_directions = all_wedge_directions();
-  const CoordinateMaps::Frustum map_upper_zeta(
+  const domain::CoordinateMaps::Frustum map_upper_zeta(
       face_vertices, lower_bound, upper_bound,
       wedge_directions[0]);  // Upper Z frustum
-  const CoordinateMaps::Frustum map_upper_eta(
+  const domain::CoordinateMaps::Frustum map_upper_eta(
       face_vertices, lower_bound, upper_bound,
       wedge_directions[2]);  // Upper Y frustum
-  const CoordinateMaps::Frustum map_upper_xi(
+  const domain::CoordinateMaps::Frustum map_upper_xi(
       face_vertices, lower_bound, upper_bound,
       wedge_directions[4]);  // Upper X Frustum
-  const CoordinateMaps::Frustum map_lower_zeta(
+  const domain::CoordinateMaps::Frustum map_lower_zeta(
       face_vertices, lower_bound, upper_bound,
       wedge_directions[1]);  // Lower Z frustum
-  const CoordinateMaps::Frustum map_lower_eta(
+  const domain::CoordinateMaps::Frustum map_lower_eta(
       face_vertices, lower_bound, upper_bound,
       wedge_directions[3]);  // Lower Y frustum
-  const CoordinateMaps::Frustum map_lower_xi(
+  const domain::CoordinateMaps::Frustum map_lower_xi(
       face_vertices, lower_bound, upper_bound,
       wedge_directions[5]);  // Lower X frustum
   const std::array<double, 3> lowest_corner{{-1.0, -1.0, -1.0}};
@@ -192,8 +192,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   const double lower_bound = 2.0;
   const double upper_bound = 5.0;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+  auto failed_frustum = domain::CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, domain::OrientationMap<3>{});
   static_cast<void>(failed_frustum);
 
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -211,8 +211,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   const double lower_bound = 2.0;
   const double upper_bound = 5.0;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+  auto failed_frustum = domain::CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, domain::OrientationMap<3>{});
   static_cast<void>(failed_frustum);
 
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -230,8 +230,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   const double lower_bound = 2.0;
   const double upper_bound = 5.0;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+  auto failed_frustum = domain::CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, domain::OrientationMap<3>{});
   static_cast<void>(failed_frustum);
 
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -249,8 +249,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   const double lower_bound = 2.0;
   const double upper_bound = 5.0;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+  auto failed_frustum = domain::CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, domain::OrientationMap<3>{});
   static_cast<void>(failed_frustum);
 
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -268,8 +268,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   const double lower_bound = 2.0;
   const double upper_bound = -2.0;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+  auto failed_frustum = domain::CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, domain::OrientationMap<3>{});
   static_cast<void>(failed_frustum);
 
   ERROR("Failed to trigger ASSERT in an assertion test");

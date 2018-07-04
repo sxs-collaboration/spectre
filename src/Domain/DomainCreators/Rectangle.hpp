@@ -16,11 +16,14 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 template <size_t Dim, typename Frame>
 class DomainCreator;  // IWYU pragma: keep
+}  // namespace domain
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 2D Domain consisting of a single Block.
@@ -89,4 +92,5 @@ class Rectangle : public DomainCreator<2, TargetFrame> {
   typename InitialRefinement::type initial_refinement_level_xy_{};
   typename InitialGridPoints::type initial_number_of_grid_points_in_xy_{};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

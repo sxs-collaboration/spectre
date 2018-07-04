@@ -23,10 +23,18 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \cond
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+}  // namespace domain
 /// \endcond
 
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief Contains all the classes and functions necessary for working with the
+ * computational domain.
+ */
+namespace domain {
 /*!
  *  \ingroup ComputationalDomainGroup
  *  \brief A wrapper around a vector of Blocks that represent the computational
@@ -92,3 +100,4 @@ bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
 template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
                          const Domain<VolumeDim, TargetFrame>& d);
+}  // namespace domain

@@ -10,6 +10,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 
+namespace domain {
 namespace {
 template <size_t VolumeDim>
 std::set<size_t> set_of_dimensions(
@@ -119,3 +120,4 @@ std::ostream& operator<<(std::ostream& os,
 template class OrientationMap<1>;
 template class OrientationMap<2>;
 template class OrientationMap<3>;
+}  // namespace domain

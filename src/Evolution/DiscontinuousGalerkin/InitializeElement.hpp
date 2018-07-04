@@ -44,8 +44,10 @@
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
+namespace domain {
 template <size_t VolumeDim>
 class ElementIndex;
+}  // namespace domain
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
@@ -92,10 +94,10 @@ namespace Actions {
 /// - Modifies: nothing
 template <size_t Dim>
 struct InitializeElement {
-  static Mesh<Dim> element_mesh(
+  static domain::Mesh<Dim> element_mesh(
       const std::vector<std::array<size_t, Dim>>& initial_extents,
-      const ElementId<Dim>& element_id,
-      const OrientationMap<Dim>& orientation = {}) noexcept {
+      const domain::ElementId<Dim>& element_id,
+      const domain::OrientationMap<Dim>& orientation = {}) noexcept {
     const auto& unoriented_extents = initial_extents[element_id.block_id()];
     Index<Dim> extents;
     for (size_t i = 0; i < Dim; ++i) {
@@ -108,26 +110,28 @@ struct InitializeElement {
   // Items related to the basic structure of the domain
   struct DomainTags {
     using simple_tags =
-        db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Element<Dim>,
-                          Tags::ElementMap<Dim>>;
+        db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                          domain::Tags::ElementMap<Dim>>;
 
     using compute_tags = db::AddComputeTags<
-        Tags::LogicalCoordinates<Dim>,
-        Tags::MappedCoordinates<Tags::ElementMap<Dim>,
-                                Tags::LogicalCoordinates<Dim>>,
-        Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                              Tags::LogicalCoordinates<Dim>>>;
+        domain::Tags::LogicalCoordinates<Dim>,
+        domain::Tags::MappedCoordinates<domain::Tags::ElementMap<Dim>,
+                                        domain::Tags::LogicalCoordinates<Dim>>,
+        domain::Tags::InverseJacobian<domain::Tags::ElementMap<Dim>,
+                                      domain::Tags::LogicalCoordinates<Dim>>>;
 
     template <typename TagsList>
     static auto initialize(
-        db::DataBox<TagsList>&& box, const ElementIndex<Dim>& array_index,
+        db::DataBox<TagsList>&& box,
+        const domain::ElementIndex<Dim>& array_index,
         const std::vector<std::array<size_t, Dim>>& initial_extents,
-        const Domain<Dim, Frame::Inertial>& domain) noexcept {
-      const ElementId<Dim> element_id{array_index};
+        const domain::Domain<Dim, Frame::Inertial>& domain) noexcept {
+      const domain::ElementId<Dim> element_id{array_index};
       const auto& my_block = domain.blocks()[element_id.block_id()];
-      Mesh<Dim> mesh = element_mesh(initial_extents, element_id);
-      Element<Dim> element = create_initial_element(element_id, my_block);
-      ElementMap<Dim, Frame::Inertial> map{
+      domain::Mesh<Dim> mesh = element_mesh(initial_extents, element_id);
+      domain::Element<Dim> element =
+          domain::create_initial_element(element_id, my_block);
+      domain::ElementMap<Dim, Frame::Inertial> map{
           element_id, my_block.coordinate_map().get_clone()};
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
@@ -150,9 +154,9 @@ struct InitializeElement {
       using Vars = typename System::variables_tag::type;
 
       const size_t num_grid_points =
-          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+          db::get<domain::Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
+          db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
       using solution_tag = CacheTags::AnalyticSolutionBase;
@@ -185,9 +189,9 @@ struct InitializeElement {
       using Vars = typename System::variables_tag::type;
 
       const size_t num_grid_points =
-          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+          db::get<domain::Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
+          db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
       using solution_tag = CacheTags::AnalyticSolutionBase;
@@ -212,17 +216,22 @@ struct InitializeElement {
 
     template <typename Directions>
     using face_tags = tmpl::list<
-        Directions, Tags::Interface<Directions, Tags::Direction<Dim>>,
-        Tags::Interface<Directions, Tags::Mesh<Dim - 1>>,
-        Tags::Interface<Directions, typename System::variables_tag>,
-        Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<Dim>>,
-        Tags::Interface<Directions, typename System::template magnitude_tag<
-                                        Tags::UnnormalizedFaceNormal<Dim>>>,
-        Tags::Interface<Directions,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+        Directions,
+        domain::Tags::Interface<Directions, domain::Tags::Direction<Dim>>,
+        domain::Tags::Interface<Directions, domain::Tags::Mesh<Dim - 1>>,
+        domain::Tags::Interface<Directions, typename System::variables_tag>,
+        domain::Tags::Interface<Directions,
+                                domain::Tags::UnnormalizedFaceNormal<Dim>>,
+        domain::Tags::Interface<Directions,
+                                typename System::template magnitude_tag<
+                                    domain::Tags::UnnormalizedFaceNormal<Dim>>>,
+        domain::Tags::Interface<
+            Directions,
+            Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>>;
 
-    using compute_tags = tmpl::append<face_tags<Tags::InternalDirections<Dim>>,
-                                      face_tags<Tags::BoundaryDirections<Dim>>>;
+    using compute_tags =
+        tmpl::append<face_tags<domain::Tags::InternalDirections<Dim>>,
+                     face_tags<domain::Tags::BoundaryDirections<Dim>>>;
 
     template <typename TagsList>
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {
@@ -246,11 +255,11 @@ struct InitializeElement {
               bool IsConservative = LocalSystem::is_conservative>
     struct ComputeTags {
       using type = db::AddComputeTags<
-          Tags::Time,
-          Tags::deriv<typename variables_tag::tags_list,
-                      typename System::gradients_tags,
-                      Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                                            Tags::LogicalCoordinates<Dim>>>>;
+          Tags::Time, Tags::deriv<typename variables_tag::tags_list,
+                                  typename System::gradients_tags,
+                                  domain::Tags::InverseJacobian<
+                                      domain::Tags::ElementMap<Dim>,
+                                      domain::Tags::LogicalCoordinates<Dim>>>>;
     };
 
     template <typename LocalSystem>
@@ -260,8 +269,9 @@ struct InitializeElement {
           Tags::ComputeDiv<
               db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<Dim>,
                                  Frame::Inertial>,
-              Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                                    Tags::LogicalCoordinates<Dim>>>>;
+              domain::Tags::InverseJacobian<
+                  domain::Tags::ElementMap<Dim>,
+                  domain::Tags::LogicalCoordinates<Dim>>>>;
     };
 
     using compute_tags = typename ComputeTags<System>::type;
@@ -279,9 +289,9 @@ struct InitializeElement {
       const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
 
       const size_t num_grid_points =
-          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+          db::get<domain::Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
+          db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Will be overwritten before use
       DtVars dt_vars{num_grid_points};
@@ -323,19 +333,21 @@ struct InitializeElement {
     using flux_comm_types = FluxCommunicationTypes<Metavariables>;
 
     template <typename Tag>
-    using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+    using interface_tag =
+        domain::Tags::Interface<domain::Tags::InternalDirections<Dim>, Tag>;
 
     template <typename TagsList>
     static auto add_mortar_data(
         db::DataBox<TagsList>&& box,
         const std::vector<std::array<size_t, Dim>>& initial_extents) noexcept {
-      const auto& element = db::get<Tags::Element<Dim>>(box);
-      const auto& mesh = db::get<Tags::Mesh<Dim>>(box);
+      const auto& element = db::get<domain::Tags::Element<Dim>>(box);
+      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
 
       typename flux_comm_types::simple_mortar_data_tag::type mortar_data{};
       typename Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>::type
           mortar_next_temporal_ids{};
-      typename Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>::type mortar_meshes{};
+      typename Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>::type
+          mortar_meshes{};
       typename Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>::type
           mortar_sizes{};
       const auto& temporal_id = get<Tags::Next<temporal_id_tag>>(box);
@@ -363,7 +375,7 @@ struct InitializeElement {
           db::RemoveTags<>,
           db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
                             Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
-                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+                            Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                             Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>>(
           std::move(box), std::move(mortar_data),
           std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
@@ -376,7 +388,7 @@ struct InitializeElement {
       using simple_tags = db::AddSimpleTags<
           typename flux_comm_types::simple_mortar_data_tag,
           Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
-          Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+          Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
           Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
           interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
 
@@ -389,14 +401,14 @@ struct InitializeElement {
         auto box2 = add_mortar_data(std::move(box), initial_extents);
 
         const auto& internal_directions =
-            db::get<Tags::InternalDirections<Dim>>(box2);
+            db::get<domain::Tags::InternalDirections<Dim>>(box2);
 
         typename interface_tag<
             typename flux_comm_types::normal_dot_fluxes_tag>::type
             normal_dot_fluxes{};
         for (const auto& direction : internal_directions) {
           const auto& interface_num_points =
-              db::get<interface_tag<Tags::Mesh<Dim - 1>>>(box2)
+              db::get<interface_tag<domain::Tags::Mesh<Dim - 1>>>(box2)
                   .at(direction)
                   .number_of_grid_points();
           normal_dot_fluxes[direction].initialize(interface_num_points, 0.);
@@ -415,7 +427,7 @@ struct InitializeElement {
       using simple_tags =
           db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
                             Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
-                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+                            Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                             Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>;
 
       using compute_tags = db::AddComputeTags<
@@ -466,12 +478,12 @@ struct InitializeElement {
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ElementIndex<Dim>& array_index,
+                    const domain::ElementIndex<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain, Time initial_time,
-                    TimeDelta initial_dt) noexcept {
+                    domain::Domain<Dim, Frame::Inertial> domain,
+                    Time initial_time, TimeDelta initial_dt) noexcept {
     using system = typename Metavariables::system;
     auto domain_box = DomainTags::initialize(
         db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);

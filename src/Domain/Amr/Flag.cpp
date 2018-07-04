@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+namespace domain {
 namespace amr {
 
 std::ostream& operator<<(std::ostream& os, const Flag& flag) {
@@ -34,3 +35,4 @@ std::ostream& operator<<(std::ostream& os, const Flag& flag) {
   return os;
 }
 }  // namespace amr
+}  // namespace domain

@@ -49,7 +49,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
       : safety_factor_(safety_factor) {}
 
   using argument_tags =
-      tmpl::list<Tags::MinimumGridSpacing<Dim, Frame>, Tags::DataBox>;
+      tmpl::list<domain::Tags::MinimumGridSpacing<Dim, Frame>, Tags::DataBox>;
 
   template <typename Metavariables, typename DbTags>
   double operator()(

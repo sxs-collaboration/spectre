@@ -15,6 +15,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbor of a Block in a particular direction.
 ///
@@ -63,3 +64,4 @@ bool operator==(const BlockNeighbor<VolumeDim>& lhs,
 template <size_t VolumeDim>
 bool operator!=(const BlockNeighbor<VolumeDim>& lhs,
                 const BlockNeighbor<VolumeDim>& rhs) noexcept;
+}  // namespace domain

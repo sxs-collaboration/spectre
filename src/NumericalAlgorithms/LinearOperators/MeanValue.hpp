@@ -14,8 +14,10 @@
 
 /// \cond
 class DataVector;
+namespace domain {
 template <size_t>
 class Mesh;
+}  // namespace domain
 /// \endcond
 
 /*!
@@ -33,7 +35,7 @@ class Mesh;
  * \param mesh the Mesh of the manifold on which f is located.
  */
 template <size_t Dim>
-double mean_value(const DataVector& f, const Mesh<Dim>& mesh) {
+double mean_value(const DataVector& f, const domain::Mesh<Dim>& mesh) {
   return definite_integral(f, mesh) / two_to_the(Dim);
 }
 
@@ -52,5 +54,6 @@ double mean_value(const DataVector& f, const Mesh<Dim>& mesh) {
  * \param side whether it is the lower or upper boundary in the d-th dimension.
  */
 template <size_t Dim>
-double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
-                              size_t d, Side side);
+double mean_value_on_boundary(const DataVector& f,
+                              const domain::Mesh<Dim>& mesh, size_t d,
+                              domain::Side side);

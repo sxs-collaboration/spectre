@@ -36,7 +36,7 @@ struct DgElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using action_list = ActionList;
-  using array_index = ElementIndex<volume_dim>;
+  using array_index = domain::ElementIndex<volume_dim>;
 
   using const_global_cache_tag_list =
       Parallel::get_const_global_cache_tags<action_list>;
@@ -50,7 +50,7 @@ struct DgElementArray {
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
+      std::unique_ptr<domain::DomainCreator<volume_dim, Frame::Inertial>>
           domain_creator,
       double initial_time, double initial_dt) noexcept;
 
@@ -68,7 +68,7 @@ struct DgElementArray {
 template <class Metavariables, class ActionList>
 void DgElementArray<Metavariables, ActionList>::initialize(
     Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-    const std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
+    const std::unique_ptr<domain::DomainCreator<volume_dim, Frame::Inertial>>
         domain_creator,
     const double initial_time, const double initial_dt) noexcept {
   auto& dg_element_array = Parallel::get_parallel_component<DgElementArray>(
@@ -78,12 +78,12 @@ void DgElementArray<Metavariables, ActionList>::initialize(
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs =
         domain_creator->initial_refinement_levels()[block.id()];
-    const std::vector<ElementId<volume_dim>> element_ids =
-        initial_element_ids(block.id(), initial_ref_levs);
+    const std::vector<domain::ElementId<volume_dim>> element_ids =
+        domain::initial_element_ids(block.id(), initial_ref_levs);
     int which_proc = 0;
     const int number_of_procs = Parallel::number_of_procs();
     for (size_t i = 0; i < element_ids.size(); ++i) {
-      dg_element_array(ElementIndex<volume_dim>(element_ids[i]))
+      dg_element_array(domain::ElementIndex<volume_dim>(element_ids[i]))
           .insert(global_cache, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }

@@ -14,8 +14,8 @@
 namespace {
 
 template <size_t Dim>
-DataVector integrate_over_last_dimension(const DataVector& integrand,
-                                         const Mesh<Dim>& mesh) noexcept {
+DataVector integrate_over_last_dimension(
+    const DataVector& integrand, const domain::Mesh<Dim>& mesh) noexcept {
   static_assert(Dim > 1, "Expect dimension to be at least 2.");
   const DataVector& weights =
       Spectral::quadrature_weights(mesh.slice_through(Dim - 1));
@@ -29,7 +29,7 @@ DataVector integrate_over_last_dimension(const DataVector& integrand,
 
 template <size_t Dim>
 double definite_integral(const DataVector& integrand,
-                         const Mesh<Dim>& mesh) noexcept {
+                         const domain::Mesh<Dim>& mesh) noexcept {
   const size_t num_grid_points = mesh.number_of_grid_points();
   ASSERT(integrand.size() == num_grid_points,
          "num_grid_points = " << num_grid_points
@@ -40,7 +40,7 @@ double definite_integral(const DataVector& integrand,
 
 template <>
 double definite_integral<1>(const DataVector& integrand,
-                            const Mesh<1>& mesh) noexcept {
+                            const domain::Mesh<1>& mesh) noexcept {
   const size_t num_grid_points = mesh.number_of_grid_points();
   ASSERT(integrand.size() == num_grid_points,
          "num_grid_points = " << num_grid_points
@@ -51,7 +51,7 @@ double definite_integral<1>(const DataVector& integrand,
 
 /// \cond
 template double definite_integral<2>(const DataVector&,
-                                     const Mesh<2>&) noexcept;
+                                     const domain::Mesh<2>&) noexcept;
 template double definite_integral<3>(const DataVector&,
-                                     const Mesh<3>&) noexcept;
+                                     const domain::Mesh<3>&) noexcept;
 /// \endcond

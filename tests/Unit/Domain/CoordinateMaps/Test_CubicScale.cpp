@@ -41,7 +41,7 @@ void cubic_scale_non_invertible(const double a0, const double b0,
   const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
       {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
 
-  const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
+  const domain::CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
   const std::array<double, 1> point_xi{{19.2}};
 
   const std::array<double, 1> mapped_point{
@@ -78,7 +78,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
         {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
 
     const double outer_boundary = outer_b;
-    const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
+    const domain::CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
     const std::array<double, 1> point_xi{{x0}};
 
     // test serialized/deserialized map
@@ -187,7 +187,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordMapsTimeDependent.CubicScale.TestBoundaries",
+    "Unit.Domain.domain::CoordMapsTimeDependent.CubicScale.TestBoundaries",
     "[Domain][Unit]") {
   static constexpr size_t deriv_order = 2;
 
@@ -213,7 +213,7 @@ SPECTRE_TEST_CASE(
         {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
 
     const double outer_boundary = 20.0;
-    const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
+    const domain::CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
     const std::array<double, 1> point_xi{{x0}};
 
     while (t < final_time) {
@@ -238,7 +238,7 @@ SPECTRE_TEST_CASE(
 // [[OutputRegex, The map is invertible only if 0 < expansion_b <
 // expansion_a\*2/3]]
 SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordMapsTimeDependent.CubicScale.NonInvertible1",
+    "Unit.Domain.domain::CoordMapsTimeDependent.CubicScale.NonInvertible1",
     "[Domain][Unit]") {
   ERROR_TEST();
   // the two expansion factors are chosen such that the map is non-invertible
@@ -247,7 +247,7 @@ SPECTRE_TEST_CASE(
 
 // [[OutputRegex, We require expansion_a > 0 for invertibility]]
 SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordMapsTimeDependent.CubicScale.NonInvertible2",
+    "Unit.Domain.domain::CoordMapsTimeDependent.CubicScale.NonInvertible2",
     "[Domain][Unit]") {
   ERROR_TEST();
   // Make a<0

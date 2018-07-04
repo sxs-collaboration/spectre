@@ -58,7 +58,7 @@ struct System {
   using volume_sources = ComputeSources;
 };
 
-using ElementIndexType = ElementIndex<dim>;
+using ElementIndexType = domain::ElementIndex<dim>;
 
 struct Metavariables;
 using component = ActionTesting::MockArrayComponent<
@@ -75,7 +75,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
                   "[Unit][Evolution][Actions]") {
   ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<dim> self(1);
+  const domain::ElementId<dim> self(1);
 
   const Scalar<DataVector> var1{{{{3., 4.}}}};
   const Scalar<DataVector> var3{{{{5., 6.}}}};

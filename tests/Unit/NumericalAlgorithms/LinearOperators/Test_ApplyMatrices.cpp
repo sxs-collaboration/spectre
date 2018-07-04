@@ -46,8 +46,8 @@ struct VectorTag {
 
 template <size_t Dim>
 Variables<tmpl::list<ScalarTag, VectorTag>> polynomial_data(
-    const Mesh<Dim>& mesh, const Index<Dim>& powers) noexcept {
-  const auto coords = logical_coordinates(mesh);
+    const domain::Mesh<Dim>& mesh, const Index<Dim>& powers) noexcept {
+  const auto coords = domain::logical_coordinates(mesh);
   Variables<tmpl::list<ScalarTag, VectorTag>> result(
       mesh.number_of_grid_points(), 1.);
   for (size_t i = 0; i < Dim; ++i) {
@@ -61,7 +61,7 @@ Variables<tmpl::list<ScalarTag, VectorTag>> polynomial_data(
 template <size_t Dim, size_t FilledDim = 0>
 struct CheckApply {
   static void apply(
-      const Mesh<Dim>& source_mesh, const Mesh<Dim>& dest_mesh,
+      const domain::Mesh<Dim>& source_mesh, const domain::Mesh<Dim>& dest_mesh,
       const Index<Dim>& powers,
       std::array<Matrix, Dim> matrices = std::array<Matrix, Dim>{}) noexcept {
     if (source_mesh.extents(FilledDim) == dest_mesh.extents(FilledDim)) {
@@ -79,7 +79,8 @@ struct CheckApply {
 
 template <size_t Dim>
 struct CheckApply<Dim, Dim> {
-  static void apply(const Mesh<Dim>& source_mesh, const Mesh<Dim>& dest_mesh,
+  static void apply(const domain::Mesh<Dim>& source_mesh,
+                    const domain::Mesh<Dim>& dest_mesh,
                     const Index<Dim>& powers,
                     const std::array<Matrix, Dim>& matrices = {}) noexcept {
     const auto source_data = polynomial_data(source_mesh, powers);
@@ -131,8 +132,10 @@ void test_interpolation() noexcept {
       }
       for (IndexIterator<Dim> powers(max_powers); powers; ++powers) {
         CAPTURE(*powers);
-        Mesh<Dim> source_mesh{(*source_extents).indices(), basis, quadrature};
-        Mesh<Dim> dest_mesh{(*dest_extents).indices(), basis, quadrature};
+        domain::Mesh<Dim> source_mesh{(*source_extents).indices(), basis,
+                                      quadrature};
+        domain::Mesh<Dim> dest_mesh{(*dest_extents).indices(), basis,
+                                    quadrature};
         CheckApply<Dim>::apply(std::move(source_mesh), std::move(dest_mesh),
                                *powers);
       }

@@ -24,100 +24,149 @@
 
 namespace {
 void test_create_initial_element(
-    const ElementId<2>& element_id, const Block<2, Frame::Inertial>& block,
-    const std::unordered_map<Direction<2>, Neighbors<2>>&
+    const domain::ElementId<2>& element_id,
+    const domain::Block<2, Frame::Inertial>& block,
+    const std::unordered_map<domain::Direction<2>, domain::Neighbors<2>>&
         expected_neighbors) noexcept {
   const auto created_element = create_initial_element(element_id, block);
-  const Element<2> expected_element{element_id, expected_neighbors};
+  const domain::Element<2> expected_element{element_id, expected_neighbors};
   CHECK(created_element == expected_element);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
-  OrientationMap<2> aligned(
-      make_array(Direction<2>::upper_xi(), Direction<2>::upper_eta()));
-  OrientationMap<2> unaligned(
-      make_array(Direction<2>::lower_eta(), Direction<2>::upper_xi()));
-  OrientationMap<2> inverse_of_unaligned(
-      {{Direction<2>::lower_eta(), Direction<2>::upper_xi()}},
-      {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
-  Block<2, Frame::Inertial> test_block(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Identity<2>{}),
-      0, {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},
-          {Direction<2>::upper_eta(), BlockNeighbor<2>{2, unaligned}}});
+  domain::OrientationMap<2> aligned(make_array(
+      domain::Direction<2>::upper_xi(), domain::Direction<2>::upper_eta()));
+  domain::OrientationMap<2> unaligned(make_array(
+      domain::Direction<2>::lower_eta(), domain::Direction<2>::upper_xi()));
+  domain::OrientationMap<2> inverse_of_unaligned(
+      {{domain::Direction<2>::lower_eta(), domain::Direction<2>::upper_xi()}},
+      {{domain::Direction<2>::upper_xi(), domain::Direction<2>::upper_eta()}});
+  domain::Block<2, Frame::Inertial> test_block(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}),
+      0,
+      {{domain::Direction<2>::upper_xi(), domain::BlockNeighbor<2>{1, aligned}},
+       {domain::Direction<2>::upper_eta(),
+        domain::BlockNeighbor<2>{2, unaligned}}});
 
   // interior element
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 4}}}}, test_block,
-      {{Direction<2>::upper_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 4}}}}},
-                     aligned}},
-       {Direction<2>::lower_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 4}}}}},
-                     aligned}},
-       {Direction<2>::upper_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 5}}}}},
-                     aligned}},
-       {Direction<2>::lower_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 3}}}}},
-                     aligned}}});
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 4}}}},
+      test_block,
+      {{domain::Direction<2>::upper_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 4}}}}},
+            aligned}},
+       {domain::Direction<2>::lower_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 1}, domain::SegmentId{3, 4}}}}},
+            aligned}},
+       {domain::Direction<2>::upper_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 5}}}}},
+            aligned}},
+       {domain::Direction<2>::lower_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 3}}}}},
+            aligned}}});
 
   // element on external boundary
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 0}}}}, test_block,
-      {{Direction<2>::upper_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 0}}}}},
-                     aligned}},
-       {Direction<2>::upper_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 1}}}}},
-                     aligned}}});
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 0}, domain::SegmentId{3, 0}}}},
+      test_block,
+      {{domain::Direction<2>::upper_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 1}, domain::SegmentId{3, 0}}}}},
+            aligned}},
+       {domain::Direction<2>::upper_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 0}, domain::SegmentId{3, 1}}}}},
+            aligned}}});
 
   // element bounding aligned neighbor block
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 4}}}}, test_block,
-      {{Direction<2>::upper_xi(),
-        Neighbors<2>{{ElementId<2>{1, {{SegmentId{2, 0}, SegmentId{3, 4}}}}},
-                     aligned}},
-       {Direction<2>::lower_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 4}}}}},
-                     aligned}},
-       {Direction<2>::upper_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 5}}}}},
-                     aligned}},
-       {Direction<2>::lower_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 3}}}}},
-                     aligned}}});
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 4}}}},
+      test_block,
+      {{domain::Direction<2>::upper_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                1, {{domain::SegmentId{2, 0}, domain::SegmentId{3, 4}}}}},
+            aligned}},
+       {domain::Direction<2>::lower_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 4}}}}},
+            aligned}},
+       {domain::Direction<2>::upper_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 5}}}}},
+            aligned}},
+       {domain::Direction<2>::lower_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 3}}}}},
+            aligned}}});
 
   // element bounding unaligned neighbor block
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 7}}}}, test_block,
-      {{Direction<2>::upper_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 7}}}}},
-                     aligned}},
-       {Direction<2>::lower_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 7}}}}},
-                     aligned}},
-       {Direction<2>::upper_eta(),
-        Neighbors<2>{{ElementId<2>{2, {{SegmentId{3, 0}, SegmentId{2, 1}}}}},
-                     unaligned}},
-       {Direction<2>::lower_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 6}}}}},
-                     aligned}}});
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 7}}}},
+      test_block,
+      {{domain::Direction<2>::upper_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 7}}}}},
+            aligned}},
+       {domain::Direction<2>::lower_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 1}, domain::SegmentId{3, 7}}}}},
+            aligned}},
+       {domain::Direction<2>::upper_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                2, {{domain::SegmentId{3, 0}, domain::SegmentId{2, 1}}}}},
+            unaligned}},
+       {domain::Direction<2>::lower_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 6}}}}},
+            aligned}}});
 
   // element bounding both neighbor blocks
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 7}}}}, test_block,
-      {{Direction<2>::upper_xi(),
-        Neighbors<2>{{ElementId<2>{1, {{SegmentId{2, 0}, SegmentId{3, 7}}}}},
-                     aligned}},
-       {Direction<2>::lower_xi(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 7}}}}},
-                     aligned}},
-       {Direction<2>::upper_eta(),
-        Neighbors<2>{{ElementId<2>{2, {{SegmentId{3, 0}, SegmentId{2, 0}}}}},
-                     unaligned}},
-       {Direction<2>::lower_eta(),
-        Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 6}}}}},
-                     aligned}}});
+      domain::ElementId<2>{
+          0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 7}}}},
+      test_block,
+      {{domain::Direction<2>::upper_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                1, {{domain::SegmentId{2, 0}, domain::SegmentId{3, 7}}}}},
+            aligned}},
+       {domain::Direction<2>::lower_xi(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 2}, domain::SegmentId{3, 7}}}}},
+            aligned}},
+       {domain::Direction<2>::upper_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                2, {{domain::SegmentId{3, 0}, domain::SegmentId{2, 0}}}}},
+            unaligned}},
+       {domain::Direction<2>::lower_eta(),
+        domain::Neighbors<2>{
+            {domain::ElementId<2>{
+                0, {{domain::SegmentId{2, 3}, domain::SegmentId{3, 6}}}}},
+            aligned}}});
 }

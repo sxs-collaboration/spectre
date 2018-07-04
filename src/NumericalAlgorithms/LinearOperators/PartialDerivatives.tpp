@@ -23,7 +23,7 @@ struct LogicalImpl;
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
 std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives(
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) noexcept {
+    const Variables<VariableTags>& u, const domain::Mesh<Dim>& mesh) noexcept {
   return partial_derivatives_detail::LogicalImpl<
       Dim, VariableTags, DerivativeTags>::apply(u, mesh);
 }
@@ -33,7 +33,7 @@ template <typename DerivativeTags, typename VariableTags, size_t Dim,
 Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                            DerivativeFrame>>
 partial_derivatives(
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const Variables<VariableTags>& u, const domain::Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept {
   const auto logical_partial_derivatives_of_u =
@@ -74,7 +74,7 @@ template <typename VariableTags, typename DerivativeTags>
 struct LogicalImpl<1, VariableTags, DerivativeTags> {
   static constexpr const size_t Dim = 1;
   static auto apply(const Variables<VariableTags>& u,
-                    const Mesh<Dim>& mesh) noexcept {
+                    const domain::Mesh<Dim>& mesh) noexcept {
     auto logical_partial_derivatives_of_u = make_array<Dim>(
         Variables<DerivativeTags>(u.number_of_grid_points(), 0.0));
     const Matrix& differentiation_matrix_xi =
@@ -93,7 +93,7 @@ template <typename VariableTags, typename DerivativeTags>
 struct LogicalImpl<2, VariableTags, DerivativeTags> {
   static constexpr size_t Dim = 2;
   static auto apply(const Variables<VariableTags>& u,
-                    const Mesh<2>& mesh) noexcept {
+                    const domain::Mesh<2>& mesh) noexcept {
     auto logical_partial_derivatives_of_u =
         make_array<Dim>(Variables<DerivativeTags>(u.number_of_grid_points()));
     const Matrix& differentiation_matrix_xi =
@@ -129,7 +129,7 @@ template <typename VariableTags, typename DerivativeTags>
 struct LogicalImpl<3, VariableTags, DerivativeTags> {
   static constexpr size_t Dim = 3;
   static auto apply(const Variables<VariableTags>& u,
-                    const Mesh<3>& mesh) noexcept {
+                    const domain::Mesh<3>& mesh) noexcept {
     auto logical_partial_derivatives_of_u =
         make_array<Dim>(Variables<DerivativeTags>(u.number_of_grid_points()));
     const Matrix& differentiation_matrix_xi =

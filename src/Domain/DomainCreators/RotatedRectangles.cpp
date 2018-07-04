@@ -14,7 +14,8 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 RotatedRectangles<TargetFrame>::RotatedRectangles(
@@ -72,7 +73,8 @@ RotatedRectangles<TargetFrame>::initial_refinement_levels() const noexcept {
   const size_t& y_0 = initial_refinement_level_xy_[1];
   return {{{x_0, y_0}}, {{x_0, y_0}}, {{y_0, x_0}}, {{y_0, x_0}}};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::RotatedRectangles<Frame::Inertial>;
-template class DomainCreators::RotatedRectangles<Frame::Grid>;
+template class RotatedRectangles<Frame::Inertial>;
+template class RotatedRectangles<Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

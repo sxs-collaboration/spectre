@@ -19,11 +19,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace domain {
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
 using block_logical_coord_holder =
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>;
+    IdPair<BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>;
 }  // namespace
 
 template <size_t Dim>
@@ -114,3 +115,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 /// \endcond
+}  // namespace domain

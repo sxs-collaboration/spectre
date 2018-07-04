@@ -10,8 +10,10 @@
 
 /// \cond
 class DataVector;
+namespace domain {
 template <size_t>
 class Mesh;
+}  // namespace domain
 /// \endcond
 
 /*!
@@ -28,4 +30,4 @@ class Mesh;
  */
 template <size_t Dim>
 double definite_integral(const DataVector& integrand,
-                         const Mesh<Dim>& mesh) noexcept;
+                         const domain::Mesh<Dim>& mesh) noexcept;

@@ -20,7 +20,7 @@
 namespace {
 template <size_t Dim>
 void test_extents_basis_and_quadrature(
-    const Mesh<Dim>& mesh, const std::array<size_t, Dim>& extents,
+    const domain::Mesh<Dim>& mesh, const std::array<size_t, Dim>& extents,
     const std::array<Spectral::Basis, Dim>& basis,
     const std::array<Spectral::Quadrature, Dim>& quadrature) {
   CHECK(mesh.number_of_grid_points() ==
@@ -38,44 +38,43 @@ void test_extents_basis_and_quadrature(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
-  SECTION("Uniform LGL mesh") {
-    const Mesh<1> mesh1d_lgl{3, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
-    test_extents_basis_and_quadrature(mesh1d_lgl, {{3}},
-                                      {{Spectral::Basis::Legendre}},
-                                      {{Spectral::Quadrature::GaussLobatto}});
-    const Mesh<2> mesh2d_lgl{3, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
-    test_extents_basis_and_quadrature(
-        mesh2d_lgl, {{3, 3}},
-        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-        {{Spectral::Quadrature::GaussLobatto,
-          Spectral::Quadrature::GaussLobatto}});
-    const Mesh<3> mesh3d_lgl{3, Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto};
-    test_extents_basis_and_quadrature(
-        mesh3d_lgl, {{3, 3, 3}},
-        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-          Spectral::Basis::Legendre}},
-        {{Spectral::Quadrature::GaussLobatto,
-          Spectral::Quadrature::GaussLobatto,
-          Spectral::Quadrature::GaussLobatto}});
+// clang-format OFF
+SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]"){
+    SECTION("Uniform LGL mesh"){const domain::Mesh<1> mesh1d_lgl{
+        3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+test_extents_basis_and_quadrature(mesh1d_lgl, {{3}},
+                                  {{Spectral::Basis::Legendre}},
+                                  {{Spectral::Quadrature::GaussLobatto}});
+const domain::Mesh<2> mesh2d_lgl{3, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto};
+test_extents_basis_and_quadrature(
+    mesh2d_lgl, {{3, 3}},
+    {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+    {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto}});
+const domain::Mesh<3> mesh3d_lgl{3, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto};
+test_extents_basis_and_quadrature(
+    mesh3d_lgl, {{3, 3, 3}},
+    {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+      Spectral::Basis::Legendre}},
+    {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+      Spectral::Quadrature::GaussLobatto}});
   }
+  // clang-format ON
 
   SECTION("Explicit choices per dimension") {
-    CHECK(Mesh<0>{}.slice_through() == Mesh<0>{});
-    const Mesh<1> mesh1d{{{2}},
-                         {{Spectral::Basis::Legendre}},
-                         {{Spectral::Quadrature::GaussLobatto}}};
+    CHECK(domain::Mesh<0>{}.slice_through() == domain::Mesh<0>{});
+    const domain::Mesh<1> mesh1d{{{2}},
+                                 {{Spectral::Basis::Legendre}},
+                                 {{Spectral::Quadrature::GaussLobatto}}};
     test_extents_basis_and_quadrature(mesh1d, {{2}},
                                       {{Spectral::Basis::Legendre}},
                                       {{Spectral::Quadrature::GaussLobatto}});
-    CHECK(mesh1d.slice_away(0) == Mesh<0>{});
-    CHECK(mesh1d.slice_through() == Mesh<0>{});
+    CHECK(mesh1d.slice_away(0) == domain::Mesh<0>{});
+    CHECK(mesh1d.slice_through() == domain::Mesh<0>{});
     CHECK(mesh1d.slice_through(0) == mesh1d);
 
-    const Mesh<2> mesh2d{
+    const domain::Mesh<2> mesh2d{
         {{2, 3}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
         {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}};
@@ -83,21 +82,23 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
         mesh2d, {{2, 3}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
         {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}});
-    CHECK(mesh2d.slice_away(0) == Mesh<1>{3, Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto});
-    CHECK(mesh2d.slice_away(1) ==
-          Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
-    CHECK(mesh2d.slice_through() == Mesh<0>{});
+    CHECK(mesh2d.slice_away(0) ==
+          domain::Mesh<1>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
+    CHECK(mesh2d.slice_away(1) == domain::Mesh<1>{2, Spectral::Basis::Legendre,
+                                                  Spectral::Quadrature::Gauss});
+    CHECK(mesh2d.slice_through() == domain::Mesh<0>{});
     CHECK(mesh2d.slice_through(0) == mesh2d.slice_away(1));
     CHECK(mesh2d.slice_through(1) == mesh2d.slice_away(0));
     CHECK(mesh2d.slice_through(0, 1) == mesh2d);
     CHECK(mesh2d.slice_through(1, 0) ==
-          Mesh<2>{{{3, 2}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::Gauss}}});
+          domain::Mesh<2>{
+              {{3, 2}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::GaussLobatto,
+                Spectral::Quadrature::Gauss}}});
 
-    const Mesh<3> mesh3d{
+    const domain::Mesh<3> mesh3d{
         {{2, 3, 4}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
           Spectral::Basis::Legendre}},
@@ -110,99 +111,107 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
         {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
           Spectral::Quadrature::GaussLobatto}});
     CHECK(mesh3d.slice_away(0) ==
-          Mesh<2>{{{3, 4}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::Gauss,
-                    Spectral::Quadrature::GaussLobatto}}});
-    CHECK(mesh3d.slice_away(1) == Mesh<2>{{{2, 4}},
-                                          Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto});
+          domain::Mesh<2>{
+              {{3, 4}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::Gauss,
+                Spectral::Quadrature::GaussLobatto}}});
+    CHECK(mesh3d.slice_away(1) ==
+          domain::Mesh<2>{{{2, 4}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
     CHECK(mesh3d.slice_away(2) ==
-          Mesh<2>{{{2, 3}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::Gauss}}});
-    CHECK(mesh3d.slice_through() == Mesh<0>{});
+          domain::Mesh<2>{
+              {{2, 3}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::GaussLobatto,
+                Spectral::Quadrature::Gauss}}});
+    CHECK(mesh3d.slice_through() == domain::Mesh<0>{});
     CHECK(mesh3d.slice_through(0) ==
-          Mesh<1>{2, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          domain::Mesh<1>{2, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
     CHECK(mesh3d.slice_through(1) ==
-          Mesh<1>{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+          domain::Mesh<1>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss});
     CHECK(mesh3d.slice_through(2) ==
-          Mesh<1>{4, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
+          domain::Mesh<1>{4, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
     CHECK(mesh3d.slice_through(0, 1) == mesh3d.slice_away(2));
     CHECK(mesh3d.slice_through(0, 2) == mesh3d.slice_away(1));
     CHECK(mesh3d.slice_through(1, 2) == mesh3d.slice_away(0));
     CHECK(mesh3d.slice_through(0, 1, 2) == mesh3d);
-    CHECK(mesh3d.slice_through(2, 0, 1) ==
-          Mesh<3>{{{4, 2, 3}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-                    Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::Gauss}}});
+    CHECK(
+        mesh3d.slice_through(2, 0, 1) ==
+        domain::Mesh<3>{{{4, 2, 3}},
+                        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                          Spectral::Basis::Legendre}},
+                        {{Spectral::Quadrature::GaussLobatto,
+                          Spectral::Quadrature::GaussLobatto,
+                          Spectral::Quadrature::Gauss}}});
   }
 
   SECTION("Equality") {
-    CHECK(Mesh<1>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} ==
-          Mesh<1>{{{3}},
-                  {{Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::GaussLobatto}}});
-    CHECK(Mesh<1>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} !=
-          Mesh<1>{{{2}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
-    CHECK(Mesh<1>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} !=
-          Mesh<1>{{{3}},
-                  {{Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::Gauss}}});
-    CHECK(Mesh<2>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} ==
-          Mesh<2>{{{3, 3}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
-    CHECK(Mesh<2>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} ==
-          Mesh<2>{{{3, 3}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::GaussLobatto}}});
-    CHECK(Mesh<2>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} !=
-          Mesh<2>{{{3, 2}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
-    CHECK(Mesh<2>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} !=
-          Mesh<2>{{{3, 3}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::Gauss,
-                    Spectral::Quadrature::GaussLobatto}}});
-    CHECK(Mesh<3>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} ==
-          Mesh<3>{{{3, 3, 3}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
-    CHECK(Mesh<3>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} ==
-          Mesh<3>{{{3, 3, 3}},
-                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
-                    Spectral::Basis::Legendre}},
-                  {{Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::GaussLobatto,
-                    Spectral::Quadrature::GaussLobatto}}});
-    CHECK(Mesh<3>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} !=
-          Mesh<3>{{{3, 2, 3}},
-                  Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
-    CHECK(Mesh<3>{3, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto} !=
-          Mesh<3>{
+    CHECK(domain::Mesh<1>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} ==
+          domain::Mesh<1>{{{3}},
+                          {{Spectral::Basis::Legendre}},
+                          {{Spectral::Quadrature::GaussLobatto}}});
+    CHECK(domain::Mesh<1>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} !=
+          domain::Mesh<1>{{{2}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
+    CHECK(domain::Mesh<1>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} !=
+          domain::Mesh<1>{{{3}},
+                          {{Spectral::Basis::Legendre}},
+                          {{Spectral::Quadrature::Gauss}}});
+    CHECK(domain::Mesh<2>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} ==
+          domain::Mesh<2>{{{3, 3}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
+    CHECK(domain::Mesh<2>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} ==
+          domain::Mesh<2>{
+              {{3, 3}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::GaussLobatto,
+                Spectral::Quadrature::GaussLobatto}}});
+    CHECK(domain::Mesh<2>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} !=
+          domain::Mesh<2>{{{3, 2}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
+    CHECK(domain::Mesh<2>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} !=
+          domain::Mesh<2>{
+              {{3, 3}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+              {{Spectral::Quadrature::Gauss,
+                Spectral::Quadrature::GaussLobatto}}});
+    CHECK(domain::Mesh<3>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} ==
+          domain::Mesh<3>{{{3, 3, 3}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
+    CHECK(
+        domain::Mesh<3>{3, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto} ==
+        domain::Mesh<3>{{{3, 3, 3}},
+                        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                          Spectral::Basis::Legendre}},
+                        {{Spectral::Quadrature::GaussLobatto,
+                          Spectral::Quadrature::GaussLobatto,
+                          Spectral::Quadrature::GaussLobatto}}});
+    CHECK(domain::Mesh<3>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} !=
+          domain::Mesh<3>{{{3, 2, 3}},
+                          Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto});
+    CHECK(domain::Mesh<3>{3, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto} !=
+          domain::Mesh<3>{
               {{3, 3, 3}},
               {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
                 Spectral::Basis::Legendre}},
@@ -211,13 +220,13 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
   }
 
   SECTION("Serialization") {
-    test_serialization(Mesh<1>{3, Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto});
-    test_serialization(Mesh<2>{
+    test_serialization(domain::Mesh<1>{3, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto});
+    test_serialization(domain::Mesh<2>{
         {{3, 2}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
         {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}}});
-    test_serialization(Mesh<3>{
+    test_serialization(domain::Mesh<3>{
         {{3, 2, 4}},
         {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
           Spectral::Basis::Legendre}},
@@ -226,9 +235,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
   }
 
   SECTION("Tag") {
-    CHECK(Tags::Mesh<1>::name() == "Mesh");
-    CHECK(Tags::Mesh<2>::name() == "Mesh");
-    CHECK(Tags::Mesh<3>::name() == "Mesh");
+    CHECK(domain::Tags::Mesh<1>::name() == "Mesh");
+    CHECK(domain::Tags::Mesh<2>::name() == "Mesh");
+    CHECK(domain::Tags::Mesh<3>::name() == "Mesh");
   }
 }
 
@@ -238,8 +247,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
     "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
   mesh1d.slice_through(1);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -251,8 +260,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
     "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
   mesh1d.slice_away(1);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -264,8 +273,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
     "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const Mesh<3> mesh3d{2, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
+  const domain::Mesh<3> mesh3d{2, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
   mesh3d.slice_through(2, 1, 1);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

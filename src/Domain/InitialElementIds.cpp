@@ -10,6 +10,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeArray.hpp"
 
+/// \cond
+namespace domain {
 template <>
 std::vector<ElementId<1>> initial_element_ids<1>(
     const size_t block_id,
@@ -87,3 +89,5 @@ template std::vector<ElementId<2>> initial_element_ids<2>(
 template std::vector<ElementId<3>> initial_element_ids<3>(
     const std::vector<std::array<size_t, 3>>&
         initial_refinement_levels) noexcept;
+}  // namespace domain
+/// \endcond

@@ -16,10 +16,10 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_forward_declare CoordinateMaps::Rotation
+// IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
-  CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
+  domain::CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
 
   const auto xi0 = make_array<2>(0.0);
   const auto x0 = make_array<2>(0.0);
@@ -68,10 +68,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
 }
 
 template <typename T>
-void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
-                     const std::array<T, 3>& xi_hat,
-                     const std::array<T, 3>& eta_hat,
-                     const std::array<T, 3>& zeta_hat) {
+void test_rotation_3(
+    const domain::CoordinateMaps::Rotation<3>& three_dim_rotation_map,
+    const std::array<T, 3>& xi_hat, const std::array<T, 3>& eta_hat,
+    const std::array<T, 3>& zeta_hat) {
   const std::array<T, 3> zero_logical{{0.0, 0.0, 0.0}};
   const std::array<T, 3> zero_grid{{0.0, 0.0, 0.0}};
   const std::array<T, 3> xi{{1.0, 0.0, 0.0}};
@@ -111,32 +111,32 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<3>", "[Domain][Unit]") {
-  test_rotation_3(CoordinateMaps::Rotation<3>(0.0, 0.0, 0.0),
+  test_rotation_3(domain::CoordinateMaps::Rotation<3>(0.0, 0.0, 0.0),
                   std::array<double, 3>{{1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(CoordinateMaps::Rotation<3>(M_PI_2, 0.0, 0.0),
+  test_rotation_3(domain::CoordinateMaps::Rotation<3>(M_PI_2, 0.0, 0.0),
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{-1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(CoordinateMaps::Rotation<3>(M_PI, 0.0, 0.0),
+  test_rotation_3(domain::CoordinateMaps::Rotation<3>(M_PI, 0.0, 0.0),
                   std::array<double, 3>{{-1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, -1.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(CoordinateMaps::Rotation<3>(-M_PI_2, 0.0, 0.0),
+  test_rotation_3(domain::CoordinateMaps::Rotation<3>(-M_PI_2, 0.0, 0.0),
                   std::array<double, 3>{{0.0, -1.0, 0.0}},
                   std::array<double, 3>{{1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 0.0, 1.0}});
 
-  test_rotation_3(CoordinateMaps::Rotation<3>(0.0, -M_PI_2, 0.0),
+  test_rotation_3(domain::CoordinateMaps::Rotation<3>(0.0, -M_PI_2, 0.0),
                   std::array<double, 3>{{0.0, 0.0, 1.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{-1.0, 0.0, 0.0}});
 
-  test_rotation_3(CoordinateMaps::Rotation<3>(0.0, M_PI_2, 0.0),
+  test_rotation_3(domain::CoordinateMaps::Rotation<3>(0.0, M_PI_2, 0.0),
                   std::array<double, 3>{{0.0, 0.0, -1.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{1.0, 0.0, 0.0}});
