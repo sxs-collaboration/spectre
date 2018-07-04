@@ -26,6 +26,7 @@ namespace ScalarWave {
 
 template <size_t Dim>
 struct System {
+  static constexpr bool is_conservative = false;
   static constexpr size_t volume_dim = Dim;
 
   using variables_tag = Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;

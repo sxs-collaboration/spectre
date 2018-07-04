@@ -85,8 +85,7 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
     using normal_dot_numerical_flux_tag =
         db::add_tag_prefix<Tags::NormalDotNumericalFlux, variables_tag>;
 
-    using mortar_data_tag =
-        typename flux_comm_types::global_time_stepping_mortar_data_tag;
+    using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
     db::mutate<dt_variables_tag, mortar_data_tag>(
         make_not_null(&box),
         [&cache](

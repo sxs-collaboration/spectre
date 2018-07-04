@@ -37,12 +37,12 @@ namespace Actions {
 ///   interface items as required by Metavariables::system::normal_dot_fluxes
 ///
 /// DataBox changes:
-/// - Adds:
+/// - Adds: nothing
+/// - Removes: nothing
+/// - Modifies:
 ///   Tags::Interface<
 ///       Tags::InternalDirections<volume_dim>,
 ///       db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>
-/// - Removes: nothing
-/// - Modifies: nothing
 struct ComputeNonconservativeBoundaryFluxes {
  private:
   template <typename Metavariables, typename... NormalDotFluxTags, size_t Dim,
@@ -80,33 +80,29 @@ struct ComputeNonconservativeBoundaryFluxes {
         Tags::Interface<internal_directions_tag,
                         db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
 
-    auto boundary_fluxes_result = db::apply<tmpl::push_front<
-        tmpl::transform<
-            typename Metavariables::system::normal_dot_fluxes::argument_tags,
-            tmpl::bind<Tags::Interface, internal_directions_tag, tmpl::_1>>,
-        internal_directions_tag, unit_normal_tag>>(
-        [](const db::item_type<internal_directions_tag>& internal_directions,
+    db::mutate_apply<
+        tmpl::list<interface_normal_dot_fluxes_tag>,
+        tmpl::push_front<
+            tmpl::transform<
+                typename Metavariables::system::normal_dot_fluxes::
+                    argument_tags,
+                tmpl::bind<Tags::Interface, internal_directions_tag, tmpl::_1>>,
+            internal_directions_tag, unit_normal_tag>>(
+        [](const gsl::not_null<db::item_type<interface_normal_dot_fluxes_tag>*>
+               boundary_fluxes,
+           const db::item_type<internal_directions_tag>& internal_directions,
            const db::item_type<unit_normal_tag>& unit_face_normals,
            const auto&... tensors) noexcept {
-          db::item_type<interface_normal_dot_fluxes_tag> boundary_fluxes;
-
           for (const auto& direction : internal_directions) {
-            const auto& side_unit_face_normal = unit_face_normals.at(direction);
-            auto& side_boundary_flux = boundary_fluxes[direction];
-            side_boundary_flux = std::decay_t<decltype(side_boundary_flux)>(
-                side_unit_face_normal.begin()->size(), 0.0);
-            apply_flux<Metavariables>(make_not_null(&side_boundary_flux),
-                                      side_unit_face_normal,
-                                      tensors.at(direction)...);
+            apply_flux<Metavariables>(
+                make_not_null(&boundary_fluxes->at(direction)),
+                unit_face_normals.at(direction), tensors.at(direction)...);
           }
           return boundary_fluxes;
         },
-        box);
+        make_not_null(&box));
 
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<interface_normal_dot_fluxes_tag>>(
-            box, std::move(boundary_fluxes_result)));
+    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace Actions

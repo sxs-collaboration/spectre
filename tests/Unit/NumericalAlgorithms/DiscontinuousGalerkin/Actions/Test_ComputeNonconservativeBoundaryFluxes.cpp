@@ -103,6 +103,9 @@ struct Metavariables {
 template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 
+using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
+    tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;
+
 using VarsType = Variables<tmpl::list<Var, Var2>>;
 auto run_action(
     const Element<2>& element,
@@ -122,10 +125,15 @@ auto run_action(
                                                        CoordinateMaps::Affine>(
                             xi_map, eta_map)));
 
+  n_dot_f_tag::type n_dot_f_storage{};
+  for (const auto& direction_neighbors : element.neighbors()) {
+    n_dot_f_storage[direction_neighbors.first].initialize(3);
+  }
+
   auto start_box = db::create<
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
-                        interface_tag<OtherArg>>,
+                        interface_tag<OtherArg>, n_dot_f_tag>,
       db::AddComputeTags<
           Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
           interface_tag<Tags::Mesh<1>>,
@@ -133,7 +141,8 @@ auto run_action(
           interface_tag<
               Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
           interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>>(
-      element, mesh, std::move(element_map), vars, other_arg);
+      element, mesh, std::move(element_map), vars, other_arg,
+      std::move(n_dot_f_storage));
 
   return std::get<0>(
       runner
@@ -166,10 +175,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
 
   const auto& unit_face_normal = db::get<interface_tag<Tags::Normalized<
       Tags::UnnormalizedFaceNormal<2>>>>(box);
-  const auto& n_dot_f =
-      db::get<interface_tag<Tags::NormalDotFlux<Tags::Variables<
-          tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>>(
-          box);
+  const auto& n_dot_f = db::get<n_dot_f_tag>(box);
 
   std::unordered_map<Direction<2>,
                      Variables<tmpl::list<Tags::NormalDotFlux<Var>,
@@ -198,10 +204,7 @@ SPECTRE_TEST_CASE(
 
   auto box = run_action(element, vars, other_arg);
 
-  const auto& n_dot_f =
-      db::get<interface_tag<Tags::NormalDotFlux<Tags::Variables<
-          tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>>(
-          box);
+  const auto& n_dot_f = db::get<n_dot_f_tag>(box);
 
   CHECK(n_dot_f.empty());
 }
