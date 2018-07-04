@@ -1,9 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/Domain/DomainTestHelpers.hpp"
-
 #include "tests/Unit/TestingFramework.hpp"
+
+#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 
 #include <algorithm>
 #include <typeinfo>
