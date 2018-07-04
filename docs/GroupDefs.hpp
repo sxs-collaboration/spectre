@@ -509,6 +509,8 @@ specify the following:
   `DgElementArray` parallel component listed. An example of a `component_list`
   for one of the test executables is:
   \snippet Test_AlgorithmCore.cpp component_list_example
+- `using const_global_cache_tag_list` is set to a (possibly empty) `tmpl::list`
+  of CacheTags that are needed by the metavariables.
 - `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
 - `determine_next_phase`: a static function with the signature

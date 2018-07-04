@@ -31,26 +31,8 @@ namespace Parallel {
 
 /// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
-///
-/// Metavariables must define the following:
-///   - help   [c string describing the program]
-///   - component_list   [typelist of ParallelComponents]
-///   - phase   [enum class listing phases of the executable]
-///   - determine_next_phase   [function that determines the next phase of the
-///   executable]
-/// and may optionally define the following:
-///   - input_file   [c string giving default input file name]
-///   - ignore_unrecognized_command_line_options   [bool, defaults to false]
-///
-/// Each ParallelComponent in Metavariables::component_list must define the
-/// following functions:
-///   - const_global_cache_tag_list  [typelist of tags of constant data]
-///   - options  [typelist of option tags for data to be passed to initialize]
-///   - initialize
-///   - execute_next_global_actions
-///
-/// The phases in Metavariables::Phase must include Initialization (the initial
-/// phase) and Exit (the final phase)
+/// See [the Parallelization documentation](group__ParallelGroup.html#details)
+/// for an overview of Metavariables, Phases, and parallel components.
 template <typename Metavariables>
 class Main : public CBase_Main<Metavariables> {
  public:
@@ -324,7 +306,7 @@ void Main<Metavariables>::execute_next_phase() noexcept {
     Parallel::exit();
   }
   tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
-    tmpl::type_from<decltype(parallel_component)>::execute_next_global_actions(
+    tmpl::type_from<decltype(parallel_component)>::execute_next_phase(
         current_phase_, const_global_cache_proxy_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),

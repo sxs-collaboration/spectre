@@ -38,6 +38,7 @@ include(SetupLIBCXX)
 include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
+include(AddSpectreExecutable)
 
 include(SetupBlas)
 include(SetupBlaze)

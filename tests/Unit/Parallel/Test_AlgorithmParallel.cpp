@@ -384,7 +384,7 @@ struct SingletonParallelComponent {
             local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
@@ -428,7 +428,7 @@ struct ArrayParallelComponent {
     Parallel::simple_action<ArrayActions::Initialize>(array_proxy);
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -457,7 +457,7 @@ struct GroupParallelComponent {
         Parallel::get_parallel_component<GroupParallelComponent>(local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 };
@@ -480,7 +480,7 @@ struct NodegroupParallelComponent {
             local_cache));
   }
 
-  static void execute_next_global_actions(
+  static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 };
