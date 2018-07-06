@@ -187,6 +187,15 @@ class Mesh {
   Mesh<SliceDim> slice_through(const std::array<size_t, SliceDim>& dims) const
       noexcept;
 
+  /*!
+   * \brief Returns the Meshes representing 1D slices of this Mesh.
+   *
+   * The is the same as the array filled with `slice_through(d)` for
+   * `d` from `0` to `Dim - 1` except in dimension 0 where
+   * `slice_through(d)` is not defined.
+   */
+  std::array<Mesh<1>, Dim> slices() const noexcept;
+
   // clang-tidy: runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
