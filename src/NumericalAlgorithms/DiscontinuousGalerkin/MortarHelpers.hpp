@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <functional>
 #include <type_traits>
@@ -21,6 +22,10 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+template <size_t VolumeDim>
+class ElementId;
+template <size_t VolumeDim>
+class OrientationMap;
 // IWYU pragma: no_forward_declare Variables
 /// \endcond
 
@@ -31,6 +36,16 @@ namespace dg {
 template <size_t Dim>
 Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
                       const Mesh<Dim>& face_mesh2) noexcept;
+
+/// \ingroup DiscontinuousGalerkinGroup
+/// Determine the size of the mortar (i.e., the part of the face it
+/// covers) for communicating with a neighbor.  This is the size
+/// relative to the size of \p self, and will not generally agree with
+/// that determined by \p neighbor.
+template <size_t Dim>
+std::array<Spectral::MortarSize, Dim - 1> mortar_size(
+    const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
+    size_t dimension, const OrientationMap<Dim>& orientation) noexcept;
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.

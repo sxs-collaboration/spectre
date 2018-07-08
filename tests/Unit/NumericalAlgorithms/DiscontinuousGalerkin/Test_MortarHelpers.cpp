@@ -14,14 +14,22 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/ElementId.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Domain/SegmentId.hpp"
+#include "Domain/Side.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -41,6 +49,92 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_mesh",
         lgl_mesh<1>({{5}}));
   CHECK(dg::mortar_mesh(lgl_mesh<2>({{2, 5}}), lgl_mesh<2>({{3, 4}})) ==
         lgl_mesh<2>({{3, 5}}));
+}
+
+SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.mortar_size",
+                  "[Unit][NumericalAlgorithms]") {
+  CHECK(dg::mortar_size(ElementId<1>(0, {{{0, 0}}}),
+                        ElementId<1>(0, {{{5, 2}}}), 0, {}) ==
+        std::array<Spectral::MortarSize, 0>{});
+
+  // Check the root segment to make sure the code doesn't try to get
+  // its parent.
+  CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
+        std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
+  CHECK(dg::mortar_size(ElementId<2>(0, {{{1, 0}, {0, 0}}}),
+                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1, {}) ==
+        std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
+  CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                        ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1, {}) ==
+        std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::LowerHalf}});
+
+  // Check all the aligned cases in 3D
+  const auto test_segment = [](const SegmentId& base,
+                               const size_t test) noexcept {
+    switch (test) {
+      case 0:
+        return base;
+      case 1:
+        return base.id_of_parent();
+      case 2:
+        return base.id_of_child(Side::Lower);
+      case 3:
+        return base.id_of_child(Side::Upper);
+      default:
+        ERROR("Test logic error");
+    }
+  };
+  const auto expected_size = [](const size_t test) noexcept {
+    switch (test) {
+      case 0:
+      case 1:
+        return Spectral::MortarSize::Full;
+      case 2:
+        return Spectral::MortarSize::LowerHalf;
+      case 3:
+        return Spectral::MortarSize::UpperHalf;
+      default:
+        ERROR("Test logic error");
+    }
+  };
+
+  const SegmentId segment0(1, 1);
+  const SegmentId segment1(2, 0);
+  // We do not expect to actually have abutting elements with
+  // difference greater than one in perpendicular refinement levels,
+  // but this function should work even in that situation, so we test
+  // it here.
+  const SegmentId perp0(5, 1);
+  const SegmentId perp1(7, 20);
+
+  for (size_t dimension = 0; dimension < 3; ++dimension) {
+    using SegArray = std::array<SegmentId, 2>;
+    const ElementId<3> self(
+        0, insert_element(SegArray{{segment0, segment1}}, dimension, perp0));
+
+    for (size_t test0 = 0; test0 < 4; ++test0) {
+      for (size_t test1 = 0; test1 < 4; ++test1) {
+        const ElementId<3> neighbor(
+            0, insert_element(SegArray{{test_segment(segment0, test0),
+                                        test_segment(segment1, test1)}},
+                              dimension, perp1));
+        CAPTURE(neighbor);
+        const std::array<Spectral::MortarSize, 2> expected{
+            {expected_size(test0), expected_size(test1)}};
+        CHECK(dg::mortar_size(self, neighbor, dimension, {}) == expected);
+      }
+    }
+  }
+
+  // Check an orientation case
+  CHECK(dg::mortar_size(ElementId<3>(1, {{{0, 0}, {3, 2}, {7, 5}}}),
+                        ElementId<3>(4, {{{6, 61}, {3, 0}, {4, 5}}}), 0,
+                        OrientationMap<3>{{{Direction<3>::upper_eta(),
+                                            Direction<3>::upper_zeta(),
+                                            Direction<3>::lower_xi()}}}) ==
+        std::array<Spectral::MortarSize, 2>{
+            {Spectral::MortarSize::UpperHalf, Spectral::MortarSize::Full}});
 }
 
 namespace {
