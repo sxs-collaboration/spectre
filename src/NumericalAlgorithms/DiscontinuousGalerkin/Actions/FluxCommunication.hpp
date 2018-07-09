@@ -20,9 +20,11 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -269,9 +271,11 @@ struct SendDataForFluxes {
         const auto& mortar_mesh =
             db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box)
                 .at(mortar_id);
+        const auto mortar_size =
+            make_array<volume_dim - 1>(Spectral::MortarSize::Full);
 
-        auto projected_packaged_data =
-            project_to_mortar(packaged_data, boundary_mesh, mortar_mesh);
+        auto projected_packaged_data = project_to_mortar(
+            packaged_data, boundary_mesh, mortar_mesh, mortar_size);
 
         typename flux_comm_types::LocalData local_data{};
         local_data.magnitude_of_face_normal = db::get<Tags::Interface<
@@ -294,7 +298,7 @@ struct SendDataForFluxes {
               boundary_mesh == mortar_mesh
                   ? normal_dot_fluxes
                   : project_to_mortar(normal_dot_fluxes, boundary_mesh,
-                                      mortar_mesh));
+                                      mortar_mesh, mortar_size));
         }
 
         if (not orientation.is_aligned()) {

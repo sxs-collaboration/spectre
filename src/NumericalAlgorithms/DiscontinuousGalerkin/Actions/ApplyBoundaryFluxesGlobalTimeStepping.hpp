@@ -14,7 +14,9 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::Mortars<...>>
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -92,7 +94,8 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
                     normal_dot_numerical_flux_computer,
                     std::move(local_mortar_data), remote_mortar_data,
                     mesh.slice_away(dimension), mortar_meshes.at(mortar_id),
-                    mesh.extents(dimension)));
+                    mesh.extents(dimension),
+                    make_array<volume_dim - 1>(Spectral::MortarSize::Full)));
 
             add_slice_to_data(dt_vars, lifted_data, mesh.extents(), dimension,
                               index_to_slice_at(mesh.extents(), direction));

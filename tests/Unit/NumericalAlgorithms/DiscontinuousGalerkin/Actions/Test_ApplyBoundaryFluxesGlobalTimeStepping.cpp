@@ -31,9 +31,11 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -296,7 +298,8 @@ SPECTRE_TEST_CASE(
     local_data.mortar_data.initialize(face_mesh.number_of_grid_points());
     get<Tags::NormalDotFlux<Var>>(local_data.mortar_data) = flux(face_coords);
     local_data.mortar_data =
-        dg::project_to_mortar(local_data.mortar_data, face_mesh, mortar_mesh);
+        dg::project_to_mortar(local_data.mortar_data, face_mesh, mortar_mesh,
+                              make_array<2>(Spectral::MortarSize::Full));
 
     local_data.magnitude_of_face_normal = magnitude_of_face_normal(face_coords);
     PackagedData remote_data = local_data.mortar_data;

@@ -3,11 +3,12 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <functional>
 #include <type_traits>
-#include <utility>
+#include <utility>  // IWYU pragma: keep // for std::forward
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -50,9 +51,11 @@ std::array<Spectral::MortarSize, Dim - 1> mortar_size(
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.
 template <typename Tags, size_t Dim>
-Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
-                                  const Mesh<Dim>& face_mesh,
-                                  const Mesh<Dim>& mortar_mesh) noexcept {
+Variables<Tags> project_to_mortar(
+    const Variables<Tags>& vars,
+    const Mesh<Dim>& face_mesh,
+    const Mesh<Dim>& mortar_mesh,
+    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
   const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
 
@@ -61,9 +64,11 @@ Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
   for (size_t i = 0; i < Dim; ++i) {
     const auto& face_slice_mesh = gsl::at(face_slice_meshes, i);
     const auto& mortar_slice_mesh = gsl::at(mortar_slice_meshes, i);
-    if (face_slice_mesh != mortar_slice_mesh) {
+    const auto& slice_size = gsl::at(mortar_size, i);
+    if (slice_size != Spectral::MortarSize::Full or
+        face_slice_mesh != mortar_slice_mesh) {
       gsl::at(projection_matrices, i) = projection_matrix_element_to_mortar(
-          Spectral::MortarSize::Full, mortar_slice_mesh, face_slice_mesh);
+          slice_size, mortar_slice_mesh, face_slice_mesh);
     }
   }
   return apply_matrices(projection_matrices, vars, face_mesh.extents());
@@ -72,9 +77,11 @@ Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a mortar to a face.
 template <typename Tags, size_t Dim>
-Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
-                                    const Mesh<Dim>& face_mesh,
-                                    const Mesh<Dim>& mortar_mesh) noexcept {
+Variables<Tags> project_from_mortar(
+    const Variables<Tags>& vars,
+    const Mesh<Dim>& face_mesh,
+    const Mesh<Dim>& mortar_mesh,
+    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
   const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
 
@@ -83,9 +90,11 @@ Variables<Tags> project_from_mortar(const Variables<Tags>& vars,
   for (size_t i = 0; i < Dim; ++i) {
     const auto& face_slice_mesh = gsl::at(face_slice_meshes, i);
     const auto& mortar_slice_mesh = gsl::at(mortar_slice_meshes, i);
-    if (face_slice_mesh != mortar_slice_mesh) {
+    const auto& slice_size = gsl::at(mortar_size, i);
+    if (slice_size != Spectral::MortarSize::Full or
+        face_slice_mesh != mortar_slice_mesh) {
       gsl::at(projection_matrices, i) = projection_matrix_mortar_to_element(
-          Spectral::MortarSize::Full, face_slice_mesh, mortar_slice_mesh);
+          slice_size, face_slice_mesh, mortar_slice_mesh);
     }
   }
   return apply_matrices(projection_matrices, vars, mortar_mesh.extents());
@@ -131,7 +140,8 @@ auto compute_boundary_flux_contribution(
     LocalData&& local_data,
     const typename FluxCommTypes::PackagedData& remote_data,
     const Mesh<Dim>& face_mesh, const Mesh<Dim>& mortar_mesh,
-    const size_t extent_perpendicular_to_boundary) noexcept
+    const size_t extent_perpendicular_to_boundary,
+    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept
     -> db::item_type<
         db::remove_tag_prefix<typename FluxCommTypes::normal_dot_fluxes_tag>> {
   static_assert(cpp17::is_same_v<std::decay_t<LocalData>,
@@ -157,11 +167,17 @@ auto compute_boundary_flux_contribution(
         }
       });
 
+  const bool refining =
+      face_mesh != mortar_mesh or
+      std::any_of(mortar_size.begin(), mortar_size.end(),
+                  [](const Spectral::MortarSize s) noexcept {
+                    return s != Spectral::MortarSize::Full;
+                  });
+
   return dg::lift_flux(
-      face_mesh == mortar_mesh
-          ? std::move(normal_dot_numerical_fluxes)
-          : project_from_mortar(normal_dot_numerical_fluxes, face_mesh,
-                                mortar_mesh),
+      refining ? project_from_mortar(normal_dot_numerical_fluxes, face_mesh,
+                                     mortar_mesh, mortar_size)
+               : std::move(normal_dot_numerical_fluxes),
       extent_perpendicular_to_boundary,
       std::forward<LocalData>(local_data).magnitude_of_face_normal);
 }
