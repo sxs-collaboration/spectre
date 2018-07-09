@@ -47,6 +47,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -174,6 +175,8 @@ template <size_t Dim>
 using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, Dim>;
 template <size_t Dim>
 using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>;
+template <size_t Dim>
+using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>;
 
 template <size_t Dim>
 using compute_items = db::AddComputeTags<
@@ -282,10 +285,12 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     db::item_type<mortar_data_tag<2>> mortar_history{};
     db::item_type<mortar_next_temporal_ids_tag<2>> mortar_next_temporal_ids{};
     db::item_type<mortar_meshes_tag<2>> mortar_meshes{};
+    db::item_type<mortar_sizes_tag<2>> mortar_sizes{};
     for (const auto& mortar_id : neighbor_mortar_ids) {
       mortar_history.insert({mortar_id, {}});
       mortar_next_temporal_ids.insert({mortar_id, 0});
       mortar_meshes.insert({mortar_id, mesh.slice_away(0)});
+      mortar_sizes.insert({mortar_id, {{Spectral::MortarSize::Full}}});
     }
 
     return db::create<
@@ -293,11 +298,12 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                           Tags::Element<2>, Tags::ElementMap<2>,
                           normal_dot_fluxes_tag<2>, other_data_tag<2>,
                           mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
-                          mortar_meshes_tag<2>>,
-        compute_items<2>>(
-        0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
-        std::move(other_data), std::move(mortar_history),
-        std::move(mortar_next_temporal_ids), std::move(mortar_meshes));
+                          mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
+        compute_items<2>>(0, 1, mesh, element, std::move(map),
+                          std::move(normal_dot_fluxes), std::move(other_data),
+                          std::move(mortar_history),
+                          std::move(mortar_next_temporal_ids),
+                          std::move(mortar_meshes), std::move(mortar_sizes));
   }();
 
   auto sent_box = std::get<0>(
@@ -347,15 +353,18 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     db::item_type<mortar_meshes_tag<2>> mortar_meshes{};
     mortar_meshes.insert({{direction, self_id}, mesh.slice_away(0)});
 
+    db::item_type<mortar_sizes_tag<2>> mortar_sizes{};
+    mortar_sizes.insert({{direction, self_id}, {{Spectral::MortarSize::Full}}});
+
     auto box = db::create<
-        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                          Tags::Element<2>, Tags::ElementMap<2>,
-                          normal_dot_fluxes_tag<2>, other_data_tag<2>,
-                          mortar_data_tag<2>, mortar_meshes_tag<2>>,
+        db::AddSimpleTags<
+            TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
+            Tags::ElementMap<2>, normal_dot_fluxes_tag<2>, other_data_tag<2>,
+            mortar_data_tag<2>, mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
         compute_items<2>>(0, 1, mesh, element, std::move(map),
                           std::move(normal_dot_fluxes_map),
                           std::move(other_data_map), std::move(mortar_history),
-                          std::move(mortar_meshes));
+                          std::move(mortar_meshes), std::move(mortar_sizes));
 
     runner.apply<component<2>, send_data_for_fluxes<2>>(box, id);
   };
@@ -479,13 +488,14 @@ SPECTRE_TEST_CASE(
                         Tags::Element<2>, Tags::ElementMap<2>,
                         normal_dot_fluxes_tag<2>, other_data_tag<2>,
                         mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
-                        mortar_meshes_tag<2>>,
+                        mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
       compute_items<2>>(0, 1, mesh, element, std::move(map),
                         db::item_type<normal_dot_fluxes_tag<2>>{},
                         db::item_type<other_data_tag<2>>{},
                         db::item_type<mortar_data_tag<2>>{},
                         db::item_type<mortar_next_temporal_ids_tag<2>>{},
-                        db::item_type<mortar_meshes_tag<2>>{});
+                        db::item_type<mortar_meshes_tag<2>>{},
+                        db::item_type<mortar_sizes_tag<2>>{});
 
   auto sent_box = std::get<0>(
       runner.apply<component<2>, send_data_for_fluxes<2>>(start_box, self_id));
@@ -549,17 +559,22 @@ void send_from_neighbor(
   db::item_type<mortar_meshes_tag<2>> mortar_meshes;
   mortar_meshes.insert({{send_direction, receiver_id}, mesh.slice_away(0)});
 
+  db::item_type<mortar_sizes_tag<2>> mortar_sizes;
+  mortar_sizes.insert(
+      {{send_direction, receiver_id}, {{Spectral::MortarSize::Full}}});
+
   db::item_type<MortarRecorderTag> recorders;
   recorders.insert({{send_direction, receiver_id}, {}});
 
   auto box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
-                        normal_dot_fluxes_tag<2>, other_data_tag<2>,
-                        mortar_meshes_tag<2>, MortarRecorderTag>,
+      db::AddSimpleTags<
+          TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
+          Tags::ElementMap<2>, normal_dot_fluxes_tag<2>, other_data_tag<2>,
+          mortar_meshes_tag<2>, mortar_sizes_tag<2>, MortarRecorderTag>,
       compute_items<2>>(start, end, mesh, element, std::move(map),
                         std::move(fluxes), std::move(other_data),
-                        std::move(mortar_meshes), std::move(recorders));
+                        std::move(mortar_meshes), std::move(mortar_sizes),
+                        std::move(recorders));
 
   runner->apply<component<2>, send_data_for_fluxes<2>>(box, element.id());
 }
@@ -731,12 +746,15 @@ SPECTRE_TEST_CASE(
                         Tags::Element<3>, Tags::ElementMap<3>,
                         normal_dot_fluxes_tag<3>, other_data_tag<3>,
                         mortar_data_tag<3>, mortar_next_temporal_ids_tag<3>,
-                        mortar_meshes_tag<3>>,
+                        mortar_meshes_tag<3>, mortar_sizes_tag<3>>,
       compute_items<3>>(
       0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
       std::move(other_data), db::item_type<mortar_data_tag<3>>{{mortar_id, {}}},
       db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
-      db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}});
+      db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
+      db::item_type<mortar_sizes_tag<3>>{
+          {mortar_id,
+           {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}}});
 
   auto sent_box = std::get<0>(
       runner.apply<component<3>, send_data_for_fluxes<3>>(start_box, self_id));
@@ -774,5 +792,111 @@ SPECTRE_TEST_CASE(
         get<Var>(received_flux),
         get<Var>(packaged_data(flux(get<1>(rotated_mortar_coords),
                                     -get<0>(rotated_mortar_coords)))));
+  }
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.h-refinement",
+    "[Unit][NumericalAlgorithms][Actions]") {
+  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
+
+  const Scalar<DataVector> n_dot_f{{{{2., 3.}}}};
+  for (const auto& test :
+       {std::make_pair(Spectral::MortarSize::Full, DataVector{2., 3.}),
+        std::make_pair(Spectral::MortarSize::LowerHalf, DataVector{2., 2.5}),
+        std::make_pair(Spectral::MortarSize::UpperHalf, DataVector{2.5, 3.})}) {
+    CAPTURE(test.first);
+
+    const ElementId<2> self_id(1);
+    const ElementId<2> neighbor_id(2);
+
+    const auto mortar_id =
+        std::make_pair(Direction<2>::upper_xi(), neighbor_id);
+    const Element<2> element(
+        self_id, {{mortar_id.first,
+                   {{neighbor_id},
+                    OrientationMap<2>{{{Direction<2>::upper_xi(),
+                                        Direction<2>::lower_eta()}}}}}});
+
+    ElementMap<2, Frame::Inertial> map(
+        self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>(
+                         {-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
+
+    const Mesh<2> mesh(2, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto);
+    const Mesh<1> face_mesh = mesh.slice_away(mortar_id.first.dimension());
+
+    const auto packaged_data = [](const DataVector& var_flux) noexcept {
+      const Scalar<DataVector> scalar_flux(var_flux);
+      PackagedData<2> packaged(var_flux.size());
+      const tnsr::i<DataVector, 2, Frame::Inertial> normal(var_flux.size(), 1.);
+      NumericalFlux<2>{}.package_data(&packaged, scalar_flux, scalar_flux,
+                                      normal);
+      return packaged;
+    };
+
+    db::item_type<normal_dot_fluxes_tag<2>> normal_dot_fluxes;
+    normal_dot_fluxes[mortar_id.first].initialize(
+        face_mesh.number_of_grid_points());
+    get<Tags::NormalDotFlux<Var>>(normal_dot_fluxes[mortar_id.first]) = n_dot_f;
+
+    // Value does not affect tested results
+    db::item_type<other_data_tag<2>> other_data;
+    other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(),
+                                           0.);
+
+    auto start_box = db::create<
+        db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                          Tags::Element<2>, Tags::ElementMap<2>,
+                          normal_dot_fluxes_tag<2>, other_data_tag<2>,
+                          mortar_data_tag<2>, mortar_next_temporal_ids_tag<2>,
+                          mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
+        compute_items<2>>(
+        0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
+        std::move(other_data),
+        db::item_type<mortar_data_tag<2>>{{mortar_id, {}}},
+        db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
+        db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
+        db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}});
+
+    auto sent_box =
+        std::get<0>(runner.apply<component<2>, send_data_for_fluxes<2>>(
+            start_box, self_id));
+
+    // Check local data
+    {
+      CHECK(db::get<mortar_data_tag<2>>(sent_box).size() == 1);
+      auto mortar_data = db::get<mortar_data_tag<2>>(sent_box).at(mortar_id);
+      mortar_data.remote_insert(0, PackagedData<2>{});
+      const auto local_data = mortar_data.extract().first;
+      CHECK(local_data.mortar_data.number_of_grid_points() ==
+            face_mesh.number_of_grid_points());
+      CHECK(get(local_data.magnitude_of_face_normal).size() ==
+            face_mesh.number_of_grid_points());
+
+      CHECK_ITERABLE_APPROX(get<Var>(local_data.mortar_data),
+                            get<Var>(packaged_data(test.second)));
+
+      CHECK(get<Tags::NormalDotFlux<Var>>(local_data.mortar_data) == n_dot_f);
+      CHECK(get(local_data.magnitude_of_face_normal) ==
+            DataVector(face_mesh.number_of_grid_points(), 1.));
+    }
+
+    // Check sent data
+    {
+      CHECK(runner.nonempty_inboxes<component<2>, fluxes_tag<2>>().size() == 1);
+      auto& inbox = tuples::get<fluxes_tag<2>>(
+          runner.inboxes<component<2>>().at(neighbor_id));
+
+      const auto& received_flux =
+          inbox.at(0).at({Direction<2>::lower_xi(), self_id}).second;
+      // The interface has an inverting orientation.
+      CHECK_ITERABLE_APPROX(
+          get<Var>(received_flux),
+          get<Var>(packaged_data({test.second[1], test.second[0]})));
+      inbox.clear();
+    }
   }
 }

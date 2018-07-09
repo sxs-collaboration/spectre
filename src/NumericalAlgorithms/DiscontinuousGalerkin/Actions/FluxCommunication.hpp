@@ -20,11 +20,9 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -187,6 +185,7 @@ struct ReceiveDataForFluxes {
 ///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   - Metavariables::temporal_id
 ///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
+///   - Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>
 ///   - Tags::Next<Metavariables::temporal_id>
 ///
 /// DataBox changes:
@@ -233,11 +232,6 @@ struct SendDataForFluxes {
       const auto& direction = direction_neighbors.first;
       const size_t dimension = direction.dimension();
       const auto& neighbors_in_direction = direction_neighbors.second;
-      ASSERT(neighbors_in_direction.size() == 1,
-             "h-adaptivity is not supported yet.\nDirection: "
-                 << direction << "\nDimension: " << dimension
-                 << "\nNeighbors:\n"
-                 << neighbors_in_direction);
       const auto& orientation = neighbors_in_direction.orientation();
       const auto& boundary_mesh =
           db::get<Tags::Interface<Tags::InternalDirections<volume_dim>,
@@ -271,8 +265,9 @@ struct SendDataForFluxes {
         const auto& mortar_mesh =
             db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box)
                 .at(mortar_id);
-        const auto mortar_size =
-            make_array<volume_dim - 1>(Spectral::MortarSize::Full);
+        const auto& mortar_size = db::get<
+            Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(box)
+                .at(mortar_id);
 
         auto projected_packaged_data = project_to_mortar(
             packaged_data, boundary_mesh, mortar_mesh, mortar_size);
