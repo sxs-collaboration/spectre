@@ -342,6 +342,8 @@ struct InitializeElement {
       typename Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>::type
           mortar_next_temporal_ids{};
       typename Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>::type mortar_meshes{};
+      typename Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>::type
+          mortar_sizes{};
       const auto& temporal_id = get<temporal_id_tag>(box);
       for (const auto& direction_neighbors : element.neighbors()) {
         const auto& direction = direction_neighbors.first;
@@ -356,6 +358,10 @@ struct InitializeElement {
                               element_mesh(initial_extents, neighbor,
                                            neighbors.orientation())
                                   .slice_away(direction.dimension())));
+          mortar_sizes.emplace(
+              mortar_id,
+              dg::mortar_size(element.id(), neighbor, direction.dimension(),
+                              neighbors.orientation()));
         }
       }
 
@@ -363,9 +369,11 @@ struct InitializeElement {
           db::RemoveTags<>,
           db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
                             Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
-                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>>>(
+                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+                            Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>>(
           std::move(box), std::move(mortar_data),
-          std::move(mortar_next_temporal_ids), std::move(mortar_meshes));
+          std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
+          std::move(mortar_sizes));
     }
 
     template <typename LocalSystem,
@@ -375,6 +383,7 @@ struct InitializeElement {
           typename flux_comm_types::simple_mortar_data_tag,
           Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
           Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+          Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
           interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
 
       using compute_tags = db::AddComputeTags<>;
@@ -412,7 +421,8 @@ struct InitializeElement {
       using simple_tags =
           db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
                             Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
-                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>>;
+                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+                            Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>;
 
       using compute_tags = db::AddComputeTags<
           interface_tag<db::add_tag_prefix<Tags::Flux,

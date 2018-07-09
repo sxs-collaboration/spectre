@@ -62,6 +62,8 @@ class er;  // IWYU pragma: keep
 namespace Tags {
 template <typename Tag, size_t VolumeDim, typename Fr>
 struct ComputeNormalDotFlux;
+template <size_t Dim>
+struct MortarSize;
 template <typename Tag, size_t VolumeDim>
 struct Mortars;
 }  // namespace Tags
@@ -288,6 +290,8 @@ void test_initialize_element(
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(box).size() ==
         element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(box).size() ==
+        element.number_of_neighbors());
+  CHECK(db::get<Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(box).size() ==
         element.number_of_neighbors());
 
   (void)db::get<Tags::Interface<Tags::InternalDirections<dim>,
