@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/NewtonianEuler/"
   "${LIBRARY_SOURCES}"
-  "NewtonianEuler"
+  "NewtonianEuler;Test_Domain"
   )

@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Burgers/"
   "${LIBRARY_SOURCES}"
-  "BurgersSolutions"
+  "BurgersSolutions;Burgers;Utilities"
   )

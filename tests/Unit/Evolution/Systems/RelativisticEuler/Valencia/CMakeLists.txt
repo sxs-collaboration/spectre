@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/RelativisticEuler/Valencia/"
   "${LIBRARY_SOURCES}"
-  "Valencia"
+  "Valencia;Test_Domain"
   )

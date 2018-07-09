@@ -16,5 +16,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/GeneralRelativity/"
   "${LIBRARY_SOURCES}"
-  "GeneralRelativity"
+  "GeneralRelativity;Test_Pypp"
   )

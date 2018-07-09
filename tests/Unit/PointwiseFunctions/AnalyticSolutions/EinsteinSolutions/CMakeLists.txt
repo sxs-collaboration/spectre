@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/"
   "${LIBRARY_SOURCES}"
-  "EinsteinSolutions"
+  "EinsteinSolutions;GeneralizedHarmonic;GeneralRelativity;Utilities"
   )

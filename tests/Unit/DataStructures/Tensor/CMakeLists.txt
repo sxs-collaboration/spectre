@@ -15,5 +15,5 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/Tensor"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "DataStructures;ErrorHandling"
   )

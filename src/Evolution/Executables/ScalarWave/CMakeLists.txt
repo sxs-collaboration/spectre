@@ -45,6 +45,7 @@ function(add_scalar_wave_executable DIM)
     CoordinateMaps
     DomainCreators
     Informer
+    MathFunctions
     ScalarWave
     Time
     Utilities

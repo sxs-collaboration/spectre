@@ -4,9 +4,9 @@
 set(executable RunTests)
 
 set(SPECTRE_TESTS
-    "Test_TestHelpers.cpp"
-    "Test_TestingFramework.cpp"
-    )
+  "Test_TestHelpers.cpp"
+  "Test_TestingFramework.cpp"
+  )
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
@@ -52,7 +52,6 @@ add_executable(
 
 target_link_libraries(
   ${executable}
-  Informer
   ${SPECTRE_TESTS_LIBRARIES}
   ${SPECTRE_LIBRARIES}
   )

@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/RootFinding/"
   "${LIBRARY_SOURCES}"
-  "RootFinding"
+  "RootFinding;DataStructures"
   )

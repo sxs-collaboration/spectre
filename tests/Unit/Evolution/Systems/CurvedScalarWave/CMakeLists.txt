@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/CurvedScalarWave/"
   "${LIBRARY_SOURCES}"
-  "CurvedScalarWave"
+  "CurvedScalarWave;Test_GeneralRelativity"
   )

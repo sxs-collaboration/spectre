@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "DataStructures;Domain;DomainCreators;ErrorHandling;Spectral;Time;Utilities"
   )

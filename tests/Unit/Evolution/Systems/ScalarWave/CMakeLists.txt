@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/ScalarWave/"
   "${LIBRARY_SOURCES}"
-  "ScalarWave"
+  "ScalarWave;MathFunctions;WaveEquation"
   )

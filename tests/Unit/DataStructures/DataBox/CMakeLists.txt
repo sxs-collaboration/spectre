@@ -15,5 +15,5 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/DataBox"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "DataStructures;ErrorHandling;Utilities"
   )

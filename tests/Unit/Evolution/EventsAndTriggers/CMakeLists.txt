@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/EventsAndTriggers/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "ErrorHandling;Utilities"
   )

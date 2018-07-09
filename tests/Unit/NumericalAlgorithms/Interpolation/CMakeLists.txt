@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Interpolation/"
   "${LIBRARY_SOURCES}"
-  "Interpolation"
+  "Interpolation;MathFunctions"
   )

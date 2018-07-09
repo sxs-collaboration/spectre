@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Conservative/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "DataStructures;ErrorHandling"
   )

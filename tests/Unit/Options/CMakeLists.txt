@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "Options/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "Utilities"
   )
