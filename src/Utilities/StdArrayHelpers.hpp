@@ -109,6 +109,24 @@ inline std::array<T, Dim - 1> all_but_specified_element_of(
 }
 
 /// \ingroup UtilitiesGroup
+/// \brief Construct an array from an existing array adding one element
+template <typename T, size_t Dim>
+inline std::array<T, Dim + 1> insert_element(std::array<T, Dim> a,
+                                             const size_t element_to_add,
+                                             T value) noexcept {
+  ASSERT(element_to_add <= Dim, "Specified element is out of range");
+  std::array<T, Dim + 1> result{};
+  for (size_t i = 0; i < element_to_add; ++i) {
+    gsl::at(result, i) = std::move(gsl::at(a, i));
+  }
+  gsl::at(result, element_to_add) = std::move(value);
+  for (size_t i = element_to_add; i < Dim; ++i) {
+    gsl::at(result, i + 1) = std::move(gsl::at(a, i));
+  }
+  return result;
+}
+
+/// \ingroup UtilitiesGroup
 /// \brief Construct an array from an existing array prepending a value
 template <typename T, size_t Dim>
 inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,

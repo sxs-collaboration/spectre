@@ -112,6 +112,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.AllButSpecifiedElementOf",
   CHECK(a0 == all_but_specified_element_of(b1, 0));
 }
 
+SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.InsertElement",
+                  "[DataStructures][Unit]") {
+  const std::array<int, 0> a0{{}};
+  const std::array<int, 1> a1{{3}};
+  const std::array<int, 2> a2{{2, 3}};
+  const std::array<int, 3> a3{{2, 4, 3}};
+  CHECK(insert_element(a0, 0, 3) == a1);
+  CHECK(insert_element(a1, 0, 2) == a2);
+  CHECK(insert_element(a2, 1, 4) == a3);
+}
+
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Prepend",
                   "[Utilities][Unit]") {
   const std::array<size_t, 3> a3{{5, 2, 3}};
