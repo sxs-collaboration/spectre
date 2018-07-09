@@ -9,6 +9,7 @@
 #include <tuple>
 // IWYU pragma: no_include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -120,6 +121,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
   using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<1>, 2>;
+  using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<1>, 2>;
 
   ActionTesting::ActionRunner<Metavariables<2, NumericalFlux>> runner{
       {NumericalFlux{}}};
@@ -131,6 +133,9 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
   typename mortar_meshes_tag::type mortar_meshes{
       {{Direction<2>::upper_xi(), id}, mesh.slice_away(0)},
       {{Direction<2>::lower_eta(), id}, mesh.slice_away(1)}};
+  typename mortar_sizes_tag::type mortar_sizes{
+      {{Direction<2>::upper_xi(), id}, {{Spectral::MortarSize::Full}}},
+      {{Direction<2>::lower_eta(), id}, {{Spectral::MortarSize::Full}}}};
 
   const Variables<tmpl::list<Tags::dt<Var>>> initial_dt(
       mesh.number_of_grid_points(), 5.);
@@ -179,9 +184,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
            Scalar<DataVector>{{{{3., 3., 3.}}}})}};      // normal magnitude
 
   auto box = db::create<db::AddSimpleTags<
-      Tags::Mesh<2>, mortar_meshes_tag,
+      Tags::Mesh<2>, mortar_meshes_tag, mortar_sizes_tag,
       Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>, mortar_data_tag>>(
-      mesh, std::move(mortar_meshes), initial_dt, std::move(mortar_data));
+      mesh, std::move(mortar_meshes), std::move(mortar_sizes), initial_dt,
+      std::move(mortar_data));
 
   const auto out_box =
       get<0>(runner.apply<component<2, NumericalFlux>,
@@ -257,6 +263,7 @@ SPECTRE_TEST_CASE(
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
   using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<2>, 3>;
+  using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<2>, 3>;
   using dt_variables_tag =
       db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
 
@@ -270,9 +277,11 @@ SPECTRE_TEST_CASE(
       const std::array<size_t, 3>& extents) noexcept {
     const Mesh<3> mesh(extents, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
-    return db::create<db::AddSimpleTags<Tags::Mesh<3>, mortar_meshes_tag,
-                                        dt_variables_tag, mortar_data_tag>>(
+    return db::create<
+        db::AddSimpleTags<Tags::Mesh<3>, mortar_meshes_tag, mortar_sizes_tag,
+                          dt_variables_tag, mortar_data_tag>>(
         mesh, typename mortar_meshes_tag::type{},
+        typename mortar_sizes_tag::type{},
         typename dt_variables_tag::type(mesh.number_of_grid_points(), 0.),
         typename mortar_data_tag::type{});
   };
@@ -313,13 +322,15 @@ SPECTRE_TEST_CASE(
                       volume_mesh.extents(direction.dimension()),
                       local_data.magnitude_of_face_normal));
 
-    db::mutate<dt_variables_tag, mortar_meshes_tag, mortar_data_tag>(
+    db::mutate<dt_variables_tag, mortar_meshes_tag, mortar_sizes_tag,
+               mortar_data_tag>(
         local,
         [
           &direction, &id, &local_data, &mortar_mesh, &uncoupled_lifted_flux,
           &volume_mesh
         ](const gsl::not_null<db::item_type<dt_variables_tag>*> dt_variables,
           const gsl::not_null<db::item_type<mortar_meshes_tag>*> mortar_meshes,
+          const gsl::not_null<db::item_type<mortar_sizes_tag>*> mortar_sizes,
           const gsl::not_null<db::item_type<mortar_data_tag>*>
               mortar_data) noexcept {
           const auto mortar_id = std::make_pair(direction, id);
@@ -328,6 +339,9 @@ SPECTRE_TEST_CASE(
               direction.dimension(),
               index_to_slice_at(volume_mesh.extents(), direction));
           (*mortar_meshes)[mortar_id] = mortar_mesh;
+          mortar_sizes->insert(
+              {mortar_id,
+               {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}});
           (*mortar_data)[mortar_id].local_insert(0, std::move(local_data));
         });
     db::mutate<mortar_data_tag>(
@@ -364,4 +378,181 @@ SPECTRE_TEST_CASE(
               logical_coordinates(get<Tags::Mesh<3>>(out_box2)))),
       get<Tags::Mesh<3>>(out_box2));
   CHECK(average_dt1 == approx(-average_dt2));
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping.h-refinement",
+    "[Unit][NumericalAlgorithms][Actions]") {
+  using Spectral::MortarSize;
+
+  using flux_comm_types =
+      dg::FluxCommunicationTypes<Metavariables<3, RefinementNumericalFlux>>;
+  using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
+  using LocalData = typename flux_comm_types::LocalData;
+  using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<2>, 3>;
+  using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<2>, 3>;
+  using dt_variables_tag =
+      db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
+
+  ActionTesting::ActionRunner<Metavariables<3, RefinementNumericalFlux>> runner{
+      {RefinementNumericalFlux{}}};
+
+  const Mesh<3> mesh(5, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+
+  const ElementId<3> self_id(10);
+  const auto direction = Direction<3>::upper_xi();
+
+  const auto face_mesh = mesh.slice_away(direction.dimension());
+  const auto face_coords = logical_coordinates(face_mesh);
+  Variables<tmpl::list<Tags::NormalDotFlux<Var>>> initial_flux(
+      face_mesh.number_of_grid_points());
+  get<Tags::NormalDotFlux<Var>>(initial_flux) = flux1(face_coords);
+  typename dt_variables_tag::type initial_dt_vars(mesh.number_of_grid_points(),
+                                                  0.);
+  add_slice_to_data(
+      make_not_null(&initial_dt_vars),
+      typename dt_variables_tag::type(dg::lift_flux(
+          std::move(initial_flux), mesh.extents(direction.dimension()),
+          magnitude_of_face_normal1(face_coords))),
+      mesh.extents(), direction.dimension(),
+      index_to_slice_at(mesh.extents(), direction));
+
+  // The coordinates are stored for use in integration later.  They
+  // are not needed for the action.
+  auto self_box = db::create<db::AddSimpleTags<
+      Tags::Mesh<3>, Tags::Coordinates<3, Frame::Logical>, mortar_meshes_tag,
+      mortar_sizes_tag, dt_variables_tag, mortar_data_tag>>(
+      mesh, logical_coordinates(mesh), typename mortar_meshes_tag::type{},
+      typename mortar_sizes_tag::type{}, std::move(initial_dt_vars),
+      typename mortar_data_tag::type{});
+
+  std::vector<decltype(self_box)> neighbor_boxes{};
+  const auto add_neighbor =
+      [&direction, &face_coords, &mesh, &neighbor_boxes, &self_box, &self_id](
+          const std::array<MortarSize, 2>& mortar_size,
+          const std::array<double, 2>& center,
+          const std::array<double, 2>& half_width) noexcept {
+    // These ids don't describe elements that fit together correctly,
+    // but they are only used as opaque identifiers so it doesn't
+    // matter.
+    const ElementId<3> neighbor_id(neighbor_boxes.size());
+    const auto mortar_id_in_self = std::make_pair(direction, neighbor_id);
+    const auto mortar_id_in_neighbor = std::make_pair(direction, self_id);
+
+    const auto mortar_mesh = mesh.slice_away(direction.dimension());
+    auto mortar_coords = face_coords;
+    get<0>(mortar_coords) = half_width[0] * get<0>(mortar_coords) + center[0];
+    get<1>(mortar_coords) = half_width[1] * get<1>(mortar_coords) + center[1];
+    auto neighbor_coords = logical_coordinates(mesh);
+    // xi (0) is the perpendicular direction
+    get<1>(neighbor_coords) =
+        half_width[0] * get<1>(neighbor_coords) + center[0];
+    get<2>(neighbor_coords) =
+        half_width[1] * get<2>(neighbor_coords) + center[1];
+
+    LocalData self_data{};
+    self_data.mortar_data.initialize(mortar_mesh.number_of_grid_points());
+    get<Tags::NormalDotFlux<Var>>(self_data.mortar_data) = flux1(face_coords);
+    // We need to use the projected values rather than the "exact"
+    // values evaluated on the mortar for the method to be
+    // conservative.
+    self_data.mortar_data = dg::project_to_mortar(
+        self_data.mortar_data, mortar_mesh, mortar_mesh, mortar_size);
+    self_data.magnitude_of_face_normal = magnitude_of_face_normal1(face_coords);
+
+    LocalData neighbor_data{};
+    neighbor_data.mortar_data.initialize(mortar_mesh.number_of_grid_points());
+    get<Tags::NormalDotFlux<Var>>(neighbor_data.mortar_data) =
+        flux2(mortar_coords);
+    neighbor_data.magnitude_of_face_normal =
+        magnitude_of_face_normal2(mortar_coords);
+
+    typename mortar_data_tag::type neighbor_mortar_data{};
+    neighbor_mortar_data[mortar_id_in_neighbor].local_insert(0, neighbor_data);
+    neighbor_mortar_data[mortar_id_in_neighbor].remote_insert(
+        0, self_data.mortar_data);
+
+    Variables<tmpl::list<Tags::NormalDotFlux<Var>>> neighbor_flux(
+        mortar_mesh.number_of_grid_points());
+    get<Tags::NormalDotFlux<Var>>(neighbor_flux) = flux2(mortar_coords);
+    typename dt_variables_tag::type neighbor_dt_vars(
+        mesh.number_of_grid_points(), 0.);
+    add_slice_to_data(
+        make_not_null(&neighbor_dt_vars),
+        typename dt_variables_tag::type(dg::lift_flux(
+            std::move(neighbor_flux), mesh.extents(direction.dimension()),
+            magnitude_of_face_normal2(mortar_coords))),
+        mesh.extents(), direction.dimension(),
+        index_to_slice_at(mesh.extents(), direction));
+
+    neighbor_boxes.push_back(
+        db::create<db::AddSimpleTags<Tags::Mesh<3>,
+                                     Tags::Coordinates<3, Frame::Logical>,
+                                     mortar_meshes_tag, mortar_sizes_tag,
+                                     dt_variables_tag, mortar_data_tag>>(
+            mesh, std::move(neighbor_coords),
+            typename mortar_meshes_tag::type{
+                {mortar_id_in_neighbor, mortar_mesh}},
+            // The neighbors are the small elements, so they are the
+            // same size as the mortars.
+            typename mortar_sizes_tag::type{
+                {mortar_id_in_neighbor,
+                 {{MortarSize::Full, MortarSize::Full}}}},
+            std::move(neighbor_dt_vars), std::move(neighbor_mortar_data)));
+
+    db::mutate<mortar_data_tag, mortar_meshes_tag, mortar_sizes_tag>(
+        make_not_null(&self_box),
+        [
+          &mortar_id_in_self, &mortar_mesh, &mortar_size, &neighbor_data,
+          &self_data
+        ](const gsl::not_null<db::item_type<mortar_data_tag>*> data,
+          const gsl::not_null<db::item_type<mortar_meshes_tag>*> meshes,
+          const gsl::not_null<db::item_type<mortar_sizes_tag>*>
+              sizes) noexcept {
+          (*data)[mortar_id_in_self].local_insert(0, self_data);
+          (*data)[mortar_id_in_self].remote_insert(0,
+                                                   neighbor_data.mortar_data);
+          (*meshes)[mortar_id_in_self] = mortar_mesh;
+          (*sizes)[mortar_id_in_self] = mortar_size;
+        });
+  };
+
+  add_neighbor({{MortarSize::Full, MortarSize::UpperHalf}}, {{0.0, 0.5}},
+               {{1.0, 0.5}});
+  add_neighbor({{MortarSize::UpperHalf, MortarSize::LowerHalf}}, {{0.5, -0.5}},
+               {{0.5, 0.5}});
+  add_neighbor({{MortarSize::LowerHalf, MortarSize::LowerHalf}}, {{-0.5, -0.5}},
+               {{0.5, 0.5}});
+
+  auto self_out_box =
+      get<0>(runner.apply<component<3, RefinementNumericalFlux>,
+                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
+          self_box, self_id));
+  std::vector<decltype(self_out_box)> neighbor_out_boxes{};
+  neighbor_out_boxes.reserve(neighbor_boxes.size());
+  for (auto& neighbor_box : neighbor_boxes) {
+    neighbor_out_boxes.push_back(
+        get<0>(runner.apply<component<3, RefinementNumericalFlux>,
+                            dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
+            neighbor_box,
+            // id doesn't matter
+            self_id)));
+  }
+
+  // Check that the operation was conservative.
+  const auto average_dt = [&mesh](const auto& box,
+                                  const auto& det_jacobian) noexcept {
+    return definite_integral(
+        get(get<Tags::dt<Var>>(box)) *
+            get(det_jacobian(get<Tags::Coordinates<3, Frame::Logical>>(box))),
+        mesh);
+  };
+  const double self_average_dt =
+      average_dt(self_out_box, determinant_of_jacobian1);
+  const double neighbors_average_dt =
+      0.5 * average_dt(neighbor_out_boxes[0], determinant_of_jacobian2) +
+      0.25 * average_dt(neighbor_out_boxes[1], determinant_of_jacobian2) +
+      0.25 * average_dt(neighbor_out_boxes[2], determinant_of_jacobian2);
+  CHECK(self_average_dt == approx(-neighbors_average_dt));
 }
