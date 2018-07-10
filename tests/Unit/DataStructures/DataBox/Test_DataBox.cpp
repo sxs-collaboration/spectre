@@ -1719,8 +1719,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TaggedTuple",
     // Test that having a TaggedTuple inside a DataBox works properly
     auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
         tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
-    auto box2 = box;
-    box2 = std::move(box);
+    auto box2 = std::move(box);
     CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
           123);
     CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==
@@ -1730,8 +1729,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TaggedTuple",
     // Test that having a TaggedTuple inside a DataBox works properly
     auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
         tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
-    auto box2 = box;
-    box2 = box;
+    auto box2 = std::move(box);
     CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
           123);
     CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==

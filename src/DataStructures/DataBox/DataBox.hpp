@@ -445,17 +445,8 @@ class DataBox<tmpl::list<Tags...>>
     }
     return *this;
   }
-  DataBox(const DataBox& rhs) = default;
-  DataBox& operator=(const DataBox& rhs) noexcept(
-      tmpl2::flat_all_v<
-          cpp17::is_nothrow_copy_assignable_v<DataBox_detail::DataBoxLeaf<
-              Tags, db::item_type<Tags, tmpl::list<Tags...>>>>...>) {
-    if (&rhs != this) {
-      ::expand_pack(
-          (get_deferred<Tags>() = rhs.template get_deferred<Tags>())...);
-    }
-    return *this;
-  }
+  DataBox(const DataBox& rhs) = delete;
+  DataBox& operator=(const DataBox& rhs) = delete;
 #ifdef SPECTRE_DEBUG
   // Destructor is used for triggering assertions
   ~DataBox() noexcept {
