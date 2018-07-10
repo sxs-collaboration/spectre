@@ -5,23 +5,11 @@ if (DEFINED ENV{CHARM_ROOT} AND "${CHARM_ROOT}" STREQUAL "")
   set(CHARM_ROOT "$ENV{CHARM_ROOT}")
 endif()
 
-if (NOT EXISTS "${CHARM_ROOT}")
-  if ("${CHARM_ROOT}" STREQUAL "")
-    message(
-        FATAL_ERROR "CHARM_ROOT was not set. Pass it as a command-line arg: "
-        "cmake -D CHARM_ROOT=/path/to/charm++/build-dir")
-  endif()
-  message(
-      FATAL_ERROR "CHARM_ROOT=${CHARM_ROOT} does not exist. "
-      "Please pass it as a command-line definition to cmake, i.e. "
-      "cmake -D CHARM_ROOT=/path/to/charm++/build-dir"
-  )
-endif ()
-
 find_path(
     CHARM_INCLUDE_DIRS charm.h
     PATH_SUFFIXES include
     HINTS ${CHARM_ROOT}
+    DOC "Charm include directory. Used CHARM_ROOT to set a search dir."
 )
 
 if (EXISTS "${CHARM_INCLUDE_DIRS}/VERSION")
