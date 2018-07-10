@@ -40,6 +40,9 @@ template <>
 void register_with_charm<1>() {
   PUPable_reg(
       SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Affine>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                 CoordinateMaps::DiscreteRotation<1>, Affine>));
 }
 
 template <>

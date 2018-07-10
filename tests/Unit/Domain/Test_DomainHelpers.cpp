@@ -8,6 +8,7 @@
 #include <memory>
 #include <pup.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
@@ -22,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
@@ -45,8 +47,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
   const PairOfFaces x_faces{{1, 3, 5, 7}, {0, 2, 4, 6}};
 
   const std::vector<PairOfFaces> identifications{x_faces};
-  set_periodic_boundaries<3>(identifications, corners_of_all_blocks,
-                             &neighbors_of_all_blocks);
+  set_identified_boundaries<3>(identifications, corners_of_all_blocks,
+                               &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
 
@@ -74,8 +76,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
   const PairOfFaces x_faces_on_different_blocks{{1, 3, 5, 7}, {8, 10, 0, 2}};
 
   const std::vector<PairOfFaces> identifications{x_faces_on_different_blocks};
-  set_periodic_boundaries<3>(identifications, corners_of_all_blocks,
-                             &neighbors_of_all_blocks);
+  set_identified_boundaries<3>(identifications, corners_of_all_blocks,
+                               &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
   const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
@@ -862,6 +864,170 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
 #endif
 }
 
+namespace {
+void test_fci_1d() {
+  FaceCornerIterator<1> fci{Direction<1>::upper_xi()};
+  CHECK(fci);
+  CHECK(fci.volume_index() == 1);
+  CHECK(fci.face_index() == 0);
+  ++fci;
+  CHECK(not fci);
+
+  FaceCornerIterator<1> fci2{Direction<1>::lower_xi()};
+  CHECK(fci2);
+  CHECK(fci2.volume_index() == 0);
+  CHECK(fci2.face_index() == 0);
+  ++fci2;
+  CHECK(not fci2);
+}
+
+void test_fci_2d() {
+  FaceCornerIterator<2> fci{Direction<2>::upper_xi()};
+  CHECK(fci);
+  CHECK(fci.volume_index() == 1);
+  CHECK(fci.face_index() == 0);
+  ++fci;
+  CHECK(fci.volume_index() == 3);
+  CHECK(fci.face_index() == 1);
+  ++fci;
+  CHECK(not fci);
+
+  FaceCornerIterator<2> fci2{Direction<2>::lower_xi()};
+  CHECK(fci2);
+  CHECK(fci2.volume_index() == 0);
+  CHECK(fci2.face_index() == 0);
+  ++fci2;
+  CHECK(fci2.volume_index() == 2);
+  CHECK(fci2.face_index() == 1);
+  ++fci2;
+  CHECK(not fci2);
+
+  FaceCornerIterator<2> fci3{Direction<2>::upper_eta()};
+  CHECK(fci3);
+  CHECK(fci3.volume_index() == 2);
+  CHECK(fci3.face_index() == 0);
+  ++fci3;
+  CHECK(fci3.volume_index() == 3);
+  CHECK(fci3.face_index() == 1);
+  ++fci3;
+  CHECK(not fci3);
+
+  FaceCornerIterator<2> fci4{Direction<2>::lower_eta()};
+  CHECK(fci4);
+  CHECK(fci4.volume_index() == 0);
+  CHECK(fci4.face_index() == 0);
+  ++fci4;
+  CHECK(fci4.volume_index() == 1);
+  CHECK(fci4.face_index() == 1);
+  ++fci4;
+  CHECK(not fci4);
+}
+void test_fci_3d() {
+  FaceCornerIterator<3> fci{Direction<3>::upper_xi()};
+  CHECK(fci);
+  CHECK(fci.volume_index() == 1);
+  CHECK(fci.face_index() == 0);
+  ++fci;
+  CHECK(fci.volume_index() == 3);
+  CHECK(fci.face_index() == 1);
+  ++fci;
+  CHECK(fci.volume_index() == 5);
+  CHECK(fci.face_index() == 2);
+  ++fci;
+  CHECK(fci.volume_index() == 7);
+  CHECK(fci.face_index() == 3);
+  ++fci;
+  CHECK(not fci);
+
+  FaceCornerIterator<3> fci2{Direction<3>::lower_xi()};
+  CHECK(fci2);
+  CHECK(fci2.volume_index() == 0);
+  CHECK(fci2.face_index() == 0);
+  ++fci2;
+  CHECK(fci2.volume_index() == 2);
+  CHECK(fci2.face_index() == 1);
+  ++fci2;
+  CHECK(fci2.volume_index() == 4);
+  CHECK(fci2.face_index() == 2);
+  ++fci2;
+  CHECK(fci2.volume_index() == 6);
+  CHECK(fci2.face_index() == 3);
+  ++fci2;
+  CHECK(not fci2);
+
+  FaceCornerIterator<3> fci3{Direction<3>::upper_eta()};
+  CHECK(fci3);
+  CHECK(fci3.volume_index() == 2);
+  CHECK(fci3.face_index() == 0);
+  ++fci3;
+  CHECK(fci3.volume_index() == 3);
+  CHECK(fci3.face_index() == 1);
+  ++fci3;
+  CHECK(fci3.volume_index() == 6);
+  CHECK(fci3.face_index() == 2);
+  ++fci3;
+  CHECK(fci3.volume_index() == 7);
+  CHECK(fci3.face_index() == 3);
+  ++fci3;
+  CHECK(not fci3);
+
+  FaceCornerIterator<3> fci4{Direction<3>::lower_eta()};
+  CHECK(fci4);
+  CHECK(fci4.volume_index() == 0);
+  CHECK(fci4.face_index() == 0);
+  ++fci4;
+  CHECK(fci4.volume_index() == 1);
+  CHECK(fci4.face_index() == 1);
+  ++fci4;
+  CHECK(fci4.volume_index() == 4);
+  CHECK(fci4.face_index() == 2);
+  ++fci4;
+  CHECK(fci4.volume_index() == 5);
+  CHECK(fci4.face_index() == 3);
+  ++fci4;
+  CHECK(not fci4);
+
+  FaceCornerIterator<3> fci5{Direction<3>::upper_zeta()};
+  CHECK(fci5);
+  CHECK(fci5.volume_index() == 4);
+  CHECK(fci5.face_index() == 0);
+  ++fci5;
+  CHECK(fci5.volume_index() == 5);
+  CHECK(fci5.face_index() == 1);
+  ++fci5;
+  CHECK(fci5.volume_index() == 6);
+  CHECK(fci5.face_index() == 2);
+  ++fci5;
+  CHECK(fci5.volume_index() == 7);
+  CHECK(fci5.face_index() == 3);
+  ++fci5;
+  CHECK(not fci5);
+
+  FaceCornerIterator<3> fci6{Direction<3>::lower_zeta()};
+  CHECK(fci6);
+  CHECK(fci6.volume_index() == 0);
+  CHECK(fci6.face_index() == 0);
+  ++fci6;
+  CHECK(fci6.volume_index() == 1);
+  CHECK(fci6.face_index() == 1);
+  ++fci6;
+  CHECK(fci6.volume_index() == 2);
+  CHECK(fci6.face_index() == 2);
+  ++fci6;
+  CHECK(fci6.volume_index() == 3);
+  CHECK(fci6.face_index() == 3);
+  ++fci6;
+  CHECK(not fci6);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.FaceCornerIterator",
+                  "[Domain][Unit]") {
+  test_fci_1d();
+  test_fci_2d();
+  test_fci_3d();
+}
+
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
                   "[Domain][Unit]") {
   std::vector<std::array<size_t, 2>> corners_for_a_1d_road{
@@ -1099,5 +1265,125 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
                         Equiangular{-1., 1., -0.4, 0.3}});
   for (size_t i = 0; i < equiangular_maps_3d.size(); i++) {
     CHECK(*equiangular_maps_3d[i] == *expected_equiangular_maps_3d[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
+                  "[Domain][Unit]") {
+  const auto domain = rectilinear_domain<3, Frame::Inertial>(
+      Index<3>{3, 3, 3},
+      std::array<std::vector<double>, 3>{
+          {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
+      {Index<3>{1, 1, 1}}, {}, std::array<bool, 3>{{true, false, false}}, {});
+  const std::vector<std::unordered_set<Direction<3>>>
+      expected_external_boundaries{
+          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_zeta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_zeta()}},
+          {{Direction<3>::lower_zeta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_eta()}},
+          {{Direction<3>::lower_eta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::lower_eta()}},
+          {},
+          {},
+          {{Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_eta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_eta()}},
+          {{Direction<3>::upper_zeta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}},
+          {{Direction<3>::upper_zeta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}}};
+  for (const auto& block : domain.blocks()) {
+  }
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
+                  "[Domain][Unit]") {
+  const auto rotation = OrientationMap<2>{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  auto orientations_of_all_blocks =
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+  orientations_of_all_blocks[0] = rotation;
+  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
+      false);
+
+  const std::vector<std::unordered_set<Direction<2>>>
+      expected_external_boundaries{{{Direction<2>::upper_xi()}},
+                                   {{Direction<2>::lower_eta()}},
+                                   {{Direction<2>::upper_eta()}},
+                                   {{Direction<2>::upper_eta()}}};
+
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
+                  "[Domain][Unit]") {
+  const OrientationMap<2> flipped{std::array<Direction<2>, 2>{
+      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
+  const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
+      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
+      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
+  auto orientations_of_all_blocks =
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+  orientations_of_all_blocks[1] = flipped;
+  orientations_of_all_blocks[2] = quarter_turn_cw;
+  orientations_of_all_blocks[3] = quarter_turn_ccw;
+  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
+      false);
+
+  std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
+      expected_block_neighbors{
+          {{Direction<2>::upper_xi(), {1, flipped}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
+           {Direction<2>::lower_xi(), {1, flipped}},
+           {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, flipped}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
+           {Direction<2>::lower_xi(), {0, flipped}},
+           {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {3, flipped}},
+           {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::lower_eta(), {3, flipped}}},
+          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {2, flipped}},
+           {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::lower_eta(), {2, flipped}}}};
+  std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
+      {}, {}, {}, {}};
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].external_boundaries() ==
+          expected_external_boundaries[i]);
+  }
+  for (size_t i = 0; i < domain.blocks().size(); i++) {
+    INFO(i);
+    CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
 }

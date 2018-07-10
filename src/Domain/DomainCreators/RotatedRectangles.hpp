@@ -52,6 +52,13 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
         "Sequence of [x,y] for upper bounds in the target frame."};
   };
 
+  struct IsPeriodicIn {
+    using type = std::array<bool, 2>;
+    static constexpr OptionString help = {
+        "Sequence for [x], true if periodic."};
+    static type default_value() { return {{false, false}}; }
+  };
+
   struct InitialRefinement {
     using type = std::array<size_t, 2>;
     static constexpr OptionString help = {
@@ -64,7 +71,7 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
         "Initial number of grid points in [[x], [y]]."};
   };
 
-  using options = tmpl::list<LowerBound, Midpoint, UpperBound,
+  using options = tmpl::list<LowerBound, Midpoint, UpperBound, IsPeriodicIn,
                              InitialRefinement, InitialGridPoints>;
 
   static constexpr OptionString help = {
@@ -77,6 +84,7 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
   RotatedRectangles(
       typename LowerBound::type lower_xy, typename Midpoint::type midpoint_xy,
       typename UpperBound::type upper_xy,
+      typename IsPeriodicIn::type is_periodic_in,
       typename InitialRefinement::type initial_refinement_level_xy,
       typename InitialGridPoints::type
           initial_number_of_grid_points_in_xy) noexcept;
@@ -102,6 +110,7 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
       {std::numeric_limits<double>::signaling_NaN()}};
   typename UpperBound::type upper_xy_{
       {std::numeric_limits<double>::signaling_NaN()}};
+  typename IsPeriodicIn::type is_periodic_in_{{false, false}};
   typename InitialRefinement::type initial_refinement_level_xy_{
       {std::numeric_limits<size_t>::max()}};
   typename InitialGridPoints::type initial_number_of_grid_points_in_xy_{

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -29,9 +30,6 @@ template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
-namespace Frame {
-struct Logical;
-}  // namespace Frame
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
@@ -58,10 +56,10 @@ void set_internal_boundaries(
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up additional BlockNeighbors corresponding to any
-/// periodic boundary condtions provided by the user. These are
-/// stored in identifications.
+/// identifications of faces provided by the user. Can be used
+/// for manually setting up periodic boundary conditions.
 template <size_t VolumeDim>
-void set_periodic_boundaries(
+void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
@@ -206,6 +204,8 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
+    const std::array<bool, VolumeDim>& dimension_is_periodic =
+        make_array<VolumeDim>(false),
     const std::vector<PairOfFaces>& identifications = {},
     bool use_equiangular_map = false) noexcept;
 
@@ -282,3 +282,54 @@ class VolumeCornerIterator {
   std::array<Direction<VolumeDim>, VolumeDim> array_directions_{};
   std::array<double, VolumeDim> coords_of_corner_ = make_array<VolumeDim>(-1.0);
 };
+
+/// \ingroup ComputationalDomainGroup
+/// Iterates over the 2^(VolumeDim-1) logical corners of the face of a
+/// VolumeDim-dimensional cube in the given direction.
+template <size_t VolumeDim>
+class FaceCornerIterator {
+ public:
+  explicit FaceCornerIterator(Direction<VolumeDim> direction) noexcept;
+  void operator++() noexcept {
+    face_index_++;
+    do {
+      index_++;
+    } while (get_nth_bit(index_, direction_.dimension()) ==
+             (direction_.side() == Side::Upper ? 0 : 1));
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
+    }
+  }
+  explicit operator bool() const noexcept {
+    return face_index_ < two_to_the(VolumeDim - 1);
+  }
+  tnsr::I<double, VolumeDim, Frame::Logical> operator()() const noexcept {
+    return corner_;
+  }
+  tnsr::I<double, VolumeDim, Frame::Logical> operator*() const noexcept {
+    return corner_;
+  }
+
+  // Returns the value used to construct the logical corner.
+  size_t volume_index() const noexcept { return index_; }
+  // Returns the number of times operator++ has been called.
+  size_t face_index() const noexcept { return face_index_; }
+
+ private:
+  const Direction<VolumeDim> direction_;
+  size_t index_;
+  size_t face_index_ = 0;
+  tnsr::I<double, VolumeDim, Frame::Logical> corner_;
+};
+
+template <size_t VolumeDim>
+FaceCornerIterator<VolumeDim>::FaceCornerIterator(
+    Direction<VolumeDim> direction) noexcept
+    : direction_(std::move(direction)),
+      index_(direction.side() == Side::Upper
+                 ? two_to_the(direction_.dimension())
+                 : 0) {
+  for (size_t i = 0; i < VolumeDim; ++i) {
+    corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
+  }
+}
