@@ -154,25 +154,23 @@ before_install:
       export NUMPY_VERSION=1.14;
       export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11;
       cd $HOME;
-      rm  /usr/local/include/c++;
+      rm /usr/local/include/c++;
+      brew update;
       brew install gcc;
       brew install ccache;
       PATH=/usr/local/opt/ccache/libexec:$PATH;
       brew install jemalloc;
       brew install gsl;
-
       brew install hdf5;
 
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
       chmod +x miniconda.sh;
       ./miniconda.sh -b -p /Users/travis/mc;
       export PATH=/Users/travis/mc/bin:$PATH;
-
       conda info;
       conda update --yes conda;
       conda create -n osx_env --yes python=$TRAVIS_PYTHON_VERSION;
       source activate osx_env;
-
       conda install -y numpy=$NUMPY_VERSION;
 
       ccache -z;
