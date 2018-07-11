@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Utilities")
 
 set(LIBRARY_SOURCES
+  Test_Algorithm.cpp
   Test_Array.cpp
   Test_Blas.cpp
   Test_BoostHelpers.cpp
