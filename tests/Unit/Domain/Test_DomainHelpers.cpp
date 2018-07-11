@@ -1303,8 +1303,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}}};
-  for (const auto& block : domain.blocks()) {
-  }
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
