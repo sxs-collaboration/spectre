@@ -52,6 +52,15 @@ Mesh<SliceDim> Mesh<Dim>::slice_through(
                         std::move(slice_quadratures));
 }
 
+template <size_t Dim>
+std::array<Mesh<1>, Dim> Mesh<Dim>::slices() const noexcept {
+  std::array<Mesh<1>, Dim> result{};
+  for (size_t d = 0; d < Dim; ++d) {
+    gsl::at(result, d) = Mesh<1>(extents(d), basis(d), quadrature(d));
+  }
+  return result;
+}
+
 /// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
 void Mesh<Dim>::pup(PUP::er& p) noexcept {

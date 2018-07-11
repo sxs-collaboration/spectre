@@ -33,6 +33,7 @@ void test_extents_basis_and_quadrature(
     CHECK(mesh.extents(d) == gsl::at(extents, d));
     CHECK(mesh.basis(d) == gsl::at(basis, d));
     CHECK(mesh.quadrature(d) == gsl::at(quadrature, d));
+    CHECK(gsl::at(mesh.slices(), d) == mesh.slice_through(d));
   }
 }
 }  // namespace
