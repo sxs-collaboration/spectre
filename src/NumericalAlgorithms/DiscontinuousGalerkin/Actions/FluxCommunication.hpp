@@ -31,8 +31,6 @@ template <typename Tag>
 struct Magnitude;
 template <typename Tag>
 struct Next;
-template <typename Tag>
-struct Normalized;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -181,10 +179,8 @@ struct ReceiveDataForFluxes {
 /// - DataBox:
 ///   - Tags::Element<volume_dim>
 ///   - Interface<Tags listed in
-///               Metavariables::normal_dot_numerical_flux::type::slice_tags>
-///   - Interface<FluxCommunicationTypes<Metavariables>::normal_dot_fluxes_tag>
+///               Metavariables::normal_dot_numerical_flux::type::argument_tags>
 ///   - Interface<Tags::Mesh<volume_dim - 1>>
-///   - Interface<Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>
 ///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   - Metavariables::temporal_id
 ///   - Tags::Next<Metavariables::temporal_id>
@@ -251,12 +247,8 @@ struct SendDataForFluxes {
       // from this side of the mortar now, then package it into a Variables.
       // We store one copy of the Variables and send another, since we need
       // the data on both sides of the mortar.
-      using package_arguments = tmpl::append<
-          typename db::item_type<
-              typename flux_comm_types::normal_dot_fluxes_tag>::tags_list,
-          typename Metavariables::normal_dot_numerical_flux::type::slice_tags,
-          tmpl::list<
-              Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
+      using package_arguments = typename Metavariables::
+          normal_dot_numerical_flux::type::argument_tags;
       const auto packaged_data = db::apply<tmpl::transform<
           package_arguments,
           tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,

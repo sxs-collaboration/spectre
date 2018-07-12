@@ -7,6 +7,7 @@
 #include <string>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,6 +28,8 @@ template <typename, typename, typename>
 struct deriv;
 template <typename>
 struct NormalDotFlux;
+template <typename>
+struct Normalized;
 }  // namespace Tags
 
 namespace ScalarWave {
@@ -82,7 +85,9 @@ struct ComputeDuDt {
  */
 template <size_t Dim>
 struct ComputeNormalDotFluxes {
-  using argument_tags = tmpl::list<Pi, Phi<Dim>>;
+  using argument_tags =
+      tmpl::list<Pi, Phi<Dim>,
+                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
                     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
                         phi_normal_dot_flux,
@@ -127,25 +132,38 @@ struct UpwindFlux {
   // clang-tidy: non-const reference
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 
+  // This is the data needed to compute the numerical flux.
+  // `dg::SendBoundaryFluxes` calls `package_data` to store these tags in a
+  // Variables. Local and remote values of this data are then combined in the
+  // `()` operator.
   using package_tags =
       tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>, Pi,
                  NormalTimesFluxPi>;
 
-  using slice_tags = tmpl::list<Pi>;
+  // These tags on the interface of the element are passed to
+  // `package_data` to provide the data needed to compute the numerical fluxes.
+  using argument_tags =
+      tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>, Pi,
+                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code
+  // Following the not-null pointer to packaged_data, this function expects as
+  // arguments the databox types of the `argument_tags`.
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,
       const Scalar<DataVector>& normal_dot_flux_pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
-      const Scalar<DataVector>& /*normal_dot_flux_psi*/,
       const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
       const noexcept;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code
+  // The arguments are first the system::variables_tag::tags_list wrapped in
+  // Tags::NormalDotNumericalFLux as not-null pointers to write the results
+  // into, then the package_tags on the interior side of the mortar followed by
+  // the package_tags on the exterior side.
   void operator()(
       gsl::not_null<Scalar<DataVector>*> pi_normal_dot_numerical_flux,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>

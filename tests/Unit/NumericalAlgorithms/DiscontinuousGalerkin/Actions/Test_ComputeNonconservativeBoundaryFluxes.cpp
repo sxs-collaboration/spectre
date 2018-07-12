@@ -68,12 +68,13 @@ struct System {
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 
   struct normal_dot_fluxes {
-    using argument_tags = tmpl::list<Var, OtherArg, Var2>;
+    using argument_tags =
+        tmpl::list<Var, OtherArg, Var2,
+                   Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>;
     static void apply(
         const gsl::not_null<Scalar<DataVector>*> var_normal_dot_flux,
         const gsl::not_null<tnsr::ii<DataVector, 2>*> var2_normal_dot_flux,
-        const Scalar<DataVector>& var,
-        const double other_arg,
+        const Scalar<DataVector>& var, const double other_arg,
         const tnsr::ii<DataVector, 2>& var2,
         const tnsr::i<DataVector, 2>& unit_face_normal) noexcept {
       get(*var_normal_dot_flux) =

@@ -3,7 +3,6 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <limits>
 #include <random>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -26,20 +25,16 @@ DataVector apply_numerical_flux(const DataVector& ndotf_interior,
                                 const DataVector& u_exterior) noexcept {
   using flux = Burgers::LocalLaxFriedrichsFlux;
 
-  // Scalar fluxes should not depend on the normal.
-  const auto normal = make_with_value<tnsr::i<DataVector, 1>>(
-      u_interior, std::numeric_limits<double>::signaling_NaN());
-
   auto package_data_interior =
       make_with_value<Variables<typename flux::package_tags>>(u_interior, 0.);
   flux{}.package_data(&package_data_interior,
                       Scalar<DataVector>(ndotf_interior),
-                      Scalar<DataVector>(u_interior), normal);
+                      Scalar<DataVector>(u_interior));
   auto package_data_exterior =
       make_with_value<Variables<typename flux::package_tags>>(u_interior, 0.);
   flux{}.package_data(&package_data_exterior,
                       Scalar<DataVector>(ndotf_exterior),
-                      Scalar<DataVector>(u_exterior), normal);
+                      Scalar<DataVector>(u_exterior));
 
   auto result = make_with_value<Scalar<DataVector>>(u_interior, 0.);
   flux{}(&result,
