@@ -164,12 +164,13 @@ void check_with_random_values_impl(
     const auto result =
         tuples::get<Tag>((klass.*f)(std::get<ArgumentIs>(args)...));
     INFO("function: " << function_names[count]);
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(
         result,
         (pypp::call<std::decay_t<decltype(result)>>(
             module_name, function_names[count], std::get<ArgumentIs>(args)...,
             forward_to_pypp<std::decay_t<decltype(result)>>(
-                std::get<MemberArgsIs>(member_args), used_for_size)...)));
+                std::get<MemberArgsIs>(member_args), used_for_size)...)),
+        Approx::custom().epsilon(1.e-12).scale(1.0));
     count++;
   });
 }
@@ -210,11 +211,13 @@ void check_with_random_values_impl(
           bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
   INFO("function: " << function_name);
-  CHECK_ITERABLE_APPROX(
-      result, pypp::call<ResultType>(
-                  module_name, function_name, std::get<ArgumentIs>(args)...,
-                  forward_to_pypp<ResultType>(
-                      std::get<MemberArgsIs>(member_args), used_for_size)...));
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      result,
+      pypp::call<ResultType>(
+          module_name, function_name, std::get<ArgumentIs>(args)...,
+          forward_to_pypp<ResultType>(std::get<MemberArgsIs>(member_args),
+                                      used_for_size)...),
+      Approx::custom().epsilon(1.e-12).scale(1.0));
 }
 
 template <class F, class T, class Klass, class... ReturnTypes,
@@ -271,13 +274,14 @@ void check_with_random_values_impl(
     (void)used_for_size;  // avoid compiler warning
     constexpr size_t iter = decltype(result_i)::value;
     INFO("function: " << function_names[iter]);
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(
         std::get<iter>(results),
         (pypp::call<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
             module_name, function_names[iter], std::get<ArgumentIs>(args)...,
             forward_to_pypp<
                 std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
-                std::get<MemberArgsIs>(member_args), used_for_size)...)));
+                std::get<MemberArgsIs>(member_args), used_for_size)...)),
+        Approx::custom().epsilon(1.e-12).scale(1.0));
     return '0';
   };
   (void)std::initializer_list<char>{
@@ -784,8 +788,9 @@ void check_with_random_values(
               BOOST_PP_TUPLE_PUSH_FRONT(                                       \
                   BOOST_PP_LIST_TO_TUPLE(BOOST_PP_LIST_TRANSFORM(              \
                       INVOKE_FUNCTION_WITH_MANY_TEMPLATE_PARAMS_TUPLE_TO_LIST, \
-                      _, BOOST_PP_LIST_REST(                                   \
-                             BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__)))),        \
+                      _,                                                       \
+                      BOOST_PP_LIST_REST(                                      \
+                          BOOST_PP_VARIADIC_TO_LIST(__VA_ARGS__)))),           \
                   BOOST_PP_LIST_TRANSFORM(                                     \
                       INVOKE_FUNCTION_TUPLE_PUSH_BACK,                         \
                       (FUNCTION_NAME, TUPLE_ARGS),                             \
