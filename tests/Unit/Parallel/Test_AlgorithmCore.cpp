@@ -403,7 +403,8 @@ struct add_int0_from_receive {
             .begin());
     tuples::get<IntReceiveTag>(inboxes).erase(db::get<TemporalId>(box));
     return std::make_tuple(
-        db::create_from<tmpl::list<>, tmpl::list<Int0>>(box, int0), ++a >= 5);
+        db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), int0),
+        ++a >= 5);
   }
 
   /// [is_ready_example]

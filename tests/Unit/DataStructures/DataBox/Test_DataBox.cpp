@@ -116,6 +116,24 @@ struct TagPrefix : db::PrefixTag, db::SimpleTag {
 }  // namespace test_databox_tags
 
 namespace {
+using EmptyBox = decltype(db::create<db::AddSimpleTags<>>());
+static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
+                                   std::declval<EmptyBox>())),
+                               EmptyBox>,
+              "Wrong create_from result type");
+static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
+                                   std::declval<const EmptyBox>())),
+                               const EmptyBox>,
+              "Wrong create_from result type");
+static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
+                                   std::declval<EmptyBox&>())),
+                               const EmptyBox>,
+              "Wrong create_from result type");
+static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
+                                   std::declval<const EmptyBox&>())),
+                               const EmptyBox>,
+              "Wrong create_from result type");
+
 using Box_t = db::DataBox<tmpl::list<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
     test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
@@ -183,7 +201,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   // No removal
   {
-    auto box = db::create_from<db::RemoveTags<>>(original_box);
+    const auto& box = db::create_from<db::RemoveTags<>>(original_box);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
@@ -192,7 +210,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   }
   {
     /// [create_from_remove]
-    auto box =
+    const auto& box =
         db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(original_box);
     /// [create_from_remove]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -203,9 +221,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   }
   {
     /// [create_from_add_item]
-    auto box = db::create_from<db::RemoveTags<>,
-                               db::AddSimpleTags<test_databox_tags::Tag3>>(
-        original_box, "Yet another test string"s);
+    const auto& box =
+        db::create_from<db::RemoveTags<>,
+                        db::AddSimpleTags<test_databox_tags::Tag3>>(
+            original_box, "Yet another test string"s);
     /// [create_from_add_item]
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -221,7 +240,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                           test_databox_tags::Tag2>>(
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    auto box =
+    const auto& box =
         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
                         db::AddComputeTags<test_databox_tags::ComputeTag0>>(
             simple_box);
@@ -235,7 +254,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                           test_databox_tags::Tag2>>(
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    auto box =
+    const auto& box =
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<test_databox_tags::Tag3>,
                         db::AddComputeTags<test_databox_tags::ComputeTag0>>(
@@ -250,7 +269,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                           test_databox_tags::Tag2>>(
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    auto box =
+    const auto& box =
         db::create_from<db::RemoveTags<test_databox_tags::Tag1>,
                         db::AddSimpleTags<test_databox_tags::Tag3>,
                         db::AddComputeTags<test_databox_tags::ComputeTag0>>(
@@ -1595,10 +1614,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
           decltype(db::create_from<db::RemoveTags<test_subitems::Parent<2>>>(
               db::create_from<db::RemoveTags<>,
                               db::AddSimpleTags<test_subitems::Parent<2>>>(
-                  box, std::make_pair(
-                           test_subitems::Boxed<int>(std::make_shared<int>(5)),
-                           test_subitems::Boxed<double>(
-                               std::make_shared<double>(3.5))))))>,
+                  std::move(box),
+                  std::make_pair(
+                      test_subitems::Boxed<int>(std::make_shared<int>(5)),
+                      test_subitems::Boxed<double>(
+                          std::make_shared<double>(3.5))))))>,
       "Failed testing that adding and removing a simple subitem does "
       "not change the type of the DataBox");
 
@@ -1610,7 +1630,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
               db::create_from<
                   db::RemoveTags<>, db::AddSimpleTags<>,
                   db::AddComputeTags<test_subitems::Parent<2, true, true>>>(
-                  box)))>,
+                  std::move(box))))>,
       "Failed testing that adding and removing a compute subitem does "
       "not change the type of the DataBox");
 }
