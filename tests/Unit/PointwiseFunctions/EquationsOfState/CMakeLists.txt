@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/EquationsOfState/"
   "${LIBRARY_SOURCES}"
-  "EquationsOfState"
+  "EquationsOfState;DataStructures;Utilities"
   )

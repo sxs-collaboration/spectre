@@ -17,5 +17,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearOperators/"
   "${LIBRARY_SOURCES}"
-  "LinearOperators"
+  "LinearOperators;MathFunctions;Utilities"
   )

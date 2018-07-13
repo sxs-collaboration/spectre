@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Actions/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "DataStructures;Domain;ErrorHandling"
   )

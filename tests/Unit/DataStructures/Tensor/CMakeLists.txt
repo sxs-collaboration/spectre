@@ -1,16 +1,19 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_EvolutionConservative")
+set(LIBRARY "Test_Tensor")
 
 set(LIBRARY_SOURCES
-  Test_ConservativeDuDt.cpp
-  Test_Tags.cpp
+  Test_Identity.cpp
+  Test_Tensor.cpp
   )
+
+add_subdirectory(EagerMath)
+add_subdirectory(Expressions)
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/Conservative/"
+  "DataStructures/Tensor"
   "${LIBRARY_SOURCES}"
   "DataStructures;ErrorHandling"
   )

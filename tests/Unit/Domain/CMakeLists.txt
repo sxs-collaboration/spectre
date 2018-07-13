@@ -36,5 +36,5 @@ add_test_library(
   ${LIBRARY}
   "Domain"
   "${LIBRARY_SOURCES}"
-  "Domain;CoordinateMaps;DomainCreators"
+  "Domain;DomainCreators;Utilities"
   )

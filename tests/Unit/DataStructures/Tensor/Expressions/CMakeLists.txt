@@ -1,16 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_EvolutionConservative")
+set(LIBRARY "Test_Expressions")
 
 set(LIBRARY_SOURCES
-  Test_ConservativeDuDt.cpp
-  Test_Tags.cpp
+  Test_TensorExpressions.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/Conservative/"
+  "DataStructures/Tensor/Expressions"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ErrorHandling"
+  "ErrorHandling"
   )

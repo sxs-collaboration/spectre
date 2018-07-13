@@ -37,5 +37,5 @@ add_test_library(
   ${LIBRARY}
   "Utilities"
   "${LIBRARY_SOURCES}"
-  "Utilities"
+  "DataStructures;Utilities"
   )

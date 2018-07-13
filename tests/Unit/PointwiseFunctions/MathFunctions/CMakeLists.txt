@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/MathFunctions/"
   "${LIBRARY_SOURCES}"
-  "MathFunctions"
+  "MathFunctions;Utilities"
   )

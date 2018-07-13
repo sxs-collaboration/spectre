@@ -1,16 +1,23 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(LIBRARY "Test_DomainCreators")
+
 set(LIBRARY_SOURCES
-  ${LIBRARY_SOURCES}
-  DomainCreators/Test_Brick.cpp
-  DomainCreators/Test_Cylinder.cpp
-  DomainCreators/Test_Disk.cpp
-  DomainCreators/Test_Interval.cpp
-  DomainCreators/Test_Rectangle.cpp
-  DomainCreators/Test_RotatedIntervals.cpp
-  DomainCreators/Test_RotatedRectangles.cpp
-  DomainCreators/Test_Shell.cpp
-  DomainCreators/Test_Sphere.cpp
-  PARENT_SCOPE
+  Test_Brick.cpp
+  Test_Cylinder.cpp
+  Test_Disk.cpp
+  Test_Interval.cpp
+  Test_Rectangle.cpp
+  Test_RotatedIntervals.cpp
+  Test_RotatedRectangles.cpp
+  Test_Shell.cpp
+  Test_Sphere.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Domain/DomainCreators"
+  "${LIBRARY_SOURCES}"
+  "DomainCreators;Test_Domain"
   )

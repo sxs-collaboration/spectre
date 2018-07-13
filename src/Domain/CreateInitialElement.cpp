@@ -104,5 +104,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 
 #undef DIM
 #undef FRAME
-#undef INSTANTIATIE
+#undef INSTANTIATE
 /// \endcond

@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "CoordinateMaps;DataStructures;Domain;ErrorHandling;Utilities"
   )

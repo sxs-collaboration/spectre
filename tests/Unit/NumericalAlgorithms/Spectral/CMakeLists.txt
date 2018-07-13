@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Spectral/"
   "${LIBRARY_SOURCES}"
-  "Spectral"
+  "Spectral;Domain"
   )
