@@ -38,7 +38,7 @@ struct CreateMemberFunctionPointer<ThermodynamicDim,
 template <class T, typename EoS>
 using Function = Scalar<T> (EoS::*)(const Scalar<T>&, const Scalar<T>&) const;
 
-template <bool IsRelativistic, size_t ThermodynamicDim, class... MemberArgs,
+template <size_t ThermodynamicDim, bool IsRelativistic, class... MemberArgs,
           class T, size_t... Is>
 void check_impl(const std::unique_ptr<::EquationsOfState::EquationOfState<
                     IsRelativistic, ThermodynamicDim>>& in_eos,
@@ -182,23 +182,25 @@ template <class EosType, class T, class... MemberArgs>
 void check(std::unique_ptr<EosType> in_eos,
            const std::string& python_function_prefix, const T& used_for_size,
            const MemberArgs&... member_args) noexcept {
-  detail::check_impl(std::unique_ptr<::EquationsOfState::EquationOfState<
-                         EosType::is_relativistic, EosType::thermodynamic_dim>>(
-                         std::move(in_eos)),
-                     python_function_prefix, used_for_size,
-                     std::make_index_sequence<EosType::thermodynamic_dim - 1>{},
-                     member_args...);
+  detail::check_impl<EosType::thermodynamic_dim>(
+      std::unique_ptr<::EquationsOfState::EquationOfState<
+          EosType::is_relativistic, EosType::thermodynamic_dim>>(
+          std::move(in_eos)),
+      python_function_prefix, used_for_size,
+      std::make_index_sequence<EosType::thermodynamic_dim - 1>{},
+      member_args...);
 }
 
 template <class EosType, class T, class... MemberArgs>
 void check(EosType in_eos, const std::string& python_function_prefix,
            const T& used_for_size, const MemberArgs&... member_args) noexcept {
-  detail::check_impl(std::unique_ptr<::EquationsOfState::EquationOfState<
-                         EosType::is_relativistic, EosType::thermodynamic_dim>>(
-                         std::make_unique<EosType>(std::move(in_eos))),
-                     python_function_prefix, used_for_size,
-                     std::make_index_sequence<EosType::thermodynamic_dim - 1>{},
-                     member_args...);
+  detail::check_impl<EosType::thermodynamic_dim>(
+      std::unique_ptr<::EquationsOfState::EquationOfState<
+          EosType::is_relativistic, EosType::thermodynamic_dim>>(
+          std::make_unique<EosType>(std::move(in_eos))),
+      python_function_prefix, used_for_size,
+      std::make_index_sequence<EosType::thermodynamic_dim - 1>{},
+      member_args...);
 }
 // @}
 }  // namespace EquationsOfState
