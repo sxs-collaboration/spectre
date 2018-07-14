@@ -38,13 +38,12 @@ struct LocalLaxFriedrichsFlux {
 
   using package_tags = tmpl::list<::Tags::NormalDotFlux<Tags::U>, Tags::U>;
 
-  using slice_tags = tmpl::list<Tags::U>;
+  using argument_tags = tmpl::list<::Tags::NormalDotFlux<Tags::U>, Tags::U>;
 
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,
       const Scalar<DataVector>& normal_dot_flux_u,
-      const Scalar<DataVector>& u,
-      const tnsr::i<DataVector, 1>& /*interface_unit_normal*/) const noexcept;
+      const Scalar<DataVector>& u) const noexcept;
 
   void operator()(
       gsl::not_null<Scalar<DataVector>*> normal_dot_numerical_flux_u,

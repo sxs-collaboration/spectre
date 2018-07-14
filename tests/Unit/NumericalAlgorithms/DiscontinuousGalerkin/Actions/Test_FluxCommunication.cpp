@@ -82,14 +82,14 @@ class NumericalFlux {
   // This is a silly set of things to request, but it tests not
   // requesting the evolved variables and requesting multiple other
   // things.
-  using slice_tags = tmpl::list<Tags::NormalDotFlux<Var>, OtherData>;
+  using argument_tags =
+      tmpl::list<Tags::NormalDotFlux<Var>, OtherData,
+                 Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>;
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
-                    const Scalar<DataVector>& var_flux2,
                     const Scalar<DataVector>& other_data,
                     const tnsr::i<DataVector, 2, Frame::Inertial>&
                         interface_unit_normal) const noexcept {
-    CHECK(var_flux == var_flux2);
     get(get<Var>(*packaged_data)) = 10. * get(var_flux);
     get<0>(get<ExtraData>(*packaged_data)) =
         get(other_data) + 2. * get<0>(interface_unit_normal) +
@@ -373,7 +373,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         x /= get(get<MagnitudeOfFaceNormal>(local_data));
       }
       PackagedData local_packaged(3);
-      NumericalFlux{}.package_data(&local_packaged, local_flux, local_flux,
+      NumericalFlux{}.package_data(&local_packaged, local_flux,
                                    local_other, normalized_local_normal);
       local_data.assign_subset(local_packaged);
 
@@ -383,7 +383,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         x /= get(magnitude_remote_normal);
       }
       PackagedData remote_packaged(3);
-      NumericalFlux{}.package_data(&remote_packaged, remote_flux, remote_flux,
+      NumericalFlux{}.package_data(&remote_packaged, remote_flux,
                                    remote_other, normalized_remote_normal);
       // Cannot be inlined because of CHECK implementation.
       const auto expected =

@@ -21,8 +21,7 @@ namespace Burgers {
 void LocalLaxFriedrichsFlux::package_data(
     gsl::not_null<Variables<package_tags>*> packaged_data,
     const Scalar<DataVector>& normal_dot_flux_u,
-    const Scalar<DataVector>& u,
-    const tnsr::i<DataVector, 1>& /*interface_unit_normal*/) const noexcept {
+    const Scalar<DataVector>& u) const noexcept {
   get<Tags::U>(*packaged_data) = u;
   get<::Tags::NormalDotFlux<Tags::U>>(*packaged_data) = normal_dot_flux_u;
 }
