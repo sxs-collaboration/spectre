@@ -24,12 +24,14 @@ namespace Solutions {
 
 IsentropicVortex::IsentropicVortex(
     const double adiabatic_index, IsentropicVortex::Center::type center,
-    IsentropicVortex::MeanVelocity::type mean_velocity, const double strength)
+    IsentropicVortex::MeanVelocity::type mean_velocity,
+    const double perturbation_amplitude, const double strength)
     : adiabatic_index_(adiabatic_index),
       // clang-tidy: do not std::move trivial types.
       center_(std::move(center)),  // NOLINT
       // clang-tidy: do not std::move trivial types.
       mean_velocity_(std::move(mean_velocity)),  // NOLINT
+      perturbation_amplitude_(perturbation_amplitude),
       strength_(strength) {
   ASSERT(adiabatic_index_ > 1.0 and adiabatic_index_ < 2.0,
          "The adiabatic index must be in the range (1, 2). The value given "
@@ -45,7 +47,14 @@ void IsentropicVortex::pup(PUP::er& p) noexcept {
   p | adiabatic_index_;
   p | center_;
   p | mean_velocity_;
+  p | perturbation_amplitude_;
   p | strength_;
+}
+
+template <typename DataType>
+Scalar<DataType> IsentropicVortex::perturbation(const DataType& coord_z) const
+    noexcept {
+  return Scalar<DataType>{perturbation_amplitude_ * sin(coord_z)};
 }
 
 template <typename DataType>
@@ -84,6 +93,7 @@ IsentropicVortex::primitive_variables(const tnsr::I<DataType, 3>& x,
   }
   velocity.get(0) -= x_tilde.get(1) * temp;
   velocity.get(1) += x_tilde.get(0) * temp;
+  velocity.get(2) += get(perturbation(x.get(2)));
 
   get<Tags::Velocity<DataType, 3>>(result) = std::move(velocity);
 
@@ -124,6 +134,9 @@ IsentropicVortex::conservative_variables(const tnsr::I<DataType, 3>& x,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
+  template Scalar<DTYPE(data)>                                               \
+  NewtonianEuler::Solutions::IsentropicVortex::perturbation(                 \
+      const DTYPE(data) & coord_z) const noexcept;                           \
   template tuples::TaggedTupleTypelist<                                      \
       NewtonianEuler::Solutions::IsentropicVortex::primitive_t<DTYPE(data)>> \
   NewtonianEuler::Solutions::IsentropicVortex::primitive_variables(          \

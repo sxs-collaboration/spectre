@@ -28,20 +28,21 @@ void test_create_from_options() noexcept {
       "  AdiabaticIndex: 1.43\n"
       "  Center: [2.3, -1.3, -0.6]\n"
       "  MeanVelocity: [-0.3, 0.1, 0.7]\n"
+      "  PerturbAmplitude: 0.5\n"
       "  Strength: 3.76");
 }
 
 void test_move() noexcept {
   NewtonianEuler::Solutions::IsentropicVortex vortex(
-      1.32, {{3.2, -4.1, 9.0}}, {{0.43, 0.31, -0.68}}, 1.65);
+      1.32, {{3.2, -4.1, 9.0}}, {{0.43, 0.31, -0.68}}, 0.23, 1.65);
   NewtonianEuler::Solutions::IsentropicVortex vortex_copy(
-      1.32, {{3.2, -4.1, 9.0}}, {{0.43, 0.31, -0.68}}, 1.65);
+      1.32, {{3.2, -4.1, 9.0}}, {{0.43, 0.31, -0.68}}, 0.23, 1.65);
   test_move_semantics(std::move(vortex), vortex_copy);  //  NOLINT
 }
 
 void test_serialize() noexcept {
   NewtonianEuler::Solutions::IsentropicVortex vortex(
-      1.5, {{3.2, 0.1, -1.3}}, {{0.2, -0.25, 0.41}}, 1.65);
+      1.5, {{3.2, 0.1, -1.3}}, {{0.2, -0.25, 0.41}}, 0.13, 1.65);
   test_serialization(vortex);
 }
 
@@ -50,6 +51,7 @@ void test_variables(const DataType& used_for_size) noexcept {
   const double adiabatic_index = 1.56;
   const std::array<double, 3> center = {{0.15, -0.02, 1.9}};
   const std::array<double, 3> mean_velocity = {{1.2, 0.43, 0.5}};
+  const double perturbation_amplitude = 0.47;
   const double strength = 2.0;
 
   pypp::check_with_random_values<
@@ -58,11 +60,12 @@ void test_variables(const DataType& used_for_size) noexcept {
                     NewtonianEuler::Tags::SpecificInternalEnergy<DataType>>>(
       &NewtonianEuler::Solutions::IsentropicVortex::primitive_variables<
           DataType>,
-      NewtonianEuler::Solutions::IsentropicVortex(adiabatic_index, center,
-                                                  mean_velocity, strength),
+      NewtonianEuler::Solutions::IsentropicVortex(
+          adiabatic_index, center, mean_velocity, perturbation_amplitude,
+          strength),
       "TestFunctions", {"mass_density", "velocity", "specific_internal_energy"},
-      {{{-1.0, 1.0}}},
-      std::make_tuple(adiabatic_index, center, mean_velocity, strength),
+      {{{-1.0, 1.0}}}, std::make_tuple(adiabatic_index, center, mean_velocity,
+                                       perturbation_amplitude, strength),
       used_for_size);
 
   pypp::check_with_random_values<
@@ -71,11 +74,12 @@ void test_variables(const DataType& used_for_size) noexcept {
                     NewtonianEuler::Tags::EnergyDensity<DataType>>>(
       &NewtonianEuler::Solutions::IsentropicVortex::conservative_variables<
           DataType>,
-      NewtonianEuler::Solutions::IsentropicVortex(adiabatic_index, center,
-                                                  mean_velocity, strength),
+      NewtonianEuler::Solutions::IsentropicVortex(
+          adiabatic_index, center, mean_velocity, perturbation_amplitude,
+          strength),
       "TestFunctions", {"mass_density", "momentum_density", "energy_density"},
-      {{{-1.0, 1.0}}},
-      std::make_tuple(adiabatic_index, center, mean_velocity, strength),
+      {{{-1.0, 1.0}}}, std::make_tuple(adiabatic_index, center, mean_velocity,
+                                       perturbation_amplitude, strength),
       used_for_size);
 }
 
@@ -107,9 +111,9 @@ struct Vortex {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   NewtonianEuler::Solutions::IsentropicVortex test_vortex(
-      0.9, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, 2.5);
+      0.9, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, 0.21, 2.5);
   NewtonianEuler::Solutions::IsentropicVortex another_test_vortex(
-      2.2, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, 2.5);
+      2.2, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, 0.21, 2.5);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -121,7 +125,7 @@ struct Vortex {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   NewtonianEuler::Solutions::IsentropicVortex test_vortex(
-      1.3, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, -1.7);
+      1.3, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, -0.15, -1.7);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -138,6 +142,7 @@ SPECTRE_TEST_CASE(
       "  AdiabaticIndex: 0.4\n"
       "  Center: [2.3, -1.3, -0.6]\n"
       "  MeanVelocity: [-0.3, 0.1, 0.7]\n"
+      "  PerturbAmplitude: -0.2\n"
       "  Strength: 3.76");
   test_options.get<Vortex>();
 }
@@ -154,11 +159,12 @@ SPECTRE_TEST_CASE(
       "  AdiabaticIndex: 2.7\n"
       "  Center: [1.4, -0.1, 2.3]\n"
       "  MeanVelocity: [0.56, 0.2, -0.16]\n"
+      "  PerturbAmplitude: 0.41\n"
       "  Strength: 1.53");
   test_options.get<Vortex>();
 }
 
-// [[OutputRegex, In string:.*At line 5 column 13:.Value -0.2 is below the lower
+// [[OutputRegex, In string:.*At line 6 column 13:.Value -0.2 is below the lower
 // bound of 0]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.VortexStrengthO",
@@ -170,6 +176,7 @@ SPECTRE_TEST_CASE(
       "  AdiabaticIndex: 1.4\n"
       "  Center: [-3.9, 1.1, 4.5]\n"
       "  MeanVelocity: [0.1, 0.0, 0.65]\n"
+      "  PerturbAmplitude: 0.13\n"
       "  Strength: -0.2");
   test_options.get<Vortex>();
 }
