@@ -389,6 +389,11 @@
  */
 
 /*!
+ * \defgroup EllipticSystemsGroup Elliptic Systems
+ * \brief Contains the namespaces of all the available elliptic systems.
+ */
+
+/*!
  * \defgroup EquationsOfStateGroup Equations of State
  * \brief The various available equations of state
  */

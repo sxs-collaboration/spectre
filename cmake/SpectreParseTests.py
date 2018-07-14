@@ -14,6 +14,7 @@ allowed_tags = [
                 "ControlSystem",
                 "DataStructures",
                 "Domain",
+                "Elliptic",
                 "EquationsOfState",
                 "ErrorHandling",
                 "Evolution",
