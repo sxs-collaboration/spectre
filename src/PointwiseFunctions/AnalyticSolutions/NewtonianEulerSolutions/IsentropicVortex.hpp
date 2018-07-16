@@ -60,7 +60,18 @@ namespace Solutions {
  * On the other hand, if the velocity along the \f$z-\f$axis is not a constant
  * but a function of the \f$z\f$ coordinate, the resulting modified isentropic
  * vortex is still a solution to the Newtonian Euler system, but with source
- * terms that are proportional to \f$dv_z/dz\f$ (See IsentropicVortexSource.)
+ * terms that are proportional to \f$dv_z/dz\f$. (See
+ * NewtonianEuler::Sources::IsentropicVortexSource.) For testing purposes,
+ * we choose to write the velocity as a uniform field plus a periodic
+ * perturbation,
+ *
+ * \f{align*}
+ * v_z(z) = W + \epsilon \sin{z},
+ * \f}
+ *
+ * where \f$\epsilon\f$ is the amplitude of the perturbation. The resulting
+ * source for the Newtonian Euler system will then be proportional to
+ * \f$\epsilon \cos{z}\f$.
  *
  * \anchor vortex_ref [1] H.C Yee, N.D Sandham, M.J Djomehri, Low-dissipative
  * high-order shock-capturing methods using characteristic-based filters, J.
@@ -91,6 +102,13 @@ class IsentropicVortex {
     static constexpr OptionString help = {"The mean flow velocity."};
   };
 
+  /// The amplitude of the perturbation generating a source term.
+  struct PerturbAmplitude {
+    using type = double;
+    static constexpr OptionString help = {
+        "The amplitude of the perturbation producing sources."};
+  };
+
   /// The strength of the vortex.
   struct Strength {
     using type = double;
@@ -98,7 +116,8 @@ class IsentropicVortex {
     static type lower_bound() { return 0.0; }
   };
 
-  using options = tmpl::list<AdiabaticIndex, Center, MeanVelocity, Strength>;
+  using options = tmpl::list<AdiabaticIndex, Center, MeanVelocity,
+                             PerturbAmplitude, Strength>;
   static constexpr OptionString help = {"Newtonian Isentropic Vortex."};
 
   IsentropicVortex() = default;
@@ -109,7 +128,8 @@ class IsentropicVortex {
   ~IsentropicVortex() = default;
 
   IsentropicVortex(double adiabatic_index, Center::type center,
-                   MeanVelocity::type mean_velocity, double strength);
+                   MeanVelocity::type mean_velocity,
+                   double perturbation_amplitude, double strength);
 
   explicit IsentropicVortex(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -122,6 +142,9 @@ class IsentropicVortex {
   using conservative_t = tmpl::list<Tags::MassDensity<DataType>,
                                     Tags::MomentumDensity<DataType, 3>,
                                     Tags::EnergyDensity<DataType>>;
+
+  template <typename DataType>
+  Scalar<DataType> perturbation(const DataType& coord_z) const noexcept;
 
   template <typename DataType>
   tuples::TaggedTupleTypelist<primitive_t<DataType>> primitive_variables(
@@ -139,6 +162,9 @@ class IsentropicVortex {
   constexpr const MeanVelocity::type& mean_velocity() const noexcept {
     return mean_velocity_;
   }
+  constexpr double perturbation_amplitude() const noexcept {
+    return perturbation_amplitude_;
+  }
   constexpr double strength() const noexcept { return strength_; }
 
  private:
@@ -146,6 +172,7 @@ class IsentropicVortex {
   Center::type center_ = {{0.0, 0.0, 0.0}};
   MeanVelocity::type mean_velocity_ =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
+  double perturbation_amplitude_ = std::numeric_limits<double>::signaling_NaN();
   double strength_ = std::numeric_limits<double>::signaling_NaN();
 };
 
@@ -154,6 +181,7 @@ inline constexpr bool operator==(const IsentropicVortex& lhs,
   return lhs.adiabatic_index() == rhs.adiabatic_index() and
          lhs.center() == rhs.center() and
          lhs.mean_velocity() == rhs.mean_velocity() and
+         lhs.perturbation_amplitude() == rhs.perturbation_amplitude() and
          lhs.strength() == rhs.strength();
 }
 

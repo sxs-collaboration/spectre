@@ -10,6 +10,8 @@ set(LIBRARY_SOURCES
   Test_PrimitiveFromConservative.cpp
   )
 
+add_subdirectory(NewtonianEulerSources)
+
 add_test_library(
   ${LIBRARY}
   "Evolution/Systems/NewtonianEuler/"
