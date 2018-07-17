@@ -129,7 +129,7 @@ struct Metavariables {
 template <bool IsConservative>
 struct TestConservativeOrNonconservativeParts {
   template <typename Metavariables, typename DbTags>
-  static void apply(const db::DataBox<DbTags>& box) noexcept {
+  static void apply(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
 
@@ -137,46 +137,42 @@ struct TestConservativeOrNonconservativeParts {
         Tags::deriv<typename system::variables_tag::tags_list,
                     typename system::gradients_tags,
                     Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                          Tags::LogicalCoordinates<dim>>>>(box);
+                                          Tags::LogicalCoordinates<dim>>>>(
+        *box);
   }
 };
 
 template <>
 struct TestConservativeOrNonconservativeParts<true> {
   template <typename Metavariables, typename DbTags>
-  static void apply(const db::DataBox<DbTags>& box) noexcept {
+  static void apply(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
 
     const size_t number_of_grid_points =
-        get<Tags::Mesh<dim>>(box).number_of_grid_points();
+        get<Tags::Mesh<dim>>(*box).number_of_grid_points();
 
     CHECK(
         db::get<db::add_tag_prefix<Tags::Flux, Tags::Variables<tmpl::list<Var>>,
-                                   tmpl::size_t<dim>, Frame::Inertial>>(box)
+                                   tmpl::size_t<dim>, Frame::Inertial>>(*box)
             .number_of_grid_points() == number_of_grid_points);
-    CHECK(db::get<db::add_tag_prefix<Tags::Source, variables_tag>>(box)
+    CHECK(db::get<db::add_tag_prefix<Tags::Source, variables_tag>>(*box)
               .number_of_grid_points() == number_of_grid_points);
 
-    {
-      auto local_box = box;
-      using flux_tag = db::add_tag_prefix<Tags::Flux, variables_tag,
-                                          tmpl::size_t<dim>, Frame::Inertial>;
-      // Don't try to take the divergence of NaN
-      db::mutate<flux_tag>(
-          make_not_null(&local_box), [](const auto vars) noexcept {
-            vars->initialize(vars->number_of_grid_points(), 0.);
-          });
-      (void)db::get<Tags::ComputeDiv<
-          flux_tag, Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                          Tags::LogicalCoordinates<dim>>>>(
-          local_box);
-    }
+    using flux_tag = db::add_tag_prefix<Tags::Flux, variables_tag,
+                                        tmpl::size_t<dim>, Frame::Inertial>;
+    // Don't try to take the divergence of NaN
+    db::mutate<flux_tag>(box, [](const auto vars) noexcept {
+      vars->initialize(vars->number_of_grid_points(), 0.);
+    });
+    (void)db::get<Tags::ComputeDiv<
+        flux_tag, Tags::InverseJacobian<Tags::ElementMap<dim>,
+                                        Tags::LogicalCoordinates<dim>>>>(*box);
 
     (void)db::get<Tags::Interface<
         Tags::InternalDirections<dim>,
-        Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>>(box);
+        Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>>(*box);
   }
 };
 
@@ -304,8 +300,8 @@ void test_initialize_element(
   (void)db::get<Tags::Interface<Tags::BoundaryDirections<dim>,
                                 typename system::variables_tag>>(box);
 
-  TestConservativeOrNonconservativeParts<
-      system::is_conservative>::template apply<Metavariables>(box);
+  TestConservativeOrNonconservativeParts<system::is_conservative>::
+      template apply<Metavariables>(make_not_null(&box));
 }
 }  // namespace
 

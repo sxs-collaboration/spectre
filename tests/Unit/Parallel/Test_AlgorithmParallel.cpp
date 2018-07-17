@@ -9,6 +9,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "AlgorithmArray.hpp"
@@ -77,7 +78,7 @@ namespace SingletonActions {
 struct Initialize {
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& box,
+  static auto apply(db::DataBox<tmpl::list<>>& box,  // NOLINT
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -88,7 +89,7 @@ struct Initialize {
                          SingletonParallelComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     /// [return_forward_as_tuple]
-    return std::forward_as_tuple(box);
+    return std::forward_as_tuple(std::move(box));
     /// [return_forward_as_tuple]
   }
 };
