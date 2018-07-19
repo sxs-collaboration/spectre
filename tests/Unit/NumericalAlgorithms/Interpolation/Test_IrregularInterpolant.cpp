@@ -16,7 +16,6 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp" // IWYU pragma: keep
-#include "DataStructures/VariablesHelpers.hpp" // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -35,6 +34,7 @@
 // IWYU pragma: no_forward_declare MathFunction
 // IWYU pragma: no_forward_declare PowX
 // IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 
 namespace {
 

@@ -221,6 +221,7 @@ struct FromPyObject<long, std::nullptr_t> {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
 #elif PY_MAJOR_VERSION == 3
+      // NOLINTNEXTLINE(hicpp-signed-bitwise)
     } else if (not PyLong_Check(t)) {
 #else
     } else {
@@ -240,6 +241,7 @@ struct FromPyObject<unsigned long, std::nullptr_t> {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
 #elif PY_MAJOR_VERSION == 3
+      // NOLINTNEXTLINE(hicpp-signed-bitwise)
     } else if (not PyLong_Check(t)) {
 #else
     } else {

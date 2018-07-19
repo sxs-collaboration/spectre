@@ -7,6 +7,7 @@
 #include <array>
 #include <functional>
 #include <string>
+// IWYU pragma: no_include <type_traits>
 #include <unordered_set>
 
 #include "Domain/Direction.hpp"

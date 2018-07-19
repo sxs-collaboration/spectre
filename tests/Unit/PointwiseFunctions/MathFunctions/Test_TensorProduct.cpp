@@ -13,7 +13,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -29,6 +29,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 
 class DataVector;
 template <size_t VolumeDim>

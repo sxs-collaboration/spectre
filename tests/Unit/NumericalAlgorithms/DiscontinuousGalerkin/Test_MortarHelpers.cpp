@@ -5,8 +5,7 @@
 
 #include <array>
 #include <cstddef>
-#include <initializer_list>  // IWYU pragma: keep
-#include <type_traits>
+// IWYU pragma: no_include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"

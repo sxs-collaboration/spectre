@@ -23,7 +23,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
-#include "Domain/CreateInitialElement.hpp"
+#include "Domain/CreateInitialElement.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"

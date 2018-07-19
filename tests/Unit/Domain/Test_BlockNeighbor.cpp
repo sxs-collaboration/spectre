@@ -5,7 +5,6 @@
 
 #include <array>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "Domain/BlockNeighbor.hpp"
@@ -14,6 +13,8 @@
 #include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <type_traits>
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockNeighbor", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
