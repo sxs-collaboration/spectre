@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -26,6 +27,7 @@ void conservative_from_primitive(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
     const gsl::not_null<Scalar<DataVector>*> tilde_phi,
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& pressure,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -49,12 +51,16 @@ void conservative_from_primitive(
   get(*tilde_d) = get(sqrt_det_spatial_metric) * get(rest_mass_density) *
                   get(lorentz_factor);
 
-  get(*tilde_tau) =
-      get(*tilde_d) * (get(lorentz_factor) * get(specific_enthalpy) - 1.0) +
-      get(sqrt_det_spatial_metric) *
-          (0.5 * get(magnetic_field_squared) *
-               (1.0 + get(spatial_velocity_squared)) -
-           0.5 * get(magnetic_field_dot_spatial_velocity) - get(pressure));
+  get(*tilde_tau) = get(sqrt_det_spatial_metric) *
+                      (square(get(lorentz_factor)) *
+                        (get(rest_mass_density) *
+                          (get(specific_internal_energy) +
+                           get(spatial_velocity_squared) * get(lorentz_factor) /
+                              (get(lorentz_factor) + 1.)) +
+                         get(pressure) * get(spatial_velocity_squared)) +
+                       0.5 * get(magnetic_field_squared) *
+                        (1.0 + get(spatial_velocity_squared)) -
+                       0.5 * square(get(magnetic_field_dot_spatial_velocity)));
 
   Scalar<DataVector> common_factor = std::move(magnetic_field_squared);
   get(common_factor) *= get(sqrt_det_spatial_metric);

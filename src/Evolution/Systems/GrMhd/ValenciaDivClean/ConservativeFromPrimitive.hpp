@@ -25,7 +25,7 @@ namespace ValenciaDivClean {
  * {\tilde S}_i = & \sqrt{\gamma} \left( \rho h W^2 v_i + B^m B_m v_i - B^m v_m
  * B_i \right) \\
  * {\tilde \tau} = & \sqrt{\gamma} \left[ \rho h W^2 - p - \rho W - \frac{1}{2}
- * B^m v_m + \frac{1}{2} B^m B_m \left( 1 + v^m v_m \right) \right] \\
+ * (B^m v_m)^2 + \frac{1}{2} B^m B_m \left( 1 + v^m v_m \right) \right] \\
  * {\tilde B}^i = & \sqrt{\gamma} B^i \\
  * {\tilde \Phi} = & \sqrt{\gamma} \Phi
  * \f}
@@ -40,6 +40,13 @@ namespace ValenciaDivClean {
  * spatial velocity, \f$\epsilon\f$ is the specific internal energy, \f$p\f$ is
  * the pressure, \f$B^i\f$ is the spatial magnetic field measured by an Eulerian
  * observer, and \f$\Phi\f$ is a divergence cleaning field.
+ *
+ * The quantity \f${\tilde \tau}\f$ is rewritten as in `RelativisticEuler`
+ * to avoid cancellation error in the non-relativistic limit:
+ * \f[
+ * \left( \rho h W^2 - p - \rho W \right) \longrightarrow
+ *  W^2 \left[ \rho \left( \epsilon + v^2
+ * \frac{W}{W + 1} \right) + p v^2 \right] .\f]
  */
 void conservative_from_primitive(
     gsl::not_null<Scalar<DataVector>*> tilde_d,
@@ -48,6 +55,7 @@ void conservative_from_primitive(
     gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
     gsl::not_null<Scalar<DataVector>*> tilde_phi,
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& pressure,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
