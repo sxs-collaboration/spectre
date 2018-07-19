@@ -6,6 +6,7 @@
 #include <pup.h>  // IWYU pragma: keep
 
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {
 struct Grid;
@@ -65,48 +66,20 @@ bool operator!=(const Block<VolumeDim, TargetFrame>& lhs,
   return not(lhs == rhs);
 }
 
-template class Block<1, Frame::Grid>;
-template class Block<2, Frame::Grid>;
-template class Block<3, Frame::Grid>;
-template class Block<1, Frame::Inertial>;
-template class Block<2, Frame::Inertial>;
-template class Block<3, Frame::Inertial>;
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-template std::ostream& operator<<(std::ostream& os,
-                                  const Block<1, Frame::Grid>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Block<2, Frame::Grid>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Block<3, Frame::Grid>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Block<1, Frame::Inertial>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Block<2, Frame::Inertial>& block);
-template std::ostream& operator<<(std::ostream& os,
-                                  const Block<3, Frame::Inertial>& block);
+#define INSTANTIATE(_, data)                                                   \
+  template class Block<DIM(data), FRAME(data)>;                                \
+  template std::ostream& operator<<(                                           \
+      std::ostream& os, const Block<DIM(data), FRAME(data)>& block);           \
+  template bool operator==(const Block<DIM(data), FRAME(data)>& lhs,           \
+                           const Block<DIM(data), FRAME(data)>& rhs) noexcept; \
+  template bool operator!=(const Block<DIM(data), FRAME(data)>& lhs,           \
+                           const Block<DIM(data), FRAME(data)>& rhs) noexcept;
 
-template bool operator==(const Block<1, Frame::Grid>& lhs,
-                         const Block<1, Frame::Grid>& rhs) noexcept;
-template bool operator==(const Block<2, Frame::Grid>& lhs,
-                         const Block<2, Frame::Grid>& rhs) noexcept;
-template bool operator==(const Block<3, Frame::Grid>& lhs,
-                         const Block<3, Frame::Grid>& rhs) noexcept;
-template bool operator==(const Block<1, Frame::Inertial>& lhs,
-                         const Block<1, Frame::Inertial>& rhs) noexcept;
-template bool operator==(const Block<2, Frame::Inertial>& lhs,
-                         const Block<2, Frame::Inertial>& rhs) noexcept;
-template bool operator==(const Block<3, Frame::Inertial>& lhs,
-                         const Block<3, Frame::Inertial>& rhs) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 
-template bool operator!=(const Block<1, Frame::Grid>& lhs,
-                         const Block<1, Frame::Grid>& rhs) noexcept;
-template bool operator!=(const Block<2, Frame::Grid>& lhs,
-                         const Block<2, Frame::Grid>& rhs) noexcept;
-template bool operator!=(const Block<3, Frame::Grid>& lhs,
-                         const Block<3, Frame::Grid>& rhs) noexcept;
-template bool operator!=(const Block<1, Frame::Inertial>& lhs,
-                         const Block<1, Frame::Inertial>& rhs) noexcept;
-template bool operator!=(const Block<2, Frame::Inertial>& lhs,
-                         const Block<2, Frame::Inertial>& rhs) noexcept;
-template bool operator!=(const Block<3, Frame::Inertial>& lhs,
-                         const Block<3, Frame::Inertial>& rhs) noexcept;
+#undef DIM
+#undef FRAME
+#undef INSTANTIATE

@@ -3,6 +3,8 @@
 
 #include "Domain/BlockNeighbor.hpp"
 
+#include "Utilities/GenerateInstantiations.hpp"
+
 #include <ostream>
 
 template <size_t VolumeDim>
@@ -37,24 +39,19 @@ bool operator!=(const BlockNeighbor<VolumeDim>& lhs,
 }
 
 // Explicit instantiations
-template class BlockNeighbor<1>;
-template class BlockNeighbor<2>;
-template class BlockNeighbor<3>;
 
-template std::ostream& operator<<(std::ostream&, const BlockNeighbor<1>&);
-template std::ostream& operator<<(std::ostream&, const BlockNeighbor<2>&);
-template std::ostream& operator<<(std::ostream&, const BlockNeighbor<3>&);
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template bool operator==(const BlockNeighbor<1>& lhs,
-                         const BlockNeighbor<1>& rhs);
-template bool operator==(const BlockNeighbor<2>& lhs,
-                         const BlockNeighbor<2>& rhs);
-template bool operator==(const BlockNeighbor<3>& lhs,
-                         const BlockNeighbor<3>& rhs);
+#define INSTANTIATE(_, data)                                          \
+  template class BlockNeighbor<DIM(data)>;                            \
+  template std::ostream& operator<<(std::ostream&,                    \
+                                    const BlockNeighbor<DIM(data)>&); \
+  template bool operator==(const BlockNeighbor<DIM(data)>& lhs,       \
+                           const BlockNeighbor<DIM(data)>& rhs);      \
+  template bool operator!=(const BlockNeighbor<DIM(data)>& lhs,       \
+                           const BlockNeighbor<DIM(data)>& rhs);
 
-template bool operator!=(const BlockNeighbor<1>& lhs,
-                         const BlockNeighbor<1>& rhs);
-template bool operator!=(const BlockNeighbor<2>& lhs,
-                         const BlockNeighbor<2>& rhs);
-template bool operator!=(const BlockNeighbor<3>& lhs,
-                         const BlockNeighbor<3>& rhs);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef DIM
+#undef INSTANTIATE
