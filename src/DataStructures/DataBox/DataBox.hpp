@@ -1091,8 +1091,11 @@ template <typename Tag, Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>>>
 SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
     -> const item_type<Tag, tags_list>& {
   DEBUG_STATIC_ASSERT(
+      not DataBox_detail::has_no_matching_tag_v<tags_list, Tag>,
+      "Found no tags in the DataBox that match the tag being retrieved.");
+  DEBUG_STATIC_ASSERT(
       DataBox_detail::has_unique_matching_tag_v<tags_list, Tag>,
-      "Found more than one (or no) tag(s) in the DataBox that matches the tag "
+      "Found more than one tag in the DataBox that matches the tag "
       "being retrieved. This happens because more than one tag with the same "
       "base (class) tag was added to the DataBox.");
   using derived_tag = DataBox_detail::first_matching_tag<tags_list, Tag>;
