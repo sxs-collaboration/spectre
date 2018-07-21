@@ -9,6 +9,7 @@
 #include <pup.h>  // IWYU pragma: keep
 
 #include "Utilities/Blaze.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 #include <blaze/math/DynamicVector.h>
@@ -54,3 +55,15 @@ class DenseVector : public blaze::DynamicVector<T, TF> {
     }
   }
 };
+
+namespace MakeWithValueImpls {
+template <bool TFOut, typename TIn, bool TFIn>
+struct MakeWithValueImpl<DenseVector<double, TFOut>, DenseVector<TIn, TFIn>> {
+  /// \brief Returns a `DenseVector` the same size as `input`, with each element
+  /// equal to `value`.
+  static SPECTRE_ALWAYS_INLINE DenseVector<double, TFOut> apply(
+      const DenseVector<TIn, TFIn>& input, const double value) noexcept {
+    return DenseVector<double, TFOut>(input.size(), value);
+  }
+};
+}  // namespace MakeWithValueImpls

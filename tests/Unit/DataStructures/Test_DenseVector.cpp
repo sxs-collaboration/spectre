@@ -8,6 +8,7 @@
 
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseVector.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DenseVector", "[DataStructures][Unit]") {
@@ -30,6 +31,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DenseVector", "[DataStructures][Unit]") {
   CHECK_ITERABLE_APPROX(dot(a, a), 9.);
   CHECK_ITERABLE_APPROX(dot(a, b), 9.);
   CHECK_ITERABLE_APPROX(dot(a, c), 1.4);
+
+  CHECK(make_with_value<DenseVector<double>>(vec, 2.) ==
+        DenseVector<double>(size_t{3}, 2.));
 
   test_serialization(vec);
   test_copy_semantics(vec);
