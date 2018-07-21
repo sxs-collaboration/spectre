@@ -4,4 +4,5 @@
 add_subdirectory(Burgers)
 add_subdirectory(EinsteinSolutions)
 add_subdirectory(NewtonianEulerSolutions)
+add_subdirectory(Poisson)
 add_subdirectory(WaveEquation)
