@@ -7,9 +7,11 @@
 #pragma once
 
 #include <cmath>
+#include <pup.h>
 #include <utility>
 
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -25,6 +27,12 @@ namespace StepControllers {
 /// prefers simpler (smaller denominator) fractions of slabs.
 class SimpleTimes : public StepController {
  public:
+  /// \cond
+  SimpleTimes() = default;
+  explicit SimpleTimes(CkMigrateMessage* /*unused*/) noexcept {}
+  WRAPPED_PUPable_decl(SimpleTimes);  // NOLINT
+  /// \endcond
+
   using options = tmpl::list<>;
   static constexpr OptionString help = {
       "Chooses steps by dividing the remainder of the slab approximately\n"

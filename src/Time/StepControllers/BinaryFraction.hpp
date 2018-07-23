@@ -9,9 +9,11 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <pup.h>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -26,6 +28,12 @@ namespace StepControllers {
 /// A StepController that chooses steps to be 1/2^n of a slab.
 class BinaryFraction : public StepController {
  public:
+  /// \cond
+  BinaryFraction() = default;
+  explicit BinaryFraction(CkMigrateMessage* /*unused*/) noexcept {}
+  WRAPPED_PUPable_decl(BinaryFraction);  // NOLINT
+  /// \endcond
+
   using options = tmpl::list<>;
   static constexpr OptionString help = {
       "Chooses steps to be binary fractions of a slab"};

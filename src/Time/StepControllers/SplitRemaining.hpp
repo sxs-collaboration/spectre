@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <pup.h>
 
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -24,6 +26,12 @@ namespace StepControllers {
 /// the slab.
 class SplitRemaining : public StepController {
  public:
+  /// \cond
+  SplitRemaining() = default;
+  explicit SplitRemaining(CkMigrateMessage* /*unused*/) noexcept {}
+  WRAPPED_PUPable_decl(SplitRemaining);  // NOLINT
+  /// \endcond
+
   using options = tmpl::list<>;
   static constexpr OptionString help = {
       "Chooses steps by dividing the remainder of the slab evenly.\n"

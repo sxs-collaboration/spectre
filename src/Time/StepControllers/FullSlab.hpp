@@ -6,8 +6,11 @@
 
 #pragma once
 
+#include <pup.h>
+
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -22,6 +25,12 @@ namespace StepControllers {
 /// using global time stepping.
 class FullSlab : public StepController {
  public:
+  /// \cond
+  FullSlab() = default;
+  explicit FullSlab(CkMigrateMessage* /*unused*/) noexcept {}
+  WRAPPED_PUPable_decl(FullSlab);  // NOLINT
+  /// \endcond
+
   using options = tmpl::list<>;
   static constexpr OptionString help = {"Chooses the full slab."};
 

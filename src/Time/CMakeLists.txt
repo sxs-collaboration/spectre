@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
     )
 
 add_subdirectory(StepChoosers)
+add_subdirectory(StepControllers)
 add_subdirectory(TimeSteppers)
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
