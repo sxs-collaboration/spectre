@@ -29,6 +29,7 @@ set(LIBRARY_SOURCES
   Test_Side.cpp
   )
 
+add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
 add_subdirectory(DomainCreators)
 
