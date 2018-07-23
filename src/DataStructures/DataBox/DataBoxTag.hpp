@@ -179,6 +179,17 @@ using has_unique_matching_tag_t =
 template <typename TagList, typename Tag>
 constexpr bool has_unique_matching_tag_v =
     has_unique_matching_tag<TagList, Tag>::value;
+
+template <typename TagList, typename Tag>
+struct has_no_matching_tag
+    : std::integral_constant<bool, number_of_matching_tags<TagList, Tag> == 0> {
+};
+
+template <typename TagList, typename Tag>
+using has_no_matching_tag_t = typename has_no_matching_tag<TagList, Tag>::type;
+
+template <typename TagList, typename Tag>
+constexpr bool has_no_matching_tag_v = has_no_matching_tag<TagList, Tag>::value;
 }  // namespace DataBox_detail
 
 /*!
