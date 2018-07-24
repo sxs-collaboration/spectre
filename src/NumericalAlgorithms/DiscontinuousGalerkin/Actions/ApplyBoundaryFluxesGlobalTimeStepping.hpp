@@ -114,8 +114,23 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
 
             // Projections need to happen here.
 
+            // lambda prevents a gcc-6.4.0 ICE
+            [&normal_dot_numerical_fluxes, &local_mortar_data]() noexcept {
+              tmpl::for_each<typename variables_tag::tags_list>([
+                &normal_dot_numerical_fluxes, &local_mortar_data
+              ](const auto tag) noexcept {
+                using Tag = tmpl::type_from<decltype(tag)>;
+                auto& numerical_flux = get<Tags::NormalDotNumericalFlux<Tag>>(
+                    normal_dot_numerical_fluxes);
+                const auto& local_flux = get<Tags::NormalDotFlux<Tag>>(
+                    local_mortar_data.mortar_data);
+                for (size_t i = 0; i < numerical_flux.size(); ++i) {
+                  numerical_flux[i] -= local_flux[i];
+                }
+              });
+            }();
+
             db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
-                local_mortar_data.mortar_data,
                 std::move(normal_dot_numerical_fluxes), mesh.extents(dimension),
                 std::move(local_mortar_data.magnitude_of_face_normal)));
 
