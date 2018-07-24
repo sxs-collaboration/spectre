@@ -8,12 +8,22 @@
 
 #include <cmath>
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
+
+  CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
+  CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
+}
 
 namespace {
 

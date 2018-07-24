@@ -9,6 +9,10 @@
               "\"Utilities/TMPL.hpp\"", public]},
 
   { include: ["@<blaze/.*>", private,
+              "\"DataStructures/DenseMatrix.hpp\"", public]},
+  { include: ["@<blaze/.*>", private,
+              "\"DataStructures/DenseVector.hpp\"", public]},
+  { include: ["@<blaze/.*>", private,
               "\"Utilities/PointerVector.hpp\"", private]},
 
   { include: ["<ckmessage.h>", private,

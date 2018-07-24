@@ -10,6 +10,7 @@
 #pragma once
 
 #include <cstddef>
+#include <iosfwd>
 #include <limits>
 
 /// \cond
@@ -44,6 +45,10 @@ namespace Spectral {
  */
 enum class Basis { Legendre };
 
+/// \cond HIDDEN_SYMBOLS
+std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;
+/// \endcond
+
 /*!
  * \ingroup SpectralGroup
  * \brief The choice of quadrature method to compute integration weights.
@@ -54,6 +59,11 @@ enum class Basis { Legendre };
  * domain boundary.
  */
 enum class Quadrature { Gauss, GaussLobatto };
+
+/// \cond HIDDEN_SYMBOLS
+std::ostream& operator<<(std::ostream& os,
+                         const Quadrature& quadrature) noexcept;
+/// \endcond
 
 /*!
  * \brief Minimum number of possible collocation points for a quadrature type.
