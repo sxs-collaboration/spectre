@@ -111,6 +111,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   // Check make_array with an rvalue sequence
   {
     std::vector<MyNonCopyable<int>> vector;
+    vector.reserve(3);
     for (int i = 0; i < 3; ++i) {
       vector.emplace_back(i);
     }
