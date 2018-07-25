@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_Scalarwave")
+set(LIBRARY "Test_ScalarWave")
 
 set(LIBRARY_SOURCES
   Test_Equations.cpp
