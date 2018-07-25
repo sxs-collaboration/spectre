@@ -222,6 +222,7 @@ license() {
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
               '.png' \
+              '.svg' \
               '.clang-format$' && \
         ! grep -q "Distributed under the MIT License" "$1"
 }
@@ -324,7 +325,7 @@ standard_checks+=(pragma_once)
 
 # Check for a newline at end of file
 final_newline() {
-    whitelist "$1" '.png' &&
+    whitelist "$1" '.png' '.svg' &&
     # Bash strips trailing newlines from $() output
     [ "$(tail -c 1 "$1" ; echo x)" != $'\n'x ]
 }
