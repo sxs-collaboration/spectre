@@ -103,6 +103,7 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
 BENCHMARK(bench_all_gradient);
 }  // namespace
 
-BENCHMARK_MAIN()
-
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+// Some compilers require a semi-colon here with some versions of Benchmark. If
+// you get "expected initializer at end of input" errors then you need to add
+// the semi-colon.
+BENCHMARK_MAIN()  // ;
