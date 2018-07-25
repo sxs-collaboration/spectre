@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <deque>
+#include <set>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -14,37 +15,45 @@
 
 SPECTRE_TEST_CASE("Unit.Utilities.indices_of", "[Unit][Utilities]") {
   const auto helper = [](const auto& data) {
-    CHECK(std::array<size_t, 3>{{0, 5, 3}} ==
-          indices_of<3>(data, [](const double lhs, const double rhs) {
-            return lhs < rhs;
-          }));
+    CHECK(std::set<size_t>{0, 5, 3} == [&data]() {
+      const auto t = indices_of<3>(
+          data, [](const double lhs, const double rhs) { return lhs < rhs; });
+      return std::set<size_t>(t.begin(), t.end());
+    }());
     CHECK(std::array<size_t, 3>{{3, 0, 5}} ==
           sorted_indices_of<3>(data, [](const double lhs, const double rhs) {
             return lhs < rhs;
           }));
 
-    CHECK(std::array<size_t, 3>{{0, 6, 5}} ==
+    CHECK(std::set<size_t>{0, 6, 5} == [&data]() {
+      const auto t =
           indices_of<3>(data, [](const double lhs, const double rhs) {
             return std::abs(lhs) < std::abs(rhs);
-          }));
+          });
+      return std::set<size_t>(t.begin(), t.end());
+    }());
     CHECK(std::array<size_t, 3>{{0, 5, 6}} ==
           sorted_indices_of<3>(data, [](const double lhs, const double rhs) {
             return std::abs(lhs) < std::abs(rhs);
           }));
 
-    CHECK(std::array<size_t, 3>{{4, 1, 2}} ==
-          indices_of<3>(data, [](const double lhs, const double rhs) {
-            return lhs > rhs;
-          }));
+    CHECK(std::set<size_t>{4, 1, 2} == [&data]() {
+      const auto t = indices_of<3>(
+          data, [](const double lhs, const double rhs) { return lhs > rhs; });
+      return std::set<size_t>(t.begin(), t.end());
+    }());
     CHECK(std::array<size_t, 3>{{4, 2, 1}} ==
           sorted_indices_of<3>(data, [](const double lhs, const double rhs) {
             return lhs > rhs;
           }));
 
-    CHECK(std::array<size_t, 3>{{3, 4, 2}} ==
+    CHECK(std::set<size_t>{3, 4, 2} == [&data]() {
+      const auto t =
           indices_of<3>(data, [](const double lhs, const double rhs) {
             return std::abs(lhs) > std::abs(rhs);
-          }));
+          });
+      return std::set<size_t>(t.begin(), t.end());
+    }());
     CHECK(std::array<size_t, 3>{{3, 4, 2}} ==
           sorted_indices_of<3>(data, [](const double lhs, const double rhs) {
             return std::abs(lhs) > std::abs(rhs);

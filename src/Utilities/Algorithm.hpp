@@ -13,16 +13,10 @@
 
 /*!
  * \ingroup UtilitiesGroup
- * \brief Get the indices in the container `t` of the `K` elements that satisfy
- * `op` after sorting with respect to `op`.
+ * \brief Compute the indices of the 'K` smallest elements of the container 't'
  *
- * Specifically, if `op` is `[](const lhs, const rhs) { return lhs < rhs; }`
- * then the result will be the indices of the `K` smallest elements in `t`. If
- * `op` is `[](const lhs, const rhs) { return lhs > rhs; }` then the result will
- * be the indices of the `K` largest elements in `t`.
- *
- * \warning The indices are not sorted by `op` when returned. Use
- * `sorted_indices_of`.
+ * \warning The order of the indices is not guaranteed. That is, the first index
+ * is not guaranteed to be the of the smallest element in `t`
  */
 template <size_t K, typename T, typename Comparator>
 auto indices_of(const T& t, Comparator op) noexcept -> std::array<size_t, K> {
@@ -54,14 +48,15 @@ auto indices_of(const T& t, Comparator op) noexcept -> std::array<size_t, K> {
 
 /*!
  * \ingroup UtilitiesGroup
- * \brief Same as `indices_of` but returns the list of indices sorted by `op`.
+ * \brief Same as `indices_of` but returns the list of indices sorted such that
+ * the order corresponds to the input `t` having been sorted by `op`.
  */
 template <size_t K, typename T, typename Comparator>
 auto sorted_indices_of(const T& t, Comparator op) noexcept
     -> std::array<size_t, K> {
   auto result = indices_of<K>(t, op);
   std::sort(result.begin(), result.end(),
-            [&t, &op](const size_t lhs, const size_t rhs) {
+            [&t, &op ](const size_t lhs, const size_t rhs) noexcept {
               return op(gsl::at(t, lhs), gsl::at(t, rhs));
             });
   return result;
