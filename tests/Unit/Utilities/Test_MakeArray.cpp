@@ -130,4 +130,20 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
       CHECK(vector[i] == (std::vector<int>{1, 2, 3}));
     }
   }
+
+  // Check that make_array works with non-default-constructible types
+  {
+    struct NonDefaultConstructible {
+      NonDefaultConstructible() = delete;
+      explicit NonDefaultConstructible(int /*unused*/) noexcept {}
+    };
+    const NonDefaultConstructible ndc{1};
+    // We just check that these compile, since there's not any
+    // realistic way they could give a wrong answer.
+    make_array<0>(ndc);
+    make_array<1>(ndc);
+    make_array<2>(ndc);
+    make_array(ndc, ndc);
+    make_array(ndc, ndc, ndc);
+  }
 }
