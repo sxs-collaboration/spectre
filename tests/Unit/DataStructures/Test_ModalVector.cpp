@@ -3,19 +3,25 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <cstddef>
-#include <numeric>
+#include <algorithm>                         // for move
+#include <array>                             // for array, operator==
+#include <cmath>                             // for abs
+#include <cstddef>                           // for size_t
+#include <functional>                        // for std::reference_wrapper
+#include <numeric>                           // for iota
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU wants to include DataVector.hpp to access the function blaze::smpAssign
+//
+// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector",
                   "[DataStructures][Unit]") {
@@ -59,7 +65,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector",
 
 SPECTRE_TEST_CASE("Unit.Serialization.ModalVector",
                   "[DataStructures][Unit][Serialization]") {
-  const size_t npts = 10;
+  const size_t npts = 100;
   ModalVector t(npts), tgood(npts);
   std::iota(t.begin(), t.end(), 1.2);
   std::iota(tgood.begin(), tgood.end(), 1.2);
@@ -76,7 +82,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.ModalVector",
 
 SPECTRE_TEST_CASE("Unit.Serialization.ModalVector_Ref",
                   "[DataStructures][Unit][Serialization]") {
-  const size_t npts = 10;
+  const size_t npts = 11;
   ModalVector t(npts);
   std::iota(t.begin(), t.end(), 4.3);
   ModalVector t2;
@@ -101,10 +107,10 @@ SPECTRE_TEST_CASE("Unit.Serialization.ModalVector_Ref",
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector_Ref",
                   "[DataStructures][Unit]") {
   ModalVector data{1.43, 2.83, 3.94, 7.85};
+  CHECK(data.is_owning());
   ModalVector t;
   t.set_data_ref(&data);
   CHECK(not t.is_owning());
-  CHECK(data.is_owning());
   CHECK(t.data() == data.data());
   CHECK(t.size() == 4);
   CHECK(t[0] == 1.43);
@@ -125,6 +131,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector_Ref",
     data_2_ref.set_data_ref(&data_2);
     ModalVector data_3{2.43, 3.83, 4.94, 8.85};
     data_2_ref = std::move(data_3);
+    // check that data_2 now contain data_3's values
     CHECK(data_2[0] == 2.43);
     CHECK(data_2[1] == 3.83);
     CHECK(data_2[2] == 4.94);
@@ -145,6 +152,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector_Ref",
     ModalVector owned_data;
     // clang-tidy: false positive, used after it was moved
     owned_data = data_2_ref;  // NOLINT
+    CHECK(owned_data.is_owning());
     CHECK(owned_data[0] == 2.43);
     CHECK(owned_data[1] == 3.83);
     CHECK(owned_data[2] == 4.94);
@@ -156,15 +164,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector_Ref",
 
 // [[OutputRegex, Must copy into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
-                "Unit.DataStructures.ModalVector.ref_diff_size",
-                "[DataStructures][Unit]") {
+    "Unit.DataStructures.ModalVector.ref_diff_size",
+    "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   ModalVector data{1.43, 2.83, 3.94, 7.85};
+  ModalVector data2{1.43, 2.83, 5.94};
   ModalVector data_ref;
   data_ref.set_data_ref(&data);
-  ModalVector data2{1.43, 2.83, 3.94};
+  CHECK(data_ref[2] == 3.94);
   data_ref = data2;
+  CHECK(data_ref[2] == 5.94);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -176,9 +186,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector_Ref",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   ModalVector data{1.43, 2.83, 3.94, 7.85};
+  ModalVector data2{1.43, 2.83, 3.94};
   ModalVector data_ref;
   data_ref.set_data_ref(&data);
-  ModalVector data2{1.43, 2.83, 3.94};
   data_ref = std::move(data2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -191,6 +201,7 @@ void check_vectors(const T1& t1, const T2& t2) {
 }
 }  // namespace
 
+/// Tests of ModalVector math
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathAfterMove",
                   "[Unit][DataStructures]") {
   ModalVector m0(10, 3.0), m1(10, 9.0);
@@ -240,64 +251,121 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathAfterMove",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
-                  "[Unit][DataStructures]") {
-  const size_t num_pts = 19;
-  ModalVector val{1., -2., 3., -4., 8., 12., -14.};
-  ModalVector nine(num_pts, 9.0);
+namespace {
+enum class UseRefWrap { None, Cref, Ref };
+
+template <UseRefWrap Wrap, class T,
+          Requires<Wrap == UseRefWrap::Cref> = nullptr>
+decltype(auto) wrap(const T& t) noexcept {
+  return std::cref(t);
+}
+template <UseRefWrap Wrap, class T,
+          Requires<Wrap == UseRefWrap::Ref> = nullptr>
+decltype(auto) wrap(T& t) noexcept {
+  return std::ref(t);
+}
+template <UseRefWrap Wrap, class T,
+          Requires<Wrap == UseRefWrap::None> = nullptr>
+decltype(auto) wrap(const T& t) noexcept {
+  return t;
+}
+
+// Wrap is used to wrap values in a std::reference_wrapper using std::cref and
+// std::ref, or to not wrap at all. This is done to verify that all math
+// operations work transparently with a `std::reference_wrapper` too.
+template <UseRefWrap WrapLeftOp, UseRefWrap WrapRightOp>
+void test_ModalVector_math() noexcept {
+  constexpr size_t num_pts = 19;
+  ModalVector val{1., 2., 3., -4., 8., 12., -14.};
   ModalVector one(num_pts, 1.0);
+  ModalVector eight(num_pts, 8.0);
+  ModalVector nine(num_pts, 9.0);
 
   // Test unary minus
-  check_vectors(-nine, ModalVector(num_pts, -9.0));
+  check_vectors(-wrap<WrapLeftOp>(nine), ModalVector(num_pts, -9.0));
 
-  check_vectors(nine + 2.0, ModalVector(num_pts, 11.0));
-  check_vectors(2.0 + nine, ModalVector(num_pts, 11.0));
-  check_vectors(nine - 2.0, ModalVector(num_pts, 7.0));
-  check_vectors(2.0 - nine, ModalVector(num_pts, -7.0));
-  check_vectors(nine + nine, ModalVector(num_pts, 18.0));
-  check_vectors(nine + (one * nine), ModalVector(num_pts, 18.0));
-  check_vectors((one * nine) + nine, ModalVector(num_pts, 18.0));
-  check_vectors(nine - ModalVector(num_pts, 8.0), one);
-  check_vectors(nine - (one * nine), ModalVector(num_pts, 0.0));
-  check_vectors((one * nine) - nine, ModalVector(num_pts, 0.0));
+  check_vectors(wrap<WrapLeftOp>(nine) + 2.0, ModalVector(num_pts, 11.0));
+  check_vectors(2.0 + wrap<WrapLeftOp>(nine), ModalVector(num_pts, 11.0));
+  check_vectors(wrap<WrapLeftOp>(nine) - 2.0, ModalVector(num_pts, 7.0));
+  check_vectors(2.0 - wrap<WrapLeftOp>(nine), ModalVector(num_pts, -7.0));
+  check_vectors(wrap<WrapLeftOp>(nine) + wrap<WrapRightOp>(nine),
+                ModalVector(num_pts, 18.0));
+  check_vectors(wrap<WrapLeftOp>(nine) +
+                    (wrap<WrapLeftOp>(one) * wrap<WrapRightOp>(nine)),
+                ModalVector(num_pts, 18.0));
+  check_vectors((wrap<WrapLeftOp>(one) * wrap<WrapLeftOp>(nine)) +
+                    wrap<WrapRightOp>(nine),
+                ModalVector(num_pts, 18.0));
+  check_vectors(wrap<WrapLeftOp>(nine) - ModalVector(num_pts, 8.0),
+                ModalVector(num_pts, 1.0));
+  check_vectors(wrap<WrapLeftOp>(nine) -
+                    (wrap<WrapRightOp>(one) * wrap<WrapLeftOp>(nine)),
+                ModalVector(num_pts, 0.0));
+  check_vectors((wrap<WrapLeftOp>(one) * wrap<WrapLeftOp>(nine)) -
+                    wrap<WrapRightOp>(nine),
+                ModalVector(num_pts, 0.0));
 
-  check_vectors(ModalVector(num_pts, 18.0), (one / 0.5) * nine);
+  check_vectors(ModalVector(num_pts, -1.0 / 9.0),
+                -one / wrap<WrapRightOp>(nine));
+  check_vectors(ModalVector(num_pts, -8.0 / 9.0),
+                -(wrap<WrapLeftOp>(nine) - wrap<WrapRightOp>(one)) /
+                    wrap<WrapLeftOp>(nine));
+  check_vectors(ModalVector(num_pts, 18.0),
+                (wrap<WrapLeftOp>(one) / 0.5) * wrap<WrapRightOp>(nine));
+  check_vectors(ModalVector(num_pts, 1.0), 9.0 / wrap<WrapRightOp>(nine));
+  check_vectors(ModalVector(num_pts, 1.0),
+                (wrap<WrapLeftOp>(one) * 9.0) / wrap<WrapRightOp>(nine));
 
-  CHECK(-14 == min(val));
-  CHECK(12 == max(val));
-  check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.}, abs(val));
-  check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.}, fabs(val));
+  check_vectors(ModalVector(num_pts, 81.0),
+                wrap<WrapLeftOp>(nine) * wrap<WrapRightOp>(nine));
+  check_vectors(ModalVector(num_pts, 81.0),
+                wrap<WrapLeftOp>(nine) *
+                    (wrap<WrapLeftOp>(nine) * wrap<WrapRightOp>(one)));
+  check_vectors(ModalVector(num_pts, 81.0),
+                (wrap<WrapLeftOp>(nine) * wrap<WrapRightOp>(nine)) *
+                    wrap<WrapLeftOp>(one));
+  check_vectors(ModalVector(num_pts, 81.0), 9.0 * wrap<WrapLeftOp>(nine));
+  check_vectors(ModalVector(num_pts, 81.0), wrap<WrapLeftOp>(nine) * 9.0);
+  check_vectors(ModalVector(num_pts, 1.0), wrap<WrapLeftOp>(nine) / 9.0);
+  check_vectors(ModalVector(num_pts, 1.0),
+                wrap<WrapLeftOp>(nine) / (wrap<WrapRightOp>(one) * 9.0));
+  check_vectors(ModalVector(num_pts, 9.0),
+                (wrap<WrapLeftOp>(one) * wrap<WrapLeftOp>(nine)) /
+                    wrap<WrapRightOp>(one));
 
-  check_vectors(ModalVector(num_pts, 81.0), nine * nine);
-  check_vectors(ModalVector(num_pts, 81.0), nine * (nine * one));
-  check_vectors(ModalVector(num_pts, 81.0), (nine * nine) * one);
-  check_vectors(ModalVector(num_pts, 81.0), 9.0 * nine);
-  check_vectors(ModalVector(num_pts, 81.0), nine * 9.0);
-  check_vectors(ModalVector(num_pts, 1.0), nine / 9.0);
+  CHECK(-14 == min(wrap<WrapLeftOp>(val)));
+  CHECK(12 == max(wrap<WrapLeftOp>(val)));
+  check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.},
+                abs(wrap<WrapLeftOp>(val)));
+  check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.},
+                fabs(wrap<WrapLeftOp>(val)));
 
-  ModalVector dummy(nine * nine * 1.0);
+  check_vectors(sqrt(wrap<WrapLeftOp>(nine)), ModalVector(num_pts, 3.0));
+
+  ModalVector dummy(wrap<WrapLeftOp>(nine) * wrap<WrapLeftOp>(nine) * 1.0);
   check_vectors(ModalVector(num_pts, 81.0), dummy);
 
   // Test assignment
   ModalVector test_81(num_pts, -1.0);
-  test_81 = nine * nine;
+  // cannot assign to a reference_wrapper using an expr :(
+  test_81 = wrap<WrapLeftOp>(nine) * wrap<WrapRightOp>(nine);
   check_vectors(ModalVector(num_pts, 81.0), test_81);
   CHECK(test_81.is_owning());
   ModalVector test_81_ref(test_81.data(), test_81.size());
   test_81_ref = 0.0;
   test_81 = 0.0;
-  test_81_ref = nine * nine;
+  test_81_ref = wrap<WrapLeftOp>(nine) * wrap<WrapRightOp>(nine);
   check_vectors(ModalVector(num_pts, 81.0), test_81);
   CHECK(test_81.is_owning());
   check_vectors(ModalVector(num_pts, 81.0), test_81_ref);
   CHECK_FALSE(test_81_ref.is_owning());
   ModalVector second_81(num_pts);
-  second_81 = test_81;
+  second_81 = wrap<WrapLeftOp>(test_81);
   check_vectors(ModalVector(num_pts, 81.0), second_81);
   CHECK(second_81.is_owning());
   test_81_ref = 0.0;
   check_vectors(ModalVector(num_pts, 0.0), test_81_ref);
-  test_81_ref = second_81;
+  test_81_ref = wrap<WrapLeftOp>(second_81);
   check_vectors(ModalVector(num_pts, 81.0), test_81_ref);
   second_81 = 0.0;
   test_81_ref.set_data_ref(&test_81);
@@ -317,39 +385,61 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   CHECK_FALSE(test_081.is_owning());
 
   ModalVector test_assignment(num_pts, 7.0);
-  test_assignment += nine;
+  test_assignment += wrap<WrapLeftOp>(nine);
   check_vectors(ModalVector(num_pts, 16.0), test_assignment);
   test_assignment += 3.0;
   check_vectors(ModalVector(num_pts, 19.0), test_assignment);
-  test_assignment += (nine * nine);
+  test_assignment += (wrap<WrapLeftOp>(nine) * wrap<WrapLeftOp>(nine));
   check_vectors(ModalVector(num_pts, 100.0), test_assignment);
 
   test_assignment = 7.0;
-  test_assignment -= nine;
+  test_assignment -= wrap<WrapLeftOp>(nine);
   check_vectors(ModalVector(num_pts, -2.0), test_assignment);
   test_assignment -= 3.0;
   check_vectors(ModalVector(num_pts, -5.0), test_assignment);
-  test_assignment -= nine * nine;
+  test_assignment -= wrap<WrapLeftOp>(nine) * wrap<WrapLeftOp>(nine);
   check_vectors(ModalVector(num_pts, -86.0), test_assignment);
 
   test_assignment = 2.0;
   test_assignment *= 3.0;
   check_vectors(ModalVector(num_pts, 6.0), test_assignment);
-  test_assignment *= nine;
+  test_assignment *= wrap<WrapLeftOp>(nine);
   check_vectors(ModalVector(num_pts, 54.0), test_assignment);
   test_assignment = 1.0;
-  test_assignment *= nine * nine;
+  test_assignment *= wrap<WrapLeftOp>(nine) * wrap<WrapLeftOp>(nine);
   check_vectors(ModalVector(num_pts, 81.0), test_assignment);
 
   test_assignment = 2.0;
   test_assignment /= 2.0;
   check_vectors(ModalVector(num_pts, 1.0), test_assignment);
+  test_assignment /= ModalVector(num_pts, 0.5);
+  check_vectors(ModalVector(num_pts, 2.0), test_assignment);
+  test_assignment /= (ModalVector(num_pts, 2.0) * ModalVector(num_pts, 3.0));
+  check_vectors(ModalVector(num_pts, 1.0 / 3.0), test_assignment);
 
   // Test assignment where the RHS is an expression that contains the LHS
   ModalVector x(num_pts, 4.);
-  x *= x;
-  check_vectors(ModalVector(num_pts, 16.0), x);
+  x += sqrt(wrap<WrapLeftOp>(x));
+  check_vectors(ModalVector(num_pts, 6.0), x);
+  x -= sqrt(wrap<WrapLeftOp>(x) - 2.0);
+  check_vectors(ModalVector(num_pts, 4.0), x);
+  x = sqrt(wrap<WrapLeftOp>(x));
+  check_vectors(ModalVector(num_pts, 2.0), x);
+  x *= wrap<WrapLeftOp>(x);
+  check_vectors(ModalVector(num_pts, 4.0), x);
+  x /= wrap<WrapLeftOp>(x);
+  check_vectors(ModalVector(num_pts, 1.0), x);
 
+  // Test composition of constant expressions with ModalVector math member
+  // functions
+  x = ModalVector(num_pts, 2.);
+  check_vectors(ModalVector(num_pts, 1.4142135623730951),
+                sqrt(abs(wrap<WrapLeftOp>(x))));
+  check_vectors(ModalVector(num_pts, 2.),
+                sqrt(wrap<WrapLeftOp>(x) * wrap<WrapRightOp>(x)));
+}
+
+void test_ModalVector_array_math() noexcept {
   // Test addition of arrays of ModalVectors to arrays of doubles.
   const ModalVector t1{0.0, 1.0, 2.0, 3.0};
   const ModalVector t2{-0.1, -0.2, -0.3, -0.4};
@@ -400,43 +490,31 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
   const ModalVector expected_d1{2.5, 3.4};
   const auto magnitude_d1 = magnitude(d1);
   CHECK_ITERABLE_APPROX(expected_d1, magnitude_d1);
-  const std::array<ModalVector, 2> d2{{ModalVector(2, 3.),
-                                             ModalVector(2, 4.)}};
+  const std::array<ModalVector, 2> d2{{ModalVector(2, 3.), ModalVector(2, 4.)}};
   const ModalVector expected_d2(2, 5.);
   const auto magnitude_d2 = magnitude(d2);
   CHECK_ITERABLE_APPROX(expected_d2, magnitude_d2);
   const std::array<ModalVector, 3> d3{
-      {ModalVector(2, 3.), ModalVector(2, -4.),
-       ModalVector(2, 12.)}};
+      {ModalVector(2, 3.), ModalVector(2, -4.), ModalVector(2, 12.)}};
   const ModalVector expected_d3(2, 13.);
   const auto magnitude_d3 = magnitude(d3);
   CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
 }
+}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
+SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.Math",
                   "[Unit][DataStructures]") {
-  const size_t num_pts = 23;
-  ModalVector nine(num_pts, 9.0);
-  CHECK(nine.is_owning());
-  DataVector eight(num_pts, 8.0);
+  test_ModalVector_math<UseRefWrap::Cref, UseRefWrap::Cref>();
+  test_ModalVector_math<UseRefWrap::Cref, UseRefWrap::Ref>();
+  test_ModalVector_math<UseRefWrap::Cref, UseRefWrap::None>();
+  test_ModalVector_math<UseRefWrap::Ref, UseRefWrap::Cref>();
+  test_ModalVector_math<UseRefWrap::Ref, UseRefWrap::Ref>();
+  test_ModalVector_math<UseRefWrap::Ref, UseRefWrap::None>();
+  test_ModalVector_math<UseRefWrap::None, UseRefWrap::Cref>();
+  test_ModalVector_math<UseRefWrap::None, UseRefWrap::Ref>();
+  test_ModalVector_math<UseRefWrap::None, UseRefWrap::None>();
 
-  // Test math with DataVector
-  ModalVector test_72(num_pts, -1.0);
-  test_72 = nine * eight;
-  check_vectors(ModalVector(num_pts, 72.0), test_72);
-  CHECK(test_72.is_owning());
-  test_72 = eight * nine;
-  check_vectors(ModalVector(num_pts, 72.0), test_72);
-  CHECK(test_72.is_owning());
-  test_72 = test_72 / eight;
-  check_vectors(ModalVector(num_pts, 9.0), test_72);
-  test_72 = nine;
-  test_72 *= eight;
-  check_vectors(ModalVector(num_pts, 72.0), test_72);
-  CHECK(test_72.is_owning());
-  test_72 /= eight;
-  check_vectors(ModalVector(num_pts, 9.0), test_72);
-  CHECK(test_72.is_owning());
+  test_ModalVector_array_math();
 }
 
 // [[OutputRegex, Must copy into same size]]
@@ -452,3 +530,4 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector.MathWithDataVector",
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+

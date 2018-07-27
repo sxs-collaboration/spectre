@@ -15,12 +15,13 @@
 #include <type_traits>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PointerVector.hpp" // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"          // for list
 
 /// \cond HIDDEN_SYMBOLS
 namespace PUP {
@@ -31,6 +32,39 @@ class er;
 //             We want the std::abs to be used
 using std::abs;  // NOLINT
 /// \endcond
+
+// IWYU doesn't like that we want PointerVector.hpp to expose Blaze and also
+// have ModalVector.hpp to expose PointerVector.hpp without including Blaze
+// directly in ModalVector.hpp
+//
+// IWYU pragma: no_include <blaze/math/dense/DenseVector.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecAddExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecDivExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecMultExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecDVecSubExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecScalarDivExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DVecScalarMultExpr.h>
+// IWYU pragma: no_include <blaze/math/expressions/DenseVector.h>
+// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
+// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
+// IWYU pragma: no_include <blaze/math/expressions/Forward.h>
+// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
+// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
+// IWYU pragma: no_include <blaze/math/traits/AddTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/DivTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
+// IWYU pragma: no_include <blaze/system/TransposeFlag.h>
+// IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
+
+// IWYU pragma: no_forward_declare blaze::DenseVector
+// IWYU pragma: no_forward_declare blaze::UnaryMapTrait
+// IWYU pragma: no_forward_declare blaze::BinaryMapTrait
+// IWYU pragma: no_forward_declare blaze::IsVector
+// IWYU pragma: no_forward_declare blaze::TransposeFlag
 
 /*!
  * \ingroup DataStructuresGroup
@@ -44,21 +78,17 @@ using std::abs;  // NOLINT
  * addition to addition, subtraction, multiplication, division, there
  * are the following element-wise operations:
  *
- * - abs
+ * - abs/fabs/magnitude
  * - max
  * - min
  *
  * In order to allow filtering, multiplication (*, *=) and division (/, /=)
- * operations with a DataVectors (holding filters) is supported.
+ * operations with a DenseVectors (holding filters) is supported.
  *
- * Note : Because of no tagging feature yet, expressions containing purely
- * DataVectors will evaluate and get copy-constructed to a ModalVector.
- * Disallowing this would also mean disallowing expressions such as
- * ModalVector coeffs_filtered(coeffs * filter) - where:
- *  - coeffs is a ModalVector
- *  - filter is a DataVector
  */
-class ModalVector {
+class ModalVector
+    : public PointerVector<double, blaze::unaligned, blaze::unpadded,
+                           blaze::defaultTransposeFlag, ModalVector> {
   /// \cond HIDDEN_SYMBOLS
   static constexpr int private_asserts() {
     static_assert(std::is_nothrow_move_constructible<ModalVector>::value,
@@ -71,18 +101,32 @@ class ModalVector {
   using allocator_type = std::allocator<value_type>;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
+  using BaseType = PointerVector<value_type, blaze::unaligned, blaze::unpadded,
+                                 blaze::defaultTransposeFlag, ModalVector>;
+  static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
 
-  // The type alias ElementType is needed because blaze::IsInvertible<T> is not
-  // SFINAE friendly to an ElementType type alias
-  using ElementType = double;
+  using BaseType::ElementType;
+  using TransposeType = ModalVector;
+  using CompositeType = const ModalVector&;
 
- private:
-  /// The type of the "pointer" used internally
-  using InternalModalVector_t = PointerVector<double>;
-  /// The type used to store the data in
-  using InternalStorage_t = std::vector<double, allocator_type>;
+  /// Iterators etc obtained from base class PointerVector
+  using BaseType::operator[];
+  using BaseType::begin;
+  using BaseType::cbegin;
+  using BaseType::cend;
+  using BaseType::data;
+  using BaseType::end;
+  using BaseType::size;
 
- public:
+  /// Do we need an upcast from ModalVector to PointerVector?
+  // @{
+  // Upcast to `BaseType`
+  const BaseType& operator~() const noexcept {
+    return static_cast<const BaseType&>(*this);
+  }
+  BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
+  // @}
+
   /// Create with the given size and value.
   ///
   /// \param size number of values
@@ -92,47 +136,58 @@ class ModalVector {
               double value = std::numeric_limits<double>::signaling_NaN());
 
   /// Create a non-owning ModalVector that points to `start`
-  ModalVector(double* start, size_t size);
+  ModalVector(double* start, size_t size) noexcept;
 
-  /// Create from an initializer list of doubles. All elements in the
-  /// `std::initializer_list` must have decimal points
-  // cppcheck-suppress syntaxError
+  /// Create from an initializer list of doubles (must have decimal points)
   template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
   ModalVector(std::initializer_list<T> list);
 
   /// Empty ModalVector
-  ModalVector() = default;
+  ModalVector() noexcept = default;
   /// \cond HIDDEN_SYMBOLS
   ~ModalVector() = default;
 
+  // Initialize ModalVector with expressions involving itself
   ModalVector(const ModalVector& rhs);
   ModalVector(ModalVector&& rhs) noexcept;
   ModalVector& operator=(const ModalVector& rhs);
   ModalVector& operator=(ModalVector&& rhs) noexcept;
 
+  /// Catch DenseVector expressions into ModalVectors, only if their return
+  /// types are defined as ModalVectors
+  //
   // This is a converting constructor. clang-tidy complains that it's not
   // explicit, but we want it to allow conversion.
   // clang-tidy: mark as explicit (we want conversion to ModalVector)
   template <typename VT, bool VF>
-  ModalVector(const blaze::Vector<VT, VF>& expression);  // NOLINT
+  ModalVector(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
 
   template <typename VT, bool VF>
-  ModalVector& operator=(const blaze::Vector<VT, VF>& expression);
+  ModalVector& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
   /// \endcond
 
-  /// Number of values stored
-  size_t size() const noexcept { return size_; }
+  ModalVector& operator=(const double& rhs) noexcept {
+    ~*this = rhs;
+    return *this;
+  }
+
+  // Using expression macro, defined in PointerVector.hpp, these lines overload
+  // assignment operators { +=, -=, *=, /= } for LHS = ModalVector and RHS =
+  // (i) ModalVector, (ii) blaze::DenseVector (to hold spectral filters), and
+  // (iii) double (i.e. the ElementType)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, ModalVector)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, ModalVector)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, ModalVector)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, ModalVector)
 
   // @{
-  /// Set the ModalVector to be a reference to another ModalVector
-  /// object
+  /// Set ModalVector to be a reference to another ModalVector object
   void set_data_ref(gsl::not_null<ModalVector*> rhs) noexcept {
-    set_data_ref(rhs->data(), rhs->size_);
+    set_data_ref(rhs->data(), rhs->size());
   }
   void set_data_ref(double* start, size_t size) noexcept {
-    size_ = size;
     owned_data_ = decltype(owned_data_){};
-    data_ = decltype(data_){start, size_};
+    (~*this).reset(start, size);
     owning_ = false;
   }
   // @}
@@ -140,242 +195,17 @@ class ModalVector {
   /// Returns true if the class owns the data
   bool is_owning() const noexcept { return owning_; }
 
-  // @{
-  /// Access ith element
-  double& operator[](const size_type i) noexcept {
-    ASSERT(i < size_, "i = " << i << ", size = " << size_);
-    // clang-tidy: do not use pointer arithmetic
-    return data_[i];  // NOLINT
-  }
-  const double& operator[](const size_type i) const noexcept {
-    ASSERT(i < size_, "i = " << i << ", size = " << size_);
-    // clang-tidy: do not use pointer arithmetic
-    return data_[i];  // NOLINT
-  }
-  // @}
-
-  // @{
-  /// Access to the pointer
-  double* data() noexcept { return data_.data(); }
-  const double* data() const noexcept { return data_.data(); }
-  // @}
-
-  // @{
-  /// Returns iterator to beginning of data
-  decltype(auto) begin() noexcept { return data_.begin(); }
-  decltype(auto) begin() const noexcept { return data_.begin(); }
-  // @}
-  // @{
-  /// Returns iterator to end of data
-  decltype(auto) end() noexcept { return data_.end(); }
-  decltype(auto) end() const noexcept { return data_.end(); }
-  // @}
-
   /// Serialization for Charm++
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  // @{
-  /// See the Blaze library documentation for details on these functions since
-  /// they merely forward to Blaze.
-  /// https://bitbucket.org/blaze-lib/blaze/overview
-  ModalVector& operator=(const double& rhs) noexcept {
-    data_ = rhs;
-    return *this;
-  }
-
-  ModalVector& operator+=(const ModalVector& rhs) noexcept {
-    data_ += rhs.data_;
-    return *this;
-  }
-  template <typename VT, bool VF>
-  ModalVector& operator+=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ += rhs;
-    return *this;
-  }
-  ModalVector& operator+=(const double& rhs) noexcept {
-    data_ += rhs;
-    return *this;
-  }
-
-  ModalVector& operator-=(const ModalVector& rhs) noexcept {
-    data_ -= rhs.data_;
-    return *this;
-  }
-  template <typename VT, bool VF>
-  ModalVector& operator-=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ -= rhs;
-    return *this;
-  }
-  ModalVector& operator-=(const double& rhs) noexcept {
-    data_ -= rhs;
-    return *this;
-  }
-
-  template <typename VT, bool VF>
-  ModalVector& operator*=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ *= rhs;
-    return *this;
-  }
-  ModalVector& operator*=(const double& rhs) noexcept {
-    data_ *= rhs;
-    return *this;
-  }
-  ModalVector& operator*=(const ModalVector& rhs) noexcept {
-    data_ *= rhs.data_;
-    return *this;
-  }
-  // FIXME PK: Can we avoid the instantiation of new DV object in this function
-  ModalVector& operator*=(const DataVector& rhs) noexcept {
-    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
-    data_ *= _rhs_local;
-    return *this;
-  }
-
-  template <typename VT, bool VF>
-  ModalVector& operator/=(const blaze::Vector<VT, VF>& rhs) noexcept {
-    data_ /= rhs;
-    return *this;
-  }
-  ModalVector& operator/=(const double& rhs) noexcept {
-    data_ /= rhs;
-    return *this;
-  }
-  // FIXME PK: Can we avoid the instantiation of new DV object in this function
-  ModalVector& operator/=(const DataVector& rhs) noexcept {
-    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
-    data_ /= _rhs_local;
-    return *this;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const ModalVector& lhs, const ModalVector& rhs) noexcept {
-    return lhs.data_ + rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
-    return ~lhs + rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ + ~rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const ModalVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ + rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator+(
-      const double& lhs, const ModalVector& rhs) noexcept {
-    return lhs + rhs.data_;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const ModalVector& lhs, const ModalVector& rhs) noexcept {
-    return lhs.data_ - rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
-    return ~lhs - rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ - ~rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const ModalVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ - rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const double& lhs, const ModalVector& rhs) noexcept {
-    return lhs - rhs.data_;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator-(
-      const ModalVector& rhs) noexcept {
-    return -rhs.data_;
-  };
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const ModalVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ * rhs;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const double& lhs, const ModalVector& rhs) noexcept {
-    return lhs * rhs.data_;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const ModalVector& lhs, const ModalVector& rhs) noexcept {
-    return lhs.data_ * rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const blaze::Vector<VT, VF>& lhs, const ModalVector& rhs) noexcept {
-    return ~lhs * rhs.data_;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ * ~rhs;
-  }
-  // FIXME PK: Can we avoid the instantiation of new DV objects in the
-  // next 2 functions?
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const ModalVector& lhs, const DataVector& rhs) noexcept {
-    blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
-    return lhs * _rhs_local;
-  }
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator*(
-      const DataVector& lhs, const ModalVector& rhs) noexcept {
-    blaze::DynamicVector<double> _lhs_local(lhs.size(), lhs.data());
-    return rhs * _lhs_local;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const ModalVector& lhs, const double& rhs) noexcept {
-    return lhs.data_ / rhs;
-  }
-  template <typename VT, bool VF>
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const ModalVector& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.data_ / ~rhs;
-  }
-  // FIXME PK: Can we avoid the instantiation of new DV object in this function
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) operator/(
-      const ModalVector& lhs, const DataVector& rhs) noexcept {
-    const blaze::DynamicVector<double> _rhs_local(rhs.size(), rhs.data());
-    return lhs / _rhs_local;
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) min(
-      const ModalVector& t) noexcept {
-    return min(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) max(
-      const ModalVector& t) noexcept {
-    return max(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) abs(
-      const ModalVector& t) noexcept {
-    return abs(t.data_);
-  }
-
-  SPECTRE_ALWAYS_INLINE friend decltype(auto) fabs(
-      const ModalVector& t) noexcept {
-    return abs(t.data_);
-  }
-  // @}
-
-
  private:
+  SPECTRE_ALWAYS_INLINE void reset_pointer_vector() noexcept {
+    reset(owned_data_.data(), owned_data_.size());
+  }
+
   /// \cond HIDDEN_SYMBOLS
-  size_t size_ = 0;
-  InternalStorage_t owned_data_;
-  InternalModalVector_t data_;
+  std::vector<value_type, allocator_type> owned_data_;
   bool owning_{true};
   /// \endcond
 };
@@ -384,10 +214,143 @@ class ModalVector {
 std::ostream& operator<<(std::ostream& os, const ModalVector& d);
 
 /// Equivalence operator for ModalVector
-bool operator==(const ModalVector& lhs, const ModalVector& rhs);
+bool operator==(const ModalVector& lhs, const ModalVector& rhs) noexcept;
 
 /// Inequivalence operator for ModalVector
-bool operator!=(const ModalVector& lhs, const ModalVector& rhs);
+bool operator!=(const ModalVector& lhs, const ModalVector& rhs) noexcept;
+
+/// \cond
+// Used for comparing ModalVector to an expression
+template <typename VT, bool VF>
+bool operator==(const ModalVector& lhs,
+                const blaze::DenseVector<VT, VF>& rhs) noexcept {
+  return lhs == ModalVector(rhs);
+}
+
+template <typename VT, bool VF>
+bool operator!=(const ModalVector& lhs,
+                const blaze::DenseVector<VT, VF>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
+template <typename VT, bool VF>
+bool operator==(const blaze::DenseVector<VT, VF>& lhs,
+                const ModalVector& rhs) noexcept {
+  return ModalVector(lhs) == rhs;
+}
+
+template <typename VT, bool VF>
+bool operator!=(const blaze::DenseVector<VT, VF>& lhs,
+                const ModalVector& rhs) noexcept {
+  return not(lhs == rhs);
+}
+/// \endcond
+
+// Specialize the Blaze type traits to correctly handle ModalVector
+namespace blaze {
+template <>
+struct IsVector<ModalVector> : std::true_type {};
+
+template <>
+struct TransposeFlag<ModalVector> : BoolConstant<
+                ModalVector::transpose_flag> {};
+
+template <>
+struct AddTrait<ModalVector, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct AddTrait<ModalVector, double> {
+  using Type = ModalVector;
+};
+
+template <>
+struct AddTrait<double, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct SubTrait<ModalVector, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct SubTrait<ModalVector, double> {
+  using Type = ModalVector;
+};
+
+template <>
+struct SubTrait<double, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct MultTrait<ModalVector, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct MultTrait<ModalVector, double> {
+  using Type = ModalVector;
+};
+
+template <>
+struct MultTrait<double, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct DivTrait<ModalVector, ModalVector> {
+  using Type = ModalVector;
+};
+
+template <>
+struct DivTrait<ModalVector, double> {
+  using Type = ModalVector;
+};
+
+// Forbid math operations in this specialization of UnaryMap traits for
+// ModalVector that are unlikely to be used on spectral coefficients
+template <typename Operator>
+struct UnaryMapTrait<ModalVector, Operator> {
+  static_assert(not tmpl::list_contains_v<tmpl::list<//blaze::Max, blaze::Min,
+                //blaze::Sqrt,
+                blaze::Cbrt,
+                blaze::InvSqrt, blaze::InvCbrt,
+                blaze::Acos, blaze::Acosh, blaze::Cos, blaze::Cosh,
+                blaze::Asin, blaze::Asinh, blaze::Sin, blaze::Sinh,
+                blaze::Atan, blaze::Atan2, blaze::Atanh,
+                blaze::Tan, blaze::Tanh, blaze::Hypot,
+                blaze::Exp, blaze::Exp2, blaze::Exp10,
+                blaze::Log, blaze::Log2, blaze::Log10,
+                blaze::Erf, blaze::Erfc, blaze::StepFunction
+                >, Operator>,
+                "This operation is not permitted on a ModalVector."
+                "Only unary operation permitted are: abs, fabs, sqrt.");
+  using Type = ModalVector;
+};
+
+// Forbid math operations in this specialization of BinaryMap traits for
+// ModalVector that are unlikely to be used on spectral coefficients
+template <typename Operator>
+struct BinaryMapTrait<ModalVector, ModalVector, Operator> {
+  static_assert(not tmpl::list_contains_v<tmpl::list<blaze::Max, blaze::Min
+                >, Operator>,
+                "This operation is not permitted on a ModalVector."
+                "Only unary operation are permitted: abs, fabs, sqrt.");
+  using Type = ModalVector;
+};
+
+}  // namespace blaze
+
+SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const ModalVector& t) noexcept {
+  return abs(~t);
+}
+
+SPECTRE_ALWAYS_INLINE decltype(auto) abs(const ModalVector& t) noexcept {
+  return abs(~t);
+}
 
 template <typename T, size_t Dim>
 std::array<ModalVector, Dim> operator+(
@@ -467,24 +430,39 @@ std::array<ModalVector, Dim>& operator-=(
 
 /// \cond HIDDEN_SYMBOLS
 template <typename VT, bool VF>
-ModalVector::ModalVector(const blaze::Vector<VT, VF>& expression)
-    : size_((~expression).size()),
-      owned_data_((~expression).size()),
-      data_(owned_data_.data(), (~expression).size()) {
-  data_ = expression;
+ModalVector::ModalVector(const blaze::DenseVector<VT, VF>& expression) noexcept
+    : owned_data_((~expression).size()) {
+  static_assert(cpp17::is_same_v<typename VT::ResultType, ModalVector>,
+                "You are attempting to assign the result of an expression that "
+                "is not a ModalVector to a ModalVector.");
+  reset_pointer_vector();
+  ~*this = expression;
 }
 
 template <typename VT, bool VF>
 ModalVector& ModalVector::operator=(
-    const blaze::Vector<VT, VF>& expression) {
+    const blaze::DenseVector<VT, VF>& expression) noexcept {
+  static_assert(cpp17::is_same_v<typename VT::ResultType, ModalVector>,
+                "You are attempting to assign the result of an expression that "
+                "is not a ModalVector to a ModalVector.");
   if (owning_ and (~expression).size() != size()) {
-    size_ = (~expression).size();
-    owned_data_ = InternalStorage_t(size_);
-    data_ = decltype(data_){owned_data_.data(), size_};
+    owned_data_.resize((~expression).size());
+    reset_pointer_vector();
   } else if (not owning_) {
     ASSERT((~expression).size() == size(), "Must copy into same size");
   }
-  data_ = expression;
+  ~*this = expression;
   return *this;
 }
 /// \endcond
+
+namespace MakeWithValueImpls {
+/// \brief Returns a ModalVector the same size as `input`, with each element
+/// equal to `value`.
+template <>
+SPECTRE_ALWAYS_INLINE ModalVector
+MakeWithValueImpl<ModalVector, ModalVector>::apply(const ModalVector& input,
+                                                 const double value) {
+  return ModalVector(input.size(), value);
+}
+}  // namespace MakeWithValueImpls
