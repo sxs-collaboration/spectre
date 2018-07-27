@@ -59,6 +59,7 @@ using std::abs;  // NOLINT
 // IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
 // IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
+// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
 // IWYU pragma: no_forward_declare blaze::DenseVector
 // IWYU pragma: no_forward_declare blaze::UnaryMapTrait
