@@ -5,6 +5,8 @@ set(LIBRARY Amr)
 
 set(LIBRARY_SOURCES
   Flag.cpp
+  Helpers.cpp
+  UpdateAmrDecision.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
