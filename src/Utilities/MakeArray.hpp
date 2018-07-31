@@ -45,8 +45,14 @@ template <>
 struct MakeArray<true> {
   template <typename T, typename... Args>
   static SPECTRE_ALWAYS_INLINE constexpr std::array<T, 0> apply(
-      std::index_sequence<> /* unused */, Args&&... /*args*/) noexcept {
+      std::index_sequence<> /* unused */, Args&&... args) noexcept {
+#ifndef HAVE_BROKEN_ARRAY0
+    expand_pack(args...);  // Used in other preprocessor branch
     return std::array<T, 0>{{}};
+#else  // HAVE_BROKEN_ARRAY0
+    // https://bugs.llvm.org/show_bug.cgi?id=35491
+    return {{T(std::forward<Args>(args)...)}};
+#endif  // HAVE_BROKEN_ARRAY0
   }
 };
 }  // namespace MakeArray_detail

@@ -40,6 +40,8 @@ include(SetupSanitizers)
 include(SetupListTargets)
 include(AddSpectreExecutable)
 
+include(CheckBrokenArray0)
+
 include(SetupBlas)
 include(SetupBlaze)
 include(SetupBoost)

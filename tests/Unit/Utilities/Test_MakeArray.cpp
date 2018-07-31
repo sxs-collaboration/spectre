@@ -111,6 +111,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
   // Check make_array with an rvalue sequence
   {
     std::vector<MyNonCopyable<int>> vector;
+    vector.reserve(3);
     for (int i = 0; i < 3; ++i) {
       vector.emplace_back(i);
     }
@@ -128,5 +129,21 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
     for (size_t i = 0; i < 3; ++i) {
       CHECK(vector[i] == (std::vector<int>{1, 2, 3}));
     }
+  }
+
+  // Check that make_array works with non-default-constructible types
+  {
+    struct NonDefaultConstructible {
+      NonDefaultConstructible() = delete;
+      explicit NonDefaultConstructible(int /*unused*/) noexcept {}
+    };
+    const NonDefaultConstructible ndc{1};
+    // We just check that these compile, since there's not any
+    // realistic way they could give a wrong answer.
+    make_array<0>(ndc);
+    make_array<1>(ndc);
+    make_array<2>(ndc);
+    make_array(ndc, ndc);
+    make_array(ndc, ndc, ndc);
   }
 }
