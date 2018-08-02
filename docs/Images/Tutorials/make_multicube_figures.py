@@ -273,9 +273,7 @@ def eight_cube_rotated_exploded_figure():
                        flip_vector=[False, True, True])
     draw_basis_vectors(ax, [0.17, 2.17, 2.3], label_permutation=[2, 0, 1],
                        flip_vector=[False, True, True])
-    draw_basis_vectors(ax, [2.17, 2.17, 2.3], label_permutation=[0, 2, 1],
-                       flip_vector=[True, True, True])
-
+    draw_basis_vectors(ax, [2.17, 2.17, 2.45])
     fig.savefig('eightcubes_rotated_exploded.png')
 
 
