@@ -4,7 +4,8 @@
 set(LIBRARY Informer)
 
 set(LIBRARY_SOURCES
-    Informer.cpp)
+    Informer.cpp
+    Verbosity.cpp)
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
