@@ -462,6 +462,11 @@
  */
 
 /*!
+ * \defgroup NumericalFluxesGroup Numerical Fluxes
+ * \brief The set of available numerical fluxes
+ */
+
+/*!
  * \defgroup OptionParsingGroup Option Parsing
  * Things related to parsing YAML input files.
  */
