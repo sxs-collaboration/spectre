@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 
 #include "ErrorHandling/Error.hpp"
@@ -51,4 +52,17 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.RealRoots",
   auto roots = real_roots(2.0, -11.0, 5.0);
   CHECK(approx(0.5) == roots[0]);
   CHECK(approx(5.0) == roots[1]);
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.Accuracy",
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
+  auto small_positive = real_roots(1e-8, 1.0 - 1e-16, -1e-8);
+  std::sort(small_positive.begin(), small_positive.end());
+  CHECK(approx(-1e8) == small_positive[0]);
+  CHECK(approx(1e-8) == small_positive[1]);
+
+  auto small_negative = real_roots(1e-8, -(1.0 - 1e-16), -1e-8);
+  std::sort(small_negative.begin(), small_negative.end());
+  CHECK(approx(-1e-8) == small_negative[0]);
+  CHECK(approx(1e8) == small_negative[1]);
 }
