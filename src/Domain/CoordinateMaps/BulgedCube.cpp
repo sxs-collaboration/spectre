@@ -78,11 +78,10 @@ DType scaling_factor(RootFunction<DType>&& rootfunction) noexcept {
   const DType& x_sq = rootfunction.get_x_sq();
   const DType& physical_r_squared = rootfunction.get_r_sq();
   try {
-    DType rho =
-        RootFinder::toms748(rootfunction, make_with_value<DType>(x_sq, 0.0),
-                            make_with_value<DType>(x_sq, sqrt(3.0)),
-                            10.0 * std::numeric_limits<double>::epsilon(),
-                            10.0 * std::numeric_limits<double>::epsilon());
+    const double tol = 10.0 * std::numeric_limits<double>::epsilon();
+    DType rho = RootFinder::toms748(
+        rootfunction, make_with_value<DType>(x_sq, 0.0),
+        make_with_value<DType>(x_sq, sqrt(3.0) + tol), tol, tol);
     for (size_t i = 0; i < get_size(rho); i++) {
       if (not(equal_within_roundoff(get_element(physical_r_squared, i), 0.0))) {
         get_element(rho, i) /= sqrt(get_element(physical_r_squared, i));

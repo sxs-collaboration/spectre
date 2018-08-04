@@ -23,6 +23,10 @@ namespace RootFinder {
  *
  * \snippet Test_TOMS748.cpp double_root_find
  *
+ * The TOMS_748 algorithm searches for a root in the interval [`lower_bound`,
+ * `upper_bound`], and will throw an exception if this interval does not bracket
+ * a root, i.e. if `f(lower_bound) * f(upper_bound) > 0`.
+ *
  * See the [Boost](http://www.boost.org/) documentation for more details.
  *
  * \requires Function `f` is invokable with a `double`
@@ -45,13 +49,9 @@ double toms748(const Function& f, const double lower_bound,
             absolute_tolerance +
                 relative_tolerance * fmin(fabs(lhs), fabs(rhs)));
   };
-  // Lower and upper bound are shifted by absolute tolerance so that the root
-  // find does not fail if upper or lower bound are equal to the root within
-  // tolerance
   // clang-tidy: internal boost warning, can't fix it.
   auto result = boost::math::tools::toms748_solve(  // NOLINT
-      f, lower_bound - absolute_tolerance, upper_bound + absolute_tolerance,
-      tol, max_iters);
+      f, lower_bound, upper_bound, tol, max_iters);
   return result.first + 0.5 * (result.second - result.first);
 }
 
@@ -67,6 +67,11 @@ double toms748(const Function& f, const double lower_bound,
  * a lambda-captured `DataVector` using the `size_t` passed to `f`.
  *
  * \snippet Test_TOMS748.cpp datavector_root_find
+ *
+ * For each index `i` into the DataVector, the TOMS_748 algorithm searches for a
+ * root in the interval [`lower_bound[i]`, `upper_bound[i]`], and will throw an
+ * exception if this interval does not bracket a root,
+ * i.e. if `f(lower_bound[i], i) * f(upper_bound[i], i) > 0`.
  *
  * See the [Boost](http://www.boost.org/) documentation for more details.
  *
@@ -89,9 +94,6 @@ DataVector toms748(const Function& f, const DataVector& lower_bound,
             absolute_tolerance +
                 relative_tolerance * fmin(fabs(lhs), fabs(rhs)));
   };
-  // Lower and upper bound are shifted by absolute tolerance so that the root
-  // find does not fail if upper or lower bound are equal to the root within
-  // tolerance
   DataVector result_vector{lower_bound.size()};
   for (size_t i = 0; i < result_vector.size(); ++i) {
     // toms748_solver modifies the max_iters after the root is found to the
@@ -100,9 +102,8 @@ DataVector toms748(const Function& f, const DataVector& lower_bound,
     boost::uintmax_t max_iters = max_iterations;
     // clang-tidy: internal boost warning, can't fix it.
     auto result = boost::math::tools::toms748_solve(  // NOLINT
-        [&f, i](double x) { return f(x, i); },
-        lower_bound[i] - absolute_tolerance,
-        upper_bound[i] + absolute_tolerance, tol, max_iters);
+        [&f, i](double x) { return f(x, i); }, lower_bound[i], upper_bound[i],
+        tol, max_iters);
     result_vector[i] = result.first + 0.5 * (result.second - result.first);
   }
   return result_vector;
