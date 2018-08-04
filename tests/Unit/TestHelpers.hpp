@@ -8,9 +8,13 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
+#include <cstddef>
 #include <iterator>
 #include <memory>
+#include <ostream>
+#include <string>
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -19,7 +23,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -220,17 +224,6 @@ void check_cmp(const T& less, const T& greater) {
 
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Get the streamed output `c` as a `std::string`
- */
-template <typename Container>
-std::string get_output(const Container& c) {
-  std::ostringstream os;
-  os << c;
-  return os.str();
-}
-
-/*!
- * \ingroup TestingFrameworkGroup
  * \brief Calculates the derivative of an Invocable at a point x - represented
  * by an array of doubles - in the domain of `map` with a sixth-order finite
  * difference method.
@@ -275,6 +268,17 @@ struct NonCopyable {
   NonCopyable& operator=(NonCopyable&&) = default;
   ~NonCopyable() = default;
 };
+inline bool operator==(const NonCopyable& /*a*/,
+                       const NonCopyable& /*b*/) noexcept {
+  return true;
+}
+inline bool operator!=(const NonCopyable& a, const NonCopyable& b) noexcept {
+  return not(a == b);
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const NonCopyable& /*v*/) noexcept {
+  return os << "NC";
+}
 
 class DoesNotThrow {
  public:

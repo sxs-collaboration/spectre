@@ -6,7 +6,7 @@
 #include <string>
 
 #include "Domain/Side.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.Side", "[Domain][Unit]") {
   Side side_lower = Side::Lower;

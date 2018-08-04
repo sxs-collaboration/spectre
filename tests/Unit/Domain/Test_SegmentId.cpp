@@ -10,6 +10,7 @@
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {

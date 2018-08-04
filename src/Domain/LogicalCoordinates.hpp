@@ -8,7 +8,10 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 template <size_t Dim>
@@ -47,3 +50,15 @@ template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
     const Mesh<VolumeDim - 1>& mesh,
     const Direction<VolumeDim>& direction) noexcept;
+
+namespace Tags {
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The logical coordinates in the Element
+template <size_t VolumeDim>
+struct LogicalCoordinates : Coordinates<VolumeDim, Frame::Logical>,
+                            db::ComputeTag {
+  using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
+  static constexpr auto function = logical_coordinates<VolumeDim>;
+};
+}  // namespace Tags

@@ -11,6 +11,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

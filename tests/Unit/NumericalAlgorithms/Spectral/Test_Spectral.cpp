@@ -15,7 +15,7 @@
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
                   "[NumericalAlgorithms][Spectral][Unit]") {

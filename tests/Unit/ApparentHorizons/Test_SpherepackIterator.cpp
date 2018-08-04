@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 

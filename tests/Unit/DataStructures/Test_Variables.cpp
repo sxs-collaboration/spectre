@@ -20,6 +20,7 @@
 #include "DataStructures/VariablesHelpers.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/StdHelpers.hpp"

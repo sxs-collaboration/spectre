@@ -21,10 +21,10 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -68,16 +68,6 @@ struct Mesh : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The logical coordinates in the Element
-template <size_t VolumeDim>
-struct LogicalCoordinates : db::ComputeTag {
-  static std::string name() noexcept { return "LogicalCoordinates"; }
-  using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
-  static constexpr auto function = logical_coordinates<VolumeDim>;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::SimpleTag {
@@ -87,12 +77,26 @@ struct ElementMap : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// The coordinates in a given frame.
+///
+/// \snippet Test_CoordinatesTag.cpp coordinates_name
+template <size_t Dim, typename Frame>
+struct Coordinates : db::SimpleTag {
+  static std::string name() noexcept {
+    return get_output(Frame{}) + "Coordinates";
+  }
+  using type = tnsr::I<DataVector, Dim, Frame>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The coordinates in the target frame of `MapTag`. The `SourceCoordsTag`'s
 /// frame must be the source frame of `MapTag`
 template <class MapTag, class SourceCoordsTag>
-struct Coordinates : db::ComputeTag, db::PrefixTag {
-  using tag = MapTag;
-  static std::string name() noexcept { return "Coordinates"; }
+struct MappedCoordinates
+    : Coordinates<db::item_type<MapTag>::dim,
+                  typename db::item_type<MapTag>::target_frame>,
+      db::ComputeTag {
   static constexpr auto function(
       const db::item_type<MapTag>& element_map,
       const db::item_type<SourceCoordsTag>& source_coords) noexcept {

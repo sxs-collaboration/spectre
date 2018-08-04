@@ -18,8 +18,8 @@
 #include <utility>
 #include <vector>
 
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare boost::hash
 

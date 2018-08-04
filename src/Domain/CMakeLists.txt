@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
     InitialElementIds.cpp
     LogicalCoordinates.cpp
     Mesh.cpp
+    MinimumGridSpacing.cpp
     Neighbors.cpp
     OrientationMap.cpp
     SegmentId.cpp

@@ -6,7 +6,7 @@
 #include <string>
 
 #include "Domain/Amr/Flag.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.Amr.Flag", "[Domain][Unit]") {
   CHECK(get_output(amr::Flag::Undefined) == "Undefined");

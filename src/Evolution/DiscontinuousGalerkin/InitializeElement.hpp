@@ -22,6 +22,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "Evolution/Conservative/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
@@ -95,7 +96,8 @@ struct InitializeElement {
 
     using compute_tags = db::AddComputeTags<
         Tags::LogicalCoordinates<Dim>,
-        Tags::Coordinates<Tags::ElementMap<Dim>, Tags::LogicalCoordinates<Dim>>,
+        Tags::MappedCoordinates<Tags::ElementMap<Dim>,
+                                Tags::LogicalCoordinates<Dim>>,
         Tags::InverseJacobian<Tags::ElementMap<Dim>,
                               Tags::LogicalCoordinates<Dim>>>;
 
@@ -135,8 +137,7 @@ struct InitializeElement {
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Tags::ElementMap<Dim>,
-                                    Tags::LogicalCoordinates<Dim>>>(box);
+          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
       using solution_tag = CacheTags::AnalyticSolutionBase;
@@ -171,8 +172,7 @@ struct InitializeElement {
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Tags::ElementMap<Dim>,
-                                    Tags::LogicalCoordinates<Dim>>>(box);
+          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
       using solution_tag = CacheTags::AnalyticSolutionBase;
@@ -273,8 +273,7 @@ struct InitializeElement {
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Tags::ElementMap<Dim>,
-                                    Tags::LogicalCoordinates<Dim>>>(box);
+          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Will be overwritten before use
       DtVars dt_vars{num_grid_points};

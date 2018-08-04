@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_FakeVirtual.cpp
   Test_FileSystem.cpp
   Test_FractionUtilities.cpp
+  Test_GetOutput.cpp
   Test_Gsl.cpp
   Test_MakeArray.cpp
   Test_MakeVector.cpp
