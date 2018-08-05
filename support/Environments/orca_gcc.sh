@@ -8,7 +8,7 @@ spectre_setup_modules() {
 }
 
 spectre_unload_modules() {
-module unload python/2.7.8
+module unload python/2.7.15
 module unload spack
 module unload gcc/7.3.0
 module unload openmpi/3.1.0
@@ -28,7 +28,7 @@ module unload zlib-1.2.11-gcc-7.3.0-qzvtd4j
 }
 
 spectre_load_modules() {
-module load python/2.7.8
+module load python/2.7.15
 module load spack
 module load gcc/7.3.0
 module load openmpi/3.1.0
@@ -56,6 +56,6 @@ spectre_run_cmake() {
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
-          -D PYTHON_EXECUTABLE=/share/apps/python/2.7.8/bin/python
+          -D PYTHON_EXECUTABLE=/share/apps/python/2.7.15/bin/python \
           $SPECTRE_HOME
 }
