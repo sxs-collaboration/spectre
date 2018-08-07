@@ -49,6 +49,11 @@ void test_1d() {
         expected_antiparallel_segment_ids);
   CHECK(get_output(parallel_orientation) == "(+0)");
   CHECK(get_output(antiparallel_orientation) == "(-0)");
+  CHECK(std::array<int, 1>{{1}} ==
+        parallel_orientation.permute_from_neighbor(std::array<int, 1>{{1}}));
+  CHECK(
+      std::array<int, 1>{{1}} ==
+      antiparallel_orientation.permute_from_neighbor(std::array<int, 1>{{1}}));
 
   // Test comparison:
   CHECK(custom1 != custom2);
@@ -157,6 +162,15 @@ void test_2d() {
   CHECK_FALSE(rotated2d_pos_eta_neg_xi.is_aligned());
   CHECK(rotated2d_pos_xi_pos_eta.is_aligned());
 
+  const std::array<int, 2> input_array{{1, -3}};
+  const std::array<int, 2> flipped_array{{-3, 1}};
+  CHECK(rotated2d_neg_xi_neg_eta.permute_from_neighbor(input_array) ==
+        input_array);
+  CHECK(rotated2d_neg_eta_pos_xi.permute_from_neighbor(input_array) ==
+        flipped_array);
+  CHECK(rotated2d_pos_eta_neg_xi.permute_from_neighbor(input_array) ==
+        flipped_array);
+
   // The naming convention used in this test:
   //"neg_eta_pos_xi" means that -1 in the host maps to +0,
   // and that +0 in the host maps to +1, in the neighbor.
@@ -253,14 +267,17 @@ void test_3d() {
 
   // Test inverse:
   CHECK(default_orientation.inverse_map() == default_orientation);
-  CHECK(
-      OrientationMap<3>(std::array<Direction<3>, 3>{{Direction<3>::lower_eta(),
-                                                     Direction<3>::lower_zeta(),
-                                                     Direction<3>::upper_xi()}})
-          .inverse_map() ==
-      OrientationMap<3>(std::array<Direction<3>, 3>{
-          {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
-           Direction<3>::lower_eta()}}));
+  OrientationMap<3> custom3{std::array<Direction<3>, 3>{
+      {Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
+       Direction<3>::upper_xi()}}};
+  OrientationMap<3> custom4{std::array<Direction<3>, 3>{
+      {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
+       Direction<3>::lower_eta()}}};
+  CHECK(custom3.inverse_map() == custom4);
+  CHECK(std::array<int, 3>{{-8, 12, 4}} ==
+        custom3.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
+  CHECK(std::array<int, 3>{{12, 4, -8}} ==
+        custom4.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
   CHECK(custom1.inverse_map().inverse_map() == custom1);
   CHECK(custom2.inverse_map().inverse_map() == custom2);
 }
