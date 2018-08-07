@@ -6,14 +6,18 @@
 
 #pragma once
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Time/History.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
@@ -100,6 +104,22 @@ struct FinalTime {
 struct TimeStepper {
   using type = std::unique_ptr<::TimeStepper>;
   static constexpr OptionString help{"The time stepper"};
+};
+
+/// \ingroup CacheTagsGroup
+/// \ingroup TimeGroup
+template <typename Registrars>
+struct StepChoosers {
+  static constexpr OptionString help{"Limits on LTS step size"};
+  using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
+  static size_t lower_bound_on_size() noexcept { return 1; }
+};
+
+/// \ingroup CacheTagsGroup
+/// \ingroup TimeGroup
+struct StepController {
+  static constexpr OptionString help{"The LTS step controller"};
+  using type = std::unique_ptr<::StepController>;
 };
 
 }  // namespace CacheTags
