@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/Exceptions.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -157,4 +158,36 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
   RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.convergence_error.Double",
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_throw_exception(
+      []() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 1e-15;
+        const double upper = 2.0;
+        const double lower = 0.0;
+        const auto f = [](double x) { return 2.0 - square(x); };
+        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
+      },
+      convergence_error("toms748 reached max iterations without converging"));
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.TOMS748.convergence_error.DataVector",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_throw_exception(
+      []() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 1e-15;
+        const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
+        const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+        const DataVector constant{2.0, 4.0, 2.0, 4.0};
+        const auto f = [&constant](const double x, const size_t i) noexcept {
+          return constant[i] - square(x);
+        };
+        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
+      },
+      convergence_error("toms748 reached max iterations without converging"));
 }

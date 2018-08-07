@@ -11,6 +11,7 @@
 #include <limits>
 
 #include "DataStructures/DataVector.hpp"
+#include "ErrorHandling/Exceptions.hpp"
 
 namespace RootFinder {
 
@@ -24,12 +25,16 @@ namespace RootFinder {
  * \snippet Test_TOMS748.cpp double_root_find
  *
  * The TOMS_748 algorithm searches for a root in the interval [`lower_bound`,
- * `upper_bound`], and will throw an exception if this interval does not bracket
- * a root, i.e. if `f(lower_bound) * f(upper_bound) > 0`.
+ * `upper_bound`], and will throw if this interval does not bracket a root,
+ * i.e. if `f(lower_bound) * f(upper_bound) > 0`.
  *
  * See the [Boost](http://www.boost.org/) documentation for more details.
  *
  * \requires Function `f` is invokable with a `double`
+ *
+ * \throws `std::domain_error` if the bounds do not bracket a root.
+ * \throws `convergence_error` if the requested tolerance is not met after
+ *                            `max_iterations` iterations.
  */
 template <typename Function>
 double toms748(const Function& f, const double lower_bound,
@@ -52,6 +57,10 @@ double toms748(const Function& f, const double lower_bound,
   // clang-tidy: internal boost warning, can't fix it.
   auto result = boost::math::tools::toms748_solve(  // NOLINT
       f, lower_bound, upper_bound, tol, max_iters);
+  if (max_iters >= max_iterations) {
+    throw convergence_error(
+        "toms748 reached max iterations without converging");
+  }
   return result.first + 0.5 * (result.second - result.first);
 }
 
@@ -69,13 +78,18 @@ double toms748(const Function& f, const double lower_bound,
  * \snippet Test_TOMS748.cpp datavector_root_find
  *
  * For each index `i` into the DataVector, the TOMS_748 algorithm searches for a
- * root in the interval [`lower_bound[i]`, `upper_bound[i]`], and will throw an
- * exception if this interval does not bracket a root,
+ * root in the interval [`lower_bound[i]`, `upper_bound[i]`], and will throw if
+ * this interval does not bracket a root,
  * i.e. if `f(lower_bound[i], i) * f(upper_bound[i], i) > 0`.
  *
  * See the [Boost](http://www.boost.org/) documentation for more details.
  *
  * \requires Function `f` be callable with a `double` and a `size_t`
+ *
+ * \throws `std::domain_error` if, for any index, the bounds do not bracket a
+ * root.
+ * \throws `convergence_error` if, for any index, the requested tolerance is not
+ * met after `max_iterations` iterations.
  */
 template <typename Function>
 DataVector toms748(const Function& f, const DataVector& lower_bound,
@@ -104,6 +118,10 @@ DataVector toms748(const Function& f, const DataVector& lower_bound,
     auto result = boost::math::tools::toms748_solve(  // NOLINT
         [&f, i](double x) { return f(x, i); }, lower_bound[i], upper_bound[i],
         tol, max_iters);
+    if (max_iters >= max_iterations) {
+      throw convergence_error(
+          "toms748 reached max iterations without converging");
+    }
     result_vector[i] = result.first + 0.5 * (result.second - result.first);
   }
   return result_vector;
