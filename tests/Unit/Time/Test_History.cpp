@@ -14,14 +14,15 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-Time make_time(const double t) noexcept {
-  return Slab(t, t + 0.5).start();
-}
+Time make_time(const double t) noexcept { return Slab(t, t + 0.5).start(); }
+
+TimeId make_time_id(const double t) noexcept { return {true, 0, make_time(t)}; }
 
 // Requires `it` to point at 0. in the sequence of times -1., 0., 1., 2.
 template <typename Iterator>
@@ -239,17 +240,17 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   CHECK(history.remote_size() == 0);
   CHECK(history.remote_begin() == history.remote_end());
 
-  history.local_insert(make_time(0.), get_output(0));
-  history.local_insert(make_time(1.), get_output(1));
-  history.local_insert_initial(make_time(-1.), get_output(-1));
-  history.local_insert(make_time(2.), get_output(2));
+  history.local_insert(make_time_id(0.), get_output(0));
+  history.local_insert(make_time_id(1.), get_output(1));
+  history.local_insert_initial(make_time_id(-1.), get_output(-1));
+  history.local_insert(make_time_id(2.), get_output(2));
 
-  history.remote_insert(make_time(1.), std::vector<int>{1});
-  history.remote_insert_initial(make_time(0.), std::vector<int>{0});
-  history.remote_insert_initial(make_time(-1.), std::vector<int>{-1});
-  history.remote_insert(make_time(2.), std::vector<int>{2});
-  history.remote_insert_initial(make_time(-2.), std::vector<int>{-2});
-  history.remote_insert(make_time(3.), std::vector<int>{3});
+  history.remote_insert(make_time_id(1.), std::vector<int>{1});
+  history.remote_insert_initial(make_time_id(0.), std::vector<int>{0});
+  history.remote_insert_initial(make_time_id(-1.), std::vector<int>{-1});
+  history.remote_insert(make_time_id(2.), std::vector<int>{2});
+  history.remote_insert_initial(make_time_id(-2.), std::vector<int>{-2});
+  history.remote_insert(make_time_id(3.), std::vector<int>{3});
 
   CHECK(check_boundary_state(&history) == 2);
 
