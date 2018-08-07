@@ -30,6 +30,7 @@ set(LIBRARY_SOURCES
   Test_OrientationMap.cpp
   Test_SegmentId.cpp
   Test_Side.cpp
+  Test_SizeOfElement.cpp
   )
 
 add_subdirectory(Amr)

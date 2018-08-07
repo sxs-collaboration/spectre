@@ -29,6 +29,7 @@ set(LIBRARY_SOURCES
     OrientationMap.cpp
     SegmentId.cpp
     Side.cpp
+    SizeOfElement.cpp
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
