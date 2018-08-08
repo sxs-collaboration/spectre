@@ -25,6 +25,7 @@ allowed_tags = [
                 "IO",
                 "LinearAlgebra",
                 "LinearOperators",
+                "LinearSolver",
                 "NumericalAlgorithms",
                 "Options",
                 "Parallel",
