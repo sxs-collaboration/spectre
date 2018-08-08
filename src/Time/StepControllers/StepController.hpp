@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <pup.h>
+
+#include "Parallel/CharmPupable.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,7 +27,7 @@ class SplitRemaining;  // IWYU pragma: keep
 /// StepControllers take desired step sizes (generally determined by
 /// StepChoosers) and convert them into TimeDeltas compatible with the
 /// slab requirements.
-class StepController {
+class StepController : public PUP::able {
  public:
   using creatable_classes = tmpl::list<
     StepControllers::BinaryFraction,
@@ -33,12 +36,7 @@ class StepController {
     StepControllers::SplitRemaining>;
 
   /// \cond HIDDEN_SYMBOLS
-  StepController() = default;
-  StepController(const StepController&) = default;
-  StepController(StepController&&) = default;
-  StepController& operator=(const StepController&) = default;
-  StepController& operator=(StepController&&) = default;
-  virtual ~StepController() = default;
+  WRAPPED_PUPable_abstract(StepController);  // NOLINT
   /// \endcond
 
   virtual TimeDelta choose_step(const Time& time,
