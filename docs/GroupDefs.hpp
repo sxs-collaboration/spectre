@@ -391,7 +391,14 @@
 
 /*!
  * \defgroup EllipticSystemsGroup Elliptic Systems
- * \brief Contains the namespaces of all the available elliptic systems.
+ * \brief All available elliptic systems and information on how to implement
+ * elliptic systems
+ *
+ * \details Actions and parallel components may require an elliptic system to
+ * expose the following types:
+ *
+ * - `fields_tag`: A \ref DataBoxGroup tag that represents the fields being
+ * solved for.
  */
 
 /*!

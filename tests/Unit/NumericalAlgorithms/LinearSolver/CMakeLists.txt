@@ -9,6 +9,8 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   )
 
+add_subdirectory(ConjugateGradient)
+
 add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearSolver/"
