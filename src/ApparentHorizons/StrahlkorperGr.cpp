@@ -6,14 +6,349 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <utility>
 
+#include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Matrix.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvalues.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
+
+// Functions used by StrahlkorperGr::dimensionful_spin_magnitude
+namespace {
+// Find the 2D surface metric by inserting the tangents \f$\partial_\theta\f$
+// and \f$\partial_\phi\f$ into the slots of the 3D spatial metric
+template <typename Fr>
+tnsr::ii<DataVector, 2, Frame::Spherical<Fr>> get_surface_metric(
+    const tnsr::ii<DataVector, 3, Fr>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Fr>& tangents,
+    const Scalar<DataVector>& sin_theta) noexcept {
+  auto surface_metric =
+      make_with_value<tnsr::ii<DataVector, 2, Frame::Spherical<Fr>>>(
+          get<0, 0>(spatial_metric), 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      get<0, 1>(surface_metric) += spatial_metric.get(i, j) *
+                                   tangents.get(i, 0) * tangents.get(j, 1) *
+                                   get(sin_theta);
+    }
+    // Use symmetry to sum over fewer terms for the 0,0 and 1,1 components
+    get<0, 0>(surface_metric) +=
+        spatial_metric.get(i, i) * square(tangents.get(i, 0));
+    get<1, 1>(surface_metric) += spatial_metric.get(i, i) *
+                                 square(tangents.get(i, 1)) *
+                                 square(get(sin_theta));
+    for (size_t j = i + 1; j < 3; ++j) {
+      get<0, 0>(surface_metric) += 2.0 * spatial_metric.get(i, j) *
+                                   tangents.get(i, 0) * tangents.get(j, 0);
+      get<1, 1>(surface_metric) += 2.0 * spatial_metric.get(i, j) *
+                                   tangents.get(i, 1) * tangents.get(j, 1) *
+                                   square(get(sin_theta));
+    }
+  }
+  return surface_metric;
+}
+
+// Compute the trace of Christoffel 2nd kind on the horizon
+template <typename Fr>
+tnsr::I<DataVector, 2, Frame::Spherical<Fr>> get_trace_christoffel_second_kind(
+    const tnsr::ii<DataVector, 2, Frame::Spherical<Fr>>& surface_metric,
+    const tnsr::II<DataVector, 2, Frame::Spherical<Fr>>& inverse_surface_metric,
+    const Scalar<DataVector>& sin_theta, const YlmSpherepack& ylm) noexcept {
+  const Scalar<DataVector> cos_theta{cos(ylm.theta_phi_points()[0])};
+
+  // Because the surface metric components are not representable in terms
+  // of scalar spherical harmonics, you can't naively take first derivatives.
+  // To avoid potentially large numerical errors, actually differentiate
+  // square(sin_theta) * the metric component, then
+  // compute from that the gradient of just the metric component itself.
+  //
+  // Note: the method implemented here works with YlmSpherepack but will fail
+  // for other expansions that, unlike Spherepack, include a collocation
+  // point at theta = 0. Before switching to such an expansion, first
+  // reimplement this code to avoid dividing by sin(theta).
+  //
+  // Note: YlmSpherepack gradients are flat-space Pfaffian derivatives.
+  auto grad_surface_metric_theta_theta =
+      ylm.gradient(square(get(sin_theta)) * get<0, 0>(surface_metric));
+  get<0>(grad_surface_metric_theta_theta) /= square(get(sin_theta));
+  get<1>(grad_surface_metric_theta_theta) /= square(get(sin_theta));
+  get<0>(grad_surface_metric_theta_theta) -=
+      2.0 * get<0, 0>(surface_metric) * get(cos_theta) / get(sin_theta);
+
+  auto grad_surface_metric_theta_phi =
+      ylm.gradient(get(sin_theta) * get<0, 1>(surface_metric));
+
+  get<0>(grad_surface_metric_theta_phi) /= get(sin_theta);
+  get<1>(grad_surface_metric_theta_phi) /= get(sin_theta);
+  get<0>(grad_surface_metric_theta_phi) -=
+      get<0, 1>(surface_metric) * get(cos_theta) / get(sin_theta);
+
+  auto grad_surface_metric_phi_phi = ylm.gradient(get<1, 1>(surface_metric));
+
+  auto deriv_surface_metric =
+      make_with_value<tnsr::ijj<DataVector, 2, Frame::Spherical<Fr>>>(
+          get<0, 0>(surface_metric), 0.0);
+  // Get the partial derivative of the metric from the Pfaffian derivative
+  get<0, 0, 0>(deriv_surface_metric) = get<0>(grad_surface_metric_theta_theta);
+  get<1, 0, 0>(deriv_surface_metric) =
+      get(sin_theta) * get<1>(grad_surface_metric_theta_theta);
+  get<0, 0, 1>(deriv_surface_metric) = get<0>(grad_surface_metric_theta_phi);
+  get<1, 0, 1>(deriv_surface_metric) =
+      get(sin_theta) * get<1>(grad_surface_metric_theta_phi);
+  get<0, 1, 1>(deriv_surface_metric) = get<0>(grad_surface_metric_phi_phi);
+  get<1, 1, 1>(deriv_surface_metric) =
+      get(sin_theta) * get<1>(grad_surface_metric_phi_phi);
+
+  return trace_last_indices(
+      raise_or_lower_first_index(
+          gr::christoffel_first_kind(deriv_surface_metric),
+          inverse_surface_metric),
+      inverse_surface_metric);
+}
+
+// I'm going to solve a general eigenvalue problem of the form
+// A x = lambda B x, where A and B are NxN, where N is the
+// number of elements with l > 0 and l < ntheta - 2,
+// i.e. l < l_max + 1 - 2 = l_max - 1. This function computes N.
+size_t get_matrix_dimension(const YlmSpherepack& ylm) noexcept {
+  // If l_max == m_max, there are square(l_max+1) Ylms total
+  size_t matrix_dimension = square(ylm.l_max() + 1);
+  // If l_max > m_max, there are
+  // (l_max - m_max) * (l_max - m_max + 1) fewer Ylms total
+  matrix_dimension -=
+      (ylm.l_max() - ylm.m_max()) * (ylm.l_max() - ylm.m_max() + 1);
+  // The actual matrix dimension is smaller, because we do not count
+  // Ylms with l == 0, l == l_max, or l == l_max - 1.
+  matrix_dimension -= 4 * ylm.m_max() + 3;
+  if (ylm.l_max() == ylm.m_max()) {
+    matrix_dimension += 2;
+  }
+  return matrix_dimension;
+}
+
+// Get left matrix A and right matrix B for eigenproblem A x = lambda B x.
+template <typename Fr>
+void get_left_and_right_eigenproblem_matrices(
+    const gsl::not_null<Matrix*> left_matrix,
+    const gsl::not_null<Matrix*> right_matrix,
+    const tnsr::II<DataVector, 2, Frame::Spherical<Fr>>& inverse_surface_metric,
+    const tnsr::I<DataVector, 2, Frame::Spherical<Fr>>&
+        trace_christoffel_second_kind,
+    const Scalar<DataVector>& sin_theta, const Scalar<DataVector>& ricci_scalar,
+    const YlmSpherepack& ylm) noexcept {
+  const auto grad_ricci_scalar = ylm.gradient(get(ricci_scalar));
+  // loop over all terms with 0<l<l_max-1: each makes a column of
+  // the matrices for the eigenvalue problem
+  size_t column = 0;  // number which column of the matrix we are filling
+  for (auto iter_i = SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_i;
+       ++iter_i) {
+    if (iter_i.l() > 0 and iter_i.l() < ylm.l_max() - 1 and
+        iter_i.m() <= iter_i.l()) {
+      // Make a spectral vector that's all zeros except for one element,
+      // which is 1. This corresponds to the ith Ylm, which I call yi.
+      DataVector yi_spectral(ylm.spectral_size(), 0.0);
+      yi_spectral[iter_i()] = 1.0;
+
+      // Transform column vector corresponding to
+      // a specific Y_lm to physical space.
+      const DataVector yi_physical = ylm.spec_to_phys(yi_spectral);
+
+      // In physical space, numerically compute the
+      // linear differential operators acting on the
+      // ith Y_lm.
+
+      // \nabla^2 Y_lm
+      const auto derivs_yi = ylm.first_and_second_derivative(yi_physical);
+      auto laplacian_yi =
+          make_with_value<Scalar<DataVector>>(ricci_scalar, 0.0);
+      get(laplacian_yi) +=
+          get<0, 0>(derivs_yi.second) * get<0, 0>(inverse_surface_metric);
+      get(laplacian_yi) += 2.0 * get<1, 0>(derivs_yi.second) *
+                           get<1, 0>(inverse_surface_metric) * get(sin_theta);
+      get(laplacian_yi) += get<1, 1>(derivs_yi.second) *
+                           get<1, 1>(inverse_surface_metric) *
+                           square(get(sin_theta));
+      get(laplacian_yi) -=
+          get<0>(derivs_yi.first) * get<0>(trace_christoffel_second_kind);
+      get(laplacian_yi) -= get<1>(derivs_yi.first) * get(sin_theta) *
+                           get<1>(trace_christoffel_second_kind);
+
+      // \nabla^4 Y_lm
+      const auto derivs_laplacian_yi =
+          ylm.first_and_second_derivative(get(laplacian_yi));
+      auto laplacian_squared_yi =
+          make_with_value<Scalar<DataVector>>(ricci_scalar, 0.0);
+      get(laplacian_squared_yi) += get<0, 0>(derivs_laplacian_yi.second) *
+                                   get<0, 0>(inverse_surface_metric);
+      get(laplacian_squared_yi) += 2.0 * get<1, 0>(derivs_laplacian_yi.second) *
+                                   get<1, 0>(inverse_surface_metric) *
+                                   get(sin_theta);
+      get(laplacian_squared_yi) += get<1, 1>(derivs_laplacian_yi.second) *
+                                   get<1, 1>(inverse_surface_metric) *
+                                   square(get(sin_theta));
+      get(laplacian_squared_yi) -= get<0>(derivs_laplacian_yi.first) *
+                                   get<0>(trace_christoffel_second_kind);
+      get(laplacian_squared_yi) -= get<1>(derivs_laplacian_yi.first) *
+                                   get(sin_theta) *
+                                   get<1>(trace_christoffel_second_kind);
+
+      // \nabla R \cdot \nabla Y_lm
+      auto grad_ricci_scalar_dot_grad_yi =
+          make_with_value<Scalar<DataVector>>(ricci_scalar, 0.0);
+      get(grad_ricci_scalar_dot_grad_yi) += get<0>(derivs_yi.first) *
+                                            get<0>(grad_ricci_scalar) *
+                                            get<0, 0>(inverse_surface_metric);
+      get(grad_ricci_scalar_dot_grad_yi) +=
+          get<0>(derivs_yi.first) * get<1>(grad_ricci_scalar) *
+          get<1, 0>(inverse_surface_metric) * get(sin_theta);
+      get(grad_ricci_scalar_dot_grad_yi) +=
+          get<1>(derivs_yi.first) * get<0>(grad_ricci_scalar) *
+          get<1, 0>(inverse_surface_metric) * get(sin_theta);
+      get(grad_ricci_scalar_dot_grad_yi) +=
+          get<1>(derivs_yi.first) * get<1>(grad_ricci_scalar) *
+          get<1, 1>(inverse_surface_metric) * square(get(sin_theta));
+
+      // Assemble the operator making up the eigenproblem's left-hand-side
+      auto left_matrix_yi_physical =
+          make_with_value<Scalar<DataVector>>(ricci_scalar, 0.0);
+      get(left_matrix_yi_physical) = get(laplacian_squared_yi) +
+                                     get(ricci_scalar) * get(laplacian_yi) +
+                                     get(grad_ricci_scalar_dot_grad_yi);
+
+      // Transform back to spectral space, to get one column each for the left
+      // and right matrices for the eigenvalue problem.
+      const DataVector left_matrix_yi_spectral =
+          ylm.phys_to_spec(get(left_matrix_yi_physical));
+      const DataVector right_matrix_yi_spectral =
+          ylm.phys_to_spec(get(laplacian_yi));
+
+      // Set the current column of the left and right matrices
+      // for the eigenproblem.
+      size_t row = 0;
+      for (auto iter_j = SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_j;
+           ++iter_j) {
+        if (iter_j.l() > 0 and iter_j.l() < ylm.l_max() - 1) {
+          (*left_matrix)(row, column) = left_matrix_yi_spectral[iter_j()];
+          (*right_matrix)(row, column) = right_matrix_yi_spectral[iter_j()];
+          ++row;
+        }
+      }  // loop over rows
+      ++column;
+    }
+  }  // loop over columns
+}
+
+// Find the eigenvectors corresponding to the three smallest-magnitude
+// eigenvalues.
+// Note: uses the fact that eigenvalues should be real
+std::array<DataVector, 3> get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
+    const DataVector& eigenvalues_real_part, const Matrix& eigenvectors,
+    const YlmSpherepack& ylm) noexcept {
+  size_t index_smallest = 0;
+  size_t index_second_smallest = 0;
+  size_t index_third_smallest = 0;
+
+  // Simple algorithm that loops over all elements to
+  // find indexes of 3 smallest-magnitude eigenvalues
+  for (size_t i = 1; i < eigenvalues_real_part.size(); ++i) {
+    if (abs(eigenvalues_real_part[i]) <
+        abs(eigenvalues_real_part[index_smallest])) {
+      index_third_smallest = index_second_smallest;
+      index_second_smallest = index_smallest;
+      index_smallest = i;
+    } else if (i < 2 or abs(eigenvalues_real_part[i]) <
+                            abs(eigenvalues_real_part[index_second_smallest])) {
+      index_third_smallest = index_second_smallest;
+      index_second_smallest = i;
+    } else if (i < 3 or abs(eigenvalues_real_part[i]) <
+                            abs(eigenvalues_real_part[index_third_smallest])) {
+      index_third_smallest = i;
+    }
+  }
+
+  DataVector smallest_eigenvector(ylm.spectral_size(), 0.0);
+  DataVector second_smallest_eigenvector(ylm.spectral_size(), 0.0);
+  DataVector third_smallest_eigenvector(ylm.spectral_size(), 0.0);
+
+  size_t row = 0;
+
+  for (auto iter_i = SpherepackIterator(ylm.l_max(), ylm.m_max()); iter_i;
+       ++iter_i) {
+    if (iter_i.l() > 0 and iter_i.l() < ylm.l_max() - 1) {
+      smallest_eigenvector[iter_i()] = eigenvectors(row, index_smallest);
+      second_smallest_eigenvector[iter_i()] =
+          eigenvectors(row, index_second_smallest);
+      third_smallest_eigenvector[iter_i()] =
+          eigenvectors(row, index_third_smallest);
+      ++row;
+    }
+  }
+
+  return {{smallest_eigenvector, second_smallest_eigenvector,
+           third_smallest_eigenvector}};
+}
+
+// This function converts the three eigenvectors with smallest-magnitude
+// eigenvalues to physical space to get the spin potentials corresponding to
+// the approximate Killing vectors. The potentials are normalized using the
+// "Kerr normalization:" the integral of (potential - the potential average)^2
+// is set to (horizon area)^3/(48*pi), as it is for Kerr.
+std::array<DataVector, 3> get_normalized_spin_potentials(
+    const std::array<DataVector, 3>& eigenvectors_for_potentials,
+    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept {
+  const double area = ylm.definite_integral(get(area_element).data());
+
+  std::array<DataVector, 3> potentials;
+
+  DataVector temp_integrand(get(area_element));
+  for (size_t i = 0; i < 3; ++i) {
+    gsl::at(potentials, i) =
+        ylm.spec_to_phys(gsl::at(eigenvectors_for_potentials, i));
+
+    temp_integrand = gsl::at(potentials, i) * get(area_element);
+    const double potential_average =
+        ylm.definite_integral(temp_integrand.data()) / area;
+
+    temp_integrand =
+        square(gsl::at(potentials, i) - potential_average) * get(area_element);
+    const double potential_norm = ylm.definite_integral(temp_integrand.data());
+    gsl::at(potentials, i) *=
+        sqrt(cube(area) / (48.0 * square(M_PI) * potential_norm));
+  }
+  return potentials;
+}
+
+// Get the spin magnitude. There are three potentials, each corresponding to an
+// approximate Killing vector. The spin for each potential is the surface
+// integral of the potential times the spin function. The spin magnitude
+// is the Euclidean norm of the spin for each potential.
+double get_spin_magnitude(const std::array<DataVector, 3>& potentials,
+                          const Scalar<DataVector>& spin_function,
+                          const Scalar<DataVector>& area_element,
+                          const YlmSpherepack& ylm) noexcept {
+  double spin_magnitude_squared = 0.0;
+
+  DataVector spin_density(get(area_element));
+  for (size_t i = 0; i < 3; ++i) {
+    spin_density =
+        gsl::at(potentials, i) * get(spin_function) * get(area_element);
+    spin_magnitude_squared +=
+        square(ylm.definite_integral(spin_density.data()) / (8.0 * M_PI));
+  }
+  return sqrt(spin_magnitude_squared);
+}
+}  // namespace
 
 namespace StrahlkorperGr {
 
@@ -236,6 +571,47 @@ Scalar<DataVector> spin_function(
 
   return temp;
 }
+
+template <typename Frame>
+double dimensionful_spin_magnitude(
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept {
+  const Scalar<DataVector> sin_theta{sin(ylm.theta_phi_points()[0])};
+
+  const auto& surface_metric =
+      get_surface_metric(spatial_metric, tangents, sin_theta);
+  const auto& inverse_surface_metric =
+      determinant_and_inverse(surface_metric).second;
+  const auto& trace_christoffel_second_kind = get_trace_christoffel_second_kind(
+      surface_metric, inverse_surface_metric, sin_theta, ylm);
+
+  const size_t matrix_dimension = get_matrix_dimension(ylm);
+  Matrix left_matrix(matrix_dimension, matrix_dimension, 0.0);
+  Matrix right_matrix(matrix_dimension, matrix_dimension, 0.0);
+  get_left_and_right_eigenproblem_matrices(
+      &left_matrix, &right_matrix, inverse_surface_metric,
+      trace_christoffel_second_kind, sin_theta, ricci_scalar, ylm);
+
+  DataVector eigenvalues_real_part(matrix_dimension, 0.0);
+  DataVector eigenvalues_im_part(matrix_dimension, 0.0);
+  Matrix eigenvectors(matrix_dimension, matrix_dimension, 0.0);
+  find_generalized_eigenvalues(&eigenvalues_real_part, &eigenvalues_im_part,
+                               &eigenvectors, left_matrix, right_matrix);
+
+  const std::array<DataVector, 3> smallest_eigenvectors =
+      get_eigenvectors_for_3_smallest_magnitude_eigenvalues(
+          eigenvalues_real_part, eigenvectors, ylm);
+
+  // Get normalized potentials (Kerr normalization) corresponding to the
+  // eigenvectors with three smallest-magnitude eigenvalues.
+  const auto& potentials =
+      get_normalized_spin_potentials(smallest_eigenvectors, ylm, area_element);
+
+  return get_spin_magnitude(potentials, spin_function, area_element, ylm);
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
@@ -294,3 +670,11 @@ template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame::Inertial>&
         extrinsic_curvature) noexcept;
+
+template double StrahlkorperGr::dimensionful_spin_magnitude<Frame::Inertial>(
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
+        tangents,
+    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
