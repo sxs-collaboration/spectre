@@ -16,6 +16,7 @@
 .dir-locals.el
 .vscode
 compile_commands.json
+.cquery_cached_index
 
 # TeX products
 *.aux
