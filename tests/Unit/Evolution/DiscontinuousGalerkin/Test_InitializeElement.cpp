@@ -137,6 +137,11 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
+template <typename Tag, typename Box>
+bool box_contains(const Box& /*box*/) noexcept {
+  return tmpl::list_contains_v<typename Box::tags_list, Tag>;
+}
+
 template <bool IsConservative>
 struct TestConservativeOrNonconservativeParts {
   template <typename Metavariables, typename DbTags>
@@ -144,12 +149,12 @@ struct TestConservativeOrNonconservativeParts {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
 
-    (void)db::get<
-        Tags::deriv<typename system::variables_tag::tags_list,
-                    typename system::gradients_tags,
-                    Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                          Tags::LogicalCoordinates<dim>>>>(
-        *box);
+    CHECK(box_contains<
+          Tags::deriv<typename system::variables_tag::tags_list,
+                      typename system::gradients_tags,
+                      Tags::InverseJacobian<Tags::ElementMap<dim>,
+                                            Tags::LogicalCoordinates<dim>>>>(
+        *box));
   }
 };
 
@@ -171,19 +176,16 @@ struct TestConservativeOrNonconservativeParts<true> {
     CHECK(db::get<db::add_tag_prefix<Tags::Source, variables_tag>>(*box)
               .number_of_grid_points() == number_of_grid_points);
 
-    using flux_tag = db::add_tag_prefix<Tags::Flux, variables_tag,
-                                        tmpl::size_t<dim>, Frame::Inertial>;
-    // Don't try to take the divergence of NaN
-    db::mutate<flux_tag>(box, [](const auto vars) noexcept {
-      vars->initialize(vars->number_of_grid_points(), 0.);
-    });
-    (void)db::get<Tags::ComputeDiv<
-        flux_tag, Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                        Tags::LogicalCoordinates<dim>>>>(*box);
+    CHECK(box_contains<Tags::ComputeDiv<
+              db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<dim>,
+                                 Frame::Inertial>,
+              Tags::InverseJacobian<Tags::ElementMap<dim>,
+                                    Tags::LogicalCoordinates<dim>>>>(*box));
 
-    (void)db::get<Tags::Interface<
-        Tags::InternalDirections<dim>,
-        Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>>(*box);
+    CHECK(box_contains<Tags::Interface<
+              Tags::InternalDirections<dim>,
+              Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>>(
+        *box));
   }
 };
 
@@ -233,9 +235,7 @@ void test_initialize_element(
   CHECK(db::get<Tags::LogicalCoordinates<dim>>(box) == logical_coords);
   CHECK(db::get<Tags::Mesh<dim>>(box) == mesh);
   CHECK(db::get<Tags::Element<dim>>(box) == element);
-  // Can't test ElementMap directly, only via inverse jacobian and grid
-  // coordinates. We can check that we can retrieve it.
-  (void)db::get<Tags::ElementMap<dim>>(box);
+  CHECK(box_contains<Tags::ElementMap<dim>>(box));
   CHECK(db::get<Var>(box) == ([&inertial_coords, &slab]() {
           double time = slab.start().value();
           Scalar<DataVector> var{inertial_coords.get(0) + time};
@@ -294,26 +294,28 @@ void test_initialize_element(
   CHECK(db::get<Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(box).size() ==
         element.number_of_neighbors());
 
-  (void)db::get<Tags::Interface<Tags::InternalDirections<dim>,
-                                Tags::UnnormalizedFaceNormal<dim>>>(box);
+  CHECK(box_contains<Tags::Interface<Tags::InternalDirections<dim>,
+                                     Tags::UnnormalizedFaceNormal<dim>>>(box));
   using magnitude_tag =
       Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<dim>>;
-  (void)db::get<Tags::Interface<Tags::InternalDirections<dim>, magnitude_tag>>(
-      box);
-  (void)db::get<Tags::Interface<
-      Tags::InternalDirections<dim>,
-      Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(box);
-  (void)db::get<Tags::Interface<Tags::InternalDirections<dim>,
-                                typename system::variables_tag>>(box);
-  (void)db::get<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                Tags::UnnormalizedFaceNormal<dim>>>(box);
-  (void)db::get<Tags::Interface<Tags::BoundaryDirections<dim>, magnitude_tag>>(
-      box);
-  (void)db::get<Tags::Interface<
-      Tags::BoundaryDirections<dim>,
-      Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(box);
-  (void)db::get<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                typename system::variables_tag>>(box);
+  CHECK(box_contains<
+        Tags::Interface<Tags::InternalDirections<dim>, magnitude_tag>>(box));
+  CHECK(box_contains<
+        Tags::Interface<Tags::InternalDirections<dim>,
+                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
+      box));
+  CHECK(box_contains<Tags::Interface<Tags::InternalDirections<dim>,
+                                     typename system::variables_tag>>(box));
+  CHECK(box_contains<Tags::Interface<Tags::BoundaryDirections<dim>,
+                                     Tags::UnnormalizedFaceNormal<dim>>>(box));
+  CHECK(box_contains<
+        Tags::Interface<Tags::BoundaryDirections<dim>, magnitude_tag>>(box));
+  CHECK(box_contains<
+        Tags::Interface<Tags::BoundaryDirections<dim>,
+                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
+      box));
+  CHECK(box_contains<Tags::Interface<Tags::BoundaryDirections<dim>,
+                                     typename system::variables_tag>>(box));
 
   TestConservativeOrNonconservativeParts<system::is_conservative>::
       template apply<Metavariables>(make_not_null(&box));
