@@ -28,7 +28,14 @@ void check(const size_t block1,
   ElementIndex<VolumeDim> element_index1{}, element_index2{};
   // Check for nondeterminacy due to previous memory state.
   std::memset(&element_index1, 0, sizeof(element_index1));
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
   std::memset(&element_index2, 255, sizeof(element_index2));
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
   new (&element_index1) ElementIndex<VolumeDim>(id1);
   new (&element_index2) ElementIndex<VolumeDim>(id2);
 

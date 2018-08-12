@@ -322,6 +322,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.PupNonfunction",
   ERROR_TEST();
   Deferred<double> deferred{3.89};
   auto data = std::make_unique<char[]>(10);
-  PUP::fromMem p{static_cast<const void* const>(data.get())};
+  PUP::fromMem p{static_cast<const void*>(data.get())};
   deferred.pack_unpack_lazy_function(p);
 }

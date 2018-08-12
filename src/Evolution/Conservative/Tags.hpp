@@ -43,8 +43,9 @@ struct ComputeNormalDotFlux : db::add_tag_prefix<NormalDotFlux, Tag>,
     auto result = make_with_value<
         ::Variables<db::wrap_tags_in<NormalDotFlux, tags_list>>>(flux, 0.);
 
-    tmpl::for_each<tags_list>([&result, &flux, &normal](auto tag) noexcept {
-      using tensor_tag = tmpl::type_from<decltype(tag)>;
+    tmpl::for_each<tags_list>([&result, &flux,
+                               &normal ](auto local_tag) noexcept {
+      using tensor_tag = tmpl::type_from<decltype(local_tag)>;
       auto& result_tensor = get<NormalDotFlux<tensor_tag>>(result);
       const auto& flux_tensor =
           get<Flux<tensor_tag, tmpl::size_t<VolumeDim>, Fr>>(flux);
