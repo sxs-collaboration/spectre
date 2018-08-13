@@ -99,6 +99,7 @@ struct ComputeNormalDotFluxes {
 };
 
 /*!
+ * \ingroup NumericalFluxesGroup
  * \brief Computes the upwind flux
  *
  * The upwind flux is given by:
