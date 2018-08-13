@@ -4,12 +4,13 @@
 set(LIBRARY "Test_Poisson")
 
 set(LIBRARY_SOURCES
-  Test_PoissonTags.cpp
+  Test_Equations.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "Elliptic/Systems/Poisson/"
   "${LIBRARY_SOURCES}"
-  ""
+  "CoordinateMaps;DataStructures;Domain;Poisson;PoissonSolutions;Utilities"
   )
