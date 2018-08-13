@@ -46,6 +46,31 @@ def vsq(spatial_velocity, spatial_metric):
                      np.outer(spatial_velocity, spatial_velocity))
 
 
+# Functions for testing Characteristics.cpp
+def characteristic_speeds(lapse, shift, spatial_velocity, spatial_velocity_sqrd,
+                          sound_speed_sqrd, alfven_speed_sqrd, normal_oneform):
+    normal_velocity = np.dot(spatial_velocity, normal_oneform)
+    normal_shift = np.dot(shift, normal_oneform)
+    sound_speed_sqrd += alfven_speed_sqrd * (1.0 - sound_speed_sqrd)
+    prefactor = lapse / (1.0 - spatial_velocity_sqrd * sound_speed_sqrd)
+    first_term = prefactor * normal_velocity * (1.0 - sound_speed_sqrd)
+    second_term = (prefactor * np.sqrt(sound_speed_sqrd) *
+                   np.sqrt((1.0 - spatial_velocity_sqrd) *
+                           (1.0 - spatial_velocity_sqrd * sound_speed_sqrd
+                            - normal_velocity * normal_velocity *
+                            (1.0 - sound_speed_sqrd))))
+    result = [-lapse - normal_shift]
+    result.append(first_term - second_term - normal_shift)
+    for i in range(0, spatial_velocity.size + 2):
+        result.append(lapse * normal_velocity - normal_shift)
+    result.append(first_term + second_term - normal_shift)
+    result.append(lapse - normal_shift)
+    return result
+
+
+# End functions for testing Characteristics.cpp
+
+
 # Functions for testing ConservativeFromPrimitive.cpp
 def tilde_d(rest_mass_density, specific_internal_energy, specific_enthalpy,
             pressure, spatial_velocity, lorentz_factor, magnetic_field,

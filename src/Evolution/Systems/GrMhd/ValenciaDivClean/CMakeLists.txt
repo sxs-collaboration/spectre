@@ -4,6 +4,7 @@
 set(LIBRARY ValenciaDivClean)
 
 set(LIBRARY_SOURCES
+  Characteristics.cpp
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
   Sources.cpp
