@@ -6,10 +6,14 @@
 
 #pragma once
 
+#include <cstddef>
+#include <utility>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace dg {
 /// \ingroup DiscontinuousGalerkinGroup
@@ -33,41 +37,17 @@ namespace dg {
 ///
 /// \note The result is still provided only on the boundary grid.  The
 /// values away from the boundary are zero and are not stored.
-///
-/// \param local_data Data containing the local NormalDotFlux values
-/// and possibly other values, which will be ignored.
-/// \param numerical_flux The numerical flux
-/// \param extent_perpendicular_to_boundary The extent perpendicular
-/// to the boundary
-/// \param magnitude_of_face_normal The magnitude of the face normal
-template <typename LocalDataTags, typename... NormalDotNumericalFluxTags>
-auto lift_flux(
-    const Variables<LocalDataTags>& local_data,
-    Variables<tmpl::list<NormalDotNumericalFluxTags...>> numerical_flux,
-    const size_t extent_perpendicular_to_boundary,
-    Scalar<DataVector> magnitude_of_face_normal) noexcept
-    -> Variables<
-        tmpl::list<db::remove_tag_prefix<NormalDotNumericalFluxTags>...>> {
+template <typename... FluxTags>
+auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
+               const size_t extent_perpendicular_to_boundary,
+               Scalar<DataVector> magnitude_of_face_normal) noexcept
+    -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
   auto lift_factor = std::move(get(magnitude_of_face_normal));
   lift_factor *= -0.5 * (extent_perpendicular_to_boundary *
                          (extent_perpendicular_to_boundary - 1));
 
-  Variables<tmpl::list<db::remove_tag_prefix<NormalDotNumericalFluxTags>...>>
-      lifted_data(std::move(numerical_flux));
-  tmpl::for_each<typename decltype(lifted_data)::tags_list>(
-      [&lifted_data, &local_data](auto tag) noexcept {
-        using Tag = tmpl::type_from<decltype(tag)>;
-        auto& lifted_tensor = get<Tag>(lifted_data);
-        const auto& local_tensor =
-            get<db::add_tag_prefix<Tags::NormalDotFlux, Tag>>(local_data);
-        auto local_it = local_tensor.begin();
-        for (auto lifted_it = lifted_tensor.begin();
-             lifted_it != lifted_tensor.end();
-             ++lifted_it, ++local_it) {
-          *lifted_it -= *local_it;
-        }
-      });
-
+  Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> lifted_data(
+      std::move(flux));
   lifted_data *= lift_factor;
   return lifted_data;
 }

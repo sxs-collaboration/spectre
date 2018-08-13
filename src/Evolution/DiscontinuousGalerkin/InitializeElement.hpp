@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
@@ -23,9 +24,11 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
+#include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "Evolution/Conservative/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -36,6 +39,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -88,6 +92,19 @@ namespace Actions {
 /// - Modifies: nothing
 template <size_t Dim>
 struct InitializeElement {
+  static Mesh<Dim> element_mesh(
+      const std::vector<std::array<size_t, Dim>>& initial_extents,
+      const ElementId<Dim>& element_id,
+      const OrientationMap<Dim>& orientation = {}) noexcept {
+    const auto& unoriented_extents = initial_extents[element_id.block_id()];
+    Index<Dim> extents;
+    for (size_t i = 0; i < Dim; ++i) {
+      extents[i] = gsl::at(unoriented_extents, orientation(i));
+    }
+    return {extents.indices(), Spectral::Basis::Legendre,
+            Spectral::Quadrature::GaussLobatto};
+  }
+
   // Items related to the basic structure of the domain
   struct DomainTags {
     using simple_tags =
@@ -108,9 +125,7 @@ struct InitializeElement {
         const Domain<Dim, Frame::Inertial>& domain) noexcept {
       const ElementId<Dim> element_id{array_index};
       const auto& my_block = domain.blocks()[element_id.block_id()];
-      Mesh<Dim> mesh{initial_extents[element_id.block_id()],
-                     Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+      Mesh<Dim> mesh = element_mesh(initial_extents, element_id);
       Element<Dim> element = create_initial_element(element_id, my_block);
       ElementMap<Dim, Frame::Inertial> map{
           element_id, my_block.coordinate_map().get_clone()};
@@ -317,12 +332,16 @@ struct InitializeElement {
     using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 
     template <typename TagsList>
-    static auto add_mortar_data(db::DataBox<TagsList>&& box) noexcept {
+    static auto add_mortar_data(
+        db::DataBox<TagsList>&& box,
+        const std::vector<std::array<size_t, Dim>>& initial_extents) noexcept {
       const auto& element = db::get<Tags::Element<Dim>>(box);
+      const auto& mesh = db::get<Tags::Mesh<Dim>>(box);
 
       typename flux_comm_types::simple_mortar_data_tag::type mortar_data{};
       typename Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>::type
           mortar_next_temporal_ids{};
+      typename Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>::type mortar_meshes{};
       const auto& temporal_id = get<temporal_id_tag>(box);
       for (const auto& direction_neighbors : element.neighbors()) {
         const auto& direction = direction_neighbors.first;
@@ -331,15 +350,22 @@ struct InitializeElement {
           const auto mortar_id = std::make_pair(direction, neighbor);
           mortar_data.insert({mortar_id, {}});
           mortar_next_temporal_ids.insert({mortar_id, temporal_id});
+          mortar_meshes.emplace(
+              mortar_id,
+              dg::mortar_mesh(mesh.slice_away(direction.dimension()),
+                              element_mesh(initial_extents, neighbor,
+                                           neighbors.orientation())
+                                  .slice_away(direction.dimension())));
         }
       }
 
       return db::create_from<
           db::RemoveTags<>,
           db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
-                            Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>>>(
+                            Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
+                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>>>(
           std::move(box), std::move(mortar_data),
-          std::move(mortar_next_temporal_ids));
+          std::move(mortar_next_temporal_ids), std::move(mortar_meshes));
     }
 
     template <typename LocalSystem,
@@ -348,13 +374,16 @@ struct InitializeElement {
       using simple_tags = db::AddSimpleTags<
           typename flux_comm_types::simple_mortar_data_tag,
           Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
+          Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
           interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
 
       using compute_tags = db::AddComputeTags<>;
 
       template <typename TagsList>
-      static auto initialize(db::DataBox<TagsList>&& box) noexcept {
-        auto box2 = add_mortar_data(std::move(box));
+      static auto initialize(db::DataBox<TagsList>&& box,
+                             const std::vector<std::array<size_t, Dim>>&
+                                 initial_extents) noexcept {
+        auto box2 = add_mortar_data(std::move(box), initial_extents);
 
         const auto& internal_directions =
             db::get<Tags::InternalDirections<Dim>>(box2);
@@ -382,7 +411,8 @@ struct InitializeElement {
     struct Impl<LocalSystem, true> {
       using simple_tags =
           db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
-                            Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>>;
+                            Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
+                            Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>>;
 
       using compute_tags = db::AddComputeTags<
           interface_tag<db::add_tag_prefix<Tags::Flux,
@@ -392,9 +422,12 @@ struct InitializeElement {
               typename LocalSystem::variables_tag, Dim, Frame::Inertial>>>;
 
       template <typename TagsList>
-      static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+      static auto initialize(db::DataBox<TagsList>&& box,
+                             const std::vector<std::array<size_t, Dim>>&
+                                 initial_extents) noexcept {
         return db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                               compute_tags>(add_mortar_data(std::move(box)));
+                               compute_tags>(
+            add_mortar_data(std::move(box), initial_extents));
       }
     };
 
@@ -403,8 +436,10 @@ struct InitializeElement {
     using compute_tags = typename impl::compute_tags;
 
     template <typename TagsList>
-    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
-      return impl::initialize(std::move(box));
+    static auto initialize(
+        db::DataBox<TagsList>&& box,
+        const std::vector<std::array<size_t, Dim>>& initial_extents) noexcept {
+      return impl::initialize(std::move(box), initial_extents);
     }
   };
 
@@ -442,7 +477,8 @@ struct InitializeElement {
         DomainInterfaceTags<system>::initialize(std::move(system_box));
     auto evolution_box = EvolutionTags<system>::initialize(
         std::move(domain_interface_box), cache, initial_time, initial_dt);
-    auto dg_box = DgTags<Metavariables>::initialize(std::move(evolution_box));
+    auto dg_box = DgTags<Metavariables>::initialize(std::move(evolution_box),
+                                                    initial_extents);
     return std::make_tuple(std::move(dg_box));
   }
 };

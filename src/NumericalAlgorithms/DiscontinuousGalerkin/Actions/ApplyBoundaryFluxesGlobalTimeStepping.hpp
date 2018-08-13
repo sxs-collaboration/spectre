@@ -12,14 +12,12 @@
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/IndexToSliceAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::Mortars<...>>
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-template <typename TagsList>
-class Variables;
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
@@ -40,7 +38,9 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache: Metavariables::normal_dot_numerical_flux
-/// - DataBox: Tags::Mesh<volume_dim>,
+/// - DataBox:
+///   - Tags::Mesh<volume_dim>
+///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -49,23 +49,6 @@ namespace Actions {
 ///   db::add_tag_prefix<Tags::dt, variables_tag>,
 ///   FluxCommunicationTypes<Metavariables>::mortar_data_tag
 struct ApplyBoundaryFluxesGlobalTimeStepping {
- private:
-  template <typename Flux, typename... NumericalFluxTags, typename... SelfTags,
-            typename... PackagedTags, typename... ArgumentTags,
-            typename... Args>
-  static void apply_normal_dot_numerical_flux(
-      const gsl::not_null<Variables<tmpl::list<NumericalFluxTags...>>*>
-          numerical_fluxes,
-      const Flux& flux,
-      const Variables<tmpl::list<SelfTags...>>& self_packaged_data,
-      const Variables<tmpl::list<PackagedTags...>>&
-          neighbor_packaged_data) noexcept {
-    flux(make_not_null(&get<NumericalFluxTags>(*numerical_fluxes))...,
-         get<PackagedTags>(self_packaged_data)...,
-         get<PackagedTags>(neighbor_packaged_data)...);
-  }
-
- public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -82,16 +65,16 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
 
     using flux_comm_types = FluxCommunicationTypes<Metavariables>;
 
-    using normal_dot_numerical_flux_tag =
-        db::add_tag_prefix<Tags::NormalDotNumericalFlux, variables_tag>;
-
     using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
     db::mutate<dt_variables_tag, mortar_data_tag>(
         make_not_null(&box),
         [&cache](
             const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::item_type<Tags::Mesh<volume_dim>>& mesh) noexcept {
+            const db::item_type<Tags::Mesh<volume_dim>>& mesh,
+            const db::item_type<
+                Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>&
+                mortar_meshes) noexcept {
           const auto& normal_dot_numerical_flux_computer =
               get<typename Metavariables::normal_dot_numerical_flux>(cache);
 
@@ -100,32 +83,23 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             const auto& direction = mortar_id.first;
             const size_t dimension = direction.dimension();
 
-            const auto data = this_mortar_data.second.extract();
-            const auto& local_mortar_data = data.first;
+            auto data = this_mortar_data.second.extract();
+            auto& local_mortar_data = data.first;
             const auto& remote_mortar_data = data.second;
 
-            // Compute numerical flux
-            db::item_type<normal_dot_numerical_flux_tag>
-                normal_dot_numerical_fluxes(
-                    mesh.slice_away(dimension).number_of_grid_points(), 0.0);
-            apply_normal_dot_numerical_flux(
-                make_not_null(&normal_dot_numerical_fluxes),
-                normal_dot_numerical_flux_computer, local_mortar_data,
-                remote_mortar_data);
-
-            // Projections need to happen here.
-
-            db::item_type<dt_variables_tag> lifted_data(dg::lift_flux(
-                local_mortar_data, std::move(normal_dot_numerical_fluxes),
-                mesh.extents(dimension),
-                get<typename flux_comm_types::MagnitudeOfFaceNormal>(
-                    local_mortar_data)));
+            db::item_type<dt_variables_tag> lifted_data(
+                compute_boundary_flux_contribution<flux_comm_types>(
+                    normal_dot_numerical_flux_computer,
+                    std::move(local_mortar_data), remote_mortar_data,
+                    mesh.slice_away(dimension), mortar_meshes.at(mortar_id),
+                    mesh.extents(dimension)));
 
             add_slice_to_data(dt_vars, lifted_data, mesh.extents(), dimension,
                               index_to_slice_at(mesh.extents(), direction));
           }
         },
-        db::get<Tags::Mesh<volume_dim>>(box));
+        db::get<Tags::Mesh<volume_dim>>(box),
+        db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

@@ -50,22 +50,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const auto magnitude_of_face_normal = magnitude(unnormalized_face_normal(
       boundary_mesh, coordinate_map, Direction<2>::lower_eta()));
 
-  Variables<tmpl::list<Tags::NormalDotFlux<Var>>> local_flux(
+  Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> flux(
       boundary_mesh.number_of_grid_points());
-  get(get<Tags::NormalDotFlux<Var>>(local_flux)) = {1., 2., 3.};
-  Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> numerical_flux(
-      boundary_mesh.number_of_grid_points());
-  get(get<Tags::NormalDotNumericalFlux<Var>>(numerical_flux)) = {2., 3., 5.};
+  get(get<Tags::NormalDotNumericalFlux<Var>>(flux)) = {2., 3., 5.};
 
   const Variables<tmpl::list<Var>> expected =
-      -2. / (element_length * weight) * (numerical_flux - local_flux);
+      -2. / (element_length * weight) * flux;
 
-  Variables<tmpl::list<Var, Tags::NormalDotFlux<Var>>> local_data(
-      boundary_mesh.number_of_grid_points());
-  get(get<Tags::NormalDotFlux<Var>>(local_data)) =
-      get(get<Tags::NormalDotFlux<Var>>(local_flux));
-  get(get<Var>(local_data)) = {123., 456., 789.};  // Should be ignored
-
-  CHECK(dg::lift_flux(local_data, numerical_flux, mesh.extents(1),
-                      magnitude_of_face_normal) == expected);
+  CHECK(dg::lift_flux(flux, mesh.extents(1), magnitude_of_face_normal) ==
+        expected);
 }

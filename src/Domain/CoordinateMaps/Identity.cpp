@@ -67,7 +67,7 @@ template class Identity<2>;
   Identity<DIM(data)>::inv_jacobian(                                           \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (double, DataVector,
                          std::reference_wrapper<const double>,
                          std::reference_wrapper<const DataVector>))

@@ -107,10 +107,23 @@ void Impl<Dim, DimensionIsIdentity...>::apply(
 }
 
 template <>
+struct Impl<0> {
+  static constexpr const size_t Dim = 0;
+  template <typename MatrixType>
+  static void apply(const gsl::not_null<double*> result,
+                    const std::array<MatrixType, Dim>& /*matrices*/,
+                    const double* const data, const Index<Dim>& /*extents*/,
+                    const size_t number_of_independent_components) noexcept {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    std::copy(data, data + number_of_independent_components, result.get());
+  }
+};
+
+template <>
 struct Impl<1, false> {
   static constexpr const size_t Dim = 1;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -123,7 +136,7 @@ template <>
 struct Impl<1, true> {
   static constexpr const size_t Dim = 1;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -137,7 +150,7 @@ template <>
 struct Impl<2, false, false> {
   static constexpr size_t Dim = 2;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -158,7 +171,7 @@ template <>
 struct Impl<2, false, true> {
   static constexpr size_t Dim = 2;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -171,7 +184,7 @@ template <>
 struct Impl<2, true, false> {
   static constexpr size_t Dim = 2;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -191,7 +204,7 @@ template <>
 struct Impl<2, true, true> {
   static constexpr size_t Dim = 2;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -205,7 +218,7 @@ template <>
 struct Impl<3, false, false, false> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -228,7 +241,7 @@ template <>
 struct Impl<3, false, false, true> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -249,7 +262,7 @@ template <>
 struct Impl<3, false, true, false> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -270,7 +283,7 @@ template <>
 struct Impl<3, false, true, true> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -283,7 +296,7 @@ template <>
 struct Impl<3, true, false, false> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -305,7 +318,7 @@ template <>
 struct Impl<3, true, false, true> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -325,7 +338,7 @@ template <>
 struct Impl<3, true, true, false> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& matrices,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -345,7 +358,7 @@ template <>
 struct Impl<3, true, true, true> {
   static constexpr size_t Dim = 3;
   template <typename MatrixType>
-  static auto apply(const gsl::not_null<double*> result,
+  static void apply(const gsl::not_null<double*> result,
                     const std::array<MatrixType, Dim>& /*matrices*/,
                     const double* const data, const Index<Dim>& extents,
                     const size_t number_of_independent_components) noexcept {
@@ -363,7 +376,7 @@ struct Impl<3, true, true, true> {
       const std::array<MATRIX(data), DIM(data)>&, const double* const, \
       const Index<DIM(data)>&, const size_t) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3),
                         (Matrix, std::reference_wrapper<const Matrix>))
 
 #undef DIM

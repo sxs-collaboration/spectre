@@ -18,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -183,6 +184,7 @@ struct ReceiveDataForFluxes {
 ///   - Interface<Tags::Mesh<volume_dim - 1>>
 ///   - Interface<Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>,
 ///   - Metavariables::temporal_id
+///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
 ///   - Tags::Next<Metavariables::temporal_id>
 ///
 /// DataBox changes:
@@ -240,9 +242,6 @@ struct SendDataForFluxes {
                                   Tags::Mesh<volume_dim - 1>>>(box)
               .at(direction);
 
-      // Everything below here needs to be fixed for
-      // hp-adaptivity to handle projections correctly
-
       // We compute the parts of the numerical flux that only depend on data
       // from this side of the mortar now, then package it into a Variables.
       // We store one copy of the Variables and send another, since we need
@@ -263,34 +262,53 @@ struct SendDataForFluxes {
           },
           box);
 
-      typename flux_comm_types::LocalData local_data(
-          boundary_mesh.number_of_grid_points());
-      local_data.assign_subset(
-          db::get<interface_normal_dot_fluxes_tag>(box).at(direction));
-      local_data.assign_subset(packaged_data);
-      get<typename flux_comm_types::MagnitudeOfFaceNormal>(local_data) =
-          db::get<Tags::Interface<
-              Tags::InternalDirections<volume_dim>,
-              Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
-              .at(direction);
-
       const auto direction_from_neighbor = orientation(direction.opposite());
-
-      // orient_variables_on_slice only needs to be done in the case where
-      // the data is oriented differently. This needs to improved later.
-      // Note: avoiding the same-orientation-on-both-sides copy is possible
-      // even with AMR since the quantities are already on the mortar at this
-      // point
-      const auto neighbor_packaged_data = orient_variables_on_slice(
-          packaged_data, boundary_mesh.extents(), dimension, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
         const auto mortar_id = std::make_pair(direction, neighbor);
+        const auto& mortar_mesh =
+            db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box)
+                .at(mortar_id);
+
+        auto projected_packaged_data =
+            project_to_mortar(packaged_data, boundary_mesh, mortar_mesh);
+
+        typename flux_comm_types::LocalData local_data{};
+        local_data.magnitude_of_face_normal = db::get<Tags::Interface<
+            Tags::InternalDirections<volume_dim>,
+            Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
+                                                  .at(direction);
+
+        local_data.mortar_data.initialize(mortar_mesh.number_of_grid_points());
+        local_data.mortar_data.assign_subset(projected_packaged_data);
+        if (tmpl::size<
+                typename flux_comm_types::LocalMortarData::tags_list>::value !=
+            tmpl::size<
+                typename flux_comm_types::PackagedData::tags_list>::value) {
+          // The local fluxes were not (all) included in the packaged
+          // data, so we need to add them to the mortar data
+          // explicitly.
+          const auto& normal_dot_fluxes =
+              db::get<interface_normal_dot_fluxes_tag>(box).at(direction);
+          local_data.mortar_data.assign_subset(
+              boundary_mesh == mortar_mesh
+                  ? normal_dot_fluxes
+                  : project_to_mortar(normal_dot_fluxes, boundary_mesh,
+                                      mortar_mesh));
+        }
+
+        if (not orientation.is_aligned()) {
+          projected_packaged_data = orient_variables_on_slice(
+              projected_packaged_data, mortar_mesh.extents(), dimension,
+              orientation);
+        }
+
         Parallel::receive_data<typename flux_comm_types::FluxesTag>(
             receiver_proxy[neighbor], temporal_id,
             std::make_pair(
                 std::make_pair(direction_from_neighbor, element.id()),
-                std::make_pair(next_temporal_id, neighbor_packaged_data)));
+                std::make_pair(next_temporal_id,
+                               std::move(projected_packaged_data))));
 
         db::mutate<Tags::VariablesBoundaryData>(
             make_not_null(&box),
@@ -298,7 +316,8 @@ struct SendDataForFluxes {
                 const gsl::not_null<
                     db::item_type<Tags::VariablesBoundaryData, DbTags>*>
                     mortar_data) noexcept {
-              mortar_data->at(mortar_id).local_insert(temporal_id, local_data);
+              mortar_data->at(mortar_id).local_insert(temporal_id,
+                                                      std::move(local_data));
             });
       }  // loop over neighbors_in_direction
     }    // loop over element.neighbors()

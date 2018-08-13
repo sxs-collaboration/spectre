@@ -4,8 +4,10 @@
 set(LIBS_TO_LINK
   Burgers
   BurgersSolutions
+  DiscontinuousGalerkin
   DomainCreators
   Informer
+  LinearOperators
   Time
   Utilities
   )
