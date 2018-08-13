@@ -35,7 +35,7 @@ struct Field : db::SimpleTag {
  */
 template <size_t Dim>
 struct AuxiliaryField : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+  using type = tnsr::I<DataVector, Dim, Frame::Inertial>;
   static std::string name() noexcept { return "AuxiliaryField"; }
 };
 
