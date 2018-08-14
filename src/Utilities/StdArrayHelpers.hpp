@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 // Arithmetic operators for std::array<T, Dim>
@@ -93,15 +94,15 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) noexcept {
 
 /// \ingroup UtilitiesGroup
 /// \brief Construct an array from an existing array omitting one element
-template <size_t ElementToRemove, typename T, size_t Dim>
+template <typename T, size_t Dim>
 inline std::array<T, Dim - 1> all_but_specified_element_of(
-    const std::array<T, Dim>& a) noexcept {
-  static_assert(ElementToRemove < Dim, "Specified element does not exist");
+    const std::array<T, Dim>& a, const size_t element_to_remove) noexcept {
+  ASSERT(element_to_remove < Dim, "Specified element does not exist");
   std::array<T, Dim - 1> result{};
-  for (size_t i = 0; i < ElementToRemove; ++i) {
+  for (size_t i = 0; i < element_to_remove; ++i) {
     gsl::at(result, i) = gsl::at(a, i);
   }
-  for (size_t i = ElementToRemove + 1; i < Dim; ++i) {
+  for (size_t i = element_to_remove + 1; i < Dim; ++i) {
     gsl::at(result, i - 1) = gsl::at(a, i);
   }
   return result;

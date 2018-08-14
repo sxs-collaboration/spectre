@@ -57,7 +57,7 @@ partial_derivatives(
           partial_derivatives_of_variable.get_tensor_index(it);
       const size_t deriv_index = deriv_indices[0];
       const auto tensor_indices =
-          all_but_specified_element_of<0>(deriv_indices);
+          all_but_specified_element_of(deriv_indices, 0);
       for (size_t d = 0; d < Dim; ++d) {
         *it += inverse_jacobian.get(d, deriv_index) *
                get<Tag>(gsl::at(logical_partial_derivatives_of_u, d))

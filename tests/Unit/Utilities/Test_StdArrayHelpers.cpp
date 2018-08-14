@@ -100,16 +100,16 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.AllButSpecifiedElementOf",
   const std::array<size_t, 2> a2{{2, 3}};
   const std::array<size_t, 1> a1{{3}};
   const std::array<size_t, 0> a0{{}};
-  CHECK(a2 == all_but_specified_element_of<0>(a3));
-  CHECK(a1 == all_but_specified_element_of<0>(a2));
-  CHECK(a0 == all_but_specified_element_of<0>(a1));
+  CHECK(a2 == all_but_specified_element_of(a3, 0));
+  CHECK(a1 == all_but_specified_element_of(a2, 0));
+  CHECK(a0 == all_but_specified_element_of(a1, 0));
   const std::array<size_t, 2> b2{{5, 3}};
   const std::array<size_t, 1> b1{{5}};
-  auto c2 = all_but_specified_element_of<1>(a3);
+  auto c2 = all_but_specified_element_of(a3, 1);
   CHECK(b2 == c2);
-  auto c1 = all_but_specified_element_of<1>(b2);
+  auto c1 = all_but_specified_element_of(b2, 1);
   CHECK(b1 == c1);
-  CHECK(a0 == all_but_specified_element_of<0>(b1));
+  CHECK(a0 == all_but_specified_element_of(b1, 0));
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.Prepend",
