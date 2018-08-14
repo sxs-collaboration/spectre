@@ -134,7 +134,11 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
      \
      \
      && perl -pi -e 's/ReceiveTag_temporal_id/typename ReceiveTag::temporal_id/g' Algorithm${ALGORITHM_NAME}.def.h \
-     && perl -pi -e 's/ReceiveTag_temporal_id/typename ReceiveTag::temporal_id/g' Algorithm${ALGORITHM_NAME}.decl.h"
+     && perl -pi -e 's/ReceiveTag_temporal_id/typename ReceiveTag::temporal_id/g' Algorithm${ALGORITHM_NAME}.decl.h \
+     \
+     \
+     && perl -pi -e 's/CK_MSG_INLINE/([]() { static const auto pes = CkNumPes(); return pes > 1; }() ? CK_MSG_INLINE : 0)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/if \\(obj\\)/if (obj && []() { static const auto pes = CkNumPes(); return pes > 1; }())/g' Algorithm${ALGORITHM_NAME}.def.h"
 
     WORKING_DIRECTORY ${ALGORITHM_DIR}
     RESULT_VARIABLE SUCCEEDED_GENERATING_CHARM
