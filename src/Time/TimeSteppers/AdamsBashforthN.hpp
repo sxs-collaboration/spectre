@@ -275,6 +275,7 @@ void AdamsBashforthN::update_u(
   ASSERT(is_self_starting_ or target_order_ == history->size(),
          "Length of history should be the order, so "
          << target_order_ << ", but is: " << history->size());
+  ASSERT(history->size() > 0, "No history provided");
   ASSERT(history->size() <= target_order_,
          "Length of history (" << history->size() << ") "
          << "should not exceed target order (" << target_order_ << ")");
@@ -320,11 +321,7 @@ void AdamsBashforthN::update_u(
       ERROR("Bad amount of history data: " << history->size());
   }
 
-  // Clean up old history
-  if (history->size() >= target_order_) {
-    history->mark_unneeded(
-        history->end() - static_cast<ssize_t>(target_order_ - 1));
-  }
+  history->mark_unneeded(history->begin() + 1);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
@@ -334,17 +331,20 @@ AdamsBashforthN::compute_boundary_delta(
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
     const TimeDelta& time_step) const noexcept {
-  ASSERT(not is_self_starting_, "Unimplemented");
+  const auto order = history->local_size();
 
   // Avoid billions of casts
-  const auto target_order_s = static_cast<ssize_t>(target_order_);
+  const auto order_s = static_cast<ssize_t>(order);
 
-  ASSERT(history->local_size() == target_order_,
-         "Local history has wrong length (" << history->local_size()
-         << " should be " << target_order_s << ")");
-  ASSERT(history->remote_size() >= target_order_,
+  ASSERT(is_self_starting_ or order == target_order_,
+         "Local history has wrong length (" << order
+         << " should be " << target_order_ << ")");
+  ASSERT(order <= target_order_,
+         "Local history is too long for target order (" << order
+         << " should not exceed " << target_order_ << ")");
+  ASSERT(history->remote_size() >= order,
          "Remote history is too short (" << history->remote_size()
-         << " should be at least " << target_order_s << ")");
+         << " should be at least " << order << ")");
 
   // Start and end of the step we are trying to take
   const Time start_time = *(history->local_end() - 1);
@@ -355,8 +355,8 @@ AdamsBashforthN::compute_boundary_delta(
   // history cleanup at the end of the previous step we didn't know we
   // were going to get this point so we kept an extra remote history
   // value.
-  if (history->remote_size() > target_order_ and
-      *(history->remote_begin() + target_order_s) == start_time) {
+  if (history->remote_size() > order and
+      *(history->remote_begin() + order_s) == start_time) {
     history->remote_mark_unneeded(history->remote_begin() + 1);
   }
 
@@ -391,10 +391,13 @@ AdamsBashforthN::compute_boundary_delta(
     // The remote-side values will all be needed if the remote step is
     // larger than our local one.  If not, they will be cleaned up
     // next time.
-    history->local_mark_unneeded(history->local_end() - (target_order_s - 1));
+    history->local_mark_unneeded(history->local_begin() + 1);
 
     return accumulated_change;
   }
+
+  ASSERT(order == target_order_,
+         "Cannot perform local time-stepping while self-starting.");
 
   const SimulationLess simulation_less(time_step.is_positive());
 
@@ -405,7 +408,7 @@ AdamsBashforthN::compute_boundary_delta(
                         simulation_less),
          "Remote history not in order");
   ASSERT(not simulation_less(start_time,
-                             *(history->remote_begin() + (target_order_s - 1))),
+                             *(history->remote_begin() + (order_s - 1))),
          "Remote history does not extend far enough back");
   ASSERT(simulation_less(*(history->remote_end() - 1), end_time),
          "Please supply only older data: " << *(history->remote_end() - 1)
@@ -435,20 +438,19 @@ AdamsBashforthN::compute_boundary_delta(
   const auto union_step_start = union_step(start_time);
   const auto union_step_end = union_times.cend() - 1;
 
-  // min(union_step_end, it + target_order_s) except being careful not
+  // min(union_step_end, it + order_s) except being careful not
   // to create out-of-range iterators.
   const auto advance_within_step =
-      [target_order_s, union_step_end](const UnionIter& it) noexcept {
-    return union_step_end - it > target_order_s ? it + target_order_s
-                                                : union_step_end;
+      [order_s, union_step_end](const UnionIter& it) noexcept {
+    return union_step_end - it > order_s ? it + order_s : union_step_end;
   };
 
   // Calculating the Adams-Bashforth coefficients is somewhat
   // expensive, so we cache them.  ab_coefs(it) returns the
   // coefficients used to step from it to *(it + 1).
-  auto ab_coefs = make_cached_function<UnionIter, std::map>([target_order_s](
+  auto ab_coefs = make_cached_function<UnionIter, std::map>([order_s](
       const UnionIter& times_end) noexcept {
-    return get_coefficients(times_end - (target_order_s - 1), times_end + 1,
+    return get_coefficients(times_end - (order_s - 1), times_end + 1,
                             *(times_end + 1) - *times_end);
   });
 
@@ -526,15 +528,15 @@ AdamsBashforthN::compute_boundary_delta(
                                    *local_evaluation_step, simulation_less)) {
           auto union_step_upper_bound =
               advance_within_step(union_local_evaluation_step);
-          if (history->remote_end() - remote_evaluation_step > target_order_s) {
+          if (history->remote_end() - remote_evaluation_step > order_s) {
             union_step_upper_bound = std::min(
                 union_step_upper_bound,
-                union_step(*(remote_evaluation_step + target_order_s)));
+                union_step(*(remote_evaluation_step + order_s)));
           }
 
           auto control_points = make_lagrange_iterator(
-              remote_evaluation_step - history->remote_begin() >= target_order_s
-                  ? remote_evaluation_step - (target_order_s - 1)
+              remote_evaluation_step - history->remote_begin() >= order_s
+                  ? remote_evaluation_step - (order_s - 1)
                   : history->remote_begin());
           for (auto step = union_step_lower_bound;
                step < union_step_upper_bound;
@@ -544,7 +546,7 @@ AdamsBashforthN::compute_boundary_delta(
                               make_lagrange_iterator(remote_evaluation_step),
                               local_evaluation_step->value(),
                               control_points,
-                              control_points + target_order_s);
+                              control_points + order_s);
           }
         }
       }
@@ -561,15 +563,16 @@ AdamsBashforthN::compute_boundary_delta(
 
   // Clean up old history
 
-  // We know that the local side will step at end_time, so the
-  // step containing that time will be the next step, which is not
-  // currently in the history.
-  history->local_mark_unneeded(history->local_end() - (target_order_s - 1));
+  // We know that the local side will step at end_time, so the step
+  // containing that time will be the next step, which is not
+  // currently in the history.  We therefore know we won't need the
+  // oldest value for the next step.
+  history->local_mark_unneeded(history->local_begin() + 1);
   // We don't know whether the remote side will step at end_time, so
   // we have to be conservative and assume they will not.  If it does
   // we will remove the first value at the start of the next call to
   // this function.
-  history->remote_mark_unneeded(history->remote_end() - target_order_s);
+  history->remote_mark_unneeded(history->remote_end() - order_s);
 
   return accumulated_change;
 }
