@@ -28,6 +28,7 @@ struct NormalDotFlux;
 /// \endcond
 
 namespace Burgers {
+/// \ingroup NumericalFluxesGroup
 struct LocalLaxFriedrichsFlux {
   using options = tmpl::list<>;
   static constexpr OptionString help{

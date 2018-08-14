@@ -18,6 +18,7 @@ allowed_tags = [
                 "EquationsOfState",
                 "ErrorHandling",
                 "Evolution",
+                "Fluxes",
                 "GeneralizedHarmonic",
                 "GrMhd",
                 "H5",

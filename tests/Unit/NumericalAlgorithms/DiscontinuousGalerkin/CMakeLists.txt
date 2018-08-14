@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(Actions)
+add_subdirectory(NumericalFluxes)
 
 add_test_library(
   ${LIBRARY}
