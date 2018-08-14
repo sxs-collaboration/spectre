@@ -12,6 +12,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
@@ -138,6 +139,7 @@ class NCd {
 
 NCd operator*(double a, const NCd& b) { return NCd(a * b()); }
 NCd& operator+=(NCd& a, NCd&& b) { return a = NCd(a() + b()); }
+NCd& operator*=(NCd& a, double b) { return a = NCd(a() * b); }
 
 // Random numbers
 constexpr double c10 = 0.949716728952811;
@@ -359,4 +361,57 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
   // test operator !=
   TimeSteppers::AdamsBashforthN ab2(4, true);
   CHECK(ab != ab2);
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
+                  "[Unit][Time]") {
+  const TimeSteppers::AdamsBashforthN ab3(3);
+
+  const auto f = [](const double t) noexcept {
+    return 1. + t * (2. + t * (3. + t * 4.));
+  };
+  const auto df = [](const double t) noexcept {
+    return 2. + t * (6. + t * 12.);
+  };
+
+  const Slab slab(0., 1.);
+  TimeSteppers::History<double, double> history{};
+  const auto add_history = [&df, &f, &history](const Time& time) noexcept {
+    history.insert(time, f(time.value()), df(time.value()));
+  };
+  add_history(slab.start());
+  add_history(slab.end());
+  add_history(slab.start() + slab.duration() / 3);
+  double y = f(1. / 3.);
+  ab3.update_u(make_not_null(&y), make_not_null(&history), slab.duration() / 3);
+  CHECK(y == approx(f(2. / 3.)));
+}
+
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
+                  "[Unit][Time]") {
+  const TimeSteppers::AdamsBashforthN ab3(3);
+
+  const auto f = [](const double t) noexcept {
+    return 1. + t * (2. + t * (3. + t * 4.));
+  };
+  const auto df = [](const double t) noexcept {
+    return 2. + t * (6. + t * 12.);
+  };
+
+  const Slab slab(0., 1.);
+  TimeSteppers::BoundaryHistory<double, double, double> history{};
+  const auto add_history = [&df, &history](const TimeId& time_id) noexcept {
+    history.local_insert(time_id, df(time_id.time().value()));
+    history.remote_insert(time_id, 0.);
+  };
+  add_history(TimeId(true, 0, slab.start()));
+  add_history(TimeId(true, 0, slab.end()));
+  add_history(TimeId(true, 1, slab.start() + slab.duration() / 3));
+  double y = f(1. / 3.);
+  y += ab3.compute_boundary_delta(
+      [](const double local, const double /*remote*/) noexcept {
+        return local;
+      },
+      make_not_null(&history), slab.duration() / 3);
+  CHECK(y == approx(f(2. / 3.)));
 }

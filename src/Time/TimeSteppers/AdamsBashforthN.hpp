@@ -33,7 +33,7 @@
 struct TimeId;
 namespace TimeSteppers {
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-class BoundaryHistory;
+class BoundaryHistory;  // IWYU pragma: keep
 template <typename Vars, typename DerivVars>
 class History;
 }  // namespace TimeSteppers
@@ -339,17 +339,12 @@ AdamsBashforthN::compute_boundary_delta(
   // Avoid billions of casts
   const auto target_order_s = static_cast<ssize_t>(target_order_);
 
-  const SimulationLess simulation_less(time_step.is_positive());
-
   ASSERT(history->local_size() == target_order_,
          "Local history has wrong length (" << history->local_size()
          << " should be " << target_order_s << ")");
-  ASSERT(std::is_sorted(history->local_begin(), history->local_end(),
-                        simulation_less),
-         "Local history not in order");
-  ASSERT(std::is_sorted(history->remote_begin(), history->remote_end(),
-                        simulation_less),
-         "Remote history not in order");
+  ASSERT(history->remote_size() >= target_order_,
+         "Remote history is too short (" << history->remote_size()
+         << " should be at least " << target_order_s << ")");
 
   // Start and end of the step we are trying to take
   const Time start_time = *(history->local_end() - 1);
@@ -365,6 +360,53 @@ AdamsBashforthN::compute_boundary_delta(
     history->remote_mark_unneeded(history->remote_begin() + 1);
   }
 
+  // Result variable.  We evaluate the coupling only for the
+  // structure.  This evaluation may be expensive, but by choosing the
+  // most recent times on both sides we should guarantee that it is a
+  // result we need later, so this will serve to get it into the
+  // coupling cache so we don't have to compute it when we actually use it.
+  auto accumulated_change =
+      make_with_value<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>(
+          history->coupling(coupling, history->local_end() - 1,
+                            history->remote_end() - 1),
+          0.);
+
+  if (history->local_size() == history->remote_size() and
+      std::equal(history->local_begin(), history->local_end(),
+                 history->remote_begin())) {
+    // No local time-stepping going on.
+    const auto coefficients = get_coefficients(history->local_begin(),
+                                               history->local_end(), time_step);
+
+    auto local_it = history->local_begin();
+    auto remote_it = history->remote_begin();
+    for (auto coefficients_it = coefficients.rbegin();
+         coefficients_it != coefficients.rend();
+         ++coefficients_it, ++local_it, ++remote_it) {
+      accumulated_change +=
+          *coefficients_it * history->coupling(coupling, local_it, remote_it);
+    }
+    accumulated_change *= time_step.value();
+
+    // The remote-side values will all be needed if the remote step is
+    // larger than our local one.  If not, they will be cleaned up
+    // next time.
+    history->local_mark_unneeded(history->local_end() - (target_order_s - 1));
+
+    return accumulated_change;
+  }
+
+  const SimulationLess simulation_less(time_step.is_positive());
+
+  ASSERT(std::is_sorted(history->local_begin(), history->local_end(),
+                        simulation_less),
+         "Local history not in order");
+  ASSERT(std::is_sorted(history->remote_begin(), history->remote_end(),
+                        simulation_less),
+         "Remote history not in order");
+  ASSERT(not simulation_less(start_time,
+                             *(history->remote_begin() + (target_order_s - 1))),
+         "Remote history does not extend far enough back");
   ASSERT(simulation_less(*(history->remote_end() - 1), end_time),
          "Please supply only older data: " << *(history->remote_end() - 1)
          << " is not before " << end_time);
@@ -409,17 +451,6 @@ AdamsBashforthN::compute_boundary_delta(
     return get_coefficients(times_end - (target_order_s - 1), times_end + 1,
                             *(times_end + 1) - *times_end);
   });
-
-  // Result variable.  We evaluate the coupling only for the
-  // structure.  This evaluation may be expensive, but by choosing the
-  // most recent times on both sides we should guarantee that it is a
-  // result we need later, so this will serve to get it into the
-  // coupling cache so we don't have to compute it when we actually use it.
-  auto accumulated_change =
-      make_with_value<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>(
-          history->coupling(
-              coupling, history->local_end() - 1, history->remote_end() - 1),
-          0.);
 
   for (auto local_evaluation_step = history->local_begin();
        local_evaluation_step != history->local_end();
