@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <string>
@@ -13,6 +14,7 @@
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Options/Options.hpp"
 
 namespace Tags {
@@ -34,6 +36,16 @@ struct Mortars : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DiscontinuousGalerkinGroup
+/// Size of a mortar, relative to the element face.  That is, the part
+/// of the face that it covers.
+template <size_t Dim>
+struct MortarSize : db::SimpleTag {
+  static std::string name() noexcept { return "MortarSize"; }
+  using type = std::array<Spectral::MortarSize, Dim>;
 };
 }  // namespace Tags
 

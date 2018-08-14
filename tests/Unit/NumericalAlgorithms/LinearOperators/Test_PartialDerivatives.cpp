@@ -453,7 +453,7 @@ void test_logical_derivatives_compute_item(
       const auto deriv_indices = expected_dvariable.get_tensor_index(it);
       const size_t deriv_index = deriv_indices[0];
       const auto tensor_indices =
-          all_but_specified_element_of<0>(deriv_indices);
+          all_but_specified_element_of(deriv_indices, 0);
       for (size_t n = 0; n < mesh.number_of_grid_points(); ++n) {
         CAPTURE_PRECISE(get<Tag>(du[deriv_index]).get(tensor_indices)[n] -
                         (*it)[n]);

@@ -41,6 +41,7 @@ namespace Actions {
 /// - DataBox:
 ///   - Tags::Mesh<volume_dim>
 ///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
+///   - Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -74,7 +75,10 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             const db::item_type<Tags::Mesh<volume_dim>>& mesh,
             const db::item_type<
                 Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>&
-                mortar_meshes) noexcept {
+                mortar_meshes,
+            const db::item_type<
+                Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>&
+                mortar_sizes) noexcept {
           const auto& normal_dot_numerical_flux_computer =
               get<typename Metavariables::normal_dot_numerical_flux>(cache);
 
@@ -92,14 +96,16 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
                     normal_dot_numerical_flux_computer,
                     std::move(local_mortar_data), remote_mortar_data,
                     mesh.slice_away(dimension), mortar_meshes.at(mortar_id),
-                    mesh.extents(dimension)));
+                    mesh.extents(dimension), mortar_sizes.at(mortar_id)));
 
             add_slice_to_data(dt_vars, lifted_data, mesh.extents(), dimension,
                               index_to_slice_at(mesh.extents(), direction));
           }
         },
         db::get<Tags::Mesh<volume_dim>>(box),
-        db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box));
+        db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box),
+        db::get<Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(
+            box));
 
     return std::forward_as_tuple(std::move(box));
   }
