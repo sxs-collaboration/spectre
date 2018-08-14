@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
+#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -56,6 +57,7 @@ struct EvolutionMetavars {
                  Actions::ComputeVolumeDuDt<1>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
+                 Actions::RecordTimeStepperData,
                  Actions::UpdateU>>>;
 
   static constexpr OptionString help{
