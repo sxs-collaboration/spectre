@@ -8,8 +8,8 @@
 #include <cstddef>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperDataBox.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/StrahlkorperGr.hpp"
+#include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep

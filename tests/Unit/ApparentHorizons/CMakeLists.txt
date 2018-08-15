@@ -8,8 +8,8 @@ set(LIBRARY_SOURCES
   Test_FastFlow.cpp
   Test_SpherepackIterator.cpp
   Test_Strahlkorper.cpp
-  Test_StrahlkorperDataBox.cpp
   Test_StrahlkorperGr.cpp
+  Test_Tags.cpp
   Test_YlmSpherepack.cpp
   YlmTestFunctions.cpp
   )
