@@ -3,7 +3,6 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <functional>
@@ -12,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
@@ -24,6 +24,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -271,4 +272,19 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
     INFO(i);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
+}
+
+// [[OutputRegex, Must pass same number of maps as block corner sets]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Domain.BadArgs", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  // NOLINTNEXTLINE(misc-unused-raii)
+  Domain<1, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                      CoordinateMaps::Affine{-1., 1., -1., 1.}),
+                  make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                      CoordinateMaps::Affine{-1., 1., -1., 1.})),
+      std::vector<std::array<size_t, 2>>{{{1, 2}}});
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }

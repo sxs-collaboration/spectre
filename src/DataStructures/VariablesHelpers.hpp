@@ -9,11 +9,12 @@
 #include <boost/range/combine.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <cstddef>
+#include <ostream>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -127,6 +128,14 @@ void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
       Variables<TagsList>::number_of_independent_components;
   const size_t volume_grid_points = extents.product();
   const size_t slice_grid_points = extents.slice_away(sliced_dim).product();
+  ASSERT(volume_vars->number_of_grid_points() == volume_grid_points,
+         "volume_vars has wrong number of grid points.  Expected "
+         << volume_grid_points << ", got "
+         << volume_vars->number_of_grid_points());
+  ASSERT(vars_on_slice.number_of_grid_points() == slice_grid_points,
+         "vars_on_slice has wrong number of grid points.  Expected "
+         << slice_grid_points << ", got "
+         << vars_on_slice.number_of_grid_points());
   double* const volume_data = volume_vars->data();
   const double* const slice_data = vars_on_slice.data();
   for (SliceIterator si(extents, sliced_dim, fixed_index); si; ++si) {
