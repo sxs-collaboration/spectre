@@ -67,6 +67,15 @@ class OrientationMap {
   std::array<SegmentId, VolumeDim> operator()(
       const std::array<SegmentId, VolumeDim>& segmentIds) const;
 
+  /// An array whose elements are permuted such that
+  /// `result[d] = array_in_neighbor[this->operator()(d)]`
+  ///
+  /// \note the permutation depends only on how the dimension is mapped
+  /// and ignores the side of the mapped direction.
+  template <typename T>
+  std::array<T, VolumeDim> permute_from_neighbor(
+      const std::array<T, VolumeDim>& array_in_neighbor) const noexcept;
+
   /// The corresponding Orientation of the host in the frame of the neighbor.
   OrientationMap<VolumeDim> inverse_map() const noexcept;
 
@@ -93,6 +102,19 @@ template <size_t VolumeDim>
 bool operator!=(const OrientationMap<VolumeDim>& lhs,
                 const OrientationMap<VolumeDim>& rhs) noexcept {
   return not(lhs == rhs);
+}
+
+template <size_t VolumeDim>
+template <typename T>
+std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_from_neighbor(
+    const std::array<T, VolumeDim>& array_in_neighbor) const noexcept {
+  std::array<T, VolumeDim> result = array_in_neighbor;
+  if (not is_aligned_ and VolumeDim > 1) {
+    for (size_t i = 0; i < VolumeDim; i++) {
+      gsl::at(result, i) = gsl::at(array_in_neighbor, this->operator()(i));
+    }
+  }
+  return result;
 }
 
 /// \ingroup DomainCreatorsGroup
