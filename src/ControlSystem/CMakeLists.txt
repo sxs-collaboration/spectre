@@ -4,6 +4,7 @@
 set(LIBRARY ControlSystem)
 
 set(LIBRARY_SOURCES
+    Averager.cpp
     Controller.cpp
     PiecewisePolynomial.cpp
     SettleToConstant.cpp

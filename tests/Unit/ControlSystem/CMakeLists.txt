@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ControlSystem")
 
 set(LIBRARY_SOURCES
+  Test_Averager.cpp
   Test_Controller.cpp
   Test_PiecewisePolynomial.cpp
   Test_SettleToConstant.cpp
