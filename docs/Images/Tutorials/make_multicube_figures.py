@@ -17,6 +17,7 @@ plt.rcParams['font.size'] = 10
 
 
 def draw_basis_vectors(ax, x_origin, label_permutation=[0, 1, 2],
+                       flip_vector=[False, False, False],
                        use_greek_labels=True):
     from matplotlib.patches import FancyArrowPatch
     from mpl_toolkits.mplot3d import proj3d
@@ -37,14 +38,18 @@ def draw_basis_vectors(ax, x_origin, label_permutation=[0, 1, 2],
               r'$\zeta$'] if use_greek_labels else ['$x$', '$y$', '$z$']
     arrow_props = dict(mutation_scale=10, arrowstyle='-|>', color='k',
                        shrinkA=0, shrinkB=0)
-    x0, y0, z0 = x_origin
-    ax.add_artist(Arrow3D([x0, x0+length], [y0, y0], [z0, z0], **arrow_props))
-    ax.add_artist(Arrow3D([x0, x0], [y0, y0+length], [z0, z0], **arrow_props))
-    ax.add_artist(Arrow3D([x0, x0], [y0, y0], [z0, z0+length], **arrow_props))
-    length_pad = length + 0.05
-    ax.text(x0 + length_pad, y0, z0, labels[label_permutation[0]])
-    ax.text(x0, y0 + length_pad, z0, labels[label_permutation[1]])
-    ax.text(x0, y0, z0 + length_pad, labels[label_permutation[2]])
+    x0, y0, z0 = [x_origin[i] + (length if flip_vector[i] else 0.0)
+                  for i in range(3)]
+    dx, dy, dz = [length * (-1.0 if flip_vector[i] else 1.0) for i in range(3)]
+    ax.add_artist(Arrow3D([x0, x0 + dx], [y0, y0], [z0, z0], **arrow_props))
+    ax.add_artist(Arrow3D([x0, x0], [y0, y0 + dy], [z0, z0], **arrow_props))
+    ax.add_artist(Arrow3D([x0, x0], [y0, y0], [z0, z0 + dz], **arrow_props))
+    dxt, dyt, dzt = [-length - 0.15 if flip_vector[i] else length + 0.05
+                     for i in range(3)]
+    dyt = dyt - (0.15 if flip_vector[1] else 0.0)
+    ax.text(x0 + dxt, y0, z0, labels[label_permutation[0]])
+    ax.text(x0, y0 + dyt, z0, labels[label_permutation[1]])
+    ax.text(x0, y0, z0 + dzt, labels[label_permutation[2]])
 
 
 def draw_polygon_collection(ax, polygons, face_colors, edge_colors):
@@ -143,7 +148,7 @@ def two_cube_figures():
     ax = Axes3D(fig)
     ax.set_aspect('equal')
     ax.set_axis_off()
-    ax.set_xlim(0, 2)
+    ax.set_xlim(0.0, 2.0)
     ax.set_ylim(-0.5, 1.5)
     ax.set_zlim(-0.5, 1.5)
 
@@ -170,7 +175,7 @@ def eight_cube_figures():
     def red_black_blue(mean_xyz):
         r = max(1.0 - mean_xyz[1], 0.0)
         b = max(mean_xyz[1] - 1.0, 0.0)
-        return [r, 0, b]
+        return [r, 0.0, b]
 
     cubes = CubeManager(p, strides=[1, 3, 9],
                         edge_color_function=red_black_blue)
@@ -187,16 +192,16 @@ def eight_cube_figures():
     ax = Axes3D(fig)
     ax.set_aspect('equal')
     ax.set_axis_off()
-    ax.set_xlim(0, 2)
-    ax.set_ylim(0, 2)
-    ax.set_zlim(0, 2)
+    ax.set_xlim(0.0, 2.0)
+    ax.set_ylim(0.0, 2.0)
+    ax.set_zlim(0.0, 2.0)
 
     draw_polygon_collection(ax, cubes.quads, cubes.face_colors,
                             cubes.edge_colors)
 
     fig.savefig('eightcubes.png')
 
-    draw_basis_vectors(ax, [0.55, -0.75, 0], use_greek_labels=False)
+    draw_basis_vectors(ax, [0.55, -0.75, 0.0], use_greek_labels=False)
     for i in range(p.shape[0]):
         # shift labels on each y=constant surface, to reduce overlaps
         shift = [0.0, 0.0, 0.0]
@@ -222,6 +227,56 @@ def eight_cube_figures():
     fig.savefig('eightcubes_numbered.png')
 
 
+def eight_cube_rotated_exploded_figure():
+    p = np.array([[x, y, z] for z in [0, 1, 2, 3] for y in [0, 1, 2, 3]
+                 for x in [0, 1, 2, 3]])
+
+    def red_black_blue(mean_xyz):
+        y_normalization = 1.5
+        r = max(1.0 - mean_xyz[1] / y_normalization, 0.0)
+        b = max(mean_xyz[1] / y_normalization - 1.0, 0.0)
+        return [r, 0.0, b]
+
+    cubes = CubeManager(p, strides=[1, 4, 16],
+                        edge_color_function=red_black_blue)
+    cubes.add_cube(0)
+    cubes.add_cube(2)
+    cubes.add_cube(8)
+    cubes.add_cube(10)
+    cubes.add_cube(32)
+    cubes.add_cube(34)
+    cubes.add_cube(40)
+    cubes.add_cube(42)
+
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.set_aspect('equal')
+    ax.set_axis_off()
+    ax.set_xlim(0.0, 3.0)
+    ax.set_ylim(0.0, 3.0)
+    ax.set_zlim(0.0, 3.0)
+
+    draw_polygon_collection(ax, cubes.quads, cubes.face_colors,
+                            cubes.edge_colors)
+
+    draw_basis_vectors(ax, [1.0, -0.8, 0.0], use_greek_labels=False)
+    draw_basis_vectors(ax, [0.17, 0.17, 0.25])
+    draw_basis_vectors(ax, [2.17, 0.17, 0.25], label_permutation=[2, 1, 0],
+                       flip_vector=[False, False, True])
+    draw_basis_vectors(ax, [0.17, 2.17, 0.45], label_permutation=[0, 2, 1],
+                       flip_vector=[False, False, True])
+    draw_basis_vectors(ax, [2.17, 2.17, 0.3], label_permutation=[2, 0, 1],
+                       flip_vector=[False, True, True])
+    draw_basis_vectors(ax, [0.17, 0.17, 2.25], label_permutation=[1, 0, 2],
+                       flip_vector=[False, True, False])
+    draw_basis_vectors(ax, [2.17, 0.17, 2.25], label_permutation=[1, 2, 0],
+                       flip_vector=[False, True, True])
+    draw_basis_vectors(ax, [0.17, 2.17, 2.3], label_permutation=[2, 0, 1],
+                       flip_vector=[False, True, True])
+    draw_basis_vectors(ax, [2.17, 2.17, 2.45])
+    fig.savefig('eightcubes_rotated_exploded.png')
+
+
 def tesseract_figure():
     p = np.array([[x, y, z] for z in [0, 1, 2, 3, 4] for y in [0, 1, 2, 3]
                  for x in [0, 1, 2, 3]])
@@ -232,7 +287,7 @@ def tesseract_figure():
         y_normalization = 1.5
         r = max(1.0 - mean_xyz[1]/y_normalization, 0.0)
         b = max(mean_xyz[1]/y_normalization - 1.0, 0.0)
-        return [r, 0, b]
+        return [r, 0.0, b]
 
     cubes = CubeManager(p, strides=[1, 4, 16],
                         edge_color_function=red_black_blue)
@@ -255,7 +310,7 @@ def tesseract_figure():
     ax.set_axis_off()
     ax.set_xlim(-0.5, 3.5)
     ax.set_ylim(-0.5, 3.5)
-    ax.set_zlim(0, 4)
+    ax.set_zlim(0.0, 4.0)
 
     # draw bounding box first, else matplotlib gets the layer ordering wrong
     draw_polygon_collection(ax, box_quads, 'white', 'lightgrey')
@@ -302,4 +357,5 @@ def tesseract_figure():
 one_cube_figure()
 two_cube_figures()
 eight_cube_figures()
+eight_cube_rotated_exploded_figure()
 tesseract_figure()

@@ -36,6 +36,8 @@ class Interval;
 template <typename TargetFrame>
 class Rectangle;
 template <typename TargetFrame>
+class RotatedBricks;
+template <typename TargetFrame>
 class RotatedIntervals;
 template <typename TargetFrame>
 class RotatedRectangles;
@@ -68,6 +70,7 @@ struct domain_creators<3> {
   template <typename Frame>
   using creators =
       tmpl::list<DomainCreators::Brick<Frame>, DomainCreators::Cylinder<Frame>,
+                 DomainCreators::RotatedBricks<Frame>,
                  DomainCreators::Shell<Frame>, DomainCreators::Sphere<Frame>>;
 };
 }  // namespace DomainCreators_detail
@@ -104,6 +107,7 @@ class DomainCreator {
 #include "Domain/DomainCreators/Disk.hpp"
 #include "Domain/DomainCreators/Interval.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
+#include "Domain/DomainCreators/RotatedBricks.hpp"
 #include "Domain/DomainCreators/RotatedIntervals.hpp"
 #include "Domain/DomainCreators/RotatedRectangles.hpp"
 #include "Domain/DomainCreators/Shell.hpp"
