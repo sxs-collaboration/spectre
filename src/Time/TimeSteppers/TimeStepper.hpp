@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <pup.h>
 #include <type_traits>
 
@@ -94,7 +95,7 @@ class TimeStepper : public PUP::able {
   }
 
   /// Number of substeps in this TimeStepper
-  virtual size_t number_of_substeps() const noexcept = 0;
+  virtual uint64_t number_of_substeps() const noexcept = 0;
 
   /// Number of past time steps needed for multi-step method
   virtual size_t number_of_past_steps() const noexcept = 0;

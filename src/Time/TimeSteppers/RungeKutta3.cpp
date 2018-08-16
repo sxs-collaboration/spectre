@@ -9,7 +9,7 @@
 
 namespace TimeSteppers {
 
-size_t RungeKutta3::number_of_substeps() const noexcept {
+uint64_t RungeKutta3::number_of_substeps() const noexcept {
   return 3;
 }
 

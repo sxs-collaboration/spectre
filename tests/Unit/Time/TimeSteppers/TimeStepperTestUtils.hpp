@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Time/BoundaryHistory.hpp"
@@ -28,7 +29,9 @@ void take_step(
     F&& rhs,
     const TimeDelta& step_size) noexcept {
   TimeId time_id(step_size.is_positive(), 0, *time);
-  for (size_t substep = 0; substep < stepper.number_of_substeps(); ++substep) {
+  for (uint64_t substep = 0;
+       substep < stepper.number_of_substeps();
+       ++substep) {
     CHECK(time_id.substep() == substep);
     history->insert(time_id.time(), *y, rhs(*y));
     stepper.update_u(y, history, step_size);
@@ -78,7 +81,7 @@ void integrate_test(const Stepper& stepper, const size_t number_of_past_steps,
   auto analytic = [](double t) { return sin(t); };
   auto rhs = [](double v) { return sqrt(1. - square(v)); };
 
-  const size_t num_steps = 800;
+  const uint64_t num_steps = 800;
   const Slab slab = integration_time > 0
       ? Slab::with_duration_from_start(0., integration_time)
       : Slab::with_duration_to_end(0., -integration_time);
@@ -93,7 +96,7 @@ void integrate_test(const Stepper& stepper, const size_t number_of_past_steps,
   initialize_history(time, &history, analytic, rhs, step_size,
                      number_of_past_steps);
 
-  for (size_t i = 0; i < num_steps; ++i) {
+  for (uint64_t i = 0; i < num_steps; ++i) {
     take_step(&time, &y, &history, stepper, rhs, step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
@@ -112,7 +115,7 @@ void integrate_variable_test(const Stepper& stepper,
   auto analytic = [](double t) { return sin(t); };
   auto rhs = [](double v) { return sqrt(1. - square(v)); };
 
-  const size_t num_steps = 800;
+  const uint64_t num_steps = 800;
   const double average_step = 1. / num_steps;
 
   Slab slab = Slab::with_duration_to_end(0., average_step);
@@ -123,7 +126,7 @@ void integrate_variable_test(const Stepper& stepper,
   initialize_history(time, &history, analytic, rhs, slab.duration(),
                      number_of_past_steps);
 
-  for (size_t i = 0; i < num_steps; ++i) {
+  for (uint64_t i = 0; i < num_steps; ++i) {
     slab = slab.advance().with_duration_from_start(
         (1. + 0.5 * sin(i)) * average_step);
     time = time.with_slab(slab);
@@ -136,7 +139,7 @@ void integrate_variable_test(const Stepper& stepper,
 
 template <typename Stepper>
 void stability_test(const Stepper& stepper) noexcept {
-  const size_t num_steps = 5000;
+  const uint64_t num_steps = 5000;
   const double bracket_size = 1.1;
 
   // This is integrating dy/dt = -2y, which is chosen so that the stable
@@ -156,7 +159,7 @@ void stability_test(const Stepper& stepper) noexcept {
                        [](double v) { return -2. * v; },
                        step_size, stepper.number_of_past_steps());
 
-    for (size_t i = 0; i < num_steps; ++i) {
+    for (uint64_t i = 0; i < num_steps; ++i) {
       take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
                 step_size);
       CHECK(std::abs(y) < 10.);
@@ -177,7 +180,7 @@ void stability_test(const Stepper& stepper) noexcept {
                        [](double v) { return -2. * v; },
                        step_size, stepper.number_of_past_steps());
 
-    for (size_t i = 0; i < num_steps; ++i) {
+    for (uint64_t i = 0; i < num_steps; ++i) {
       take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
                 step_size);
       if (std::abs(y) > 10.) {
@@ -205,7 +208,7 @@ void equal_rate_boundary(const Stepper& stepper,
 
   Approx approx = Approx::custom().epsilon(epsilon);
 
-  const size_t num_steps = 100;
+  const uint64_t num_steps = 100;
   const Slab slab(0.875, 1.);
   const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
 
@@ -238,8 +241,8 @@ void equal_rate_boundary(const Stepper& stepper,
     }
   }
 
-  for (size_t i = 0; i < num_steps; ++i) {
-    for (size_t substep = 0;
+  for (uint64_t i = 0; i < num_steps; ++i) {
+    for (uint64_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
       volume_history.insert(time_id.time(), y, 0.);

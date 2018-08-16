@@ -3,7 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <string>
 
@@ -55,12 +55,12 @@ void check(const bool time_runs_forward) noexcept {
   CHECK(id == TimeId(id));
 
   const auto check_comparisons =
-      [&id](const ssize_t slab_delta, const TimeDelta& step_time_delta,
-            const ssize_t substep_delta, const TimeDelta& time_delta) noexcept {
+      [&id](const int64_t slab_delta, const TimeDelta& step_time_delta,
+            const int64_t substep_delta, const TimeDelta& time_delta) noexcept {
     const TimeId id2(id.time_runs_forward(),
-                     id.slab_number() + static_cast<size_t>(slab_delta),
+                     id.slab_number() + slab_delta,
                      id.step_time() + step_time_delta,
-                     id.substep() + static_cast<size_t>(substep_delta),
+                     id.substep() + static_cast<uint64_t>(substep_delta),
                      id.time() + time_delta);
     check_cmp(id, id2);
     CHECK(Hash{}(id) != Hash{}(id2));

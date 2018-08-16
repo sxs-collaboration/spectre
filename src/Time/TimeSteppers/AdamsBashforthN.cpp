@@ -19,7 +19,7 @@ AdamsBashforthN::AdamsBashforthN(size_t target_order, bool self_start,
   }
 }
 
-size_t AdamsBashforthN::number_of_substeps() const noexcept {
+uint64_t AdamsBashforthN::number_of_substeps() const noexcept {
   return 1;
 }
 
