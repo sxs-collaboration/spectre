@@ -41,6 +41,9 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct SpacetimeChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct SpatialChristoffelSecondKind;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct SpacetimeNormalOneForm;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
@@ -48,11 +51,14 @@ struct SpacetimeNormalVector;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
 struct TraceSpacetimeChristoffelFirstKind;
-template <size_t Dim, typename Frame, typename DataType>
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct TraceSpatialChristoffelSecondKind;
-template <size_t Dim, typename Frame, typename DataType>
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct ExtrinsicCurvature;
-template <size_t Dim, typename Frame, typename DataType>
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct TraceExtrinsicCurvature;
 }  // namespace Tags
 }  // namespace gr
