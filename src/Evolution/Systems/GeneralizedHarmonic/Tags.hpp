@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "TagsDeclarations.hpp"
 
 class DataVector;
 
