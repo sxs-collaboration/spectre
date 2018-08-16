@@ -42,9 +42,7 @@ Identity<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const
 
 template class Identity<1>;
 template class Identity<2>;
-// Identity should only be used in ProductMaps if a particular dimension is
-// unaffected.  So if the largest dim we do is 3, then you should never use
-// Identity<3>
+template class Identity<3>;
 
 // Explicit instantiations
 /// \cond
