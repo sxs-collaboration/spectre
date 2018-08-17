@@ -19,16 +19,6 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Math.hpp"
 
-namespace Spectral {
-// For exact-quadrature test where we need the \f$w_k\f$. We don't provide a
-// public accessor since we only ever need them in Spectral.cpp.
-template <Basis, Quadrature>
-std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
-    size_t) noexcept;
-template <Basis>
-DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
-}  // namespace Spectral
-
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.streaming",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");

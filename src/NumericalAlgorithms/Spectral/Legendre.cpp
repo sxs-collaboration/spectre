@@ -17,11 +17,9 @@
 namespace Spectral {
 
 // Algorithms to compute Legendre basis functions
-// These functions specialize the templates declared in `Spectral.cpp`.
+// These functions specialize the templates declared in `Spectral.hpp`.
 
 /// \cond
-template <Basis>
-DataVector compute_basis_function_values(size_t, const DataVector&) noexcept;
 template <>
 DataVector compute_basis_function_values<Basis::Legendre>(
     const size_t k, const DataVector& x) noexcept {
@@ -44,25 +42,17 @@ DataVector compute_basis_function_values<Basis::Legendre>(
   }
 }
 
-template <Basis>
-DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
 template <>
 DataVector compute_inverse_weight_function_values<Basis::Legendre>(
     const DataVector& x) noexcept {
   return DataVector(x.size(), 1.);
 }
 
-template <Basis>
-double compute_basis_function_normalization_square(size_t) noexcept;
 template <>
 double compute_basis_function_normalization_square<Basis::Legendre>(
     const size_t k) noexcept {
   return 2. / (2. * k + 1.);
 }
-
-template <Basis, Quadrature>
-std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
-    size_t) noexcept;
 /// \endcond
 
 // Algorithms to compute Legendre-Gauss quadrature

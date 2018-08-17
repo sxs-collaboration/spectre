@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <limits>
+#include <utility>
 
 /// \cond
 class Matrix;
@@ -90,6 +91,42 @@ constexpr size_t minimum_number_of_points<BasisType, Quadrature::GaussLobatto> =
  */
 template <Basis>
 constexpr size_t maximum_number_of_points = 12;
+
+/*!
+ * \brief Compute the function values of the basis function \f$\Phi_k(x)\f$
+ * (zero-indexed).
+ */
+template <Basis BasisType>
+DataVector compute_basis_function_values(size_t k,
+                                         const DataVector& x) noexcept;
+
+/*!
+ * \brief Compute the inverse of the weight function \f$w(x)\f$ w.r.t. which
+ * the basis functions are orthogonal. See the description of
+ * `quadrature_weights(size_t)` for details.
+ */
+template <Basis>
+DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
+
+/*!
+ * \brief Compute the normalization square of the basis function \f$\Phi_k\f$
+ * (zero-indexed), i.e. the weighted definite integral over its square.
+ */
+template <Basis BasisType>
+double compute_basis_function_normalization_square(size_t k) noexcept;
+
+/*!
+ * \brief Compute the collocation points and weights associated to the
+ * basis and quadrature.
+ *
+ * \details This function is expected to return the tuple
+ * \f$(\xi_k,w_k)\f$ where the \f$\xi_k\f$ are the collocation
+ * points and the \f$w_k\f$ are defined in the description of
+ * `quadrature_weights(size_t)`.
+ */
+template <Basis BasisType, Quadrature QuadratureType>
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
+    size_t num_points) noexcept;
 
 /*!
  * \brief Collocation points

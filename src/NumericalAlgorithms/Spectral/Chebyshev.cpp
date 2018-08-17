@@ -15,11 +15,9 @@
 namespace Spectral {
 
 // Algorithms to compute Chebyshev basis functions
-// These functions specialize the templates declared in `Spectral.cpp`.
+// These functions specialize the templates declared in `Spectral.hpp`.
 
 /// \cond
-template <Basis>
-DataVector compute_basis_function_values(size_t, const DataVector&) noexcept;
 template <>
 DataVector compute_basis_function_values<Basis::Chebyshev>(
     const size_t k, const DataVector& x) noexcept {
@@ -47,16 +45,12 @@ DataVector compute_basis_function_values<Basis::Chebyshev>(
   }
 }
 
-template <Basis>
-DataVector compute_inverse_weight_function_values(const DataVector&) noexcept;
 template <>
 DataVector compute_inverse_weight_function_values<Basis::Chebyshev>(
     const DataVector& x) noexcept {
   return sqrt(1. - square(x));
 }
 
-template <Basis>
-double compute_basis_function_normalization_square(size_t) noexcept;
 template <>
 double compute_basis_function_normalization_square<Basis::Chebyshev>(
     const size_t k) noexcept {
@@ -66,10 +60,6 @@ double compute_basis_function_normalization_square<Basis::Chebyshev>(
     return M_PI_2;
   }
 }
-
-template <Basis, Quadrature>
-std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
-    size_t) noexcept;
 /// \endcond
 
 // Algorithm to compute Chebyshev-Gauss quadrature
