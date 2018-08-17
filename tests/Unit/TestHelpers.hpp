@@ -298,3 +298,21 @@ class DoesThrow {
   DoesThrow& operator=(DoesThrow&&) noexcept(false);
   ~DoesThrow() = default;
 };
+
+template <typename Exception, typename ThrowingFunctor>
+void test_throw_exception(const ThrowingFunctor& func,
+                          const Exception& expected) {
+  try {
+    func();
+    INFO("Failed to throw any exception");
+    CHECK(false);
+  } catch (Exception& e) {
+    CAPTURE(e.what());
+    CAPTURE(expected.what());
+    CHECK(std::string(e.what()) == std::string(expected.what()));
+  } catch (...) {
+    INFO("Failed to throw exception of type " +
+         pretty_type::get_name<Exception>());
+    CHECK(false);
+  }
+}

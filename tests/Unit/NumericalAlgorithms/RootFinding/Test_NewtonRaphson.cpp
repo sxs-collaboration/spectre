@@ -9,8 +9,10 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/Exceptions.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 std::pair<double, double> func_and_deriv_free(double x) noexcept {
@@ -137,4 +139,44 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.DataVector",
                                                lower, upper, digits);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.NewtonRaphson.convergence_error.Double",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_throw_exception(
+      []() {
+        const size_t digits = 8;
+        const double guess = 1.5;
+        const double lower = 1.;
+        const double upper = 2.;
+        const auto func_and_deriv = [](double x) noexcept {
+          return std::make_pair(2. - square(x), -2. * x);
+        };
+        RootFinder::newton_raphson(func_and_deriv, guess, lower, upper, digits,
+                                   2);
+      },
+      convergence_error(
+          "newton_raphson reached max iterations without converging"));
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.NewtonRaphson.convergence_error.DataVector",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_throw_exception(
+      []() {
+        const size_t digits = 8;
+        const DataVector guess{1.6, 1.9, -1.6, -1.9};
+        const DataVector lower{sqrt(2.), sqrt(2.), -2., -3.};
+        const DataVector upper{2., 3., -sqrt(2.), -sqrt(2.)};
+        const DataVector constant{2., 4., 2., 4.};
+        const auto func_and_deriv = [&constant](const double x,
+                                                const size_t i) noexcept {
+          return std::make_pair(constant[i] - square(x), -2. * x);
+        };
+        RootFinder::newton_raphson(func_and_deriv, guess, lower, upper, digits,
+                                   2);
+      },
+      convergence_error(
+          "newton_raphson reached max iterations without converging"));
 }

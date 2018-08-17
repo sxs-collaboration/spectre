@@ -3,17 +3,20 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <cmath>
 #include <cstddef>
+#include <iomanip>
 #include <limits>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/Exceptions.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 double f_free(double x) { return 2.0 - square(x); }
@@ -62,33 +65,34 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.Bounds",
                             rel_tol) == approx(root));
 
   // Check that exception is thrown for various bad bracket possibilities
-  const auto test_bad_bracket_exception = [&f_lambda, &abs_tol, &rel_tol](
-                                              const double local_lower,
-                                              const double local_upper,
-                                              const std::string& msg) {
-    try {
-      RootFinder::toms748(f_lambda, local_lower, local_upper, abs_tol, rel_tol);
-      INFO(msg);
-      CHECK(false);
-    } catch (std::domain_error& e) {
-      const std::string expected =
-          "Error in function boost::math::tools::toms748_solve<double>: "
-          "Parameters a and b do not bracket the root:";
-      CAPTURE(e.what());
-      CHECK(boost::algorithm::starts_with(e.what(), expected));
-    } catch (...) {
-      CHECK(false);
-    }
-  };
+  const std::string prefix =
+      "Error in function boost::math::tools::toms748_solve<double>: "
+      "Parameters a and b do not bracket the root: a=";
 
-  test_bad_bracket_exception(
-      0.0, sqrt(2.0) - abs_tol,
-      "Expected root finder to fail because upper bound is too tight");
-  test_bad_bracket_exception(
-      sqrt(2.0) + abs_tol, upper,
-      "Expected root finder to fail because lower bound is too tight");
-  test_bad_bracket_exception(
-      -1.0, 1.0, "Expected root finder to fail because root is not bracketed");
+  test_throw_exception(
+      [&f_lambda, &abs_tol, &rel_tol]() {
+        RootFinder::toms748(f_lambda, 0.0, sqrt(2.0) - abs_tol, abs_tol,
+                            rel_tol);
+      },
+      std::domain_error(prefix + "0"));
+
+  const std::string lower_bound_string = [&abs_tol]() {
+    std::stringstream s;
+    s << std::setprecision(17) << (sqrt(2.0) + abs_tol);
+    return s.str();
+  }();
+  test_throw_exception(
+      [&f_lambda, &abs_tol, &rel_tol]() {
+        RootFinder::toms748(f_lambda, sqrt(2.0) + abs_tol, 2.0, abs_tol,
+                            rel_tol);
+      },
+      std::domain_error(prefix + lower_bound_string));
+
+  test_throw_exception(
+      [&f_lambda, &abs_tol, &rel_tol]() {
+        RootFinder::toms748(f_lambda, -1.0, 1.0, abs_tol, rel_tol);
+      },
+      std::domain_error(prefix + "-1"));
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
@@ -154,4 +158,36 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
   RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.convergence_error.Double",
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_throw_exception(
+      []() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 1e-15;
+        const double upper = 2.0;
+        const double lower = 0.0;
+        const auto f = [](double x) { return 2.0 - square(x); };
+        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
+      },
+      convergence_error("toms748 reached max iterations without converging"));
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.TOMS748.convergence_error.DataVector",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_throw_exception(
+      []() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 1e-15;
+        const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
+        const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+        const DataVector constant{2.0, 4.0, 2.0, 4.0};
+        const auto f = [&constant](const double x, const size_t i) noexcept {
+          return constant[i] - square(x);
+        };
+        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
+      },
+      convergence_error("toms748 reached max iterations without converging"));
 }
