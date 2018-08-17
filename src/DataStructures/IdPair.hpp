@@ -13,8 +13,8 @@
  */
 template <typename IdType, typename DataType>
 struct IdPair {
-  IdType id;
-  DataType data;
+  IdType id{};
+  DataType data{};
 };
 
 template <typename IdType, typename DataType>
