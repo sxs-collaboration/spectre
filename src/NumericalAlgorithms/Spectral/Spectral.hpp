@@ -36,6 +36,9 @@ class Mesh;
  * \note Generally you should prefer working with a Mesh. Use its
  * Mesh::slice_through() method to retrieve the mesh in a particular dimension:
  * \snippet Test_Spectral.cpp get_points_for_mesh
+ *
+ *
+ * Most algorithms in this namespace are adapted from \cite Kopriva.
  */
 namespace Spectral {
 
