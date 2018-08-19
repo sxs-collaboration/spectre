@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
+/// \ingroup UtilitiesGroup
 /// A function wrapper that caches function values.
 template <typename Function, typename Map>
 class CachedFunction {
@@ -39,6 +40,7 @@ class CachedFunction {
   Map cache_;
 };
 
+/// \ingroup UtilitiesGroup
 /// Construct a CachedFunction wrapping the given function
 ///
 /// \example
