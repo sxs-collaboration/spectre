@@ -12,6 +12,12 @@
  */
 
 /*!
+ * \defgroup AnalyticSolutionsGroup Analytic Solutions
+ * \brief Analytic solutions to the equations implemented in \ref
+ * EvolutionSystemsGroup and \ref EllipticSystemsGroup.
+ */
+
+/*!
  * \defgroup BoundaryConditionsGroup Boundary Conditions
  * A collection of boundary conditions used for evolutions.
  */
@@ -381,11 +387,6 @@
  * \defgroup DomainCreatorsGroup Domain Creators
  * A collection of domain creators for specifying the initial computational
  * domain geometry.
- */
-
-/*!
- * \defgroup EinsteinSolutionsGroup Einstein Solutions
- * \brief Classes which implement analytic solutions to Einstein's equations
  */
 
 /*!

@@ -26,7 +26,6 @@ class DataVector;
 namespace EinsteinSolutions {
 
 /*!
- * \ingroup EinsteinSolutionsGroup
  * \brief TOV solver based on Lindblom's method
  *
  * Uses Lindblom's method of integrating the TOV equations from
