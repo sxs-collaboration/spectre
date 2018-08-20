@@ -8,6 +8,10 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
+class YlmSpherepack;
+/// \endcond
+
 namespace TestHelpers {
 namespace Schwarzschild {
 /*!
@@ -58,6 +62,36 @@ template <typename DataType>
 Scalar<DataType> horizon_radius(const std::array<DataType, 2>& theta_phi,
                                 const double& mass,
                                 const std::array<double, 3>& spin) noexcept;
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Kerr (Kerr-Schild) horizon ricci scalar (spin on z axis)
+ *
+ * \details
+ * Computes the 2-dimensional Ricci scalar \f$R\f$ on the
+ * horizon of a Kerr-Schild black hole with spin in the z direction
+ * in terms of mass `mass` and dimensionless spin `dimensionless_spin_z`.
+ */
+template <typename DataType>
+Scalar<DataType> horizon_ricci_scalar(
+    const Scalar<DataType>& horizon_radius, const double& mass,
+    const double& dimensionless_spin_z) noexcept;
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Kerr (Kerr-Schild) horizon ricci scalar (generic spin)
+ *
+ * \details
+ * Computes the 2-dimensional Ricci scalar \f$R\f$ on the
+ * horizon of a Kerr-Schild black hole with generic spin
+ * in terms of mass `mass` and dimensionless spin `dimensionless_spin`.
+ */
+template <typename DataType>
+Scalar<DataType> horizon_ricci_scalar(
+    const Scalar<DataType>& horizon_radius_with_spin_on_z_axis,
+    const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
+    const double& mass,
+    const std::array<double, 3>& dimensionless_spin) noexcept;
 
 }  // namespace Kerr
 }  // namespace TestHelpers

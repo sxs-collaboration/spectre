@@ -191,7 +191,7 @@ Scalar<DataVector> area_element(
  * The argument `unit_normal_vector` can be found by raising the
  * index of the one-form returned by `StrahlkorperGr::unit_normal_oneform`.
  * The argument `tangents` is a Tangents that can be obtained from the
- * StrahlkorperDataBox using the "Tangents" tag.
+ * StrahlkorperDataBox using the `StrahlkorperTags::Tangents` tag.
  */
 template <typename Frame>
 Scalar<DataVector> spin_function(
@@ -201,4 +201,44 @@ Scalar<DataVector> spin_function(
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
 
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Spin magnitude measured on a 2D `Strahlkorper`.
+ *
+ * \details Measures the quasilocal spin magnitude of a Strahlkorper, by
+ * inserting \f$\alpha=1\f$ into Eq. (10) of https://arxiv.org/abs/0907.0280
+ * and dividing by \f$8\pi\f$ to yield the spin magnitude. The
+ * spin magnitude is a Euclidean norm of surface integrals over the horizon
+ * \f$S = \frac{1}{8\pi}\oint z \Omega dA\f$,
+ * where \f$\Omega\f$ is obtained via `StrahlkorperGr::spin_function()`,
+ * \f$dA\f$ is the area element, and \f$z\f$ (the "spin potential") is a
+ * solution of a generalized eigenproblem given by Eq. (9) of
+ * https://arxiv.org/abs/0907.0280. Specifically,
+ * \f$\nabla^4 z + \nabla \cdot (R\nabla z) = \lambda \nabla^2 z\f$, where
+ * \f$R\f$ is obtained via `StrahlkorperGr::ricci_scalar()`. The spin
+ * magnitude is the Euclidean norm of the three values of \f$S\f$ obtained from
+ * the eigenvectors \f$z\f$ with the 3 smallest-magnitude
+ * eigenvalues \f$\lambda\f$. Note that this formulation of the eigenproblem
+ * uses the "Owen" normalization, Eq. (A9) and surrounding discussion in
+ * https://arxiv.org/abs/0805.4192.
+ * The eigenvectors are normalized  with the "Kerr normalization",
+ * Eq. (A22) of https://arxiv.org/abs/0805.4192.
+ * The argument `spatial_metric` is the metric of the 3D spatial slice
+ * evaluated on the `Strahlkorper`.
+ * The argument `tangents` can be obtained from the StrahlkorperDataBox
+ * using the `StrahlkorperTags::Tangents` tag, and the argument
+ * `unit_normal_vector` can
+ * be found by raising the index of the one-form returned by
+ * `StrahlkorperGr::unit_normal_one_form`.
+ * The argument `ylm` is the `YlmSpherepack` of the `Strahlkorper`.
+ * The argument `area_element`
+ * can be computed via `StrahlkorperGr::area_element`.
+ */
+template <typename Frame>
+double dimensionful_spin_magnitude(
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
+    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
 }  // namespace StrahlkorperGr

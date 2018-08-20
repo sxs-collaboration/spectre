@@ -26,7 +26,7 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
   }
   return christoffel;
 }
-} // namespace gr
+}  // namespace gr
 
 // Explicit Instantiations
 /// \cond
@@ -42,7 +42,8 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
           d_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial),
+                        (Frame::Grid, Frame::Inertial,
+                         Frame::Spherical<Frame::Inertial>),
                         (IndexType::Spatial, IndexType::Spacetime))
 
 #undef DIM
