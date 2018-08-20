@@ -23,6 +23,7 @@
 
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/TestHelpers.hpp"  // IWYU pragma: keep
 
 namespace {
 
@@ -111,6 +112,16 @@ static_assert(cpp17::negation<cpp17::bool_constant<false>>::value,
 static_assert(std::is_same<cpp17::void_t<char, bool, double>, void>::value,
               "Failed testing type trait void_t");
 /// [void_t_example]
+
+static_assert(tt::can_be_copy_constructed_v<int>,
+              "Failed testing type trait is_copy_constructible");
+static_assert(tt::can_be_copy_constructed_v<std::vector<int>>,
+              "Failed testing type trait is_copy_constructible");
+static_assert(tt::can_be_copy_constructed_v<std::unordered_map<int, int>>,
+              "Failed testing type trait is_copy_constructible");
+static_assert(
+    not tt::can_be_copy_constructed_v<std::unordered_map<int, NonCopyable>>,
+    "Failed testing type trait is_copy_constructible");
 
 /// [is_std_array_example]
 static_assert(tt::is_std_array<std::array<double, 3>>::value,
