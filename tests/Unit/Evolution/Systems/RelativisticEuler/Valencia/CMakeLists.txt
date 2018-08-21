@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ConservativeFromPrimitive.cpp
   Test_Equations.cpp
   Test_Fluxes.cpp
+  Test_PrimitiveFromConservative.cpp
   )
 
 add_test_library(
