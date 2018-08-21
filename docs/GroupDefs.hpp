@@ -454,6 +454,37 @@
  * \brief Tags used for options parsed from the input file
  */
 
+/*!
+ * \defgroup LinearSolverGroup  Linear Solver
+ * \brief Algorithms to solve linear systems of equations
+ *
+ * \details In a way, the linear solver is for elliptic systems what time
+ * stepping is for the evolution code. This is because the DG scheme for an
+ * elliptic system reduces to a linear system of equations of the type
+ * \f$Ax=b\f$, where \f$A\f$ is a global matrix representing the DG
+ * discretization of the problem. Since this is one equation for each node in
+ * the computational domain it becomes unfeasible to numerically invert the
+ * global matrix \f$A\f$. Instead, we solve the problem iteratively so that we
+ * never need to construct \f$A\f$ globally but only need \f$Ax\f$ that can be
+ * evaluated locally by virtue of the DG formulation. This action of the
+ * operator we have to supply in each step of the iterative algorithms
+ * implemented here. It is where most of the computational cost goes and usually
+ * involves computing a volume contribution for each element and communicating
+ * fluxes with neighboring elements.
+ *
+ * In the iterative algorithms we usually don't work with the physical field
+ * \f$x\f$ directly. Instead we need to apply the operator to an internal
+ * variable defined by the respective algorithm. This variable is exposed as
+ * `LinearSolver::Tags::Operand`, and the algorithm expects that the computed
+ * operator action is written into
+ * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
+ * LinearSolver::Tags::Operand>` in each step.
+ *
+ * Since the iterative algorithms typically scale badly with increasing grid
+ * size, a preconditioner \f$P\f$ is needed such that \f$P^{-1}A\f$ is easier to
+ * invert.
+ */
+
 /// \defgroup MathFunctionsGroup Math Functions
 /// \brief Useful analytic functions
 
