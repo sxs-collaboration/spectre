@@ -65,8 +65,16 @@ class Shell : public DomainCreator<3, TargetFrame> {
     static constexpr type default_value() noexcept { return 1.0; }
   };
 
-  using options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
-                             InitialGridPoints, UseEquiangularMap, AspectRatio>;
+  struct UseLogarithmicMap {
+    using type = bool;
+    static constexpr OptionString help = {
+        "Use a logarithmically spaced radial grid."};
+    static constexpr type default_value() noexcept { return false; }
+  };
+
+  using options =
+      tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
+                 UseEquiangularMap, AspectRatio, UseLogarithmicMap>;
 
   static constexpr OptionString help{
       "Creates a 3D spherical shell with 6 Blocks. `UseEquiangularMap` has\n"
@@ -82,7 +90,8 @@ class Shell : public DomainCreator<3, TargetFrame> {
         typename InitialRefinement::type initial_refinement,
         typename InitialGridPoints::type initial_number_of_grid_points,
         typename UseEquiangularMap::type use_equiangular_map,
-        typename AspectRatio::type aspect_ratio = 1.0) noexcept;
+        typename AspectRatio::type aspect_ratio = 1.0,
+        typename UseLogarithmicMap::type use_logarithmic_map = false) noexcept;
 
   Shell() = default;
   Shell(const Shell&) = delete;
@@ -105,5 +114,6 @@ class Shell : public DomainCreator<3, TargetFrame> {
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_ = true;
   typename AspectRatio::type aspect_ratio_ = 1.0;
+  typename UseLogarithmicMap::type use_logarithmic_map_ = false;
 };
 }  // namespace DomainCreators

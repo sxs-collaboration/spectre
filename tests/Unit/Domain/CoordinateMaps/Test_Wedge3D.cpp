@@ -45,7 +45,7 @@ void test_wedge3d_all_directions() {
               with_logarithmic_map ? 1.0 : inner_sphericity,
               with_logarithmic_map ? 1.0 : outer_sphericity,
               with_equiangular_map, halves, with_logarithmic_map);
-          test_suite_for_map(wedge_map);
+          test_suite_for_map_on_unit_cube(wedge_map);
         }
       }
     }

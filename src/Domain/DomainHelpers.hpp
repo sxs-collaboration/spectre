@@ -94,15 +94,16 @@ corners_for_rectilinear_domains(const Index<VolumeDim>& domain_extents,
 /// The argument `aspect_ratio` sets the equatorial compression factor,
 /// used by the EquatorialCompression maps which get composed with the Wedges.
 /// This is done if `aspect_ratio` is set to something other than the default
-/// value of one.
+/// value of one. When the argument `use_logarithmic_map` is set to `true`,
+/// the radial gridpoints of the wedge map are set to be spaced logarithmically.
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(double inner_radius, double outer_radius,
                       double inner_sphericity, double outer_sphericity,
                       bool use_equiangular_map,
                       double x_coord_of_shell_center = 0.0,
-                      bool use_half_wedges = false,
-                      double aspect_ratio = 1.0) noexcept;
+                      bool use_half_wedges = false, double aspect_ratio = 1.0,
+                      bool use_logarithmic_map = false) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact

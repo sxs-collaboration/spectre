@@ -480,30 +480,31 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double outer_sphericity,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
-                      const bool use_half_wedges,
-                      const double aspect_ratio) noexcept {
+                      const bool use_half_wedges, const double aspect_ratio,
+                      const bool use_logarithmic_map) noexcept {
   const auto wedge_orientations = orientations_for_wrappings();
 
   using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Halves = Wedge3DMap::WedgeHalves;
   std::vector<Wedge3DMap> wedges{};
   for (size_t i = 0; i < 6; i++) {
     wedges.emplace_back(inner_radius, outer_radius,
                         gsl::at(wedge_orientations, i), inner_sphericity,
-                        outer_sphericity, use_equiangular_map);
+                        outer_sphericity, use_equiangular_map, Halves::Both,
+                        use_logarithmic_map);
   }
 
   if (use_half_wedges) {
-    using Halves = Wedge3DMap::WedgeHalves;
     std::vector<Wedge3DMap> wedges_and_half_wedges{};
     for (size_t i = 0; i < 4; i++) {
       wedges_and_half_wedges.emplace_back(
           inner_radius, outer_radius, gsl::at(wedge_orientations, i),
           inner_sphericity, outer_sphericity, use_equiangular_map,
-          Halves::LowerOnly);
+          Halves::LowerOnly, use_logarithmic_map);
       wedges_and_half_wedges.emplace_back(
           inner_radius, outer_radius, gsl::at(wedge_orientations, i),
           inner_sphericity, outer_sphericity, use_equiangular_map,
-          Halves::UpperOnly);
+          Halves::UpperOnly, use_logarithmic_map);
     }
     wedges_and_half_wedges.push_back(wedges[4]);
     wedges_and_half_wedges.push_back(wedges[5]);
@@ -1004,8 +1005,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double outer_sphericity,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
-                      const bool use_wedge_halves,
-                      const double aspect_ratio) noexcept;
+                      const bool use_wedge_halves, const double aspect_ratio,
+                      const bool use_logarithmic_map) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
@@ -1013,8 +1014,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double outer_sphericity,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
-                      const bool use_wedge_halves,
-                      const double aspect_ratio) noexcept;
+                      const bool use_wedge_halves, const double aspect_ratio,
+                      const bool use_logarithmic_map) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
