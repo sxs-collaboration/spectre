@@ -146,7 +146,7 @@ void compute_source_terms_of_u(
   }
 
   get(*source_tilde_phi) =
-      (get(trace(extrinsic_curvature, inv_spatial_metric)) -
+      (-get(trace(extrinsic_curvature, inv_spatial_metric)) -
        constraint_damping_parameter) *
       get(lapse) * get(tilde_phi);
   for (size_t m = 0; m < 3; ++m) {
