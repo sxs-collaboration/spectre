@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ApparentHorizons/StrahlkorperDataBox.hpp"
+#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond

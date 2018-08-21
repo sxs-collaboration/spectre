@@ -12,8 +12,8 @@
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperDataBox.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
+#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"

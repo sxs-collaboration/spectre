@@ -9,7 +9,7 @@
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "ApparentHorizons/StrahlkorperDataBox.hpp"  // IWYU pragma: keep
+#include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
