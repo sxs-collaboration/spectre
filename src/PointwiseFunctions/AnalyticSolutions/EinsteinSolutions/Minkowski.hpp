@@ -25,7 +25,6 @@ struct dt;
 namespace EinsteinSolutions {
 
 /*!
- * \ingroup EinsteinSolutionsGroup
  * \brief The Minkowski solution for flat space in Dim spatial dimensions.
  *
  * \details The solution has lapse \f$N(x,t)= 1 \f$, shift \f$N^i(x,t) = 0 \f$

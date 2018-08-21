@@ -28,7 +28,6 @@ struct dt;
 namespace EinsteinSolutions {
 
 /*!
- * \ingroup EinsteinSolutionsGroup
  * \brief Kerr black hole in Kerr-Schild coordinates
  *
  * \details

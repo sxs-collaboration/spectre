@@ -18,7 +18,6 @@ namespace NewtonianEuler {
 namespace Solutions {
 
 /*!
- * \ingroup NewtonianEulerSolutionsGroup
  * \brief Newtonian isentropic vortex in Cartesian coordinates
  *
  * The analytic solution to the 2-D Newtonian Euler system
