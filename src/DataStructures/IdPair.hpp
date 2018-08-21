@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <ostream>
 #include <pup.h>
 #include <type_traits>
 #include <utility>
@@ -48,5 +49,11 @@ template <typename IdType, typename DataType>
 bool operator!=(const IdPair<IdType, DataType>& lhs,
                 const IdPair<IdType, DataType>& rhs) noexcept {
   return not(lhs == rhs);
+}
+
+template <typename IdType, typename DataType>
+std::ostream& operator<<(std::ostream& os,
+                         const IdPair<IdType, DataType>& t) noexcept {
+  return os << '(' << t.id << ',' << t.data << ')';
 }
 /// \endcond
