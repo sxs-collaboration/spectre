@@ -24,14 +24,16 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
                  const OrientationMap<3> orientation_of_wedge,
                  const double sphericity_inner, const double sphericity_outer,
                  const bool with_equiangular_map,
-                 const WedgeHalves halves_to_use) noexcept
+                 const WedgeHalves halves_to_use,
+                 const bool with_logarithmic_map) noexcept
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       orientation_of_wedge_(orientation_of_wedge),
       sphericity_inner_(sphericity_inner),
       sphericity_outer_(sphericity_outer),
       with_equiangular_map_(with_equiangular_map),
-      halves_to_use_(halves_to_use) {
+      halves_to_use_(halves_to_use),
+      with_logarithmic_map_(with_logarithmic_map) {
   ASSERT(radius_inner > 0.0,
          "The radius of the inner surface must be greater than zero.");
   ASSERT(sphericity_inner >= 0.0 and sphericity_inner <= 1.0,
@@ -48,21 +50,36 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
          "The arguments passed into the constructor for Wedge3D result in an "
          "object where the "
          "outer surface is pierced by the inner surface.");
-  scaled_frustum_zero_ =
-      0.5 / sqrt(3.0) * ((1.0 - sphericity_outer_) * radius_outer +
-                         (1.0 - sphericity_inner) * radius_inner);
-  sphere_zero_ = 0.5 * (sphericity_outer_ * radius_outer +
-                        sphericity_inner * radius_inner);
-  scaled_frustum_rate_ =
-      0.5 / sqrt(3.0) * ((1.0 - sphericity_outer_) * radius_outer -
-                         (1.0 - sphericity_inner) * radius_inner);
-  sphere_rate_ = 0.5 * (sphericity_outer_ * radius_outer -
-                        sphericity_inner * radius_inner);
+  ASSERT(not with_logarithmic_map_ or
+             (with_logarithmic_map_ and sphericity_inner_ == 1.0 and
+              sphericity_outer_ == 1.0),
+         "The logarithmic map is only supported for spherical wedges.");
+  if (with_logarithmic_map_) {
+    scaled_frustum_zero_ = 0.0;
+    sphere_zero_ = 0.5 * (log(radius_outer * radius_inner));
+    scaled_frustum_rate_ = 0.0;
+    sphere_rate_ = 0.5 * (log(radius_outer / radius_inner));
+  } else {
+    scaled_frustum_zero_ = 0.5 / sqrt(3.0) *
+                           ((1.0 - sphericity_outer_) * radius_outer +
+                            (1.0 - sphericity_inner) * radius_inner);
+    sphere_zero_ = 0.5 * (sphericity_outer_ * radius_outer +
+                          sphericity_inner * radius_inner);
+    scaled_frustum_rate_ = 0.5 / sqrt(3.0) *
+                           ((1.0 - sphericity_outer_) * radius_outer -
+                            (1.0 - sphericity_inner) * radius_inner);
+    sphere_rate_ = 0.5 * (sphericity_outer_ * radius_outer -
+                          sphericity_inner * radius_inner);
+  }
 }
 
 template <typename T>
 tt::remove_cvref_wrap_t<T> Wedge3D::default_physical_z(
     const T& zeta, const T& one_over_rho) const noexcept {
+  if (with_logarithmic_map_) {
+    return exp(sphere_zero_ + sphere_rate_ * zeta) * one_over_rho;
+  }
+
   // Using auto keeps this as a blaze expression.
   const auto zeta_coefficient =
       (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
@@ -116,7 +133,6 @@ boost::optional<std::array<double, 3>> Wedge3D::inverse(
   const double cap_eta = physical_y / physical_z;
   const double one_over_rho =
       1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
-
   const double zeta_coefficient =
       (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
   // If -sphere_rate_/scaled_frustum_rate_ > 1, then
@@ -135,7 +151,14 @@ boost::optional<std::array<double, 3>> Wedge3D::inverse(
     return boost::none;
   }
   const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
-  double zeta = (physical_z - z_zero) / zeta_coefficient;
+  double zeta;
+  if (with_logarithmic_map_) {
+    zeta = (log(physical_z * sqrt(1.0 + square(cap_xi) + square(cap_eta))) -
+            sphere_zero_) /
+           sphere_rate_;
+  } else {
+    zeta = (physical_z - z_zero) / zeta_coefficient;
+  }
   double xi = with_equiangular_map_ ? atan(cap_xi) / M_PI_4 : cap_xi;
   double eta =
       with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : cap_eta;
@@ -177,7 +200,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
       1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
   const ReturnType one_over_rho_cubed = pow<3>(one_over_rho);
   const ReturnType physical_z = default_physical_z(zeta, one_over_rho);
-  const ReturnType s_factor = sphere_zero_ + sphere_rate_ * zeta;
+  const ReturnType s_factor =
+      with_logarithmic_map_
+          ? ReturnType{exp(sphere_zero_ + sphere_rate_ * zeta)}
+          : ReturnType{sphere_zero_ + sphere_rate_ * zeta};
 
   auto jacobian_matrix =
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
@@ -213,7 +239,11 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::jacobian(
   get<2, 1>(jacobian_matrix) = dX_dlogical[2];
 
   // dz_dzeta
-  dX_dlogical[2] = scaled_frustum_rate_ + sphere_rate_ * one_over_rho;
+  if (with_logarithmic_map_) {
+    dX_dlogical[2] = s_factor * sphere_rate_ * one_over_rho;
+  } else {
+    dX_dlogical[2] = scaled_frustum_rate_ + sphere_rate_ * one_over_rho;
+  }
   // dx_dzeta
   dX_dlogical[0] = cap_xi * dX_dlogical[2];
   // dy_dzeta
@@ -259,9 +289,17 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Wedge3D::inv_jacobian(
   const ReturnType scaled_z_frustum =
       scaled_frustum_zero_ + scaled_frustum_rate_ * zeta;
   const ReturnType s_factor_over_rho_cubed =
-      (sphere_zero_ + sphere_rate_ * zeta) * one_over_rho_cubed;
+      with_logarithmic_map_
+          ? ReturnType{exp(sphere_zero_ + sphere_rate_ * zeta) *
+                       one_over_rho_cubed}
+          : ReturnType{(sphere_zero_ + sphere_rate_ * zeta) *
+                       one_over_rho_cubed};
   const ReturnType one_over_dz_dzeta =
-      1.0 / (scaled_frustum_rate_ + sphere_rate_ * one_over_rho);
+      with_logarithmic_map_
+          ? ReturnType{1.0 / (exp(sphere_zero_ + sphere_rate_ * zeta) *
+                              sphere_rate_ * one_over_rho)}
+          : ReturnType{1.0 /
+                       (scaled_frustum_rate_ + sphere_rate_ * one_over_rho)};
   const ReturnType dzeta_factor = one_over_physical_z * one_over_dz_dzeta;
 
   auto inv_jacobian_matrix =
@@ -318,6 +356,7 @@ void Wedge3D::pup(PUP::er& p) noexcept {
   p | sphericity_outer_;
   p | with_equiangular_map_;
   p | halves_to_use_;
+  p | with_logarithmic_map_;
   p | scaled_frustum_zero_;
   p | sphere_zero_;
   p | scaled_frustum_rate_;
@@ -330,6 +369,7 @@ bool operator==(const Wedge3D& lhs, const Wedge3D& rhs) noexcept {
          lhs.orientation_of_wedge_ == rhs.orientation_of_wedge_ and
          lhs.with_equiangular_map_ == rhs.with_equiangular_map_ and
          lhs.halves_to_use_ == rhs.halves_to_use_ and
+         lhs.with_logarithmic_map_ == rhs.with_logarithmic_map_ and
          lhs.sphericity_inner_ == rhs.sphericity_inner_ and
          lhs.sphericity_outer_ == rhs.sphericity_outer_ and
          lhs.scaled_frustum_zero_ == rhs.scaled_frustum_zero_ and
