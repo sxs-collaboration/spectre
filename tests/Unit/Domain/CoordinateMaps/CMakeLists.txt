@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_Identity.cpp
   Test_ProductMaps.cpp
   Test_Rotation.cpp
+  Test_SpecialMobius.cpp
   Test_Translation.cpp
   Test_Wedge2D.cpp
   Test_Wedge3D.cpp
