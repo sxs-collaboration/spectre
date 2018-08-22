@@ -183,7 +183,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.WrongSizeQProvided",
   ERROR_TEST();
 
   double t = 0.0;
-  const double dt = 0.1;
   constexpr size_t deriv_order = 2;
 
   Averager<deriv_order> averager(1.0, false);

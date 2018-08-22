@@ -58,7 +58,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",
   const std::array<double, 3> input_point{{x, y, z}};
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
   const auto result_point = special_mobius_map(input_point);
-  const auto& result_x = result_point[0];
   const auto& result_y = result_point[1];
   const auto& result_z = result_point[2];
 
@@ -91,7 +90,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.LargeMu",
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
   const auto result_point = special_mobius_map(input_point);
   const auto expected_input_point = special_mobius_map.inverse(result_point);
-  const auto& result_x = result_point[0];
   const auto& result_y = result_point[1];
   const auto& result_z = result_point[2];
   // The SpecialMobius map should map the unit sphere to itself:
