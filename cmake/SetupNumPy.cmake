@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(NumPy REQUIRED)
+find_package(NumPy 1.10 REQUIRED)
 
 message(STATUS "NumPy incl: " ${NUMPY_INCLUDE_DIRS})
 message(STATUS "NumPy vers: " ${NUMPY_VERSION})
