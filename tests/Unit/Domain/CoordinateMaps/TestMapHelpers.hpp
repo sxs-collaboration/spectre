@@ -296,7 +296,7 @@ void test_inverse_map(const Map& map,
  * jacobian, and inverse jacobian, for a series of points.
  */
 template <typename Map>
-void test_suite_for_map(const Map& map) {
+void test_suite_for_map_on_unit_cube(const Map& map) {
   // Set up random number generator
   const auto seed = std::random_device{}();
   std::mt19937 gen(seed);

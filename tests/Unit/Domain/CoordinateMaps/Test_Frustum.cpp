@@ -45,7 +45,7 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
          {{upper_x_upper_base, upper_y_upper_base}}}};
     const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
                                               with_equiangular_map);
-    test_suite_for_map(frustum_map);
+    test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
 }  // namespace

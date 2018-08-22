@@ -92,10 +92,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.DiscreteRotation",
                   "[Domain][Unit]") {
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
     const CoordinateMaps::DiscreteRotation<2> coord_map{map_i()};
-    test_suite_for_map(coord_map);
+    test_suite_for_map_on_unit_cube(coord_map);
   }
   for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
     const CoordinateMaps::DiscreteRotation<3> coord_map{map_i()};
-    test_suite_for_map(coord_map);
+    test_suite_for_map_on_unit_cube(coord_map);
   }
 }

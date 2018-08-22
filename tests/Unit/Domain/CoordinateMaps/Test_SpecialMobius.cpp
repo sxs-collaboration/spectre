@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Suite",
   const double mu = mu_dis(gen);
   CAPTURE_PRECISE(mu);
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
-  test_suite_for_map(special_mobius_map);
+  test_suite_for_map_on_unit_cube(special_mobius_map);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",

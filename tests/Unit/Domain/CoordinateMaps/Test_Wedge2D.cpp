@@ -118,7 +118,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   CAPTURE_PRECISE(outer_circularity);
 
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
-    test_suite_for_map(CoordinateMaps::Wedge2D{
+    test_suite_for_map_on_unit_cube(CoordinateMaps::Wedge2D{
         inner_radius, outer_radius, inner_circularity, outer_circularity,
         map_i(), with_equiangular_map});
   }

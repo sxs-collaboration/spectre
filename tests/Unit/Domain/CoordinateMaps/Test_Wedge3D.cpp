@@ -40,7 +40,7 @@ void test_wedge3d_all_directions(const bool with_equiangular_map) {
       const CoordinateMaps::Wedge3D wedge_map(
           inner_radius, outer_radius, direction, inner_sphericity,
           outer_sphericity, with_equiangular_map, halves);
-      test_suite_for_map(wedge_map);
+      test_suite_for_map_on_unit_cube(wedge_map);
     }
   }
 }
