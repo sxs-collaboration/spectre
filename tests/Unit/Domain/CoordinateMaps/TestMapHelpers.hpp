@@ -294,6 +294,8 @@ void test_inverse_map(const Map& map,
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, tests the map functions, including map inverse,
  * jacobian, and inverse jacobian, for a series of points.
+ * These points are chosen in a dim-dimensonal cube of side 2 centered at
+ * the origin.  The map is expected to be valid on the boundaries of the cube.
  */
 template <typename Map>
 void test_suite_for_map_on_unit_cube(const Map& map) {
@@ -329,6 +331,89 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
     test_jacobian(map_to_test, random_point);
     test_inv_jacobian(map_to_test, random_point);
     test_inverse_map(map_to_test, random_point);
+  };
+  test_helper(map);
+  const auto map2 = serialize_and_deserialize(map);
+  check_if_maps_are_equal(
+      make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+  test_helper(map2);
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Given a Map `map`, tests the map functions, including map inverse,
+ * jacobian, and inverse jacobian, for a series of points.
+ * These points are chosen in a sphere of radius `radius_of_sphere`, and the
+ * map is expected to be valid on the boundary of that sphere as well as
+ * in its interior.  The flag `include_origin` indicates whether to test the
+ * map at the origin.
+ * This test works only in 3 dimensions.
+ */
+template <typename Map>
+void test_suite_for_map_on_sphere(const Map& map,
+                                  const bool include_origin = true,
+                                  const double radius_of_sphere = 1.0) {
+  static_assert(Map::dim == 3, "Works only for a 3d map");
+
+  // Set up random number generator
+  const auto seed = std::random_device{}();
+  std::mt19937 gen(seed);
+  INFO("seed = " << seed);
+
+  // If we don't include the origin, we want to use some finite inner
+  // boundary so that random points stay away from the origin.
+  // test_jacobian has a dx of 1.e-4 for finite-differencing, so here
+  // we pick a value larger than that.
+  const double inner_bdry = include_origin ? 0.0 : 5.e-3;
+
+  std::uniform_real_distribution<> radius_dis(inner_bdry, radius_of_sphere);
+  std::uniform_real_distribution<> theta_dis(0, M_PI);
+  std::uniform_real_distribution<> phi_dis(0, 2.0 * M_PI);
+
+  const double theta = theta_dis(gen);
+  CAPTURE_PRECISE(theta);
+  const double phi = phi_dis(gen);
+  CAPTURE_PRECISE(phi);
+  const double radius = radius_dis(gen);
+  CAPTURE_PRECISE(radius);
+
+  const std::array<double, 3> random_point{{radius * sin(theta) * cos(phi),
+                                            radius * sin(theta) * sin(phi),
+                                            radius * cos(theta)}};
+
+  const std::array<double, 3> random_bdry_point{
+      {radius_of_sphere * sin(theta) * cos(phi),
+       radius_of_sphere * sin(theta) * sin(phi),
+       radius_of_sphere * cos(theta)}};
+
+  // This point is either the origin or (if include_origin is false)
+  // it is some random point on the inner boundary.
+  const std::array<double, 3> random_inner_bdry_point_or_origin{
+      {inner_bdry * sin(theta) * cos(phi),
+       inner_bdry * sin(theta) * sin(phi),
+       inner_bdry * cos(theta)}};
+
+  const auto test_helper =
+    [&random_bdry_point, &random_inner_bdry_point_or_origin,
+       &random_point ](const auto& map_to_test) noexcept {
+    test_serialization(map_to_test);
+    CHECK_FALSE(map_to_test != map_to_test);
+
+    test_coordinate_map_argument_types(map_to_test,
+                                       random_inner_bdry_point_or_origin);
+    test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+    test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+    test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
+
+    test_coordinate_map_argument_types(map_to_test, random_point);
+    test_jacobian(map_to_test, random_point);
+    test_inv_jacobian(map_to_test, random_point);
+    test_inverse_map(map_to_test, random_point);
+
+    test_jacobian(map_to_test, random_bdry_point);
+    test_inv_jacobian(map_to_test, random_bdry_point);
+    test_inverse_map(map_to_test, random_bdry_point);
   };
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
