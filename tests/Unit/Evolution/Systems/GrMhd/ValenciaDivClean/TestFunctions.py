@@ -234,7 +234,7 @@ def source_tilde_phi(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
                      inv_spatial_metric, sqrt_det_spatial_metric,
                      extrinsic_curvature, constraint_damping_parameter):
     return (lapse * tilde_phi *
-            (np.einsum("ab, ab", inv_spatial_metric, extrinsic_curvature) -
+            (-np.einsum("ab, ab", inv_spatial_metric, extrinsic_curvature) -
              constraint_damping_parameter) +
             np.einsum("a, a", tilde_b, d_lapse))
 
