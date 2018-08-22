@@ -69,8 +69,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.Bounds",
       "Error in function boost::math::tools::toms748_solve<double>: "
       "Parameters a and b do not bracket the root: a=";
 
+  // NOLINTNEXTLINE(clang-analyzer-core)
   test_throw_exception(
       [&f_lambda, &abs_tol, &rel_tol]() {
+        // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(f_lambda, 0.0, sqrt(2.0) - abs_tol, abs_tol,
                             rel_tol);
       },
@@ -155,6 +157,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
   double lower = sqrt(2.0) - abs_tol;
   const auto f_lambda = [](double x) { return 2.0 - square(x); };
 
+  // NOLINTNEXTLINE(clang-analyzer-core)
   RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

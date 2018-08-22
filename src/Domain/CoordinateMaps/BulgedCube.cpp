@@ -79,6 +79,7 @@ DType scaling_factor(RootFunction<DType>&& rootfunction) noexcept {
   const DType& physical_r_squared = rootfunction.get_r_sq();
   try {
     const double tol = 10.0 * std::numeric_limits<double>::epsilon();
+    // NOLINTNEXTLINE(clang-analyzer-core)
     DType rho = RootFinder::toms748(
         rootfunction, make_with_value<DType>(x_sq, 0.0),
         make_with_value<DType>(x_sq, sqrt(3.0) + tol), tol, tol);
@@ -160,6 +161,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::inverse(
   const ReturnType z_sq = square(physical_z);
   const ReturnType physical_r_squared = x_sq + y_sq + z_sq;
   const auto scaling_factor =
+      // NOLINTNEXTLINE(clang-analyzer-core)
       ::scaling_factor<ReturnType>(RootFunction<ReturnType>{
           radius_, sphericity_, physical_r_squared, x_sq, y_sq, z_sq});
   if (use_equiangular_map_) {
