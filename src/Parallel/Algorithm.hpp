@@ -485,8 +485,8 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
 
   bool terminate_{false};
   // Create a boost::variant that can hold any of the DataBox's
-  make_boost_variant_over<
-      tmpl::append<tmpl::list<db::DataBox<tmpl::list<>>>, databox_types>>
+  make_boost_variant_over<tmpl::remove_duplicates<
+      tmpl::append<tmpl::list<db::DataBox<tmpl::list<>>>, databox_types>>>
       box_;
   tuples::TaggedTupleTypelist<inbox_tags_list> inboxes_{};
   array_index array_index_;
