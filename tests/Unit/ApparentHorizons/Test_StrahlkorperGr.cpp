@@ -435,6 +435,81 @@ void test_dimensionful_spin_magnitude(
   CHECK_ITERABLE_CUSTOM_APPROX(spin_magnitude, expected, custom_approx);
 }
 
+template <typename Solution, typename Fr>
+void test_spin_vector(
+    const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
+    const double mass, const std::array<double, 3> dimensionless_spin,
+    const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
+    const YlmSpherepack& ylm_with_spin_on_z_axis) noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+  const auto inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+  const DataVector one_over_one_form_magnitude =
+      1.0 / get(magnitude(
+                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                inverse_spatial_metric));
+  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+      one_over_one_form_magnitude);
+  const auto unit_normal_vector =
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
+
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+  const auto& jacobian =
+      db::get<StrahlkorperTags::Jacobian<Frame::Inertial>>(box);
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+
+  const auto& ylm = strahlkorper.ylm_spherepack();
+
+  const auto& deriv_spatial_metric =
+      get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                      tmpl::size_t<3>, Frame::Inertial>>(vars);
+  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+      get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
+      get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
+      get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                      tmpl::size_t<3>, Frame::Inertial>>(vars),
+      spatial_metric,
+      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
+          vars),
+      deriv_spatial_metric);
+
+  const auto& tangents =
+      db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
+
+  const auto& spin_function = StrahlkorperGr::spin_function(
+      tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
+
+  const auto ricci_scalar = TestHelpers::Kerr::horizon_ricci_scalar(
+      horizon_radius_with_spin_on_z_axis, ylm_with_spin_on_z_axis, ylm, mass,
+      dimensionless_spin);
+
+  const auto spin_vector =
+      StrahlkorperGr::spin_vector(magnitude(dimensionless_spin), area_element,
+                                  Scalar<DataVector>{std::move(radius)}, r_hat,
+                                  ricci_scalar, spin_function, ylm);
+
+  CHECK_ITERABLE_APPROX(spin_vector, dimensionless_spin);
+}
+
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
                   "[ApparentHorizons][Unit]") {
   const auto sphere =
@@ -625,4 +700,37 @@ SPECTRE_TEST_CASE(
       generic_kerr_horizon, mass, generic_dimensionless_spin,
       rotated_horizon_radius, rotated_kerr_horizon.ylm_spherepack(),
       expected_generic_spin_magnitude, generic_tolerance);
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinVector",
+                  "[ApparentHorizons][Unit]") {
+  // Set up Kerr horizon
+  constexpr int l_max = 20;
+  const double mass = 2.0;
+  const std::array<double, 3> spin{{0.04, 0.08, 0.12}};
+  const auto spin_magnitude = magnitude(spin);
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+
+  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+      Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+          .ylm_spherepack()
+          .theta_phi_points(),
+      mass, spin);
+  const auto kerr_horizon =
+      Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
+
+  const auto horizon_radius_with_spin_on_z_axis =
+      TestHelpers::Kerr::horizon_radius(
+          Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
+              .ylm_spherepack()
+              .theta_phi_points(),
+          mass, {{0.0, 0.0, spin_magnitude}});
+  const auto kerr_horizon_with_spin_on_z_axis = Strahlkorper<Frame::Inertial>(
+      l_max, l_max, get(horizon_radius_with_spin_on_z_axis), center);
+
+  // Check that the StrahlkorperGr::spin_vector() correctly recovers the
+  // chosen dimensionless spin
+  test_spin_vector(EinsteinSolutions::KerrSchild{mass, spin, center},
+                   kerr_horizon, mass, spin, horizon_radius_with_spin_on_z_axis,
+                   kerr_horizon_with_spin_on_z_axis.ylm_spherepack());
 }

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <array>
+
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
@@ -241,4 +243,41 @@ double dimensionful_spin_magnitude(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Spin vector of a 2D `Strahlkorper`.
+ *
+ * \details Computes the spin vector of a `Strahlkorper` in a `Frame`, such as
+ * `Frame::Inertial`. The result is a `std::array<double, 3>` containing the
+ * Cartesian components of the spin vector, whose magnitude is
+ * `spin_magnitude`. This function will return the dimensionless spin
+ * components if `spin_magnitude` is the dimensionless spin magnitude, and
+ * it will return the dimensionful spin components if `spin_magnitude` is
+ * the dimensionful spin magnitude. The spin vector is given by
+ * a surface integral over the horizon \f$\mathcal{H}\f$ [Eq. (25) of
+ * https://arxiv.org/abs/1708.07325]:
+ * \f$S^i = \frac{S}{N} \oint_\mathcal{H} dA \Omega (x^i - x^i_0 - x^i_R) \f$,
+ * where \f$S\f$ is the spin magnitude,
+ * \f$N\f$ is a normalization factor enforcing \f$\delta_{ij}S^iS^j = S\f$,
+ * \f$dA\f$ is the area element (via `StrahlkorperGr::area_element`),
+ * \f$\Omega\f$ is the "spin function" (via `StrahlkorperGr::spin_function`),
+ * \f$x^i\f$ are the `Frame` coordinates of points on the `Strahlkorper`,
+ * \f$x^i_0\f$ are the `Frame` coordinates of the center of the Strahlkorper,
+ * \f$x^i_R = \frac{1}{8\pi}\oint_\mathcal{H} dA (x^i - x^i_0) R \f$,
+ * and \f$R\f$ is the intrinsic Ricci scalar of the `Strahlkorper`
+ * (via `StrahlkorperGr::ricci_scalar`).
+ * Note that measuring positions on the horizon relative to
+ * \f$x^i_0 + x^i_R\f$ instead of \f$x^i_0\f$ ensures that the mass dipole
+ * moment vanishes. Also note that \f$x^i - x^i_0\f$ is
+ * is the product of `StrahlkorperTags::Rhat` and `StrahlkorperTags::Radius`.
+ */
+template <typename Frame>
+std::array<double, 3> spin_vector(double spin_magnitude,
+                                  const Scalar<DataVector>& area_element,
+                                  const Scalar<DataVector>& radius,
+                                  const tnsr::i<DataVector, 3, Frame>& r_hat,
+                                  const Scalar<DataVector>& ricci_scalar,
+                                  const Scalar<DataVector>& spin_function,
+                                  const YlmSpherepack& ylm) noexcept;
 }  // namespace StrahlkorperGr

@@ -21,6 +21,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -612,6 +613,34 @@ double dimensionful_spin_magnitude(
 
   return get_spin_magnitude(potentials, spin_function, area_element, ylm);
 }
+
+template <typename Frame>
+std::array<double, 3> spin_vector(const double spin_magnitude,
+                                  const Scalar<DataVector>& area_element,
+                                  const Scalar<DataVector>& radius,
+                                  const tnsr::i<DataVector, 3, Frame>& r_hat,
+                                  const Scalar<DataVector>& ricci_scalar,
+                                  const Scalar<DataVector>& spin_function,
+                                  const YlmSpherepack& ylm) noexcept {
+  std::array<double, 3> spin_vector = {{0.0, 0.0, 0.0}};
+  auto integrand = make_with_value<Scalar<DataVector>>(get(radius), 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    // Compute horizon coordinates with a coordinate center such that
+    // the mass dipole moment vanishes.
+    get(integrand) =
+        get(area_element) * get(ricci_scalar) * r_hat.get(i) * get(radius);
+    get(integrand) =
+      ylm.definite_integral(get(integrand).data()) / (-8.0 * M_PI);
+    get(integrand) += r_hat.get(i) * get(radius);
+
+    // Get a component of a vector in the direction of the spin
+    get(integrand) *= get(area_element) * get(spin_function);
+    gsl::at(spin_vector, i) = ylm.definite_integral(get(integrand).data());
+  }
+
+  // Normalize spin_vector so its magnitude is the magnitude of the spin
+  return spin_vector * (spin_magnitude / magnitude(spin_vector));
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
@@ -678,3 +707,10 @@ template double StrahlkorperGr::dimensionful_spin_magnitude<Frame::Inertial>(
     const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
         tangents,
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
+
+template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::Inertial>(
+    const double spin_magnitude, const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& radius,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat,
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function, const YlmSpherepack& ylm) noexcept;
