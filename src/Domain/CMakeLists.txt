@@ -9,6 +9,7 @@ set(LIBRARY Domain)
 
 set(LIBRARY_SOURCES
     Block.cpp
+    BlockLogicalCoordinates.cpp
     BlockNeighbor.cpp
     CreateInitialElement.cpp
     Domain.cpp
@@ -17,6 +18,7 @@ set(LIBRARY_SOURCES
     Element.cpp
     ElementId.cpp
     ElementIndex.cpp
+    ElementLogicalCoordinates.cpp
     ElementMap.cpp
     FaceNormal.cpp
     InitialElementIds.cpp
