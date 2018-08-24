@@ -5,9 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
-#include <iomanip>
 #include <limits>
-#include <ostream>
 #include <stdexcept>
 #include <string>
 
@@ -76,25 +74,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.Bounds",
         RootFinder::toms748(f_lambda, 0.0, sqrt(2.0) - abs_tol, abs_tol,
                             rel_tol);
       },
-      std::domain_error(prefix + "0"));
+      std::domain_error(prefix));
 
-  const std::string lower_bound_string = [&abs_tol]() {
-    std::stringstream s;
-    s << std::setprecision(17) << (sqrt(2.0) + abs_tol);
-    return s.str();
-  }();
   test_throw_exception(
       [&f_lambda, &abs_tol, &rel_tol]() {
         RootFinder::toms748(f_lambda, sqrt(2.0) + abs_tol, 2.0, abs_tol,
                             rel_tol);
       },
-      std::domain_error(prefix + lower_bound_string));
+      std::domain_error(prefix));
 
   test_throw_exception(
       [&f_lambda, &abs_tol, &rel_tol]() {
         RootFinder::toms748(f_lambda, -1.0, 1.0, abs_tol, rel_tol);
       },
-      std::domain_error(prefix + "-1"));
+      std::domain_error(prefix));
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
