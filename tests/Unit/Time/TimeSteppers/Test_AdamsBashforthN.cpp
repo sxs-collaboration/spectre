@@ -45,6 +45,22 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
       TimeStepperTestUtils::integrate_test(stepper, start_points, 1., epsilon);
     }
   }
+
+  const TimeSteppers::AdamsBashforthN stepper(2);
+  const Slab slab(0., 1.);
+  const TimeId time_id(true, 0, slab.start());
+  {
+    TimeSteppers::History<double, double> history;
+    history.insert(slab.start(), 0., 0.);
+    history.insert(slab.end(), 0., 0.);
+    CHECK(stepper.can_change_step_size(time_id, history));
+  }
+  {
+    TimeSteppers::History<double, double> history;
+    history.insert(slab.end(), 0., 0.);
+    history.insert(slab.start(), 0., 0.);
+    CHECK_FALSE(stepper.can_change_step_size(time_id, history));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
@@ -85,6 +101,22 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
           TimeSteppers::AdamsBashforthN(order, true), start_points, -1.,
           epsilon);
     }
+  }
+
+  const TimeSteppers::AdamsBashforthN stepper(2);
+  const Slab slab(0., 1.);
+  const TimeId time_id(false, 0, slab.start());
+  {
+    TimeSteppers::History<double, double> history;
+    history.insert(slab.start(), 0., 0.);
+    history.insert(slab.end(), 0., 0.);
+    CHECK_FALSE(stepper.can_change_step_size(time_id, history));
+  }
+  {
+    TimeSteppers::History<double, double> history;
+    history.insert(slab.end(), 0., 0.);
+    history.insert(slab.start(), 0., 0.);
+    CHECK(stepper.can_change_step_size(time_id, history));
   }
 }
 

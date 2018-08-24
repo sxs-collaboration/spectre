@@ -11,13 +11,13 @@
 #include <type_traits>
 
 #include "Parallel/CharmPupable.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class TimeDelta;
-struct TimeId;
 namespace TimeSteppers {
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 class BoundaryHistory;
@@ -35,6 +35,7 @@ class RungeKutta3;  // IWYU pragma: keep
 }  // namespace TimeSteppers
 
 namespace TimeStepper_detail {
+DEFINE_FAKE_VIRTUAL(can_change_step_size)
 DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
 DEFINE_FAKE_VIRTUAL(update_u)
 }  // namespace TimeStepper_detail
@@ -44,9 +45,9 @@ DEFINE_FAKE_VIRTUAL(update_u)
 /// Abstract base class for TimeSteppers.
 class TimeStepper : public PUP::able {
  public:
-  using Inherit =
+  using Inherit = TimeStepper_detail::FakeVirtualInherit_can_change_step_size<
       TimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
-          TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>;
+          TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>>;
   using creatable_classes =
       tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::RungeKutta3>;
 
@@ -108,6 +109,19 @@ class TimeStepper : public PUP::able {
   /// The TimeId after the current substep
   virtual TimeId next_time_id(const TimeId& current_id,
                               const TimeDelta& time_step) const noexcept = 0;
+
+  /// Whether a local change in the step size is allowed before taking
+  /// a step.  This should be called after the history has been
+  /// updated with the current time derivative.  This does not control
+  /// global step size changes, which are always allowed at slab
+  /// boundaries.
+  template <typename Vars, typename DerivVars>
+  bool can_change_step_size(
+      const TimeId& time_id,
+      const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
+    return TimeStepper_detail::fake_virtual_can_change_step_size<
+        creatable_classes>(this, time_id, history);
+  }
 };
 
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"  // IWYU pragma: keep
