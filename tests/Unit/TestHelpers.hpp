@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/algorithm/string/predicate.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -299,6 +300,14 @@ class DoesThrow {
   ~DoesThrow() = default;
 };
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Execute `func` and check that it throws an exception `expected`.
+ *
+ * \note The `.what()` strings of the thrown and `expected` exceptions are
+ * compared for a partial match only: the `expected.what()` string must be
+ * contained in (or equal to) the `.what()` string of the thrown exception.
+ */
 template <typename Exception, typename ThrowingFunctor>
 void test_throw_exception(const ThrowingFunctor& func,
                           const Exception& expected) {
@@ -309,7 +318,7 @@ void test_throw_exception(const ThrowingFunctor& func,
   } catch (Exception& e) {
     CAPTURE(e.what());
     CAPTURE(expected.what());
-    CHECK(std::string(e.what()) == std::string(expected.what()));
+    CHECK(boost::contains(std::string(e.what()), std::string(expected.what())));
   } catch (...) {
     INFO("Failed to throw exception of type " +
          pretty_type::get_name<Exception>());
