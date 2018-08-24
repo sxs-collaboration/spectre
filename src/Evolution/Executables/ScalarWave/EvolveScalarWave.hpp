@@ -49,12 +49,13 @@ struct EvolutionMetavars {
 
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
-      tmpl::list<Actions::ComputeVolumeDuDt<Dim>,
+      tmpl::list<Actions::AdvanceTime, Actions::FinalTime,
+                 Actions::ComputeVolumeDuDt<Dim>,
                  dg::Actions::ComputeNonconservativeBoundaryFluxes,
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
-                 Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;
+                 Actions::UpdateU>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"

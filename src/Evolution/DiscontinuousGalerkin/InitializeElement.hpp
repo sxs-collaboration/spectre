@@ -274,16 +274,9 @@ struct InitializeElement {
       using Vars = typename variables_tag::type;
       using DtVars = typename dt_variables_tag::type;
 
-      const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
-
+      // This is stored as Next<TimeId> and will be used to update
+      // TimeId at the start of the algorithm.
       const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
-      TimeId next_time_id = time_stepper.next_time_id(time_id, initial_dt);
-      if (next_time_id.is_at_slab_boundary()) {
-        const auto next_time = next_time_id.step_time();
-        next_time_id = TimeId(
-            initial_dt.is_positive(), 1,
-            next_time.with_slab(next_time.slab().advance_towards(initial_dt)));
-      }
 
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
@@ -296,6 +289,7 @@ struct InitializeElement {
       typename Tags::HistoryEvolvedVariables<variables_tag,
                                              dt_variables_tag>::type history;
       using solution_tag = CacheTags::AnalyticSolutionBase;
+      const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
       if (not time_stepper.is_self_starting()) {
         // We currently just put initial points at past slab boundaries.
         Time past_t = initial_time;
@@ -317,7 +311,7 @@ struct InitializeElement {
       }
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-          std::move(box), time_id, next_time_id, initial_dt, std::move(dt_vars),
+          std::move(box), TimeId{}, time_id, initial_dt, std::move(dt_vars),
           std::move(history));
     }
   };
@@ -344,7 +338,7 @@ struct InitializeElement {
       typename Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>::type mortar_meshes{};
       typename Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>::type
           mortar_sizes{};
-      const auto& temporal_id = get<temporal_id_tag>(box);
+      const auto& temporal_id = get<Tags::Next<temporal_id_tag>>(box);
       for (const auto& direction_neighbors : element.neighbors()) {
         const auto& direction = direction_neighbors.first;
         const auto& neighbors = direction_neighbors.second;

@@ -43,6 +43,8 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: Tags::TimeId, Tags::TimeStep
 struct AdvanceTime {
+  using const_global_cache_tags = tmpl::list<CacheTags::TimeStepper>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

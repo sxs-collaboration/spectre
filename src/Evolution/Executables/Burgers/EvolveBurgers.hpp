@@ -50,12 +50,13 @@ struct EvolutionMetavars {
 
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
-      tmpl::list<Actions::ComputeVolumeFluxes,
+      tmpl::list<Actions::AdvanceTime, Actions::FinalTime,
+                 Actions::ComputeVolumeFluxes,
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  Actions::ComputeVolumeDuDt<1>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
-                 Actions::UpdateU, Actions::AdvanceTime, Actions::FinalTime>>>;
+                 Actions::UpdateU>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"
