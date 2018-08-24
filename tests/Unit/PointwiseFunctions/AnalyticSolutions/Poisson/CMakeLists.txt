@@ -4,6 +4,7 @@
 set(LIBRARY "Test_PoissonSolutions")
 
 set(LIBRARY_SOURCES
+  Test_Moustache.cpp
   Test_ProductOfSinusoids.cpp
   )
 

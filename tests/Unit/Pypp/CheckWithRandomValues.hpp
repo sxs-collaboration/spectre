@@ -159,6 +159,7 @@ void check_with_random_values_impl(
   size_t count = 0;
   tmpl::for_each<TagsList>([&f, &klass, &args, &used_for_size, &member_args,
                             &module_name, &function_names, &count](auto tag) {
+    (void)member_args;    // Avoid compiler warning
     (void)used_for_size;  // Avoid compiler warning
     using Tag = tmpl::type_from<decltype(tag)>;
     const auto result =

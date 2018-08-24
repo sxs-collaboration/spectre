@@ -8,6 +8,7 @@
 
 namespace Poisson {
 /*!
+ * \ingroup AnalyticSolutionsGroup
  * \brief Analytic solutions to the Poisson equation
  * \f$-\Delta u(\vec{x}) = f(\vec{x})\f$
  */
