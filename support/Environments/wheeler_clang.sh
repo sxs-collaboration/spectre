@@ -26,6 +26,7 @@ spectre_unload_modules() {
     module unload git/2.8.4
     module unload llvm/5.0.1
     module unload charm/6.8.0-smp
+    module unload python/anaconda2-4.1.1
 }
 
 spectre_load_modules() {
@@ -47,6 +48,7 @@ spectre_load_modules() {
     module load git/2.8.4
     module load llvm/5.0.1
     module load charm/6.8.0-smp
+    module load python/anaconda2-4.1.1
 }
 
 spectre_run_cmake() {
