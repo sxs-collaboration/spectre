@@ -6,8 +6,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cmath>
-#include <deque>
-#include <tuple>
+#include <cstddef>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Time/BoundaryHistory.hpp"
@@ -234,8 +233,9 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
       history_time -= history_step_size;
       volume_history.insert_initial(history_time,
                                     analytic(history_time.value()), 0.);
-      boundary_history.local_insert_initial(history_time, unused_local_deriv);
-      boundary_history.remote_insert_initial(history_time,
+      boundary_history.local_insert_initial(TimeId(forward, 0, history_time),
+                                            unused_local_deriv);
+      boundary_history.remote_insert_initial(TimeId(forward, 0, history_time),
                                              driver(history_time.value()));
     }
   }
@@ -245,9 +245,8 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
          substep < stepper.number_of_substeps();
          ++substep) {
       volume_history.insert(time_id.time(), y, 0.);
-      boundary_history.local_insert(time_id.time(), unused_local_deriv);
-      boundary_history.remote_insert(time_id.time(),
-                                     driver(time_id.time().value()));
+      boundary_history.local_insert(time_id, unused_local_deriv);
+      boundary_history.remote_insert(time_id, driver(time_id.time().value()));
 
       stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
                        step_size);

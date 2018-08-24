@@ -5,21 +5,20 @@
 
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
+#include <cstddef>
 #include <deque>
-#include <iterator>
 #include <map>
 #include <pup.h>
-#include <pup_stl.h>
+#include <pup_stl.h>  // IWYU pragma: keep
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"
-#include "Time/Time.hpp"
+#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Time/Time.hpp"  // IWYU pragma: keep
+#include "Time/TimeId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Requires.hpp"
 
 namespace TimeSteppers {
 
@@ -50,26 +49,22 @@ class BoundaryHistory {
 
   /// Add a new value to the end of the history of the indicated side.
   //@{
-  void local_insert(Time time, LocalVars vars) noexcept {
-    // clang-tidy: move of trivially-copyable type
-    local_data_.emplace_back(std::move(time), std::move(vars));  // NOLINT
+  void local_insert(const TimeId& time_id, LocalVars vars) noexcept {
+    local_data_.emplace_back(time_id.time(), std::move(vars));
   }
-  void remote_insert(Time time, RemoteVars vars) noexcept {
-    // clang-tidy: move of trivially-copyable type
-    remote_data_.emplace_back(std::move(time), std::move(vars));  // NOLINT
+  void remote_insert(const TimeId& time_id, RemoteVars vars) noexcept {
+    remote_data_.emplace_back(time_id.time(), std::move(vars));
   }
   //@}
 
   /// Add a new value to the front of the history of the indicated
   /// side.  This is often convenient for setting initial data.
   //@{
-  void local_insert_initial(Time time, LocalVars vars) noexcept {
-    // clang-tidy: move of trivially-copyable type
-    local_data_.emplace_front(std::move(time), std::move(vars));  // NOLINT
+  void local_insert_initial(const TimeId& time_id, LocalVars vars) noexcept {
+    local_data_.emplace_front(time_id.time(), std::move(vars));
   }
-  void remote_insert_initial(Time time, RemoteVars vars) noexcept {
-    // clang-tidy: move of trivially-copyable type
-    remote_data_.emplace_front(std::move(time), std::move(vars));  // NOLINT
+  void remote_insert_initial(const TimeId& time_id, RemoteVars vars) noexcept {
+    remote_data_.emplace_front(time_id.time(), std::move(vars));
   }
   //@}
 

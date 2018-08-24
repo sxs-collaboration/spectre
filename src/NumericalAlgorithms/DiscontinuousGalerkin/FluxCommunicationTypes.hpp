@@ -19,6 +19,7 @@
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -80,6 +81,14 @@ struct FluxCommunicationTypes {
                        db::item_type<typename Metavariables::temporal_id>,
                        LocalData, PackagedData>,
                    volume_dim>;
+
+  /// The DataBox tag for the data stored on the mortars for local
+  /// stepping.
+  using local_time_stepping_mortar_data_tag = BasedMortars<
+      Tags::VariablesBoundaryData,
+      Tags::BoundaryHistory<LocalData, PackagedData,
+                            db::item_type<typename system::variables_tag>>,
+      volume_dim>;
 
   /// The inbox tag for flux communication.
   struct FluxesTag {

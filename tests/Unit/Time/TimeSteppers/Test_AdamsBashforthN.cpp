@@ -8,7 +8,6 @@
 #include <cmath>
 #include <cstddef>
 #include <deque>
-#include <sys/types.h>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"
@@ -186,6 +185,10 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
     return forward_in_time ? a < b : b < a;
   };
 
+  const auto make_time_id = [forward_in_time](const Time& t) noexcept {
+    return TimeId(forward_in_time, 0, t);
+  };
+
   const Slab slab = dt[0].slab();
   Time t = forward_in_time ? slab.start() : slab.end();
 
@@ -198,11 +201,13 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
     for (ssize_t step = 1; step <= 3; ++step) {
       {
         const Time now = t - step * dt[0].with_slab(init_slab);
-        history.local_insert_initial(now, NCd(quartic_side1(now.value())));
+        history.local_insert_initial(make_time_id(now),
+                                     NCd(quartic_side1(now.value())));
       }
       {
         const Time now = t - step * dt[1].with_slab(init_slab);
-        history.remote_insert_initial(now, NCd(quartic_side2(now.value())));
+        history.remote_insert_initial(make_time_id(now),
+                                      NCd(quartic_side2(now.value())));
       }
     }
   }
@@ -216,9 +221,9 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
         - next.cbegin());
 
     if (side == 0) {
-      history.local_insert(t, NCd(quartic_side1(t.value())));
+      history.local_insert(make_time_id(t), NCd(quartic_side1(t.value())));
     } else {
-      history.remote_insert(t, NCd(quartic_side2(t.value())));
+      history.remote_insert(make_time_id(t), NCd(quartic_side2(t.value())));
     }
 
     gsl::at(next, side) += gsl::at(dt, side);
@@ -283,6 +288,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
                   "[Unit][Time]") {
   const Slab slab(0., 1.);
 
+  const auto make_time_id = [](const Time& t) noexcept {
+    return TimeId(true, 0, t);
+  };
+
   Time t = slab.start();
 
   TimeSteppers::AdamsBashforthN ab4(4, false);
@@ -296,8 +305,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     for (ssize_t step = 1; step <= 3; ++step) {  // NOLINT
       // clang-tidy misfeature: warns about boost internals here
       const Time now = t - step * init_dt;  // NOLINT
-      history.local_insert_initial(now, NCd(quartic_side1(now.value())));
-      history.remote_insert_initial(now, NCd(quartic_side2(now.value())));
+      history.local_insert_initial(make_time_id(now),
+                                   NCd(quartic_side1(now.value())));
+      history.remote_insert_initial(make_time_id(now),
+                                    NCd(quartic_side2(now.value())));
     }
   }
 
@@ -314,9 +325,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
         std::min_element(next.cbegin(), next.cend()) - next.cbegin());
 
     if (side == 0) {
-      history.local_insert(next[0], NCd(quartic_side1(next[0].value())));
+      history.local_insert(make_time_id(next[0]),
+                           NCd(quartic_side1(next[0].value())));
     } else {
-      history.remote_insert(next[1], NCd(quartic_side2(next[1].value())));
+      history.remote_insert(make_time_id(next[1]),
+                            NCd(quartic_side2(next[1].value())));
     }
 
     const TimeDelta this_dt = gsl::at(dt, side).front();

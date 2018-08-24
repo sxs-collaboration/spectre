@@ -7,14 +7,13 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
@@ -75,15 +74,12 @@ struct HistoryEvolvedVariables : db::PrefixTag, db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// Prefix for TimeStepper boundary history
-///
-/// \tparam Key type identifying a boundary
-/// \tparam Tag tag for boundary variables
-template <typename Key, typename Tag, typename Hash = std::hash<Key>>
-struct HistoryBoundaryVariables : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "HistoryBoundaryVariables"; }
-  using tag = Tag;
-  using type = std::unordered_map<Key, db::item_type<Tag>, Hash>;
+/// Tag for TimeStepper boundary history
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+struct BoundaryHistory : db::SimpleTag {
+  static std::string name() noexcept { return "BoundaryHistory"; }
+  using type =
+      TimeSteppers::BoundaryHistory<LocalVars, RemoteVars, CouplingResult>;
 };
 
 }  // namespace Tags
