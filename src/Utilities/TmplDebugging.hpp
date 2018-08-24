@@ -19,7 +19,7 @@
  * TypeDisplayer<std::vector<double>> some_random_name;
  * \endcode
  * will produce a compiler error that contains the type `std::vector<double,
- * std::allocatior...>`. TypeDisplayer is extremely useful when debugging
+ * std::allocator...>`. TypeDisplayer is extremely useful when debugging
  * template metaprograms.
  *
  * \note The TypeDisplayer header should only be included during testing
