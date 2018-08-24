@@ -4,6 +4,7 @@
 set(LIBRARY "Test_NumericalFluxes")
 
 set(LIBRARY_SOURCES
+  Test_Hll.cpp
   Test_LocalLaxFriedrichs.cpp
   )
 
