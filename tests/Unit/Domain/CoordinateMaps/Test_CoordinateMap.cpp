@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <cstddef>
 #include <memory>
@@ -87,15 +88,16 @@ void test_single_coordinate_map() {
     CHECK((make_array<double, 1>((*affine1d_base)(
               tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}}))) ==
           first_affine1d(coord));
-    CHECK((make_array<double, 1>(affine1d_base->inverse(
-              tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}}))) ==
-          first_affine1d.inverse(coord));
+    CHECK((make_array<double, 1>(
+              affine1d_base
+                  ->inverse(tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}})
+                  .get())) == first_affine1d.inverse(coord).get());
 
     CHECK((make_array<double, 1>(affine1d(tnsr::I<double, 1, Frame::Logical>{
               {{coord[0]}}}))) == first_affine1d(coord));
-    CHECK((make_array<double, 1>(affine1d.inverse(
-              tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}}))) ==
-          first_affine1d.inverse(coord));
+    CHECK((make_array<double, 1>(
+              affine1d.inverse(tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}})
+                  .get())) == first_affine1d.inverse(coord).get());
 
     const auto jac =
         affine1d.jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}});
@@ -132,15 +134,19 @@ void test_single_coordinate_map() {
     CHECK((make_array<double, 2>((*rotated2d_base)(
               tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
           first_rotated2d(coord));
-    CHECK((make_array<double, 2>(rotated2d_base->inverse(
-              tnsr::I<double, 2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
-          first_rotated2d.inverse(coord));
+    CHECK((make_array<double, 2>(rotated2d_base
+                                     ->inverse(tnsr::I<double, 2, Frame::Grid>{
+                                         {{coord[0], coord[1]}}})
+                                     .get())) ==
+          first_rotated2d.inverse(coord).get());
 
     CHECK((make_array<double, 2>(rotated2d(tnsr::I<double, 2, Frame::Logical>{
               {{coord[0], coord[1]}}}))) == first_rotated2d(coord));
-    CHECK((make_array<double, 2>(rotated2d.inverse(
-              tnsr::I<double, 2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
-          first_rotated2d.inverse(coord));
+    CHECK((make_array<double, 2>(rotated2d
+                                     .inverse(tnsr::I<double, 2, Frame::Grid>{
+                                         {{coord[0], coord[1]}}})
+                                     .get())) ==
+          first_rotated2d.inverse(coord).get());
 
     const auto jac = rotated2d.jacobian(
         tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
@@ -187,17 +193,19 @@ void test_single_coordinate_map() {
     CHECK((make_array<double, 3>((
               *rotated3d_base)(tnsr::I<double, 3, Frame::Logical>{
               {{coord[0], coord[1], coord[2]}}}))) == first_rotated3d(coord));
-    CHECK((make_array<double, 3>(
-              rotated3d_base->inverse(tnsr::I<double, 3, Frame::Grid>{
-                  {{coord[0], coord[1], coord[2]}}}))) ==
-          first_rotated3d.inverse(coord));
+    CHECK((make_array<double, 3>(rotated3d_base
+                                     ->inverse(tnsr::I<double, 3, Frame::Grid>{
+                                         {{coord[0], coord[1], coord[2]}}})
+                                     .get())) ==
+          first_rotated3d.inverse(coord).get());
 
     CHECK((make_array<double, 3>(rotated3d(tnsr::I<double, 3, Frame::Logical>{
               {{coord[0], coord[1], coord[2]}}}))) == first_rotated3d(coord));
-    CHECK((make_array<double, 3>(
-              rotated3d.inverse(tnsr::I<double, 3, Frame::Grid>{
-                  {{coord[0], coord[1], coord[2]}}}))) ==
-          first_rotated3d.inverse(coord));
+    CHECK((make_array<double, 3>(rotated3d
+                                     .inverse(tnsr::I<double, 3, Frame::Grid>{
+                                         {{coord[0], coord[1], coord[2]}}})
+                                     .get())) ==
+          first_rotated3d.inverse(coord).get());
 
     const auto jac = rotated3d.jacobian(
         tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
@@ -240,8 +248,8 @@ void test_coordinate_map_with_affine_map() {
     CHECK((tnsr::I<double, 1, Frame::Grid>(1.0 / i + -0.5))[0] ==
           approx(map(tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})[0]));
     CHECK((tnsr::I<double, 1, Frame::Logical>(2.0 / i + -1.0))[0] ==
-          approx(
-              map.inverse(tnsr::I<double, 1, Frame::Grid>{1.0 / i + -0.5})[0]));
+          approx(map.inverse(tnsr::I<double, 1, Frame::Grid>{1.0 / i + -0.5})
+                     .get()[0]));
 
     CHECK(approx(map.inv_jacobian(
                         tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})
@@ -265,8 +273,10 @@ void test_coordinate_map_with_affine_map() {
     CHECK(get<0>(expected_mapped_point) == approx(get<0>(mapped_point)));
     CHECK(get<1>(expected_mapped_point) == approx(get<1>(mapped_point)));
 
-    const auto inv_mapped_point = prod_map2d.inverse(
-        tnsr::I<double, 2, Frame::Grid>{{{4.0 / i + 2.0, 8.0 / i + 0.0}}});
+    const auto inv_mapped_point = prod_map2d
+                                      .inverse(tnsr::I<double, 2, Frame::Grid>{
+                                          {{4.0 / i + 2.0, 8.0 / i + 0.0}}})
+                                      .get();
     const auto expected_inv_mapped_point =
         tnsr::I<double, 2, Frame::Grid>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}};
     CHECK(get<0>(expected_inv_mapped_point) ==
@@ -308,8 +318,10 @@ void test_coordinate_map_with_affine_map() {
     CHECK(get<2>(expected_mapped_point) == approx(get<2>(mapped_point)));
 
     const auto inv_mapped_point =
-        prod_map3d.inverse(tnsr::I<double, 3, Frame::Grid>{
-            {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}});
+        prod_map3d
+            .inverse(tnsr::I<double, 3, Frame::Grid>{
+                {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}})
+            .get();
     const auto expected_inv_mapped_point = tnsr::I<double, 3, Frame::Grid>{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}};
     CHECK(get<0>(expected_inv_mapped_point) ==
@@ -368,9 +380,11 @@ void test_coordinate_map_with_rotation_map() {
     CHECK((make_array<double, 2>(double_rotated2d(
               tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
           second_rotated2d(first_rotated2d(coord)));
-    CHECK((make_array<double, 2>(double_rotated2d.inverse(
-              tnsr::I<double, 2, Frame::Grid>{{{coord[0], coord[1]}}}))) ==
-          first_rotated2d.inverse(second_rotated2d.inverse(coord)));
+    CHECK((make_array<double, 2>(double_rotated2d
+                                     .inverse(tnsr::I<double, 2, Frame::Grid>{
+                                         {{coord[0], coord[1]}}})
+                                     .get())) ==
+          first_rotated2d.inverse(second_rotated2d.inverse(coord).get()).get());
 
     const auto jac = double_rotated2d.jacobian(
         tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
@@ -404,10 +418,11 @@ void test_coordinate_map_with_rotation_map() {
               double_rotated3d(tnsr::I<double, 3, Frame::Logical>{
                   {{coord[0], coord[1], coord[2]}}}))) ==
           second_rotated3d(first_rotated3d(coord)));
-    CHECK((make_array<double, 3>(
-              double_rotated3d.inverse(tnsr::I<double, 3, Frame::Grid>{
-                  {{coord[0], coord[1], coord[2]}}}))) ==
-          first_rotated3d.inverse(second_rotated3d.inverse(coord)));
+    CHECK((make_array<double, 3>(double_rotated3d
+                                     .inverse(tnsr::I<double, 3, Frame::Grid>{
+                                         {{coord[0], coord[1], coord[2]}}})
+                                     .get())) ==
+          first_rotated3d.inverse(second_rotated3d.inverse(coord).get()).get());
 
     const auto jac = double_rotated3d.jacobian(
         tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
@@ -449,9 +464,6 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     CHECK((make_array<DataVector, 2>(double_rotated2d(coords2d))) ==
           second_rotated2d(first_rotated2d(coords2d_array)));
-    CHECK(
-        (make_array<DataVector, 2>(double_rotated2d.inverse(coords2d_grid))) ==
-        first_rotated2d.inverse(second_rotated2d.inverse(coords2d_array)));
 
     const auto jac = double_rotated2d.jacobian(coords2d);
     const auto expected_jac =
@@ -494,9 +506,6 @@ void test_coordinate_map_with_rotation_map_datavector() {
 
     CHECK((make_array<DataVector, 3>(double_rotated3d(coords3d))) ==
           second_rotated3d(first_rotated3d(coords3d_array)));
-    CHECK(
-        (make_array<DataVector, 3>(double_rotated3d.inverse(coords3d_grid))) ==
-        first_rotated3d.inverse(second_rotated3d.inverse(coords3d_array)));
 
     const auto jac = double_rotated3d.jacobian(coords3d);
     const auto expected_jac =

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 
@@ -64,9 +65,8 @@ class EquatorialCompression {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
-      const std::array<T, 3>& target_coords) const noexcept;
+  boost::optional<std::array<double, 3>> inverse(
+      const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(
@@ -82,8 +82,7 @@ class EquatorialCompression {
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> angular_distortion(
-      const std::array<T, 3>& coords, double inverse_alpha) const
-      noexcept;
+      const std::array<T, 3>& coords, double inverse_alpha) const noexcept;
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>
   angular_distortion_jacobian(const std::array<T, 3>& coords,

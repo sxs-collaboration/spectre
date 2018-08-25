@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <random>
 
@@ -40,7 +41,7 @@ void test_wedge3d_all_directions(const bool with_equiangular_map) {
       const CoordinateMaps::Wedge3D wedge_map(
           inner_radius, outer_radius, direction, inner_sphericity,
           outer_sphericity, with_equiangular_map, halves);
-      test_suite_for_map(wedge_map);
+      test_suite_for_map_on_unit_cube(wedge_map);
     }
   }
 }
@@ -233,7 +234,46 @@ void test_wedge3d_random_radii(const bool with_equiangular_map) {
   CHECK(magnitude(map_upper_zeta(random_outer_face)) ==
         approx(random_outer_radius_upper_zeta));
 }
+
+void test_wedge3d_fail() noexcept {
+  const CoordinateMaps::Wedge3D map(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
+                                    true);
+  // Any point with z=0 should fail the inverse map.
+  const std::array<double, 3> test_mapped_point1{{3.0, 3.0, 0.0}};
+  const std::array<double, 3> test_mapped_point2{{-3.0, 3.0, 0.0}};
+
+  // Any point with (x^2+y^2)/z^2 >= 1199 should fail the inverse map.
+  const std::array<double, 3> test_mapped_point3{{sqrt(1198.0), 1.0, 1.0}};
+  const std::array<double, 3> test_mapped_point4{{30.0, sqrt(299.0), 1.0}};
+  const std::array<double, 3> test_mapped_point5{{30.0, sqrt(300.0), 1.0}};
+
+  // These points are outside the mapped wedge. So inverse should either
+  // return the correct inverse (which happens to be computable for
+  // these points) or it should return boost::none.
+  const std::array<double, 3> test_mapped_point6{{30.0, sqrt(298.0), 1.0}};
+  const std::array<double, 3> test_mapped_point7{{2.0, 4.0, 6.0}};
+
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point4)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point5)));
+  if(map.inverse(test_mapped_point6)) {
+    Approx my_approx = Approx::custom().epsilon(1.e-10).scale(1.0);
+    CHECK_ITERABLE_CUSTOM_APPROX(map(map.inverse(test_mapped_point6).get()),
+                                 test_mapped_point6, my_approx);
+  }
+  if(map.inverse(test_mapped_point7)) {
+    CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point7).get()),
+                          test_mapped_point7);
+  }
+}
+
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Fail", "[Domain][Unit]") {
+  test_wedge3d_fail();
+}
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map.Equiangular",
                   "[Domain][Unit]") {

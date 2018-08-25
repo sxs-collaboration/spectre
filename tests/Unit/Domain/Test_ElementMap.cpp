@@ -61,14 +61,10 @@ void test_element_impl(
       composed_map(logical_point_dv);
 
   if (test_inverse) {
-    CHECK(element_map.inverse(inertial_point_dv) ==
-          composed_map.inverse(inertial_point_dv));
     CHECK(element_map.inverse(inertial_point_double) ==
-          composed_map.inverse(inertial_point_double));
-    CHECK(element_map_deserialized.inverse(inertial_point_dv) ==
-          composed_map.inverse(inertial_point_dv));
+          composed_map.inverse(inertial_point_double).get());
     CHECK(element_map_deserialized.inverse(inertial_point_double) ==
-          composed_map.inverse(inertial_point_double));
+          composed_map.inverse(inertial_point_double).get());
   }
 
   CHECK(element_map.inv_jacobian(logical_point_dv) ==

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 
@@ -134,9 +135,9 @@ class Wedge2D {
   std::array<tt::remove_cvref_wrap_t<T>, 2> operator()(
       const std::array<T, 2>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 2> inverse(
-      const std::array<T, 2>& target_coords) const noexcept;
+  /// Returns invalid if \f$x<=0\f$ (for a \f$+x\f$-oriented `Wedge2D`).
+  boost::optional<std::array<double, 2>> inverse(
+      const std::array<double, 2>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian(

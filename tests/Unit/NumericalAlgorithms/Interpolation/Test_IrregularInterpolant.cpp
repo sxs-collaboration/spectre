@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -14,7 +15,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables.hpp" // IWYU pragma: keep
+#include "DataStructures/VariablesHelpers.hpp" // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -121,7 +123,22 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
           nn_generator, nn_dist, DataVector(number_of_points));
 
   const auto coordinate_map = make_affine_map<Dim>();
-  const auto target_x = coordinate_map.inverse(target_x_inertial);
+  const auto target_x = [&target_x_inertial, &coordinate_map,
+                         &number_of_points]() {
+    tnsr::I<DataVector, Dim, Frame::Logical> result(number_of_points);
+    for (size_t s = 0; s < number_of_points; ++s) {
+      tnsr::I<double, Dim> x_inertial_local{};
+      for (size_t d = 0; d < Dim; ++d) {
+        x_inertial_local.get(d) = target_x_inertial.get(d)[s];
+      }
+      const auto x_local =
+          coordinate_map.inverse(x_inertial_local).get();
+      for (size_t d = 0; d < Dim; ++d) {
+        result.get(d)[s] = x_local.get(d);
+      }
+    }
+    return result;
+  }();
 
   // Set up interpolator. Need do this only once.
   const intrp::Irregular<Dim> irregular_interpolant(mesh, target_x);

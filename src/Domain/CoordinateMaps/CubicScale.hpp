@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 #include <string>
@@ -43,8 +44,9 @@ class CubicScale {
       const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
       noexcept;
 
+  /// Returns boost::none if the point is outside the range of the map.
   template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 1> inverse(
+  boost::optional<std::array<tt::remove_cvref_wrap_t<T>, 1>> inverse(
       const std::array<T, 1>& target_coords, double time,
       const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
       noexcept;

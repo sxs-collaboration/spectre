@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 
@@ -51,9 +52,12 @@ class Frustum {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
-      const std::array<T, 3>& target_coords) const noexcept;
+  /// Returns boost::none if \f$z\f$ is at or beyond the \f$z\f$-coordinate of
+  /// the apex of the pyramid, tetrahedron, or triangular prism that is
+  /// formed by extending the `Frustum` (for a
+  /// \f$z\f$-oriented `Frustum`).
+  boost::optional<std::array<double, 3>> inverse(
+      const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(

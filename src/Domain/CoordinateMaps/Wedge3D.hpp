@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 
@@ -237,9 +238,16 @@ class Wedge3D {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
-      const std::array<T, 3>& target_coords) const noexcept;
+  /// For a \f$+z\f$-oriented `Wedge3D`, returns invalid if \f$z<=0\f$
+  /// or if \f$(x,y,z)\f$ is on or outside the cone defined
+  /// by \f$(x^2/z^2 + y^2/z^2+1)^{1/2} = -S/F\f$, where
+  /// \f$S = \frac{1}{2}(s_1 r_1 - s_0 r_0)\f$ and
+  /// \f$F = \frac{1}{2\sqrt{3}}((1-s_1) r_1 - (1-s_0) r_0)\f$.
+  /// Here \f$s_0,s_1\f$ and \f$r_0,r_1\f$ are the specified sphericities
+  /// and radii of the inner and outer \f$z\f$ surfaces.  The map is singular on
+  /// the cone and on the xy plane.
+  boost::optional<std::array<double, 3>> inverse(
+      const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(

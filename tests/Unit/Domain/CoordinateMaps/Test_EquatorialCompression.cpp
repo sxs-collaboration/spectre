@@ -24,7 +24,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
   CAPTURE_PRECISE(aspect_ratio);
   const CoordinateMaps::EquatorialCompression angular_compression_map(
       aspect_ratio);
-  test_suite_for_map(angular_compression_map);
+  test_suite_for_map_on_unit_cube(angular_compression_map);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression.Radius",

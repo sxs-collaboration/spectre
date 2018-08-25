@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <random>
 
@@ -118,12 +119,39 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   CAPTURE_PRECISE(outer_circularity);
 
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
-    test_suite_for_map(CoordinateMaps::Wedge2D{
+    test_suite_for_map_on_unit_cube(CoordinateMaps::Wedge2D{
         inner_radius, outer_radius, inner_circularity, outer_circularity,
         map_i(), with_equiangular_map});
   }
 }
+
+void test_wedge2d_fail() noexcept {
+  const auto map =
+      CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
+
+  // Any point with x<=0 should fail the inverse map.
+  const std::array<double, 2> test_mapped_point1{{0.0, 3.0}};
+  const std::array<double, 2> test_mapped_point2{{0.0, -6.0}};
+  const std::array<double, 2> test_mapped_point3{{-1.0, 3.0}};
+
+  // This point is outside the mapped wedge.  So inverse should either
+  // return the correct inverse (which happens to be computable for
+  // this point) or it should return boost::none.
+  const std::array<double, 2> test_mapped_point4{{100.0, -6.0}};
+
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
+  if(map.inverse(test_mapped_point4)) {
+    CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).get()),
+                          test_mapped_point4);
+  }
+}
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Fail", "[Domain][Unit]") {
+  test_wedge2d_fail();
+}
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equidistant",
                   "[Domain][Unit]") {

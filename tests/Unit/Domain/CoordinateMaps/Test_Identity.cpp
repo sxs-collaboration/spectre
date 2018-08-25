@@ -6,8 +6,8 @@
 #include <array>
 #include <cstddef>
 
-#include "Utilities/MakeArray.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -17,7 +17,7 @@ void test_identity() {
   const auto xi = make_array<Dim>(1.0);
   const auto x = make_array<Dim>(1.0);
   CHECK(identity_map(xi) == x);
-  CHECK(identity_map.inverse(x) == xi);
+  CHECK(identity_map.inverse(x).get() == xi);
   const auto inv_jac = identity_map.inv_jacobian(xi);
   const auto jac = identity_map.jacobian(xi);
   for (size_t i = 0; i < Dim; ++i) {

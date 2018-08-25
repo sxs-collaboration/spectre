@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <string>
 #include <unordered_map>
@@ -36,9 +37,8 @@ class Translation {
       const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
       noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 1> inverse(
-      const std::array<T, 1>& target_coords, double time,
+  boost::optional<std::array<double, 1>> inverse(
+      const std::array<double, 1>& target_coords, double time,
       const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
       noexcept;
 

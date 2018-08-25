@@ -23,12 +23,11 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::operator()(
   return {{source_coords[0] + map_list.at(f_of_t_name_).func(time)[0][0]}};
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::inverse(
-    const std::array<T, 1>& target_coords, const double time,
+boost::optional<std::array<double, 1>> Translation::inverse(
+    const std::array<double, 1>& target_coords, const double time,
     const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
     noexcept {
-  return {{target_coords[0] - map_list.at(f_of_t_name_).func(time)[0][0]}};
+  return {{{target_coords[0] - map_list.at(f_of_t_name_).func(time)[0][0]}}};
 }
 
 template <typename T>
@@ -70,11 +69,6 @@ bool operator==(const CoordMapsTimeDependent::Translation& lhs,
   operator()(const std::array<DTYPE(data), 1>& source_coords,                  \
              const double time,                                                \
              const std::unordered_map<std::string, FunctionOfTime&>& map_list) \
-      const noexcept;                                                          \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                 \
-  Translation::inverse(                                                        \
-      const std::array<DTYPE(data), 1>& target_coords, const double time,      \
-      const std::unordered_map<std::string, FunctionOfTime&>& map_list)        \
       const noexcept;                                                          \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                 \
   Translation::frame_velocity(                                                 \

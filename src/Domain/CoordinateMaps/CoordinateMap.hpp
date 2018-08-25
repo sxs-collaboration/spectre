@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -79,20 +80,17 @@ class CoordinateMapBase : public PUP::able {
   // @}
 
   // @{
-  /// Apply the inverse `Maps` to the point(s) `target_point`
-  virtual tnsr::I<double, Dim, SourceFrame> inverse(
+  /// Apply the inverse `Maps` to the point(s) `target_point`.
+  /// The returned boost::optional is invalid if the map is not invertible
+  /// at `target_point`, or if `target_point` can be easily determined to not
+  /// make sense for the map.  An example of the latter is passing a
+  /// point with a negative value of z into a positive-z Wedge3D inverse map.
+  virtual boost::optional<tnsr::I<double, Dim, SourceFrame>> inverse(
       tnsr::I<double, Dim, TargetFrame> target_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
           std::unordered_map<std::string, FunctionOfTime&>{}) const
       noexcept = 0;
-  virtual tnsr::I<DataVector, Dim, SourceFrame> inverse(
-      tnsr::I<DataVector, Dim, TargetFrame> target_point,
-      double time = std::numeric_limits<double>::signaling_NaN(),
-      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
-          std::unordered_map<std::string, FunctionOfTime&>{}) const
-      noexcept = 0;
-
   // @}
 
   // @{
@@ -215,17 +213,8 @@ class CoordinateMap
 
   // @{
   /// Apply the inverse `Maps...` to the point(s) `target_point`
-  constexpr tnsr::I<double, dim, SourceFrame> inverse(
+  constexpr boost::optional<tnsr::I<double, dim, SourceFrame>> inverse(
       tnsr::I<double, dim, TargetFrame> target_point,
-      const double time = std::numeric_limits<double>::signaling_NaN(),
-      const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
-          std::unordered_map<std::string, FunctionOfTime&>{}) const
-      noexcept override {
-    return inverse_impl(std::move(target_point), time, f_of_t_list,
-                        std::make_index_sequence<sizeof...(Maps)>{});
-  }
-  constexpr tnsr::I<DataVector, dim, SourceFrame> inverse(
-      tnsr::I<DataVector, dim, TargetFrame> target_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list =
           std::unordered_map<std::string, FunctionOfTime&>{}) const
@@ -308,7 +297,8 @@ class CoordinateMap
       std::index_sequence<Is...> /*meta*/) const noexcept;
 
   template <typename T, size_t... Is>
-  constexpr SPECTRE_ALWAYS_INLINE tnsr::I<T, dim, SourceFrame> inverse_impl(
+  constexpr SPECTRE_ALWAYS_INLINE boost::optional<tnsr::I<T, dim, SourceFrame>>
+  inverse_impl(
       tnsr::I<T, dim, TargetFrame>&& target_point, double time,
       const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list,
       std::index_sequence<Is...> /*meta*/) const noexcept;
@@ -379,34 +369,43 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
-constexpr SPECTRE_ALWAYS_INLINE tnsr::I<
-    T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, SourceFrame>
+constexpr SPECTRE_ALWAYS_INLINE boost::optional<tnsr::I<
+    T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, SourceFrame>>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
     tnsr::I<T, dim, TargetFrame>&& target_point, const double time,
     const std::unordered_map<std::string, FunctionOfTime&>& f_of_t_list,
     std::index_sequence<Is...> /*meta*/) const noexcept {
-  std::array<T, dim> mapped_point = make_array<T, dim>(std::move(target_point));
+  boost::optional<std::array<T, dim>> mapped_point(
+      make_array<T, dim>(std::move(target_point)));
 
   (void)std::initializer_list<char>{make_overloader(
-      [](const auto& the_map, std::array<T, dim>& point, const double /*t*/,
+      [](const auto& the_map, boost::optional<std::array<T, dim>>& point,
+         const double /*t*/,
          const std::unordered_map<std::string, FunctionOfTime&>&
          /*f_of_ts*/,
          const std::false_type /*is_time_independent*/) noexcept {
-        point = the_map.inverse(point);
+        if (point) {
+          point = the_map.inverse(point.get());
+        }
         return '0';
       },
-      [](const auto& the_map, std::array<T, dim>& point, const double t,
+      [](const auto& the_map, boost::optional<std::array<T, dim>>& point,
+         const double t,
          const std::unordered_map<std::string, FunctionOfTime&>& f_of_ts,
          const std::true_type /*is_time_dependent*/) noexcept {
-        point = the_map.inverse(point, t, f_of_ts);
+        if (point) {
+          point = the_map.inverse(point.get(), t, f_of_ts);
+        }
         return '0';
         // this is the inverse function, so the iterator sequence below is
         // reversed
-      })(std::get<sizeof...(Maps)-1 - Is>(maps_), mapped_point, time,
+      })(std::get<sizeof...(Maps) - 1 - Is>(maps_), mapped_point, time,
          f_of_t_list,
          CoordinateMap_detail::is_map_time_dependent_t<Maps>{})...};
 
-  return tnsr::I<T, dim, SourceFrame>(std::move(mapped_point));
+  return mapped_point
+             ? tnsr::I<T, dim, SourceFrame>(std::move(mapped_point.get()))
+             : boost::optional<tnsr::I<T, dim, SourceFrame>>{};
 }
 
 // define type-trait to check for time-dependent jacobian

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 
@@ -44,6 +45,19 @@ namespace CoordinateMaps {
  * z(1-\mu^2)\\
  * \end{bmatrix}\f]
  *
+ * The inverse map is the same as the forward map with \f$\mu\f$
+ * replaced by \f$-\mu\f$.
+ *
+ * This map is intended to be used only inside the unit sphere.  A
+ * point inside the unit sphere maps to another point inside the unit
+ * sphere. The map can have undesirable behavior at certain points
+ * outside the unit sphere: The map is singular at
+ * \f$(x,y,z) = (1/\mu, 0, 0)\f$ (which is outside the unit sphere
+ * since \f$|\mu| < 1\f$). Moreover, a point on the \f$x\f$-axis
+ * arbitrarily close to the singularity maps to an arbitrarily large
+ * value on the \f$\pm x\f$-axis, where the sign depends on which side
+ * of the singularity the point is on.
+ *
  * A general Mobius transformation is a function on the complex plane, and
  * takes the form \f$ f(z) = \frac{az+b}{cz+d}\f$, where
  * \f$z, a, b, c, d \in \mathbb{C}\f$, and \f$ad-bc\neq 0\f$.
@@ -81,9 +95,9 @@ class SpecialMobius {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, 3> inverse(
-      const std::array<T, 3>& target_coords) const noexcept;
+  /// Returns boost::none for target_coords outside the unit sphere.
+  boost::optional<std::array<double, 3>> inverse(
+      const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> jacobian(

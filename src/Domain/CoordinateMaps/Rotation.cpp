@@ -32,13 +32,12 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
                source_coords[1] * get<1, 1>(rotation_matrix_)}};
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::inverse(
-    const std::array<T, 2>& target_coords) const noexcept {
-  return {{target_coords[0] * get<0, 0>(rotation_matrix_) +
-               target_coords[1] * get<1, 0>(rotation_matrix_),
-           target_coords[0] * get<0, 1>(rotation_matrix_) +
-               target_coords[1] * get<1, 1>(rotation_matrix_)}};
+boost::optional<std::array<double, 2>> Rotation<2>::inverse(
+    const std::array<double, 2>& target_coords) const noexcept {
+  return {{{target_coords[0] * get<0, 0>(rotation_matrix_) +
+                target_coords[1] * get<1, 0>(rotation_matrix_),
+            target_coords[0] * get<0, 1>(rotation_matrix_) +
+                target_coords[1] * get<1, 1>(rotation_matrix_)}}};
 }
 
 template <typename T>
@@ -123,19 +122,18 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation<3>::operator()(
                source_coords[2] * get<2, 2>(rotation_matrix_)}};
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation<3>::inverse(
-    const std::array<T, 3>& target_coords) const noexcept {
+boost::optional<std::array<double, 3>> Rotation<3>::inverse(
+    const std::array<double, 3>& target_coords) const noexcept {
   // Inverse rotation matrix is the same as the transpose.
-  return {{target_coords[0] * get<0, 0>(rotation_matrix_) +
-               target_coords[1] * get<1, 0>(rotation_matrix_) +
-               target_coords[2] * get<2, 0>(rotation_matrix_),
-           target_coords[0] * get<0, 1>(rotation_matrix_) +
-               target_coords[1] * get<1, 1>(rotation_matrix_) +
-               target_coords[2] * get<2, 1>(rotation_matrix_),
-           target_coords[0] * get<0, 2>(rotation_matrix_) +
-               target_coords[1] * get<1, 2>(rotation_matrix_) +
-               target_coords[2] * get<2, 2>(rotation_matrix_)}};
+  return {{{target_coords[0] * get<0, 0>(rotation_matrix_) +
+                target_coords[1] * get<1, 0>(rotation_matrix_) +
+                target_coords[2] * get<2, 0>(rotation_matrix_),
+            target_coords[0] * get<0, 1>(rotation_matrix_) +
+                target_coords[1] * get<1, 1>(rotation_matrix_) +
+                target_coords[2] * get<2, 1>(rotation_matrix_),
+            target_coords[0] * get<0, 2>(rotation_matrix_) +
+                target_coords[1] * get<1, 2>(rotation_matrix_) +
+                target_coords[2] * get<2, 2>(rotation_matrix_)}}};
 }
 
 template <typename T>
@@ -200,9 +198,6 @@ bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
   Rotation<DIM(data)>::operator()(                                             \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  Rotation<DIM(data)>::inverse(                                                \
-      const std::array<DTYPE(data), DIM(data)>& target_coords) const noexcept; \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
                     Frame::NoFrame>                                            \
   Rotation<DIM(data)>::jacobian(                                               \
@@ -216,7 +211,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
                         (double, DataVector,
                          std::reference_wrapper<const double>,
                          std::reference_wrapper<const DataVector>))
-
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE

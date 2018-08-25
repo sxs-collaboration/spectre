@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -36,9 +37,8 @@ class Identity {
   std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
       const std::array<T, Dim>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, Dim> inverse(
-      const std::array<T, Dim>& target_coords) const noexcept;
+  boost::optional<std::array<double, Dim>> inverse(
+      const std::array<double, Dim>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(

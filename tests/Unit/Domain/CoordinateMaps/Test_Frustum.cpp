@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <random>
 
 #include "Domain/CoordinateMaps/Frustum.hpp"
@@ -45,10 +46,40 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
          {{upper_x_upper_base, upper_y_upper_base}}}};
     const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
                                               with_equiangular_map);
-    test_suite_for_map(frustum_map);
+    test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
+
+void test_frustum_fail() noexcept {
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(face_vertices, 2.0, 5.0,
+                                    OrientationMap<3>{});
+
+  // For the choice of params above, any point with z<=-1 should fail.
+  const std::array<double, 3> test_mapped_point1{{3.0, 3.0, -1.0}};
+  const std::array<double, 3> test_mapped_point2{{6.0, -7.0, -1.0}};
+  const std::array<double, 3> test_mapped_point3{{6.0, -7.0, -3.0}};
+
+  // This is outside the mapped frustum, so inverse should either
+  // return the correct inverse (which happens to be computable for
+  // this point) or it should return boost::none.
+  const std::array<double, 3> test_mapped_point4{{0.0, 0.0, 9.0}};
+
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
+  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
+  if(map.inverse(test_mapped_point4)) {
+    CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).get()),
+                          test_mapped_point4);
+  }
+}
+
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Fail", "[Domain][Unit]") {
+  test_frustum_fail();
+}
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equidistant",
                   "[Domain][Unit]") {

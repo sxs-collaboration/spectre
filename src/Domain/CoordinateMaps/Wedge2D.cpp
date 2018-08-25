@@ -3,6 +3,7 @@
 
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 
+#include <boost/none.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -10,6 +11,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -40,14 +42,14 @@ Wedge2D::Wedge2D(double radius_inner, double radius_outer,
                  ((1.0 - circularity_inner) / sqrt(2.0) + circularity_inner),
          "The arguments passed into the constructor for Wedge2D result in an "
          "object where the outer surface is pierced by the inner surface.");
-  scaled_trapezoid_zero_ = 0.5 / sqrt(2.0) *
-                           ((1.0 - circularity_outer) * radius_outer +
-                            (1.0 - circularity_inner) * radius_inner);
+  scaled_trapezoid_zero_ =
+      0.5 / sqrt(2.0) * ((1.0 - circularity_outer) * radius_outer +
+                         (1.0 - circularity_inner) * radius_inner);
   annulus_zero_ = 0.5 * (circularity_outer * radius_outer +
                          circularity_inner * radius_inner);
-  scaled_trapezoid_rate_ = 0.5 / sqrt(2.0) *
-                           ((1.0 - circularity_outer) * radius_outer -
-                            (1.0 - circularity_inner) * radius_inner);
+  scaled_trapezoid_rate_ =
+      0.5 / sqrt(2.0) * ((1.0 - circularity_outer) * radius_outer -
+                         (1.0 - circularity_inner) * radius_inner);
   annulus_rate_ = 0.5 * (circularity_outer * radius_outer -
                          circularity_inner * radius_inner);
 }
@@ -68,23 +70,25 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Wedge2D::operator()(
   return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 2> Wedge2D::inverse(
-    const std::array<T, 2>& target_coords) const noexcept {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const std::array<ReturnType, 2> physical_coords =
+boost::optional<std::array<double, 2>> Wedge2D::inverse(
+    const std::array<double, 2>& target_coords) const noexcept {
+  const std::array<double, 2> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
-  const ReturnType& physical_x = physical_coords[0];
-  const ReturnType& physical_y = physical_coords[1];
+  const double& physical_x = physical_coords[0];
+  const double& physical_y = physical_coords[1];
 
-  const ReturnType cap_eta = physical_y / physical_x;
-  const ReturnType one_over_rho = 1.0 / sqrt(1.0 + square(cap_eta));
-  ReturnType xi =
+  if (physical_x < 0.0 or equal_within_roundoff(physical_x, 0.0)) {
+    return boost::none;
+  }
+
+  const double cap_eta = physical_y / physical_x;
+  const double one_over_rho = 1.0 / sqrt(1.0 + square(cap_eta));
+  double xi =
       (physical_x - scaled_trapezoid_zero_ - annulus_zero_ * one_over_rho) /
       (scaled_trapezoid_rate_ + annulus_rate_ * one_over_rho);
-  ReturnType eta =
-      with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : std::move(cap_eta);
-  return std::array<ReturnType, 2>{{std::move(xi), std::move(eta)}};
+  double eta =
+      with_equiangular_map_ ? atan(cap_eta) / M_PI_4 : cap_eta;
+  return std::array<double, 2>{{xi, eta}};
 }
 
 template <typename T>
@@ -207,9 +211,6 @@ bool operator!=(const Wedge2D& lhs, const Wedge2D& rhs) noexcept {
 #define INSTANTIATE(_, data)                                                  \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 2> Wedge2D::      \
   operator()(const std::array<DTYPE(data), 2>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 2>                \
-  Wedge2D::inverse(const std::array<DTYPE(data), 2>& target_coords)           \
-      const noexcept;                                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 2, Frame::NoFrame>  \
   Wedge2D::jacobian(const std::array<DTYPE(data), 2>& source_coords)          \
       const noexcept;                                                         \
@@ -220,7 +221,6 @@ bool operator!=(const Wedge2D& lhs, const Wedge2D& rhs) noexcept {
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
                                       std::reference_wrapper<const double>,
                                       std::reference_wrapper<const DataVector>))
-
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond

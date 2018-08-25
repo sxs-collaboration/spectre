@@ -7,6 +7,8 @@
 #pragma once
 
 #include <array>
+#include <boost/none.hpp>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <functional>
 #include <utility>
@@ -42,6 +44,23 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_call(
            std::array<std::reference_wrapper<const UnwrappedT>, sizeof...(Js)>{
                {coords[Map1::dim + Js]...}},
            map2)[Js]...}};
+}
+
+template <size_t Size, typename Map1, typename Map2, typename Function,
+          size_t... Is, size_t... Js>
+boost::optional<std::array<double, Size>> apply_inverse(
+    const std::array<double, Size>& coords, const Map1& map1, const Map2& map2,
+    const Function func, std::integer_sequence<size_t, Is...> /*meta*/,
+    std::integer_sequence<size_t, Js...> /*meta*/) noexcept {
+  auto map1_func =
+      func(std::array<double, sizeof...(Is)>{{coords[Is]...}}, map1);
+  auto map2_func = func(
+      std::array<double, sizeof...(Js)>{{coords[Map1::dim + Js]...}}, map2);
+  if (map1_func and map2_func) {
+    return {{{map1_func.get()[Is]..., map2_func.get()[Js]...}}};
+  } else {
+    return boost::none;
+  }
 }
 
 template <typename T, size_t Size, typename Map1, typename Map2,
@@ -98,9 +117,8 @@ class ProductOf2Maps {
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
       const std::array<T, dim>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> inverse(
-      const std::array<T, dim>& target_coords) const noexcept;
+  boost::optional<std::array<double, dim>> inverse(
+      const std::array<double, dim>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
@@ -133,22 +151,21 @@ std::array<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim>
 ProductOf2Maps<Map1, Map2>::operator()(
     const std::array<T, dim>& source_coords) const noexcept {
   return product_detail::apply_call(
-      source_coords, map1_, map2_,
-      [](const auto& point, const auto& map) noexcept { return map(point); },
+      source_coords, map1_,
+      map2_, [](const auto& point,
+                const auto& map) noexcept { return map(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
 }
 
 template <typename Map1, typename Map2>
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim>
+boost::optional<std::array<double, ProductOf2Maps<Map1, Map2>::dim>>
 ProductOf2Maps<Map1, Map2>::inverse(
-    const std::array<T, dim>& target_coords) const noexcept {
-  return product_detail::apply_call(
-      target_coords, map1_, map2_,
-      [](const auto& point, const auto& map) noexcept {
-        return map.inverse(point);
-      },
+    const std::array<double, dim>& target_coords) const noexcept {
+  return product_detail::apply_inverse(
+      target_coords, map1_,
+      map2_, [](const auto& point,
+                const auto& map) noexcept { return map.inverse(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
 }
@@ -160,10 +177,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim,
 ProductOf2Maps<Map1, Map2>::inv_jacobian(
     const std::array<T, dim>& source_coords) const noexcept {
   return product_detail::apply_jac(
-      source_coords, map1_, map2_,
-      [](const auto& point, const auto& map) noexcept {
-        return map.inv_jacobian(point);
-      },
+      source_coords, map1_,
+      map2_, [](const auto& point,
+                const auto& map) noexcept { return map.inv_jacobian(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
 }
@@ -175,10 +191,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf2Maps<Map1, Map2>::dim,
 ProductOf2Maps<Map1, Map2>::jacobian(
     const std::array<T, dim>& source_coords) const noexcept {
   return product_detail::apply_jac(
-      source_coords, map1_, map2_,
-      [](const auto& point, const auto& map) noexcept {
-        return map.jacobian(point);
-      },
+      source_coords, map1_,
+      map2_, [](const auto& point,
+                const auto& map) noexcept { return map.jacobian(point); },
       std::make_index_sequence<Map1::dim>{},
       std::make_index_sequence<Map2::dim>{});
 }
@@ -213,9 +228,8 @@ class ProductOf3Maps {
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
       const std::array<T, dim>& source_coords) const noexcept;
 
-  template <typename T>
-  std::array<tt::remove_cvref_wrap_t<T>, dim> inverse(
-      const std::array<T, dim>& target_coords) const noexcept;
+  boost::optional<std::array<double, dim>> inverse(
+      const std::array<double, dim>& target_coords) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, dim, Frame::NoFrame> inv_jacobian(
@@ -260,19 +274,19 @@ ProductOf3Maps<Map1, Map2, Map3>::operator()(
 }
 
 template <typename Map1, typename Map2, typename Map3>
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, ProductOf3Maps<Map1, Map2, Map3>::dim>
+boost::optional<std::array<double, ProductOf3Maps<Map1, Map2, Map3>::dim>>
 ProductOf3Maps<Map1, Map2, Map3>::inverse(
-    const std::array<T, dim>& target_coords) const noexcept {
-  using UnwrappedT = tt::remove_cvref_wrap_t<T>;
-  return {
-      {map1_.inverse(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-           {target_coords[0]}})[0],
-       map2_.inverse(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-           {target_coords[1]}})[0],
-       map3_.inverse(std::array<std::reference_wrapper<const UnwrappedT>, 1>{
-           {target_coords[2]}})[0]}};
+    const std::array<double, dim>& target_coords) const noexcept {
+  auto c1 = map1_.inverse(std::array<double, 1>{{target_coords[0]}});
+  auto c2 = map2_.inverse(std::array<double, 1>{{target_coords[1]}});
+  auto c3 = map3_.inverse(std::array<double, 1>{{target_coords[2]}});
+  if (c1 and c2 and c3) {
+    return {{{c1.get()[0], c2.get()[0], c3.get()[0]}}};
+  } else {
+    return boost::none;
+  }
 }
+
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, ProductOf3Maps<Map1, Map2, Map3>::dim,

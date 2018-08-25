@@ -39,13 +39,12 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::operator()(
                                      (-B_ - A_ + 2.0 * source_coords[0])))}};
 }
 
-template <typename T>
-std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::inverse(
-    const std::array<T, 1>& target_coords) const noexcept {
-  return {{0.5 * (A_ + B_ +
-                  length_of_domain_over_m_pi_4_ *
-                      atan(one_over_length_of_range_ *
-                           (-a_ - b_ + 2.0 * target_coords[0])))}};
+boost::optional<std::array<double, 1>> Equiangular::inverse(
+    const std::array<double, 1>& target_coords) const noexcept {
+  return {{{0.5 * (A_ + B_ +
+                   length_of_domain_over_m_pi_4_ *
+                       atan(one_over_length_of_range_ *
+                            (-a_ - b_ + 2.0 * target_coords[0])))}}};
 }
 
 template <typename T>
@@ -111,9 +110,6 @@ bool operator==(const CoordinateMaps::Equiangular& lhs,
 #define INSTANTIATE(_, data)                                                  \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> Equiangular::  \
   operator()(const std::array<DTYPE(data), 1>& source_coords) const noexcept; \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                \
-  Equiangular::inverse(const std::array<DTYPE(data), 1>& target_coords)       \
-      const noexcept;                                                         \
   template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
   Equiangular::jacobian(const std::array<DTYPE(data), 1>& source_coords)      \
       const noexcept;                                                         \
