@@ -14,6 +14,10 @@ struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+struct Var2 : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 template <typename Tag>
 struct Prefix : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
@@ -115,6 +119,26 @@ static_assert(
                          char, bool>>,
                      Tags::Variables<tmpl::list<Var>>>,
     "Failed testing remove_all_prefixes");
+
+static_assert(
+    cpp17::is_same_v<
+        db::variables_tag_with_tags_list<
+            PrefixWithArgs<Prefix<Tags::Variables<tmpl::list<
+                               PrefixWithArgs<Prefix<Var>, char, bool>>>>,
+                           char, bool>,
+            tmpl::list<Var, Prefix<Var>>>,
+        PrefixWithArgs<Prefix<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>,
+                       char, bool>>,
+    "Failed testing variables_tag_with_tags_list");
+
+/// [variables_tag_with_tags_list]
+static_assert(
+    cpp17::is_same_v<db::variables_tag_with_tags_list<
+                         Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>,
+                         tmpl::list<Prefix<Var2>>>,
+                     Prefix<Tags::Variables<tmpl::list<Prefix<Var2>>>>>,
+    "Failed testing variables_tag_with_tags_list");
+/// [variables_tag_with_tags_list]
 
 static_assert(cpp17::is_same_v<db::split_tag<Var>, tmpl::list<Var>>,
               "Failed testing split_tag");

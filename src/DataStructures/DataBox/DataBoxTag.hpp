@@ -560,6 +560,44 @@ template <class Tag>
 struct remove_all_prefixes_impl<Tag, true> {
   using type = remove_all_prefixes<remove_tag_prefix<Tag>>;
 };
+
+// Implementation of variables_tag_with_tags_list
+template <DispatchTagType TagType>
+struct variables_tag_with_tags_list_impl;
+}  // namespace DataBox_detail
+
+/// \ingroup DataBoxGroup
+/// Change the tags contained in a possibly prefixed Variables tag.
+/// \example
+/// \snippet Test_DataBoxTag.cpp variables_tag_with_tags_list
+template <typename Tag, typename NewTagsList>
+using variables_tag_with_tags_list =
+    typename DataBox_detail::variables_tag_with_tags_list_impl<
+        DataBox_detail::tag_type<Tag>>::template f<Tag, NewTagsList>;
+
+namespace DataBox_detail {
+// Implementation of variables_tag_with_tags_list
+template <>
+struct variables_tag_with_tags_list_impl<DispatchTagType::Variables> {
+  template <typename Tag, typename NewTagsList>
+  using f = Tags::Variables<NewTagsList>;
+};
+
+template <>
+struct variables_tag_with_tags_list_impl<DispatchTagType::Prefix> {
+  template <typename Tag, typename NewTagsList>
+  struct helper;
+
+  template <template <typename...> class Prefix, typename Tag, typename... Args,
+            typename NewTagsList>
+  struct helper<Prefix<Tag, Args...>, NewTagsList> {
+    using type =
+        Prefix<variables_tag_with_tags_list<Tag, NewTagsList>, Args...>;
+  };
+
+  template <typename Tag, typename NewTagsList>
+  using f = typename helper<Tag, NewTagsList>::type;
+};
 }  // namespace DataBox_detail
 
 /// \ingroup DataBoxGroup
