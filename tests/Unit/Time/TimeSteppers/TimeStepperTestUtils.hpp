@@ -38,15 +38,15 @@ void take_step(
   *time = time_id.time();
 }
 
-template <typename Stepper, typename F1, typename F2>
+template <typename F1, typename F2>
 void initialize_history(
     Time time,
     const gsl::not_null<TimeSteppers::History<double, double>*> history,
-    const Stepper& stepper,
     F1&& analytic,
     F2&& rhs,
-    TimeDelta step_size) noexcept {
-  for (size_t j = 0; j < stepper.number_of_past_steps(); ++j) {
+    TimeDelta step_size,
+    const size_t number_of_past_steps) noexcept {
+  for (size_t j = 0; j < number_of_past_steps; ++j) {
     ASSERT(time.slab() == step_size.slab(), "Slab mismatch");
     if ((step_size.is_positive() and time.is_at_slab_start()) or
         (not step_size.is_positive() and time.is_at_slab_end())) {
@@ -72,7 +72,8 @@ void check_substep_properties(const Stepper& stepper) noexcept {
 }
 
 template <typename Stepper>
-void integrate_test(const Stepper& stepper, const double integration_time,
+void integrate_test(const Stepper& stepper, const size_t number_of_past_steps,
+                    const double integration_time,
                     const double epsilon) noexcept {
   auto analytic = [](double t) { return sin(t); };
   auto rhs = [](double v) { return sqrt(1. - square(v)); };
@@ -89,9 +90,8 @@ void integrate_test(const Stepper& stepper, const double integration_time,
   double y = analytic(time.value());
   TimeSteppers::History<double, double> history;
 
-  if (not stepper.is_self_starting()) {
-    initialize_history(time, &history, stepper, analytic, rhs, step_size);
-  }
+  initialize_history(time, &history, analytic, rhs, step_size,
+                     number_of_past_steps);
 
   for (size_t i = 0; i < num_steps; ++i) {
     take_step(&time, &y, &history, stepper, rhs, step_size);
@@ -107,6 +107,7 @@ void integrate_test(const Stepper& stepper, const double integration_time,
 
 template <typename Stepper>
 void integrate_variable_test(const Stepper& stepper,
+                             const size_t number_of_past_steps,
                              const double epsilon) noexcept {
   auto analytic = [](double t) { return sin(t); };
   auto rhs = [](double v) { return sqrt(1. - square(v)); };
@@ -119,9 +120,8 @@ void integrate_variable_test(const Stepper& stepper,
   double y = analytic(time.value());
 
   TimeSteppers::History<double, double> history;
-  if (not stepper.is_self_starting()) {
-    initialize_history(time, &history, stepper, analytic, rhs, slab.duration());
-  }
+  initialize_history(time, &history, analytic, rhs, slab.duration(),
+                     number_of_past_steps);
 
   for (size_t i = 0; i < num_steps; ++i) {
     slab = slab.advance().with_duration_from_start(
@@ -150,12 +150,10 @@ void stability_test(const Stepper& stepper) noexcept {
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    if (not stepper.is_self_starting()) {
-      initialize_history(time, &history, stepper,
-                         [](double t) { return exp(-2. * t); },
-                         [](double v) { return -2. * v; },
-                         step_size);
-    }
+    initialize_history(time, &history,
+                       [](double t) { return exp(-2. * t); },
+                       [](double v) { return -2. * v; },
+                       step_size, stepper.number_of_past_steps());
 
     for (size_t i = 0; i < num_steps; ++i) {
       take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
@@ -173,12 +171,10 @@ void stability_test(const Stepper& stepper) noexcept {
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    if (not stepper.is_self_starting()) {
-      initialize_history(time, &history, stepper,
-                         [](double t) { return exp(-2. * t); },
-                         [](double v) { return -2. * v; },
-                         step_size);
-    }
+    initialize_history(time, &history,
+                       [](double t) { return exp(-2. * t); },
+                       [](double v) { return -2. * v; },
+                       step_size, stepper.number_of_past_steps());
 
     for (size_t i = 0; i < num_steps; ++i) {
       take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
@@ -192,8 +188,9 @@ void stability_test(const Stepper& stepper) noexcept {
 }
 
 template <typename Stepper>
-void equal_rate_boundary(const Stepper& stepper, const double epsilon,
-                         const bool forward) {
+void equal_rate_boundary(const Stepper& stepper,
+                         const size_t number_of_past_steps,
+                         const double epsilon, const bool forward) {
   // This does an integral putting the entire derivative into the
   // boundary term.
   const double unused_local_deriv = 4444.;
@@ -216,10 +213,10 @@ void equal_rate_boundary(const Stepper& stepper, const double epsilon,
   TimeSteppers::History<double, double> volume_history;
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
 
-  if (not stepper.is_self_starting()) {
+  {
     Time history_time = time_id.time();
     TimeDelta history_step_size = step_size;
-    for (size_t j = 0; j < stepper.number_of_past_steps(); ++j) {
+    for (size_t j = 0; j < number_of_past_steps; ++j) {
       ASSERT(history_time.slab() == history_step_size.slab(), "Slab mismatch");
       if ((history_step_size.is_positive() and
            history_time.is_at_slab_start()) or
