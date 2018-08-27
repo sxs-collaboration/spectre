@@ -59,59 +59,73 @@ matrix:
     dist: trusty
     env: CHECK_COMMITS=true
     compiler: clang
+    name: check commits
   - os: linux
     dist: trusty
     env: CHECK_FILES=true
     compiler: clang
+    name: check files
   - os: linux
     dist: trusty
     env: RUN_CLANG_TIDY=true BUILD_TYPE=Release
     compiler: clang
+    name: clang-tidy release
   - os: linux
     dist: trusty
     env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug
     compiler: clang
+    name: clang-tidy debug
   - os: linux
     dist: trusty
     env: RUN_IWYU=true BUILD_TYPE=Debug
     compiler: clang
+    name: include what you use
   - os: linux
     dist: trusty
     env: TEST_CHECK_FILES=true
     compiler: clang
+    name: test check files
     # Run full builds after static analysis
   - os: linux
     compiler: gcc
     dist: trusty
     env: BUILD_TYPE=Debug COVERAGE=ON
+    name: gcc debug with coverage
   - os: linux
     compiler: gcc
     dist: trusty
     env: BUILD_TYPE=Release
+    name: gcc release
   - os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Debug COMPILER=gcc-6
+    name: gcc-6 debug
   - os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-6
+    name: gcc-6 release
   - os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Debug
+    name: clang debug
   - os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Release
+    name: clang release
   - os: osx
     env: BUILD_TYPE=Debug
     osx_image: xcode8.3
     compiler: clang
+    name: osx debug
   - os: osx
     osx_image: xcode8.3
     env: BUILD_TYPE=Release
     compiler: clang
+    name: osx release
 
 
 # Travis allows caching of data between builds to reduce build times or perform
