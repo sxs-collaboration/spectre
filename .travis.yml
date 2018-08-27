@@ -283,7 +283,6 @@ script:
         --build-arg GH_PAGES_SOURCE_BRANCH=${GH_PAGES_SOURCE_BRANCH}
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
         --build-arg RUN_CLANG_TIDY=${RUN_CLANG_TIDY}
-        --build-arg RUN_CPPCHECK=${RUN_CPPCHECK}
         --build-arg RUN_IWYU=${RUN_IWYU}
         --build-arg USE_PCH=${USE_PCH}
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}

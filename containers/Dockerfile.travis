@@ -42,7 +42,6 @@ ARG GH_PAGES_REPO
 ARG GH_PAGES_SOURCE_BRANCH
 ARG COVERALLS_TOKEN
 ARG RUN_CLANG_TIDY
-ARG RUN_CPPCHECK
 ARG RUN_IWYU
 ARG USE_PCH
 ARG UPSTREAM_REPO
@@ -94,10 +93,6 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
 # Build all Charm++ modules
 RUN make module_All
 
-RUN if [ ${RUN_CPPCHECK} ]; then \
-      make cppcheck; \
-    fi
-
 RUN if [ ${RUN_CLANG_TIDY} ]; then \
       /work/spectre/.travis/RunClangTidy.sh; \
     fi
@@ -107,8 +102,7 @@ RUN if [ ${RUN_IWYU} ]; then \
     fi
 
 # TravisCI currently has 2 cores for a job, so we build on 2.
-RUN if [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ] \
+RUN if [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ]; then \
       bash -c ". /etc/profile.d/lmod.sh; \
                export PATH=$PATH:/work/spack/bin; \
@@ -131,7 +125,6 @@ RUN if [ -z "${RUN_CPPCHECK}" ] \
 # can search the file for warnings
 RUN if [ "${CC}" = "gcc" ] \
     && [ $BUILD_TYPE = Debug ] \
-    && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ]; then \
       make doc | tee doxygen.log; \
@@ -139,7 +132,6 @@ RUN if [ "${CC}" = "gcc" ] \
     fi
 
 RUN if [ "${CHARM_CC}" = "gcc" ] \
-    && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
     && [ ${COVERAGE} = ON ]; then \
@@ -167,7 +159,6 @@ RUN if [ "${CHARM_CC}" = "gcc" ] \
 # for one job but let the others run tests, i.e.
 # we add documentation only for one specific build matrix entry.
 RUN if [ ${CC} = gcc ] \
-    && [ -z "${RUN_CPPCHECK}" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
@@ -191,8 +182,7 @@ RUN if [ ${CC} = gcc ] \
     fi
 
 # push documentation to GitHub pages
-RUN if  [ -z "${RUN_CPPCHECK}" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ] \
+RUN if [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ]; then \
       /work/spectre/.travis/TravisPushDocumentation.sh; \
     fi
