@@ -1,0 +1,29 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+# Executable: Test_HorizonManager
+# Check: execute
+DomainCreator:
+  Shell:
+    InnerRadius: 1.9
+    OuterRadius: 4.9
+    InitialRefinement: 1
+    InitialGridPoints: [5, 5]
+
+DataInterpolator:
+  Verbosity: Quiet
+
+AhA:
+  Verbosity: Quiet
+  InitialGuess:
+    Lmax: 6
+    Radius: 4.0
+    Center: [0.,0.,0.]
+  FastFlow:
+
+AhB:
+  Verbosity: Quiet
+  InitialGuess:
+    Lmax: 6
+    Radius: 3.5
+    Center: [0.,0.,0.]
+  FastFlow:
