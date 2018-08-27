@@ -417,7 +417,7 @@ template <template <typename...> class Wrapper, typename TagList,
 using wrap_tags_in =
     tmpl::transform<TagList, tmpl::bind<Wrapper, tmpl::_1, tmpl::pin<Args>...>>;
 
-namespace detail {
+namespace DataBox_detail {
 enum class DispatchTagType {
   Variables,
   Prefix,
@@ -522,33 +522,35 @@ struct remove_tag_prefix_impl<Prefix<UnprefixedTag, Args...>> {
                 "Unwrapped tag is not a DataBoxTag");
   using type = dispatch_remove_variables_prefix<UnprefixedTag>;
 };
-}  // namespace detail
+}  // namespace DataBox_detail
 
 /// \ingroup DataBoxTagsGroup
 /// Wrap `Tag` in `Prefix<_, Args...>`, also wrapping variables tags
 /// if `Tag` is a `Tags::Variables`.
 template <template <typename...> class Prefix, typename Tag, typename... Args>
 using add_tag_prefix =
-    Prefix<detail::dispatch_add_tag_prefix_impl<Prefix, Tag, Args...>, Args...>;
+    Prefix<DataBox_detail::dispatch_add_tag_prefix_impl<Prefix, Tag, Args...>,
+           Args...>;
 
 /// \ingroup DataBoxTagsGroup
 /// Remove a prefix from `Tag`, also removing it from the variables
 /// tags if the unwrapped tag is a `Tags::Variables`.
 template <typename Tag>
-using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
+using remove_tag_prefix =
+    typename DataBox_detail::remove_tag_prefix_impl<Tag>::type;
 
-namespace databox_detail {
+namespace DataBox_detail {
 template <class Tag, bool IsPrefix>
 struct remove_all_prefixes_impl;
-}  // namespace databox_detail
+}  // namespace DataBox_detail
 
 /// \ingroup DataBoxGroup
 /// Completely remove all prefix tags from a Tag
 template <typename Tag>
-using remove_all_prefixes = typename databox_detail::remove_all_prefixes_impl<
+using remove_all_prefixes = typename DataBox_detail::remove_all_prefixes_impl<
     Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
 
-namespace databox_detail {
+namespace DataBox_detail {
 template <class Tag>
 struct remove_all_prefixes_impl<Tag, false> {
   using type = Tag;
@@ -558,7 +560,7 @@ template <class Tag>
 struct remove_all_prefixes_impl<Tag, true> {
   using type = remove_all_prefixes<remove_tag_prefix<Tag>>;
 };
-}  // namespace databox_detail
+}  // namespace DataBox_detail
 
 /// \ingroup DataBoxGroup
 /// Struct that can be specialized to allow DataBox items to have
