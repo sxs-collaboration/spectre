@@ -45,13 +45,10 @@ sudo: required
 services:
 - docker
 
-# Set up travis configurations of Linux and macOS. We use the 14.04 Ubuntu build
-# env. We target 10.11 Debug and 10.12 Release builds.
+# Set up travis configurations of Linux and macOS.
 #
 # We also have separate targets for running shell scripts that enforce what
 # would normally be done as pre-push hooks, CHECK_COMMITS and CHECK_FILES
-#
-# We run two static analyzers, and clang-tidy.
 #
 # NOTE: The static analysis targets are run first since these are typically
 #       fast to run and provide the most useful feedback.
