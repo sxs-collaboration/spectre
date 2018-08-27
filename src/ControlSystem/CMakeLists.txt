@@ -6,6 +6,7 @@ set(LIBRARY ControlSystem)
 set(LIBRARY_SOURCES
     Averager.cpp
     Controller.cpp
+    FunctionOfTimeUpdater.cpp
     PiecewisePolynomial.cpp
     SettleToConstant.cpp
     TimescaleTuner.cpp
