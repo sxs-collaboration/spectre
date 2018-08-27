@@ -73,7 +73,7 @@ struct Residual : db::PrefixTag, db::SimpleTag {
 
 /*!
  * \ingroup LinearSolverGroup
- * \brief The magnitude square of the residual \f$\langle r,r\rangle_A\f$ w.r.t.
+ * \brief The magnitude square of the residual \f$\langle r,r\rangle\f$ w.r.t.
  * the `LinearSolver::inner_product`
  */
 template <typename Tag>
