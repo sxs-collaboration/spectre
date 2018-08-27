@@ -209,6 +209,8 @@ using abcd = Tensor<
 
 // Test construction of high-rank, high-dim tensors
 constexpr abcd<double, 7> check_construction{};
+// Silence unused variable warning
+static_assert(check_construction.rank() == 4, "Wrong structure");
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",

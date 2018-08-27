@@ -53,7 +53,6 @@ struct ComputeSources {
 };
 
 struct System {
-  static constexpr size_t volume_dim = dim;
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2>>;
   using sourced_variables = tmpl::list<Var2>;
   using volume_sources = ComputeSources;

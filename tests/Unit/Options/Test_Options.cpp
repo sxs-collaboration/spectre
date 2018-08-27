@@ -440,6 +440,7 @@ SPECTRE_TEST_CASE("Unit.Options.ComplexContainers", "[Unit][Options]") {
           {{1}, {"A"}}, {{2}, {"B"}}}));
 }
 
+#ifdef SPECTRE_DEBUG
 namespace {
 struct A {
   struct Duplicate {
@@ -454,6 +455,7 @@ struct B {
   };
 };
 }  // namespace
+#endif  // SPECTRE_DEBUG
 
 // [[OutputRegex, Duplicate option name: Duplicate]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.Duplicate", "[Unit][Options]") {
@@ -464,6 +466,7 @@ struct B {
 #endif
 }
 
+#ifdef SPECTRE_DEBUG
 namespace {
 struct TooooooooooooooooooooLong {
   using type = int;
@@ -479,6 +482,7 @@ struct TooLongHelp {
     "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
 }  // namespace
+#endif  // SPECTRE_DEBUG
 
 // [[OutputRegex, The option name TooooooooooooooooooooLong is too long for
 // nice formatting]]

@@ -99,6 +99,7 @@ void test_minkowski(const T& value) {
   CHECK(lapse.get() == one);
   CHECK(dt_lapse.get() == zero);
   CHECK(det_g.get() == one);
+  CHECK(dt_det_g.get() == zero);
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(shift.get(i) == zero);
     CHECK(dt_shift.get(i) == zero);
@@ -110,6 +111,7 @@ void test_minkowski(const T& value) {
       CHECK(inv_g.get(i, j) == zero);
     }
     for (size_t j = 0; j < Dim; ++j) {
+      CHECK(d_shift.get(i, j) == zero);
       CHECK(dt_g.get(i, j) == zero);
       CHECK(extrinsic_curvature.get(i, j) == zero);
       for (size_t k = 0; k < Dim; ++k) {
