@@ -43,6 +43,7 @@ ARG GH_PAGES_SOURCE_BRANCH
 ARG COVERALLS_TOKEN
 ARG RUN_CLANG_TIDY
 ARG RUN_IWYU
+ARG BUILD_DOC
 ARG USE_PCH
 ARG UPSTREAM_REPO
 ARG UPSTREAM_BRANCH
@@ -103,7 +104,8 @@ RUN if [ ${RUN_IWYU} ]; then \
 
 # TravisCI currently has 2 cores for a job, so we build on 2.
 RUN if [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ -z "${RUN_IWYU}" ]; then \
+    && [ -z "${RUN_IWYU}" ] \
+    && [ -z "${BUILD_DOC}" ]; then \
       bash -c ". /etc/profile.d/lmod.sh; \
                export PATH=$PATH:/work/spack/bin; \
                . /work/spack/share/spack/setup-env.sh; \
@@ -123,10 +125,7 @@ RUN if [ -z "${RUN_CLANG_TIDY}" ] \
 
 # Check documentation output for warnings write to stdout and to file so we
 # can search the file for warnings
-RUN if [ "${CC}" = "gcc" ] \
-    && [ $BUILD_TYPE = Debug ] \
-    && [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ -z "${RUN_IWYU}" ]; then \
+RUN if [ ${BUILD_DOC} ]; then \
       make doc | tee doxygen.log; \
       ! grep 'warning' ./doxygen.log; \
     fi
@@ -134,6 +133,7 @@ RUN if [ "${CC}" = "gcc" ] \
 RUN if [ "${CHARM_CC}" = "gcc" ] \
     && [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
+    && [ -z "${BUILD_DOC}" ] \
     && [ ${COVERAGE} = ON ]; then \
     bash -c ". /etc/profile.d/lmod.sh; \
                export PATH=$PATH:/work/spack/bin; \
@@ -158,11 +158,8 @@ RUN if [ "${CHARM_CC}" = "gcc" ] \
 # Since this still runs all jobs we only actually build documentation
 # for one job but let the others run tests, i.e.
 # we add documentation only for one specific build matrix entry.
-RUN if [ ${CC} = gcc ] \
-    && [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ -z "${RUN_IWYU}" ] \
+RUN if [ ${BUILD_DOC} ] \
     && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
-    && [ ${COVERAGE} ] \
     && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
     && [ ${TRAVIS_PULL_REQUEST} = false ]; then \
       make doc-coverage; \
@@ -182,7 +179,6 @@ RUN if [ ${CC} = gcc ] \
     fi
 
 # push documentation to GitHub pages
-RUN if [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ -z "${RUN_IWYU}" ]; then \
+RUN if [ ${BUILD_DOC} ]; then \
       /work/spectre/.travis/TravisPushDocumentation.sh; \
     fi

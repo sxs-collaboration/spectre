@@ -82,6 +82,11 @@ matrix:
     name: include what you use
   - os: linux
     dist: trusty
+    env: BUILD_DOC=true BUILD_TYPE=Debug
+    compiler: clang
+    name: documentation
+  - os: linux
+    dist: trusty
     env: TEST_CHECK_FILES=true
     compiler: clang
     name: test check files
@@ -298,6 +303,7 @@ script:
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
         --build-arg RUN_CLANG_TIDY=${RUN_CLANG_TIDY}
         --build-arg RUN_IWYU=${RUN_IWYU}
+        --build-arg BUILD_DOC=${BUILD_DOC}
         --build-arg USE_PCH=${USE_PCH}
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
         --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
