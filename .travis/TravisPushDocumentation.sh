@@ -8,9 +8,7 @@
 
 # We use cron jobs to deploy to gh-pages. Since this still runs all jobs we
 # only actually build documentation for one job but let the others run tests.
-if [ ${CC} = gcc ] \
-&& [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
-&& [ ${COVERAGE} ] \
+if [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
 && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
 && [ ${TRAVIS_PULL_REQUEST} == false ]; then
   cd /work/gh-pages

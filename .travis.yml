@@ -45,13 +45,10 @@ sudo: required
 services:
 - docker
 
-# Set up travis configurations of Linux and macOS. We use the 14.04 Ubuntu build
-# env. We target 10.11 Debug and 10.12 Release builds.
+# Set up travis configurations of Linux and macOS.
 #
 # We also have separate targets for running shell scripts that enforce what
 # would normally be done as pre-push hooks, CHECK_COMMITS and CHECK_FILES
-#
-# We run two static analyzers, and clang-tidy.
 #
 # NOTE: The static analysis targets are run first since these are typically
 #       fast to run and provide the most useful feedback.
@@ -62,59 +59,78 @@ matrix:
     dist: trusty
     env: CHECK_COMMITS=true
     compiler: clang
+    name: check commits
   - os: linux
     dist: trusty
     env: CHECK_FILES=true
     compiler: clang
+    name: check files
   - os: linux
     dist: trusty
     env: RUN_CLANG_TIDY=true BUILD_TYPE=Release
     compiler: clang
+    name: clang-tidy release
   - os: linux
     dist: trusty
     env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug
     compiler: clang
+    name: clang-tidy debug
   - os: linux
     dist: trusty
     env: RUN_IWYU=true BUILD_TYPE=Debug
     compiler: clang
+    name: include what you use
+  - os: linux
+    dist: trusty
+    env: BUILD_DOC=true BUILD_TYPE=Debug
+    compiler: clang
+    name: documentation
   - os: linux
     dist: trusty
     env: TEST_CHECK_FILES=true
     compiler: clang
+    name: test check files
     # Run full builds after static analysis
   - os: linux
     compiler: gcc
     dist: trusty
     env: BUILD_TYPE=Debug COVERAGE=ON
+    name: gcc debug with coverage
   - os: linux
     compiler: gcc
     dist: trusty
     env: BUILD_TYPE=Release
+    name: gcc release
   - os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Debug COMPILER=gcc-6
+    name: gcc-6 debug
   - os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-6
+    name: gcc-6 release
   - os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Debug
+    name: clang debug
   - os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Release
+    name: clang release
   - os: osx
     env: BUILD_TYPE=Debug
     osx_image: xcode8.3
     compiler: clang
+    name: osx debug
   - os: osx
     osx_image: xcode8.3
     env: BUILD_TYPE=Release
     compiler: clang
+    name: osx release
 
 
 # Travis allows caching of data between builds to reduce build times or perform
@@ -286,8 +302,8 @@ script:
         --build-arg GH_PAGES_SOURCE_BRANCH=${GH_PAGES_SOURCE_BRANCH}
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
         --build-arg RUN_CLANG_TIDY=${RUN_CLANG_TIDY}
-        --build-arg RUN_CPPCHECK=${RUN_CPPCHECK}
         --build-arg RUN_IWYU=${RUN_IWYU}
+        --build-arg BUILD_DOC=${BUILD_DOC}
         --build-arg USE_PCH=${USE_PCH}
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
         --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
