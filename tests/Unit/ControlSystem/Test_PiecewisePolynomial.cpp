@@ -153,5 +153,5 @@ SPECTRE_TEST_CASE(
       {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);
   f_of_t.update(2.0, {6.0, 0.0});
-  const auto& lambdas = f_of_t.func(0.5);
+  f_of_t.func(0.5);
 }
