@@ -16,10 +16,14 @@
  * \brief Functionality for solving linear systems of equations
  */
 namespace LinearSolver {
-namespace Tags {
 
 /*!
  * \ingroup LinearSolverGroup
+ * \brief The \ref DataBoxGroup tags associated with the linear solver
+ */
+namespace Tags {
+
+/*!
  * \brief Holds an `IterationId` that identifies a step in the linear solver
  * algorithm
  */
@@ -29,7 +33,6 @@ struct IterationId : db::SimpleTag {
 };
 
 /*!
- * \ingroup LinearSolverGroup
  * \brief The operand that the local linear operator \f$A\f$ is applied to
  *
  * \details The result of the operation should be wrapped in
@@ -45,7 +48,6 @@ struct Operand : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \ingroup LinearSolverGroup
  * \brief The linear operator \f$A\f$ applied to the data in `Tag`
  */
 template <typename Tag>
@@ -58,7 +60,6 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \ingroup LinearSolverGroup
  * \brief The residual \f$r=b - Ax\f$
  */
 template <typename Tag>
@@ -71,7 +72,6 @@ struct Residual : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \ingroup LinearSolverGroup
  * \brief The magnitude square of the residual \f$\langle r,r\rangle\f$ w.r.t.
  * the `LinearSolver::inner_product`
  */
