@@ -22,6 +22,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -30,7 +31,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-struct TimeId;
 namespace TimeSteppers {
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 class BoundaryHistory;  // IWYU pragma: keep
@@ -219,6 +219,11 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
   TimeId next_time_id(const TimeId& current_id,
                       const TimeDelta& time_step) const noexcept override;
+
+  template <typename Vars, typename DerivVars>
+  bool can_change_step_size(
+      const TimeId& time_id,
+      const TimeSteppers::History<Vars, DerivVars>& history) const noexcept;
 
   WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
 
@@ -575,6 +580,19 @@ AdamsBashforthN::compute_boundary_delta(
   history->remote_mark_unneeded(history->remote_end() - order_s);
 
   return accumulated_change;
+}
+
+template <typename Vars, typename DerivVars>
+bool AdamsBashforthN::can_change_step_size(
+    const TimeId& time_id,
+    const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
+  // We need to forbid local time-stepping before initialization is
+  // complete.  The self-start procedure itself should never consider
+  // changing the step size, but we need to wait during the main
+  // evolution until the self-start history has been replaced with
+  // "real" values.
+  return std::is_sorted(history.begin(), history.end(),
+                        SimulationLess(time_id.time_runs_forward()));
 }
 
 template <typename Iterator>

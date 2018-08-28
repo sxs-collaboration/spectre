@@ -75,6 +75,14 @@ class RungeKutta3 : public TimeStepper::Inherit {
   TimeId next_time_id(const TimeId& current_id,
                       const TimeDelta& time_step) const noexcept override;
 
+  template <typename Vars, typename DerivVars>
+  bool can_change_step_size(const TimeId& /*time_id*/,
+                            const TimeSteppers::History<Vars, DerivVars>&
+                                /*history*/) const noexcept {
+    // This integrator does not support local time-stepping.
+    return false;
+  }
+
   WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
 
   explicit RungeKutta3(CkMigrateMessage* /*unused*/) noexcept {}

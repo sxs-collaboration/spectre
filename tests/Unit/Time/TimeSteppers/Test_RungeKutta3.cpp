@@ -4,6 +4,9 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include "Parallel/PupStlCpp11.hpp"
+#include "Time/History.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -15,6 +18,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3", "[Unit][Time]") {
   const TimeSteppers::RungeKutta3 stepper{};
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 0, 1., 1e-9);
+
+  const Slab slab(0., 1.);
+  const TimeId time_id(true, 0, slab.start());
+  TimeSteppers::History<double, double> history;
+  CHECK_FALSE(stepper.can_change_step_size(time_id, history));
+  history.insert(slab.start(), 0., 0.);
+  CHECK_FALSE(stepper.can_change_step_size(time_id, history));
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Variable",
@@ -27,6 +37,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Backwards",
                   "[Unit][Time]") {
   const TimeSteppers::RungeKutta3 stepper{};
   TimeStepperTestUtils::integrate_test(stepper, 0, -1., 1e-9);
+
+  const Slab slab(0., 1.);
+  const TimeId time_id(false, 0, slab.end());
+  TimeSteppers::History<double, double> history;
+  CHECK_FALSE(stepper.can_change_step_size(time_id, history));
+  history.insert(slab.start(), 0., 0.);
+  CHECK_FALSE(stepper.can_change_step_size(time_id, history));
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3.Stability",

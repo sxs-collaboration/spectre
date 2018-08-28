@@ -7,6 +7,8 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -16,10 +18,6 @@
 /// \cond
 class TimeDelta;
 class TimeId;
-namespace Tags {
-template <typename Tag>
-struct Next;
-}  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -33,7 +31,10 @@ namespace Actions {
 ///   - CacheTags::StepChoosers<StepChooserRegistrars>
 ///   - CacheTags::StepController
 ///   - CacheTags::TimeStepper
-/// - DataBox: Tags::TimeId, Tags::TimeStep
+/// - DataBox:
+///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
+///   - Tags::TimeId
+///   - Tags::TimeStep
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -54,10 +55,23 @@ struct ChangeStepSize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    using variables_tag = typename Metavariables::system::variables_tag;
+    using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
+
     const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
     const auto& step_choosers = Parallel::get<step_choosers_tag>(cache);
     const auto& step_controller =
         Parallel::get<CacheTags::StepController>(cache);
+
+    const auto& time_id = db::get<Tags::TimeId>(box);
+
+    if (not time_stepper.can_change_step_size(
+            time_id,
+            db::get<
+                Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>(
+                box))) {
+      return std::forward_as_tuple(std::move(box));
+    }
 
     const auto& current_step = db::get<Tags::TimeStep>(box);
 
@@ -73,7 +87,6 @@ struct ChangeStepSize {
       desired_step = -desired_step;
     }
 
-    const auto& time_id = db::get<Tags::TimeId>(box);
     const auto new_step =
         step_controller.choose_step(time_id.time(), desired_step);
     if (new_step != current_step) {
