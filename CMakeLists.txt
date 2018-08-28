@@ -12,6 +12,15 @@ site_name(HOSTNAME)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+option(
+  DOCS_ONLY
+  "Skip all initialization not required for rendering documentation"
+)
+if (DOCS_ONLY)
+  include(SetupDoxygen)
+  return()
+endif (DOCS_ONLY)
+
 include(CheckCompilerVersion)
 include(ProhibitInSourceBuild)
 include(SetupNinjaColors)

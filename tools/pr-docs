@@ -1,0 +1,50 @@
+#!/bin/bash -e
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+usage() {
+    cat <<EOF
+Usage: $0 pr-number output/location
+
+Render documentation from a pull request and write the result to the
+specified location.  This script must be run from within a SpECTRE repo.
+EOF
+}
+
+if [ "$1" = -h ] ; then
+    usage
+    exit 0
+fi
+
+if [ "$#" -ne 2 ] ; then
+    usage >&2
+    exit 1
+fi
+
+pr=$1
+outdir=$2
+
+# Linux || OSX
+tmpdir=$(mktemp -d --tmpdir 2>/dev/null || mkdir -d -t spectre-doc)
+trap 'rm -rf "${tmpdir}"' EXIT
+
+spectre=$(git rev-parse --show-toplevel 2>/dev/null) || {
+    echo "Must run from a SpECTRE git working tree" >&2
+    exit 1
+}
+
+pushd "${tmpdir}" >/dev/null
+# Clone from the local SpECTRE repo to avoid having to redownload
+# everything.
+git clone --shared --quiet --no-checkout -- "${spectre}" source
+pushd source >/dev/null
+git fetch https://github.com/sxs-collaboration/spectre pull/"${pr}"/head
+git checkout --quiet FETCH_HEAD
+popd >/dev/null
+cmake -D DOCS_ONLY=TRUE source
+# Ignore doxygen failures.  We want them to be displayed, but we still
+# usually get usable documentation.
+make doc-check || :
+rm -rf "${outdir}"
+popd >/dev/null
+mv "${tmpdir}/docs/html" "${outdir}"
