@@ -34,7 +34,7 @@ void test_shell_construction(
     const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_shell_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const double aspect_ratio = 1.0) {
+    const double aspect_ratio = 1.0, const bool use_logarithmic_map = false) {
   const auto domain = shell.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
@@ -91,41 +91,48 @@ void test_shell_construction(
   CHECK(shell.initial_extents() == expected_extents);
   CHECK(shell.initial_refinement_levels() == expected_refinement_level);
   using Wedge3DMap = CoordinateMaps::Wedge3D;
+  using Halves = Wedge3DMap::WedgeHalves;
   if (aspect_ratio == 1.0) {
     test_domain_construction(
         domain, expected_block_neighbors, expected_external_boundaries,
         make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0,
-                       1.0, use_equiangular_map},
+                       1.0, use_equiangular_map, Halves::Both,
+                       use_logarithmic_map},
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
-                       1.0, 1.0, use_equiangular_map},
+                       1.0, 1.0, use_equiangular_map, Halves::Both,
+                       use_logarithmic_map},
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                      Direction<3>::lower_eta()}}},
-                1.0, 1.0, use_equiangular_map},
+                1.0, 1.0, use_equiangular_map, Halves::Both,
+                use_logarithmic_map},
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                      Direction<3>::upper_eta()}}},
-                1.0, 1.0, use_equiangular_map},
+                1.0, 1.0, use_equiangular_map, Halves::Both,
+                use_logarithmic_map},
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                      Direction<3>::upper_eta()}}},
-                1.0, 1.0, use_equiangular_map},
+                1.0, 1.0, use_equiangular_map, Halves::Both,
+                use_logarithmic_map},
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                      Direction<3>::upper_eta()}}},
-                1.0, 1.0, use_equiangular_map}
+                1.0, 1.0, use_equiangular_map, Halves::Both,
+                use_logarithmic_map}
 
             ));
   } else {
@@ -136,7 +143,8 @@ void test_shell_construction(
         make_vector(
             make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                 Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0,
-                           1.0, use_equiangular_map},
+                           1.0, use_equiangular_map, Halves::Both,
+                           use_logarithmic_map},
                 compression),
             make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                 Wedge3DMap{
@@ -144,7 +152,8 @@ void test_shell_construction(
                     OrientationMap<3>{std::array<Direction<3>, 3>{
                         {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                          Direction<3>::lower_zeta()}}},
-                    1.0, 1.0, use_equiangular_map},
+                    1.0, 1.0, use_equiangular_map, Halves::Both,
+                    use_logarithmic_map},
                 compression),
             make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                 Wedge3DMap{
@@ -152,7 +161,8 @@ void test_shell_construction(
                     OrientationMap<3>{std::array<Direction<3>, 3>{
                         {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                          Direction<3>::lower_eta()}}},
-                    1.0, 1.0, use_equiangular_map},
+                    1.0, 1.0, use_equiangular_map, Halves::Both,
+                    use_logarithmic_map},
                 compression),
             make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                 Wedge3DMap{
@@ -160,7 +170,8 @@ void test_shell_construction(
                     OrientationMap<3>{std::array<Direction<3>, 3>{
                         {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                          Direction<3>::upper_eta()}}},
-                    1.0, 1.0, use_equiangular_map},
+                    1.0, 1.0, use_equiangular_map, Halves::Both,
+                    use_logarithmic_map},
                 compression),
             make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                 Wedge3DMap{
@@ -168,7 +179,8 @@ void test_shell_construction(
                     OrientationMap<3>{std::array<Direction<3>, 3>{
                         {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                          Direction<3>::upper_eta()}}},
-                    1.0, 1.0, use_equiangular_map},
+                    1.0, 1.0, use_equiangular_map, Halves::Both,
+                    use_logarithmic_map},
                 compression),
             make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                 Wedge3DMap{
@@ -176,7 +188,8 @@ void test_shell_construction(
                     OrientationMap<3>{std::array<Direction<3>, 3>{
                         {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                          Direction<3>::upper_eta()}}},
-                    1.0, 1.0, use_equiangular_map},
+                    1.0, 1.0, use_equiangular_map, Halves::Both,
+                    use_logarithmic_map},
                 compression)
 
                 ));
@@ -186,19 +199,21 @@ void test_shell_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const DomainCreators::Shell<Frame::Inertial> shell{
-      inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-      true};
-  test_physical_separation(shell.create_domain().blocks());
-  test_shell_construction(shell, inner_radius, outer_radius, true,
-                          grid_points_r_angular,
-                          {6, make_array<3>(refinement_level)});
+  for (const auto& use_equiangular_map : {true, false}) {
+    const DomainCreators::Shell<Frame::Inertial> shell{
+        inner_radius, outer_radius, refinement_level, grid_points_r_angular,
+        use_equiangular_map};
+    test_physical_separation(shell.create_domain().blocks());
+    test_shell_construction(shell, inner_radius, outer_radius,
+                            use_equiangular_map, grid_points_r_angular,
+                            {6, make_array<3>(refinement_level)});
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equiangular",
@@ -216,21 +231,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equiangular",
       dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
       inner_radius, outer_radius, true, grid_points_r_angular,
       {6, make_array<3>(refinement_level)});
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.Equidistant",
-                  "[Domain][Unit]") {
-  const double inner_radius = 1.0, outer_radius = 2.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
-
-  const DomainCreators::Shell<Frame::Inertial> shell{
-      inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-      false};
-  test_physical_separation(shell.create_domain().blocks());
-  test_shell_construction(shell, inner_radius, outer_radius, false,
-                          grid_points_r_angular,
-                          {6, make_array<3>(refinement_level)});
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equidistant",
@@ -285,4 +285,43 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.AspectRatio",
       dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)}, aspect_ratio);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.LogarithmicMap",
+                  "[Domain][Unit]") {
+  const double inner_radius = 1.0, outer_radius = 2.0;
+  const size_t refinement_level = 2;
+  const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
+  const double aspect_ratio = 1.0;
+  const bool use_logarithmic_map = true;
+
+  const DomainCreators::Shell<Frame::Inertial> shell{
+      inner_radius, outer_radius, refinement_level,   grid_points_r_angular,
+      false,        aspect_ratio, use_logarithmic_map};
+  test_physical_separation(shell.create_domain().blocks());
+  test_shell_construction(
+      shell, inner_radius, outer_radius, false, grid_points_r_angular,
+      {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.LogarithmicMap",
+                  "[Domain][Unit]") {
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      "  Shell:\n"
+      "    InnerRadius: 1\n"
+      "    OuterRadius: 3\n"
+      "    InitialRefinement: 2\n"
+      "    InitialGridPoints: [2,3]\n"
+      "    UseEquiangularMap: false\n"
+      "    AspectRatio: 2.0        \n"
+      "    UseLogarithmicMap: true\n");
+  const double inner_radius = 1.0, outer_radius = 3.0;
+  const size_t refinement_level = 2;
+  const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
+  const double aspect_ratio = 2.0;
+  const bool use_logarithmic_map = true;
+  test_shell_construction(
+      dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+      inner_radius, outer_radius, false, grid_points_r_angular,
+      {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }

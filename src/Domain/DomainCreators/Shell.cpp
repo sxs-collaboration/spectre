@@ -31,16 +31,18 @@ Shell<TargetFrame>::Shell(
     typename InitialRefinement::type initial_refinement,
     typename InitialGridPoints::type initial_number_of_grid_points,
     typename UseEquiangularMap::type use_equiangular_map,
-    typename AspectRatio::type aspect_ratio) noexcept
+    typename AspectRatio::type aspect_ratio,
+    typename UseLogarithmicMap::type use_logarithmic_map) noexcept
     // clang-tidy: trivially copyable
-    : inner_radius_(std::move(inner_radius)),                // NOLINT
-      outer_radius_(std::move(outer_radius)),                // NOLINT
-      initial_refinement_(                                   // NOLINT
-          std::move(initial_refinement)),                    // NOLINT
-      initial_number_of_grid_points_(                        // NOLINT
-          std::move(initial_number_of_grid_points)),         // NOLINT
-      use_equiangular_map_(std::move(use_equiangular_map)),  // NOLINT
-      aspect_ratio_(std::move(aspect_ratio)) {}              // NOLINT
+    : inner_radius_(std::move(inner_radius)),                  // NOLINT
+      outer_radius_(std::move(outer_radius)),                  // NOLINT
+      initial_refinement_(                                     // NOLINT
+          std::move(initial_refinement)),                      // NOLINT
+      initial_number_of_grid_points_(                          // NOLINT
+          std::move(initial_number_of_grid_points)),           // NOLINT
+      use_equiangular_map_(std::move(use_equiangular_map)),    // NOLINT
+      aspect_ratio_(std::move(aspect_ratio)),                  // NOLINT
+      use_logarithmic_map_(std::move(use_logarithmic_map)) {}  // NOLINT
 
 template <typename TargetFrame>
 Domain<3, TargetFrame> Shell<TargetFrame>::create_domain() const noexcept {
@@ -48,7 +50,7 @@ Domain<3, TargetFrame> Shell<TargetFrame>::create_domain() const noexcept {
       std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
       coord_maps = wedge_coordinate_maps<TargetFrame>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
-          false, aspect_ratio_);
+          false, aspect_ratio_, use_logarithmic_map_);
   return Domain<3, TargetFrame>{std::move(coord_maps),
                                 corners_for_radially_layered_domains(1, false)};
 }

@@ -185,6 +185,24 @@ namespace CoordinateMaps {
  *  \end{bmatrix}
  *  \f]
  *
+ *  ### Changing the radial distribution of the gridpoints
+ *  By default, Wedge3D linearly distributes its gridpoints in the radial
+ *  direction. An exponential map can be applied to the sphere factor
+ *  \f$S(\zeta)\f$ in order to obtain a relatively higher resolution at smaller
+ *  radii. Since this is a radial rescaling of Wedge3D, this option is only
+ *  supported for fully spherical wedges with
+ *  `sphericity_inner` = `sphericity_outer` = 1.
+ *
+ *  The map then is:
+ *  \f[\vec{x}(\xi,\eta,\zeta) =
+ *  \frac{e^{S(\zeta)}}{\rho}\begin{bmatrix}
+ *  \Xi\\
+ *  \mathrm{H}\\
+ *  1\\
+ *  \end{bmatrix}\f]
+ *
+ *  The jacobian simplifies similarly.
+ *
  */
 class Wedge3D {
  public:
@@ -221,11 +239,15 @@ class Wedge3D {
    * the coordinates in the [-1,0] interval (value of `LowerOnly`) of the
    * full wedge, or the full wedge entirely (value of `Both`). Half wedges are
    * currently only useful in constructing domains for binary systems.
+   * \param with_logarithmic_map Determines whether to apply an exponential
+   * function mapping to the "sphere factor", the effect of which is to
+   * distribute the radial gridpoints logarithmically in physical space.
    */
   Wedge3D(double radius_inner, double radius_outer,
           OrientationMap<3> orientation_of_wedge, double sphericity_inner,
           double sphericity_outer, bool with_equiangular_map,
-          WedgeHalves halves_to_use = WedgeHalves::Both) noexcept;
+          WedgeHalves halves_to_use = WedgeHalves::Both,
+          bool with_logarithmic_map = false) noexcept;
 
   Wedge3D() = default;
   ~Wedge3D() = default;
@@ -275,6 +297,7 @@ class Wedge3D {
   double sphericity_outer_{std::numeric_limits<double>::signaling_NaN()};
   bool with_equiangular_map_ = false;
   WedgeHalves halves_to_use_ = WedgeHalves::Both;
+  bool with_logarithmic_map_ = false;
   double scaled_frustum_zero_{std::numeric_limits<double>::signaling_NaN()};
   double sphere_zero_{std::numeric_limits<double>::signaling_NaN()};
   double scaled_frustum_rate_{std::numeric_limits<double>::signaling_NaN()};
