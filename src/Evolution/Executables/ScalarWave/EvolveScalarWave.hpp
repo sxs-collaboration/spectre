@@ -28,6 +28,7 @@
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/FinalTime.hpp"
+#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -55,6 +56,7 @@ struct EvolutionMetavars {
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                  dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
+                 Actions::RecordTimeStepperData,
                  Actions::UpdateU>>>;
 
   static constexpr OptionString help{

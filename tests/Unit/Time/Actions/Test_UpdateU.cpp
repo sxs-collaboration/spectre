@@ -13,10 +13,10 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Time/Actions/UpdateU.hpp"
+// IWYU pragma: no_include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,7 +52,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
 
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
-  const TimeId time_id(true, 8, slab.start());
 
   using history_tag =
       Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
@@ -61,10 +60,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
       [](const double t, const double y) { return 2. * t - 2. * (y - t * t); };
 
   auto box =
-      db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep, variables_tag,
-                                   dt_variables_tag, history_tag>,
-                 db::AddComputeTags<Tags::Time>>(time_id, time_step, 1., 0.,
-                                                 history_tag::type{});
+      db::create<db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>>(
+          time_step, 1., history_tag::type{});
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
@@ -73,16 +70,13 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const std::array<double, 3> expected_values{{3., 3., 10./3.}};
 
   for (size_t substep = 0; substep < 3; ++substep) {
-    db::mutate<dt_variables_tag, Tags::TimeId>(
+    db::mutate<history_tag>(
         make_not_null(&box),
         [&rhs, &substep, &substep_times ](
-            const gsl::not_null<double*> dt_vars,
-            const gsl::not_null<TimeId*> local_time_id,
+            const gsl::not_null<db::item_type<history_tag>*> history,
             const double& vars) noexcept {
-          *local_time_id = TimeId(true, 8, substep_times[0], substep,
-                                  gsl::at(substep_times, substep));
-
-          *dt_vars = rhs(local_time_id->time().value(), vars);
+          const Time& time = gsl::at(substep_times, substep);
+          history->insert(time, vars, rhs(time.value(), vars));
         },
         db::get<variables_tag>(box));
 
