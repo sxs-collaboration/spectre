@@ -70,10 +70,8 @@ namespace CoordinateMaps {
  *  \f$+z\f$
  *  direction in either choice of coordinates is then given by:
  *
- *  \f[\vec{\sigma}_{spherical}: \vec{\xi} \rightarrow \vec{x}(\vec{\xi})\f]
- *  Where
  *  \f[
- *  \vec{x}(\xi,\eta) =
+ *  \vec{\sigma}_{spherical}(\xi,\eta) =
  *  \begin{bmatrix}
  *  x(\xi,\eta)\\
  *  y(\xi,\eta)\\
@@ -90,10 +88,8 @@ namespace CoordinateMaps {
  *  The surface map for the cubical face of side length \f$2L\f$ lying in the
  *  \f$+z\f$ direction is given by:
  *
- *  \f[\vec{\sigma}_{cubical}: \vec{\xi} \rightarrow \vec{x}(\vec{\xi})\f]
- *  Where
  *  \f[
- *  \vec{x}(\xi,\eta) =
+ *  \vec{\sigma}_{cubical}(\xi,\eta) =
  *  \begin{bmatrix}
  *  x(\xi,\eta)\\
  *  y(\xi,\eta)\\
@@ -107,14 +103,14 @@ namespace CoordinateMaps {
  *  \f]
  *
  *  ### The Bulged Face Map
- *  To construct the bulged map we interpolate between this cubical face map
- *  and a spherical face map of radius `radius_of_other_surface`, with the
+ *  To construct the bulged map we interpolate between a cubical face map of
+ *  side length \f$2L\f$ and a spherical face map of radius \f$R\f$, with the
  *  interpolation parameter being \f$s\f$, the `sphericity`.
  *  The surface map for the bulged face lying in the \f$+z\f$ direction is then
  *  given by:
  *
  *  \f[
- *  \vec{\sigma}_{+z}(\xi,\eta) = \left\{(1-s)L + \frac{sR}{\rho}\right\}
+ *  \vec{\sigma}_{+\zeta}(\xi,\eta) = \left\{(1-s)L + \frac{sR}{\rho}\right\}
  *  \begin{bmatrix}
  *  \Xi\\
  *  \mathrm{H}\\
@@ -122,6 +118,9 @@ namespace CoordinateMaps {
  *  \end{bmatrix}
  *  \f]
  *
+ *  This equation defines the upper-z map \f$\vec{\sigma}_{+\zeta}\f$, and we
+ *  similarly define the other five surface maps \f$\vec{\sigma}_{+\eta}\f$,
+ *  \f$\vec{\sigma}_{+\xi}\f$, and so on by appropriate rotations.
  *  We constrain L by demanding that the spherical face circumscribe the cube.
  *  With this condition, we have \f$L = R/\sqrt3\f$.
  *
@@ -135,10 +134,19 @@ namespace CoordinateMaps {
  *
  *  Hesthaven's formula is general in the degree of the shape functions used,
  *  so for our purposes we take the special case where the shape functions are
- *  linear, and define new variables accordingly.
+ *  linear in the interpolation variable, and define new variables accordingly.
+ *  However, our interpolation variables do not necessarily have to be the
+ *  logical coordinates themselves, though they often are. To make this
+ *  distinction clear, we will define the new interpolation variables
+ *  \f$\{\tilde{\xi},\tilde{\eta},\tilde{\zeta}\}\f$, which may either be the
+ *  logical coordinates themselves or a invertible transformation of them. For
+ *  the purposes of the bulged cube map, this transformation will be the same
+ *  transformation that takes the logical coordinates into the equiangular
+ *  coordinates. We will later see how this choice can lead to simplifications
+ *  in the final map.
  *
  *  We define the following variables for
- *  \f$\alpha, \beta, \gamma \in\{\xi,\eta,\zeta\}\f$:
+ *  \f$\alpha, \beta, \gamma \in\{\tilde{\xi},\tilde{\eta},\tilde{\zeta}\}\f$:
  *
  *  \f[
  *  f^{\pm}_{\alpha} = \frac{1}{2}(1\pm\alpha)\\
@@ -153,34 +161,36 @@ namespace CoordinateMaps {
  *  face(s) these objects belong to. The full volume map is given by:
  *
  *  \f{align*}
- *  \phi(\xi,\eta,\zeta) = &
- *  f^{+}_{\zeta}\vec{\sigma}_{+\zeta}(\xi, \eta)+
- *  f^{-}_{\zeta}\vec{\sigma}_{-\zeta}(\xi, \eta)\\
- *  &+ f^{+}_{\eta}\vec{\sigma}_{+\eta}(\xi, \zeta)+
- *  f^{-}_{\eta}\vec{\sigma}_{-\eta}(\xi, \zeta)+
- *  f^{+}_{\xi}\vec{\sigma}_{+\xi}(\eta, \zeta)+
- *  f^{-}_{\xi}\vec{\sigma}_{-\xi}(\eta, \zeta)\\
- *  &- f^{++}_{\xi \ \eta}\vec{\Gamma}_{+\xi +\eta}(\zeta)-
- *  f^{-+}_{\xi \ \eta}\vec{\Gamma}_{-\xi +\eta}(\zeta)-
- *  f^{+-}_{\xi \ \eta}\vec{\Gamma}_{+\xi -\eta}(\zeta)-
- *  f^{--}_{\xi \ \eta}\vec{\Gamma}_{-\xi -\eta}(\zeta)\\
- *  &- f^{++}_{\xi \ \zeta}\vec{\Gamma}_{+\xi +\zeta}(\eta)-
- *  f^{-+}_{\xi \ \zeta}\vec{\Gamma}_{-\xi +\zeta}(\eta)-
- *  f^{+-}_{\xi \ \zeta}\vec{\Gamma}_{+\xi -\zeta}(\eta)-
- *  f^{--}_{\xi \ \zeta}\vec{\Gamma}_{-\xi -\zeta}(\eta)\\
- *  &- f^{++}_{\eta \ \zeta}\vec{\Gamma}_{+\eta +\zeta}(\xi)-
- *  f^{-+}_{\eta \ \zeta}\vec{\Gamma}_{-\eta +\zeta}(\xi)-
- *  f^{+-}_{\eta \ \zeta}\vec{\Gamma}_{+\eta -\zeta}(\xi)-
- *  f^{--}_{\eta \zeta}\vec{\Gamma}_{-\eta -\zeta}(\xi)\\
- *  &+ f^{+++}_{\xi \ \eta \ \zeta}\vec{\pi}_{+\xi +\eta +\zeta}+
- *  f^{-++}_{\xi \ \eta \ \zeta}\vec{\pi}_{-\xi +\eta +\zeta}+
- *  f^{+-+}_{\xi \ \eta \ \zeta}\vec{\pi}_{+\xi -\eta +\zeta}+
- *  f^{--+}_{\xi \ \eta \ \zeta}\vec{\pi}_{-\xi -\eta +\zeta}\\
- *  &+ f^{++-}_{\xi \ \eta \ \zeta}\vec{\pi}_{+\xi +\eta -\zeta}+
- *  f^{-+-}_{\xi \ \eta \ \zeta}\vec{\pi}_{-\xi +\eta -\zeta}+
- *  f^{+--}_{\xi \ \eta \ \zeta}\vec{\pi}_{+\xi -\eta -\zeta}+
- *  f^{---}_{\xi \ \eta \ \zeta}\vec{\pi}_{-\xi -\eta -\zeta}
- *  \f}
+ *  \vec{x}(\xi,\eta,\zeta) = &
+ *  f^{+}_{\tilde{\zeta}}\vec{\sigma}_{+\zeta}(\xi, \eta)+
+ *  f^{-}_{\tilde{\zeta}}\vec{\sigma}_{-\zeta}(\xi, \eta)\\
+ *  &+ f^{+}_{\tilde{\eta}}\vec{\sigma}_{+\eta}(\xi, \zeta)+
+ *  f^{-}_{\tilde{\eta}}\vec{\sigma}_{-\eta}(\xi, \zeta)+
+ *  f^{+}_{\tilde{\xi}}\vec{\sigma}_{+\xi}(\eta, \zeta)+
+ *  f^{-}_{\tilde{\xi}}\vec{\sigma}_{-\xi}(\eta, \zeta)\\
+ *  &- f^{++}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{+\xi +\eta}(\zeta)-
+ *  f^{-+}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{-\xi +\eta}(\zeta)-
+ *  f^{+-}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{+\xi -\eta}(\zeta)-
+ *  f^{--}_{\tilde{\xi} \ \tilde{\eta}}\vec{\Gamma}_{-\xi -\eta}(\zeta)\\
+ *  &- f^{++}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{+\xi +\zeta}(\eta)-
+ *  f^{-+}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{-\xi +\zeta}(\eta)-
+ *  f^{+-}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{+\xi -\zeta}(\eta)-
+ *  f^{--}_{\tilde{\xi} \ \tilde{\zeta}}\vec{\Gamma}_{-\xi -\zeta}(\eta)\\
+ *  &- f^{++}_{\tilde{\eta} \ \tilde{\zeta}}\vec{\Gamma}_{+\eta +\zeta}(\xi)-
+ *  f^{-+}_{\tilde{\eta} \ \tilde{\zeta}}\vec{\Gamma}_{-\eta +\zeta}(\xi)-
+ *  f^{+-}_{\tilde{\eta} \ \tilde{\zeta}}\vec{\Gamma}_{+\eta -\zeta}(\xi)-
+ *  f^{--}_{\tilde{\eta} \tilde{\zeta}}\vec{\Gamma}_{-\eta -\zeta}(\xi)\\
+ *  &+ f^{+++}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{+\xi +\eta
+ * +\zeta}+ f^{-++}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi
+ * +\eta +\zeta}+ f^{+-+}_{\tilde{\xi} \ \tilde{\eta} \
+ * \tilde{\zeta}}\vec{\pi}_{+\xi -\eta +\zeta}+
+ *  f^{--+}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi -\eta
+ * +\zeta}\\
+ *  &+ f^{++-}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{+\xi +\eta
+ * -\zeta}+ f^{-+-}_{\tilde{\xi} \ \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi
+ * +\eta -\zeta}+ f^{+--}_{\tilde{\xi} \ \tilde{\eta} \
+ * \tilde{\zeta}}\vec{\pi}_{+\xi -\eta -\zeta}+ f^{---}_{\tilde{\xi} \
+ * \tilde{\eta} \ \tilde{\zeta}}\vec{\pi}_{-\xi -\eta -\zeta} \f}
  *
  *
  *  ### The Special Case for Octahedral Symmetry
@@ -295,22 +305,23 @@ namespace CoordinateMaps {
  * = N_xC_{zxy}N_x\vec{\sigma}_{+\zeta}(+1,\zeta)\f$
  * </center>
  *
- * Now we can write the volume map \f$\phi\f$ in terms of
+ * Now we can write the volume map in terms of
  * \f$\vec{\sigma}_{+\zeta}\f$ only:
- * \f{align*}\phi(\xi,\eta,\zeta) = &
- * (f^{+}_{\zeta} + f^{-}_{\zeta}N_z)
+ * \f{align*}\vec{x}(\xi,\eta,\zeta) = &
+ * (f^{+}_{\tilde{\zeta}} + f^{-}_{\tilde{\zeta}}N_z)
  * \vec{\sigma}_{+\zeta}(\xi, \eta)\\
- * &+ (f^{+}_{\eta} + f^{-}_{\eta}N_y)
+ * &+ (f^{+}_{\tilde{\eta}} + f^{-}_{\tilde{\eta}}N_y)
  * S_{yz}\vec{\sigma}_{+\zeta}(\xi, \zeta)\\
- * &+ (f^{+}_{\xi} + f^{-}_{\xi}N_x)
+ * &+ (f^{+}_{\tilde{\xi}} + f^{-}_{\tilde{\xi}}N_x)
  * C_{zxy}\vec{\sigma}_{+\zeta}(\eta, \zeta)\\
- * &- (f^{+}_{\xi}+f^{-}_{\xi}N_x)
- * (f^{+}_{\eta}+f^{-}_{\eta}N_y)
+ * &- (f^{+}_{\tilde{\xi}}+f^{-}_{\tilde{\xi}}N_x)
+ * (f^{+}_{\tilde{\eta}}+f^{-}_{\tilde{\eta}}N_y)
  * C_{zxy}\vec{\sigma}_{+\zeta}(+1, \zeta)\\
- * &- (f^{+}_{\zeta}+f^{-}_{\zeta}N_z)\left\{
- * (f^{+}_{\xi}+f^{-}_{\xi}N_x)\vec{\sigma}_{+\zeta}(+1, \eta)+
- * (f^{+}_{\eta}+f^{-}_{\eta}N_y)S_{xy}\vec{\sigma}_{+\zeta}(+1, \xi)\right\}\\
- * &+ \frac{r}{\sqrt{3}}\vec{\xi}
+ * &- (f^{+}_{\tilde{\zeta}}+f^{-}_{\tilde{\zeta}}N_z)\left\{
+ * (f^{+}_{\tilde{\xi}}+f^{-}_{\tilde{\xi}}N_x)\vec{\sigma}_{+\zeta}(+1, \eta)+
+ * (f^{+}_{\tilde{\eta}}+f^{-}_{\tilde{\eta}}N_y)S_{xy}\vec{\sigma}_{+\zeta}(+1,
+ * \xi)\right\}\\
+ * &+ \frac{r}{\sqrt{3}}\vec{\tilde{\xi}}
  *  \f}
  *
  * Note that we can now absorb all of the \f$f\f$s into the matrix prefactors
@@ -318,112 +329,115 @@ namespace CoordinateMaps {
  * following *blending matrices*:
  *
  *  \f[
- *  B_{\xi} =
+ *  B_{\tilde{\xi}} =
  *  \begin{bmatrix}
- *  0 & 0 & \xi\\
+ *  0 & 0 & \tilde{\xi}\\
  *  1 & 0 & 0\\
  *  0 & 1 & 0\\
  *  \end{bmatrix},\
  *
- *  B_{\eta} =
+ *  B_{\tilde{\eta}} =
  *  \begin{bmatrix}
  *  1 & 0 & 0\\
- *  0 & 0 & \eta\\
+ *  0 & 0 & \tilde{\eta}\\
  *  0 & 1 & 0\\
  *  \end{bmatrix},\
  *
- *  B_{\zeta} =
+ *  B_{\tilde{\zeta}} =
  *  \begin{bmatrix}
  *  1 & 0 & 0\\
  *  0 & 1 & 0\\
- *  0 & 0 & \zeta\\
+ *  0 & 0 & \tilde{\zeta}\\
  *  \end{bmatrix}\\
  *
- *  B_{\xi\eta} =
+ *  B_{\tilde{\xi}\tilde{\eta}} =
  *  \begin{bmatrix}
- *  0 & 0 & \xi\\
- *  \eta & 0 & 0\\
+ *  0 & 0 & \tilde{\xi}\\
+ *  \tilde{\eta} & 0 & 0\\
  *  0 & 1 & 0\\
  *  \end{bmatrix},\
  *
- *  B_{\xi\zeta} =
+ *  B_{\tilde{\xi}\tilde{\zeta}} =
  *  \begin{bmatrix}
- *  \xi & 0 & 0\\
+ *  \tilde{\xi} & 0 & 0\\
  *  0 & 1 & 0\\
- *  0 & 0 & \zeta\\
+ *  0 & 0 & \tilde{\zeta}\\
  *  \end{bmatrix},\
  *
- *  B_{\eta\zeta} =
+ *  B_{\tilde{\eta}\tilde{\zeta}} =
  *  \begin{bmatrix}
  *  0 & 1 & 0\\
- *  \eta & 0 & 0\\
- *  0 & 0 & \zeta\\
+ *  \tilde{\eta} & 0 & 0\\
+ *  0 & 0 & \tilde{\zeta}\\
  *  \end{bmatrix}\\
  *
- *  B_{\xi\eta\zeta} =
+ *  B_{\tilde{\xi}\tilde{\eta}\tilde{\zeta}} =
  *  \begin{bmatrix}
- *  \xi & 0 & 0\\
- *  0 & \eta & 0\\
- *  0 & 0 & \zeta\\
+ *  \tilde{\xi} & 0 & 0\\
+ *  0 & \tilde{\eta} & 0\\
+ *  0 & 0 & \tilde{\zeta}\\
  *  \end{bmatrix}
  *  \f]
  *
- *  Now we can write the volume map \f$\phi\f$ in these terms:
+ *  Now we can write the volume map in these terms:
  *
  * \f{align*}
- * \phi(\xi,\eta,\zeta) = &
- * B_{\zeta}
+ * \vec{x}(\xi,\eta,\zeta) = &
+ * B_{\tilde{\zeta}}
  * \vec{\sigma}_{+\zeta}(\xi, \eta)\\& +
- * B_{\eta}
+ * B_{\tilde{\eta}}
  * \vec{\sigma}_{+\zeta}(\xi, \zeta)+
- * B_{\xi}
+ * B_{\tilde{\xi}}
  * \vec{\sigma}_{+\zeta}(\eta, \zeta)\\& -
- * B_{\xi \eta}
+ * B_{\tilde{\xi} \tilde{\eta}}
  * \vec{\sigma}_{+\zeta}(+1, \zeta)-
- * B_{\xi \zeta}
+ * B_{\tilde{\xi} \tilde{\zeta}}
  * \vec{\sigma}_{+\zeta}(+1, \eta)+
- * B_{\eta \zeta}
+ * B_{\tilde{\eta} \tilde{\zeta}}
  * \vec{\sigma}_{+\zeta}(+1, \xi)\\& +
- * B_{\xi \eta \zeta}
+ * B_{\tilde{\xi} \tilde{\eta} \tilde{\zeta}}
  * \vec{\sigma}_{+\zeta}(+1, +1)
  * \f}
  *
  * ### The Bulged Cube Map
  * We now use the result above to provide the mapping for the bulged cube.
  * First we will define the variables \f$\rho_A\f$ and \f$\rho_{AB}\f$, for
- * \f$A, B \in \{\Xi,\mathrm{H}, \mathrm{Z}\} \f$:
+ * \f$A, B \in \{\Xi,\mathrm{H}, \mathrm{Z}\} \f$, where \f$\mathrm{Z}\f$
+ * is \f$\tan(\zeta\pi/4)\f$ in the equiangular case and \f$\zeta\f$ in the
+ * equidistant case:
+ *
  * \f[
  * \rho_A = \sqrt{2 + A^2}\\
  * \rho_{AB} = \sqrt{1 + A^2 + B^2}
  * \f]
  * The final mapping is then:
  * \f[
- * \vec{x}(\xi,\eta,\zeta) = \frac{(1-s)r}{\sqrt{3}}
+ * \vec{x}(\xi,\eta,\zeta) = \frac{(1-s)R}{\sqrt{3}}
  * \begin{bmatrix}
  * \Xi\\
  * \mathrm{H}\\
  * \mathrm{Z}\\
  * \end{bmatrix} +
- * \frac{sr}{\sqrt{3}}
+ * \frac{sR}{\sqrt{3}}
  * \begin{bmatrix}
- * \xi\\
- * \eta\\
- * \zeta\\
- * \end{bmatrix} + sr
+ * \tilde{\xi}\\
+ * \tilde{\eta}\\
+ * \tilde{\zeta}\\
+ * \end{bmatrix} + sR
  * \begin{bmatrix}
- * \xi & \Xi & \Xi\\
- * \mathrm{H} & \eta &\mathrm{H}\\
- * \mathrm{Z} & \mathrm{Z} & \zeta\\
+ * \tilde{\xi} & \Xi & \Xi\\
+ * \mathrm{H} & \tilde{\eta} &\mathrm{H}\\
+ * \mathrm{Z} & \mathrm{Z} & \tilde{\zeta}\\
  * \end{bmatrix}
  * \begin{bmatrix}
  * 1/\rho_{\mathrm{H}\mathrm{Z}}\\
  * 1/\rho_{\Xi\mathrm{Z}}\\
  * 1/\rho_{\Xi\mathrm{H}}\\
- * \end{bmatrix} - sr
+ * \end{bmatrix} - sR
  * \begin{bmatrix}
- * \Xi & \xi & \xi\\
- * \eta & \mathrm{H} &\eta\\
- * \zeta & \zeta & \mathrm{Z}\\
+ * \Xi & \tilde{\xi} & \tilde{\xi}\\
+ * \tilde{\eta} & \mathrm{H} &\tilde{\eta}\\
+ * \tilde{\zeta} & \tilde{\zeta} & \mathrm{Z}\\
  * \end{bmatrix}
  * \begin{bmatrix}
  * 1/\rho_{\Xi}\\
@@ -432,15 +446,21 @@ namespace CoordinateMaps {
  * \end{bmatrix}
  * \f]
  *
- * In the case where the same coordinates are used for the cube and the sphere,
- * we have \f$\xi = \Xi\f$, etc. In this case, the formula reduces further.
- * It is given by:
+ * Recall that the lower case Greek letters with tildes are the variables
+ * used for the linear interpolation between the six bounding surfaces, and
+ * that the upper case Greek letters are the coordinates along these surfaces -
+ * both of which can be specified to be either
+ * equidistant or equiangular. In the case where the
+ * interpolation variable is chosen to match that of the
+ * coordinates along the surface, we have \f$\tilde{\xi} = \Xi\f$, etc. In this
+ * case, the formula reduces further. The reduced formula below is the one used
+ * for this CoordinateMap. It is given by:
  *
  * \f[
  * \vec{x}(\xi,\eta,\zeta) =
  * \left\{
- * \frac{r}{\sqrt{3}}
- * + sr
+ * \frac{R}{\sqrt{3}}
+ * + sR
  * \left(
  * 1/\rho_{\mathrm{H}\mathrm{Z}}+
  * 1/\rho_{\Xi\mathrm{Z}}+
@@ -457,6 +477,11 @@ namespace CoordinateMaps {
  * \end{bmatrix}
  * \f]
  *
+ * The inverse mapping is analytic in the angular directions. A root find
+ * must be performed for the inverse mapping in the radial direction. This
+ * one-dimensional formula is obtained by taking the magnitude of both sides
+ * of the mapping, and changing variables from \f$\xi, \eta, \zeta\f$ to
+ * \f$x, y, z\f$ and introducing \f$\rho^2 := \sqrt{\xi^2+\eta^2+\zeta^2}\f$.
  */
 class BulgedCube {
  public:
