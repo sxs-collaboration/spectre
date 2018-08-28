@@ -39,32 +39,6 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
-// Forward declarations with basis-specific implementations
-
-/// \cond
-/*!
- * \brief Computes the function value of the basis function \f$\Phi_k(x)\f$
- * (zero-indexed).
- */
-template <Basis BasisType>
-double compute_basis_function_value(size_t k, double x) noexcept;
-
-/*!
- * \brief Computes the normalization square of the basis function \f$\Phi_k\f$
- * (zero-indexed), i.e. the definite integral over its square.
- */
-template <Basis BasisType>
-double compute_basis_function_normalization_square(size_t k) noexcept;
-
-/*!
- * \brief Computes the collocation points and integral weights associated to the
- * basis and quadrature.
- */
-template <Basis BasisType, Quadrature QuadratureType>
-std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
-    size_t num_points) noexcept;
-/// \endcond
-
 namespace {
 
 // Caching mechanism
@@ -103,10 +77,23 @@ struct CollocationPointsAndWeightsGenerator {
 // Computation of basis-agnostic quantities
 
 template <Basis BasisType, Quadrature QuadratureType>
+struct QuadratureWeightsGenerator {
+  DataVector operator()(const size_t num_points) const noexcept {
+    const auto& pts_and_weights = precomputed_spectral_quantity<
+        BasisType, QuadratureType,
+        CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>>(
+        num_points);
+    return pts_and_weights.second *
+           compute_inverse_weight_function_values<BasisType>(
+               pts_and_weights.first);
+  }
+};
+
+template <Basis BasisType, Quadrature QuadratureType>
 struct BarycentricWeightsGenerator {
   DataVector operator()(const size_t num_points) const noexcept {
-    // This implements algorithm 30 on p. 75 of Kopriva's book.
-    // It is valid for any collocation points.
+    // Algorithm 30 in Kopriva, p. 75
+    // This is valid for any collocation points.
     const DataVector& x =
         collocation_points<BasisType, QuadratureType>(num_points);
     DataVector bary_weights(num_points, 1.);
@@ -135,7 +122,7 @@ const DataVector& barycentric_weights(const size_t num_points) noexcept {
 template <Basis BasisType, Quadrature QuadratureType>
 struct DifferentiationMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
-    // This implements algorithm 37 on p. 82 of Kopriva's book.
+    // Algorithm 37 in Kopriva, p. 82
     // It is valid for any collocation points and barycentric weights.
     const DataVector& collocation_pts =
         collocation_points<BasisType, QuadratureType>(num_points);
@@ -163,13 +150,14 @@ struct SpectralToGridPointsMatrixGenerator {
     // To obtain the Vandermonde matrix we need to compute the basis function
     // values at the collocation points. Constructing the matrix proceeds
     // the same for any basis.
-    const DataVector& x =
+    const DataVector& collocation_pts =
         collocation_points<BasisType, QuadratureType>(num_points);
     Matrix vandermonde_matrix(num_points, num_points);
-    for (size_t i = 0; i < num_points; i++) {
-      for (size_t j = 0; j < num_points; j++) {
-        vandermonde_matrix(i, j) =
-            compute_basis_function_value<BasisType>(j, x[i]);
+    for (size_t j = 0; j < num_points; j++) {
+      const auto& basis_function_values =
+          compute_basis_function_values<BasisType>(j, collocation_pts);
+      for (size_t i = 0; i < num_points; i++) {
+        vandermonde_matrix(i, j) = basis_function_values[i];
       }
     }
     return vandermonde_matrix;
@@ -193,7 +181,11 @@ struct GridPointsToSpectralMatrixGenerator<BasisType, Quadrature::Gauss> {
     // \f$\mathcal{V}^{-1}_{ij}=\mathcal{V}_{ji}\frac{w_j}{\gamma_i}\f$
     // (see description of `grid_points_to_spectral_matrix`).
     const DataVector& weights =
-        quadrature_weights<BasisType, Quadrature::Gauss>(num_points);
+        precomputed_spectral_quantity<
+            BasisType, Quadrature::Gauss,
+            CollocationPointsAndWeightsGenerator<BasisType, Quadrature::Gauss>>(
+            num_points)
+            .second;
     const Matrix& vandermonde_matrix =
         spectral_to_grid_points_matrix<BasisType, Quadrature::Gauss>(
             num_points);
@@ -248,10 +240,8 @@ const DataVector& collocation_points(const size_t num_points) noexcept {
 template <Basis BasisType, Quadrature QuadratureType>
 const DataVector& quadrature_weights(const size_t num_points) noexcept {
   return precomputed_spectral_quantity<
-             BasisType, QuadratureType,
-             CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>>(
-             num_points)
-      .second;
+      BasisType, QuadratureType,
+      QuadratureWeightsGenerator<BasisType, QuadratureType>>(num_points);
 }
 
 /// \cond
@@ -297,8 +287,8 @@ Matrix interpolation_matrix(const size_t num_points,
       barycentric_weights<BasisType, QuadratureType>(num_points);
   const size_t num_target_points = get_size(target_points);
   Matrix interp_matrix(num_target_points, num_points);
-  // This implements algorithm 32 on p. 76 of Kopriva's book.
-  // It is valid for any collocation points.
+  // Algorithm 32 in Kopriva, p. 76
+  // This is valid for any collocation points.
   for (size_t k = 0; k < num_target_points; k++) {
     // Check where no interpolation is necessary since a target point
     // matches the original collocation points
@@ -430,7 +420,8 @@ template Matrix Spectral::interpolation_matrix(const Mesh<1>&,
 template Matrix Spectral::interpolation_matrix(
     const Mesh<1>&, const std::vector<double>&) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (Spectral::Basis::Legendre),
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (Spectral::Basis::Chebyshev, Spectral::Basis::Legendre),
                         (Spectral::Quadrature::Gauss,
                          Spectral::Quadrature::GaussLobatto))
 
