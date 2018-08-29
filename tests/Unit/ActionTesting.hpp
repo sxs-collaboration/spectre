@@ -134,9 +134,30 @@ class ActionRunner {
   ActionRunner& operator=(ActionRunner&&) = delete;
   ~ActionRunner() = default;
 
+  template <typename Component>
+  struct InboxesTag {
+    using type =
+        std::unordered_map<typename Component::index,
+                           tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
+                               typename Component::action_list>>>;
+  };
+
+  template <typename Component>
+  struct LocalAlgorithmsTag {
+    using type =
+        std::unordered_map<typename Component::index,
+                           ActionTesting_detail::MockLocalAlgorithm<Component>>;
+  };
+
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
   using CacheTuple =
       tuples::TaggedTupleTypelist<typename GlobalCache::tag_list>;
+  using LocalAlgorithms = tuples::TaggedTupleTypelist<
+      tmpl::transform<typename Metavariables::component_list,
+                      tmpl::bind<LocalAlgorithmsTag, tmpl::_1>>>;
+  using Inboxes = tuples::TaggedTupleTypelist<
+      tmpl::transform<typename Metavariables::component_list,
+                      tmpl::bind<InboxesTag, tmpl::_1>>>;
 
   /// Construct from the tuple of ConstGlobalCache objects.
   explicit ActionRunner(CacheTuple cache_contents)
@@ -144,10 +165,9 @@ class ActionRunner {
     tmpl::for_each<typename Metavariables::component_list>(
         [this](auto component) {
           using Component = tmpl::type_from<decltype(component)>;
-          Parallel::get_parallel_component<Component>(cache_)
-              .set_data(
-                  &tuples::get<LocalAlgorithms<Component>>(local_algorithms_),
-                  &tuples::get<Inboxes<Component>>(inboxes_));
+          Parallel::get_parallel_component<Component>(cache_).set_data(
+              &tuples::get<LocalAlgorithmsTag<Component>>(local_algorithms_),
+              &tuples::get<InboxesTag<Component>>(inboxes_));
         });
   }
 
@@ -193,7 +213,7 @@ class ActionRunner {
                      tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
                          typename Component::action_list>>>&
   inboxes() noexcept {
-    return tuples::get<Inboxes<Component>>(inboxes_);
+    return tuples::get<InboxesTag<Component>>(inboxes_);
   }
 
   /// Find the set of array indices on Component where the specified
@@ -213,34 +233,14 @@ class ActionRunner {
   /// Access the mocked algorithms for a component, indexed by array index.
   template <typename Component>
   auto& algorithms() noexcept {
-    return tuples::get<LocalAlgorithms<Component>>(local_algorithms_);
+    return tuples::get<LocalAlgorithmsTag<Component>>(local_algorithms_);
   }
 
   const GlobalCache& cache() noexcept { return cache_; }
 
  private:
-  template <typename Component>
-  struct Inboxes {
-    using type =
-        std::unordered_map<typename Component::index,
-                           tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
-                               typename Component::action_list>>>;
-  };
-
-  template <typename Component>
-  struct LocalAlgorithms {
-    using type = std::unordered_map<
-      typename Component::index,
-      ActionTesting_detail::MockLocalAlgorithm<Component>>;
-  };
-
   GlobalCache cache_;
-  tuples::TaggedTupleTypelist<tmpl::transform<
-      typename Metavariables::component_list, tmpl::bind<Inboxes, tmpl::_1>>>
-      inboxes_;
-  tuples::TaggedTupleTypelist<
-    tmpl::transform<typename Metavariables::component_list,
-                    tmpl::bind<LocalAlgorithms, tmpl::_1>>>
-      local_algorithms_;
+  Inboxes inboxes_;
+  LocalAlgorithms local_algorithms_;
 };
 }  // namespace ActionTesting
