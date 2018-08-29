@@ -43,8 +43,9 @@ struct DgElementArray {
       typename dg::Actions::InitializeElement<volume_dim>::
           template return_tag_list<Metavariables>>;
 
-  using options = tmpl::list<typename Metavariables::domain_creator_tag,
-                             OptionTags::InitialTime, OptionTags::DeltaT>;
+  using options =
+      tmpl::list<typename Metavariables::domain_creator_tag,
+                 OptionTags::InitialTime, OptionTags::InitialTimeStep>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,

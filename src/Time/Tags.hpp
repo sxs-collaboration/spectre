@@ -136,8 +136,9 @@ struct InitialTime {
 /// \ingroup TimeGroup
 /// \brief The initial time step taken by the time stepper. This may be
 /// overridden by an adaptive stepper
-struct DeltaT {
+struct InitialTimeStep {
   using type = double;
-  static constexpr OptionString help = {"The initial time step size."};
+  static constexpr OptionString help =
+      "The initial time step, before local stepping adjustment";
 };
 }  // namespace OptionTags
