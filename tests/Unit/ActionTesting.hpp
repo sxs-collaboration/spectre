@@ -14,12 +14,14 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+namespace ActionTesting {
 namespace ActionTesting_detail {
 template <typename Component>
 class MockLocalAlgorithm {
  public:
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() { return terminate_; }
+
  private:
   bool terminate_{false};
 };
@@ -58,6 +60,7 @@ class MockProxy {
       std::unordered_map<Index, MockLocalAlgorithm<Component>>;
 
   MockProxy() : inboxes_(nullptr) {}
+
   void set_data(LocalAlgorithms* local_algorithms,
                 Inboxes* inboxes) {
     local_algorithms_ = local_algorithms;
@@ -92,11 +95,12 @@ struct MockArrayChare {
       MockProxy<Component, Index, Parallel::get_inbox_tags<ActionList>>;
 };
 }  // namespace ActionTesting_detail
+}  // namespace ActionTesting
 
 /// \cond HIDDEN_SYMBOLS
 namespace Parallel {
 template <>
-struct get_array_index<ActionTesting_detail::MockArrayChare> {
+struct get_array_index<ActionTesting::ActionTesting_detail::MockArrayChare> {
   template <typename Component>
   using f = typename Component::index;
 };
