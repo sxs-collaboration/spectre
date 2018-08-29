@@ -35,7 +35,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-// IWYU pragma: no_include "Time/Slab.hpp"
+#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
@@ -146,7 +146,7 @@ struct InitializeElement {
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
-        const Time& initial_time) noexcept {
+        const double initial_time) noexcept {
       using Vars = typename System::variables_tag::type;
 
       const size_t num_grid_points =
@@ -158,7 +158,7 @@ struct InitializeElement {
       using solution_tag = CacheTags::AnalyticSolutionBase;
       Vars vars{num_grid_points};
       vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-          inertial_coords, initial_time.value(), typename Vars::tags_list{}));
+          inertial_coords, initial_time, typename Vars::tags_list{}));
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(vars));
@@ -181,7 +181,7 @@ struct InitializeElement {
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
-        const Time& initial_time) noexcept {
+        const double initial_time) noexcept {
       using Vars = typename System::variables_tag::type;
 
       const size_t num_grid_points =
@@ -193,7 +193,7 @@ struct InitializeElement {
       using solution_tag = CacheTags::AnalyticSolutionBase;
       Vars vars{num_grid_points};
       vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-          inertial_coords, initial_time.value(), typename Vars::tags_list{}));
+          inertial_coords, initial_time, typename Vars::tags_list{}));
 
       // Will be set before use
       typename fluxes_tag::type fluxes(num_grid_points);
@@ -270,13 +270,25 @@ struct InitializeElement {
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
-        const Time& initial_time, const TimeDelta& initial_dt) noexcept {
+        const double initial_time_value,
+        const double initial_dt_value) noexcept {
       using Vars = typename variables_tag::type;
       using DtVars = typename dt_variables_tag::type;
 
+      const bool time_runs_forward = initial_dt_value > 0.0;
+      const Slab initial_slab =
+          time_runs_forward ? Slab::with_duration_from_start(initial_time_value,
+                                                             initial_dt_value)
+                            : Slab::with_duration_to_end(initial_time_value,
+                                                         -initial_dt_value);
+      const Time initial_time =
+          time_runs_forward ? initial_slab.start() : initial_slab.end();
+      const TimeDelta initial_dt =
+          (time_runs_forward ? 1 : -1) * initial_slab.duration();
+
       // This is stored as Next<TimeId> and will be used to update
       // TimeId at the start of the algorithm.
-      const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
+      const TimeId time_id(time_runs_forward, 0, initial_time);
 
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
@@ -470,8 +482,9 @@ struct InitializeElement {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain, Time initial_time,
-                    TimeDelta initial_dt) noexcept {
+                    Domain<Dim, Frame::Inertial> domain,
+                    const double initial_time,
+                    const double initial_dt) noexcept {
     using system = typename Metavariables::system;
     auto domain_box = DomainTags::initialize(
         db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);

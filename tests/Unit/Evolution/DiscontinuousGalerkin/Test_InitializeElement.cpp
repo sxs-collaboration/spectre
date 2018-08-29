@@ -44,10 +44,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -200,7 +197,8 @@ void test_initialize_element(
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
        SystemAnalyticSolution{}}};
 
-  const Slab slab = Slab::with_duration_from_start(0.3, 0.01);
+  const double start_time = 0.3;
+  const double dt = 0.01;
 
   const auto domain = domain_creator.create_domain();
 
@@ -209,14 +207,15 @@ void test_initialize_element(
       std::get<0>(runner.template apply<component<dim, system::is_conservative>,
                                         dg::Actions::InitializeElement<dim>>(
           empty_box, element_id, domain_creator.initial_extents(),
-          domain_creator.create_domain(), slab.start(), slab.duration()));
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
-        TimeId(true, 0, slab.start()));
+          domain_creator.create_domain(), start_time, dt));
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time_runs_forward());
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() == 0);
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time().value() == start_time);
   // The TimeId is uninitialized and is updated immediately by the
   // algorithm loop.
   CHECK(box_contains<Tags::TimeId>(box));
   CHECK(box_contains<Tags::Time>(box));
-  CHECK(db::get<Tags::TimeStep>(box) == slab.duration());
+  CHECK(db::get<Tags::TimeStep>(box).value() == approx(dt));
 
   const auto& my_block = domain.blocks()[element_id.block_id()];
   ElementMap<dim, Frame::Inertial> map{element_id,
@@ -230,11 +229,10 @@ void test_initialize_element(
   CHECK(db::get<Tags::Mesh<dim>>(box) == mesh);
   CHECK(db::get<Tags::Element<dim>>(box) == element);
   CHECK(box_contains<Tags::ElementMap<dim>>(box));
-  CHECK(db::get<Var>(box) == ([&inertial_coords, &slab]() {
-          double time = slab.start().value();
-          Scalar<DataVector> var{inertial_coords.get(0) + time};
+  CHECK(db::get<Var>(box) == ([&inertial_coords, &start_time]() {
+          Scalar<DataVector> var{inertial_coords.get(0) + start_time};
           for (size_t d = 1; d < dim; ++d) {
-            get(var) += inertial_coords.get(d) + time;
+            get(var) += inertial_coords.get(d) + start_time;
           }
           return var;
         }()));
@@ -246,25 +244,18 @@ void test_initialize_element(
     TimeSteppers::AdamsBashforthN stepper(4, false);
     CHECK(history.size() == stepper.number_of_past_steps());
     const SystemAnalyticSolution solution{};
-    Time past_t{slab.start()};
-    TimeDelta past_dt{slab.duration()};
+    double past_t = start_time;
     for (size_t i = stepper.number_of_past_steps(); i > 0; --i) {
       const auto entry = history.begin() + static_cast<ssize_t>(i - 1);
-      past_dt = past_dt.with_slab(past_dt.slab().advance_towards(-past_dt));
-      past_t -= past_dt;
+      past_t -= dt;
 
-      CHECK(*entry == past_t);
-      tmpl::for_each<tmpl::list<Var>>([&solution, &entry, &inertial_coords,
-                                       &past_t](auto type_wrapped_tag) {
-        using tag = tmpl::type_from<decltype(type_wrapped_tag)>;
-        CHECK(get<tag>(entry.value()) ==
-              get<tag>(solution.variables(inertial_coords, past_t.value(),
-                                          tmpl::list<Var>{})));
-        CHECK(
-            get<Tags::dt<tag>>(entry.derivative()) ==
-            get<Tags::dt<tag>>(solution.variables(
-                inertial_coords, past_t.value(), tmpl::list<Tags::dt<Var>>{})));
-      });
+      CHECK(entry->value() == past_t);
+      CHECK(get<Var>(entry.value()) ==
+            get<Var>(solution.variables(inertial_coords, past_t,
+                                        tmpl::list<Var>{})));
+      CHECK(get<Tags::dt<Var>>(entry.derivative()) ==
+            get<Tags::dt<Var>>(solution.variables(
+                inertial_coords, past_t, tmpl::list<Tags::dt<Var>>{})));
     }
   }
   CHECK((db::get<Tags::MappedCoordinates<Tags::ElementMap<dim>,
@@ -319,8 +310,6 @@ void test_mortar_orientation() noexcept {
   ActionTesting::ActionRunner<Metavariables<3, false>> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
        SystemAnalyticSolution{}}};
-  const Slab slab(0., 1.);
-
   // This is the domain from the OrientationMap and corner numbering
   // tutorial.
   Domain<3, Frame::Inertial> domain(
@@ -334,8 +323,7 @@ void test_mortar_orientation() noexcept {
   db::DataBox<tmpl::list<>> empty_box{};
   const auto box = std::get<0>(
       runner.apply<component<3, false>, dg::Actions::InitializeElement<3>>(
-          empty_box, ElementId<3>(0), extents, std::move(domain), slab.start(),
-          slab.duration()));
+          empty_box, ElementId<3>(0), extents, std::move(domain), 0., 1.));
 
   CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
         Index<2>{{{3, 4}}});

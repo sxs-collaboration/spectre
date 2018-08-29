@@ -17,11 +17,9 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Time/Slab.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace Frame {
@@ -90,15 +88,7 @@ void DgElementArray<Metavariables, ActionList>::initialize(
   }
   dg_element_array.doneInserting();
 
-  // Set time and DeltaT allowing for integration backwards in time
-  const bool time_reversed = initial_dt < 0;
-  const Slab slab =
-      time_reversed ? Slab::with_duration_to_end(initial_time, -initial_dt)
-                    : Slab::with_duration_from_start(initial_time, initial_dt);
-  const Time time = time_reversed ? slab.end() : slab.start();
-  const TimeDelta dt = time_reversed ? -slab.duration() : slab.duration();
-
   Parallel::simple_action<dg::Actions::InitializeElement<volume_dim>>(
       dg_element_array, domain_creator->initial_extents(), std::move(domain),
-      time, dt);
+      initial_time, initial_dt);
 }
