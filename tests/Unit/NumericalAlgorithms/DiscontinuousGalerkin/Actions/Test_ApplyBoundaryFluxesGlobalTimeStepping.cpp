@@ -24,7 +24,7 @@
 #include "Domain/IndexToSliceAt.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "Domain/Tags.hpp"
+#include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -39,9 +39,11 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 /// \cond
+// IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 namespace PUP {
@@ -99,7 +101,8 @@ struct component
           Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Flux>>,
           tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>> {
   using initial_databox = db::compute_databox_type<
-      tmpl::list<Tags::Mesh<Dim>, Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+      tmpl::list<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
+                 Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
                  Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
                  Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
                  typename dg::FluxCommunicationTypes<
@@ -122,14 +125,13 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using flux_comm_types =
       dg::FluxCommunicationTypes<Metavariables<2, NumericalFlux>>;
+  using my_component =
+      component<2, NumericalFlux, Metavariables<2, NumericalFlux>>;
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<1>, 2>;
   using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<1>, 2>;
-
-  ActionTesting::ActionRunner<Metavariables<2, NumericalFlux>> runner{
-      {NumericalFlux{}}};
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -188,16 +190,32 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
            Scalar<DataVector>{{{{-2., -4., -6.}}}},      // flux
            Scalar<DataVector>{{{{3., 3., 3.}}}})}};      // normal magnitude
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::Mesh<2>, mortar_meshes_tag, mortar_sizes_tag,
-      Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>, mortar_data_tag>>(
-      mesh, std::move(mortar_meshes), std::move(mortar_sizes), initial_dt,
-      std::move(mortar_data));
+  using simple_tags =
+      db::AddSimpleTags<Tags::Mesh<2>, Tags::Coordinates<2, Frame::Logical>,
+                        mortar_meshes_tag, mortar_sizes_tag,
+                        Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
+                        mortar_data_tag>;
 
-  const auto out_box = get<0>(
-      runner.apply<component<2, NumericalFlux, Metavariables<2, NumericalFlux>>,
-                   dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(box,
-                                                                       id));
+  using ActionRunner =
+      ActionTesting::ActionRunner<Metavariables<2, NumericalFlux>>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
+      component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(id, db::create<simple_tags>(mesh, logical_coordinates(mesh),
+                                           std::move(mortar_meshes),
+                                           std::move(mortar_sizes), initial_dt,
+                                           std::move(mortar_data)));
+  ActionRunner runner{{NumericalFlux{}}, std::move(local_algs)};
+
+  auto& box = runner.algorithms<my_component>()
+                  .at(id)
+                  .get_databox<db::compute_databox_type<simple_tags>>();
+
+  const auto out_box =
+      get<0>(runner.apply<my_component,
+                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
+          box, id));
 
   // F* - F = 10 * local_var + 1000 * remote_var - local_flux
   const DataVector xi_flux = {0., 0., 7011.,
@@ -212,7 +230,6 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
       get(db::get<Tags::dt<Var>>(out_box)),
       get(get<Tags::dt<Var>>(initial_dt)) - 6. * xi_flux - 9. * eta_flux);
 }
-
 namespace {
 class RefinementNumericalFlux {
  public:
@@ -263,6 +280,7 @@ SPECTRE_TEST_CASE(
     "Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping.p-refinement",
     "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<3, RefinementNumericalFlux>;
+  using my_component = component<3, RefinementNumericalFlux, metavariables>;
   using flux_comm_types = dg::FluxCommunicationTypes<metavariables>;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
@@ -272,30 +290,46 @@ SPECTRE_TEST_CASE(
   using dt_variables_tag =
       db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
 
-  ActionTesting::ActionRunner<Metavariables<3, RefinementNumericalFlux>> runner{
-      {RefinementNumericalFlux{}}};
+  using simple_tags =
+      db::AddSimpleTags<Tags::Mesh<3>, Tags::Coordinates<3, Frame::Logical>,
+                        mortar_meshes_tag, mortar_sizes_tag, dt_variables_tag,
+                        mortar_data_tag>;
 
-  const ElementId<3> id(0);
+  const ElementId<3> id_0(0);
+  const ElementId<3> id_1(1);
   const auto direction = Direction<3>::upper_xi();
 
   const auto make_initial_box = [](
       const std::array<size_t, 3>& extents) noexcept {
     const Mesh<3> mesh(extents, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
-    return db::create<
-        db::AddSimpleTags<Tags::Mesh<3>, mortar_meshes_tag, mortar_sizes_tag,
-                          dt_variables_tag, mortar_data_tag>>(
-        mesh, typename mortar_meshes_tag::type{},
+    return db::create<simple_tags>(
+        mesh, logical_coordinates(mesh), typename mortar_meshes_tag::type{},
         typename mortar_sizes_tag::type{},
         typename dt_variables_tag::type(mesh.number_of_grid_points(), 0.),
         typename mortar_data_tag::type{});
   };
-  auto box1 = make_initial_box({{3, 4, 5}});
-  auto box2 = make_initial_box({{4, 2, 6}});
+
+  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
+      component<3, RefinementNumericalFlux, metavariables>>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(id_0, make_initial_box({{3, 4, 5}}));
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(id_1, make_initial_box({{4, 2, 6}}));
+  ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+
+  auto& box1 = runner.algorithms<my_component>()
+                   .at(id_0)
+                   .get_databox<db::compute_databox_type<simple_tags>>();
+  auto& box2 = runner.algorithms<my_component>()
+                   .at(id_1)
+                   .get_databox<db::compute_databox_type<simple_tags>>();
 
   const auto set_boundary_data =
-      [&direction, &id](const auto local, const auto remote, const auto flux,
-                        const auto magnitude_of_face_normal) noexcept {
+      [&direction, &id_0 ](const auto local, const auto remote, const auto flux,
+                           const auto magnitude_of_face_normal) noexcept {
     const auto& volume_mesh = get<Tags::Mesh<3>>(*local);
     const auto face_mesh =
         get<Tags::Mesh<3>>(*local).slice_away(direction.dimension());
@@ -331,14 +365,14 @@ SPECTRE_TEST_CASE(
                mortar_data_tag>(
         local,
         [
-          &direction, &id, &local_data, &mortar_mesh, &uncoupled_lifted_flux,
+          &direction, &id_0, &local_data, &mortar_mesh, &uncoupled_lifted_flux,
           &volume_mesh
         ](const gsl::not_null<db::item_type<dt_variables_tag>*> dt_variables,
           const gsl::not_null<db::item_type<mortar_meshes_tag>*> mortar_meshes,
           const gsl::not_null<db::item_type<mortar_sizes_tag>*> mortar_sizes,
           const gsl::not_null<db::item_type<mortar_data_tag>*>
               mortar_data) noexcept {
-          const auto mortar_id = std::make_pair(direction, id);
+          const auto mortar_id = std::make_pair(direction, id_0);
           add_slice_to_data(
               dt_variables, uncoupled_lifted_flux, volume_mesh.extents(),
               direction.dimension(),
@@ -350,10 +384,10 @@ SPECTRE_TEST_CASE(
           (*mortar_data)[mortar_id].local_insert(0, std::move(local_data));
         });
     db::mutate<mortar_data_tag>(
-        remote, [&direction, &id, &remote_data](
+        remote, [&direction, &id_0, &remote_data ](
                     const gsl::not_null<db::item_type<mortar_data_tag>*>
                         mortar_data) noexcept {
-          const auto mortar_id = std::make_pair(direction, id);
+          const auto mortar_id = std::make_pair(direction, id_0);
           (*mortar_data)[mortar_id].remote_insert(0, std::move(remote_data));
         });
   };
@@ -363,13 +397,13 @@ SPECTRE_TEST_CASE(
                     magnitude_of_face_normal2);
 
   const auto out_box1 =
-      get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
+      get<0>(runner.apply<my_component,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          box1, id));
+          box1, id_0));
   const auto out_box2 =
       get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          box2, id));
+          box2, id_1));
 
   // Check that the operation was conservative.
   const double average_dt1 = definite_integral(
@@ -391,6 +425,7 @@ SPECTRE_TEST_CASE(
   using Spectral::MortarSize;
 
   using metavariables = Metavariables<3, RefinementNumericalFlux>;
+  using my_component = component<3, RefinementNumericalFlux, metavariables>;
   using flux_comm_types = dg::FluxCommunicationTypes<metavariables>;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
@@ -398,9 +433,6 @@ SPECTRE_TEST_CASE(
   using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<2>, 3>;
   using dt_variables_tag =
       db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
-
-  ActionTesting::ActionRunner<Metavariables<3, RefinementNumericalFlux>> runner{
-      {RefinementNumericalFlux{}}};
 
   const Mesh<3> mesh(5, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -425,23 +457,31 @@ SPECTRE_TEST_CASE(
 
   // The coordinates are stored for use in integration later.  They
   // are not needed for the action.
-  auto self_box = db::create<db::AddSimpleTags<
-      Tags::Mesh<3>, Tags::Coordinates<3, Frame::Logical>, mortar_meshes_tag,
-      mortar_sizes_tag, dt_variables_tag, mortar_data_tag>>(
-      mesh, logical_coordinates(mesh), typename mortar_meshes_tag::type{},
-      typename mortar_sizes_tag::type{}, std::move(initial_dt_vars),
-      typename mortar_data_tag::type{});
 
-  std::vector<decltype(self_box)> neighbor_boxes{};
+  using simple_tags =
+      db::AddSimpleTags<Tags::Mesh<3>, Tags::Coordinates<3, Frame::Logical>,
+                        mortar_meshes_tag, mortar_sizes_tag, dt_variables_tag,
+                        mortar_data_tag>;
+  using db_type = db::compute_databox_type<simple_tags>;
+
+  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
+      component<3, RefinementNumericalFlux, metavariables>>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(self_id,
+               db::create<simple_tags>(mesh, logical_coordinates(mesh),
+                                       typename mortar_meshes_tag::type{},
+                                       typename mortar_sizes_tag::type{},
+                                       std::move(initial_dt_vars),
+                                       typename mortar_data_tag::type{}));
+
   const auto add_neighbor =
-      [&direction, &face_coords, &mesh, &neighbor_boxes, &self_box, &self_id](
+      [&direction, &face_coords, &mesh, &self_id, &local_algs ](
           const std::array<MortarSize, 2>& mortar_size,
           const std::array<double, 2>& center,
-          const std::array<double, 2>& half_width) noexcept {
-    // These ids don't describe elements that fit together correctly,
-    // but they are only used as opaque identifiers so it doesn't
-    // matter.
-    const ElementId<3> neighbor_id(neighbor_boxes.size());
+          const std::array<double, 2>& half_width,
+          const ElementId<3>& neighbor_id) noexcept {
     const auto mortar_id_in_self = std::make_pair(direction, neighbor_id);
     const auto mortar_id_in_neighbor = std::make_pair(direction, self_id);
 
@@ -491,21 +531,22 @@ SPECTRE_TEST_CASE(
         mesh.extents(), direction.dimension(),
         index_to_slice_at(mesh.extents(), direction));
 
-    neighbor_boxes.push_back(
-        db::create<db::AddSimpleTags<Tags::Mesh<3>,
-                                     Tags::Coordinates<3, Frame::Logical>,
-                                     mortar_meshes_tag, mortar_sizes_tag,
-                                     dt_variables_tag, mortar_data_tag>>(
-            mesh, std::move(neighbor_coords),
-            typename mortar_meshes_tag::type{
-                {mortar_id_in_neighbor, mortar_mesh}},
-            // The neighbors are the small elements, so they are the
-            // same size as the mortars.
-            typename mortar_sizes_tag::type{
-                {mortar_id_in_neighbor,
-                 {{MortarSize::Full, MortarSize::Full}}}},
-            std::move(neighbor_dt_vars), std::move(neighbor_mortar_data)));
+    tuples::get<LocalAlgsTag>(local_algs)
+        .emplace(neighbor_id, db::create<simple_tags>(
+                                  mesh, std::move(neighbor_coords),
+                                  typename mortar_meshes_tag::type{
+                                      {mortar_id_in_neighbor, mortar_mesh}},
+                                  // The neighbors are the small elements, so
+                                  // they are the same size as the mortars.
+                                  typename mortar_sizes_tag::type{
+                                      {mortar_id_in_neighbor,
+                                       {{MortarSize::Full, MortarSize::Full}}}},
+                                  std::move(neighbor_dt_vars),
+                                  std::move(neighbor_mortar_data)));
 
+    auto& self_box = tuples::get<LocalAlgsTag>(local_algs)
+                         .at(self_id)
+                         .get_databox<db_type>();
     db::mutate<mortar_data_tag, mortar_meshes_tag, mortar_sizes_tag>(
         make_not_null(&self_box),
         [
@@ -524,25 +565,32 @@ SPECTRE_TEST_CASE(
   };
 
   add_neighbor({{MortarSize::Full, MortarSize::UpperHalf}}, {{0.0, 0.5}},
-               {{1.0, 0.5}});
+               {{1.0, 0.5}}, ElementId<3>{11});
   add_neighbor({{MortarSize::UpperHalf, MortarSize::LowerHalf}}, {{0.5, -0.5}},
-               {{0.5, 0.5}});
+               {{0.5, 0.5}}, ElementId<3>{12});
   add_neighbor({{MortarSize::LowerHalf, MortarSize::LowerHalf}}, {{-0.5, -0.5}},
-               {{0.5, 0.5}});
+               {{0.5, 0.5}}, ElementId<3>{13});
+
+  ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  auto& self_box =
+      runner.algorithms<my_component>().at(self_id).get_databox<db_type>();
 
   auto self_out_box =
-      get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
+      get<0>(runner.apply<my_component,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
           self_box, self_id));
+  // These ids don't describe elements that fit together correctly,
+  // but they are only used as identifiers so it doesn't matter.
+  std::vector<ElementId<3>> ordered_ids{ElementId<3>{11}, ElementId<3>{12},
+                                        ElementId<3>{13}};
   std::vector<decltype(self_out_box)> neighbor_out_boxes{};
-  neighbor_out_boxes.reserve(neighbor_boxes.size());
-  for (auto& neighbor_box : neighbor_boxes) {
+  neighbor_out_boxes.reserve(ordered_ids.size());
+  for (const auto& id : ordered_ids) {
     neighbor_out_boxes.push_back(get<0>(
         runner.apply<component<3, RefinementNumericalFlux, metavariables>,
                      dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-            neighbor_box,
-            // id doesn't matter
-            self_id)));
+            runner.algorithms<my_component>().at(id).get_databox<db_type>(),
+            id)));
   }
 
   // Check that the operation was conservative.

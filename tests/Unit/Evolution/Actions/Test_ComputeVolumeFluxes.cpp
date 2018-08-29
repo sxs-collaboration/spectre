@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <string>
 #include <tuple>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -16,8 +18,10 @@
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+// IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -71,16 +75,27 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
                   "[Unit][Evolution][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<dim> self(1);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag =
+      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
 
-  auto start_box = db::create<db::AddSimpleTags<Var1, Var2, flux_tag>>(
-      db::item_type<Var1>{{{3.}}}, db::item_type<Var2>{{{7., 12.}}},
-      db::item_type<flux_tag>{{{-100.}}});
+  const ElementId<dim> self_id(1);
+
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(self_id, db::create<db::AddSimpleTags<Var1, Var2, flux_tag>>(
+                            db::item_type<Var1>{{{3.}}},
+                            db::item_type<Var2>{{{7., 12.}}},
+                            db::item_type<flux_tag>{{{-100.}}}));
+  ActionRunner runner{{}, std::move(local_algs)};
+  auto& start_box = runner.algorithms<component<Metavariables>>()
+                        .at(self_id)
+                        .get_databox<db::compute_databox_type<
+                            db::AddSimpleTags<Var1, Var2, flux_tag>>>();
 
   const auto box = get<0>(
       runner.apply<component<Metavariables>, Actions::ComputeVolumeFluxes>(
-          start_box, self));
+          start_box, self_id));
   CHECK(get<0>(db::get<flux_tag>(box)) == -15.);
   CHECK(get<1>(db::get<flux_tag>(box)) == 57.);
 }

@@ -8,6 +8,8 @@
 // IWYU pragma: no_include <initializer_list>
 #include <memory>
 #include <tuple>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -20,14 +22,19 @@
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int,
                                         tmpl::list<CacheTags::TimeStepper>> {
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using simple_tags =
+      db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
+  using initial_databox = db::compute_databox_type<simple_tags>;
 };
 
 struct Metavariables {
@@ -36,17 +43,28 @@ struct Metavariables {
 };
 
 void check_rk3(const Time& start, const TimeDelta& time_step) {
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {std::make_unique<TimeSteppers::RungeKutta3>()}};
-
   const std::array<TimeDelta, 3> substep_offsets{
       {time_step * 0, time_step, time_step / 2}};
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>(
-      TimeId(time_step.is_positive(), 8, start),
-      TimeId(time_step.is_positive(), 8, start, 1, start + substep_offsets[1]),
-      time_step);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0,
+               ActionTesting::MockLocalAlgorithm<component>{
+                   db::create<db::AddSimpleTags<
+                       Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>(
+                       TimeId(time_step.is_positive(), 8, start),
+                       TimeId(time_step.is_positive(), 8, start, 1,
+                              start + substep_offsets[1]),
+                       time_step)});
+  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                      std::move(local_algs)};
+  auto& box =
+      runner.algorithms<component>()
+          .at(0)
+          .get_databox<db::compute_databox_type<db::AddSimpleTags<
+              Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>>();
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
@@ -67,14 +85,20 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 }
 
 void check_abn(const Time& start, const TimeDelta& time_step) {
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
-
-  auto box =
-      db::create<db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
-                                   Tags::TimeStep>>(
-          TimeId(time_step.is_positive(), 8, start),
-          TimeId(time_step.is_positive(), 8, start + time_step), time_step);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<typename component::simple_tags>(
+                          TimeId(time_step.is_positive(), 8, start),
+                          TimeId(time_step.is_positive(), 8, start + time_step),
+                          time_step)});
+  ActionRunner runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
+                      std::move(local_algs)};
+  auto& box = runner.algorithms<component>()
+                  .at(0)
+                  .get_databox<typename component::initial_databox>();
 
   for (const auto& step_start : {start, start + time_step}) {
     CHECK(db::get<Tags::TimeId>(box) ==

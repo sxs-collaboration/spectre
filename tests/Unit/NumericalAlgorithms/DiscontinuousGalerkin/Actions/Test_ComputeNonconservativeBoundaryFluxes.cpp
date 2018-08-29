@@ -37,8 +37,10 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+// IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 
@@ -89,12 +91,31 @@ struct System {
   };
 };
 
+template <typename Tag>
+using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
+
+using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
+    tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;
+
+using VarsType = Variables<tmpl::list<Var, Var2>>;
+
 struct Metavariables;
 
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, ElementIndex<2>,
                                         tmpl::list<>> {
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using simple_tags =
+      db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
+                        interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
+                        interface_tag<OtherArg>, n_dot_f_tag>;
+  using compute_tags = db::AddComputeTags<
+      Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
+      interface_tag<Tags::Mesh<1>>,
+      interface_tag<Tags::UnnormalizedFaceNormal<2>>,
+      interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
+      interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
+  using initial_databox =
+      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
 
 struct Metavariables {
@@ -103,19 +124,10 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
-template <typename Tag>
-using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
-
-using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
-    tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;
-
-using VarsType = Variables<tmpl::list<Var, Var2>>;
 auto run_action(
     const Element<2>& element,
     const std::unordered_map<Direction<2>, VarsType>& vars,
     const std::unordered_map<Direction<2>, double>& other_arg) noexcept {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
@@ -133,19 +145,24 @@ auto run_action(
     n_dot_f_storage[direction_neighbors.first].initialize(3);
   }
 
-  auto start_box = db::create<
-      db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
-                        interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
-                        interface_tag<OtherArg>, n_dot_f_tag>,
-      db::AddComputeTags<
-          Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
-          interface_tag<Tags::Mesh<1>>,
-          interface_tag<Tags::UnnormalizedFaceNormal<2>>,
-          interface_tag<
-              Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
-          interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>>(
-      element, mesh, std::move(element_map), vars, other_arg,
-      std::move(n_dot_f_storage));
+  using simple_tags = typename component::simple_tags;
+  using compute_tags = typename component::compute_tags;
+
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(ElementIndex<2>{element.id()},
+               ActionTesting::MockLocalAlgorithm<component>{
+                   db::create<simple_tags, compute_tags>(
+                       element, mesh, std::move(element_map), vars, other_arg,
+                       std::move(n_dot_f_storage))});
+  ActionRunner runner{{}, std::move(local_algs)};
+
+  auto& start_box = runner.algorithms<component>()
+                        .at(element.id())
+                        .get_databox<db::compute_databox_type<
+                            tmpl::append<simple_tags, compute_tags>>>();
 
   return std::get<0>(
       runner

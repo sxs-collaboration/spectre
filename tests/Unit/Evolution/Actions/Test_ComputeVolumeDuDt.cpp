@@ -4,6 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <string>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -13,7 +15,10 @@
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 struct var_tag : db::SimpleTag {
@@ -52,10 +57,22 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
                   "[Unit][Evolution][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag =
+      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
+
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
-  auto start_box =
-      db::create<db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>(3, -100);
+
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(
+          self_id,
+          db::create<db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>(3, -100));
+  ActionRunner runner{{}, std::move(local_algs)};
+  auto& start_box = runner.algorithms<component<Metavariables>>()
+                        .at(self_id)
+                        .get_databox<db::compute_databox_type<
+                            db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>>();
 
   CHECK(db::get<var_tag>(start_box) == 3);
   CHECK(db::get<Tags::dt<var_tag>>(start_box) == -100);

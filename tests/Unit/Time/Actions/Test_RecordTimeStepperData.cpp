@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -17,6 +18,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace {
@@ -29,10 +31,19 @@ struct System {
   using variables_tag = Var;
 };
 
+using variables_tag = Var;
+using dt_variables_tag = Tags::dt<Var>;
+using history_tag =
+    Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
+
 struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>> {
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using simple_tags = db::AddSimpleTags<Tags::TimeId, variables_tag,
+                                        dt_variables_tag, history_tag>;
+  using compute_tags = db::AddComputeTags<Tags::Time>;
+  using initial_databox =
+      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
 
 struct Metavariables {
@@ -44,22 +55,26 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
                   "[Unit][Time][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-  using variables_tag = Var;
-  using dt_variables_tag = Tags::dt<Var>;
 
   const Slab slab(1., 3.);
   const TimeId time_id(true, 8, slab.start());
 
-  using history_tag =
-      Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
   history_tag::type history{};
   history.insert(slab.end(), 2., 3.);
 
-  auto box = db::create<db::AddSimpleTags<Tags::TimeId, variables_tag,
-                                          dt_variables_tag, history_tag>,
-                        db::AddComputeTags<Tags::Time>>(time_id, 4., 5.,
-                                                        std::move(history));
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<typename component::simple_tags,
+                                 typename component::compute_tags>(
+                          time_id, 4., 5., std::move(history))});
+  ActionRunner runner{{}, std::move(local_algs)};
+
+  auto& box = runner.algorithms<component>()
+                  .at(0)
+                  .get_databox<typename component::initial_databox>();
 
   box = std::get<0>(
       runner.apply<component, Actions::RecordTimeStepperData>(box, 0));

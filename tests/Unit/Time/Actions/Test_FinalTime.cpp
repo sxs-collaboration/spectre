@@ -5,15 +5,18 @@
 
 #include <array>
 #include <tuple>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/Actions/FinalTime.hpp"
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace {
@@ -21,7 +24,10 @@ struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int,
                                         tmpl::list<CacheTags::FinalTime>> {
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>;
+  using compute_tags = db::AddComputeTags<Tags::Time>;
+  using initial_databox =
+      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
 
 struct Metavariables {
@@ -32,10 +38,19 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
   const Slab slab(3., 6.);
-  ActionTesting::ActionRunner<Metavariables> runner{{5.}};
 
-  auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
-                        db::AddComputeTags<Tags::Time>>(TimeId{}, TimeDelta{});
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<typename component::simple_tags,
+                                 typename component::compute_tags>(
+                          TimeId{}, TimeDelta{})});
+  ActionRunner runner{{5.}, std::move(local_algs)};
+  auto& box = runner.algorithms<component>()
+                  .at(0)
+                  .get_databox<typename component::initial_databox>();
 
   struct Test {
     Time time{};

@@ -17,7 +17,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -52,7 +51,6 @@
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -124,13 +122,8 @@ struct System {
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
 
-template <size_t Dim>
-struct Metavariables;
-template <size_t Dim>
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables<Dim>>;
-template <size_t Dim>
-using receive_data_for_fluxes =
-    dg::Actions::ReceiveDataForFluxes<Metavariables<Dim>>;
+template <typename Metavariables>
+using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables>;
 
 template <size_t Dim, typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
@@ -164,7 +157,7 @@ template <size_t Dim, typename Metavariables>
 struct component
     : ActionTesting::MockArrayComponent<
           Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Dim>>,
-          tmpl::list<receive_data_for_fluxes<Dim>>> {
+          tmpl::list<dg::Actions::ReceiveDataForFluxes<Metavariables>>> {
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags =
@@ -215,8 +208,8 @@ Scalar<DataVector> reverse(Scalar<DataVector> x) noexcept {
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   "[Unit][NumericalAlgorithms][Actions]") {
-  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
-
+  using metavariables = Metavariables<2>;
+  using my_component = component<2, metavariables>;
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
@@ -321,41 +314,15 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
             other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
             mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
             mortar_sizes_tag<2>>,
-        compute_items<component<2, Metavariables<2>>>>(
+        compute_items<my_component>>(
         0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
         std::move(other_data), std::move(mortar_history),
         std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
         std::move(mortar_sizes));
-  }();
-
-  auto sent_box = std::get<0>(
-      runner.apply<component<2, Metavariables<2>>, send_data_for_fluxes<2>>(
-          start_box, self_id));
-
-  // Here, we just check that messages are sent to the correct places.
-  // We will check the received values on the central element later.
-  {
-    CHECK(runner.nonempty_inboxes<component<2, Metavariables<2>>,
-                                  fluxes_tag<flux_comm_types<2>>>() ==
-          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
-    const auto check_sent_data = [&runner, &self_id](
-        const ElementId<2>& id, const Direction<2>& direction) noexcept {
-      const auto& inboxes = runner.inboxes<component<2, Metavariables<2>>>();
-      const auto& flux_inbox =
-          tuples::get<fluxes_tag<flux_comm_types<2>>>(inboxes.at(id));
-      CHECK(flux_inbox.size() == 1);
-      CHECK(flux_inbox.count(0) == 1);
-      const auto& flux_inbox_at_time = flux_inbox.at(0);
-      CHECK(flux_inbox_at_time.size() == 1);
-      CHECK(flux_inbox_at_time.count({direction, self_id}) == 1);
-    };
-    check_sent_data(west_id, Direction<2>::lower_eta());
-    check_sent_data(east_id, Direction<2>::lower_xi());
-    check_sent_data(south_id, Direction<2>::lower_eta());
   }
+  ();
 
-  // Now check ReceiveDataForFluxes
-  const auto send_data = [&mesh, &runner, &self_id, &coordmap](
+  const auto create_neighbor_databox = [&mesh, &self_id, &coordmap ](
       const ElementId<2>& id, const Direction<2>& direction,
       const OrientationMap<2>& orientation,
       const Scalar<DataVector>& normal_dot_fluxes,
@@ -382,45 +349,121 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     db::item_type<mortar_sizes_tag<2>> mortar_sizes{};
     mortar_sizes.insert({{direction, self_id}, {{Spectral::MortarSize::Full}}});
 
-    auto box = db::create<
+    return db::create<
         db::AddSimpleTags<
             TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
             Tags::ElementMap<2>, normal_dot_fluxes_tag<2, flux_comm_types<2>>,
             other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-            mortar_meshes_tag<2>, mortar_sizes_tag<2>>,
-        compute_items<component<2, Metavariables<2>>>>(
+            mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+            mortar_sizes_tag<2>>,
+        compute_items<my_component>>(
         0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes_map),
         std::move(other_data_map), std::move(mortar_history),
+        db::item_type<mortar_next_temporal_ids_tag<2>>{},
         std::move(mortar_meshes), std::move(mortar_sizes));
-
-    runner.apply<component<2, Metavariables<2>>, send_data_for_fluxes<2>>(box,
-                                                                          id);
   };
 
-  CHECK_FALSE(runner.is_ready<component<2, Metavariables<2>>,
-                              receive_data_for_fluxes<2>>(sent_box, self_id));
-  send_data(south_id, Direction<2>::lower_eta(), {},
-            data.remote_fluxes.at(Direction<2>::upper_eta()),
-            data.remote_other_data.at(Direction<2>::upper_eta()));
-  CHECK_FALSE(runner.is_ready<component<2, Metavariables<2>>,
-                              receive_data_for_fluxes<2>>(sent_box, self_id));
-  send_data(east_id, Direction<2>::lower_xi(), {},
-            data.remote_fluxes.at(Direction<2>::upper_xi()),
-            data.remote_other_data.at(Direction<2>::upper_xi()));
-  CHECK_FALSE(runner.is_ready<component<2, Metavariables<2>>,
-                              receive_data_for_fluxes<2>>(sent_box, self_id));
-  send_data(west_id, Direction<2>::lower_eta(), block_orientation.inverse_map(),
-            data.remote_fluxes.at(Direction<2>::lower_xi()),
-            data.remote_other_data.at(Direction<2>::lower_xi()));
-  CHECK(runner.is_ready<component<2, Metavariables<2>>,
-                        receive_data_for_fluxes<2>>(sent_box, self_id));
+  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs).emplace(self_id, std::move(start_box));
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(south_id,
+               create_neighbor_databox(
+                   south_id, Direction<2>::lower_eta(), {},
+                   data.remote_fluxes.at(Direction<2>::upper_eta()),
+                   data.remote_other_data.at(Direction<2>::upper_eta())));
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(east_id,
+               create_neighbor_databox(
+                   east_id, Direction<2>::lower_xi(), {},
+                   data.remote_fluxes.at(Direction<2>::upper_xi()),
+                   data.remote_other_data.at(Direction<2>::upper_xi())));
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(west_id,
+               create_neighbor_databox(
+                   west_id, Direction<2>::lower_eta(),
+                   block_orientation.inverse_map(),
+                   data.remote_fluxes.at(Direction<2>::lower_xi()),
+                   data.remote_other_data.at(Direction<2>::lower_xi())));
+
+  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}},
+                                                       std::move(local_algs)};
+
+  using initial_databox_type = db::compute_databox_type<tmpl::append<
+      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                        Tags::Element<2>, Tags::ElementMap<2>,
+                        normal_dot_fluxes_tag<2, flux_comm_types<2>>,
+                        other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
+                        mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+                        mortar_sizes_tag<2>>,
+      compute_items<my_component>>>;
+
+  auto sent_box = std::get<0>(
+      runner.apply<my_component, send_data_for_fluxes<metavariables>>(
+          runner.algorithms<my_component>()
+              .at(self_id)
+              .get_databox<initial_databox_type>(),
+          self_id));
+
+  // Here, we just check that messages are sent to the correct places.
+  // We will check the received values on the central element later.
+  {
+    CHECK(runner.nonempty_inboxes<component<2, Metavariables<2>>,
+                                  fluxes_tag<flux_comm_types<2>>>() ==
+          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
+    const auto check_sent_data = [&runner, &self_id ](
+        const ElementId<2>& id, const Direction<2>& direction) noexcept {
+      const auto& inboxes = runner.inboxes<component<2, Metavariables<2>>>();
+      const auto& flux_inbox =
+          tuples::get<fluxes_tag<flux_comm_types<2>>>(inboxes.at(id));
+      CHECK(flux_inbox.size() == 1);
+      CHECK(flux_inbox.count(0) == 1);
+      const auto& flux_inbox_at_time = flux_inbox.at(0);
+      CHECK(flux_inbox_at_time.size() == 1);
+      CHECK(flux_inbox_at_time.count({direction, self_id}) == 1);
+    };
+    check_sent_data(west_id, Direction<2>::lower_eta());
+    check_sent_data(east_id, Direction<2>::lower_xi());
+    check_sent_data(south_id, Direction<2>::lower_eta());
+  }
+
+  // Now check ReceiveDataForFluxes
+  CHECK_FALSE(runner.is_ready<my_component,
+                              dg::Actions::ReceiveDataForFluxes<metavariables>>(
+      sent_box, self_id));
+  runner.apply<my_component, send_data_for_fluxes<metavariables>>(
+      runner.algorithms<my_component>()
+          .at(south_id)
+          .get_databox<initial_databox_type>(),
+      south_id);
+  CHECK_FALSE(runner.is_ready<my_component,
+                              dg::Actions::ReceiveDataForFluxes<metavariables>>(
+      sent_box, self_id));
+  runner.apply<my_component, send_data_for_fluxes<metavariables>>(
+      runner.algorithms<my_component>()
+          .at(east_id)
+          .get_databox<initial_databox_type>(),
+      south_id);
+  CHECK_FALSE(runner.is_ready<my_component,
+                              dg::Actions::ReceiveDataForFluxes<metavariables>>(
+      sent_box, self_id));
+  runner.apply<my_component, send_data_for_fluxes<metavariables>>(
+      runner.algorithms<my_component>()
+          .at(west_id)
+          .get_databox<initial_databox_type>(),
+      south_id);
+  CHECK(runner.is_ready<my_component,
+                        dg::Actions::ReceiveDataForFluxes<metavariables>>(
+      sent_box, self_id));
 
   auto received_box = std::get<0>(
-      runner.apply<component<2, Metavariables<2>>, receive_data_for_fluxes<2>>(
-          sent_box, self_id));
+      runner.apply<my_component,
+                   dg::Actions::ReceiveDataForFluxes<metavariables>>(sent_box,
+                                                                     self_id));
 
   CHECK(tuples::get<fluxes_tag<flux_comm_types<2>>>(
-            runner.inboxes<component<2, Metavariables<2>>>()[self_id])
+            runner.inboxes<my_component>()[self_id])
             .empty());
 
   for (const auto& mortar_id : neighbor_mortar_ids) {
@@ -497,7 +540,16 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 SPECTRE_TEST_CASE(
     "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.NoNeighbors",
     "[Unit][NumericalAlgorithms][Actions]") {
-  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
+  using metavariables = Metavariables<2>;
+  using my_component = component<2, metavariables>;
+  using initial_databox_type = db::compute_databox_type<tmpl::append<
+      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                        Tags::Element<2>, Tags::ElementMap<2>,
+                        normal_dot_fluxes_tag<2, flux_comm_types<2>>,
+                        other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
+                        mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+                        mortar_sizes_tag<2>>,
+      compute_items<component<2, Metavariables<2>>>>>;
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -528,211 +580,43 @@ SPECTRE_TEST_CASE(
       db::item_type<mortar_meshes_tag<2>>{},
       db::item_type<mortar_sizes_tag<2>>{});
 
+  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs).emplace(self_id, std::move(start_box));
+  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}},
+                                                       std::move(local_algs)};
+
   auto sent_box = std::get<0>(
-      runner.apply<component<2, Metavariables<2>>, send_data_for_fluxes<2>>(
-          start_box, self_id));
+      runner.apply<my_component, send_data_for_fluxes<metavariables>>(
+          runner.algorithms<my_component>()
+              .at(self_id)
+              .get_databox<initial_databox_type>(),
+          self_id));
 
   CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(sent_box).empty());
-  CHECK(runner
-            .nonempty_inboxes<component<2, Metavariables<2>>,
-                              fluxes_tag<flux_comm_types<2>>>()
+  CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
             .empty());
 
-  CHECK(runner.is_ready<component<2, Metavariables<2>>,
-                        receive_data_for_fluxes<2>>(sent_box, self_id));
+  CHECK(runner.is_ready<my_component,
+                        dg::Actions::ReceiveDataForFluxes<metavariables>>(
+      sent_box, self_id));
 
   const auto received_box = std::get<0>(
-      runner.apply<component<2, Metavariables<2>>, receive_data_for_fluxes<2>>(
-          sent_box, self_id));
+      runner.apply<my_component,
+                   dg::Actions::ReceiveDataForFluxes<metavariables>>(sent_box,
+                                                                     self_id));
 
   CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(received_box).empty());
-  CHECK(runner
-            .nonempty_inboxes<component<2, Metavariables<2>>,
-                              fluxes_tag<flux_comm_types<2>>>()
+  CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
             .empty());
-}
-
-namespace {
-struct DataRecorder {
-  // Only called on the sending sides, which are not interesting here.
-  void local_insert(int /*temporal_id*/,
-                    const LocalData<flux_comm_types<2>>& /*data*/) noexcept {}
-
-  void remote_insert(int temporal_id,
-                     PackagedData<flux_comm_types<2>> data) noexcept {
-    received_data.emplace_back(temporal_id, std::move(data));
-  }
-
-  std::vector<std::pair<int, PackagedData<flux_comm_types<2>>>> received_data{};
-};
-
-struct DataRecorderTag : db::SimpleTag {
-  static std::string name() { return "DataRecorderTag"; }
-  using type = DataRecorder;
-};
-
-struct MortarRecorderTag : Tags::VariablesBoundaryData,
-                           Tags::Mortars<DataRecorderTag, 2> {};
-
-void send_from_neighbor(
-    const gsl::not_null<ActionTesting::ActionRunner<Metavariables<2>>*> runner,
-    const Element<2>& element, const int start, const int end,
-    const double n_dot_f) noexcept {
-  const Direction<2>& send_direction = element.neighbors().begin()->first;
-  const ElementId<2>& receiver_id =
-      *element.neighbors().begin()->second.begin();
-
-  const Mesh<2> mesh{2, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
-
-  ElementMap<2, Frame::Inertial> map(
-      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Identity<2>{}));
-
-  db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>> fluxes;
-  fluxes[send_direction].initialize(2, n_dot_f);
-
-  db::item_type<other_data_tag<2>> other_data;
-  other_data[send_direction].initialize(2, 0.);
-
-  db::item_type<mortar_meshes_tag<2>> mortar_meshes;
-  mortar_meshes.insert({{send_direction, receiver_id}, mesh.slice_away(0)});
-
-  db::item_type<mortar_sizes_tag<2>> mortar_sizes;
-  mortar_sizes.insert(
-      {{send_direction, receiver_id}, {{Spectral::MortarSize::Full}}});
-
-  db::item_type<MortarRecorderTag> recorders;
-  recorders.insert({{send_direction, receiver_id}, {}});
-
-  auto box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
-                        normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-                        other_data_tag<2>, mortar_meshes_tag<2>,
-                        mortar_sizes_tag<2>, MortarRecorderTag>,
-      compute_items<component<2, Metavariables<2>>>>(
-      start, end, mesh, element, std::move(map), std::move(fluxes),
-      std::move(other_data), std::move(mortar_meshes), std::move(mortar_sizes),
-      std::move(recorders));
-
-  runner->apply<component<2, Metavariables<2>>, send_data_for_fluxes<2>>(
-      box, element.id());
-}
-
-// Sends the left steps, then the right steps.  The step must not be
-// ready until after the last send.
-void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
-                  const std::vector<int>& right_steps) noexcept {
-  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
-
-  const ElementId<2> left_id(0);
-  const ElementId<2> self_id(1);
-  const ElementId<2> right_id(2);
-
-  using MortarId = std::pair<Direction<2>, ElementId<2>>;
-  const MortarId left_mortar_id(Direction<2>::lower_xi(), left_id);
-  const MortarId right_mortar_id(Direction<2>::upper_xi(), right_id);
-
-  db::item_type<MortarRecorderTag> initial_recorders;
-  initial_recorders.insert({{Direction<2>::lower_xi(), left_id}, {}});
-  initial_recorders.insert({{Direction<2>::upper_xi(), right_id}, {}});
-  db::item_type<mortar_next_temporal_ids_tag<2>> initial_mortar_temporal_ids{
-      {left_mortar_id, left_steps.front()},
-      {right_mortar_id, right_steps.front()}};
-
-  auto box =
-      db::create<db::AddSimpleTags<Tags::Next<TemporalId>, MortarRecorderTag,
-                                   mortar_next_temporal_ids_tag<2>>>(
-          self_step_end, std::move(initial_recorders),
-          std::move(initial_mortar_temporal_ids));
-
-  const Element<2> left_element(left_id,
-                                {{Direction<2>::upper_xi(), {{self_id}, {}}}});
-  const Element<2> right_element(right_id,
-                                 {{Direction<2>::lower_xi(), {{self_id}, {}}}});
-
-  std::vector<int> relevant_left_steps{left_steps.front()};
-  for (size_t step = 1; step < left_steps.size(); ++step) {
-    CHECK_FALSE(runner.is_ready<component<2, Metavariables<2>>,
-                                receive_data_for_fluxes<2>>(box, self_id));
-    send_from_neighbor(&runner, left_element, left_steps[step - 1],
-                       left_steps[step], step);
-    if (left_steps[step - 1] < self_step_end) {
-      relevant_left_steps.push_back(left_steps[step]);
-    }
-  }
-  std::vector<int> relevant_right_steps{right_steps.front()};
-  for (size_t step = 1; step < right_steps.size(); ++step) {
-    CHECK_FALSE(runner.is_ready<component<2, Metavariables<2>>,
-                                receive_data_for_fluxes<2>>(box, self_id));
-    send_from_neighbor(&runner, right_element, right_steps[step - 1],
-                       right_steps[step], step);
-    if (right_steps[step - 1] < self_step_end) {
-      relevant_right_steps.push_back(right_steps[step]);
-    }
-  }
-  CHECK(runner.is_ready<component<2, Metavariables<2>>,
-                        receive_data_for_fluxes<2>>(box, self_id));
-
-  box = std::get<0>(
-      runner.apply<component<2, Metavariables<2>>, receive_data_for_fluxes<2>>(
-          box, self_id));
-
-  CHECK(db::get<mortar_next_temporal_ids_tag<2>>(box) ==
-        db::item_type<mortar_next_temporal_ids_tag<2>>{
-            {left_mortar_id, relevant_left_steps.back()},
-            {right_mortar_id, relevant_right_steps.back()}});
-
-  const auto& recorders = db::get<MortarRecorderTag>(box);
-  const auto check_data = [](const auto& recorder,
-                             const std::vector<int>& steps) noexcept {
-    const auto& received_data = recorder.received_data;
-    CHECK(received_data.size() == steps.size() - 1);
-
-    for (size_t step = 0; step < received_data.size(); ++step) {
-      CHECK(received_data[step].first == steps[step]);
-      CHECK(get(get<Var>(received_data[step].second)) ==
-            DataVector(2, 10. * (step + 1)));
-    }
-  };
-  check_data(recorders.at(left_mortar_id), relevant_left_steps);
-  check_data(recorders.at(right_mortar_id), relevant_right_steps);
-}
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication.lts",
-                  "[Unit][NumericalAlgorithms][Actions]") {
-  // Global step 0 -> 1
-  run_lts_case(1, {0, 1}, {0, 1});
-  // Global step 0 -> 1 with left element taking second step
-  run_lts_case(1, {0, 1, 2}, {0, 1});
-  // Neighbors stepping past element
-  run_lts_case(1, {0, 2}, {0, 1});
-  run_lts_case(1, {0, 1}, {0, 2});
-  run_lts_case(1, {0, 2}, {0, 2});
-  // No receives from one or both sides (because one or more neighbors
-  // have already made it to the desired time)
-  run_lts_case(1, {1}, {1});
-  run_lts_case(1, {1}, {2});
-  run_lts_case(1, {2}, {1});
-  run_lts_case(1, {2}, {2});
-  run_lts_case(1, {0, 1}, {1});
-  run_lts_case(1, {0, 1}, {2});
-  run_lts_case(1, {0, 2}, {1});
-  run_lts_case(1, {0, 2}, {2});
-  run_lts_case(1, {1}, {0, 1});
-  run_lts_case(1, {1}, {0, 2});
-  run_lts_case(1, {2}, {0, 1});
-  run_lts_case(1, {2}, {0, 2});
-  // Several steps to receive
-  run_lts_case(3, {0, 1, 3, 4}, {0, 1, 2, 4});
 }
 
 SPECTRE_TEST_CASE(
     "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.p-refinement",
     "[Unit][NumericalAlgorithms][Actions]") {
-  ActionTesting::ActionRunner<Metavariables<3>> runner{{NumericalFlux<3>{}}};
+  using metavariables = Metavariables<3>;
+  using my_component = component<3, metavariables>;
 
   const ElementId<3> self_id(1);
   const ElementId<3> neighbor_id(2);
@@ -746,9 +630,8 @@ SPECTRE_TEST_CASE(
                         Direction<3>::lower_eta()}}}}}});
 
   ElementMap<3, Frame::Inertial> map(
-      self_id,
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Identity<3>{}));
+      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                   CoordinateMaps::Identity<3>{}));
 
   const Mesh<3> mesh({{2, 3, 4}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -783,26 +666,54 @@ SPECTRE_TEST_CASE(
   db::item_type<other_data_tag<3>> other_data;
   other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(), 0.);
 
-  auto start_box = db::create<
+  using simple_tags =
       db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<3>,
                         Tags::Element<3>, Tags::ElementMap<3>,
                         normal_dot_fluxes_tag<3, flux_comm_types<3>>,
                         other_data_tag<3>, mortar_data_tag<flux_comm_types<3>>,
                         mortar_next_temporal_ids_tag<3>, mortar_meshes_tag<3>,
-                        mortar_sizes_tag<3>>,
-      compute_items<component<3, Metavariables<3>>>>(
-      0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
-      std::move(other_data),
-      db::item_type<mortar_data_tag<flux_comm_types<3>>>{{mortar_id, {}}},
-      db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
-      db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
-      db::item_type<mortar_sizes_tag<3>>{
-          {mortar_id,
-           {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}}});
+                        mortar_sizes_tag<3>>;
+
+  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(
+          self_id,
+          db::create<simple_tags, compute_items<my_component>>(
+              0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
+              std::move(other_data),
+              db::item_type<mortar_data_tag<flux_comm_types<3>>>{
+                  {mortar_id, {}}},
+              db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
+              db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
+              db::item_type<mortar_sizes_tag<3>>{
+                  {mortar_id,
+                   {{Spectral::MortarSize::Full,
+                     Spectral::MortarSize::Full}}}}));
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(
+          neighbor_id,
+          db::create<simple_tags, compute_items<my_component>>(
+              0, 1, mesh, element, ElementMap<3, Frame::Inertial>{},
+              db::item_type<normal_dot_fluxes_tag<3, flux_comm_types<3>>>{},
+              db::item_type<other_data_tag<3>>{},
+              db::item_type<mortar_data_tag<flux_comm_types<3>>>{
+                  {mortar_id, {}}},
+              db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
+              db::item_type<mortar_meshes_tag<3>>{{mortar_id, face_mesh}},
+              db::item_type<mortar_sizes_tag<3>>{{mortar_id, {{}}}}));
+
+  ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<3>{}},
+                                                    std::move(local_algs)};
+
+  auto& start_box = runner.algorithms<my_component>()
+                        .at(self_id)
+                        .get_databox<typename my_component::initial_databox>();
 
   auto sent_box = std::get<0>(
-      runner.apply<component<3, Metavariables<3>>, send_data_for_fluxes<3>>(
-          start_box, self_id));
+      runner.apply<my_component, send_data_for_fluxes<metavariables>>(start_box,
+                                                                      self_id));
 
   // Check local data
   {
@@ -828,12 +739,11 @@ SPECTRE_TEST_CASE(
 
   // Check sent data
   {
-    CHECK(runner
-              .nonempty_inboxes<component<3, Metavariables<3>>,
-                                fluxes_tag<flux_comm_types<3>>>()
-              .size() == 1);
+    CHECK(
+        runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<3>>>()
+            .size() == 1);
     const auto& inbox = tuples::get<fluxes_tag<flux_comm_types<3>>>(
-        runner.inboxes<component<3, Metavariables<3>>>().at(neighbor_id));
+        runner.inboxes<my_component>().at(neighbor_id));
 
     const auto& received_flux =
         inbox.at(0).at({Direction<3>::upper_xi(), self_id}).second;
@@ -847,8 +757,8 @@ SPECTRE_TEST_CASE(
 SPECTRE_TEST_CASE(
     "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.h-refinement",
     "[Unit][NumericalAlgorithms][Actions]") {
-  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}}};
-
+  using metavariables = Metavariables<2>;
+  using my_component = component<2, metavariables>;
   const Scalar<DataVector> n_dot_f{{{{2., 3.}}}};
   for (const auto& test :
        {std::make_pair(Spectral::MortarSize::Full, DataVector{2., 3.}),
@@ -897,23 +807,61 @@ SPECTRE_TEST_CASE(
     other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(),
                                            0.);
 
-    auto start_box = db::create<
-        db::AddSimpleTags<
-            TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-            Tags::ElementMap<2>, normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-            other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-            mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-            mortar_sizes_tag<2>>,
-        compute_items<component<2, Metavariables<2>>>>(
-        0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
-        std::move(other_data),
-        db::item_type<mortar_data_tag<flux_comm_types<2>>>{{mortar_id, {}}},
-        db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
-        db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
-        db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}});
+    using ActionRunner = ActionTesting::ActionRunner<metavariables>;
+    using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
+    ActionRunner::LocalAlgorithms local_algs{};
+    tuples::get<LocalAlgsTag>(local_algs)
+        .emplace(
+            self_id,
+            db::create<
+                db::AddSimpleTags<
+                    TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                    Tags::Element<2>, Tags::ElementMap<2>,
+                    normal_dot_fluxes_tag<2, flux_comm_types<2>>,
+                    other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
+                    mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+                    mortar_sizes_tag<2>>,
+                compute_items<my_component>>(
+                0, 1, mesh, element, std::move(map),
+                std::move(normal_dot_fluxes), std::move(other_data),
+                db::item_type<mortar_data_tag<flux_comm_types<2>>>{
+                    {mortar_id, {}}},
+                db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
+                db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
+                db::item_type<mortar_sizes_tag<2>>{
+                    {mortar_id, {{test.first}}}}));
+    tuples::get<LocalAlgsTag>(local_algs)
+        .emplace(
+            neighbor_id,
+            db::create<
+                db::AddSimpleTags<
+                    TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
+                    Tags::Element<2>, Tags::ElementMap<2>,
+                    normal_dot_fluxes_tag<2, flux_comm_types<2>>,
+                    other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
+                    mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
+                    mortar_sizes_tag<2>>,
+                compute_items<my_component>>(
+                0, 1, mesh, element, ElementMap<2, Frame::Inertial>{},
+                db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
+                db::item_type<other_data_tag<2>>{},
+                db::item_type<mortar_data_tag<flux_comm_types<2>>>{
+                    {mortar_id, {}}},
+                db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
+                db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
+                db::item_type<mortar_sizes_tag<2>>{
+                    {mortar_id, {{test.first}}}}));
+
+    ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<2>{}},
+                                                      std::move(local_algs)};
+
+    auto& start_box =
+        runner.algorithms<my_component>()
+            .at(self_id)
+            .get_databox<typename my_component::initial_databox>();
 
     auto sent_box = std::get<0>(
-        runner.apply<component<2, Metavariables<2>>, send_data_for_fluxes<2>>(
+        runner.apply<my_component, send_data_for_fluxes<metavariables>>(
             start_box, self_id));
 
     // Check local data
@@ -938,12 +886,12 @@ SPECTRE_TEST_CASE(
 
     // Check sent data
     {
-      CHECK(runner
-                .nonempty_inboxes<component<2, Metavariables<2>>,
-                                  fluxes_tag<flux_comm_types<2>>>()
-                .size() == 1);
+      CHECK(
+          runner
+              .nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
+              .size() == 1);
       auto& inbox = tuples::get<fluxes_tag<flux_comm_types<2>>>(
-          runner.inboxes<component<2, Metavariables<2>>>().at(neighbor_id));
+          runner.inboxes<my_component>().at(neighbor_id));
 
       const auto& received_flux =
           inbox.at(0).at({Direction<2>::lower_xi(), self_id}).second;

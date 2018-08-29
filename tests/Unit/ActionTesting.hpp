@@ -7,16 +7,17 @@
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace ActionTesting {
-namespace ActionTesting_detail {
 // MockLocalAlgorithm mocks the AlgorithmImpl class.
 template <typename Component>
 class MockLocalAlgorithm {
@@ -27,10 +28,10 @@ class MockLocalAlgorithm {
 
  private:
   template <typename ActiontList>
-  struct initial_databox_type;
+  struct compute_databox_type;
 
   template <typename... ActionsPack>
-  struct initial_databox_type<tmpl::list<ActionsPack...>> {
+  struct compute_databox_type<tmpl::list<ActionsPack...>> {
     using type = Parallel::Algorithm_detail::build_action_return_typelist<
         typename Component::initial_databox,
         tmpl::list<
@@ -42,12 +43,25 @@ class MockLocalAlgorithm {
   };
 
  public:
-  using databox_types = typename initial_databox_type<actions_list>::type;
+  using databox_types = typename compute_databox_type<actions_list>::type;
 
   MockLocalAlgorithm() = default;
 
+  explicit MockLocalAlgorithm(typename Component::initial_databox initial_box)
+      : box_(std::move(initial_box)) {}
+
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() { return terminate_; }
+
+  template <typename BoxType>
+  BoxType& get_databox() noexcept {
+    return boost::get<BoxType>(box_);
+  }
+
+  template <typename BoxType>
+  const BoxType& get_databox() const noexcept {
+    return boost::get<BoxType>(box_);
+  }
 
  private:
   bool terminate_{false};
@@ -56,6 +70,7 @@ class MockLocalAlgorithm {
       box_;
 };
 
+namespace ActionTesting_detail {
 template <typename Component, typename InboxTagList>
 class MockArrayElementProxy {
  public:
@@ -99,8 +114,14 @@ class MockProxy {
 
   MockArrayElementProxy<Component, InboxTagList> operator[](
       const Index& index) {
+    ASSERT(local_algorithms_->count(index) == 1,
+           "Should have exactly one local algorithm with key '"
+               << index << "' but found " << local_algorithms_->count(index)
+               << ". The known keys are " << keys_of(*local_algorithms_)
+               << ". Did you forget to add a local algorithm when constructing "
+                  "the ActionRunner?");
     return MockArrayElementProxy<Component, InboxTagList>(
-        (*local_algorithms_)[index], (*inboxes_)[index]);
+        local_algorithms_->at(index), inboxes_->operator[](index));
   }
 
   // clang-tidy: no non-const references
@@ -186,9 +207,8 @@ class ActionRunner {
 
   template <typename Component>
   struct LocalAlgorithmsTag {
-    using type =
-        std::unordered_map<typename Component::index,
-                           ActionTesting_detail::MockLocalAlgorithm<Component>>;
+    using type = std::unordered_map<typename Component::index,
+                                    MockLocalAlgorithm<Component>>;
   };
 
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
@@ -202,8 +222,10 @@ class ActionRunner {
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
   /// Construct from the tuple of ConstGlobalCache objects.
-  explicit ActionRunner(CacheTuple cache_contents)
-      : cache_(std::move(cache_contents)) {
+  explicit ActionRunner(CacheTuple cache_contents,
+                        LocalAlgorithms local_algorithms)
+      : cache_(std::move(cache_contents)),
+        local_algorithms_(std::move(local_algorithms)) {
     tmpl::for_each<typename Metavariables::component_list>(
         [this](auto component) {
           using Component = tmpl::type_from<decltype(component)>;
