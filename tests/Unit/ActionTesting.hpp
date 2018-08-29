@@ -142,9 +142,17 @@ namespace ActionTesting {
 /// A mock parallel component that acts like a component with
 /// chare_type Parallel::Algorithms::Array.
 template <typename Metavariables, typename Index,
-          typename ConstGlobalCacheTagList,
-          typename ActionList = tmpl::list<>>
+          typename ConstGlobalCacheTagList, typename ActionList = tmpl::list<>,
+          typename ComponentBeingMocked = void>
 struct MockArrayComponent {
+  // We need a way of grabbing the correct proxy from the ConstGlobalCache. The
+  // way we do that is by checking if the component passed to
+  // `Parallel::get_parallel_component` is in the
+  // `Metavariables::component_list`, if not then we search for the element of
+  // `Metavariables::component_list` that has `component_being_mocked` equal to
+  // the `ParallelComponentTag` passed to `Parallel::get_parallel_component`.
+  using component_being_mocked = ComponentBeingMocked;
+
   using metavariables = Metavariables;
   using chare_type = ActionTesting_detail::MockArrayChare;
   using index = Index;
