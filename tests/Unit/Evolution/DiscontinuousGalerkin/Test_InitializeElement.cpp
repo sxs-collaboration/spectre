@@ -117,26 +117,19 @@ struct NormalDotNumericalFluxTag {
   using type = struct { using package_tags = tmpl::list<Var>; };
 };
 
-template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
-          typename ConstGlobalCacheTagList>
-struct Metavariables;
-
-template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
-          typename ConstGlobalCacheTagList>
-using component = ActionTesting::MockArrayComponent<
-    Metavariables<Dim, IsConservative, LocalTimeStepping,
-                  ConstGlobalCacheTagList>,
-    ElementIndex<Dim>,
-    tmpl::list<CacheTags::TimeStepper,
-               CacheTags::AnalyticSolution<SystemAnalyticSolution>>,
-    tmpl::list<dg::Actions::InitializeElement<Dim>>>;
+template <size_t Dim, typename Metavariables>
+struct component
+    : ActionTesting::MockArrayComponent<
+          Metavariables, ElementIndex<Dim>,
+          tmpl::list<CacheTags::TimeStepper,
+                     CacheTags::AnalyticSolution<SystemAnalyticSolution>>> {
+  using initial_databox = db::DataBox<tmpl::list<>>;
+};
 
 template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
           typename ConstGlobalCacheTagList>
 struct Metavariables {
-  using component_list =
-      tmpl::list<component<Dim, IsConservative, LocalTimeStepping,
-                           ConstGlobalCacheTagList>>;
+  using component_list = tmpl::list<component<Dim, Metavariables>>;
   using system = System<Dim, IsConservative>;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = LocalTimeStepping;
@@ -336,9 +329,9 @@ void test_mortar_orientation() noexcept {
   const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
 
   db::DataBox<tmpl::list<>> empty_box{};
-  const auto box =
-      std::get<0>(runner.apply<component<3, false, false, tmpl::list<>>,
-                               dg::Actions::InitializeElement<3>>(
+  const auto box = std::get<0>(
+      runner.apply<component<3, Metavariables<3, false, false, tmpl::list<>>>,
+                   dg::Actions::InitializeElement<3>>(
           empty_box, ElementId<3>(0), extents, std::move(domain), 0., 1., 1.));
 
   CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==

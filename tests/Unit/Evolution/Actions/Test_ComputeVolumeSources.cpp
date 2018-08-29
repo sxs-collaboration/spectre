@@ -60,13 +60,19 @@ struct System {
 
 using ElementIndexType = ElementIndex<dim>;
 
-struct Metavariables;
-using component = ActionTesting::MockArrayComponent<
-    Metavariables, ElementIndexType, tmpl::list<>,
-    tmpl::list<Actions::ComputeVolumeSources>>;
+using source_tag =
+    Tags::Source<Tags::Variables<tmpl::list<Tags::Source<Var2>>>>;
+
+template <typename Metavariables>
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, ElementIndexType, tmpl::list<>,
+                       tmpl::list<Actions::ComputeVolumeSources>> {
+  using initial_databox = db::compute_databox_type<
+      tmpl::list<System::variables_tag, Var3, source_tag>>;
+};
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -83,15 +89,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   db::item_type<System::variables_tag> vars(2);
   get<Var1>(vars) = var1;
 
-  using source_tag =
-      Tags::Source<Tags::Variables<tmpl::list<Tags::Source<Var2>>>>;
-
   auto start_box =
       db::create<db::AddSimpleTags<System::variables_tag, Var3, source_tag>>(
           std::move(vars), var3, db::item_type<source_tag>(2));
 
   const auto box = get<0>(
-      runner.apply<component, Actions::ComputeVolumeSources>(start_box, self));
+      runner.apply<component<Metavariables>, Actions::ComputeVolumeSources>(
+          start_box, self));
   CHECK(get<0>(db::get<Tags::Source<Var2>>(box)) == get(var1));
   CHECK(get<1>(db::get<Tags::Source<Var2>>(box)) == get(var3));
 }

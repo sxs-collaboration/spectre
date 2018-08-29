@@ -36,9 +36,11 @@ using events_and_triggers_tag =
     Tags::EventsAndTriggers<DefaultClasses, DefaultClasses>;
 
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int,
-                                      tmpl::list<events_and_triggers_tag>>;
+struct component
+    : ActionTesting::MockArrayComponent<Metavariables, int,
+                                        tmpl::list<events_and_triggers_tag>> {
+  using initial_databox = db::DataBox<tmpl::list<>>;
+};
 
 struct Metavariables {
   using component_list = tmpl::list<component>;

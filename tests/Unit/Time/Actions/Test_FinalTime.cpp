@@ -18,9 +18,11 @@
 
 namespace {
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int,
-                                      tmpl::list<CacheTags::FinalTime>>;
+struct component
+    : ActionTesting::MockArrayComponent<Metavariables, int,
+                                        tmpl::list<CacheTags::FinalTime>> {
+  using initial_databox = db::DataBox<tmpl::list<>>;
+};
 
 struct Metavariables {
   using component_list = tmpl::list<component>;

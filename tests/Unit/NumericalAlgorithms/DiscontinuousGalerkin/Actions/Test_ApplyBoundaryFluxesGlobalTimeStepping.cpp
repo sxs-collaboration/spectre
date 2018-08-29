@@ -25,7 +25,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -93,19 +93,23 @@ struct System {
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
 };
 
-template <size_t Dim, typename Flux>
-struct Metavariables;
-
-template <size_t Dim, typename Flux>
-using component = ActionTesting::MockArrayComponent<
-    Metavariables<Dim, Flux>, ElementIndex<Dim>,
-    tmpl::list<NumericalFluxTag<Flux>>,
-    tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>>;
+template <size_t Dim, typename Flux, typename Metavariables>
+struct component
+    : ActionTesting::MockArrayComponent<
+          Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Flux>>,
+          tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>> {
+  using initial_databox = db::compute_databox_type<
+      tmpl::list<Tags::Mesh<Dim>, Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+                 Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
+                 Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
+                 typename dg::FluxCommunicationTypes<
+                     Metavariables>::simple_mortar_data_tag>>;
+};
 
 template <size_t Dim, typename Flux>
 struct Metavariables {
   using system = System<Dim>;
-  using component_list = tmpl::list<component<Dim, Flux>>;
+  using component_list = tmpl::list<component<Dim, Flux, Metavariables>>;
   using temporal_id = TemporalId;
   static constexpr bool local_time_stepping = false;
   using const_global_cache_tag_list = tmpl::list<>;
@@ -118,9 +122,9 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using flux_comm_types =
       dg::FluxCommunicationTypes<Metavariables<2, NumericalFlux>>;
-  using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
+  using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<1>, 2>;
   using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<1>, 2>;
 
@@ -190,10 +194,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
       mesh, std::move(mortar_meshes), std::move(mortar_sizes), initial_dt,
       std::move(mortar_data));
 
-  const auto out_box =
-      get<0>(runner.apply<component<2, NumericalFlux>,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          box, id));
+  const auto out_box = get<0>(
+      runner.apply<component<2, NumericalFlux, Metavariables<2, NumericalFlux>>,
+                   dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(box,
+                                                                       id));
 
   // F* - F = 10 * local_var + 1000 * remote_var - local_flux
   const DataVector xi_flux = {0., 0., 7011.,
@@ -258,8 +262,8 @@ Scalar<DataVector> magnitude_of_face_normal2(
 SPECTRE_TEST_CASE(
     "Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping.p-refinement",
     "[Unit][NumericalAlgorithms][Actions]") {
-  using flux_comm_types =
-      dg::FluxCommunicationTypes<Metavariables<3, RefinementNumericalFlux>>;
+  using metavariables = Metavariables<3, RefinementNumericalFlux>;
+  using flux_comm_types = dg::FluxCommunicationTypes<metavariables>;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
@@ -359,11 +363,11 @@ SPECTRE_TEST_CASE(
                     magnitude_of_face_normal2);
 
   const auto out_box1 =
-      get<0>(runner.apply<component<3, RefinementNumericalFlux>,
+      get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
           box1, id));
   const auto out_box2 =
-      get<0>(runner.apply<component<3, RefinementNumericalFlux>,
+      get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
           box2, id));
 
@@ -386,8 +390,8 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   using Spectral::MortarSize;
 
-  using flux_comm_types =
-      dg::FluxCommunicationTypes<Metavariables<3, RefinementNumericalFlux>>;
+  using metavariables = Metavariables<3, RefinementNumericalFlux>;
+  using flux_comm_types = dg::FluxCommunicationTypes<metavariables>;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
   using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<2>, 3>;
@@ -527,15 +531,15 @@ SPECTRE_TEST_CASE(
                {{0.5, 0.5}});
 
   auto self_out_box =
-      get<0>(runner.apply<component<3, RefinementNumericalFlux>,
+      get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
           self_box, self_id));
   std::vector<decltype(self_out_box)> neighbor_out_boxes{};
   neighbor_out_boxes.reserve(neighbor_boxes.size());
   for (auto& neighbor_box : neighbor_boxes) {
-    neighbor_out_boxes.push_back(
-        get<0>(runner.apply<component<3, RefinementNumericalFlux>,
-                            dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
+    neighbor_out_boxes.push_back(get<0>(
+        runner.apply<component<3, RefinementNumericalFlux, metavariables>,
+                     dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
             neighbor_box,
             // id doesn't matter
             self_id)));

@@ -33,9 +33,11 @@ struct System {
 };
 
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int,
-                                      tmpl::list<CacheTags::TimeStepper>>;
+struct component
+    : ActionTesting::MockArrayComponent<Metavariables, int,
+                                        tmpl::list<CacheTags::TimeStepper>> {
+  using initial_databox = db::DataBox<tmpl::list<>>;
+};
 
 struct Metavariables {
   using system = System;

@@ -35,13 +35,16 @@ struct System {
 
 using ElementIndexType = ElementIndex<2>;
 
-struct Metavariables;
-using component = ActionTesting::MockArrayComponent<
-    Metavariables, ElementIndexType, tmpl::list<>,
-    tmpl::list<Actions::ComputeVolumeDuDt<2>>>;
+template <typename Metavariables>
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, ElementIndexType, tmpl::list<>,
+                       tmpl::list<Actions::ComputeVolumeDuDt<2>>> {
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<var_tag, Tags::dt<var_tag>>>;
+};
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -56,7 +59,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
 
   CHECK(db::get<var_tag>(start_box) == 3);
   CHECK(db::get<Tags::dt<var_tag>>(start_box) == -100);
-  runner.apply<component, Actions::ComputeVolumeDuDt<2>>(
+  runner.apply<component<Metavariables>, Actions::ComputeVolumeDuDt<2>>(
       start_box, ElementIndexType(self_id));
   CHECK(db::get<var_tag>(start_box) == 3);
   CHECK(db::get<Tags::dt<var_tag>>(start_box) == 6);

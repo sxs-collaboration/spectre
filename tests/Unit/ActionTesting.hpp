@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -16,14 +17,43 @@
 
 namespace ActionTesting {
 namespace ActionTesting_detail {
+// MockLocalAlgorithm mocks the AlgorithmImpl class.
 template <typename Component>
 class MockLocalAlgorithm {
  public:
+  using actions_list = typename Component::action_list;
+
+  using inbox_tags_list = Parallel::get_inbox_tags<actions_list>;
+
+ private:
+  template <typename ActiontList>
+  struct initial_databox_type;
+
+  template <typename... ActionsPack>
+  struct initial_databox_type<tmpl::list<ActionsPack...>> {
+    using type = Parallel::Algorithm_detail::build_action_return_typelist<
+        typename Component::initial_databox,
+        tmpl::list<
+            tuples::TaggedTupleTypelist<inbox_tags_list>,
+            Parallel::ConstGlobalCache<typename Component::metavariables>,
+            typename Component::array_index, actions_list,
+            std::add_pointer_t<Component>>,
+        ActionsPack...>;
+  };
+
+ public:
+  using databox_types = typename initial_databox_type<actions_list>::type;
+
+  MockLocalAlgorithm() = default;
+
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() { return terminate_; }
 
  private:
   bool terminate_{false};
+  make_boost_variant_over<
+      tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>
+      box_;
 };
 
 template <typename Component, typename InboxTagList>
@@ -118,9 +148,9 @@ struct MockArrayComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting_detail::MockArrayChare;
   using index = Index;
+  using array_index = Index;
   using const_global_cache_tag_list = ConstGlobalCacheTagList;
   using action_list = ActionList;
-  using initial_databox = NoSuchType;
 };
 
 /// \ingroup TestingFrameworkGroup

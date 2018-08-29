@@ -44,6 +44,8 @@ struct ComputeFluxes {
   }
 };
 
+using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Inertial>;
+
 struct System {
   static constexpr size_t volume_dim = dim;
   using variables_tag = Var1;
@@ -52,14 +54,16 @@ struct System {
 
 using ElementIndexType = ElementIndex<dim>;
 
-struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, ElementIndexType,
-                                      tmpl::list<>,
-                                      tmpl::list<Actions::ComputeVolumeFluxes>>;
+template <typename Metavariables>
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, ElementIndexType, tmpl::list<>,
+                       tmpl::list<Actions::ComputeVolumeFluxes>> {
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<Var1, Var2, flux_tag>>;
+};
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -70,13 +74,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
   ActionTesting::ActionRunner<Metavariables> runner{{}};
   const ElementId<dim> self(1);
 
-  using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Inertial>;
   auto start_box = db::create<db::AddSimpleTags<Var1, Var2, flux_tag>>(
       db::item_type<Var1>{{{3.}}}, db::item_type<Var2>{{{7., 12.}}},
       db::item_type<flux_tag>{{{-100.}}});
 
   const auto box = get<0>(
-      runner.apply<component, Actions::ComputeVolumeFluxes>(start_box, self));
+      runner.apply<component<Metavariables>, Actions::ComputeVolumeFluxes>(
+          start_box, self));
   CHECK(get<0>(db::get<flux_tag>(box)) == -15.);
   CHECK(get<1>(db::get<flux_tag>(box)) == 57.);
 }
