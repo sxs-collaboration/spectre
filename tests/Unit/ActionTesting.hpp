@@ -402,6 +402,11 @@ struct get_array_index<ActionTesting::ActionTesting_detail::MockArrayChare> {
 }  // namespace Parallel
 /// \endcond
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Structures used for mocking the parallel components framework in order
+ * to test actions.
+ */
 namespace ActionTesting {
 /// \ingroup TestingFrameworkGroup
 /// A mock parallel component that acts like a component with
