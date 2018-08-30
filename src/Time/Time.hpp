@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <limits>
+#include <utility>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Time/Slab.hpp"
@@ -250,6 +250,13 @@ inline TimeDelta operator/(TimeDelta a,
                            const TimeDelta::rational_t& b) noexcept {
   a /= b;
   return a;
+}
+
+inline TimeDelta abs(TimeDelta t) noexcept {
+  if (not t.is_positive()) {
+    t *= -1;
+  }
+  return t;
 }
 
 std::ostream& operator<<(std::ostream& os, const Time& t) noexcept;
