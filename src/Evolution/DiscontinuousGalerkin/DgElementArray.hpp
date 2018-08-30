@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -43,15 +45,25 @@ struct DgElementArray {
       typename dg::Actions::InitializeElement<volume_dim>::
           template return_tag_list<Metavariables>>;
 
-  using options =
-      tmpl::list<typename Metavariables::domain_creator_tag,
-                 OptionTags::InitialTime, OptionTags::InitialTimeStep>;
+  using options = tmpl::flatten<tmpl::list<
+      typename Metavariables::domain_creator_tag, OptionTags::InitialTime,
+      OptionTags::InitialTimeStep,
+      tmpl::conditional_t<tmpl::list_contains_v<const_global_cache_tag_list,
+                                                CacheTags::StepController>,
+                          OptionTags::InitialSlabSize, tmpl::list<>>>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
       std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
           domain_creator,
       double initial_time, double initial_dt) noexcept;
+
+  static void initialize(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
+          domain_creator,
+      double initial_time, double initial_dt,
+      double initial_slab_size) noexcept;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -67,11 +79,27 @@ struct DgElementArray {
 template <class Metavariables, class ActionList>
 void DgElementArray<Metavariables, ActionList>::initialize(
     Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+    std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>> domain_creator,
+    const double initial_time, const double initial_dt) noexcept {
+  initialize(global_cache, std::move(domain_creator), initial_time, initial_dt,
+             std::abs(initial_dt));
+}
+
+template <class Metavariables, class ActionList>
+void DgElementArray<Metavariables, ActionList>::initialize(
+    Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
     const std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
         domain_creator,
-    const double initial_time, const double initial_dt) noexcept {
-  auto& dg_element_array = Parallel::get_parallel_component<DgElementArray>(
-      *(global_cache.ckLocalBranch()));
+    const double initial_time, const double initial_dt,
+    const double initial_slab_size) noexcept {
+  auto& cache = *global_cache.ckLocalBranch();
+  auto& dg_element_array =
+      Parallel::get_parallel_component<DgElementArray>(cache);
+
+  if (not Parallel::get<CacheTags::TimeStepper>(cache).is_self_starting() and
+      std::abs(initial_dt) != initial_slab_size) {
+    ERROR("Local time stepping only supported with self-starting integrators.");
+  }
 
   auto domain = domain_creator->create_domain();
   for (const auto& block : domain.blocks()) {
@@ -91,5 +119,5 @@ void DgElementArray<Metavariables, ActionList>::initialize(
 
   Parallel::simple_action<dg::Actions::InitializeElement<volume_dim>>(
       dg_element_array, domain_creator->initial_extents(), std::move(domain),
-      initial_time, initial_dt);
+      initial_time, initial_dt, initial_slab_size);
 }

@@ -43,7 +43,9 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
+#include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
@@ -115,23 +117,25 @@ struct NormalDotNumericalFluxTag {
   using type = struct { using package_tags = tmpl::list<Var>; };
 };
 
-template <size_t Dim, bool IsConservative>
+template <size_t Dim, bool IsConservative, typename ConstGlobalCacheTagList>
 struct Metavariables;
 
-template <size_t Dim, bool IsConservative>
+template <size_t Dim, bool IsConservative, typename ConstGlobalCacheTagList>
 using component = ActionTesting::MockArrayComponent<
-    Metavariables<Dim, IsConservative>, ElementIndex<Dim>,
+    Metavariables<Dim, IsConservative, ConstGlobalCacheTagList>,
+    ElementIndex<Dim>,
     tmpl::list<CacheTags::TimeStepper,
                CacheTags::AnalyticSolution<SystemAnalyticSolution>>,
     tmpl::list<dg::Actions::InitializeElement<Dim>>>;
 
-template <size_t Dim, bool IsConservative>
+template <size_t Dim, bool IsConservative, typename ConstGlobalCacheTagList>
 struct Metavariables {
-  using component_list = tmpl::list<component<Dim, IsConservative>>;
+  using component_list =
+      tmpl::list<component<Dim, IsConservative, ConstGlobalCacheTagList>>;
   using system = System<Dim, IsConservative>;
   using temporal_id = Tags::TimeId;
   using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list = ConstGlobalCacheTagList;
 };
 
 template <typename Tag, typename Box>
@@ -188,34 +192,32 @@ struct TestConservativeOrNonconservativeParts<true> {
 
 template <typename Metavariables, typename DomainCreatorType>
 void test_initialize_element(
+    ActionTesting::ActionRunner<Metavariables>&& runner,
     const ElementId<Metavariables::system::volume_dim>& element_id,
+    const double start_time, const double dt, const double slab_size,
     const DomainCreatorType& domain_creator) noexcept {
   using system = typename Metavariables::system;
   constexpr size_t dim = system::volume_dim;
 
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
-       SystemAnalyticSolution{}}};
-
-  const double start_time = 0.3;
-  const double dt = 0.01;
-
   const auto domain = domain_creator.create_domain();
 
   db::DataBox<tmpl::list<>> empty_box{};
-  auto box =
-      std::get<0>(runner.template apply<component<dim, system::is_conservative>,
-                                        dg::Actions::InitializeElement<dim>>(
+  auto box = std::get<0>(
+      runner.template apply<tmpl::front<typename Metavariables::component_list>,
+                            dg::Actions::InitializeElement<dim>>(
           empty_box, element_id, domain_creator.initial_extents(),
-          domain_creator.create_domain(), start_time, dt));
+          domain_creator.create_domain(), start_time, dt, slab_size));
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time_runs_forward());
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() == 0);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time().value() == start_time);
+  CHECK(
+      db::get<Tags::Next<Tags::TimeId>>(box).time().slab().duration().value() ==
+      slab_size);
   // The TimeId is uninitialized and is updated immediately by the
   // algorithm loop.
   CHECK(box_contains<Tags::TimeId>(box));
   CHECK(box_contains<Tags::Time>(box));
-  CHECK(db::get<Tags::TimeStep>(box).value() == approx(dt));
+  CHECK(db::get<Tags::TimeStep>(box).value() == dt);
 
   const auto& my_block = domain.blocks()[element_id.block_id()];
   ElementMap<dim, Frame::Inertial> map{element_id,
@@ -241,11 +243,12 @@ void test_initialize_element(
         typename system::variables_tag,
         db::add_tag_prefix<Tags::dt, typename system::variables_tag>>>(
         box);
-    TimeSteppers::AdamsBashforthN stepper(4, false);
-    CHECK(history.size() == stepper.number_of_past_steps());
+    const auto& stepper = Parallel::get<CacheTags::TimeStepper>(runner.cache());
+    CHECK(history.size() ==
+          (stepper.is_self_starting() ? 0 : stepper.number_of_past_steps()));
     const SystemAnalyticSolution solution{};
     double past_t = start_time;
-    for (size_t i = stepper.number_of_past_steps(); i > 0; --i) {
+    for (size_t i = history.size(); i > 0; --i) {
       const auto entry = history.begin() + static_cast<ssize_t>(i - 1);
       past_t -= dt;
 
@@ -307,7 +310,7 @@ void test_initialize_element(
 }
 
 void test_mortar_orientation() noexcept {
-  ActionTesting::ActionRunner<Metavariables<3, false>> runner{
+  ActionTesting::ActionRunner<Metavariables<3, false, tmpl::list<>>> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
        SystemAnalyticSolution{}}};
   // This is the domain from the OrientationMap and corner numbering
@@ -321,9 +324,9 @@ void test_mortar_orientation() noexcept {
   const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
 
   db::DataBox<tmpl::list<>> empty_box{};
-  const auto box = std::get<0>(
-      runner.apply<component<3, false>, dg::Actions::InitializeElement<3>>(
-          empty_box, ElementId<3>(0), extents, std::move(domain), 0., 1.));
+  const auto box = std::get<0>(runner.apply<component<3, false, tmpl::list<>>,
+                                            dg::Actions::InitializeElement<3>>(
+      empty_box, ElementId<3>(0), extents, std::move(domain), 0., 1., 1.));
 
   CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
         Index<2>{{{3, 4}}});
@@ -332,26 +335,49 @@ void test_mortar_orientation() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                   "[Unit][Evolution][Actions]") {
-  test_initialize_element<Metavariables<1, false>>(
-      ElementId<1>{0, {{SegmentId{2, 1}}}},
+  test_initialize_element(
+      ActionTesting::ActionRunner<Metavariables<1, false, tmpl::list<>>>{
+          {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+           SystemAnalyticSolution{}}},
+      ElementId<1>{0, {{SegmentId{2, 1}}}}, 3., 1., 1.,
       DomainCreators::Interval<Frame::Inertial>{
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
-  test_initialize_element<Metavariables<2, false>>(
-      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}},
+  test_initialize_element(
+      ActionTesting::ActionRunner<Metavariables<2, false, tmpl::list<>>>{
+          {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+           SystemAnalyticSolution{}}},
+      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
       DomainCreators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
-  test_initialize_element<Metavariables<3, false>>(
+  test_initialize_element(
+      ActionTesting::ActionRunner<Metavariables<3, false, tmpl::list<>>>{
+          {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+           SystemAnalyticSolution{}}},
       ElementId<3>{0, {{SegmentId{2, 1}, SegmentId{3, 2}, SegmentId{1, 0}}}},
-      DomainCreators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
-                                             {{1.5, 2.4, 1.2}},
-                                             {{false, false, true}},
-                                             {{2, 3, 1}},
-                                             {{4, 5, 3}}});
+      3., 1., 1., DomainCreators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
+                                                         {{1.5, 2.4, 1.2}},
+                                                         {{false, false, true}},
+                                                         {{2, 3, 1}},
+                                                         {{4, 5, 3}}});
 
-  test_initialize_element<Metavariables<2, true>>(
-      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}},
+  test_initialize_element(
+      ActionTesting::ActionRunner<Metavariables<2, true, tmpl::list<>>>{
+          {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+           SystemAnalyticSolution{}}},
+      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
+      DomainCreators::Rectangle<Frame::Inertial>{
+          {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
+
+  // local time-stepping
+  test_initialize_element(
+      ActionTesting::ActionRunner<
+          Metavariables<2, false, tmpl::list<CacheTags::StepController>>>{
+          {std::make_unique<StepControllers::SplitRemaining>(),
+           std::make_unique<TimeSteppers::AdamsBashforthN>(4, true),
+           SystemAnalyticSolution{}}},
+      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 1.5, 0.25, 0.5,
       DomainCreators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 

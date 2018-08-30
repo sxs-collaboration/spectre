@@ -141,4 +141,13 @@ struct InitialTimeStep {
   static constexpr OptionString help =
       "The initial time step, before local stepping adjustment";
 };
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+/// \brief The initial slab size
+struct InitialSlabSize {
+  using type = double;
+  static constexpr OptionString help = "The initial slab size";
+  static type lower_bound() noexcept { return 0.; }
+};
 }  // namespace OptionTags
