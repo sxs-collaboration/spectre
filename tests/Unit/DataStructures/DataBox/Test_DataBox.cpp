@@ -512,6 +512,22 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
   /// [apply_example]
 
   db::apply<tmpl::list<>>(NonCopyableFunctor{}, original_box);
+
+  /// [apply_struct_example]
+  struct ApplyCallable {
+    static void apply(const std::string& sample_string,
+                      const std::string& computed_string,
+                      const std::vector<double>& vector) noexcept {
+      CHECK(sample_string == "My Sample String"s);
+      CHECK(computed_string == "My Sample String6.28"s);
+      CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
+    }
+  };
+  db::apply<
+      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+      ApplyCallable{}, original_box,
+      db::get<test_databox_tags::Tag1>(original_box));
+  /// [apply_struct_example]
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
