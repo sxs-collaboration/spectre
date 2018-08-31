@@ -44,7 +44,7 @@ struct Metavariables {
   struct system {
     struct compute_largest_characteristic_speed {
       using argument_tags = tmpl::list<CharacteristicSpeed>;
-      double operator()(const double speed) const noexcept { return speed; }
+      static double apply(const double speed) noexcept { return speed; }
     };
   };
 };
