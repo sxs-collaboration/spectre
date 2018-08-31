@@ -126,6 +126,7 @@ void integrate_variable_test(const Stepper& stepper,
   for (size_t i = 0; i < num_steps; ++i) {
     slab = slab.advance().with_duration_from_start(
         (1. + 0.5 * sin(i)) * average_step);
+    time = time.with_slab(slab);
 
     take_step(&time, &y, &history, stepper, rhs, slab.duration());
     // This check needs a looser tolerance for lower-order time steppers.

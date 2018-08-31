@@ -10,10 +10,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -64,17 +64,6 @@ struct AdvanceTime {
           *time_id = *next_time_id;
           *time_step = time_step->with_slab(time_id->time().slab());
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);
-          if (next_time_id->is_at_slab_boundary() and
-              (next_time_id->time_runs_forward()
-                   ? next_time_id->time().is_at_slab_end()
-                   : next_time_id->time().is_at_slab_start())) {
-            const Slab new_slab =
-                next_time_id->time().slab().advance_towards(*time_step);
-            *next_time_id =
-                TimeId(next_time_id->time_runs_forward(),
-                       next_time_id->slab_number() + 1,
-                       next_time_id->step_time().with_slab(new_slab));
-          }
         });
 
     return std::forward_as_tuple(std::move(box));

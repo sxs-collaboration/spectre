@@ -25,21 +25,28 @@ void check(const bool time_runs_forward) noexcept {
   CHECK(TimeId(time_runs_forward, 4, start + step / 3) ==
         TimeId(time_runs_forward, 4, start + step / 3, 0, start + step / 3));
 
-  CHECK_FALSE(TimeId(time_runs_forward, 4, start + step / 3, 2,
-                     start + step / 2)
-                  .is_at_slab_boundary());
+  CHECK_FALSE(
+      TimeId(time_runs_forward, 4, start + step / 3, 2, start + step / 2)
+          .is_at_slab_boundary());
   CHECK_FALSE(TimeId(time_runs_forward, 4, start + step / 3, 2, start)
                   .is_at_slab_boundary());
   CHECK_FALSE(TimeId(time_runs_forward, 4, start + step / 3, 2, end)
                   .is_at_slab_boundary());
-  CHECK_FALSE(TimeId(time_runs_forward, 4, start + step / 3, 0,
-                     start + step / 3)
-                  .is_at_slab_boundary());
-  CHECK_FALSE(TimeId(time_runs_forward, 4, start, 1, start)
-                  .is_at_slab_boundary());
-  CHECK_FALSE(TimeId(time_runs_forward, 4, end, 1, end).is_at_slab_boundary());
+  CHECK_FALSE(
+      TimeId(time_runs_forward, 4, start + step / 3, 0, start + step / 3)
+          .is_at_slab_boundary());
+  CHECK_FALSE(
+      TimeId(time_runs_forward, 4, start, 1, start).is_at_slab_boundary());
+  CHECK_FALSE(
+      TimeId(time_runs_forward, 4, start, 1, end).is_at_slab_boundary());
   CHECK(TimeId(time_runs_forward, 4, start).is_at_slab_boundary());
   CHECK(TimeId(time_runs_forward, 4, end).is_at_slab_boundary());
+
+  CHECK(TimeId(time_runs_forward, 5, start).slab_number() == 5);
+  CHECK(TimeId(time_runs_forward, 5, start).time().slab() == slab);
+  CHECK(TimeId(time_runs_forward, 5, end).slab_number() == 6);
+  CHECK(TimeId(time_runs_forward, 5, end).time().slab() ==
+        slab.advance_towards(step));
 
   const TimeId id(time_runs_forward, 4, start + step / 3, 2, start + step / 2);
 

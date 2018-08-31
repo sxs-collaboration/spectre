@@ -7,6 +7,21 @@
 #include <ostream>
 #include <pup.h>
 
+#include "Time/Slab.hpp"
+
+void TimeId::canonicalize() noexcept {
+  if (time_runs_forward_ ? step_time_.is_at_slab_end()
+                         : step_time_.is_at_slab_start()) {
+    ASSERT(substep_ == 0,
+           "Time needs to be advanced, but step already started");
+    const Slab new_slab =
+        time_runs_forward_ ? time_.slab().advance() : time_.slab().retreat();
+    ++slab_number_;
+    time_ = time_.with_slab(new_slab);
+    step_time_ = time_;
+  }
+}
+
 void TimeId::pup(PUP::er& p) noexcept {
   p | time_runs_forward_;
   p | slab_number_;
