@@ -3,6 +3,7 @@
 
 #pragma once
 
+// IWYU pragma: no_include <pup.h>
 #include <vector>
 
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
@@ -22,9 +23,13 @@
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
+#include "Time/Actions/ChangeStepSize.hpp"  // IWYU pragma: keep
 #include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/Constant.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
@@ -49,9 +54,12 @@ struct EvolutionMetavars {
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
+  using step_choosers = tmpl::list<StepChoosers::Register::Constant>;
+
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
       tmpl::list<Actions::AdvanceTime, Actions::FinalTime,
+                 Actions::ChangeStepSize<step_choosers>,
                  Actions::ComputeVolumeFluxes,
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  Actions::ComputeVolumeDuDt<1>,
@@ -81,6 +89,9 @@ struct EvolutionMetavars {
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &DomainCreators::register_derived_with_charm,
+    &Parallel::register_derived_classes_with_charm<
+        StepChooser<EvolutionMetavars::step_choosers>>,
+    &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

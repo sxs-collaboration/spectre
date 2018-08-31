@@ -26,6 +26,7 @@
 #include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Evolution/Conservative/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -35,11 +36,12 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-// IWYU pragma: no_include "Time/Slab.hpp"
+#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -146,7 +148,7 @@ struct InitializeElement {
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
-        const Time& initial_time) noexcept {
+        const double initial_time) noexcept {
       using Vars = typename System::variables_tag::type;
 
       const size_t num_grid_points =
@@ -158,7 +160,7 @@ struct InitializeElement {
       using solution_tag = CacheTags::AnalyticSolutionBase;
       Vars vars{num_grid_points};
       vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-          inertial_coords, initial_time.value(), typename Vars::tags_list{}));
+          inertial_coords, initial_time, typename Vars::tags_list{}));
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(vars));
@@ -181,7 +183,7 @@ struct InitializeElement {
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
-        const Time& initial_time) noexcept {
+        const double initial_time) noexcept {
       using Vars = typename System::variables_tag::type;
 
       const size_t num_grid_points =
@@ -193,7 +195,7 @@ struct InitializeElement {
       using solution_tag = CacheTags::AnalyticSolutionBase;
       Vars vars{num_grid_points};
       vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-          inertial_coords, initial_time.value(), typename Vars::tags_list{}));
+          inertial_coords, initial_time, typename Vars::tags_list{}));
 
       // Will be set before use
       typename fluxes_tag::type fluxes(num_grid_points);
@@ -266,17 +268,53 @@ struct InitializeElement {
 
     using compute_tags = typename ComputeTags<System>::type;
 
+    // Global time stepping
+    template <typename Cache,
+              Requires<not tmpl::list_contains_v<typename Cache::tag_list,
+                                                 CacheTags::StepController>> =
+                  nullptr>
+    static TimeDelta get_initial_time_step(const Time& initial_time,
+                                           const double initial_dt_value,
+                                           const Cache& /*cache*/) noexcept {
+      return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
+    }
+
+    // Local time stepping
+    template <
+        typename Cache,
+        Requires<tmpl::list_contains_v<typename Cache::tag_list,
+                                       CacheTags::StepController>> = nullptr>
+    static TimeDelta get_initial_time_step(const Time& initial_time,
+                                           const double initial_dt_value,
+                                           const Cache& cache) noexcept {
+      const auto& step_controller =
+          Parallel::get<CacheTags::StepController>(cache);
+      return step_controller.choose_step(initial_time, initial_dt_value);
+    }
+
     template <typename TagsList, typename Metavariables>
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
-        const Time& initial_time, const TimeDelta& initial_dt) noexcept {
+        const double initial_time_value, const double initial_dt_value,
+        const double initial_slab_size) noexcept {
       using Vars = typename variables_tag::type;
       using DtVars = typename dt_variables_tag::type;
 
+      const bool time_runs_forward = initial_dt_value > 0.0;
+      const Slab initial_slab =
+          time_runs_forward ? Slab::with_duration_from_start(initial_time_value,
+                                                             initial_slab_size)
+                            : Slab::with_duration_to_end(initial_time_value,
+                                                         initial_slab_size);
+      const Time initial_time =
+          time_runs_forward ? initial_slab.start() : initial_slab.end();
+      const TimeDelta initial_dt =
+          get_initial_time_step(initial_time, initial_dt_value, cache);
+
       // This is stored as Next<TimeId> and will be used to update
       // TimeId at the start of the algorithm.
-      const TimeId time_id(initial_dt.is_positive(), 0, initial_time);
+      const TimeId time_id(time_runs_forward, 0, initial_time);
 
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
@@ -290,7 +328,12 @@ struct InitializeElement {
                                              dt_variables_tag>::type history;
       using solution_tag = CacheTags::AnalyticSolutionBase;
       const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
-      if (not time_stepper.is_self_starting()) {
+      if (not time_stepper.is_self_starting() and
+          time_stepper.number_of_past_steps() > 0) {
+        ASSERT(initial_dt == initial_dt.slab().duration() or
+                   initial_dt == -initial_dt.slab().duration(),
+               "Trying to non-self-start with local time-stepping.");
+
         // We currently just put initial points at past slab boundaries.
         Time past_t = initial_time;
         TimeDelta past_dt = initial_dt;
@@ -470,8 +513,9 @@ struct InitializeElement {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain, Time initial_time,
-                    TimeDelta initial_dt) noexcept {
+                    Domain<Dim, Frame::Inertial> domain,
+                    const double initial_time, const double initial_dt,
+                    const double initial_slab_size) noexcept {
     using system = typename Metavariables::system;
     auto domain_box = DomainTags::initialize(
         db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);
@@ -480,7 +524,8 @@ struct InitializeElement {
     auto domain_interface_box =
         DomainInterfaceTags<system>::initialize(std::move(system_box));
     auto evolution_box = EvolutionTags<system>::initialize(
-        std::move(domain_interface_box), cache, initial_time, initial_dt);
+        std::move(domain_interface_box), cache, initial_time, initial_dt,
+        initial_slab_size);
     auto dg_box = DgTags<Metavariables>::initialize(std::move(evolution_box),
                                                     initial_extents);
     return std::make_tuple(std::move(dg_box));

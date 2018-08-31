@@ -9,7 +9,8 @@ AnalyticSolution:
 
 InitialTime: 0.0
 FinalTime: 0.1
-DeltaT: 0.01
+InitialTimeStep: 0.02
+InitialSlabSize: 0.01
 
 DomainCreator:
   Interval:
@@ -19,8 +20,11 @@ DomainCreator:
     InitialRefinement: [2]
     InitialGridPoints: [7]
 
-TimeStepper:
-  AdamsBashforthN:
-    TargetOrder: 3
+TimeStepper: RungeKutta3
+
+StepController: FullSlab
+
+StepChoosers:
+  - Constant: 0.01
 
 NumericalFluxParams:

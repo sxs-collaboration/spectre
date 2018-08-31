@@ -15,7 +15,7 @@ AnalyticSolution:
 
 InitialTime: 0.0
 FinalTime: 0.1
-DeltaT: 0.01
+InitialTimeStep: 0.01
 
 DomainCreator:
   Rectangle:
