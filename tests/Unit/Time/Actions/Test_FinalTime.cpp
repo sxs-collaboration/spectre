@@ -4,12 +4,11 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-#include <tuple>
 #include <utility>
 // IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Time/Actions/FinalTime.hpp"
+#include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -23,7 +22,8 @@ namespace {
 struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<CacheTags::FinalTime>> {
+                                        tmpl::list<CacheTags::FinalTime>,
+                                        tmpl::list<Actions::FinalTime>> {
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>;
   using compute_tags = db::AddComputeTags<Tags::Time>;
   using initial_databox =
@@ -70,9 +70,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
           *time_step = test.time_step;
         });
 
-    bool terminate;
-    std::tie(box, terminate) =
-        runner.apply<component, Actions::FinalTime>(box, 0);
-    CHECK(test.expected_result == terminate);
+    runner.next_action<component>(0);
+    CHECK(test.expected_result ==
+          runner.algorithms<component>().at(0).get_terminate());
   }
 }

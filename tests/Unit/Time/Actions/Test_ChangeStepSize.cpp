@@ -6,7 +6,6 @@
 #include <memory>
 // IWYU pragma: no_include <pup.h>
 #include <string>
-#include <tuple>
 #include <utility>
 // IWYU pragma: no_include <unordered_map>
 
@@ -47,7 +46,8 @@ struct System {
 
 struct Metavariables;
 struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>> {
+    : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>,
+                                        tmpl::list<change_step_size>> {
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
                                         Tags::TimeStep, history_tag>;
   using initial_databox = db::compute_databox_type<simple_tags>;
@@ -92,11 +92,10 @@ void check(const bool time_runs_forward,
        std::make_unique<StepControllers::BinaryFraction>()},
       std::move(local_algs)};
 
+  runner.next_action<component>(0);
   auto& box = runner.algorithms<component>()
                   .at(0)
                   .get_databox<typename component::initial_databox>();
-
-  box = std::get<0>(runner.apply<component, change_step_size>(box, 0));
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==

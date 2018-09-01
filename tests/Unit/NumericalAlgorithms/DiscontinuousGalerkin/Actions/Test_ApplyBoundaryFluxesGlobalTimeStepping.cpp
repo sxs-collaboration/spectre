@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <string>
-#include <tuple>
 // IWYU pragma: no_include <unordered_map>
 #include <utility>
 #include <vector>
@@ -208,14 +207,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
                                            std::move(mortar_data)));
   ActionRunner runner{{NumericalFlux{}}, std::move(local_algs)};
 
-  auto& box = runner.algorithms<my_component>()
-                  .at(id)
-                  .get_databox<db::compute_databox_type<simple_tags>>();
-
-  const auto out_box =
-      get<0>(runner.apply<my_component,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          box, id));
+  runner.next_action<my_component>(id);
 
   // F* - F = 10 * local_var + 1000 * remote_var - local_flux
   const DataVector xi_flux = {0., 0., 7011.,
@@ -227,7 +219,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
   // These factors are (see Kopriva 8.42)
   // -3[based on extents] * magnitude_of_normal
   CHECK_ITERABLE_APPROX(
-      get(db::get<Tags::dt<Var>>(out_box)),
+      get(db::get<Tags::dt<Var>>(
+          runner.algorithms<my_component>()
+              .at(id)
+              .get_databox<db::compute_databox_type<simple_tags>>())),
       get(get<Tags::dt<Var>>(initial_dt)) - 6. * xi_flux - 9. * eta_flux);
 }
 namespace {
@@ -396,14 +391,17 @@ SPECTRE_TEST_CASE(
   set_boundary_data(make_not_null(&box2), make_not_null(&box1), flux2,
                     magnitude_of_face_normal2);
 
-  const auto out_box1 =
-      get<0>(runner.apply<my_component,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          box1, id_0));
-  const auto out_box2 =
-      get<0>(runner.apply<component<3, RefinementNumericalFlux, metavariables>,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          box2, id_1));
+  runner.next_action<my_component>(id_0);
+  runner.next_action<my_component>(id_1);
+
+  const auto& out_box1 =
+      runner.algorithms<my_component>()
+          .at(id_0)
+          .get_databox<db::compute_databox_type<simple_tags>>();
+  const auto& out_box2 =
+      runner.algorithms<my_component>()
+          .at(id_1)
+          .get_databox<db::compute_databox_type<simple_tags>>();
 
   // Check that the operation was conservative.
   const double average_dt1 = definite_integral(
@@ -572,28 +570,20 @@ SPECTRE_TEST_CASE(
                {{0.5, 0.5}}, ElementId<3>{13});
 
   ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
-  auto& self_box =
-      runner.algorithms<my_component>().at(self_id).get_databox<db_type>();
+  runner.next_action<my_component>(self_id);
 
-  auto self_out_box =
-      get<0>(runner.apply<my_component,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-          self_box, self_id));
   // These ids don't describe elements that fit together correctly,
   // but they are only used as identifiers so it doesn't matter.
   std::vector<ElementId<3>> ordered_ids{ElementId<3>{11}, ElementId<3>{12},
                                         ElementId<3>{13}};
-  std::vector<decltype(self_out_box)> neighbor_out_boxes{};
-  neighbor_out_boxes.reserve(ordered_ids.size());
   for (const auto& id : ordered_ids) {
-    neighbor_out_boxes.push_back(get<0>(
-        runner.apply<component<3, RefinementNumericalFlux, metavariables>,
-                     dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>(
-            runner.algorithms<my_component>().at(id).get_databox<db_type>(),
-            id)));
+    runner.next_action<my_component>(id);
   }
 
   // Check that the operation was conservative.
+  const auto get_box = [&runner](const ElementId<3>& id) -> decltype(auto) {
+    return runner.algorithms<my_component>().at(id).get_databox<db_type>();
+  };
   const auto average_dt = [&mesh](const auto& box,
                                   const auto& det_jacobian) noexcept {
     return definite_integral(
@@ -602,10 +592,10 @@ SPECTRE_TEST_CASE(
         mesh);
   };
   const double self_average_dt =
-      average_dt(self_out_box, determinant_of_jacobian1);
+      average_dt(get_box(self_id), determinant_of_jacobian1);
   const double neighbors_average_dt =
-      0.5 * average_dt(neighbor_out_boxes[0], determinant_of_jacobian2) +
-      0.25 * average_dt(neighbor_out_boxes[1], determinant_of_jacobian2) +
-      0.25 * average_dt(neighbor_out_boxes[2], determinant_of_jacobian2);
+      0.5 * average_dt(get_box(ordered_ids[0]), determinant_of_jacobian2) +
+      0.25 * average_dt(get_box(ordered_ids[1]), determinant_of_jacobian2) +
+      0.25 * average_dt(get_box(ordered_ids[2]), determinant_of_jacobian2);
   CHECK(self_average_dt == approx(-neighbors_average_dt));
 }

@@ -13,6 +13,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -25,6 +26,8 @@ class MockLocalAlgorithm {
   using actions_list = typename Component::action_list;
 
   using inbox_tags_list = Parallel::get_inbox_tags<actions_list>;
+
+  using metavariables = typename Component::metavariables;
 
  private:
   template <typename ActiontList>
@@ -63,12 +66,202 @@ class MockLocalAlgorithm {
     return boost::get<BoxType>(box_);
   }
 
+  void force_next_action_to_be(const size_t next_action_id) noexcept {
+    algorithm_step_ = next_action_id;
+  }
+
+  template <size_t... Is>
+  void next_action(
+      std::index_sequence<Is...> /*meta*/,
+      const typename Component::index& array_index,
+      gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
+      gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
+          const_global_cache_ptr) noexcept;
+
+  template <size_t... Is>
+  bool is_ready(
+      std::index_sequence<Is...> /*meta*/,
+      const typename Component::index& array_index,
+      gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
+      gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
+          const_global_cache) noexcept;
+
  private:
   bool terminate_{false};
   make_boost_variant_over<
       tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>
       box_;
+  // The next action we should execute.
+  size_t algorithm_step_ = 0;
+  bool performing_action_ = false;
 };
+
+template <typename Component>
+template <size_t... Is>
+void MockLocalAlgorithm<Component>::next_action(
+    std::index_sequence<Is...> /*meta*/,
+    const typename Component::index& array_index,
+    const gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
+    const gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
+        const_global_cache_ptr) noexcept {
+  auto& const_global_cache = *const_global_cache_ptr;
+  if (performing_action_) {
+    ERROR(
+        "Cannot call an Action while already calling an Action on the same "
+        "MockLocalAlgorithm (an element of a parallel component array, or a "
+        "parallel component singleton).");
+  }
+  // Keep track of if we already evaluated an action since we want `next_action`
+  // to only evaluate one per call.
+  bool already_did_an_action = false;
+  const auto helper = [
+    this, &array_index, &inboxes, &const_global_cache, &already_did_an_action
+  ](auto iteration) noexcept {
+    constexpr size_t iter = decltype(iteration)::value;
+    using this_action = tmpl::at_c<actions_list, iter>;
+    using this_databox =
+        tmpl::at_c<databox_types,
+                   iter == 0 ? tmpl::size<databox_types>::value - 1 : iter>;
+    if (already_did_an_action or algorithm_step_ != iter) {
+      return;
+    }
+
+    this_databox* box_ptr{};
+    try {
+      box_ptr = &boost::get<this_databox>(box_);
+    } catch (std::exception& e) {
+      ERROR(
+          "\nFailed to retrieve Databox in take_next_action:\nCaught "
+          "exception: '"
+          << e.what() << "'\nDataBox type: '"
+          << pretty_type::get_name<this_databox>() << "'\nIteration: " << iter
+          << "\nAction: '" << pretty_type::get_name<this_action>()
+          << "'\nBoost::Variant id: " << box_.which()
+          << "\nBoost::Variant type is: '" << type_of_current_state(box_)
+          << "'\n\n");
+    }
+    this_databox& box = *box_ptr;
+
+    const auto check_if_ready = make_overloader(
+        [&box, &array_index, &const_global_cache, &inboxes](
+            std::true_type /*has_is_ready*/, auto t) {
+          return decltype(t)::is_ready(
+              cpp17::as_const(box), cpp17::as_const(*inboxes),
+              const_global_cache, cpp17::as_const(array_index));
+        },
+        [](std::false_type /*has_is_ready*/, auto) { return true; });
+    if (not check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<
+                               this_action, this_databox,
+                               tuples::TaggedTupleTypelist<inbox_tags_list>,
+                               Parallel::ConstGlobalCache<metavariables>,
+                               typename Component::index>{},
+                           this_action{})) {
+      ERROR("Tried to invoke the action '"
+            << pretty_type::get_name<this_action>()
+            << "' but have not received all the "
+               "necessary data.");
+    }
+    performing_action_ = true;
+    algorithm_step_++;
+    constexpr Component const* const component_ptr = nullptr;
+    make_overloader(
+        [ this, &array_index, component_ptr, &const_global_cache, &inboxes ](
+            auto& my_box, std::integral_constant<size_t, 1> /*meta*/)
+            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+              std::tie(box_) = this_action::apply(
+                  my_box, *inboxes, const_global_cache,
+                  cpp17::as_const(array_index), actions_list{}, component_ptr);
+            },
+        [ this, &array_index, component_ptr, &const_global_cache, &inboxes ](
+            auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
+            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+              std::tie(box_, terminate_) = this_action::apply(
+                  my_box, *inboxes, const_global_cache,
+                  cpp17::as_const(array_index), actions_list{}, component_ptr);
+            },
+        [ this, &array_index, component_ptr, &const_global_cache, &inboxes ](
+            auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
+            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+              std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
+                  my_box, *inboxes, const_global_cache,
+                  cpp17::as_const(array_index), actions_list{}, component_ptr);
+            })(
+        box,
+        typename std::tuple_size<decltype(this_action::apply(
+            box, *inboxes, const_global_cache, cpp17::as_const(array_index),
+            actions_list{}, component_ptr))>::type{});
+    performing_action_ = false;
+    already_did_an_action = true;
+
+    // Wrap counter if necessary
+    if (algorithm_step_ >= tmpl::size<actions_list>::value) {
+      algorithm_step_ = 0;
+    }
+  };
+  // Silence compiler warning when there are no Actions.
+  (void)helper;
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
+}
+
+template <typename Component>
+template <size_t... Is>
+bool MockLocalAlgorithm<Component>::is_ready(
+    std::index_sequence<Is...> /*meta*/,
+    const typename Component::index& array_index,
+    const gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
+    const gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
+        const_global_cache) noexcept {
+  bool next_action_is_ready = false;
+  const auto helper = [
+    this, &array_index, &inboxes, &const_global_cache, &next_action_is_ready
+  ](auto iteration) noexcept {
+    constexpr size_t iter = decltype(iteration)::value;
+    using this_action = tmpl::at_c<actions_list, iter>;
+    using this_databox =
+        tmpl::at_c<databox_types,
+                   iter == 0 ? tmpl::size<databox_types>::value - 1 : iter>;
+    if (iter != algorithm_step_) {
+      return;
+    }
+
+    this_databox* box_ptr{};
+    try {
+      box_ptr = &boost::get<this_databox>(box_);
+    } catch (std::exception& e) {
+      ERROR(
+          "\nFailed to retrieve Databox in take_next_action:\nCaught "
+          "exception: '"
+          << e.what() << "'\nDataBox type: '"
+          << pretty_type::get_name<this_databox>() << "'\nIteration: " << iter
+          << "\nAction: '" << pretty_type::get_name<this_action>()
+          << "'\nBoost::Variant id: " << box_.which()
+          << "\nBoost::Variant type is: '" << type_of_current_state(box_)
+          << "'\n\n");
+    }
+    this_databox& box = *box_ptr;
+
+    const auto check_if_ready = make_overloader(
+        [&box, &array_index, &const_global_cache, &inboxes](
+            std::true_type /*has_is_ready*/, auto t) {
+          return decltype(t)::is_ready(
+              cpp17::as_const(box), cpp17::as_const(*inboxes),
+              *const_global_cache, cpp17::as_const(array_index));
+        },
+        [](std::false_type /*has_is_ready*/, auto) { return true; });
+
+    next_action_is_ready =
+        check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<
+                           this_action, this_databox,
+                           tuples::TaggedTupleTypelist<inbox_tags_list>,
+                           Parallel::ConstGlobalCache<metavariables>,
+                           typename Component::index>{},
+                       this_action{});
+  };
+  // Silence compiler warning when there are no Actions.
+  (void)helper;
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
+  return next_action_is_ready;
+}
 
 namespace ActionTesting_detail {
 template <typename Component, typename InboxTagList>
@@ -261,14 +454,47 @@ class ActionRunner {
   }
   //@}
 
-  /// Call Action::is_ready as if on the portion of Component labeled
-  /// by array_index.
-  template <typename Component, typename Action, typename DbTags>
-  bool is_ready(const db::DataBox<DbTags>& box,
-                const typename Component::index& array_index) noexcept {
-    return Action::is_ready(box,
-                            cpp17::as_const(inboxes<Component>()[array_index]),
-                            cache_, array_index);
+  /// Instead of the next call to `next_action` applying the next action in
+  /// the action list, force the next action to be `Action`
+  template <typename Component, typename Action>
+  void force_next_action_to_be(
+      const typename Component::index& array_index) noexcept {
+    static_assert(
+        tmpl::list_contains_v<typename Component::action_list, Action>,
+        "Cannot force a next action that is not in the action list of the "
+        "parallel component. See the first template parameter of "
+        "'force_next_action_to_be' for the component and the second template "
+        "parameter for the action.");
+    algorithms<Component>()
+        .at(array_index)
+        .force_next_action_to_be(
+            tmpl::index_of<typename Component::action_list, Action>::value);
+  }
+
+  /// Invoke the next action in the ActionList on the parallel component
+  /// `Component` on the component labeled by `array_index`.
+  template <typename Component>
+  void next_action(const typename Component::index& array_index) noexcept {
+    algorithms<Component>()
+        .at(array_index)
+        .next_action(
+            std::make_index_sequence<tmpl::size<
+                typename MockLocalAlgorithm<Component>::actions_list>::value>{},
+            array_index, make_not_null(&inboxes<Component>()[array_index]),
+            &cache_);
+  }
+
+  /// Call is_ready on the next action in the action list as if on the portion
+  /// of Component labeled by array_index.
+  template <typename Component>
+  bool is_ready(const typename Component::index& array_index) noexcept {
+    return algorithms<Component>()
+        .at(array_index)
+        .is_ready(
+            std::make_index_sequence<tmpl::size<
+                typename MockLocalAlgorithm<Component>::actions_list>::value>{},
+            array_index, make_not_null(&inboxes<Component>()[array_index]),
+            &cache_);
   }
 
   /// Access the inboxes for a given component.

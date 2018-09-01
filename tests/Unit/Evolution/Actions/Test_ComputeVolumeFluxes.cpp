@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <string>
-#include <tuple>
 #include <utility>
 // IWYU pragma: no_include <unordered_map>
 
@@ -15,7 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeFluxes.hpp"
+#include "Evolution/Actions/ComputeVolumeFluxes.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -81,21 +80,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
 
   const ElementId<dim> self_id(1);
 
+  using simple_tags = db::AddSimpleTags<Var1, Var2, flux_tag>;
   ActionRunner::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(self_id, db::create<db::AddSimpleTags<Var1, Var2, flux_tag>>(
-                            db::item_type<Var1>{{{3.}}},
-                            db::item_type<Var2>{{{7., 12.}}},
-                            db::item_type<flux_tag>{{{-100.}}}));
+      .emplace(self_id,
+               db::create<simple_tags>(db::item_type<Var1>{{{3.}}},
+                                       db::item_type<Var2>{{{7., 12.}}},
+                                       db::item_type<flux_tag>{{{-100.}}}));
   ActionRunner runner{{}, std::move(local_algs)};
-  auto& start_box = runner.algorithms<component<Metavariables>>()
-                        .at(self_id)
-                        .get_databox<db::compute_databox_type<
-                            db::AddSimpleTags<Var1, Var2, flux_tag>>>();
 
-  const auto box = get<0>(
-      runner.apply<component<Metavariables>, Actions::ComputeVolumeFluxes>(
-          start_box, self_id));
+  runner.next_action<component<Metavariables>>(self_id);
+
+  auto& box = runner.algorithms<component<Metavariables>>()
+                  .at(self_id)
+                  .get_databox<db::compute_databox_type<simple_tags>>();
   CHECK(get<0>(db::get<flux_tag>(box)) == -15.);
   CHECK(get<1>(db::get<flux_tag>(box)) == 57.);
 }

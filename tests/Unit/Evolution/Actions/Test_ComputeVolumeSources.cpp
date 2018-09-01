@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <string>
-#include <tuple>
 #include <utility>
 // IWYU pragma: no_include <unordered_map>
 
@@ -18,7 +17,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeSources.hpp"
+#include "Evolution/Actions/ComputeVolumeSources.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -94,23 +93,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   db::item_type<System::variables_tag> vars(2);
   get<Var1>(vars) = var1;
 
+  using simple_tags =
+      db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
   ActionRunner::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(self_id,
-               db::create<
-                   db::AddSimpleTags<System::variables_tag, Var3, source_tag>>(
-                   std::move(vars), var3, db::item_type<source_tag>(2)));
+      .emplace(self_id, db::create<simple_tags>(std::move(vars), var3,
+                                                db::item_type<source_tag>(2)));
   ActionRunner runner{{}, std::move(local_algs)};
 
-  auto& start_box =
-      runner.algorithms<component<Metavariables>>()
-          .at(self_id)
-          .get_databox<db::compute_databox_type<
-              db::AddSimpleTags<System::variables_tag, Var3, source_tag>>>();
+  runner.next_action<component<Metavariables>>(self_id);
 
-  const auto box = get<0>(
-      runner.apply<component<Metavariables>, Actions::ComputeVolumeSources>(
-          start_box, self_id));
+  const auto& box = runner.algorithms<component<Metavariables>>()
+                        .at(self_id)
+                        .get_databox<db::compute_databox_type<simple_tags>>();
   CHECK(get<0>(db::get<Tags::Source<Var2>>(box)) == get(var1));
   CHECK(get<1>(db::get<Tags::Source<Var2>>(box)) == get(var3));
 }

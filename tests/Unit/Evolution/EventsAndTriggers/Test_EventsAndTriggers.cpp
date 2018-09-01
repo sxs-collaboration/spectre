@@ -13,7 +13,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Completion.hpp"
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -39,9 +39,9 @@ using events_and_triggers_tag =
     Tags::EventsAndTriggers<DefaultClasses, DefaultClasses>;
 
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<events_and_triggers_tag>> {
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, int, tmpl::list<events_and_triggers_tag>,
+                       tmpl::list<Actions::RunEventsAndTriggers>> {
   using initial_databox = db::DataBox<tmpl::list<>>;
 };
 
@@ -70,7 +70,7 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
                   .at(0)
                   .template get_databox<db::DataBox<tmpl::list<>>>();
 
-  runner.apply<component, Actions::RunEventsAndTriggers>(box, 0);
+  runner.next_action<component>(0);
 
   CHECK(runner.algorithms<component>()[0].get_terminate() == expected);
 }

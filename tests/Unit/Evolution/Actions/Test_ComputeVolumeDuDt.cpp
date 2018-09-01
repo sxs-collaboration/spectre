@@ -9,10 +9,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"
+#include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -63,21 +63,25 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
 
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
 
+  using simple_tags = db::AddSimpleTags<var_tag, Tags::dt<var_tag>>;
   ActionRunner::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(
-          self_id,
-          db::create<db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>(3, -100));
+      .emplace(self_id, db::create<simple_tags>(3, -100));
   ActionRunner runner{{}, std::move(local_algs)};
-  auto& start_box = runner.algorithms<component<Metavariables>>()
-                        .at(self_id)
-                        .get_databox<db::compute_databox_type<
-                            db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>>();
-
-  CHECK(db::get<var_tag>(start_box) == 3);
-  CHECK(db::get<Tags::dt<var_tag>>(start_box) == -100);
-  runner.apply<component<Metavariables>, Actions::ComputeVolumeDuDt<2>>(
-      start_box, ElementIndexType(self_id));
-  CHECK(db::get<var_tag>(start_box) == 3);
-  CHECK(db::get<Tags::dt<var_tag>>(start_box) == 6);
+  const auto get_box = [&runner, &self_id]() -> decltype(auto) {
+    return runner.algorithms<component<Metavariables>>()
+        .at(self_id)
+        .get_databox<db::compute_databox_type<simple_tags>>();
+  };
+  {
+    const auto& box = get_box();
+    CHECK(db::get<var_tag>(box) == 3);
+    CHECK(db::get<Tags::dt<var_tag>>(box) == -100);
+  }
+  runner.next_action<component<Metavariables>>(self_id);
+  {
+    const auto& box = get_box();
+    CHECK(db::get<var_tag>(box) == 3);
+    CHECK(db::get<Tags::dt<var_tag>>(box) == 6);
+  }
 }

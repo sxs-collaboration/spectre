@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <memory>
 #include <string>
-#include <tuple>
 // IWYU pragma: no_include <unordered_map>
 #include <utility>
 
@@ -78,15 +77,18 @@ struct System {
 };
 
 template <typename Metavariables>
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, ElementIndex<2>,
-                       tmpl::list<CacheTags::TimeStepper, NumericalFluxTag>> {
-  using initial_databox = db::compute_databox_type<
+struct component
+    : ActionTesting::MockArrayComponent<
+          Metavariables, ElementIndex<2>,
+          tmpl::list<CacheTags::TimeStepper, NumericalFluxTag>,
+          tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>> {
+  using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
                         Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
                         System::variables_tag,
                         typename dg::FluxCommunicationTypes<Metavariables>::
-                            local_time_stepping_mortar_data_tag>>;
+                            local_time_stepping_mortar_data_tag>;
+  using initial_databox = db::compute_databox_type<simple_tags>;
 };
 
 struct Metavariables {
@@ -164,29 +166,19 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
                                          gsl::at(remote_data, 2));
 
-  using simple_tags =
-      db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
-                        Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
-                        System::variables_tag, mortar_data_tag>;
   using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
   using LocalAlgsTag =
       ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
   ActionRunner::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(id, db::create<simple_tags>(mesh, mortar_meshes, mortar_sizes,
-                                           time_step, variables,
-                                           std::move(mortar_data)));
+      .emplace(id, db::create<typename component<Metavariables>::simple_tags>(
+                       mesh, mortar_meshes, mortar_sizes, time_step, variables,
+                       std::move(mortar_data)));
   ActionRunner runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}},
       std::move(local_algs)};
 
-  auto& box = runner.algorithms<component<Metavariables>>()
-                  .at(id)
-                  .get_databox<db::compute_databox_type<simple_tags>>();
-
-  const auto out_box = get<0>(
-      runner.apply<component<Metavariables>,
-                   dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>(box, id));
+  runner.next_action<component<Metavariables>>(id);
 
   add_slice_to_data(
       make_not_null(&variables),
@@ -218,5 +210,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
       mesh.extents(), face_dimension,
       index_to_slice_at(mesh.extents(), face_direction));
 
-  CHECK_ITERABLE_APPROX(get<Var>(variables), get<Var>(out_box));
+  CHECK_ITERABLE_APPROX(
+      get<Var>(variables),
+      get<Var>(runner.algorithms<component<Metavariables>>()
+                   .at(id)
+                   .get_databox<
+                       typename component<Metavariables>::initial_databox>()));
 }

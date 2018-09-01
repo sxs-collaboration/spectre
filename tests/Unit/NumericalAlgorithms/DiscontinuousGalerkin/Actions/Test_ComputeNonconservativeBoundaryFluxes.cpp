@@ -9,7 +9,6 @@
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 
@@ -32,7 +31,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -102,8 +101,9 @@ using VarsType = Variables<tmpl::list<Var, Var2>>;
 struct Metavariables;
 
 struct component
-    : ActionTesting::MockArrayComponent<Metavariables, ElementIndex<2>,
-                                        tmpl::list<>> {
+    : ActionTesting::MockArrayComponent<
+          Metavariables, ElementIndex<2>, tmpl::list<>,
+          tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes>> {
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
@@ -158,16 +158,12 @@ auto run_action(
                        element, mesh, std::move(element_map), vars, other_arg,
                        std::move(n_dot_f_storage))});
   ActionRunner runner{{}, std::move(local_algs)};
-
-  auto& start_box = runner.algorithms<component>()
-                        .at(element.id())
-                        .get_databox<db::compute_databox_type<
-                            tmpl::append<simple_tags, compute_tags>>>();
-
-  return std::get<0>(
-      runner
-          .apply<component, dg::Actions::ComputeNonconservativeBoundaryFluxes>(
-              start_box, element.id()));
+  runner.next_action<component>(element.id());
+  // std::move call on returned value is intentional.
+  return std::move(runner.algorithms<component>()
+                       .at(element.id())
+                       .get_databox<db::compute_databox_type<
+                           tmpl::append<simple_tags, compute_tags>>>());
 }
 }  // namespace
 

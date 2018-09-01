@@ -12,7 +12,6 @@
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -36,7 +35,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -157,7 +156,8 @@ template <size_t Dim, typename MV>
 struct lts_component
     : ActionTesting::MockArrayComponent<
           MV, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Dim>>,
-          tmpl::list<dg::Actions::ReceiveDataForFluxes<MV>>> {
+          tmpl::list<dg::Actions::SendDataForFluxes<MV>,
+                     dg::Actions::ReceiveDataForFluxes<MV>>> {
   using flux_comm_types = dg::FluxCommunicationTypes<MV>;
 
   using simple_tags = db::AddSimpleTags<
@@ -196,13 +196,6 @@ using simple_items = typename Component::simple_tags;
 
 template <typename Component>
 using compute_items = typename Component::compute_tags;
-
-template <typename Metavariables>
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables>;
-
-template <typename Metavariables>
-using receive_data_for_fluxes =
-    dg::Actions::ReceiveDataForFluxes<Metavariables>;
 
 struct DataRecorder {
   // Only called on the sending sides, which are not interesting here.
@@ -266,29 +259,33 @@ void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
 }
 
 // Update the time and flux, then send the data
-template <typename Box>
 void send_from_neighbor(
-    const gsl::not_null<Box*> box,
     const gsl::not_null<ActionTesting::ActionRunner<LtsMetavariables<2>>*>
         runner,
     const Element<2>& element, const int start, const int end,
     const double n_dot_f) noexcept {
   using metavariables = LtsMetavariables<2>;
   using my_component = lts_component<2, metavariables>;
+  using initial_databox_type = typename my_component::initial_databox;
   const Direction<2>& send_direction = element.neighbors().begin()->first;
 
   db::mutate<TemporalId, Tags::Next<TemporalId>,
              normal_dot_fluxes_tag<2, flux_comm_types<2>>, other_data_tag<2>>(
-      box, [&send_direction, n_dot_f, start, end](
-               auto tstart, auto tend, auto fluxes, auto other_data) {
+      make_not_null(&runner->algorithms<my_component>()
+                         .at(element.id())
+                         .get_databox<initial_databox_type>()),
+      [&send_direction, n_dot_f, start, end](auto tstart, auto tend,
+                                             auto fluxes, auto other_data) {
         *tstart = start;
         *tend = end;
         fluxes->operator[](send_direction).initialize(2, n_dot_f);
         other_data->operator[](send_direction).initialize(2, 0.);
       });
 
-  runner->apply<my_component, send_data_for_fluxes<metavariables>>(
-      *box, element.id());
+  runner->force_next_action_to_be<
+      my_component, dg::Actions::SendDataForFluxes<metavariables>>(
+      element.id());
+  runner->next_action<my_component>(element.id());
 }
 
 // Sends the left steps, then the right steps.  The step must not be
@@ -358,20 +355,13 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
 
   ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<2>{}},
                                                     std::move(local_algs)};
-  auto& box = runner.algorithms<my_component>()
-                  .at(self_id)
-                  .get_databox<initial_databox_type>();
+
+  runner.next_action<my_component>(self_id);  // SendDataForFluxes
 
   std::vector<int> relevant_left_steps{left_steps.front()};
   for (size_t step = 1; step < left_steps.size(); ++step) {
-    CHECK_FALSE(
-        runner.is_ready<my_component,
-                        dg::Actions::ReceiveDataForFluxes<metavariables>>(
-            box, self_id));
-    send_from_neighbor(make_not_null(&runner.algorithms<my_component>()
-                                          .at(left_element.id())
-                                          .get_databox<initial_databox_type>()),
-                       &runner, left_element, left_steps[step - 1],
+    CHECK_FALSE(runner.is_ready<my_component>(self_id));
+    send_from_neighbor(&runner, left_element, left_steps[step - 1],
                        left_steps[step], step);
     if (left_steps[step - 1] < self_step_end) {
       relevant_left_steps.push_back(left_steps[step]);
@@ -379,25 +369,19 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   }
   std::vector<int> relevant_right_steps{right_steps.front()};
   for (size_t step = 1; step < right_steps.size(); ++step) {
-    CHECK_FALSE(
-        runner.is_ready<my_component,
-                        dg::Actions::ReceiveDataForFluxes<metavariables>>(
-            box, self_id));
-    send_from_neighbor(make_not_null(&runner.algorithms<my_component>()
-                                          .at(right_element.id())
-                                          .get_databox<initial_databox_type>()),
-                       &runner, right_element, right_steps[step - 1],
+    CHECK_FALSE(runner.is_ready<my_component>(self_id));
+    send_from_neighbor(&runner, right_element, right_steps[step - 1],
                        right_steps[step], step);
     if (right_steps[step - 1] < self_step_end) {
       relevant_right_steps.push_back(right_steps[step]);
     }
   }
-  CHECK(runner.is_ready<my_component, receive_data_for_fluxes<metavariables>>(
-      box, self_id));
+  REQUIRE(runner.is_ready<my_component>(self_id));
+  runner.next_action<my_component>(self_id);  // ReceiveDataForFluxes
 
-  box = std::get<0>(
-      runner.apply<my_component, receive_data_for_fluxes<metavariables>>(
-          box, self_id));
+  auto& box = runner.algorithms<my_component>()
+                  .at(self_id)
+                  .get_databox<initial_databox_type>();
 
   CHECK(db::get<mortar_next_temporal_ids_tag<2>>(box) ==
         db::item_type<mortar_next_temporal_ids_tag<2>>{

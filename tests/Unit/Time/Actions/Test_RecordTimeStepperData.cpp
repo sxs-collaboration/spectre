@@ -4,14 +4,13 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <string>
-#include <tuple>
 #include <utility>
 // IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 // IWYU pragma: no_include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -37,8 +36,9 @@ using history_tag =
     Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>> {
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, int, tmpl::list<>,
+                       tmpl::list<Actions::RecordTimeStepperData>> {
   using simple_tags = db::AddSimpleTags<Tags::TimeId, variables_tag,
                                         dt_variables_tag, history_tag>;
   using compute_tags = db::AddComputeTags<Tags::Time>;
@@ -72,12 +72,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
                           time_id, 4., 5., std::move(history))});
   ActionRunner runner{{}, std::move(local_algs)};
 
-  auto& box = runner.algorithms<component>()
-                  .at(0)
-                  .get_databox<typename component::initial_databox>();
-
-  box = std::get<0>(
-      runner.apply<component, Actions::RecordTimeStepperData>(box, 0));
+  runner.next_action<component>(0);
+  const auto& box = runner.algorithms<component>()
+                        .at(0)
+                        .get_databox<typename component::initial_databox>();
 
   const auto& new_history = db::get<history_tag>(box);
   CHECK(new_history.size() == 2);

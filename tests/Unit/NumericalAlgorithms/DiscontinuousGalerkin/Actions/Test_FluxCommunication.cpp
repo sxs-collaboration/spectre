@@ -13,7 +13,6 @@
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -157,7 +156,8 @@ template <size_t Dim, typename Metavariables>
 struct component
     : ActionTesting::MockArrayComponent<
           Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Dim>>,
-          tmpl::list<dg::Actions::ReceiveDataForFluxes<Metavariables>>> {
+          tmpl::list<dg::Actions::SendDataForFluxes<Metavariables>,
+                     dg::Actions::ReceiveDataForFluxes<Metavariables>>> {
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags =
@@ -399,12 +399,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                         mortar_sizes_tag<2>>,
       compute_items<my_component>>>;
 
-  auto sent_box = std::get<0>(
-      runner.apply<my_component, send_data_for_fluxes<metavariables>>(
-          runner.algorithms<my_component>()
-              .at(self_id)
-              .get_databox<initial_databox_type>(),
-          self_id));
+  runner.next_action<my_component>(self_id);
 
   // Here, we just check that messages are sent to the correct places.
   // We will check the received values on the central element later.
@@ -429,51 +424,31 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   }
 
   // Now check ReceiveDataForFluxes
-  CHECK_FALSE(runner.is_ready<my_component,
-                              dg::Actions::ReceiveDataForFluxes<metavariables>>(
-      sent_box, self_id));
-  runner.apply<my_component, send_data_for_fluxes<metavariables>>(
-      runner.algorithms<my_component>()
-          .at(south_id)
-          .get_databox<initial_databox_type>(),
-      south_id);
-  CHECK_FALSE(runner.is_ready<my_component,
-                              dg::Actions::ReceiveDataForFluxes<metavariables>>(
-      sent_box, self_id));
-  runner.apply<my_component, send_data_for_fluxes<metavariables>>(
-      runner.algorithms<my_component>()
-          .at(east_id)
-          .get_databox<initial_databox_type>(),
-      south_id);
-  CHECK_FALSE(runner.is_ready<my_component,
-                              dg::Actions::ReceiveDataForFluxes<metavariables>>(
-      sent_box, self_id));
-  runner.apply<my_component, send_data_for_fluxes<metavariables>>(
-      runner.algorithms<my_component>()
-          .at(west_id)
-          .get_databox<initial_databox_type>(),
-      south_id);
-  CHECK(runner.is_ready<my_component,
-                        dg::Actions::ReceiveDataForFluxes<metavariables>>(
-      sent_box, self_id));
+  CHECK_FALSE(runner.is_ready<my_component>(self_id));
+  runner.next_action<my_component>(south_id);
+  CHECK_FALSE(runner.is_ready<my_component>(self_id));
+  runner.next_action<my_component>(east_id);
+  CHECK_FALSE(runner.is_ready<my_component>(self_id));
+  runner.next_action<my_component>(west_id);
+  CHECK(runner.is_ready<my_component>(self_id));
 
-  auto received_box = std::get<0>(
-      runner.apply<my_component,
-                   dg::Actions::ReceiveDataForFluxes<metavariables>>(sent_box,
-                                                                     self_id));
+  // ReceiveDataForFluxes
+  runner.next_action<my_component>(self_id);
+  const auto& self_box = runner.algorithms<my_component>()
+                             .at(self_id)
+                             .get_databox<initial_databox_type>();
 
   CHECK(tuples::get<fluxes_tag<flux_comm_types<2>>>(
             runner.inboxes<my_component>()[self_id])
             .empty());
 
   for (const auto& mortar_id : neighbor_mortar_ids) {
-    CHECK(
-        db::get<mortar_next_temporal_ids_tag<2>>(received_box).at(mortar_id) ==
-        1);
+    CHECK(db::get<mortar_next_temporal_ids_tag<2>>(self_box).at(mortar_id) ==
+          1);
   };
 
   auto mortar_history = serialize_and_deserialize(
-      db::get<mortar_data_tag<flux_comm_types<2>>>(received_box));
+      db::get<mortar_data_tag<flux_comm_types<2>>>(self_box));
   CHECK(mortar_history.size() == 3);
   const auto check_mortar = [&mortar_history](
       const std::pair<Direction<2>, ElementId<2>>& mortar_id,
@@ -542,14 +517,15 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
-  using initial_databox_type = db::compute_databox_type<tmpl::append<
+  using simple_tags =
       db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
                         Tags::Element<2>, Tags::ElementMap<2>,
                         normal_dot_fluxes_tag<2, flux_comm_types<2>>,
                         other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
                         mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-                        mortar_sizes_tag<2>>,
-      compute_items<component<2, Metavariables<2>>>>>;
+                        mortar_sizes_tag<2>>;
+  using initial_databox_type = db::compute_databox_type<
+      tmpl::append<simple_tags, compute_items<component<2, Metavariables<2>>>>>;
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -564,50 +540,43 @@ SPECTRE_TEST_CASE(
                                                   CoordinateMaps::Affine>(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
-  auto start_box = db::create<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
-                        normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-                        other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-                        mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-                        mortar_sizes_tag<2>>,
-      compute_items<component<2, Metavariables<2>>>>(
-      0, 1, mesh, element, std::move(map),
-      db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
-      db::item_type<other_data_tag<2>>{},
-      db::item_type<mortar_data_tag<flux_comm_types<2>>>{},
-      db::item_type<mortar_next_temporal_ids_tag<2>>{},
-      db::item_type<mortar_meshes_tag<2>>{},
-      db::item_type<mortar_sizes_tag<2>>{});
-
   using ActionRunner = ActionTesting::ActionRunner<metavariables>;
   using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
   ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs).emplace(self_id, std::move(start_box));
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(
+          self_id,
+          db::create<simple_tags,
+                     compute_items<component<2, Metavariables<2>>>>(
+              0, 1, mesh, element, std::move(map),
+              db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
+              db::item_type<other_data_tag<2>>{},
+              db::item_type<mortar_data_tag<flux_comm_types<2>>>{},
+              db::item_type<mortar_next_temporal_ids_tag<2>>{},
+              db::item_type<mortar_meshes_tag<2>>{},
+              db::item_type<mortar_sizes_tag<2>>{}));
   ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}},
                                                        std::move(local_algs)};
 
-  auto sent_box = std::get<0>(
-      runner.apply<my_component, send_data_for_fluxes<metavariables>>(
-          runner.algorithms<my_component>()
-              .at(self_id)
-              .get_databox<initial_databox_type>(),
-          self_id));
+  runner.next_action<my_component>(self_id);
 
-  CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(sent_box).empty());
+  CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(
+            runner.algorithms<my_component>()
+                .at(self_id)
+                .get_databox<initial_databox_type>())
+            .empty());
   CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
             .empty());
 
-  CHECK(runner.is_ready<my_component,
-                        dg::Actions::ReceiveDataForFluxes<metavariables>>(
-      sent_box, self_id));
+  CHECK(runner.is_ready<my_component>(self_id));
 
-  const auto received_box = std::get<0>(
-      runner.apply<my_component,
-                   dg::Actions::ReceiveDataForFluxes<metavariables>>(sent_box,
-                                                                     self_id));
+  runner.next_action<my_component>(self_id);
 
-  CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(received_box).empty());
+  CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(
+            runner.algorithms<my_component>()
+                .at(self_id)
+                .get_databox<initial_databox_type>())
+            .empty());
   CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
             .empty());
 }
@@ -673,6 +642,8 @@ SPECTRE_TEST_CASE(
                         other_data_tag<3>, mortar_data_tag<flux_comm_types<3>>,
                         mortar_next_temporal_ids_tag<3>, mortar_meshes_tag<3>,
                         mortar_sizes_tag<3>>;
+  using initial_databox_type = db::compute_databox_type<
+      tmpl::append<simple_tags, compute_items<my_component>>>;
 
   using ActionRunner = ActionTesting::ActionRunner<metavariables>;
   using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
@@ -711,12 +682,13 @@ SPECTRE_TEST_CASE(
                         .at(self_id)
                         .get_databox<typename my_component::initial_databox>();
 
-  auto sent_box = std::get<0>(
-      runner.apply<my_component, send_data_for_fluxes<metavariables>>(start_box,
-                                                                      self_id));
+  runner.next_action<my_component>(self_id);
 
   // Check local data
   {
+    const auto& sent_box = runner.algorithms<my_component>()
+                               .at(self_id)
+                               .get_databox<initial_databox_type>();
     CHECK(db::get<mortar_data_tag<flux_comm_types<3>>>(sent_box).size() == 1);
     auto mortar_data =
         db::get<mortar_data_tag<flux_comm_types<3>>>(sent_box).at(mortar_id);
@@ -855,17 +827,14 @@ SPECTRE_TEST_CASE(
     ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<2>{}},
                                                       std::move(local_algs)};
 
-    auto& start_box =
-        runner.algorithms<my_component>()
-            .at(self_id)
-            .get_databox<typename my_component::initial_databox>();
-
-    auto sent_box = std::get<0>(
-        runner.apply<my_component, send_data_for_fluxes<metavariables>>(
-            start_box, self_id));
+    runner.next_action<my_component>(self_id);
 
     // Check local data
     {
+      const auto& sent_box =
+          runner.algorithms<my_component>()
+              .at(self_id)
+              .get_databox<typename my_component::initial_databox>();
       CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(sent_box).size() == 1);
       auto mortar_data =
           db::get<mortar_data_tag<flux_comm_types<2>>>(sent_box).at(mortar_id);
