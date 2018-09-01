@@ -11,6 +11,7 @@
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/SimpleActionVisitation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -66,6 +67,10 @@ class MockLocalAlgorithm {
     return boost::get<BoxType>(box_);
   }
 
+  auto& get_variant_box() noexcept { return box_; }
+
+  const auto& get_variant_box() const noexcept { return box_; }
+
   void force_next_action_to_be(const size_t next_action_id) noexcept {
     algorithm_step_ = next_action_id;
   }
@@ -90,7 +95,7 @@ class MockLocalAlgorithm {
   bool terminate_{false};
   make_boost_variant_over<
       tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>
-      box_;
+      box_ = db::DataBox<tmpl::list<>>{};
   // The next action we should execute.
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
@@ -428,31 +433,18 @@ class ActionRunner {
         });
   }
 
-  /// Call Action::apply as if on the portion of Component labeled by
-  /// array_index.
-  //@{
-  template <typename Component, typename Action, typename DbTags,
-            typename... Args>
-  decltype(auto) apply(db::DataBox<DbTags>& box,
-                       const typename Component::index& array_index,
-                       Args&&... args) noexcept {
-    return Action::apply(box, inboxes<Component>()[array_index], cache_,
-                         array_index, typename Component::action_list{},
-                         std::add_pointer_t<Component>{nullptr},
-                         std::forward<Args>(args)...);
+  /// Invoke the simple action `Action` on the `Component` labeled by
+  /// `array_index`
+  template <typename Component, typename Action, typename... Args>
+  void simple_action(const typename Component::index& array_index,
+                     Args&&... args) noexcept {
+    Parallel::Algorithm_detail::simple_action_visitor<
+        Action, typename Component::initial_databox>(
+        algorithms<Component>().at(array_index).get_variant_box(),
+        inboxes<Component>()[array_index], cache_, array_index,
+        typename Component::action_list{},
+        std::add_pointer_t<Component>{nullptr}, std::forward<Args>(args)...);
   }
-
-  template <typename Component, typename Action, typename DbTags,
-            typename... Args>
-  decltype(auto) apply(const db::DataBox<DbTags>& box,
-                       const typename Component::index& array_index,
-                       Args&&... args) noexcept {
-    return Action::apply(box, inboxes<Component>()[array_index], cache_,
-                         array_index, typename Component::action_list{},
-                         std::add_pointer_t<Component>{nullptr},
-                         std::forward<Args>(args)...);
-  }
-  //@}
 
   /// Instead of the next call to `next_action` applying the next action in
   /// the action list, force the next action to be `Action`

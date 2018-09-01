@@ -8,7 +8,6 @@
 #include <memory>
 // IWYU pragma: no_include <pup.h>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -122,8 +121,11 @@ struct component
     : ActionTesting::MockArrayComponent<
           Metavariables, ElementIndex<Dim>,
           tmpl::list<CacheTags::TimeStepper,
-                     CacheTags::AnalyticSolution<SystemAnalyticSolution>>> {
-  using initial_databox = db::DataBox<tmpl::list<>>;
+                     CacheTags::AnalyticSolution<SystemAnalyticSolution>>,
+          tmpl::list<>> {
+  using initial_databox =
+      db::compute_databox_type<typename dg::Actions::InitializeElement<
+          Dim>::template return_tag_list<Metavariables>>;
 };
 
 template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
@@ -207,18 +209,20 @@ void test_initialize_element(
       typename ActionRunner::template LocalAlgorithmsTag<my_component>;
   typename ActionRunner::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(element_id, db::DataBox<tmpl::list<>>{});
+      .emplace(element_id, ActionTesting::MockLocalAlgorithm<my_component>{});
 
   ActionTesting::ActionRunner<Metavariables> runner{std::move(cache_tuple),
                                                     std::move(local_algs)};
 
-  auto box = std::get<0>(
-      runner.template apply<my_component, dg::Actions::InitializeElement<dim>>(
-          runner.template algorithms<my_component>()
-              .at(element_id)
-              .template get_databox<db::DataBox<tmpl::list<>>>(),
-          element_id, domain_creator.initial_extents(),
-          domain_creator.create_domain(), start_time, dt, slab_size));
+  runner.template simple_action<my_component,
+                                dg::Actions::InitializeElement<dim>>(
+      element_id, domain_creator.initial_extents(),
+      domain_creator.create_domain(), start_time, dt, slab_size);
+  auto& box =
+      runner.template algorithms<my_component>()
+          .at(element_id)
+          .template get_databox<typename my_component::initial_databox>();
+
   CHECK(db::get<Tags::TimeStep>(box).value() == dt);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time_runs_forward());
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() == 0);
@@ -348,20 +352,19 @@ void test_mortar_orientation() noexcept {
   typename ActionRunner::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(ElementIndex<3>{element_id},
-               ActionTesting::MockLocalAlgorithm<my_component>{
-                   db::DataBox<tmpl::list<>>{}});
+               ActionTesting::MockLocalAlgorithm<my_component>{});
 
   ActionTesting::ActionRunner<metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
        SystemAnalyticSolution{}},
       std::move(local_algs)};
 
-  const auto box = std::get<0>(runner.apply<component<3, metavariables>,
-                                            dg::Actions::InitializeElement<3>>(
+  runner.simple_action<my_component, dg::Actions::InitializeElement<3>>(
+      element_id, extents, std::move(domain), 0., 1., 1.);
+  const auto& box =
       runner.template algorithms<my_component>()
           .at(element_id)
-          .template get_databox<db::DataBox<tmpl::list<>>>(),
-      element_id, extents, std::move(domain), 0., 1., 1.));
+          .template get_databox<typename my_component::initial_databox>();
 
   CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
         Index<2>{{{3, 4}}});
