@@ -3,8 +3,12 @@
 
 #pragma once
 
+#include <boost/preprocessor/arithmetic/sub.hpp>
+#include <boost/preprocessor/list/for_each.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/tuple/enum.hpp>
+#include <boost/preprocessor/tuple/to_list.hpp>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -46,141 +50,27 @@ struct DerivedClasses<false, 2> {
 };
 }  // namespace detail
 
-/// \cond
-template <bool IsRelativistic, size_t ThermodynamicDim,
-          typename = std::make_index_sequence<ThermodynamicDim>>
-class EquationOfState;
-/// \endcond
-
 /*!
  * \ingroup EquationsOfStateGroup
  * \brief Base class for equations of state depending on whether or not the
- * system is relativistic, and the number of variables used to determine the
- * pressure.
+ * system is relativistic, and the number of independent thermodynamic variables
+ * (`ThermodynamicDim`) needed to determine the pressure.
  *
  * The template parameter `IsRelativistic` is `true` for relativistic equations
  * of state and `false` for non-relativistic equations of state.
- *
- * For equations of state that have `ThermodynamicDim == 1`, there is also a
- * function that, given the enthalpy computes the rest mass density.
  */
-template <bool IsRelativistic, size_t ThermodynamicDim, size_t... Is>
-class EquationOfState<IsRelativistic, ThermodynamicDim,
-                      std::index_sequence<Is...>> : public PUP::able {
- public:
-  static_assert(
-      sizeof...(Is) == ThermodynamicDim,
-      "You must not pass a std::index_sequence directly to "
-      "EquationOfState, you only need to specify whether or not it is "
-      "relativistic and the number of arguments the functions should take.");
+template <bool IsRelativistic, size_t ThermodynamicDim,
+          typename = std::make_index_sequence<ThermodynamicDim>>
+class EquationOfState;
 
-  static constexpr bool is_relativistic = IsRelativistic;
-  static constexpr size_t thermodynamic_dim = ThermodynamicDim;
-  using creatable_classes =
-      typename detail::DerivedClasses<IsRelativistic, ThermodynamicDim>::type;
-
-  EquationOfState() = default;
-  EquationOfState(const EquationOfState&) = default;
-  EquationOfState& operator=(const EquationOfState&) = default;
-  EquationOfState(EquationOfState&&) = default;
-  EquationOfState& operator=(EquationOfState&&) = default;
-  ~EquationOfState() override = default;
-
-  WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
-
-  // @{
-  /*!
-   * Computes the pressure \f$p\f$ from:
-   * - `ThermodynamicDim = 1`: the  rest mass density \f$\rho\f$
-   * - `ThermodynamicDim = 2`: the  rest mass density \f$\rho\f$ and the
-   * specific internal energy \f$\epsilon\f$
-   * - `ThermodynamicDim = 3`: the  rest mass density \f$\rho\f$, the
-   * specific internal energy \f$\epsilon\f$, and the electron fraction
-   * \f$Y_e\f$
-   */
-  virtual Scalar<double> pressure_from_density(
-      const Scalar<tt::identity_t<double, Is>>&...) const noexcept = 0;
-  virtual Scalar<DataVector> pressure_from_density(
-      const Scalar<tt::identity_t<DataVector, Is>>&...) const noexcept = 0;
-  // @}
-
-  // @{
-  /*!
-   * Computes the specific enthalpy \f$h\f$ from:
-   * - `ThermodynamicDim = 1`: the  rest mass density \f$\rho\f$
-   * - `ThermodynamicDim = 2`: the  rest mass density \f$\rho\f$ and the
-   * specific internal energy \f$\epsilon\f$
-   * - `ThermodynamicDim = 3`: the  rest mass density \f$\rho\f$, the
-   * specific internal energy \f$\epsilon\f$, and the electron fraction
-   * \f$Y_e\f$
-   */
-  virtual Scalar<double> specific_enthalpy_from_density(
-      const Scalar<tt::identity_t<double, Is>>&...) const noexcept = 0;
-  virtual Scalar<DataVector> specific_enthalpy_from_density(
-      const Scalar<tt::identity_t<DataVector, Is>>&...) const noexcept = 0;
-  // @}
-
-  // @{
-  /*!
-   * Computes the specific internal energy \f$\epsilon\f$ from:
-   * - `ThermodynamicDim = 1`: the  rest mass density \f$\rho\f$
-   * - `ThermodynamicDim = 2`: the  rest mass density \f$\rho\f$ and the
-   * specific internal energy \f$\epsilon\f$
-   * - `ThermodynamicDim = 3`: the  rest mass density \f$\rho\f$, the
-   * specific internal energy \f$\epsilon\f$, and the electron fraction
-   * \f$Y_e\f$
-   */
-  virtual Scalar<double> specific_internal_energy_from_density(
-      const Scalar<tt::identity_t<double, Is>>&...) const noexcept = 0;
-
-  virtual Scalar<DataVector> specific_internal_energy_from_density(
-      const Scalar<tt::identity_t<DataVector, Is>>&...) const noexcept = 0;
-  // @}
-
-  // @{
-  /*!
-   * Computes \f$\chi=\partial p / \partial \rho\f$ where \f$p\f$ is the
-   * pressure and \f$\rho\f$ is the rest mass density, from:
-   * - `ThermodynamicDim = 1`: the  rest mass density \f$\rho\f$
-   * - `ThermodynamicDim = 2`: the  rest mass density \f$\rho\f$ and the
-   * specific internal energy \f$\epsilon\f$
-   * - `ThermodynamicDim = 3`: the  rest mass density \f$\rho\f$, the
-   * specific internal energy \f$\epsilon\f$, and the electron fraction
-   * \f$Y_e\f$
-   */
-  virtual Scalar<double> chi_from_density(
-      const Scalar<tt::identity_t<double, Is>>&...) const noexcept = 0;
-
-  virtual Scalar<DataVector> chi_from_density(
-      const Scalar<tt::identity_t<DataVector, Is>>&...) const noexcept = 0;
-  // @}
-
-  // @{
-  /*!
-   * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon\f$
-   * where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass density, and
-   * \f$\epsilon\f$ is the specific internal energy from:
-   * - `ThermodynamicDim = 1`: the  rest mass density \f$\rho\f$
-   * - `ThermodynamicDim = 2`: the  rest mass density \f$\rho\f$ and the
-   * specific internal energy \f$\epsilon\f$
-   * - `ThermodynamicDim = 3`: the  rest mass density \f$\rho\f$, the
-   * specific internal energy \f$\epsilon\f$, and the electron fraction
-   * \f$Y_e\f$
-   *
-   * The reason for not returning just
-   * \f$\kappa=\partial p / \partial \epsilon\f$ is to avoid division by zero
-   * for small values of \f$\rho\f$ when assembling the speed of sound with
-   * some equations of state.
-   */
-  virtual Scalar<double> kappa_times_p_over_rho_squared_from_density(
-      const Scalar<tt::identity_t<double, Is>>&...) const noexcept = 0;
-
-  virtual Scalar<DataVector> kappa_times_p_over_rho_squared_from_density(
-      const Scalar<tt::identity_t<DataVector, Is>>&...) const noexcept = 0;
-  // @}
-};
-
-/// \cond
+/*!
+ * \ingroup EquationsOfStateGroup
+ * \brief Base class for equations of state which need one thermodynamic
+ * variable in order to determine the pressure.
+ *
+ * The template parameter `IsRelativistic` is `true` for relativistic equations
+ * of state and `false` for non-relativistic equations of state.
+ */
 template <bool IsRelativistic, size_t Is>
 class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
     : public PUP::able {
@@ -199,50 +89,221 @@ class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
+  // @{
+  /*!
+   * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$.
+   */
   virtual Scalar<double> pressure_from_density(
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> pressure_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+  // @}
 
+  // @{
+  /*!
+   * Computes the rest mass density \f$\rho\f$ from the specific enthalpy
+   * \f$h\f$.
+   */
   virtual Scalar<double> rest_mass_density_from_enthalpy(
       const Scalar<double>& /*specific_enthalpy*/) const noexcept = 0;
   virtual Scalar<DataVector> rest_mass_density_from_enthalpy(
       const Scalar<DataVector>& /*specific_enthalpy*/) const noexcept = 0;
+  // @}
 
+  // @{
+  /*!
+   * Computes the specific enthalpy \f$h\f$ from the rest mass density
+   * \f$\rho\f$.
+   */
   virtual Scalar<double> specific_enthalpy_from_density(
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> specific_enthalpy_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+  // @}
 
+  // @{
+  /*!
+   * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
+   * density \f$\rho\f$.
+   */
   virtual Scalar<double> specific_internal_energy_from_density(
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> specific_internal_energy_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+  // @}
 
+  // @{
+  /*!
+   * Computes \f$\chi=\partial p / \partial \rho\f$ from \f$\rho\f$, where
+   * \f$p\f$ is the pressure and \f$\rho\f$ is the rest mass density.
+   */
   virtual Scalar<double> chi_from_density(
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> chi_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
+  // @}
 
+  // @{
+  /*!
+   * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon\f$
+   * from \f$\rho\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass
+   * density, and \f$\epsilon\f$ is the specific internal energy.
+   *
+   * The reason for not returning just
+   * \f$\kappa=\partial p / \partial \epsilon\f$ is to avoid division by zero
+   * for small values of \f$\rho\f$ when assembling the speed of sound with
+   * some equations of state.
+   */
   virtual Scalar<double> kappa_times_p_over_rho_squared_from_density(
       const Scalar<double>& /*rest_mass_density*/) const noexcept = 0;
   virtual Scalar<DataVector> kappa_times_p_over_rho_squared_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const noexcept = 0;
 };
-/// \endcond
+
+/*!
+ * \ingroup EquationsOfStateGroup
+ * \brief Base class for equations of state which need two independent
+ * thermodynamic variables in order to determine the pressure.
+ *
+ * The template parameter `IsRelativistic` is `true` for relativistic equations
+ * of state and `false` for non-relativistic equations of state.
+ */
+template <bool IsRelativistic, size_t Is, size_t Js>
+class EquationOfState<IsRelativistic, 2, std::index_sequence<Is, Js>>
+    : public PUP::able {
+ public:
+  static constexpr bool is_relativistic = IsRelativistic;
+  static constexpr size_t thermodynamic_dim = 2;
+  using creatable_classes =
+      typename detail::DerivedClasses<IsRelativistic, 2>::type;
+
+  EquationOfState() = default;
+  EquationOfState(const EquationOfState&) = default;
+  EquationOfState& operator=(const EquationOfState&) = default;
+  EquationOfState(EquationOfState&&) = default;
+  EquationOfState& operator=(EquationOfState&&) = default;
+  ~EquationOfState() override = default;
+
+  WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
+
+  // @{
+  /*!
+   * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$ and the
+   * specific internal energy \f$\epsilon\f$.
+   */
+  virtual Scalar<double> pressure_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+  virtual Scalar<DataVector> pressure_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/) const
+      noexcept = 0;
+  // @}
+
+  // @{
+  /*!
+   * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$ and the
+   * specific enthalpy \f$h\f$.
+   */
+  virtual Scalar<double> pressure_from_density_and_enthalpy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_enthalpy*/) const noexcept = 0;
+  virtual Scalar<DataVector> pressure_from_density_and_enthalpy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_enthalpy*/) const noexcept = 0;
+  // @}
+
+  // @{
+  /*!
+   * Computes the specific enthalpy \f$h\f$ from the rest mass density
+   * \f$\rho\f$ and the specific internal energy \f$\epsilon\f$.
+   */
+  virtual Scalar<double> specific_enthalpy_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+  virtual Scalar<DataVector> specific_enthalpy_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/) const
+      noexcept = 0;
+  // @}
+
+  // @{
+  /*!
+   * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
+   * density \f$\rho\f$ and the pressure \f$pn\f$.
+   */
+  virtual Scalar<double> specific_internal_energy_from_density_and_pressure(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*pressure*/) const noexcept = 0;
+  virtual Scalar<DataVector> specific_internal_energy_from_density_and_pressure(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*pressure*/) const noexcept = 0;
+  // @}
+
+  // @{
+  /*!
+   * Computes \f$\chi=\partial p / \partial \rho\f$ from the \f$\rho\f$ and
+   * \f$\epsilon\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass
+   * density, and \f$\epsilon\f$ is the specific internal energy.
+   */
+  virtual Scalar<double> chi_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+  virtual Scalar<DataVector> chi_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/) const
+      noexcept = 0;
+  // @}
+
+  // @{
+  /*!
+   * Computes \f$\kappa p/\rho^2=(p/\rho^2)\partial p / \partial \epsilon\f$
+   * from \f$\rho\f$ and \f$\epsilon\f$, where \f$p\f$ is the pressure,
+   * \f$\rho\f$ is the rest mass density, and \f$\epsilon\f$ is the specific
+   * internal energy.
+   *
+   * The reason for not returning just
+   * \f$\kappa=\partial p / \partial \epsilon\f$ is to avoid division by zero
+   * for small values of \f$\rho\f$ when assembling the speed of sound with
+   * some equations of state.
+   */
+  virtual Scalar<double> kappa_times_p_over_rho_squared_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/) const noexcept = 0;
+  virtual Scalar<DataVector>
+  kappa_times_p_over_rho_squared_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/) const
+      noexcept = 0;
+  // @}
+};
 }  // namespace EquationsOfState
 
 /// \cond
+#define EQUATION_OF_STATE_FUNCTIONS_1D                                    \
+  (pressure_from_density, rest_mass_density_from_enthalpy,                \
+   specific_enthalpy_from_density, specific_internal_energy_from_density, \
+   chi_from_density, kappa_times_p_over_rho_squared_from_density)
+
+#define EQUATION_OF_STATE_FUNCTIONS_2D                                   \
+  (pressure_from_density_and_energy, pressure_from_density_and_enthalpy, \
+   specific_enthalpy_from_density_and_energy,                            \
+   specific_internal_energy_from_density_and_pressure,                   \
+   chi_from_density_and_energy,                                          \
+   kappa_times_p_over_rho_squared_from_density_and_energy)
+
 #define EQUATION_OF_STATE_ARGUMENTS_EXPAND(z, n, type) \
   BOOST_PP_COMMA_IF(n) const Scalar<type>&
 
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(DIM, FUNCTION_NAME) \
-  Scalar<double> FUNCTION_NAME(                                              \
-      BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, double))      \
-      const noexcept override;                                               \
-  Scalar<DataVector> FUNCTION_NAME(                                          \
-      BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataVector))  \
-      const noexcept override
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(r, DIM,            \
+                                                         FUNCTION_NAME)     \
+  Scalar<double> FUNCTION_NAME(                                             \
+      BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, double))     \
+      const noexcept override;                                              \
+  Scalar<DataVector> FUNCTION_NAME(                                         \
+      BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataVector)) \
+      const noexcept override;
+
 /// \endcond
 
 /*!
@@ -250,21 +311,17 @@ class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
  * \brief Macro used to generate forward declarations of member functions in
  * derived classes
  */
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DERIVED, DIM)            \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(DIM,                    \
-                                                   pressure_from_density); \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(                        \
-      DIM, specific_enthalpy_from_density);                                \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(                        \
-      DIM, specific_internal_energy_from_density);                         \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(DIM, chi_from_density); \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER(                        \
-      DIM, kappa_times_p_over_rho_squared_from_density);                   \
-                                                                           \
-  /* clang-tidy: do not use non-const references */                        \
-  void pup(PUP::er& p) noexcept override; /* NOLINT */                     \
-                                                                           \
-  explicit DERIVED(CkMigrateMessage* /*unused*/) noexcept
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DERIVED, DIM)               \
+  BOOST_PP_LIST_FOR_EACH(                                                     \
+      EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER, DIM,                  \
+      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                             \
+          BOOST_PP_SUB(DIM, 1),                                               \
+          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D)))) \
+                                                                              \
+  /* clang-tidy: do not use non-const references */                           \
+  void pup(PUP::er& p) noexcept override; /* NOLINT */                        \
+                                                                              \
+  explicit DERIVED(CkMigrateMessage* /*unused*/) noexcept;
 
 /// \cond
 #define EQUATION_OF_STATE_FORWARD_ARGUMENTS(z, n, unused) \
@@ -282,42 +339,37 @@ class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
     return FUNCTION_NAME##_impl(                                            \
         BOOST_PP_REPEAT(DIM, EQUATION_OF_STATE_FORWARD_ARGUMENTS, UNUSED)); \
   }
+
+#define EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER_2(r, ARGS, FUNCTION_NAME) \
+  EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER(                                \
+      BOOST_PP_TUPLE_ELEM(0, ARGS), BOOST_PP_TUPLE_ELEM(1, ARGS),             \
+      BOOST_PP_TUPLE_ELEM(2, ARGS), BOOST_PP_TUPLE_ELEM(3, ARGS),             \
+      FUNCTION_NAME)
 /// \endcond
 
-#define EQUATION_OF_STATE_MEMBER_DEFINITIONS(TEMPLATE, DERIVED, DATA_TYPE,  \
-                                             DIM)                           \
-  EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER(TEMPLATE, DERIVED, DATA_TYPE, \
-                                              DIM, pressure_from_density)   \
-  EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER(                              \
-      TEMPLATE, DERIVED, DATA_TYPE, DIM, specific_enthalpy_from_density)    \
-  EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER(                              \
-      TEMPLATE, DERIVED, DATA_TYPE, DIM,                                    \
-      specific_internal_energy_from_density)                                \
-  EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER(TEMPLATE, DERIVED, DATA_TYPE, \
-                                              DIM, chi_from_density)        \
-  EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER(                              \
-      TEMPLATE, DERIVED, DATA_TYPE, DIM,                                    \
-      kappa_times_p_over_rho_squared_from_density)
+#define EQUATION_OF_STATE_MEMBER_DEFINITIONS(TEMPLATE, DERIVED, DATA_TYPE, \
+                                             DIM)                          \
+  BOOST_PP_LIST_FOR_EACH(                                                  \
+      EQUATION_OF_STATE_MEMBER_DEFINITIONS_HELPER_2,                       \
+      (TEMPLATE, DERIVED, DATA_TYPE, DIM),                                 \
+      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                          \
+          BOOST_PP_SUB(DIM, 1),                                            \
+          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D))))
 
 /// \cond
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(DIM,           \
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(r, DIM,        \
                                                               FUNCTION_NAME) \
   template <class DataType>                                                  \
-  Scalar<DataType> FUNCTION_NAME(BOOST_PP_REPEAT(                            \
-      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataType)) const noexcept
+  Scalar<DataType> FUNCTION_NAME##_impl(BOOST_PP_REPEAT(                     \
+      DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataType)) const noexcept;
 /// \endcond
 
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(DIM) \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(    \
-      DIM, pressure_from_density_impl);                     \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(    \
-      DIM, specific_enthalpy_from_density_impl);            \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(    \
-      DIM, specific_internal_energy_from_density_impl);     \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(    \
-      DIM, chi_from_density_impl);                          \
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(    \
-      DIM, kappa_times_p_over_rho_squared_from_density_impl)
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(DIM)       \
+  BOOST_PP_LIST_FOR_EACH(                                         \
+      EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER, DIM, \
+      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                 \
+          BOOST_PP_SUB(DIM, 1),                                   \
+          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D))))
 
 #include "PointwiseFunctions/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/EquationsOfState/IdealFluid.hpp"

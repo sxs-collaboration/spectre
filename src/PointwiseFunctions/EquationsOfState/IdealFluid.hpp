@@ -3,7 +3,13 @@
 
 #pragma once
 
+#include <boost/preprocessor/arithmetic/dec.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
+#include <boost/preprocessor/control/expr_iif.hpp>
+#include <boost/preprocessor/list/adt.hpp>
+#include <boost/preprocessor/repetition/for.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/tuple/to_list.hpp>
 #include <limits>
 #include <pup.h>
 
@@ -55,13 +61,13 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
 
   explicit IdealFluid(double adiabatic_index) noexcept;
 
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(IdealFluid, 2);
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(IdealFluid, 2)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<IsRelativistic, 2>), IdealFluid);
 
  private:
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2);
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)
 
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
 };

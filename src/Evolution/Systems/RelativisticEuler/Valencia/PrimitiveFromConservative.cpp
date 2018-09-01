@@ -62,7 +62,7 @@ class FunctionOfZ {
             },
             [&rho, &epsilon ](const EquationsOfState::EquationOfState<true, 2>&
                                   equation_of_state) noexcept {
-              return equation_of_state.pressure_from_density(
+              return equation_of_state.pressure_from_density_and_energy(
                   Scalar<double>(rho), Scalar<double>(epsilon));
             })(equation_of_state_)
             .get();
@@ -131,7 +131,7 @@ void primitive_from_conservative(
       [&rest_mass_density, &specific_internal_energy ](
           const EquationsOfState::EquationOfState<true, 2>&
               the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(
+        return the_equation_of_state.pressure_from_density_and_energy(
             *rest_mass_density, *specific_internal_energy);
       })(equation_of_state);
 

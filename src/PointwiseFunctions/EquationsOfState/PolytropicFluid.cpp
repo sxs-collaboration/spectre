@@ -24,19 +24,6 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      DataVector, 1)
 
 template <bool IsRelativistic>
-Scalar<double> PolytropicFluid<IsRelativistic>::rest_mass_density_from_enthalpy(
-    const Scalar<double>& specific_enthalpy) const noexcept {
-  return rest_mass_density_from_enthalpy_impl(specific_enthalpy);
-}
-
-template <bool IsRelativistic>
-Scalar<DataVector>
-PolytropicFluid<IsRelativistic>::rest_mass_density_from_enthalpy(
-    const Scalar<DataVector>& specific_enthalpy) const noexcept {
-  return rest_mass_density_from_enthalpy_impl(specific_enthalpy);
-}
-
-template <bool IsRelativistic>
 PolytropicFluid<IsRelativistic>::PolytropicFluid(
     CkMigrateMessage* /*unused*/) noexcept {}
 
