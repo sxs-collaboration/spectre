@@ -118,3 +118,13 @@ def polytropic_kappa_times_p_over_rho_squared_from_density(
 
 
 # End functions for testing PolytropicFluid.cpp
+
+
+# Functions for testing SpecificEnthalpy.cpp
+
+
+def specific_enthalpy(rest_mass_density, specific_internal_energy, pressure):
+    return pressure / rest_mass_density + 1.0 + specific_internal_energy
+
+
+# End functions for testing SpecificEnthalpy.cpp
