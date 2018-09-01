@@ -24,14 +24,18 @@ class er;
 class TimeId {
  public:
   TimeId() = default;
-  /// Create a TimeId at the start of a step
+  /// Create a TimeId at the start of a step.  If that step is at the
+  /// (evolution-defined) end of the slab the TimeId will be advanced
+  /// to the next slab.
   TimeId(const bool time_runs_forward, const size_t slab_number,
          const Time& time) noexcept
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(time),
         substep_(0),
-        time_(time) {}
+        time_(time) {
+    canonicalize();
+  }
   /// Create a TimeId at a substep at time `time` in a step starting
   /// at time `step_time`.
   TimeId(const bool time_runs_forward, const size_t slab_number,
@@ -43,6 +47,7 @@ class TimeId {
         time_(time) {
     ASSERT(substep_ != 0 or step_time_ == time_,
            "Initial substep must align with the step.");
+    canonicalize();
   }
 
   bool time_runs_forward() const noexcept { return time_runs_forward_; }
@@ -61,6 +66,8 @@ class TimeId {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
+  void canonicalize() noexcept;
+
   bool time_runs_forward_{false};
   size_t slab_number_{0};
   Time step_time_{};
