@@ -591,8 +591,10 @@ bool AdamsBashforthN::can_change_step_size(
   // changing the step size, but we need to wait during the main
   // evolution until the self-start history has been replaced with
   // "real" values.
-  return std::is_sorted(history.begin(), history.end(),
-                        SimulationLess(time_id.time_runs_forward()));
+  const SimulationLess less(time_id.time_runs_forward());
+  return history.size() == 0 or
+         (less(history.back(), time_id.time()) and
+          std::is_sorted(history.begin(), history.end(), less));
 }
 
 template <typename Iterator>

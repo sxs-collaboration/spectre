@@ -46,21 +46,24 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
     }
   }
 
-  const TimeSteppers::AdamsBashforthN stepper(2);
   const Slab slab(0., 1.);
-  const TimeId time_id(true, 0, slab.start());
-  {
+  const Time start = slab.start();
+  const Time mid = start + slab.duration() / 2;
+  const Time end = slab.end();
+  const auto can_change = [](const Time& first, const Time& second,
+                             const Time& now) noexcept {
+    const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history;
-    history.insert(slab.start(), 0., 0.);
-    history.insert(slab.end(), 0., 0.);
-    CHECK(stepper.can_change_step_size(time_id, history));
-  }
-  {
-    TimeSteppers::History<double, double> history;
-    history.insert(slab.end(), 0., 0.);
-    history.insert(slab.start(), 0., 0.);
-    CHECK_FALSE(stepper.can_change_step_size(time_id, history));
-  }
+    history.insert(first, 0., 0.);
+    history.insert(second, 0., 0.);
+    return stepper.can_change_step_size(TimeId(true, 0, now), history);
+  };
+  CHECK(can_change(start, mid, end));
+  CHECK_FALSE(can_change(start, end, mid));
+  CHECK_FALSE(can_change(mid, start, end));
+  CHECK_FALSE(can_change(mid, end, start));
+  CHECK_FALSE(can_change(end, start, mid));
+  CHECK_FALSE(can_change(end, mid, start));
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
@@ -103,21 +106,24 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
     }
   }
 
-  const TimeSteppers::AdamsBashforthN stepper(2);
   const Slab slab(0., 1.);
-  const TimeId time_id(false, 0, slab.start());
-  {
+  const Time start = slab.start();
+  const Time mid = start + slab.duration() / 2;
+  const Time end = slab.end();
+  const auto can_change = [](const Time& first, const Time& second,
+                             const Time& now) noexcept {
+    const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history;
-    history.insert(slab.start(), 0., 0.);
-    history.insert(slab.end(), 0., 0.);
-    CHECK_FALSE(stepper.can_change_step_size(time_id, history));
-  }
-  {
-    TimeSteppers::History<double, double> history;
-    history.insert(slab.end(), 0., 0.);
-    history.insert(slab.start(), 0., 0.);
-    CHECK(stepper.can_change_step_size(time_id, history));
-  }
+    history.insert(first, 0., 0.);
+    history.insert(second, 0., 0.);
+    return stepper.can_change_step_size(TimeId(false, 0, now), history);
+  };
+  CHECK_FALSE(can_change(start, mid, end));
+  CHECK_FALSE(can_change(start, end, mid));
+  CHECK_FALSE(can_change(mid, start, end));
+  CHECK_FALSE(can_change(mid, end, start));
+  CHECK_FALSE(can_change(end, start, mid));
+  CHECK(can_change(end, mid, start));
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability",
