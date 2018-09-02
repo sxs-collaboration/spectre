@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
+#include "Domain/MinimumGridSpacing.hpp"
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
@@ -118,7 +119,8 @@ struct InitializeElement {
         Tags::MappedCoordinates<Tags::ElementMap<Dim>,
                                 Tags::LogicalCoordinates<Dim>>,
         Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                              Tags::LogicalCoordinates<Dim>>>;
+                              Tags::LogicalCoordinates<Dim>>,
+        Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
 
     template <typename TagsList>
     static auto initialize(

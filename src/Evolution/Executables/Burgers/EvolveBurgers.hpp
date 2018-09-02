@@ -27,7 +27,9 @@
 #include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/Cfl.hpp"  // IWYU pragma: keep
 #include "Time/StepChoosers/Constant.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/Increase.hpp"  // IWYU pragma: keep
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -55,7 +57,10 @@ struct EvolutionMetavars {
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
-  using step_choosers = tmpl::list<StepChoosers::Register::Constant>;
+  using step_choosers =
+      tmpl::list<StepChoosers::Register::Cfl<1, Frame::Inertial>,
+                 StepChoosers::Register::Constant,
+                 StepChoosers::Register::Increase>;
 
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
