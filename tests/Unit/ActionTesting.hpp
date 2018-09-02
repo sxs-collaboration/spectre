@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -355,6 +356,16 @@ class MockProxy {
                   "the ActionRunner?");
     return MockArrayElementProxy<Component, InboxTagList>(
         local_algorithms_->at(index), inboxes_->operator[](index));
+  }
+
+  MockLocalAlgorithm<Component>* ckLocalBranch() noexcept {
+    ASSERT(
+        local_algorithms_->size() == 1,
+        "Can only have one algorithm when getting the ckLocalBranch, but have "
+            << local_algorithms_->size());
+    // We always retrieve the 0th local branch because we are assuming running
+    // on a single core.
+    return std::addressof(local_algorithms_->at(0));
   }
 
   // clang-tidy: no non-const references
