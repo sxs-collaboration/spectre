@@ -47,6 +47,7 @@ struct EvolutionMetavars {
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
   using temporal_id = Tags::TimeId;
+  static constexpr bool local_time_stepping = false;
   using analytic_solution_tag =
       CacheTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using normal_dot_numerical_flux =

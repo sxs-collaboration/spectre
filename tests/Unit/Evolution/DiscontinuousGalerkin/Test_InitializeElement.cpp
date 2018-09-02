@@ -117,23 +117,29 @@ struct NormalDotNumericalFluxTag {
   using type = struct { using package_tags = tmpl::list<Var>; };
 };
 
-template <size_t Dim, bool IsConservative, typename ConstGlobalCacheTagList>
+template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
+          typename ConstGlobalCacheTagList>
 struct Metavariables;
 
-template <size_t Dim, bool IsConservative, typename ConstGlobalCacheTagList>
+template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
+          typename ConstGlobalCacheTagList>
 using component = ActionTesting::MockArrayComponent<
-    Metavariables<Dim, IsConservative, ConstGlobalCacheTagList>,
+    Metavariables<Dim, IsConservative, LocalTimeStepping,
+                  ConstGlobalCacheTagList>,
     ElementIndex<Dim>,
     tmpl::list<CacheTags::TimeStepper,
                CacheTags::AnalyticSolution<SystemAnalyticSolution>>,
     tmpl::list<dg::Actions::InitializeElement<Dim>>>;
 
-template <size_t Dim, bool IsConservative, typename ConstGlobalCacheTagList>
+template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
+          typename ConstGlobalCacheTagList>
 struct Metavariables {
   using component_list =
-      tmpl::list<component<Dim, IsConservative, ConstGlobalCacheTagList>>;
+      tmpl::list<component<Dim, IsConservative, LocalTimeStepping,
+                           ConstGlobalCacheTagList>>;
   using system = System<Dim, IsConservative>;
   using temporal_id = Tags::TimeId;
+  static constexpr bool local_time_stepping = LocalTimeStepping;
   using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
   using const_global_cache_tag_list = ConstGlobalCacheTagList;
 };
@@ -272,9 +278,15 @@ void test_initialize_element(
             box)
             .size() == mesh.number_of_grid_points());
 
-  CHECK(db::get<typename dg::FluxCommunicationTypes<
-            Metavariables>::simple_mortar_data_tag>(box)
-            .size() == element.number_of_neighbors());
+  if (Metavariables::local_time_stepping) {
+    CHECK(box_contains<typename dg::FluxCommunicationTypes<
+              Metavariables>::local_time_stepping_mortar_data_tag>(box));
+  } else {
+    CHECK(box_contains<typename dg::FluxCommunicationTypes<
+              Metavariables>::simple_mortar_data_tag>(box));
+  }
+  CHECK(db::get<Tags::VariablesBoundaryData>(box).size() ==
+        element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(box).size() ==
         element.number_of_neighbors());
   CHECK(db::get<Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(box).size() ==
@@ -310,9 +322,9 @@ void test_initialize_element(
 }
 
 void test_mortar_orientation() noexcept {
-  ActionTesting::ActionRunner<Metavariables<3, false, tmpl::list<>>> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
-       SystemAnalyticSolution{}}};
+  ActionTesting::ActionRunner<Metavariables<3, false, false, tmpl::list<>>>
+      runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+              SystemAnalyticSolution{}}};
   // This is the domain from the OrientationMap and corner numbering
   // tutorial.
   Domain<3, Frame::Inertial> domain(
@@ -324,9 +336,10 @@ void test_mortar_orientation() noexcept {
   const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
 
   db::DataBox<tmpl::list<>> empty_box{};
-  const auto box = std::get<0>(runner.apply<component<3, false, tmpl::list<>>,
-                                            dg::Actions::InitializeElement<3>>(
-      empty_box, ElementId<3>(0), extents, std::move(domain), 0., 1., 1.));
+  const auto box =
+      std::get<0>(runner.apply<component<3, false, false, tmpl::list<>>,
+                               dg::Actions::InitializeElement<3>>(
+          empty_box, ElementId<3>(0), extents, std::move(domain), 0., 1., 1.));
 
   CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
         Index<2>{{{3, 4}}});
@@ -336,7 +349,7 @@ void test_mortar_orientation() noexcept {
 SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                   "[Unit][Evolution][Actions]") {
   test_initialize_element(
-      ActionTesting::ActionRunner<Metavariables<1, false, tmpl::list<>>>{
+      ActionTesting::ActionRunner<Metavariables<1, false, false, tmpl::list<>>>{
           {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
            SystemAnalyticSolution{}}},
       ElementId<1>{0, {{SegmentId{2, 1}}}}, 3., 1., 1.,
@@ -344,7 +357,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
   test_initialize_element(
-      ActionTesting::ActionRunner<Metavariables<2, false, tmpl::list<>>>{
+      ActionTesting::ActionRunner<Metavariables<2, false, false, tmpl::list<>>>{
           {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
            SystemAnalyticSolution{}}},
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
@@ -352,7 +365,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   test_initialize_element(
-      ActionTesting::ActionRunner<Metavariables<3, false, tmpl::list<>>>{
+      ActionTesting::ActionRunner<Metavariables<3, false, false, tmpl::list<>>>{
           {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
            SystemAnalyticSolution{}}},
       ElementId<3>{0, {{SegmentId{2, 1}, SegmentId{3, 2}, SegmentId{1, 0}}}},
@@ -363,7 +376,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                                                          {{4, 5, 3}}});
 
   test_initialize_element(
-      ActionTesting::ActionRunner<Metavariables<2, true, tmpl::list<>>>{
+      ActionTesting::ActionRunner<Metavariables<2, true, false, tmpl::list<>>>{
           {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
            SystemAnalyticSolution{}}},
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
@@ -373,7 +386,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   // local time-stepping
   test_initialize_element(
       ActionTesting::ActionRunner<
-          Metavariables<2, false, tmpl::list<CacheTags::StepController>>>{
+          Metavariables<2, false, true, tmpl::list<CacheTags::StepController>>>{
           {std::make_unique<StepControllers::SplitRemaining>(),
            std::make_unique<TimeSteppers::AdamsBashforthN>(4, true),
            SystemAnalyticSolution{}}},

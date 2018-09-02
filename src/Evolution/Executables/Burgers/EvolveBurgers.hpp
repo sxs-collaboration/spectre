@@ -14,7 +14,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -47,6 +47,7 @@ class CProxy_ConstGlobalCache;
 struct EvolutionMetavars {
   using system = Burgers::System;
   using temporal_id = Tags::TimeId;
+  static constexpr bool local_time_stepping = true;
   using analytic_solution_tag =
       CacheTags::AnalyticSolution<Burgers::Solutions::Linear>;
   using normal_dot_numerical_flux =
@@ -64,8 +65,8 @@ struct EvolutionMetavars {
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  Actions::ComputeVolumeDuDt<1>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-                 dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
                  Actions::RecordTimeStepperData,
+                 dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                  Actions::UpdateU>>>;
 
   static constexpr OptionString help{

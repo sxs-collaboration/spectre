@@ -47,6 +47,7 @@ using component =
 
 struct Metavariables {
   using system = System;
+  static constexpr bool local_time_stepping = true;
   using component_list = tmpl::list<component>;
   using const_global_cache_tag_list = change_step_size::const_global_cache_tags;
 };

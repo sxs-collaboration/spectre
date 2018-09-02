@@ -61,6 +61,10 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(Metavariables::local_time_stepping,
+                  "ApplyBoundaryFluxesLocalTimeStepping can only be used with "
+                  "local time-stepping.");
+
     using system = typename Metavariables::system;
     constexpr size_t volume_dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
