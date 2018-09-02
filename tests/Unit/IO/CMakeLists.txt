@@ -5,6 +5,7 @@ set(LIBRARY "Test_IO")
 
 set(LIBRARY_SOURCES
   Observers/Test_ArrayComponentId.cpp
+  Observers/Test_TypeOfObservation.cpp
   Test_H5.cpp
   )
 
