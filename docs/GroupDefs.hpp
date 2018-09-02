@@ -499,6 +499,11 @@
  */
 
 /*!
+ * \defgroup ObserversGroup Observers
+ * \brief Observing/writing data to disk.
+ */
+
+/*!
  * \defgroup OptionParsingGroup Option Parsing
  * Things related to parsing YAML input files.
  */
