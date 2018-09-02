@@ -55,7 +55,7 @@ struct LocalLaxFriedrichsFlux {
 };
 
 struct ComputeLargestCharacteristicSpeed {
-  using argumentTags = tmpl::list<Tags::U>;
+  using argument_tags = tmpl::list<Tags::U>;
   static double apply(const Scalar<DataVector>& u) noexcept;
 };
 }  // namespace Burgers
