@@ -97,8 +97,35 @@ class MockLocalAlgorithm {
   bool is_ready(
       std::index_sequence<Is...> /*meta*/) noexcept;
 
+  template <typename Action, typename... Args>
+  void simple_action(std::tuple<Args...> args) noexcept {
+    performing_action_ = true;
+    forward_tuple_to_action<Action>(
+        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+    performing_action_ = false;
+  }
+
+  template <typename Action>
+  void simple_action() noexcept {
+    performing_action_ = true;
+    Parallel::Algorithm_detail::simple_action_visitor<
+        Action, typename Component::initial_databox>(
+        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+        actions_list{}, std::add_pointer_t<Component>{nullptr});
+    performing_action_ = false;
+  }
 
  private:
+  template <typename Action, typename... Args, size_t... Is>
+  void forward_tuple_to_action(std::tuple<Args...>&& args,
+                               std::index_sequence<Is...> /*meta*/) noexcept {
+    Parallel::Algorithm_detail::simple_action_visitor<
+        Action, typename Component::initial_databox>(
+        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+        actions_list{}, std::add_pointer_t<Component>{nullptr},
+        std::forward<Args>(std::get<Is>(args))...);
+  }
+
   bool terminate_{false};
   make_boost_variant_over<
       tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>
