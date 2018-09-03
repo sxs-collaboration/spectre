@@ -31,7 +31,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
       message(STATUS "libc++ libraries: ${LIBCXX_LIBRARIES}")
     endif()
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
     set(CMAKE_CXX_FLAGS "-stdlib=libc++ ${CMAKE_CXX_FLAGS}")
 
     option(
