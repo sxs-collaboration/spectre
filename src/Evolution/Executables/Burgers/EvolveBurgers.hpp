@@ -14,15 +14,18 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
+#include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"  // IWYU pragma: keep
 #include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
@@ -62,17 +65,34 @@ struct EvolutionMetavars {
                  StepChoosers::Register::Constant,
                  StepChoosers::Register::Increase>;
 
+  using compute_rhs = tmpl::flatten<tmpl::list<
+      Actions::ComputeVolumeFluxes,
+      dg::Actions::SendDataForFluxes<EvolutionMetavars>,
+      Actions::ComputeVolumeDuDt,
+      dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
+      tmpl::conditional_t<local_time_stepping, tmpl::list<>,
+                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
+      Actions::RecordTimeStepperData>>;
+  using update_variables = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<local_time_stepping,
+                          dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
+                          tmpl::list<>>,
+      Actions::UpdateU>>;
+
+  struct EvolvePhaseStart;
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
-      tmpl::list<Actions::AdvanceTime, Actions::FinalTime,
-                 Actions::ChangeStepSize<step_choosers>,
-                 Actions::ComputeVolumeFluxes,
-                 dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-                 Actions::ComputeVolumeDuDt,
-                 dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-                 Actions::RecordTimeStepperData,
-                 dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
-                 Actions::UpdateU>>>;
+      tmpl::flatten<tmpl::list<
+          SelfStart::self_start_procedure<compute_rhs, update_variables>,
+          Actions::Label<EvolvePhaseStart>,
+          Actions::AdvanceTime,
+          Actions::FinalTime,
+          tmpl::conditional_t<local_time_stepping,
+                              Actions::ChangeStepSize<step_choosers>,
+                              tmpl::list<>>,
+          compute_rhs,
+          update_variables,
+          Actions::Goto<EvolvePhaseStart>>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"

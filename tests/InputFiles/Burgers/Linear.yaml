@@ -22,7 +22,7 @@ DomainCreator:
 
 TimeStepper:
   AdamsBashforthN:
-    TargetOrder: 1
+    TargetOrder: 3
     SelfStart: true
 
 StepController: BinaryFraction
