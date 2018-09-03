@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
+#include "Domain/MinimumGridSpacing.hpp"
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
@@ -118,7 +119,8 @@ struct InitializeElement {
         Tags::MappedCoordinates<Tags::ElementMap<Dim>,
                                 Tags::LogicalCoordinates<Dim>>,
         Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                              Tags::LogicalCoordinates<Dim>>>;
+                              Tags::LogicalCoordinates<Dim>>,
+        Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
 
     template <typename TagsList>
     static auto initialize(
@@ -269,24 +271,20 @@ struct InitializeElement {
     using compute_tags = typename ComputeTags<System>::type;
 
     // Global time stepping
-    template <typename Cache,
-              Requires<not tmpl::list_contains_v<typename Cache::tag_list,
-                                                 CacheTags::StepController>> =
-                  nullptr>
-    static TimeDelta get_initial_time_step(const Time& initial_time,
-                                           const double initial_dt_value,
-                                           const Cache& /*cache*/) noexcept {
+    template <typename Metavariables,
+              Requires<not Metavariables::local_time_stepping> = nullptr>
+    static TimeDelta get_initial_time_step(
+        const Time& initial_time, const double initial_dt_value,
+        const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
       return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
     }
 
     // Local time stepping
-    template <
-        typename Cache,
-        Requires<tmpl::list_contains_v<typename Cache::tag_list,
-                                       CacheTags::StepController>> = nullptr>
-    static TimeDelta get_initial_time_step(const Time& initial_time,
-                                           const double initial_dt_value,
-                                           const Cache& cache) noexcept {
+    template <typename Metavariables,
+              Requires<Metavariables::local_time_stepping> = nullptr>
+    static TimeDelta get_initial_time_step(
+        const Time& initial_time, const double initial_dt_value,
+        const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
       const auto& step_controller =
           Parallel::get<CacheTags::StepController>(cache);
       return step_controller.choose_step(initial_time, initial_dt_value);
@@ -364,6 +362,10 @@ struct InitializeElement {
   struct DgTags {
     using temporal_id_tag = typename Metavariables::temporal_id;
     using flux_comm_types = FluxCommunicationTypes<Metavariables>;
+    using mortar_data_tag = tmpl::conditional_t<
+        Metavariables::local_time_stepping,
+        typename flux_comm_types::local_time_stepping_mortar_data_tag,
+        typename flux_comm_types::simple_mortar_data_tag>;
 
     template <typename Tag>
     using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
@@ -375,7 +377,7 @@ struct InitializeElement {
       const auto& element = db::get<Tags::Element<Dim>>(box);
       const auto& mesh = db::get<Tags::Mesh<Dim>>(box);
 
-      typename flux_comm_types::simple_mortar_data_tag::type mortar_data{};
+      typename mortar_data_tag::type mortar_data{};
       typename Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>::type
           mortar_next_temporal_ids{};
       typename Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>::type mortar_meshes{};
@@ -387,7 +389,7 @@ struct InitializeElement {
         const auto& neighbors = direction_neighbors.second;
         for (const auto& neighbor : neighbors) {
           const auto mortar_id = std::make_pair(direction, neighbor);
-          mortar_data.insert({mortar_id, {}});
+          mortar_data[mortar_id];  // Default initialize data
           mortar_next_temporal_ids.insert({mortar_id, temporal_id});
           mortar_meshes.emplace(
               mortar_id,
@@ -404,7 +406,7 @@ struct InitializeElement {
 
       return db::create_from<
           db::RemoveTags<>,
-          db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
+          db::AddSimpleTags<mortar_data_tag,
                             Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
                             Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
                             Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>>(
@@ -417,7 +419,7 @@ struct InitializeElement {
               bool IsConservative = LocalSystem::is_conservative>
     struct Impl {
       using simple_tags = db::AddSimpleTags<
-          typename flux_comm_types::simple_mortar_data_tag,
+          mortar_data_tag,
           Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
           Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
           Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
@@ -456,7 +458,7 @@ struct InitializeElement {
     template <typename LocalSystem>
     struct Impl<LocalSystem, true> {
       using simple_tags =
-          db::AddSimpleTags<typename flux_comm_types::simple_mortar_data_tag,
+          db::AddSimpleTags<mortar_data_tag,
                             Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
                             Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
                             Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>;

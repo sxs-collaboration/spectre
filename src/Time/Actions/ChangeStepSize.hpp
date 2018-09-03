@@ -55,6 +55,9 @@ struct ChangeStepSize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    static_assert(Metavariables::local_time_stepping,
+                  "ChangeStepSize can only be used with local time-stepping.");
+
     using variables_tag = typename Metavariables::system::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 

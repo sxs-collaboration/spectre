@@ -9,7 +9,7 @@ AnalyticSolution:
 
 InitialTime: 0.0
 FinalTime: 0.1
-InitialTimeStep: 0.02
+InitialTimeStep: 0.001
 InitialSlabSize: 0.01
 
 DomainCreator:
@@ -20,11 +20,18 @@ DomainCreator:
     InitialRefinement: [2]
     InitialGridPoints: [7]
 
-TimeStepper: RungeKutta3
+TimeStepper:
+  AdamsBashforthN:
+    TargetOrder: 1
+    SelfStart: true
 
-StepController: FullSlab
+StepController: BinaryFraction
 
 StepChoosers:
-  - Constant: 0.01
+  - Constant: 0.05
+  - Increase:
+      Factor: 2
+  - Cfl:
+      SafetyFactor: 0.2
 
 NumericalFluxParams:

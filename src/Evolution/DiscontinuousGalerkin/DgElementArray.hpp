@@ -96,8 +96,12 @@ void DgElementArray<Metavariables, ActionList>::initialize(
   auto& dg_element_array =
       Parallel::get_parallel_component<DgElementArray>(cache);
 
-  if (not Parallel::get<CacheTags::TimeStepper>(cache).is_self_starting() and
+  if (not Metavariables::local_time_stepping and
       std::abs(initial_dt) != initial_slab_size) {
+    ERROR("Step and slab size must agree for global time-stepping.");
+  }
+  if (Metavariables::local_time_stepping and
+      not Parallel::get<CacheTags::TimeStepper>(cache).is_self_starting()) {
     ERROR("Local time stepping only supported with self-starting integrators.");
   }
 

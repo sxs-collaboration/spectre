@@ -14,7 +14,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -27,7 +27,9 @@
 #include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/Cfl.hpp"  // IWYU pragma: keep
 #include "Time/StepChoosers/Constant.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/Increase.hpp"  // IWYU pragma: keep
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -47,6 +49,7 @@ class CProxy_ConstGlobalCache;
 struct EvolutionMetavars {
   using system = Burgers::System;
   using temporal_id = Tags::TimeId;
+  static constexpr bool local_time_stepping = true;
   using analytic_solution_tag =
       CacheTags::AnalyticSolution<Burgers::Solutions::Linear>;
   using normal_dot_numerical_flux =
@@ -54,7 +57,10 @@ struct EvolutionMetavars {
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
-  using step_choosers = tmpl::list<StepChoosers::Register::Constant>;
+  using step_choosers =
+      tmpl::list<StepChoosers::Register::Cfl<1, Frame::Inertial>,
+                 StepChoosers::Register::Constant,
+                 StepChoosers::Register::Increase>;
 
   using component_list = tmpl::list<DgElementArray<
       EvolutionMetavars,
@@ -64,8 +70,8 @@ struct EvolutionMetavars {
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                  Actions::ComputeVolumeDuDt<1>,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-                 dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
                  Actions::RecordTimeStepperData,
+                 dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                  Actions::UpdateU>>>;
 
   static constexpr OptionString help{

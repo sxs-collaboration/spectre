@@ -107,6 +107,7 @@ struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<component<Dim, Flux>>;
   using temporal_id = TemporalId;
+  static constexpr bool local_time_stepping = false;
   using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag<Flux>;
