@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <tuple>
 #include <utility>  // IWYU pragma: keep
 #include <vector>
@@ -299,6 +300,14 @@ struct InitializeElement {
       using Vars = typename variables_tag::type;
       using DtVars = typename dt_variables_tag::type;
 
+      const size_t num_grid_points =
+          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+      const auto& inertial_coords =
+          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
+
+      // Will be overwritten before use
+      DtVars dt_vars{num_grid_points};
+
       const bool time_runs_forward = initial_dt_value > 0.0;
       const Slab initial_slab =
           time_runs_forward ? Slab::with_duration_from_start(initial_time_value,
@@ -310,27 +319,32 @@ struct InitializeElement {
       const TimeDelta initial_dt =
           get_initial_time_step(initial_time, initial_dt_value, cache);
 
+      const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
+
       // This is stored as Next<TimeId> and will be used to update
       // TimeId at the start of the algorithm.
-      const TimeId time_id(time_runs_forward, 0, initial_time);
-
-      const size_t num_grid_points =
-          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
-      const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
-
-      // Will be overwritten before use
-      DtVars dt_vars{num_grid_points};
+      TimeId time_id;
 
       typename Tags::HistoryEvolvedVariables<variables_tag,
                                              dt_variables_tag>::type history;
-      using solution_tag = OptionTags::AnalyticSolutionBase;
-      const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
-      if (not time_stepper.is_self_starting() and
-          time_stepper.number_of_past_steps() > 0) {
+      if (time_stepper.is_self_starting() or
+          time_stepper.number_of_past_steps() == 0) {
+        // The slab number is increased in the self-start phase each
+        // time one order of accuracy is obtained, and the evolution
+        // proper starts with slab 0.
+        time_id =
+            TimeId(time_runs_forward,
+                   -static_cast<int64_t>(time_stepper.number_of_past_steps()),
+                   initial_time);
+      } else {
         ASSERT(initial_dt == initial_dt.slab().duration() or
                    initial_dt == -initial_dt.slab().duration(),
                "Trying to non-self-start with local time-stepping.");
+
+        time_id = TimeId(time_runs_forward, 0, initial_time);
+
+        const auto& solution =
+            Parallel::get<OptionTags::AnalyticSolutionBase>(cache);
 
         // We currently just put initial points at past slab boundaries.
         Time past_t = initial_time;
@@ -340,12 +354,10 @@ struct InitializeElement {
           past_t -= past_dt;
           Vars hist_vars{num_grid_points};
           DtVars dt_hist_vars{num_grid_points};
-          hist_vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
+          hist_vars.assign_subset(solution.variables(
               inertial_coords, past_t.value(), typename Vars::tags_list{}));
-          dt_hist_vars.assign_subset(
-              Parallel::get<solution_tag>(cache).variables(
-                  inertial_coords, past_t.value(),
-                  typename DtVars::tags_list{}));
+          dt_hist_vars.assign_subset(solution.variables(
+              inertial_coords, past_t.value(), typename DtVars::tags_list{}));
           history.insert_initial(past_t, std::move(hist_vars),
                                  std::move(dt_hist_vars));
         }

@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 // IWYU pragma: no_include <pup.h>
 #include <string>
@@ -238,9 +239,14 @@ void test_initialize_element(
           .at(element_id)
           .template get_databox<typename my_component::initial_databox>();
 
+  const auto& stepper = Parallel::get<OptionTags::TimeStepper>(runner.cache());
+
   CHECK(db::get<Tags::TimeStep>(box).value() == dt);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time_runs_forward());
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() == 0);
+  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() ==
+        (stepper.is_self_starting()
+             ? -static_cast<int64_t>(stepper.number_of_past_steps())
+             : 0));
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time().value() == start_time);
   CHECK(
       db::get<Tags::Next<Tags::TimeId>>(box).time().slab().duration().value() ==
@@ -274,8 +280,6 @@ void test_initialize_element(
         typename system::variables_tag,
         db::add_tag_prefix<Tags::dt, typename system::variables_tag>>>(
         box);
-    const auto& stepper =
-        Parallel::get<OptionTags::TimeStepper>(runner.cache());
     CHECK(history.size() ==
           (stepper.is_self_starting() ? 0 : stepper.number_of_past_steps()));
     const SystemAnalyticSolution solution{};
