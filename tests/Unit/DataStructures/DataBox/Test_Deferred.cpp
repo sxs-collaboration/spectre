@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -58,19 +59,28 @@ void mutate_function_vector_evil(const gsl::not_null<std::vector<double>*> t,
 void simple_deferred() {
   /// [deferred_with_update]
   auto obj = Deferred<double>(3.8);
+  CHECK(obj.evaluated());
   CHECK(3.8 == obj.get());
   auto& obj_val = obj.mutate();
   CHECK(3.8 == obj_val);
   obj_val = 5.0;
   CHECK(5.0 == obj.get());
   /// [deferred_with_update]
+  CHECK(obj.evaluated());
+
+  auto copied_obj = obj.deep_copy();
+  CHECK(obj.get() == 5.0);
+  CHECK(copied_obj.get() == 5.0);
+  CHECK(std::addressof(copied_obj.get()) != std::addressof(obj.get()));
 }
 
 void single_call_deferred() {
   /// [make_deferred_with_function_object]
   auto def = make_deferred<double>(func{});
+  CHECK_FALSE(def.evaluated());
   CHECK(8.2 == def.get());
   /// [make_deferred_with_function_object]
+  CHECK(def.evaluated());
 
   /// [make_deferred_with_function]
   auto def2 = make_deferred<double>(dummy);
@@ -103,9 +113,13 @@ void mutating_deferred() {
 
 void update_deferred() {
   auto lazy_deferred = make_deferred<double>(lazy_function, 3.4);
+  CHECK_FALSE(lazy_deferred.evaluated());
   CHECK(lazy_deferred.get() == 34.);
+  CHECK(lazy_deferred.evaluated());
   update_deferred_args(make_not_null(&lazy_deferred), lazy_function, 5.5);
+  CHECK_FALSE(lazy_deferred.evaluated());
   CHECK(lazy_deferred.get() == 55.);
+  CHECK(lazy_deferred.evaluated());
 
   /// [update_args_of_deferred_deduced_fp]
   auto mutate_deferred = make_deferred<std::vector<double>>(
@@ -324,4 +338,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.PupNonfunction",
   auto data = std::make_unique<char[]>(10);
   PUP::fromMem p{static_cast<const void*>(data.get())};
   deferred.pack_unpack_lazy_function(p);
+}
+
+// [[OutputRegex, Have not yet implemented a deep_copy for
+// deferred_assoc_state]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.BadDeepCopy",
+                  "[Utilities][Unit]") {
+  ERROR_TEST();
+  Deferred<double> deferred = make_deferred<double>(func{});
+  (void)deferred.deep_copy();
 }

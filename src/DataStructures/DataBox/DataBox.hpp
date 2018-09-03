@@ -509,6 +509,20 @@ class DataBox<tmpl::list<Tags...>>
   friend void mutate(gsl::not_null<DataBox<TagList>*> box,             // NOLINT
                      Invokable&& invokable, Args&&... args) noexcept;  // NOLINT
 
+  template <typename... SimpleTags>
+  SPECTRE_ALWAYS_INLINE void copy_simple_items(
+      const DataBox& box, tmpl::list<SimpleTags...> /*meta*/) noexcept;
+
+  // Creates a copy with no aliasing of items.
+  template <typename SimpleItemTags>
+  DataBox deep_copy() const noexcept;
+
+  template <typename TagsList_>
+      // clang-tidy: redundant declaration
+  friend SPECTRE_ALWAYS_INLINE constexpr DataBox<TagsList_>  // NOLINT
+  create_copy(                                               // NOLINT
+      const DataBox<TagsList_>& box) noexcept;
+
   /*!
    * \requires Type `T` is one of the Tags corresponding to an object stored in
    * the DataBox
@@ -895,6 +909,30 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
       args_tuple, tmpl::list<AddTags...>{},
       std::make_index_sequence<sizeof...(AddTags)>{},
       tmpl::list<AddComputeTags...>{});
+}
+
+////////////////////////////////////////////////////////////////
+// Create a copy of the DataBox with no aliasing items.
+template <typename... Tags>
+template <typename... SimpleTags>
+SPECTRE_ALWAYS_INLINE void DataBox<tmpl::list<Tags...>>::copy_simple_items(
+    const DataBox& box, tmpl::list<SimpleTags...> /*meta*/) noexcept {
+  EXPAND_PACK_LEFT_TO_RIGHT((get_deferred<SimpleTags>() =
+                                 box.get_deferred<SimpleTags>().deep_copy()));
+}
+
+template <typename... Tags>
+template <typename SimpleItemTags>
+DataBox<tmpl::list<Tags...>> DataBox<tmpl::list<Tags...>>::deep_copy() const
+    noexcept {
+  DataBox new_box{};
+  new_box.copy_simple_items(*this, simple_item_tags{});
+
+  std::tuple<> empty_tuple{};
+  new_box.add_items_to_box<tmpl::list<Tags...>>(empty_tuple, tmpl::list<>{},
+                                                std::make_index_sequence<0>{},
+                                                compute_item_tags{});
+  return new_box;
 }
 /// \endcond
 
@@ -1305,6 +1343,13 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
  * whose members cannot be modified.  When passed a (mutable) rvalue
  * this function will return a mutable DataBox.
  *
+ * Note that in the const lvalue case the output DataBox shares all
+ * items that were not removed with the input DataBox. This means if an item is
+ * mutated in the input DataBox it is also mutated in the output DataBox.
+ * Similarly, if a compute item is evaluated in either the returned DataBox or
+ * the input DataBox it is evaluated in both (at the cost of only evaluating it
+ * once).
+ *
  * \example
  * Removing an item or compute item is done using:
  * \snippet Test_DataBox.cpp create_from_remove
@@ -1326,13 +1371,12 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
  *@{
  */
 template <typename RemoveTags, typename AddTags = tmpl::list<>,
-          typename AddComputeTags = tmpl::list<>, typename Box,
-          Requires<cpp17::is_same_v<Box, std::decay_t<Box>>> = nullptr,
+          typename AddComputeTags = tmpl::list<>, typename TagsList,
           typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
+SPECTRE_ALWAYS_INLINE constexpr auto create_from(db::DataBox<TagsList>&& box,
                                                  Args&&... args) noexcept {
   return DataBox_detail::create_from<RemoveTags, AddTags, AddComputeTags>(
-      std::forward<Box>(box), std::forward<Args>(args)...);
+      std::move(box), std::forward<Args>(args)...);
 }
 
 /// \cond HIDDEN_SYMBOLS
@@ -1343,11 +1387,10 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 #endif
 template <typename RemoveTags, typename AddTags = tmpl::list<>,
-          typename AddComputeTags = tmpl::list<>, typename Box,
-          Requires<not cpp17::is_same_v<Box, std::decay_t<Box>>> = nullptr,
+          typename AddComputeTags = tmpl::list<>, typename TagsList,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr const auto create_from(
-    Box&& box, Args&&... args) noexcept {
+    const db::DataBox<TagsList>& box, Args&&... args) noexcept {
   return DataBox_detail::create_from<RemoveTags, AddTags, AddComputeTags>(
       box, std::forward<Args>(args)...);
 }
@@ -1356,6 +1399,23 @@ SPECTRE_ALWAYS_INLINE constexpr const auto create_from(
 #endif
 /// \endcond
 /**@}*/
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Create a non-aliasing copy of the DataBox. That is, the new DataBox
+ * will not share items with the old one.
+ *
+ * \warning Currently all compute items will be reset in the new DataBox because
+ * copying of DataBoxes shouldn't be done in general. This does not lead to
+ * incorrect behavior, but is less efficient.
+ *
+ * \see db::create_from
+ */
+template <typename TagsList>
+SPECTRE_ALWAYS_INLINE constexpr DataBox<TagsList> create_copy(
+    const DataBox<TagsList>& box) noexcept {
+  return box.template deep_copy<typename DataBox<TagsList>::simple_item_tags>();
+}
 
 namespace DataBox_detail {
 template <typename Type, typename... Tags, typename... TagsInBox>

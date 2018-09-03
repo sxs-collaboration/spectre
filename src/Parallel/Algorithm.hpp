@@ -21,8 +21,10 @@
 #include "ErrorHandling/Error.hpp"
 // Include... ourself?
 // IWYU pragma: no_include "Parallel/Algorithm.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -93,145 +95,6 @@ inline void unlock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
 constexpr inline void unlock(
     const gsl::not_null<NoSuchType*> /*unused*/) noexcept {}
 /// \\endcond
-
-namespace Algorithm_detail {
-template <bool, typename AdditionalArgsList>
-struct build_action_return_types_impl;
-
-template <typename... AdditionalArgs>
-struct build_action_return_types_impl<false, tmpl::list<AdditionalArgs...>> {
-  template <typename LastReturnType, typename ReturnTypeList>
-  using f = tmpl::push_back<ReturnTypeList, LastReturnType>;
-};
-
-template <typename... AdditionalArgs>
-struct build_action_return_types_impl<true, tmpl::list<AdditionalArgs...>> {
-  template <typename LastReturnType, typename ReturnTypeList, typename Action,
-            typename... Actions>
-  using f = typename build_action_return_types_impl<
-      sizeof...(Actions) != 0, tmpl::list<AdditionalArgs...>>::
-      template f<
-          std::decay_t<std::tuple_element_t<
-              0,
-              std::decay_t<decltype(Action::apply(
-                  std::declval<std::add_lvalue_reference_t<LastReturnType>>(),
-                  std::declval<
-                      std::add_lvalue_reference_t<AdditionalArgs>>()...))>>>,
-          tmpl::push_back<ReturnTypeList, LastReturnType>, Actions...>;
-};
-
-/*!
- * \ingroup ParallelGroup
- * \brief Returns a typelist of the return types of all Actions in ActionList
- *
- * \metareturns
- * typelist
- *
- * \tparam ActionsPack parameter pack of Actions taken
- * \tparam FirstInputParameterType the type of the first argument of the first
- * Action in the ActionsPack
- * \tparam AdditionalArgsList the types of the arguments after the first
- * argument, which must all be the same for all Actions in the ActionsPack
- */
-template <typename FirstInputParameterType, typename AdditionalArgsList,
-          typename... ActionsPack>
-using build_action_return_typelist =
-    typename Algorithm_detail::build_action_return_types_impl<
-        sizeof...(ActionsPack) != 0, AdditionalArgsList>::
-        template f<FirstInputParameterType, tmpl::list<>, ActionsPack...>;
-
-CREATE_IS_CALLABLE(is_ready)
-
-CREATE_IS_CALLABLE(apply)
-
-template <typename Invokable, typename InitialDataBox, typename ThisVariant,
-          typename... Variants, typename... Args,
-          Requires<is_apply_callable_v<
-              Invokable, std::add_lvalue_reference_t<ThisVariant>, Args&&...>> =
-              nullptr>
-void apply_visitor_helper(boost::variant<Variants...>& box,
-                          const gsl::not_null<int*> iter,
-                          const gsl::not_null<bool*> already_visited,
-                          Args&&... args) {
-  if (box.which() == *iter and not*already_visited) {
-    try {
-      make_overloader(
-          [&box](std::true_type /*returns_void*/, auto&&... my_args) {
-            Invokable::apply(boost::get<ThisVariant>(box),
-                             std::forward<Args>(my_args)...);
-          },
-          [&box](std::false_type /*returns_void*/, auto&&... my_args) {
-            box = std::get<0>(Invokable::apply(boost::get<ThisVariant>(box),
-                                               std::forward<Args>(my_args)...));
-            using return_box_type = decltype(std::get<0>(Invokable::apply(
-                boost::get<ThisVariant>(box), std::forward<Args>(my_args)...)));
-            static_assert(
-                cpp17::is_same_v<std::decay_t<return_box_type>,
-                                 InitialDataBox> and
-                    cpp17::is_same_v<db::DataBox<tmpl::list<>>, ThisVariant>,
-                "A simple action must return either void or take an empty "
-                "DataBox and return the initial_databox set in the parallel "
-                "component.");
-          })(
-          typename std::is_same<void, decltype(Invokable::apply(
-                                          std::declval<ThisVariant&>(),
-                                          std::declval<Args>()...))>::type{},
-          std::forward<Args>(args)...);
-
-    } catch (std::exception& e) {
-      ERROR("Fatal error: Failed to call single Action '"
-            << pretty_type::get_name<Invokable>() << "' on iteration '" << iter
-            << "' with DataBox type '" << pretty_type::get_name<ThisVariant>()
-            << "'\nThe exception is: '" << e.what() << "'\n");
-    }
-    *already_visited = true;
-  }
-  (*iter)++;
-}
-
-template <typename Invokable, typename InitialDataBox, typename ThisVariant,
-          typename... Variants, typename... Args,
-          Requires<not is_apply_callable_v<
-              Invokable, std::add_lvalue_reference_t<ThisVariant>, Args&&...>> =
-              nullptr>
-void apply_visitor_helper(boost::variant<Variants...>& box,
-                          const gsl::not_null<int*> iter,
-                          const gsl::not_null<bool*> already_visited,
-                          Args&&... /*args*/) {
-  if (box.which() == *iter and not*already_visited) {
-    ERROR("Cannot call apply function of '"
-          << pretty_type::get_name<Invokable>() << "' with DataBox type '"
-          << pretty_type::get_name<ThisVariant>() << "' and arguments '"
-          << pretty_type::get_name<tmpl::list<Args...>>() << "'");
-  }
-  (*iter)++;
-}
-
-/*!
- * \brief Calls an `Invokable`'s `apply` static member function with the current
- * type in the `boost::variant`.
- *
- * The primary use case for this is to allow executing a single Action at any
- * point in the Algorithm. The current best-known use case for this is setting
- * up initial data. However, the implementation is generic enough to handle a
- * call at any time that is valid. Here valid is defined as the `apply` function
- * only accesses members of the DataBox that are guaranteed to be present when
- * it is invoked, and returns a DataBox of a type that does not break the
- * Algorithm.
- */
-template <typename Invokable, typename InitialDataBox, typename... Variants,
-          typename... Args>
-void apply_visitor(boost::variant<Variants...>& box, Args&&... args) {
-  // iter is the current element of the variant in the "for loop"
-  int iter = 0;
-  // already_visited ensures that only one visitor is invoked
-  bool already_visited = false;
-  static_cast<void>(std::initializer_list<char>{
-      (apply_visitor_helper<Invokable, InitialDataBox, Variants>(
-           box, &iter, &already_visited, std::forward<Args>(args)...),
-       '0')...});
-}
-}  // namespace Algorithm_detail
 
 /// \cond
 template <typename ParallelComponent, typename ChareType,
@@ -445,7 +308,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_action(std::tuple<Args...>&& args,
                                std::index_sequence<Is...> /*meta*/) noexcept {
-    Algorithm_detail::apply_visitor<Action, InitialDataBox>(
+    Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
         std::add_pointer_t<ParallelComponent>{},
@@ -567,7 +430,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         "no sense for a reduction.");
   }
   performing_action_ = true;
-  Algorithm_detail::apply_visitor<Action, InitialDataBox>(
+  Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{}, std::forward<Arg>(arg));
@@ -618,7 +481,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         "we do not allow.");
   }
   performing_action_ = true;
-  Algorithm_detail::apply_visitor<Action, InitialDataBox>(
+  Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{});
@@ -637,7 +500,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                    tmpl::list<ActionsPack...>, ArrayIndex,
                    InitialDataBox>::threaded_action(Args&&... args) noexcept {
   const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
-  Algorithm_detail::apply_visitor<Action, InitialDataBox>(
+  Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), node_lock,
       std::forward<Args>(args)...);

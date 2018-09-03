@@ -16,6 +16,7 @@
 #include <utility>  // IWYU pragma: keep
 
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
@@ -46,8 +47,8 @@ struct make_boost_variant_over_impl<Sequence<Ts...>> {
  * \metareturns boost::variant of all types inside `Sequence`
  */
 template <typename Sequence>
-using make_boost_variant_over =
-    typename detail::make_boost_variant_over_impl<Sequence>::type;
+using make_boost_variant_over = typename detail::make_boost_variant_over_impl<
+    tmpl::remove_duplicates<Sequence>>::type;
 
 namespace BoostVariant_detail {
 // clang-tidy: do not use non-const references
