@@ -1414,12 +1414,26 @@ constexpr const Type& get_item_from_box(const DataBox<TagList>& box,
 }
 
 namespace DataBox_detail {
+CREATE_IS_CALLABLE(apply)
+
 template <typename TagsList>
 struct Apply;
 
 template <typename... Tags>
 struct Apply<tmpl::list<Tags...>> {
-  template <typename F, typename BoxTags, typename... Args>
+  template <typename F, typename BoxTags, typename... Args,
+            Requires<is_apply_callable_v<
+                F, const std::add_lvalue_reference_t<db::item_type<Tags>>...,
+                Args...>> = nullptr>
+  static constexpr auto apply(F&& /*f*/, const DataBox<BoxTags>& box,
+                              Args&&... args) {
+    return F::apply(::db::get<Tags>(box)..., std::forward<Args>(args)...);
+  }
+
+  template <typename F, typename BoxTags, typename... Args,
+            Requires<not is_apply_callable_v<
+                F, const std::add_lvalue_reference_t<db::item_type<Tags>>...,
+                Args...>> = nullptr>
   static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                               Args&&... args) {
     static_assert(
@@ -1439,12 +1453,14 @@ struct Apply<tmpl::list<Tags...>> {
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Apply the function `f` with argument Tags `TagList` from DataBox `box`
+ * \brief Apply the function `f` with argument Tags `TagsList` from
+ * DataBox `box`
  *
  * \details
- * Apply the function `f` with arguments that are of type `Tags::type` where
- * `Tags` is defined as `TagList<Tags...>`. The arguments to `f` are retrieved
- * from the DataBox `box`.
+ * `f` must either by invokable with the arguments of type
+ * `db::item_type<TagsList>..., Args...` where the first pack expansion
+ * is over the elements in the type list `TagsList`, or have a static
+ * `apply` function that is callable with the same types.
  *
  * \usage
  * Given a function `func` that takes arguments of types
@@ -1452,20 +1468,22 @@ struct Apply<tmpl::list<Tags...>> {
  * `T2` in the DataBox `box` be `Tag1` and `Tag2`, and objects `a1` of type
  * `A1` and `a2` of type `A2`, then
  * \code
- * auto result = apply<tmpl::list<Tag1, Tag2>>(func, box, a1, a2);
+ * auto result = db::apply<tmpl::list<Tag1, Tag2>>(func, box, a1, a2);
  * \endcode
- * \return `decltype(func(box.get<Tag1>(), box.get<Tag2>(), a1, a2))`
+ * \return `decltype(func(db::get<Tag1>(box), db::get<Tag2>(box), a1, a2))`
  *
  * \semantics
  * For tags `Tags...` in a DataBox `box`, and a function `func` that takes
- * `sizeof...(Tags)` arguments of types `typename Tags::type...`,  and
+ * `sizeof...(Tags)` arguments of types `db::item_type<Tags>...`,  and
  * `sizeof...(Args)` arguments of types `Args...`,
  * \code
- * result = func(box, box.get<Tags>()..., args...);
+ * result = func(box, db::get<Tags>(box)..., args...);
  * \endcode
  *
  * \example
  * \snippet Test_DataBox.cpp apply_example
+ * Using a struct with an `apply` method:
+ * \snippet Test_DataBox.cpp apply_struct_example
  *
  * \see DataBox
  * \tparam TagsList typelist of Tags in the order that they are to be passed
@@ -1483,8 +1501,6 @@ inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
 }
 
 namespace DataBox_detail {
-CREATE_IS_CALLABLE(apply)
-
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<is_apply_callable_v<
@@ -1627,7 +1643,7 @@ constexpr bool check_mutate_apply_argument_tags(
  *
  * \details
  * `f` must either by invokable with the arguments of type
- * `db::item_type<ReturnTags>..., db::item_type<ArgumentTags>..., Args...` where
+ * `db::item_type<MutateTags>..., db::item_type<ArgumentTags>..., Args...` where
  * the first two pack expansions are over the elements in the type lists
  * `MutateTags` and `ArgumentTags`, or have a static `apply` function  that is
  * callable with the same types.
