@@ -8,6 +8,7 @@ set(LIBS_TO_LINK
 
 add_spectre_executable(
   SingletonHelloWorld
+  SingletonHelloWorld
   Executables/Examples/HelloWorld
   Metavars
   "${LIBS_TO_LINK}"
