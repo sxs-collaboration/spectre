@@ -11,6 +11,7 @@
 #include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
