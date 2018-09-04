@@ -67,6 +67,8 @@ include(SetupPapi)
 include(SetupPythonLibs)
 include(SetupYamlCpp)
 
+include(SetupLIBCXXCharm)
+
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
 

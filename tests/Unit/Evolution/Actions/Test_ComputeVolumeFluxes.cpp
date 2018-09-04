@@ -5,7 +5,8 @@
 
 #include <cstddef>
 #include <string>
-#include <tuple>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -13,11 +14,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeFluxes.hpp"
+#include "Evolution/Actions/ComputeVolumeFluxes.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+// IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -44,6 +47,8 @@ struct ComputeFluxes {
   }
 };
 
+using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Inertial>;
+
 struct System {
   static constexpr size_t volume_dim = dim;
   using variables_tag = Var1;
@@ -52,14 +57,16 @@ struct System {
 
 using ElementIndexType = ElementIndex<dim>;
 
-struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, ElementIndexType,
-                                      tmpl::list<>,
-                                      tmpl::list<Actions::ComputeVolumeFluxes>>;
+template <typename Metavariables>
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, ElementIndexType, tmpl::list<>,
+                       tmpl::list<Actions::ComputeVolumeFluxes>> {
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<Var1, Var2, flux_tag>>;
+};
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -67,16 +74,26 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
                   "[Unit][Evolution][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<dim> self(1);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag =
+      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
 
-  using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Inertial>;
-  auto start_box = db::create<db::AddSimpleTags<Var1, Var2, flux_tag>>(
-      db::item_type<Var1>{{{3.}}}, db::item_type<Var2>{{{7., 12.}}},
-      db::item_type<flux_tag>{{{-100.}}});
+  const ElementId<dim> self_id(1);
 
-  const auto box = get<0>(
-      runner.apply<component, Actions::ComputeVolumeFluxes>(start_box, self));
+  using simple_tags = db::AddSimpleTags<Var1, Var2, flux_tag>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(self_id,
+               db::create<simple_tags>(db::item_type<Var1>{{{3.}}},
+                                       db::item_type<Var2>{{{7., 12.}}},
+                                       db::item_type<flux_tag>{{{-100.}}}));
+  ActionRunner runner{{}, std::move(local_algs)};
+
+  runner.next_action<component<Metavariables>>(self_id);
+
+  auto& box = runner.algorithms<component<Metavariables>>()
+                  .at(self_id)
+                  .get_databox<db::compute_databox_type<simple_tags>>();
   CHECK(get<0>(db::get<flux_tag>(box)) == -15.);
   CHECK(get<1>(db::get<flux_tag>(box)) == 57.);
 }

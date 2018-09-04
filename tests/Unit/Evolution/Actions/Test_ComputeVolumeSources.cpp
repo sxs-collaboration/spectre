@@ -6,8 +6,8 @@
 #include <array>
 #include <cstddef>
 #include <string>
-#include <tuple>
 #include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -17,11 +17,13 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeSources.hpp"
+#include "Evolution/Actions/ComputeVolumeSources.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+// IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -60,13 +62,19 @@ struct System {
 
 using ElementIndexType = ElementIndex<dim>;
 
-struct Metavariables;
-using component = ActionTesting::MockArrayComponent<
-    Metavariables, ElementIndexType, tmpl::list<>,
-    tmpl::list<Actions::ComputeVolumeSources>>;
+using source_tag =
+    Tags::Source<Tags::Variables<tmpl::list<Tags::Source<Var2>>>>;
+
+template <typename Metavariables>
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, ElementIndexType, tmpl::list<>,
+                       tmpl::list<Actions::ComputeVolumeSources>> {
+  using initial_databox = db::compute_databox_type<
+      tmpl::list<System::variables_tag, Var3, source_tag>>;
+};
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -74,24 +82,30 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
                   "[Unit][Evolution][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<dim> self(1);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag =
+      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
 
+  const ElementId<dim> self_id(1);
   const Scalar<DataVector> var1{{{{3., 4.}}}};
   const Scalar<DataVector> var3{{{{5., 6.}}}};
 
   db::item_type<System::variables_tag> vars(2);
   get<Var1>(vars) = var1;
 
-  using source_tag =
-      Tags::Source<Tags::Variables<tmpl::list<Tags::Source<Var2>>>>;
+  using simple_tags =
+      db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(self_id, db::create<simple_tags>(std::move(vars), var3,
+                                                db::item_type<source_tag>(2)));
+  ActionRunner runner{{}, std::move(local_algs)};
 
-  auto start_box =
-      db::create<db::AddSimpleTags<System::variables_tag, Var3, source_tag>>(
-          std::move(vars), var3, db::item_type<source_tag>(2));
+  runner.next_action<component<Metavariables>>(self_id);
 
-  const auto box = get<0>(
-      runner.apply<component, Actions::ComputeVolumeSources>(start_box, self));
+  const auto& box = runner.algorithms<component<Metavariables>>()
+                        .at(self_id)
+                        .get_databox<db::compute_databox_type<simple_tags>>();
   CHECK(get<0>(db::get<Tags::Source<Var2>>(box)) == get(var1));
   CHECK(get<1>(db::get<Tags::Source<Var2>>(box)) == get(var3));
 }

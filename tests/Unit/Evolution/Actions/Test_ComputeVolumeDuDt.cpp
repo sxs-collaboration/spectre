@@ -4,16 +4,21 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <string>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"
+#include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 struct var_tag : db::SimpleTag {
@@ -35,13 +40,16 @@ struct System {
 
 using ElementIndexType = ElementIndex<2>;
 
-struct Metavariables;
-using component = ActionTesting::MockArrayComponent<
-    Metavariables, ElementIndexType, tmpl::list<>,
-    tmpl::list<Actions::ComputeVolumeDuDt<2>>>;
+template <typename Metavariables>
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, ElementIndexType, tmpl::list<>,
+                       tmpl::list<Actions::ComputeVolumeDuDt<2>>> {
+  using initial_databox =
+      db::compute_databox_type<tmpl::list<var_tag, Tags::dt<var_tag>>>;
+};
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -49,15 +57,31 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
                   "[Unit][Evolution][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{{}};
-  const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
-  auto start_box =
-      db::create<db::AddSimpleTags<var_tag, Tags::dt<var_tag>>>(3, -100);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag =
+      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
 
-  CHECK(db::get<var_tag>(start_box) == 3);
-  CHECK(db::get<Tags::dt<var_tag>>(start_box) == -100);
-  runner.apply<component, Actions::ComputeVolumeDuDt<2>>(
-      start_box, ElementIndexType(self_id));
-  CHECK(db::get<var_tag>(start_box) == 3);
-  CHECK(db::get<Tags::dt<var_tag>>(start_box) == 6);
+  const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
+
+  using simple_tags = db::AddSimpleTags<var_tag, Tags::dt<var_tag>>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(self_id, db::create<simple_tags>(3, -100));
+  ActionRunner runner{{}, std::move(local_algs)};
+  const auto get_box = [&runner, &self_id]() -> decltype(auto) {
+    return runner.algorithms<component<Metavariables>>()
+        .at(self_id)
+        .get_databox<db::compute_databox_type<simple_tags>>();
+  };
+  {
+    const auto& box = get_box();
+    CHECK(db::get<var_tag>(box) == 3);
+    CHECK(db::get<Tags::dt<var_tag>>(box) == -100);
+  }
+  runner.next_action<component<Metavariables>>(self_id);
+  {
+    const auto& box = get_box();
+    CHECK(db::get<var_tag>(box) == 3);
+    CHECK(db::get<Tags::dt<var_tag>>(box) == 6);
+  }
 }

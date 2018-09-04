@@ -13,7 +13,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Completion.hpp"
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -22,9 +22,12 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 struct DefaultClasses {
@@ -36,9 +39,11 @@ using events_and_triggers_tag =
     Tags::EventsAndTriggers<DefaultClasses, DefaultClasses>;
 
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int,
-                                      tmpl::list<events_and_triggers_tag>>;
+struct component : ActionTesting::MockArrayComponent<
+                       Metavariables, int, tmpl::list<events_and_triggers_tag>,
+                       tmpl::list<Actions::RunEventsAndTriggers>> {
+  using initial_databox = db::DataBox<tmpl::list<>>;
+};
 
 struct Metavariables {
   using component_list = tmpl::list<component>;
@@ -52,12 +57,20 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   // Test pup
   Parallel::register_derived_classes_with_charm<Event<DefaultClasses>>();
   Parallel::register_derived_classes_with_charm<Trigger<DefaultClasses>>();
-  ActionTesting::ActionRunner<Metavariables> runner{{
-    serialize_and_deserialize(events_and_triggers)}};
 
-  const auto box = db::create<db::AddSimpleTags<>>();
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using my_component = component;
+  using LocalAlgsTag =
+      typename ActionRunner::template LocalAlgorithmsTag<my_component>;
+  typename ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs).emplace(0, db::DataBox<tmpl::list<>>{});
+  ActionTesting::ActionRunner<Metavariables> runner{
+      {serialize_and_deserialize(events_and_triggers)}, std::move(local_algs)};
+  auto& box = runner.template algorithms<my_component>()
+                  .at(0)
+                  .template get_databox<db::DataBox<tmpl::list<>>>();
 
-  runner.apply<component, Actions::RunEventsAndTriggers>(box, 0);
+  runner.next_action<component>(0);
 
   CHECK(runner.algorithms<component>()[0].get_terminate() == expected);
 }

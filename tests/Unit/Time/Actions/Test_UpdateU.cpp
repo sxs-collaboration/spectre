@@ -7,12 +7,13 @@
 #include <cstddef>
 #include <memory>
 #include <string>
-#include <tuple>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Time/Actions/UpdateU.hpp"
+#include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 // IWYU pragma: no_include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -20,6 +21,7 @@
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace {
@@ -32,10 +34,20 @@ struct System {
   using variables_tag = Var;
 };
 
+using variables_tag = Var;
+using dt_variables_tag = Tags::dt<Var>;
+using history_tag =
+    Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
+
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int,
-                                      tmpl::list<CacheTags::TimeStepper>>;
+struct component
+    : ActionTesting::MockArrayComponent<Metavariables, int,
+                                        tmpl::list<CacheTags::TimeStepper>,
+                                        tmpl::list<Actions::UpdateU>> {
+  using simple_tags =
+      db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>;
+  using initial_databox = db::compute_databox_type<simple_tags>;
+};
 
 struct Metavariables {
   using system = System;
@@ -45,23 +57,21 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
-  ActionTesting::ActionRunner<Metavariables> runner{
-    {std::make_unique<TimeSteppers::RungeKutta3>()}};
-  using variables_tag = Var;
-  using dt_variables_tag = Tags::dt<Var>;
-
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
-
-  using history_tag =
-      Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
   const auto rhs =
       [](const double t, const double y) { return 2. * t - 2. * (y - t * t); };
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>>(
-          time_step, 1., history_tag::type{});
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<typename component::simple_tags>(
+                          time_step, 1., history_tag::type{})});
+  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                      std::move(local_algs)};
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
@@ -70,17 +80,23 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const std::array<double, 3> expected_values{{3., 3., 10./3.}};
 
   for (size_t substep = 0; substep < 3; ++substep) {
+    auto& before_box = runner.algorithms<component>()
+                           .at(0)
+                           .get_databox<typename component::initial_databox>();
     db::mutate<history_tag>(
-        make_not_null(&box),
+        make_not_null(&before_box),
         [&rhs, &substep, &substep_times ](
             const gsl::not_null<db::item_type<history_tag>*> history,
             const double& vars) noexcept {
           const Time& time = gsl::at(substep_times, substep);
           history->insert(time, vars, rhs(time.value(), vars));
         },
-        db::get<variables_tag>(box));
+        db::get<variables_tag>(before_box));
 
-    box = std::get<0>(runner.apply<component, Actions::UpdateU>(box, 0));
+    runner.next_action<component>(0);
+    auto& box = runner.algorithms<component>()
+                    .at(0)
+                    .get_databox<typename component::initial_databox>();
 
     CHECK(db::get<variables_tag>(box) ==
           approx(gsl::at(expected_values, substep)));

@@ -7,26 +7,35 @@
 #include <cstddef>
 // IWYU pragma: no_include <initializer_list>
 #include <memory>
-#include <tuple>
+#include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"         // IWYU pragma: keep
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"
+#include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int,
-                                      tmpl::list<CacheTags::TimeStepper>>;
+struct component
+    : ActionTesting::MockArrayComponent<Metavariables, int,
+                                        tmpl::list<CacheTags::TimeStepper>,
+                                        tmpl::list<Actions::AdvanceTime>> {
+  using simple_tags =
+      db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
+  using initial_databox = db::compute_databox_type<simple_tags>;
+};
 
 struct Metavariables {
   using component_list = tmpl::list<component>;
@@ -34,28 +43,40 @@ struct Metavariables {
 };
 
 void check_rk3(const Time& start, const TimeDelta& time_step) {
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {std::make_unique<TimeSteppers::RungeKutta3>()}};
-
   const std::array<TimeDelta, 3> substep_offsets{
       {time_step * 0, time_step, time_step / 2}};
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>(
-      TimeId(time_step.is_positive(), 8, start),
-      TimeId(time_step.is_positive(), 8, start, 1, start + substep_offsets[1]),
-      time_step);
+  using simple_tags =
+      db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<simple_tags>(
+                          TimeId(time_step.is_positive(), 8, start),
+                          TimeId(time_step.is_positive(), 8, start, 1,
+                                 start + substep_offsets[1]),
+                          time_step)});
+  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                      std::move(local_algs)};
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
+      auto& box = runner.algorithms<component>()
+                      .at(0)
+                      .get_databox<db::compute_databox_type<simple_tags>>();
       CHECK(db::get<Tags::TimeId>(box) ==
             TimeId(time_step.is_positive(), 8, step_start, substep,
                    step_start + gsl::at(substep_offsets, substep)));
       CHECK(db::get<Tags::TimeStep>(box) == time_step);
-      box = std::get<0>(runner.apply<component, Actions::AdvanceTime>(box, 0));
+      runner.next_action<component>(0);
     }
   }
 
+  auto& box = runner.algorithms<component>()
+                  .at(0)
+                  .get_databox<db::compute_databox_type<simple_tags>>();
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto& expected_slab = start.slab().advance_towards(time_step);
   CHECK(final_time_id.time().slab() == expected_slab);
@@ -65,22 +86,31 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 }
 
 void check_abn(const Time& start, const TimeDelta& time_step) {
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
-
-  auto box =
-      db::create<db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
-                                   Tags::TimeStep>>(
-          TimeId(time_step.is_positive(), 8, start),
-          TimeId(time_step.is_positive(), 8, start + time_step), time_step);
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<typename component::simple_tags>(
+                          TimeId(time_step.is_positive(), 8, start),
+                          TimeId(time_step.is_positive(), 8, start + time_step),
+                          time_step)});
+  ActionRunner runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
+                      std::move(local_algs)};
 
   for (const auto& step_start : {start, start + time_step}) {
+    auto& box = runner.algorithms<component>()
+                    .at(0)
+                    .get_databox<typename component::initial_databox>();
     CHECK(db::get<Tags::TimeId>(box) ==
           TimeId(time_step.is_positive(), 8, step_start));
     CHECK(db::get<Tags::TimeStep>(box) == time_step);
-    box = std::get<0>(runner.apply<component, Actions::AdvanceTime>(box, 0));
+    runner.next_action<component>(0);
   }
 
+  auto& box = runner.algorithms<component>()
+                  .at(0)
+                  .get_databox<typename component::initial_databox>();
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto& expected_slab = start.slab().advance_towards(time_step);
   CHECK(final_time_id.time().slab() == expected_slab);

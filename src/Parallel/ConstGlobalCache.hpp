@@ -39,6 +39,27 @@ template <class ConstGlobalCacheTag, class Metavariables>
 using type_for_get = typename type_for_get_helper<
     typename tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
         ConstGlobalCacheTag, Metavariables>>::type>::type;
+
+template <typename ComponentFromList, typename ComponentToFind>
+struct get_component_if_mocked_helper
+    : std::is_same<typename ComponentFromList::component_being_mocked,
+                   ComponentToFind> {};
+
+/// In order to be able to use a mock action testing framework we need to be
+/// able to get the correct parallel component from the global cache even when
+/// the correct component is a mock. We do this by having the mocked components
+/// have a member type alias `component_being_mocked`, and having
+/// `Parallel::get_component` check if the component to be retrieved is in the
+/// `metavariables::component_list`. If it is not in the `component_list` then
+/// we search for a mock component that is mocking the component we are trying
+/// to retrieve.
+template <typename ComponentList, typename ParallelComponent>
+using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
+    tmpl::list_contains_v<ComponentList, ParallelComponent>,
+    tmpl::type_<tmpl::list<ParallelComponent>>,
+    tmpl::lazy::find<ComponentList,
+                     get_component_if_mocked_helper<
+                         tmpl::_1, tmpl::pin<ParallelComponent>>>>>>;
 }  // namespace ConstGlobalCache_detail
 
 /// \ingroup ParallelGroup
@@ -95,13 +116,18 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
   template <typename ParallelComponentTag, typename MV>
   friend auto get_parallel_component(  // NOLINT
       ConstGlobalCache<MV>& cache) noexcept
-      -> Parallel::proxy_from_parallel_component<ParallelComponentTag>&;
+      -> Parallel::proxy_from_parallel_component<
+          ConstGlobalCache_detail::get_component_if_mocked<
+              typename MV::component_list, ParallelComponentTag>>&;
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
   friend auto get_parallel_component(  // NOLINT
-      const ConstGlobalCache<MV>& cache) noexcept -> const
-      Parallel::proxy_from_parallel_component<ParallelComponentTag>&;  // NOLINT
+      const ConstGlobalCache<MV>& cache) noexcept
+      -> const Parallel::proxy_from_parallel_component<
+          ConstGlobalCache_detail::get_component_if_mocked<
+              typename MV::component_list,
+              ParallelComponentTag>>&;  // NOLINT
 
   tuples::TaggedTupleTypelist<tag_list> const_global_cache_;
   tuples::TaggedTupleTypelist<parallel_component_tag_list> parallel_components_;
@@ -130,18 +156,24 @@ void ConstGlobalCache<Metavariables>::set_parallel_components(
 /// chare(s)
 template <typename ParallelComponentTag, typename Metavariables>
 auto get_parallel_component(ConstGlobalCache<Metavariables>& cache) noexcept
-    -> Parallel::proxy_from_parallel_component<ParallelComponentTag>& {
-  return tuples::get<tmpl::type_<
-      Parallel::proxy_from_parallel_component<ParallelComponentTag>>>(
+    -> Parallel::proxy_from_parallel_component<
+        ConstGlobalCache_detail::get_component_if_mocked<
+            typename Metavariables::component_list, ParallelComponentTag>>& {
+  return tuples::get<tmpl::type_<Parallel::proxy_from_parallel_component<
+      ConstGlobalCache_detail::get_component_if_mocked<
+          typename Metavariables::component_list, ParallelComponentTag>>>>(
       cache.parallel_components_);
 }
 
 template <typename ParallelComponentTag, typename Metavariables>
 auto get_parallel_component(
     const ConstGlobalCache<Metavariables>& cache) noexcept
-    -> const Parallel::proxy_from_parallel_component<ParallelComponentTag>& {
-  return tuples::get<tmpl::type_<
-      Parallel::proxy_from_parallel_component<ParallelComponentTag>>>(
+    -> const Parallel::proxy_from_parallel_component<
+        ConstGlobalCache_detail::get_component_if_mocked<
+            typename Metavariables::component_list, ParallelComponentTag>>& {
+  return tuples::get<tmpl::type_<Parallel::proxy_from_parallel_component<
+      ConstGlobalCache_detail::get_component_if_mocked<
+          typename Metavariables::component_list, ParallelComponentTag>>>>(
       cache.parallel_components_);
 }
 // @}

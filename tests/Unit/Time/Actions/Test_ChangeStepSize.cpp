@@ -6,12 +6,12 @@
 #include <memory>
 // IWYU pragma: no_include <pup.h>
 #include <string>
-#include <tuple>
 #include <utility>
+// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -26,6 +26,7 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace {
@@ -37,13 +38,20 @@ struct Var : db::SimpleTag {
   using type = double;
 };
 
+using history_tag = Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>;
+
 struct System {
   using variables_tag = Var;
 };
 
 struct Metavariables;
-using component =
-    ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>>;
+struct component
+    : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>,
+                                        tmpl::list<change_step_size>> {
+  using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
+                                        Tags::TimeStep, history_tag>;
+  using initial_databox = db::compute_databox_type<simple_tags>;
+};
 
 struct Metavariables {
   using system = System;
@@ -58,28 +66,36 @@ void check(const bool time_runs_forward,
   CAPTURE(time);
   CAPTURE(request);
 
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {std::move(time_stepper),
-       make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
-           std::make_unique<StepChoosers::Constant<step_choosers>>(
-               2. * request),
-           std::make_unique<StepChoosers::Constant<step_choosers>>(request),
-           std::make_unique<StepChoosers::Constant<step_choosers>>(
-               2. * request)),
-       std::make_unique<StepControllers::BinaryFraction>()}};
-
   const TimeDelta initial_step_size =
       (time_runs_forward ? 1 : -1) * time.slab().duration();
-  using history_tag = Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>;
-  auto box =
-      db::create<db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
-                                   Tags::TimeStep, history_tag>>(
-          TimeId(time_runs_forward, 0, time),
-          TimeId(time_runs_forward, 0,
-                 (time_runs_forward ? time.slab().start() : time.slab().end()) +
-                     initial_step_size),
-          initial_step_size, db::item_type<history_tag>{});
-  box = std::get<0>(runner.apply<component, change_step_size>(box, 0));
+
+  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
+  ActionRunner::LocalAlgorithms local_algs{};
+  tuples::get<LocalAlgsTag>(local_algs)
+      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+                      db::create<typename component::simple_tags>(
+                          TimeId(time_runs_forward, 0, time),
+                          TimeId(time_runs_forward, 0,
+                                 (time_runs_forward ? time.slab().start()
+                                                    : time.slab().end()) +
+                                     initial_step_size),
+                          initial_step_size, db::item_type<history_tag>{})});
+  ActionRunner runner{
+      {std::move(time_stepper),
+       make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
+           std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
+                                                                   request),
+           std::make_unique<StepChoosers::Constant<step_choosers>>(request),
+           std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
+                                                                   request)),
+       std::make_unique<StepControllers::BinaryFraction>()},
+      std::move(local_algs)};
+
+  runner.next_action<component>(0);
+  auto& box = runner.algorithms<component>()
+                  .at(0)
+                  .get_databox<typename component::initial_databox>();
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
