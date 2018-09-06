@@ -14,6 +14,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -32,7 +33,7 @@ class MockLocalAlgorithm {
   using metavariables = typename Component::metavariables;
 
  private:
-  template <typename ActiontList>
+  template <typename ActionsList>
   struct compute_databox_type;
 
   template <typename... ActionsPack>
@@ -148,7 +149,7 @@ template <size_t... Is>
 void MockLocalAlgorithm<Component>::next_action(
     std::index_sequence<Is...> /*meta*/) noexcept {
   auto& const_global_cache = *const_global_cache_;
-  if (performing_action_) {
+  if (UNLIKELY(performing_action_)) {
     ERROR(
         "Cannot call an Action while already calling an Action on the same "
         "MockLocalAlgorithm (an element of a parallel component array, or a "
