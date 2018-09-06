@@ -15,7 +15,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond

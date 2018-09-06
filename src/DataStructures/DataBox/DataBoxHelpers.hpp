@@ -13,7 +13,9 @@
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 /// \endcond
 
 template <typename Tag, typename = std::nullptr_t>

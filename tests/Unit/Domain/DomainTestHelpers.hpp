@@ -20,7 +20,9 @@ template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 template <size_t VolumeDim>
 class Direction;
 template <size_t VolumeDim, typename TargetFrame>

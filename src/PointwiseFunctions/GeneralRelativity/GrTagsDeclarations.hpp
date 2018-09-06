@@ -7,7 +7,9 @@
 
 #include "DataStructures/Tensor/IndexType.hpp"
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 
 namespace gr {
 namespace Tags {

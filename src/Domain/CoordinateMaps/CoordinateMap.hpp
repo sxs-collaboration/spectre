@@ -30,7 +30,9 @@
 #include "Utilities/Tuple.hpp"
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 class FunctionOfTime;
 /// \endcond
 

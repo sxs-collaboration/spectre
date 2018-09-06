@@ -8,17 +8,21 @@
 
 #include "Utilities/StdHelpers.hpp"
 
-DataVector::DataVector(const size_t size, const double value) noexcept
-    : owned_data_(size, value) {
+template <>
+DataVector::DataVectorImpl(const size_t size, const double value) noexcept
+  : owned_data_(size, value) {
   reset_pointer_vector();
 }
 
-DataVector::DataVector(double* start, size_t size) noexcept
+template <>
+DataVector::DataVectorImpl(double* start, size_t size) noexcept
     : BaseType(start, size), owned_data_(0), owning_(false) {}
 
-template <class T, Requires<cpp17::is_same_v<T, double>>>
-DataVector::DataVector(std::initializer_list<T> list) noexcept
-    : owned_data_(std::move(list)) {
+template <>
+template <>
+DataVector::DataVectorImpl(std::initializer_list<double> list) noexcept
+  // clang-tidy: move trivially copyable type
+  : owned_data_(std::move(list)) { //NOLINT
   reset_pointer_vector();
 }
 
@@ -26,7 +30,8 @@ DataVector::DataVector(std::initializer_list<T> list) noexcept
 // clang-tidy: calling a base constructor other than the copy constructor.
 //             We reset the base class in reset_pointer_vector after calling its
 //             default constructor
-DataVector::DataVector(const DataVector& rhs) : BaseType{} {  // NOLINT
+template <>
+DataVector::DataVectorImpl(const DataVector& rhs) : BaseType{} {  // NOLINT
   if (rhs.is_owning()) {
     owned_data_ = rhs.owned_data_;
   } else {
@@ -35,6 +40,7 @@ DataVector::DataVector(const DataVector& rhs) : BaseType{} {  // NOLINT
   reset_pointer_vector();
 }
 
+template <>
 DataVector& DataVector::operator=(const DataVector& rhs) {
   if (this != &rhs) {
     if (owning_) {
@@ -53,7 +59,8 @@ DataVector& DataVector::operator=(const DataVector& rhs) {
   return *this;
 }
 
-DataVector::DataVector(DataVector&& rhs) noexcept {
+template <>
+DataVector::DataVectorImpl(DataVector&& rhs) noexcept {
   owned_data_ = std::move(rhs.owned_data_);
   ~*this = ~rhs;  // PointerVector is trivially copyable
   owning_ = rhs.owning_;
@@ -62,6 +69,7 @@ DataVector::DataVector(DataVector&& rhs) noexcept {
   rhs.reset();
 }
 
+template <>
 DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
   if (this != &rhs) {
     if (owning_) {
@@ -80,6 +88,7 @@ DataVector& DataVector::operator=(DataVector&& rhs) noexcept {
 }
 /// \endcond
 
+template <>
 void DataVector::pup(PUP::er& p) noexcept {  // NOLINT
   auto my_size = size();
   p | my_size;
@@ -109,7 +118,3 @@ bool operator==(const DataVector& lhs, const DataVector& rhs) noexcept {
 bool operator!=(const DataVector& lhs, const DataVector& rhs) noexcept {
   return not(lhs == rhs);
 }
-
-/// \cond
-template DataVector::DataVector(std::initializer_list<double> list) noexcept;
-/// \endcond

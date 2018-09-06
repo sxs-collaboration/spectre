@@ -13,7 +13,9 @@ template <typename T>
 class not_null;
 }  // namespace gsl
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor

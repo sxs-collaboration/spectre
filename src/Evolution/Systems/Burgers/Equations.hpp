@@ -9,7 +9,9 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 // IWYU pragma: no_forward_declare Tensor
 template <typename>
 class Variables;

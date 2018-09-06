@@ -12,7 +12,9 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 namespace EquationsOfState {
 template <bool IsRelativistic>
 class DarkEnergyFluid;

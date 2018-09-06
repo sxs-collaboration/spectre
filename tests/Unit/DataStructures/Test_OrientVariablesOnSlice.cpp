@@ -29,7 +29,9 @@
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 template <size_t VolumeDim>
 class OrientationMap;
 

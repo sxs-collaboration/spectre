@@ -14,7 +14,9 @@
 #include "IO/H5/Type.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 template <size_t Dim>
 class Index;
 

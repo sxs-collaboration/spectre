@@ -13,7 +13,9 @@
 namespace domain {
 class BlockId;
 }  // namespace domain
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 template <size_t VolumeDim>
 class ElementId;
 template <typename IdType, typename DataType>

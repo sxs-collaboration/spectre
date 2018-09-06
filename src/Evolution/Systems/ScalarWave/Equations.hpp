@@ -16,7 +16,9 @@
 template <typename>
 class Variables;
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 
 namespace gsl {
 template <typename T>

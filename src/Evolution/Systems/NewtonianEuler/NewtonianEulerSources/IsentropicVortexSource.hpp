@@ -30,7 +30,9 @@ struct Pressure;
 }  // namespace Tags
 }  // namespace NewtonianEuler
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 /// \endcond
 
 namespace NewtonianEuler {

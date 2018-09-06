@@ -14,7 +14,9 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 
 namespace Tags {
 template <typename>

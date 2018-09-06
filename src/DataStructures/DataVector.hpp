@@ -68,6 +68,165 @@ using std::abs;  // NOLINT
 // IWYU pragma: no_forward_declare blaze::IsVector
 // IWYU pragma: no_forward_declare blaze::TransposeFlag
 
+
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Templatized storage for function values.
+ *
+ * \details DataVectorImpl gives the underlying implementation for the
+ * DataVector class, which is a specialization to DataVectorImpl<double>. The
+ * additional template structure is added to permit more general DataVector
+ * specializations which do not necessarily store doubles.
+ *
+ * Refer to specializations of DataVectorImpl for additional features offered
+ * which depend on the stored type.
+ * \ref DataVector
+ */
+template <typename T>
+class DataVectorImpl
+    : public PointerVector<T, blaze::unaligned, blaze::unpadded,
+                           blaze::defaultTransposeFlag, DataVectorImpl<T>> {
+  /// \cond HIDDEN_SYMBOLS
+  static constexpr void private_asserts() noexcept {
+    static_assert(std::is_nothrow_move_constructible<DataVectorImpl<T>>::value,
+                  "Missing move semantics");
+  }
+  /// \endcond
+ public:
+  using value_type = T;
+  using allocator_type = std::allocator<value_type>;
+  using size_type = size_t;
+  using difference_type = std::ptrdiff_t;
+  using BaseType = PointerVector<T, blaze::unaligned, blaze::unpadded,
+                                 blaze::defaultTransposeFlag,
+                                 DataVectorImpl<T>>;
+  static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
+
+  using ElementType = T;
+  using TransposeType = DataVectorImpl<T>;
+  using CompositeType = const DataVectorImpl<T>&;
+
+  using BaseType::operator[];
+  using BaseType::begin;
+  using BaseType::cbegin;
+  using BaseType::cend;
+  using BaseType::data;
+  using BaseType::end;
+  using BaseType::size;
+
+  // @{
+  // Upcast to `BaseType`
+  const BaseType& operator~() const noexcept {
+    return static_cast<const BaseType&>(*this);
+  }
+  BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
+  // @}
+
+  /// Create with the given size and value.
+  ///
+  /// \param size number of values
+  /// \param value the value to initialize each element.
+  explicit DataVectorImpl(
+      size_t size,
+      T value = std::numeric_limits<T>::signaling_NaN()) noexcept;
+
+  /// Create a non-owning DataVector that points to `start`
+  DataVectorImpl(double* start, size_t size) noexcept;
+
+  /// Create from an initializer list of doubles. All elements in the
+  /// `std::initializer_list` must have decimal points
+  template <class C, Requires<cpp17::is_same_v<C, T>> = nullptr>
+  DataVectorImpl(std::initializer_list<C> list) noexcept;
+
+  /// Empty DataVector
+  DataVectorImpl() noexcept = default;
+  /// \cond HIDDEN_SYMBOLS
+  ~DataVectorImpl() = default;
+
+  DataVectorImpl(const DataVectorImpl<T>& rhs);
+  DataVectorImpl(DataVectorImpl<T>&& rhs) noexcept;
+  DataVectorImpl<T>& operator=(const DataVectorImpl<T>& rhs);
+  DataVectorImpl<T>& operator=(DataVectorImpl<T>&& rhs) noexcept;
+
+  // This is a converting constructor. clang-tidy complains that it's not
+  // explicit, but we want it to allow conversion.
+  // clang-tidy: mark as explicit (we want conversion to DataVector)
+  template <typename VT, bool VF>
+  DataVectorImpl(const blaze::DenseVector<VT, VF>& expression) noexcept //NOLINT
+    : owned_data_((~expression).size()) {
+    static_assert(cpp17::is_same_v<typename VT::ResultType, DataVectorImpl<T>>,
+                  "You are attempting to assign the result of an expression "
+                  "that is not a DataVectorImpl<T> to a DataVectorImpl<T>.");
+    reset_pointer_vector();
+    ~*this = expression;
+  }
+
+  template <typename VT, bool VF>
+  DataVectorImpl<T>& operator=(
+    const blaze::DenseVector<VT, VF>& expression) noexcept {
+    static_assert(cpp17::is_same_v<typename VT::ResultType, DataVectorImpl<T>>,
+                  "You are attempting to assign the result of an expression "
+                  "that is not a DataVectorImpl<T> to a DataVectorImpl<T>.");
+    if (owning_ and (~expression).size() != size()) {
+      owned_data_.resize((~expression).size());
+      reset_pointer_vector();
+    } else if (not owning_) {
+      ASSERT((~expression).size() == size(), "Must copy into same size, not "
+             << (~expression).size()
+             << " into " << size());
+    }
+    ~*this = expression;
+    return *this;
+  }
+  /// \endcond
+
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, DataVectorImpl<T>)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, DataVectorImpl<T>)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, DataVectorImpl<T>)
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, DataVectorImpl<T>)
+
+
+  DataVectorImpl<T>& operator=(const T& rhs) noexcept {
+    ~*this = rhs;
+    return *this;
+  }
+
+  // @{
+  /// Set the DataVector to be a reference to another DataVector object
+  template <typename VT>
+  void set_data_ref(DataVectorImpl<VT>* rhs) noexcept {
+    set_data_ref(rhs->data(), rhs->size());
+  }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow" /*ignore shadowing of size*/
+  void set_data_ref(double* start, size_t size) noexcept {
+    owned_data_ = decltype(owned_data_){};
+    (~*this).reset(start, size);
+    owning_ = false;
+  }
+  // @}
+#pragma GCC diagnostic pop
+
+  /// Returns true if the class owns the data
+  bool is_owning() const noexcept { return owning_; }
+
+  /// Serialization for Charm++
+  // clang-tidy: google-runtime-references
+  void pup(PUP::er& p) noexcept;  // NOLINT
+
+ private:
+  SPECTRE_ALWAYS_INLINE void reset_pointer_vector() noexcept {
+    this->reset(owned_data_.data(), owned_data_.size());
+  }
+
+  /// \cond HIDDEN_SYMBOLS
+  std::vector<T, allocator_type> owned_data_;
+  bool owning_{true};
+  /// \endcond
+};
+
+
 /*!
  * \ingroup DataStructuresGroup
  * \brief Stores a collection of function values.
@@ -123,128 +282,18 @@ using std::abs;  // NOLINT
  * - tan
  * - tanh
  */
-class DataVector
-    : public PointerVector<double, blaze::unaligned, blaze::unpadded,
-                           blaze::defaultTransposeFlag, DataVector> {
-  /// \cond HIDDEN_SYMBOLS
-  static constexpr void private_asserts() noexcept {
-    static_assert(std::is_nothrow_move_constructible<DataVector>::value,
-                  "Missing move semantics");
-  }
-  /// \endcond
- public:
-  using value_type = double;
-  using allocator_type = std::allocator<value_type>;
-  using size_type = size_t;
-  using difference_type = std::ptrdiff_t;
-  using BaseType = PointerVector<double, blaze::unaligned, blaze::unpadded,
-                                 blaze::defaultTransposeFlag, DataVector>;
-  static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
-
-  using BaseType::ElementType;
-  using TransposeType = DataVector;
-  using CompositeType = const DataVector&;
-
-  using BaseType::operator[];
-  using BaseType::begin;
-  using BaseType::cbegin;
-  using BaseType::cend;
-  using BaseType::data;
-  using BaseType::end;
-  using BaseType::size;
-
-  // @{
-  // Upcast to `BaseType`
-  const BaseType& operator~() const noexcept {
-    return static_cast<const BaseType&>(*this);
-  }
-  BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
-  // @}
-
-  /// Create with the given size and value.
-  ///
-  /// \param size number of values
-  /// \param value the value to initialize each element.
-  explicit DataVector(
-      size_t size,
-      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
-
-  /// Create a non-owning DataVector that points to `start`
-  DataVector(double* start, size_t size) noexcept;
-
-  /// Create from an initializer list of doubles. All elements in the
-  /// `std::initializer_list` must have decimal points
-  template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
-  DataVector(std::initializer_list<T> list) noexcept;
-
-  /// Empty DataVector
-  DataVector() noexcept = default;
-  /// \cond HIDDEN_SYMBOLS
-  ~DataVector() = default;
-
-  DataVector(const DataVector& rhs);
-  DataVector(DataVector&& rhs) noexcept;
-  DataVector& operator=(const DataVector& rhs);
-  DataVector& operator=(DataVector&& rhs) noexcept;
-
-  // This is a converting constructor. clang-tidy complains that it's not
-  // explicit, but we want it to allow conversion.
-  // clang-tidy: mark as explicit (we want conversion to DataVector)
-  template <typename VT, bool VF>
-  DataVector(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
-
-  template <typename VT, bool VF>
-  DataVector& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
-  /// \endcond
-
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, DataVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, DataVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, DataVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, DataVector)
-
-  DataVector& operator=(const double& rhs) noexcept {
-    ~*this = rhs;
-    return *this;
-  }
-
-  // @{
-  /// Set the DataVector to be a reference to another DataVector object
-  void set_data_ref(gsl::not_null<DataVector*> rhs) noexcept {
-    set_data_ref(rhs->data(), rhs->size());
-  }
-  void set_data_ref(double* start, size_t size) noexcept {
-    owned_data_ = decltype(owned_data_){};
-    (~*this).reset(start, size);
-    owning_ = false;
-  }
-  // @}
-
-  /// Returns true if the class owns the data
-  bool is_owning() const noexcept { return owning_; }
-
-  /// Serialization for Charm++
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
-
- private:
-  SPECTRE_ALWAYS_INLINE void reset_pointer_vector() noexcept {
-    reset(owned_data_.data(), owned_data_.size());
-  }
-
-  /// \cond HIDDEN_SYMBOLS
-  std::vector<double, allocator_type> owned_data_;
-  bool owning_{true};
-  /// \endcond
-};
+using DataVector = DataVectorImpl<double>;
 
 /// Output operator for DataVector
 std::ostream& operator<<(std::ostream& os, const DataVector& d);
+
 
 /// Equivalence operator for DataVector
 bool operator==(const DataVector& lhs, const DataVector& rhs) noexcept;
 
 /// Inequivalence operator for DataVector
-bool operator!=(const DataVector& lhs, const DataVector& rhs) noexcept;
+bool operator!=(const DataVector& lhs,
+                const DataVector& rhs) noexcept;
 
 /// \cond
 // Used for comparing DataVector to an expression
@@ -273,196 +322,196 @@ bool operator!=(const blaze::DenseVector<VT, VF>& lhs,
 }
 /// \endcond
 
-// Specialize the Blaze type traits to correctly handle DataVector
+// Specialize the Blaze type traits to correctly handle all DataVectorImpl<T>
 namespace blaze {
-template <>
-struct IsVector<DataVector> : std::true_type {};
+template <typename T>
+struct IsVector<DataVectorImpl<T>> : std::true_type {};
 
-template <>
-struct TransposeFlag<DataVector> : BoolConstant<DataVector::transpose_flag> {};
+template <typename T>
+struct TransposeFlag<DataVectorImpl<T>>
+  : BoolConstant<DataVector::transpose_flag> {};
 
-template <>
-struct AddTrait<DataVector, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct AddTrait<DataVectorImpl<T>, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct AddTrait<DataVector, double> {
-  using Type = DataVector;
+template <typename T>
+struct AddTrait<DataVectorImpl<T>, double> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct AddTrait<double, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct AddTrait<T, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct SubTrait<DataVector, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct SubTrait<DataVectorImpl<T>, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct SubTrait<DataVector, double> {
-  using Type = DataVector;
+template <typename T>
+struct SubTrait<DataVectorImpl<T>, T> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct SubTrait<double, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct SubTrait<T, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct MultTrait<DataVector, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct MultTrait<DataVectorImpl<T>, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct MultTrait<DataVector, double> {
-  using Type = DataVector;
+template <typename T>
+struct MultTrait<DataVectorImpl<T>, T> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct MultTrait<double, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct MultTrait<T, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct DivTrait<DataVector, DataVector> {
-  using Type = DataVector;
+template <typename T>
+struct DivTrait<DataVectorImpl<T>, DataVectorImpl<T>> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <>
-struct DivTrait<DataVector, double> {
-  using Type = DataVector;
+template <typename T>
+struct DivTrait<DataVectorImpl<T>, T> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <typename Operator>
-struct UnaryMapTrait<DataVector, Operator> {
-  using Type = DataVector;
+template <typename T, typename Operator>
+struct UnaryMapTrait<DataVectorImpl<T>, Operator> {
+  using Type = DataVectorImpl<T>;
 };
 
-template <typename Operator>
-struct BinaryMapTrait<DataVector, DataVector, Operator> {
-  using Type = DataVector;
+template <typename T, typename Operator>
+struct BinaryMapTrait<DataVectorImpl<T>, DataVectorImpl<T>, Operator> {
+  using Type = DataVectorImpl<T>;
 };
 }  // namespace blaze
+
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
   return abs(~t);
 }
 
 template <typename T, size_t Dim>
-std::array<DataVector, Dim> operator+(
+std::array<DataVectorImpl<T>, Dim> operator+(
     const std::array<T, Dim>& lhs,
-    const std::array<DataVector, Dim>& rhs) noexcept {
-  std::array<DataVector, Dim> result;
+    const std::array<DataVectorImpl<T>, Dim>& rhs) noexcept {
+  std::array<DataVectorImpl<T>, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
   }
   return result;
 }
-template <typename U, size_t Dim>
-std::array<DataVector, Dim> operator+(const std::array<DataVector, Dim>& lhs,
-                                      const std::array<U, Dim>& rhs) noexcept {
+template <typename lT, typename rT,  size_t Dim>
+std::array<DataVectorImpl<lT>, Dim> operator+(
+    const std::array<DataVectorImpl<lT>, Dim>& lhs,
+    const std::array<rT, Dim>& rhs) noexcept {
   return rhs + lhs;
 }
-template <size_t Dim>
-std::array<DataVector, Dim> operator+(
-    const std::array<DataVector, Dim>& lhs,
-    const std::array<DataVector, Dim>& rhs) noexcept {
-  std::array<DataVector, Dim> result;
+template <typename T, size_t Dim>
+std::array<DataVectorImpl<T>, Dim> operator+(
+    const std::array<DataVectorImpl<T>, Dim>& lhs,
+    const std::array<DataVectorImpl<T>, Dim>& rhs) noexcept {
+  std::array<DataVectorImpl<T>, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
   }
   return result;
 }
-template <size_t Dim>
-std::array<DataVector, Dim>& operator+=(
-    std::array<DataVector, Dim>& lhs,
-    const std::array<DataVector, Dim>& rhs) noexcept {
+template <typename T, size_t Dim>
+std::array<DataVectorImpl<T>, Dim>& operator+=(
+    std::array<DataVectorImpl<T>, Dim>& lhs,
+    const std::array<DataVectorImpl<T>, Dim>& rhs) noexcept {
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(lhs, i) += gsl::at(rhs, i);
   }
   return lhs;
 }
 template <typename T, size_t Dim>
-std::array<DataVector, Dim> operator-(
+std::array<DataVectorImpl<T>, Dim> operator-(
     const std::array<T, Dim>& lhs,
-    const std::array<DataVector, Dim>& rhs) noexcept {
-  std::array<DataVector, Dim> result;
+    const std::array<DataVectorImpl<T>, Dim>& rhs) noexcept {
+  std::array<DataVectorImpl<T>, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
   }
   return result;
 }
-template <typename U, size_t Dim>
-std::array<DataVector, Dim> operator-(const std::array<DataVector, Dim>& lhs,
-                                      const std::array<U, Dim>& rhs) noexcept {
-  std::array<DataVector, Dim> result;
+template <typename T,  size_t Dim>
+std::array<DataVectorImpl<T>, Dim> operator-(
+    const std::array<DataVectorImpl<T>, Dim>& lhs,
+    const std::array<T, Dim>& rhs) noexcept {
+  std::array<DataVectorImpl<T>, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
   }
   return result;
 }
-template <size_t Dim>
-std::array<DataVector, Dim> operator-(
-    const std::array<DataVector, Dim>& lhs,
-    const std::array<DataVector, Dim>& rhs) noexcept {
-  std::array<DataVector, Dim> result;
+template <typename T, size_t Dim>
+std::array<DataVectorImpl<T>, Dim> operator-(
+    const std::array<DataVectorImpl<T>, Dim>& lhs,
+    const std::array<DataVectorImpl<T>, Dim>& rhs) noexcept {
+  std::array<DataVectorImpl<T>, Dim> result;
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
   }
   return result;
 }
-template <size_t Dim>
-std::array<DataVector, Dim>& operator-=(
-    std::array<DataVector, Dim>& lhs,
-    const std::array<DataVector, Dim>& rhs) noexcept {
+template <typename T, size_t Dim>
+std::array<DataVectorImpl<T>, Dim>& operator-=(
+    std::array<DataVectorImpl<T>, Dim>& lhs,
+    const std::array<DataVectorImpl<T>, Dim>& rhs) noexcept {
   for (size_t i = 0; i < Dim; i++) {
     gsl::at(lhs, i) -= gsl::at(rhs, i);
   }
   return lhs;
 }
 
-/// \cond HIDDEN_SYMBOLS
-template <typename VT, bool VF>
-DataVector::DataVector(const blaze::DenseVector<VT, VF>& expression) noexcept
-    : owned_data_((~expression).size()) {
-  static_assert(cpp17::is_same_v<typename VT::ResultType, DataVector>,
-                "You are attempting to assign the result of an expression that "
-                "is not a DataVector to a DataVector.");
-  reset_pointer_vector();
-  ~*this = expression;
-}
+template <>
+DataVector::DataVectorImpl(const size_t size, const double value) noexcept;
 
-template <typename VT, bool VF>
-DataVector& DataVector::operator=(
-    const blaze::DenseVector<VT, VF>& expression) noexcept {
-  static_assert(cpp17::is_same_v<typename VT::ResultType, DataVector>,
-                "You are attempting to assign the result of an expression that "
-                "is not a DataVector to a DataVector.");
-  if (owning_ and (~expression).size() != size()) {
-    owned_data_.resize((~expression).size());
-    reset_pointer_vector();
-  } else if (not owning_) {
-    ASSERT((~expression).size() == size(), "Must copy into same size, not "
-                                               << (~expression).size()
-                                               << " into " << size());
-  }
-  ~*this = expression;
-  return *this;
-}
+template <>
+DataVector::DataVectorImpl(double* start, size_t size) noexcept;
+
+/// \cond HIDDEN_SYMBOLS
+// clang-tidy: calling a base constructor other than the copy constructor.
+//             We reset the base class in reset_pointer_vector after calling its
+//             default constructor
+template <>
+DataVector::DataVectorImpl(const DataVector& rhs);
+
+template <>
+DataVector& DataVector::operator=(const DataVector& rhs);
+
+template <>
+DataVector::DataVectorImpl(DataVector&& rhs) noexcept;
+
+template <>
+DataVector& DataVector::operator=(DataVector&& rhs) noexcept;
 /// \endcond
 
-namespace MakeWithValueImpls {
-/// \brief Returns a DataVector the same size as `input`, with each element
-/// equal to `value`.
 template <>
-SPECTRE_ALWAYS_INLINE DataVector
-MakeWithValueImpl<DataVector, DataVector>::apply(const DataVector& input,
-                                                 const double value) {
-  return DataVector(input.size(), value);
-}
+void DataVector::pup(PUP::er& p) noexcept;
+
+namespace MakeWithValueImpls {
+  /// \brief Returns a DataVector the same size as `input`, with each element
+  /// equal to `value`.
+  template <>
+    SPECTRE_ALWAYS_INLINE DataVector
+  MakeWithValueImpl<DataVector, DataVector>::apply(const DataVector& input,
+                                                   const double value) {
+    return DataVector(input.size(), value);
+  }
 }  // namespace MakeWithValueImpls
 
 namespace ConstantExpressions_detail {

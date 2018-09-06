@@ -9,7 +9,9 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 
 namespace grmhd {
 namespace ValenciaDivClean {

@@ -8,7 +8,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor

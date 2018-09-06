@@ -16,7 +16,9 @@
 /// \cond
 template <size_t Dim>
 class Mesh;
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 template <size_t Dim>
 class Direction;
 /// \endcond

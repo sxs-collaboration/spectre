@@ -10,7 +10,9 @@
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Utilities/TMPL.hpp"
 
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 
 namespace {
 

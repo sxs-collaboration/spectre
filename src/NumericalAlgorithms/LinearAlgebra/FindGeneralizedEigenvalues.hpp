@@ -7,7 +7,9 @@
 #pragma once
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 class Matrix;
 namespace gsl {
 template <typename T>

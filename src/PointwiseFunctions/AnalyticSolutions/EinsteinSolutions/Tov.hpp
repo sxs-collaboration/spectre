@@ -17,7 +17,9 @@ class er;
 /// \endcond
 
 /// \cond
-class DataVector;
+template <typename T>
+class DataVectorImpl;
+using DataVector = DataVectorImpl<double>;
 /// \endcond
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
