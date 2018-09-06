@@ -211,4 +211,10 @@ bool operator==(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept;
 
 template <size_t Dim>
 bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept;
+
+template <size_t Dim>
+std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh) noexcept {
+  os << mesh.extents();
+  return os;
+}
 /// \endcond
