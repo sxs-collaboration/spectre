@@ -1222,15 +1222,17 @@ template <typename AddSimpleTags, typename AddComputeTags = tmpl::list<>,
           typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   static_assert(tt::is_a_v<tmpl::list, AddComputeTags>,
-                "AddComputeItems must by a typelist");
+                "AddComputeTags must be a tmpl::list");
   static_assert(tt::is_a_v<tmpl::list, AddSimpleTags>,
-                "AddTags must by a typelist");
-  static_assert(not tmpl::any<AddSimpleTags, is_compute_item<tmpl::_1>>::value,
-                "Cannot add any ComputeTag in the AddTags list, must use the "
-                "AddComputeItems list.");
-  static_assert(tmpl::all<AddComputeTags, is_compute_item<tmpl::_1>>::value,
-                "Cannot add any Tags in the AddComputeItems list, must use the "
-                "AddTags list.");
+                "AddSimpleTags must be a tmpl::list");
+  static_assert(
+      not tmpl::any<AddSimpleTags, is_compute_item<tmpl::_1>>::value,
+      "Cannot add any ComputeTags in the AddSimpleTags list, must use the "
+      "AddComputeTags list.");
+  static_assert(
+      tmpl::all<AddComputeTags, is_compute_item<tmpl::_1>>::value,
+      "Cannot add any SimpleTags in the AddComputeTags list, must use the "
+      "AddSimpleTags list.");
 
   using tag_list =
       DataBox_detail::expand_subitems<AddSimpleTags, AddComputeTags, true>;
