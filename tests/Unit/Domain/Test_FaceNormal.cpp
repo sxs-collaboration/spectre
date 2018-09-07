@@ -135,9 +135,10 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
   const auto box = db::create<
       db::AddSimpleTags<Directions, Tags::Mesh<2>, Tags::ElementMap<2>>,
       db::AddComputeTags<
-          Tags::Interface<Directions, Tags::Direction<2>>,
-          Tags::Interface<Directions, Tags::Mesh<1>>,
-          Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<2>>>>(
+          Tags::InterfaceComputeItem<Directions, Tags::Direction<2>>,
+          Tags::InterfaceComputeItem<Directions, Tags::InterfaceMesh<2>>,
+          Tags::InterfaceComputeItem<Directions,
+                                     Tags::UnnormalizedFaceNormal<2>>>>(
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
                                        Direction<2>::lower_eta()},
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},

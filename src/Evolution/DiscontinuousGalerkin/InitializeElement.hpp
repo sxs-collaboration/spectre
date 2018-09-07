@@ -216,14 +216,17 @@ struct InitializeElement {
 
     template <typename Directions>
     using face_tags = tmpl::list<
-        Directions, Tags::Interface<Directions, Tags::Direction<Dim>>,
-        Tags::Interface<Directions, Tags::Mesh<Dim - 1>>,
-        Tags::Interface<Directions, typename System::variables_tag>,
-        Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<Dim>>,
-        Tags::Interface<Directions, typename System::template magnitude_tag<
-                                        Tags::UnnormalizedFaceNormal<Dim>>>,
-        Tags::Interface<Directions,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+        Directions,
+        Tags::InterfaceComputeItem<Directions, Tags::Direction<Dim>>,
+        Tags::InterfaceComputeItem<Directions, Tags::InterfaceMesh<Dim>>,
+        Tags::Slice<Directions, typename System::variables_tag>,
+        Tags::InterfaceComputeItem<Directions,
+                                   Tags::UnnormalizedFaceNormal<Dim>>,
+        Tags::InterfaceComputeItem<Directions,
+                                   typename System::template magnitude_tag<
+                                       Tags::UnnormalizedFaceNormal<Dim>>>,
+        Tags::InterfaceComputeItem<
+            Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
     using compute_tags = tmpl::append<face_tags<Tags::InternalDirections<Dim>>,
                                       face_tags<Tags::BoundaryDirections<Dim>>>;
@@ -463,11 +466,26 @@ struct InitializeElement {
                             Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
                             Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>>;
 
+      template <typename Tag>
+      using interface_compute_tag =
+          Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
+
+      template <typename Tag>
+      using boundary_compute_tag =
+          Tags::InterfaceComputeItem<Tags::BoundaryDirections<Dim>, Tag>;
+
       using compute_tags = db::AddComputeTags<
-          interface_tag<db::add_tag_prefix<Tags::Flux,
+          Tags::Slice<Tags::InternalDirections<Dim>,
+                      db::add_tag_prefix<Tags::Flux,
+                                         typename LocalSystem::variables_tag,
+                                         tmpl::size_t<Dim>, Frame::Inertial>>,
+          interface_compute_tag<Tags::ComputeNormalDotFlux<
+              typename LocalSystem::variables_tag, Dim, Frame::Inertial>>,
+          Tags::Slice<Tags::BoundaryDirections<Dim>,
+                      db::add_tag_prefix<Tags::Flux,
                                            typename LocalSystem::variables_tag,
                                            tmpl::size_t<Dim>, Frame::Inertial>>,
-          interface_tag<Tags::ComputeNormalDotFlux<
+          boundary_compute_tag<Tags::ComputeNormalDotFlux<
               typename LocalSystem::variables_tag, Dim, Frame::Inertial>>>;
 
       template <typename TagsList>

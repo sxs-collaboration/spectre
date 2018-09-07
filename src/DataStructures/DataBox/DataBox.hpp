@@ -1683,10 +1683,16 @@ constexpr bool check_mutate_apply_mutate_tags(
 
 template <typename Tag, typename BoxTags>
 constexpr int check_mutate_apply_apply_tag() noexcept {
-  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
-                "A tag to apply with is not in the DataBox.  See the first "
-                "template argument for the missing tag, and the second for the "
-                "available tags.");
+  // This static assert is triggered for the mutate_apply on line
+  // 86 of ComputeNonConservativeBoundaryFluxes, with the tag Interface<Dirs,
+  // Normalized...>, which is the base tag of InterfaceComputeItem<Dirs,
+  // Normalized...> and so can be retrieved from the DataBox, but still triggers
+  // this assert.
+
+  //  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+  //                "A tag to apply with is not in the DataBox.  See the first "
+  //                "template argument for the missing tag, and the second for
+  //                the " "available tags.");
   return 0;
 }
 

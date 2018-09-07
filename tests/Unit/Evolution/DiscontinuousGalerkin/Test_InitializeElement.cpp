@@ -50,6 +50,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_forward_declare ElementIndex
@@ -71,7 +72,6 @@ namespace {
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "Var"; }
-  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 struct SystemAnalyticSolution {
@@ -144,6 +144,17 @@ bool box_contains(const Box& /*box*/) noexcept {
   return tmpl::list_contains_v<typename Box::tags_list, Tag>;
 }
 
+template <typename Tag, typename Box, typename = cpp17::void_t<>>
+struct tag_is_retrievable : std::false_type {};
+
+template <typename Tag, typename Box>
+struct tag_is_retrievable<Tag, Box,
+                          cpp17::void_t<decltype(db::get<Tag>(Box{}))>>
+    : std::true_type {};
+
+template <typename Tag, typename Box>
+constexpr bool tag_is_retrievable_v = tag_is_retrievable<Tag, Box>::value;
+
 template <bool IsConservative>
 struct TestConservativeOrNonconservativeParts {
   template <typename Metavariables, typename DbTags>
@@ -184,10 +195,11 @@ struct TestConservativeOrNonconservativeParts<true> {
               Tags::InverseJacobian<Tags::ElementMap<dim>,
                                     Tags::LogicalCoordinates<dim>>>>(*box));
 
-    CHECK(box_contains<Tags::Interface<
+    CHECK(tag_is_retrievable_v<
+          Tags::Interface<
               Tags::InternalDirections<dim>,
-              Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>>(
-        *box));
+              Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>,
+          std::decay_t<decltype(*box)>>);
   }
 };
 
@@ -304,28 +316,35 @@ void test_initialize_element(
   CHECK(db::get<Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(box).size() ==
         element.number_of_neighbors());
 
-  CHECK(box_contains<Tags::Interface<Tags::InternalDirections<dim>,
-                                     Tags::UnnormalizedFaceNormal<dim>>>(box));
+  using databox_t = std::decay_t<decltype(box)>;
+  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::InternalDirections<dim>,
+                                             Tags::UnnormalizedFaceNormal<dim>>,
+                             databox_t>);
   using magnitude_tag =
       Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<dim>>;
-  CHECK(box_contains<
-        Tags::Interface<Tags::InternalDirections<dim>, magnitude_tag>>(box));
-  CHECK(box_contains<
+  CHECK(tag_is_retrievable_v<
+        Tags::Interface<Tags::InternalDirections<dim>, magnitude_tag>,
+        databox_t>);
+  CHECK(tag_is_retrievable_v<
         Tags::Interface<Tags::InternalDirections<dim>,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
-      box));
-  CHECK(box_contains<Tags::Interface<Tags::InternalDirections<dim>,
-                                     typename system::variables_tag>>(box));
-  CHECK(box_contains<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                     Tags::UnnormalizedFaceNormal<dim>>>(box));
-  CHECK(box_contains<
-        Tags::Interface<Tags::BoundaryDirections<dim>, magnitude_tag>>(box));
-  CHECK(box_contains<
+                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
+        databox_t>);
+  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::InternalDirections<dim>,
+                                             typename system::variables_tag>,
+                             databox_t>);
+  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::BoundaryDirections<dim>,
+                                             Tags::UnnormalizedFaceNormal<dim>>,
+                             databox_t>);
+  CHECK(tag_is_retrievable_v<
+        Tags::Interface<Tags::BoundaryDirections<dim>, magnitude_tag>,
+        databox_t>);
+  CHECK(tag_is_retrievable_v<
         Tags::Interface<Tags::BoundaryDirections<dim>,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
-      box));
-  CHECK(box_contains<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                     typename system::variables_tag>>(box));
+                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
+        databox_t>);
+  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::BoundaryDirections<dim>,
+                                             typename system::variables_tag>,
+                             databox_t>);
 
   TestConservativeOrNonconservativeParts<system::is_conservative>::
       template apply<Metavariables>(make_not_null(&box));

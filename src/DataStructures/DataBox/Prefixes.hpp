@@ -46,7 +46,6 @@ struct Flux<Tag, VolumeDim, Fr,
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
   static std::string name() noexcept { return "Flux"; }
-  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
@@ -78,7 +77,6 @@ struct NormalDotFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static std::string name() noexcept { return "NormalDotFlux"; }
-  static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 /// \ingroup DataBoxTagsGroup

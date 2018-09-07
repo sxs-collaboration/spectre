@@ -14,7 +14,6 @@ namespace Tags {
 struct U : db::SimpleTag {
   static std::string name() noexcept { return "U"; }
   using type = Scalar<DataVector>;
-  static constexpr bool should_be_sliced_to_boundary = true;
 };
 }  // namespace Tags
 }  // namespace Burgers
