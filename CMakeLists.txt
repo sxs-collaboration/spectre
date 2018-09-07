@@ -52,6 +52,9 @@ include(AddSpectreExecutable)
 
 include(CheckBrokenArray0)
 
+# Need to load python libs before boost.python.
+include(SetupPythonLibs)
+
 include(SetupBlas)
 include(SetupBlaze)
 include(SetupBoost)
@@ -65,7 +68,6 @@ include(SetupLIBXSMM)
 include(SetupLapack)
 include(SetupNumPy)
 include(SetupPapi)
-include(SetupPythonLibs)
 include(SetupSciPy)
 include(SetupYamlCpp)
 
