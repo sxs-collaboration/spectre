@@ -14,6 +14,7 @@ set(LIBS_TO_LINK
 
 add_spectre_executable(
   EvolveBurgers
+  EvolveBurgers
   Evolution/Executables/Burgers
   EvolutionMetavars
   "${LIBS_TO_LINK}"

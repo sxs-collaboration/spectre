@@ -4,6 +4,8 @@
 # A function to add a SpECTRE executable that uses Charm++
 #
 # EXECUTABLE_NAME is the name of the executable (with no extension)
+# HPP_NAME        is the name of the hpp file (without the .hpp extension) that
+#                 contains the metavariables
 # SUBDIR_NAME     is the name of the directory relative to src that contains
 #                 a header file EXECUTABLE_NAME.hpp
 # METAVARS        is the name of the metavariables struct that will be used
@@ -16,7 +18,7 @@
 # The function creates EXECUTABLE_NAME.cpp in the build tree which is then
 # used to build EXECUTABLE_NAME which is put into the bin directory of the
 # the build tree
-function(add_spectre_executable EXECUTABLE_NAME SUBDIR_NAME METAVARS LINK_LIBS)
+function(add_spectre_executable EXECUTABLE_NAME HPP_NAME SUBDIR_NAME METAVARS LINK_LIBS)
   set(BUILD_TARGET_FILENAME
     "${CMAKE_BINARY_DIR}/${SUBDIR_NAME}/${EXECUTABLE_NAME}.cpp"
     )
@@ -28,7 +30,9 @@ function(add_spectre_executable EXECUTABLE_NAME SUBDIR_NAME METAVARS LINK_LIBS)
     "// Distributed under the MIT License.\n"
     "// See LICENSE.txt for details.\n"
     "\n"
-    "#include \"${SUBDIR_NAME}/${EXECUTABLE_NAME}.hpp\"\n"
+    "#include \"${SUBDIR_NAME}/${HPP_NAME}Fwd.hpp\"\n"
+    "using metavariables = ${METAVARS};\n"
+    "#include \"${SUBDIR_NAME}/${HPP_NAME}.hpp\"\n"
     "#include \"Parallel/Main.hpp\"\n"
     "\n"
     "using charmxx_main_component = Parallel::Main<${METAVARS}>;\n"
