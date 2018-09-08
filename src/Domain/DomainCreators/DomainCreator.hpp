@@ -25,6 +25,8 @@ class Domain;
 /// Defines classes that create Domains.
 namespace DomainCreators {
 /// \cond
+template <size_t VolumeDim, typename TargetFrame>
+class AlignedLattice;
 template <typename TargetFrame>
 class Brick;
 template <typename TargetFrame>
@@ -55,21 +57,24 @@ struct domain_creators;
 template <>
 struct domain_creators<1> {
   template <typename Frame>
-  using creators = tmpl::list<DomainCreators::Interval<Frame>,
+  using creators = tmpl::list<DomainCreators::AlignedLattice<1, Frame>,
+                              DomainCreators::Interval<Frame>,
                               DomainCreators::RotatedIntervals<Frame>>;
 };
 template <>
 struct domain_creators<2> {
   template <typename Frame>
   using creators =
-      tmpl::list<DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>,
+      tmpl::list<DomainCreators::AlignedLattice<2, Frame>,
+                 DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>,
                  DomainCreators::RotatedRectangles<Frame>>;
 };
 template <>
 struct domain_creators<3> {
   template <typename Frame>
   using creators =
-      tmpl::list<DomainCreators::Brick<Frame>, DomainCreators::Cylinder<Frame>,
+      tmpl::list<DomainCreators::AlignedLattice<3, Frame>,
+                 DomainCreators::Brick<Frame>, DomainCreators::Cylinder<Frame>,
                  DomainCreators::RotatedBricks<Frame>,
                  DomainCreators::Shell<Frame>, DomainCreators::Sphere<Frame>>;
 };
@@ -102,6 +107,7 @@ class DomainCreator {
       const noexcept = 0;
 };
 
+#include "Domain/DomainCreators/AlignedLattice.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Domain/DomainCreators/Cylinder.hpp"
 #include "Domain/DomainCreators/Disk.hpp"
