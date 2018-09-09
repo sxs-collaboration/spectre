@@ -1040,6 +1040,11 @@ then typically look as follows:
  */
 
 /*!
+ * \defgroup PythonBindingsGroup Python Bindings
+ * \brief Classes and functions useful when writing python bindings.
+ */
+
+/*!
  * \defgroup SlopeLimitersGroup Slope Limiters
  * \brief Slope limiters to control shocks and surfaces in the solution.
  */

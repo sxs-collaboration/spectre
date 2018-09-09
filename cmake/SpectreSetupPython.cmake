@@ -1,6 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# In order to avoid runtime errors about missing CmiPrintf and other Cmi
+# (Charm++) functions, we need to link in the whole PyBindings archive.
+# In order to make it easier for users, we define the variable
+# SPECTRE_LINK_PYBINDINGS so that the target_link_libraries only needs to
+# specify ${SPECTRE_LINK_PYBINDINGS}. Note that ${SPECTRE_LINK_PYBINDINGS}
+# must be the last library to link.
+set(SPECTRE_LINK_PYBINDINGS
+  -Wl,--whole-archive
+  PUBLIC PyBindings
+  -Wl,--no-whole-archive)
+
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
   SPECTRE_PYTHON_PREFIX
