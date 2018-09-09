@@ -27,3 +27,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Utilities"
   )
+
+spectre_add_python_test(
+  "Unit.DataStructures.Python.DataVector"
+  Test_DataVector.py
+  "unit;datastructures;python")
