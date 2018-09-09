@@ -49,6 +49,7 @@ include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
 include(AddSpectreExecutable)
+include(SpectreSetupPython)
 
 include(CheckBrokenArray0)
 
