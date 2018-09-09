@@ -95,7 +95,8 @@ Code Quality Items:
 * Explicit instantiations of functions marked as noexcept should be marked
   as noexcept as well.
 * Functions that do not throw should be marked `noexcept`. If you're unsure
-  and the function does not use an `OptionContext`, mark it `noexcept`.
+  and the function does not use an `OptionContext` or is generating python
+  bindings, mark it `noexcept`.
 * Variable names in macros must avoid name collisions, e.g. inside the
   `PARSE_ERROR` macro you would write
   `double variable_name_avoid_name_collisions_PARSE_ERROR = 0.0;`
