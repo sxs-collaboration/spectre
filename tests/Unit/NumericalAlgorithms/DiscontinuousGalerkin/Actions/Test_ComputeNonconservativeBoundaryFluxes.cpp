@@ -47,13 +47,11 @@ namespace {
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
-  static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 struct Var2 : db::SimpleTag {
   static std::string name() noexcept { return "Var2"; }
   using type = tnsr::ii<DataVector, 2>;
-  static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 struct OtherArg : db::SimpleTag {
@@ -92,6 +90,9 @@ struct System {
 
 template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
+template <typename Tag>
+using interface_compute_tag =
+    Tags::InterfaceComputeItem<Tags::InternalDirections<2>, Tag>;
 
 using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
     tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;
@@ -109,11 +110,12 @@ struct component
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
                         interface_tag<OtherArg>, n_dot_f_tag>;
   using compute_tags = db::AddComputeTags<
-      Tags::InternalDirections<2>, interface_tag<Tags::Direction<2>>,
-      interface_tag<Tags::Mesh<1>>,
-      interface_tag<Tags::UnnormalizedFaceNormal<2>>,
-      interface_tag<Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
-      interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
+      Tags::InternalDirections<2>, interface_compute_tag<Tags::Direction<2>>,
+      interface_compute_tag<Tags::InterfaceMesh<2>>,
+      interface_compute_tag<Tags::UnnormalizedFaceNormal<2>>,
+      interface_compute_tag<
+          Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
+      interface_compute_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };

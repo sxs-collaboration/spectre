@@ -42,7 +42,6 @@ struct Operand : db::PrefixTag, db::SimpleTag {
   }
   using type = typename Tag::type;
   using tag = Tag;
-  static constexpr bool should_be_sliced_to_boundary = true;
 };
 
 /*!

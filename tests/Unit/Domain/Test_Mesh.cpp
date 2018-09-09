@@ -14,7 +14,9 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -35,6 +37,7 @@ void test_extents_basis_and_quadrature(
     CHECK(mesh.quadrature(d) == gsl::at(quadrature, d));
     CHECK(gsl::at(mesh.slices(), d) == mesh.slice_through(d));
   }
+  CHECK(get_output(mesh) == get_output(extents));
 }
 }  // namespace
 

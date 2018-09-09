@@ -20,5 +20,6 @@ target_link_libraries(
   INTERFACE DataStructures
   INTERFACE ErrorHandling
   INTERFACE GeneralRelativity
+  INTERFACE LinearAlgebra
   INTERFACE SPHEREPACK
   )

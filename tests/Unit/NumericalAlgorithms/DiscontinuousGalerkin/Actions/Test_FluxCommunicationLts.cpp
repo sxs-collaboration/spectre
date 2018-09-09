@@ -65,7 +65,6 @@ struct Var : db::SimpleTag {
 struct OtherData : db::SimpleTag {
   static std::string name() noexcept { return "OtherData"; }
   using type = Scalar<DataVector>;
-  static constexpr bool should_be_sliced_to_boundary = false;
 };
 
 template <size_t Dim>
@@ -116,6 +115,9 @@ struct System {
 
 template <size_t Dim, typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+template <size_t Dim, typename Tag>
+using interface_compute_tag =
+    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
@@ -167,12 +169,14 @@ struct lts_component
       MortarRecorderTag, mortar_next_temporal_ids_tag<2>>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::InternalDirections<Dim>, interface_tag<Dim, Tags::Direction<Dim>>,
-      interface_tag<Dim, Tags::Mesh<Dim - 1>>,
-      interface_tag<Dim, Tags::UnnormalizedFaceNormal<Dim>>,
-      interface_tag<
+      Tags::InternalDirections<Dim>,
+      interface_compute_tag<Dim, Tags::Direction<Dim>>,
+      interface_compute_tag<Dim, Tags::InterfaceMesh<Dim>>,
+      interface_compute_tag<Dim, Tags::UnnormalizedFaceNormal<Dim>>,
+      interface_compute_tag<
           Dim, Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
-      interface_tag<Dim, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+      interface_compute_tag<
+          Dim, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;

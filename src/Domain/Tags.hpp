@@ -155,41 +155,28 @@ struct BoundaryDirections : db::ComputeTag {
   }
 };
 
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// Base type for the Interface tag.  Exposed so that specializations
-/// can reuse the implementation.
-/// \tparam DirectionsTag the item of directions
-/// \tparam NameTag the tag labeling the item
-/// \tparam FunctionTag the tag to call to compute the result
-template <typename DirectionsTag, typename NameTag, typename FunctionTag>
-struct InterfaceBase;
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// \brief Prefix for an object on interfaces.
+/// \brief Tag which is either a SimpleTag for quantities on an
+/// interface, base tag to a compute item which acts on tags on an interface, or
+/// base tag to a compute item which slices a tag from the volume to an
+/// interface.
 ///
-/// The contained object will be a map from ::Direction to the item
-/// type of `Tag`, with the set of directions being those produced by
-/// `DirectionsTag`.  If `Tag` is a compute item, its function will be
-/// applied separately to the data on each interface.  If some of the
-/// compute item's inputs should be taken from the volume even when
-/// applied on a slice, it may indicate them using a `volume_tags`
-/// typelist in the tag struct.
+/// The contained object will be a map from ::Direction to the item type of
+/// `Tag`, with the set of directions being those produced by `DirectionsTag`.
+///
+/// If a SimpleTag is desired on the interface, then this tag can be added to
+/// the DataBox directly. If a ComputeTag which acts on Tags on the interface is
+/// desired, then the tag should be added using `InterfaceComputeItem`. If a
+/// ComputeTag which slices a VariablesTag in the volume to an Interface is
+/// desired, then it should be added using `Slice`. In all cases, the tag can
+/// then be retrieved using `Tags::Interface<DirectionsTag, Tag>`.
 ///
 /// If using the base tag mechanism for an interface tag is desired,
 /// then `Tag` can have a `base` type alias pointing to its base
 /// class.  (This requirement is due to the lack of a way to determine
 /// a type's base classes in C++.)
-///
-/// If the type of the item is a Variables, then each tag in the
-/// Variables must specify whether it should be sliced from the volume
-/// or computed (or set) on the interface.  This is done using a
-/// `static constexpr bool should_be_sliced_to_boundary` member of the
-/// tag.  All tags in the Variables must have the same value for this
-/// member.  DataBox tags for sliced Variables will be compute items
-/// performing the slicing.  %Tags for non-sliced Variables will
-/// perform the same action as the corresponding volume tag.
 ///
 /// It must be possible to determine the type associated with `Tag`
 /// without reference to a DataBox, i.e., `db::item_type<Tag>` must
@@ -197,8 +184,10 @@ struct InterfaceBase;
 ///
 /// \tparam DirectionsTag the item of directions
 /// \tparam Tag the tag labeling the item
-template <typename DirectionsTag, typename Tag, typename = std::nullptr_t>
-struct Interface : InterfaceBase<DirectionsTag, Tag, Tag> {};
+///
+/// \see InterfaceComputeItem, Slice
+template <typename DirectionsTag, typename Tag>
+struct Interface;
 
 namespace Interface_detail {
 // Pull volume_tags from BaseComputeItem, defaulting to an empty list.
@@ -295,56 +284,130 @@ struct GetBaseTagIfPresent<DirectionsTag, Tag,
   static_assert(cpp17::is_base_of_v<typename Tag::base, Tag>,
                 "Tag `base` alias must be a base class of `Tag`.");
 };
-
-template <bool IsComputeItem, typename DirectionsTag, typename NameTag,
-          typename FunctionTag>
-struct InterfaceImpl;
-
-template <typename DirectionsTag, typename NameTag, typename FunctionTag>
-struct InterfaceImpl<false, DirectionsTag, NameTag, FunctionTag>
-    : virtual db::SimpleTag, GetBaseTagIfPresent<DirectionsTag, NameTag> {
-  static_assert(cpp17::is_same_v<NameTag, FunctionTag>,
-                "Can't specify a function for a simple item tag");
-  using tag = NameTag;
-  using type =
-      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
-                         db::item_type<NameTag>>;
-};
-
-template <typename DirectionsTag, typename NameTag, typename FunctionTag>
-struct InterfaceImpl<true, DirectionsTag, NameTag, FunctionTag>
-    : db::ComputeTag, GetBaseTagIfPresent<DirectionsTag, NameTag> {
-  using tag = NameTag;
-  using forwarded_argument_tags =
-      interface_compute_item_argument_tags<DirectionsTag, FunctionTag>;
-  using argument_tags =
-      tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
-  static constexpr auto function = evaluate_compute_item<
-    DirectionsTag, FunctionTag, forwarded_argument_tags>::apply;
-};
 }  // namespace Interface_detail
-
-template <typename DirectionsTag, typename NameTag, typename FunctionTag>
-struct InterfaceBase
-    : virtual db::PrefixTag,
-      Interface_detail::InterfaceImpl<db::is_compute_item_v<FunctionTag>,
-                                      DirectionsTag, NameTag, FunctionTag> {
-  static std::string name() noexcept { return "Interface"; }
-};
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// ::Direction to an interface
-template <size_t VolumeDim>
+template<size_t VolumeDim>
 struct Direction : db::SimpleTag {
   static std::string name() noexcept { return "Direction"; }
   using type = ::Direction<VolumeDim>;
 };
 
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// Computes the `VolumeDim-1` dimensional mesh on an interface from the volume
+/// mesh. `Tags::InterfaceComputeItem<Dirs, InterfaceMesh<VolumeDim>>` is
+/// retrievable as Tags::Interface<Dirs, Mesh<VolumeDim>>` from the DataBox.
+template<size_t VolumeDim>
+struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
+  static constexpr auto function(
+      const ::Direction<VolumeDim> &direction,
+      const ::Mesh<VolumeDim> &volume_mesh) noexcept {
+    return volume_mesh.slice_away(direction.dimension());
+  }
+  using base = Tags::Mesh<VolumeDim - 1>;
+  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
+  using volume_tags = tmpl::list<Mesh<VolumeDim>>;
+};
+
+// Virtual inheritance is used here to prevent a compiler warning: Derived class
+// SimpleTag is inaccessible
+template <typename DirectionsTag, typename Tag>
+struct Interface : virtual db::SimpleTag,
+                   Interface_detail::GetBaseTagIfPresent<DirectionsTag, Tag> {
+  static std::string name() noexcept {
+    return "Interface<" + DirectionsTag::name() + ", " + Tag::name() + ">";
+  };
+  using tag = Tag;
+  using type =
+      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
+                         db::item_type<Tag>>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief Derived tag for representing a compute item which acts on Tags on an
+/// interface. Can be retrieved using Tags::Interface<DirectionsTag, Tag>
+///
+/// The contained object will be a map from ::Direction to the item type of
+/// `Tag`, with the set of directions being those produced by `DirectionsTag`.
+/// `Tag::function` will be applied separately to the data on each interface. If
+/// some of the compute item's inputs should be taken from the volume even when
+/// applied on a slice, it may indicate them using `volume_tags`.
+///
+/// If using the base tag mechanism for an interface tag is desired,
+/// then `Tag` can have a `base` type alias pointing to its base
+/// class.  (This requirement is due to the lack of a way to determine
+/// a type's base classes in C++.)
+///
+/// \tparam DirectionsTag the item of Directions
+/// \tparam Tag the tag labeling the item
+template <typename DirectionsTag, typename Tag>
+struct InterfaceComputeItem
+    : Interface<DirectionsTag, Tag>,
+      db::ComputeTag,
+      virtual db::PrefixTag {
+  // Defining name here prevents an ambiguous function call when using base
+  // tags; Both Interface<Dirs, Tag> and Interface<Dirs, Tag::base> will have a
+  // name function and so cannot be disambiguated.
+  static std::string name() noexcept {
+    return "Interface<" + DirectionsTag::name() + ", " + Tag::name() + ">";
+  };
+  using tag = Tag;
+  using forwarded_argument_tags =
+      Interface_detail::interface_compute_item_argument_tags<DirectionsTag,
+                                                             Tag>;
+  using argument_tags =
+      tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
+  static constexpr auto function =
+      Interface_detail::evaluate_compute_item<DirectionsTag, Tag,
+                                              forwarded_argument_tags>::apply;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief Derived tag for representing a compute item which slices a Tag
+/// containing a `Variables` from the volume to an interface. Retrievable from
+/// the DataBox using `Tags::Interface<DirectionsTag, VarsTag>`
+///
+/// The contained object will be a map from ::Direction to the item
+/// type of `Tag`, with the set of directions being those produced by
+/// `DirectionsTag`.
+///
+/// \requires `Tag` correspond to a `Variables`
+///
+/// \tparam DirectionsTag the item of Directions
+/// \tparam VarsTag the tag labeling the item
+template <typename DirectionsTag, typename VarsTag>
+struct Slice : Interface<DirectionsTag, VarsTag>, db::ComputeTag {
+  static constexpr size_t volume_dim =
+      db::item_type<DirectionsTag>::value_type::volume_dim;
+  static constexpr auto function(
+      const ::Mesh<volume_dim>& mesh,
+      const std::unordered_set<::Direction<volume_dim>>& directions,
+      const db::item_type<VarsTag>& variables) noexcept {
+    std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>
+        sliced_vars{};
+    for (const auto& direction : directions) {
+      sliced_vars[direction] =
+          data_on_slice(variables, mesh.extents(), direction.dimension(),
+                        index_to_slice_at(mesh.extents(), direction));
+    }
+    return sliced_vars;
+  }
+  static std::string name() { return "Interface<" + VarsTag::name() + ">"; };
+  using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, VarsTag>;
+  using volume_tags = tmpl::list<Mesh<volume_dim>, VarsTag>;
+};
+
 /// \cond
 template <typename DirectionsTag, size_t VolumeDim>
-struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
-                                                        db::ComputeTag {
+struct InterfaceComputeItem<DirectionsTag, Direction<VolumeDim>>
+    : db::PrefixTag,
+      db::ComputeTag,
+      Tags::Interface<DirectionsTag, Direction<VolumeDim>> {
   static std::string name() noexcept { return "Interface"; }
   using tag = Direction<VolumeDim>;
   static constexpr auto function(
@@ -358,33 +421,12 @@ struct Interface<DirectionsTag, Direction<VolumeDim>> : db::PrefixTag,
   using argument_tags = tmpl::list<DirectionsTag>;
 };
 /// \endcond
-
-namespace detail {
-template <size_t VolumeDim>
-struct InterfaceMesh : db::ComputeTag {
-  static constexpr auto function(
-      const ::Direction<VolumeDim>& direction,
-      const ::Mesh<VolumeDim>& volume_mesh) noexcept {
-    return volume_mesh.slice_away(direction.dimension());
-  }
-  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
-  using volume_tags = tmpl::list<Mesh<VolumeDim>>;
-};
-}  // namespace detail
-
-/// \cond
-template <typename DirectionsTag, size_t InterfaceDim>
-struct Interface<DirectionsTag, Mesh<InterfaceDim>>
-    : InterfaceBase<DirectionsTag, Mesh<InterfaceDim>,
-                    detail::InterfaceMesh<InterfaceDim + 1>> {};
-/// \endcond
 }  // namespace Tags
 
 namespace db {
+namespace detail {
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
-struct Subitems<
-    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
-    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>> {
+struct InterfaceSubitemsImpl {
   using type = tmpl::transform<
       typename item_type<VariablesTag>::tags_list,
       tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
@@ -432,57 +474,23 @@ struct Subitems<
     return sub_value;
   }
 };
-}  // namespace db
-
-namespace Tags {
-namespace detail {
-template <size_t VolumeDim, typename>
-struct Slice;
-
-template <size_t VolumeDim, typename... SlicedTags>
-struct Slice<VolumeDim, tmpl::list<SlicedTags...>> : db::ComputeTag {
-  static constexpr auto function(
-      const ::Mesh<VolumeDim>& mesh, const ::Direction<VolumeDim>& direction,
-      const db::item_type<SlicedTags>&... tensors) noexcept {
-    return data_on_slice<SlicedTags...>(
-        mesh.extents(), direction.dimension(),
-        index_to_slice_at(mesh.extents(), direction), tensors...);
-  }
-  using argument_tags =
-      tmpl::list<Mesh<VolumeDim>, Direction<VolumeDim>, SlicedTags...>;
-  using volume_tags = tmpl::list<Mesh<VolumeDim>, SlicedTags...>;
-};
-
-template <typename Tag>
-struct ShouldBeSlicedToBoundary {
-  using type = std::integral_constant<bool, Tag::should_be_sliced_to_boundary>;
-};
 }  // namespace detail
 
-/// \cond
-template <typename DirectionsTag, typename VariablesTag>
-struct Interface<
-    DirectionsTag, VariablesTag,
-    Requires<tmpl::all<typename db::item_type<VariablesTag>::tags_list,
-                       detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value>>
-    : InterfaceBase<
-          DirectionsTag, VariablesTag,
-          detail::Slice<db::item_type<DirectionsTag>::value_type::volume_dim,
-                        typename db::item_type<VariablesTag>::tags_list>> {};
-
-template <typename DirectionsTag, typename VariablesTag>
-struct Interface<
-    DirectionsTag, VariablesTag,
-    Requires<
-        tmpl::any<typename db::item_type<VariablesTag>::tags_list,
-                  detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value and
-        not tmpl::all<typename db::item_type<VariablesTag>::tags_list,
-                      detail::ShouldBeSlicedToBoundary<tmpl::_1>>::value>> {
-  // This static_assert should always trigger. We compare the VariablesTag to a
-  // very unusual type that in general will not appear as a tag.
-  static_assert(
-      cpp17::is_same_v<VariablesTag, void* volatile const* volatile const*>,
-      "Cannot compute a partially-sliced Variables");
+template <typename TagList, typename DirectionsTag, typename VariablesTag>
+struct Subitems<
+    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
+    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
+    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {
 };
-/// \endcond
-}  // namespace Tags
+template <typename TagList, typename DirectionsTag, typename VariablesTag>
+struct Subitems<
+    TagList, Tags::InterfaceComputeItem<DirectionsTag, VariablesTag>,
+    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
+    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
+
+template <typename TagList, typename DirectionsTag, typename VariablesTag>
+struct Subitems<
+    TagList, Tags::Slice<DirectionsTag, VariablesTag>,
+    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
+: detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
+}  // namespace db
