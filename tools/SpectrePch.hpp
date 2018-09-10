@@ -15,10 +15,10 @@
 #include <vector>
 
 // Include PointerVector.hpp since this is what we use to wrap Blaze
-#include <@CMAKE_SOURCE_DIR@/src/Utilities/PointerVector.hpp>
+#include <Utilities/PointerVector.hpp>
 #include <blaze/math/typetraits/IsVector.h>
 
 // Include Brigand related headers
-#include <@CMAKE_SOURCE_DIR@/src/Utilities/TMPL.hpp>
+#include <Utilities/TMPL.hpp>
 
 #endif  // SPECTRE_PCH_HPP
