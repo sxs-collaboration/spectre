@@ -121,3 +121,21 @@ cause a problem leading to strange build failures.  If you suspect
 this may be the case, get a SpECTRE owner to click on the `More
 options` button in the top right, choose `Caches` and delete the cache
 for your pull request.
+
+## Precompiled Headers and ccache
+
+Getting ccache to work with precompiled headers on TravisCI is a little
+challenging. The header to be precompiled is
+`${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp` and is symbolically linked to
+`${SPECTRE_BUILD_DIR}/SpectrePch.hpp`. The configuration that seems to work is
+specifying the environment variables:
+
+\code{.sh}
+CCACHE_COMPILERCHECK=content
+CCACHE_EXTRAFILES="${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp"
+CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:${SPECTRE_BUILD_DIR}/SpectrePch.hpp.gch"
+\endcode
+
+On macOS builds we haven't yet had success with using `ccache` with a
+precompiled header. We disable the precompiled header and build in debug mode
+only to have reasonable build times.
