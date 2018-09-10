@@ -45,6 +45,11 @@ sudo: required
 services:
 - docker
 
+# Specify the order of stages.
+stages:
+  - Build Libraries
+  - Build and Run Tests, ClangTidy, IWYU, and Doxygen
+
 # Set up travis configurations of Linux and macOS.
 #
 # We also have separate targets for running shell scripts that enforce what
@@ -55,7 +60,8 @@ services:
 matrix:
   fast_finish: true
   include:
-  - os: linux
+  - stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
+    os: linux
     dist: trusty
     env: CHECK_COMMITS=true
     compiler: clang
@@ -90,54 +96,73 @@ matrix:
     env: TEST_CHECK_FILES=true
     compiler: clang
     name: test check files
-    # Run full builds after static analysis
-  - os: linux
+
+  # Run full builds after static analysis
+  - &GccDebug
+    os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Debug COVERAGE=ON
-    name: gcc debug with coverage
-  - os: linux
+    env: BUILD_TYPE=Debug COVERAGE=OFF
+    name: gcc debug
+    stage: Build Libraries
+  - &GccRelease
+    os: linux
     compiler: gcc
     dist: trusty
     env: BUILD_TYPE=Release
     name: gcc release
-  - os: linux
+  - &Gcc6Debug
+    os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Debug COMPILER=gcc-6
     name: gcc-6 debug
-  - os: linux
+  - &Gcc6Release
+    os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-6
     name: gcc-6 release
-  - os: linux
+  - &ClangDebug
+    os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Debug
     name: clang debug
-  - os: linux
+  - &ClangRelease
+    os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Release
     name: clang release
-  - os: osx
-    env: BUILD_TYPE=Debug
-    osx_image: xcode9.2
-    compiler: clang
-    name: osx debug
-  - os: osx
-    osx_image: xcode9.2
-    env: BUILD_TYPE=Release
-    compiler: clang
-    name: osx release
+
+  # Build and run tests, clang tidy, IWYU, and docs.
+  - <<: *GccDebug
+    stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
+  - <<: *GccRelease
+  - <<: *Gcc6Debug
+  - <<: *Gcc6Release
+  - <<: *ClangDebug
+  - <<: *ClangRelease
+  # - os: osx
+  #   env: BUILD_TYPE=Debug
+  #   osx_image: xcode9.2
+  #   compiler: clang
+  #   name: osx debug
+  # - os: osx
+  #   osx_image: xcode9.2
+  #   env: BUILD_TYPE=Release
+  #   compiler: clang
+  #   name: osx release
 
 
 # Travis allows caching of data between builds to reduce build times or perform
 # regression testing. We use ccache (https://ccache.samba.org/) to reduce
 # compilation time.
 cache:
-  ccache: true
+  directories:
+    - $HOME/ccache
+
 
 # For macOS we install all dependencies in the before_install step of Travis.
 # Unfortunately installing ccache and jemalloc from brew causes a brew update,
@@ -274,10 +299,14 @@ script:
   elif [ "${TEST_CHECK_FILES}" ==  "true" ]; then
     ./tools/CheckFiles.sh --test;
   elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+    if [ ! -d ${HOME}/ccache/build_${CC}_${BUILD_TYPE} ]; then
+      mkdir ${HOME}/ccache/build_${CC}_${BUILD_TYPE};
+    fi;
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
     && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
-    && cp -r ${HOME}/.ccache ${HOME}/docker/ccache
+    && rm -rf ${HOME}/docker/ccache
+    && mv ${HOME}/ccache/build_${CC}_${BUILD_TYPE} ${HOME}/docker/ccache
     && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
     && docker build
         --build-arg CXXFLAGS="-Werror -march=x86-64"
@@ -296,6 +325,7 @@ script:
         --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT}
         --build-arg TRAVIS_SECURE_ENV_VARS=${TRAVIS_SECURE_ENV_VARS}
         --build-arg TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}
+        --build-arg TRAVIS_BUILD_STAGE_NAME="${TRAVIS_BUILD_STAGE_NAME}"
         --build-arg ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
         --build-arg ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
         --build-arg GH_PAGES_REPO=${GH_PAGES_REPO}
@@ -308,12 +338,13 @@ script:
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
         --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
         --build-arg CHARM_PATCH=${CHARM_PATCH}
+        --build-arg CORE_LIBS=${CORE_LIBS}
         -t ${TRAVIS_REPO_SLUG}
         -f ${HOME}/docker/Dockerfile.travis
         ${HOME}/docker/
-    && rm -rf ${HOME}/.ccache
+    && rm -rf ${HOME}/ccache/*
     && CON=$(docker run -d ${TRAVIS_REPO_SLUG} /bin/bash)
-    && docker cp ${CON}:/root/.ccache ${HOME}/
+    && docker cp ${CON}:/root/.ccache ${HOME}/ccache/build_${CC}_${BUILD_TYPE}/
     && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
                  ${HOME}/docker/spectre;
   elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then

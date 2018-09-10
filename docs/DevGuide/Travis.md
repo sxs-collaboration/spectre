@@ -139,3 +139,14 @@ CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:${SPECTRE_BUILD_DIR}/S
 On macOS builds we haven't yet had success with using `ccache` with a
 precompiled header. We disable the precompiled header and build in debug mode
 only to have reasonable build times.
+
+## Build Stages
+
+In order to avoid timeouts we build SpECTRE in various stages, carrying over the
+ccache from one stage to the next. This allows us to avoid recompiling the code
+in the next stage (there is some small overhead from running ccache instead of
+not doing anything at all). The first stage builds all the SpECTRE libraries but
+none of the executables or testing libraries. The second stage builds builds the
+test executables, runs the tests, and also runs ClangTidy, include-what-you-use,
+and various other checks. Another stage could be added that builds some of the
+test libraries if necessary.
