@@ -24,7 +24,9 @@ if (USE_PCH)
   # GCC's precompiled headers require the hpp and the precompiled header
   # be in the same directory.
   set(PCH_PATH "${CMAKE_BINARY_DIR}/SpectrePch.hpp")
-  configure_file(
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    -E create_symlink
     ${CMAKE_SOURCE_DIR}/tools/SpectrePch.hpp
     ${CMAKE_BINARY_DIR}/SpectrePch.hpp
     )
@@ -38,10 +40,20 @@ if (USE_PCH)
   # the PCH library as a static lib so we know the generated libs name.
   set(PCH_LIB_NAME "PCH_SPECTRE_DEPENDENCIES")
   set(PCH_LIB_DIR "${CMAKE_BINARY_DIR}/tmp/")
-  configure_file(
+  if(NOT EXISTS "${CMAKE_BINARY_DIR}/tmp/")
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tmp/")
+  endif()
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    -E create_symlink
     ${CMAKE_SOURCE_DIR}/tools/SpectrePch.hpp
     ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.hpp
-    )
+    RESULT_VARIABLE RESULT_OF_LINK)
+  if(NOT ${RESULT_VARIABLE} EQUAL 0)
+    message(FATAL_ERROR
+      "Failed to create symbolic link for "
+      "${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.hpp")
+  endif()
   # We write a temp file and use configure_file so we don't trigger
   # a rebuild of the PCH every time CMake is run.
   file(WRITE
