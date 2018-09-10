@@ -23,6 +23,7 @@
 // IWYU pragma: no_include "Parallel/Algorithm.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/TypeTraits.hpp"
@@ -52,50 +53,6 @@ struct Singleton;
 /// \endcond
 
 namespace Parallel {
-/*!
- * \ingroup ParallelGroup
- * \brief Lock a converse CmiNodeLock
- */
-inline void lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  CmiLock(*node_lock);
-#pragma GCC diagnostic pop
-}
-
-/// \cond
-constexpr inline void lock(
-    const gsl::not_null<NoSuchType*> /*unused*/) noexcept {}
-/// \endcond
-
-/*!
- * \ingroup ParallelGroup
- * \brief Returns true if the lock was successfully acquired and false if the
- * lock is already acquired by another processor.
- */
-inline bool try_lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  return CmiTryLock(*node_lock) == 0;
-#pragma GCC diagnostic pop
-}
-
-/*!
- * \ingroup ParallelGroup
- * \brief Unlock a converse CmiNodeLock
- */
-inline void unlock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  CmiUnlock(*node_lock);
-#pragma GCC diagnostic pop
-}
-
-/// \cond
-constexpr inline void unlock(
-    const gsl::not_null<NoSuchType*> /*unused*/) noexcept {}
-/// \\endcond
-
 /// \cond
 template <typename ParallelComponent, typename ChareType,
           typename Metavariables, typename ActionList, typename ArrayIndex,
@@ -366,7 +323,7 @@ template <typename ParallelComponent, typename ChareType,
 AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
               tmpl::list<ActionsPack...>, ArrayIndex,
               InitialDataBox>::AlgorithmImpl() noexcept {
-  make_overloader([](CmiNodeLock& node_lock) { node_lock = CmiCreateLock(); },
+  make_overloader([](CmiNodeLock& node_lock) { node_lock = create_lock(); },
                   [](NoSuchType /*unused*/) {})(node_lock_);
   set_array_index();
 }
@@ -402,14 +359,8 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   // which will be instantiated.
   (void)Parallel::charmxx::RegisterParallelComponent<
       ParallelComponent>::registrar;
-  make_overloader(
-      [](CmiNodeLock& node_lock) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-        CmiDestroyLock(node_lock);
-#pragma GCC diagnostic pop
-      },
-      [](NoSuchType /*unused*/) {})(node_lock_);
+  make_overloader([](CmiNodeLock& node_lock) { free_lock(&node_lock); },
+                  [](NoSuchType /*unused*/) {})(node_lock_);
 }
 
 template <typename ParallelComponent, typename ChareType,

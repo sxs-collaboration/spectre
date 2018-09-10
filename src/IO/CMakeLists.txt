@@ -11,6 +11,8 @@ set(LIBRARY_SOURCES
     H5/Helpers.cpp
     H5/OpenGroup.cpp
     H5/Version.cpp
+    Observer/ArrayComponentId.cpp
+    Observer/TypeOfObservation.cpp
     VolumeDataFile.cpp
 )
 

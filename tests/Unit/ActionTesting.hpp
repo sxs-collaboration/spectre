@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -13,6 +14,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -31,7 +33,7 @@ class MockLocalAlgorithm {
   using metavariables = typename Component::metavariables;
 
  private:
-  template <typename ActiontList>
+  template <typename ActionsList>
   struct compute_databox_type;
 
   template <typename... ActionsPack>
@@ -53,6 +55,21 @@ class MockLocalAlgorithm {
 
   explicit MockLocalAlgorithm(typename Component::initial_databox initial_box)
       : box_(std::move(initial_box)) {}
+
+  void set_index(typename Component::index index) noexcept {
+    array_index_ = std::move(index);
+  }
+
+  void set_cache(Parallel::ConstGlobalCache<typename Component::metavariables>*
+                     cache_ptr) noexcept {
+    const_global_cache_ = cache_ptr;
+  }
+
+  void set_inboxes(tuples::TaggedTupleTypelist<
+                   Parallel::get_inbox_tags<typename Component::action_list>>*
+                       inboxes_ptr) noexcept {
+    inboxes_ = inboxes_ptr;
+  }
 
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() { return terminate_; }
@@ -76,22 +93,41 @@ class MockLocalAlgorithm {
   }
 
   template <size_t... Is>
-  void next_action(
-      std::index_sequence<Is...> /*meta*/,
-      const typename Component::index& array_index,
-      gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
-      gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
-          const_global_cache_ptr) noexcept;
+  void next_action(std::index_sequence<Is...> /*meta*/) noexcept;
 
   template <size_t... Is>
   bool is_ready(
-      std::index_sequence<Is...> /*meta*/,
-      const typename Component::index& array_index,
-      gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
-      gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
-          const_global_cache) noexcept;
+      std::index_sequence<Is...> /*meta*/) noexcept;
+
+  template <typename Action, typename... Args>
+  void simple_action(std::tuple<Args...> args) noexcept {
+    performing_action_ = true;
+    forward_tuple_to_action<Action>(
+        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+    performing_action_ = false;
+  }
+
+  template <typename Action>
+  void simple_action() noexcept {
+    performing_action_ = true;
+    Parallel::Algorithm_detail::simple_action_visitor<
+        Action, typename Component::initial_databox>(
+        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+        actions_list{}, std::add_pointer_t<Component>{nullptr});
+    performing_action_ = false;
+  }
 
  private:
+  template <typename Action, typename... Args, size_t... Is>
+  void forward_tuple_to_action(std::tuple<Args...>&& args,
+                               std::index_sequence<Is...> /*meta*/) noexcept {
+    Parallel::Algorithm_detail::simple_action_visitor<
+        Action, typename Component::initial_databox>(
+        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+        actions_list{}, std::add_pointer_t<Component>{nullptr},
+        std::forward<Args>(std::get<Is>(args))...);
+  }
+
   bool terminate_{false};
   make_boost_variant_over<
       tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>
@@ -99,18 +135,21 @@ class MockLocalAlgorithm {
   // The next action we should execute.
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
+
+  typename Component::index array_index_{};
+  Parallel::ConstGlobalCache<typename Component::metavariables>*
+      const_global_cache_{nullptr};
+  tuples::TaggedTupleTypelist<
+      Parallel::get_inbox_tags<typename Component::action_list>>* inboxes_{
+      nullptr};
 };
 
 template <typename Component>
 template <size_t... Is>
 void MockLocalAlgorithm<Component>::next_action(
-    std::index_sequence<Is...> /*meta*/,
-    const typename Component::index& array_index,
-    const gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
-    const gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
-        const_global_cache_ptr) noexcept {
-  auto& const_global_cache = *const_global_cache_ptr;
-  if (performing_action_) {
+    std::index_sequence<Is...> /*meta*/) noexcept {
+  auto& const_global_cache = *const_global_cache_;
+  if (UNLIKELY(performing_action_)) {
     ERROR(
         "Cannot call an Action while already calling an Action on the same "
         "MockLocalAlgorithm (an element of a parallel component array, or a "
@@ -120,7 +159,8 @@ void MockLocalAlgorithm<Component>::next_action(
   // to only evaluate one per call.
   bool already_did_an_action = false;
   const auto helper = [
-    this, &array_index, &inboxes, &const_global_cache, &already_did_an_action
+    this, &array_index = array_index_, &inboxes = *inboxes_,
+    &const_global_cache, &already_did_an_action
   ](auto iteration) noexcept {
     constexpr size_t iter = decltype(iteration)::value;
     using this_action = tmpl::at_c<actions_list, iter>;
@@ -151,7 +191,7 @@ void MockLocalAlgorithm<Component>::next_action(
         [&box, &array_index, &const_global_cache, &inboxes](
             std::true_type /*has_is_ready*/, auto t) {
           return decltype(t)::is_ready(
-              cpp17::as_const(box), cpp17::as_const(*inboxes),
+              cpp17::as_const(box), cpp17::as_const(inboxes),
               const_global_cache, cpp17::as_const(array_index));
         },
         [](std::false_type /*has_is_ready*/, auto) { return true; });
@@ -174,26 +214,26 @@ void MockLocalAlgorithm<Component>::next_action(
             auto& my_box, std::integral_constant<size_t, 1> /*meta*/)
             SPECTRE_JUST_ALWAYS_INLINE noexcept {
               std::tie(box_) = this_action::apply(
-                  my_box, *inboxes, const_global_cache,
+                  my_box, inboxes, const_global_cache,
                   cpp17::as_const(array_index), actions_list{}, component_ptr);
             },
         [ this, &array_index, component_ptr, &const_global_cache, &inboxes ](
             auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
             SPECTRE_JUST_ALWAYS_INLINE noexcept {
               std::tie(box_, terminate_) = this_action::apply(
-                  my_box, *inboxes, const_global_cache,
+                  my_box, inboxes, const_global_cache,
                   cpp17::as_const(array_index), actions_list{}, component_ptr);
             },
         [ this, &array_index, component_ptr, &const_global_cache, &inboxes ](
             auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
             SPECTRE_JUST_ALWAYS_INLINE noexcept {
               std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
-                  my_box, *inboxes, const_global_cache,
+                  my_box, inboxes, const_global_cache,
                   cpp17::as_const(array_index), actions_list{}, component_ptr);
             })(
         box,
         typename std::tuple_size<decltype(this_action::apply(
-            box, *inboxes, const_global_cache, cpp17::as_const(array_index),
+            box, inboxes, const_global_cache, cpp17::as_const(array_index),
             actions_list{}, component_ptr))>::type{});
     performing_action_ = false;
     already_did_an_action = true;
@@ -211,14 +251,11 @@ void MockLocalAlgorithm<Component>::next_action(
 template <typename Component>
 template <size_t... Is>
 bool MockLocalAlgorithm<Component>::is_ready(
-    std::index_sequence<Is...> /*meta*/,
-    const typename Component::index& array_index,
-    const gsl::not_null<tuples::TaggedTupleTypelist<inbox_tags_list>*> inboxes,
-    const gsl::not_null<Parallel::ConstGlobalCache<metavariables>*>
-        const_global_cache) noexcept {
+    std::index_sequence<Is...> /*meta*/) noexcept {
   bool next_action_is_ready = false;
   const auto helper = [
-    this, &array_index, &inboxes, &const_global_cache, &next_action_is_ready
+    this, &array_index = array_index_, &inboxes = *inboxes_,
+    &const_global_cache = const_global_cache_, &next_action_is_ready
   ](auto iteration) noexcept {
     constexpr size_t iter = decltype(iteration)::value;
     using this_action = tmpl::at_c<actions_list, iter>;
@@ -249,7 +286,7 @@ bool MockLocalAlgorithm<Component>::is_ready(
         [&box, &array_index, &const_global_cache, &inboxes](
             std::true_type /*has_is_ready*/, auto t) {
           return decltype(t)::is_ready(
-              cpp17::as_const(box), cpp17::as_const(*inboxes),
+              cpp17::as_const(box), cpp17::as_const(inboxes),
               *const_global_cache, cpp17::as_const(array_index));
         },
         [](std::false_type /*has_is_ready*/, auto) { return true; });
@@ -322,6 +359,16 @@ class MockProxy {
         local_algorithms_->at(index), inboxes_->operator[](index));
   }
 
+  MockLocalAlgorithm<Component>* ckLocalBranch() noexcept {
+    ASSERT(
+        local_algorithms_->size() == 1,
+        "Can only have one algorithm when getting the ckLocalBranch, but have "
+            << local_algorithms_->size());
+    // We always retrieve the 0th local branch because we are assuming running
+    // on a single core.
+    return std::addressof(local_algorithms_->at(0));
+  }
+
   // clang-tidy: no non-const references
   void pup(PUP::er& /*p*/) noexcept {  // NOLINT
     ERROR(
@@ -356,6 +403,11 @@ struct get_array_index<ActionTesting::ActionTesting_detail::MockArrayChare> {
 }  // namespace Parallel
 /// \endcond
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Structures used for mocking the parallel components framework in order
+ * to test actions.
+ */
 namespace ActionTesting {
 /// \ingroup TestingFrameworkGroup
 /// A mock parallel component that acts like a component with
@@ -430,6 +482,15 @@ class ActionRunner {
           Parallel::get_parallel_component<Component>(cache_).set_data(
               &tuples::get<LocalAlgorithmsTag<Component>>(local_algorithms_),
               &tuples::get<InboxesTag<Component>>(inboxes_));
+
+          for (auto& local_alg_pair : this->template algorithms<Component>()) {
+            const auto& index = local_alg_pair.first;
+            auto& local_alg = local_alg_pair.second;
+            local_alg.set_index(index);
+            local_alg.set_cache(&cache_);
+            local_alg.set_inboxes(
+                &(tuples::get<InboxesTag<Component>>(inboxes_)[index]));
+          }
         });
   }
 
@@ -470,10 +531,8 @@ class ActionRunner {
     algorithms<Component>()
         .at(array_index)
         .next_action(
-            std::make_index_sequence<tmpl::size<
-                typename MockLocalAlgorithm<Component>::actions_list>::value>{},
-            array_index, make_not_null(&inboxes<Component>()[array_index]),
-            &cache_);
+            std::make_index_sequence<tmpl::size<typename MockLocalAlgorithm<
+                Component>::actions_list>::value>{});
   }
 
   /// Call is_ready on the next action in the action list as if on the portion
@@ -483,10 +542,8 @@ class ActionRunner {
     return algorithms<Component>()
         .at(array_index)
         .is_ready(
-            std::make_index_sequence<tmpl::size<
-                typename MockLocalAlgorithm<Component>::actions_list>::value>{},
-            array_index, make_not_null(&inboxes<Component>()[array_index]),
-            &cache_);
+            std::make_index_sequence<tmpl::size<typename MockLocalAlgorithm<
+                Component>::actions_list>::value>{});
   }
 
   /// Access the inboxes for a given component.

@@ -27,6 +27,7 @@ allowed_tags = [
                 "LinearOperators",
                 "LinearSolver",
                 "NumericalAlgorithms",
+                "Observers",
                 "Options",
                 "Parallel",
                 "PointwiseFunctions",

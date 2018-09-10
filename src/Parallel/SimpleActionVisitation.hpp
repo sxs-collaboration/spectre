@@ -72,10 +72,15 @@ void simple_action_visitor_helper(boost::variant<Variants...>& box,
                                   const gsl::not_null<bool*> already_visited,
                                   Args&&... /*args*/) {
   if (box.which() == *iter and not*already_visited) {
-    ERROR("Cannot call apply function of '"
+    ERROR("\nCannot call apply function of '"
           << pretty_type::get_name<Invokable>() << "' with DataBox type '"
           << pretty_type::get_name<ThisVariant>() << "' and arguments '"
-          << pretty_type::get_name<tmpl::list<Args...>>() << "'");
+          << pretty_type::get_name<tmpl::list<Args...>>() << "'.\n"
+          << "If the argument types to the apply function match, then it is "
+             "possible that the apply function has non-deducible template "
+             "parameters. This could occur from removing an apply function "
+             "argument and forgetting to remove its associated template "
+             "parameters.\n");
   }
   (*iter)++;
 }
