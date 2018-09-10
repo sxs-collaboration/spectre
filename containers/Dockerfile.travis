@@ -49,9 +49,12 @@ ARG UPSTREAM_REPO
 ARG UPSTREAM_BRANCH
 ARG CHARM_PATCH
 
+ENV SPECTRE_BUILD_DIR=/work/build_${BUILD_TYPE}_${CC}
+ENV SPECTRE_SOURCE_DIR=/work/spectre
+
 # Copy the spectre repo from the TravisCI disk into the Docker image /work
 # directory
-COPY spectre /work/spectre
+COPY spectre ${SPECTRE_SOURCE_DIR}
 
 # We need the GitHub host added to known_hosts. It is safer to copy in the
 # known_hosts from Travis than to add the REPO host automatically, since that
@@ -64,8 +67,8 @@ COPY known_hosts /root/.ssh/known_hosts
 COPY ccache /root/.ccache
 
 # Create build directory
-RUN mkdir /work/build_${BUILD_TYPE}_${CC}
-WORKDIR /work/build_${BUILD_TYPE}_${CC}
+RUN mkdir ${SPECTRE_BUILD_DIR}
+WORKDIR ${SPECTRE_BUILD_DIR}
 
 RUN ccache -z
 
@@ -95,11 +98,11 @@ RUN bash -c ". /etc/profile.d/lmod.sh; \
 RUN make module_All
 
 RUN if [ ${RUN_CLANG_TIDY} ]; then \
-      /work/spectre/.travis/RunClangTidy.sh; \
+      ${SPECTRE_SOURCE_DIR}/.travis/RunClangTidy.sh; \
     fi
 
 RUN if [ ${RUN_IWYU} ]; then \
-      /work/spectre/.travis/RunIncludeWhatYouUse.sh; \
+      ${SPECTRE_SOURCE_DIR}/.travis/RunIncludeWhatYouUse.sh; \
     fi
 
 # TravisCI currently has 2 cores for a job, so we build on 2.
@@ -146,12 +149,12 @@ RUN if [ "${CHARM_CC}" = "gcc" ] \
                spack load yaml-cpp; \
                make unit-test-coverage"; \
       if [ ${TRAVIS_SECURE_ENV_VARS} = true ]; then \
-        cd /work/spectre; \
-        coveralls-lcov -v --repo-token ${COVERALLS_TOKEN} /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \
-        cd /work/build_${BUILD_TYPE}_${CC}; \
+        cd ${SPECTRE_SOURCE_DIR}; \
+        coveralls-lcov -v --repo-token ${COVERALLS_TOKEN} ${SPECTRE_BUILD_DIR}/tmp/coverage.info; \
+        cd ${SPECTRE_BUILD_DIR}; \
       fi; \
     else \
-      touch /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \
+      touch ${SPECTRE_BUILD_DIR}/tmp/coverage.info; \
     fi
 
 # We use cron jobs to deploy to gh-pages
@@ -170,7 +173,7 @@ RUN if [ ${BUILD_DOC} ] \
       # https://gist.github.com/domenic/ec8b0fc8ab45f39403dd
       # https://docs.travis-ci.com/user/encrypting-files/
       openssl aes-256-cbc -K $ENCRYPTED_KEY -iv $ENCRYPTED_IV \
-              -in /work/spectre/.travis/deploy_key.enc \
+              -in ${SPECTRE_SOURCE_DIR}/.travis/deploy_key.enc \
               -out /root/.ssh/id_rsa -d; \
       chmod 600 /root/.ssh/id_rsa; \
 
@@ -180,5 +183,5 @@ RUN if [ ${BUILD_DOC} ] \
 
 # push documentation to GitHub pages
 RUN if [ ${BUILD_DOC} ]; then \
-      /work/spectre/.travis/TravisPushDocumentation.sh; \
+      ${SPECTRE_SOURCE_DIR}/.travis/TravisPushDocumentation.sh; \
     fi
