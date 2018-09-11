@@ -10,7 +10,7 @@ set(LIBRARY_SOURCES
     PrimitiveFromConservative.cpp
     )
 
-add_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 add_subdirectory(NewtonianEulerSources)
 

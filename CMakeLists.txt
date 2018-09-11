@@ -81,6 +81,7 @@ include(SetupIwyu)
 include(SetupCppCheck)
 include(SetupDoxygen)
 include(CodeCoverageDetection)
+include(SpectreAddLibraries)
 
 # Generate Charm++ files
 generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)

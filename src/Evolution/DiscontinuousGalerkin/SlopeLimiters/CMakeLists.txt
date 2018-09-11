@@ -7,5 +7,4 @@ set(LIBRARY_SOURCES
   Minmod.cpp
   )
 
-add_library(${LIBRARY} ${LIBRARY_SOURCES})
-
+add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
