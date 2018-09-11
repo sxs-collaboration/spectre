@@ -5,27 +5,33 @@ import numpy as np
 
 
 # Functions for testing DarkEnergyFluid.cpp
-def dark_energy_fluid_pressure_from_density(
+def dark_energy_fluid_pressure_from_density_and_energy(
         rest_mass_density, specific_internal_energy, parameter_w):
     return parameter_w * rest_mass_density * (1.0 + specific_internal_energy)
 
 
-def dark_energy_fluid_rel_specific_enthalpy_from_density(
+def dark_energy_fluid_rel_pressure_from_density_and_enthalpy(
+        rest_mass_density, specific_enthalpy, parameter_w):
+    return (parameter_w * rest_mass_density *
+            specific_enthalpy / (parameter_w + 1.0))
+
+
+def dark_energy_fluid_rel_specific_enthalpy_from_density_and_energy(
         rest_mass_density, specific_internal_energy, parameter_w):
     return (parameter_w + 1.0) * (1.0 + specific_internal_energy)
 
 
-def dark_energy_fluid_specific_internal_energy_from_density(
+def dark_energy_fluid_specific_internal_energy_from_density_and_pressure(
         rest_mass_density, pressure, parameter_w):
     return pressure / (parameter_w * rest_mass_density) - 1.0
 
 
-def dark_energy_fluid_chi_from_density(rest_mass_density,
-                                       specific_internal_energy, parameter_w):
+def dark_energy_fluid_chi_from_density_and_energy(
+        rest_mass_density, specific_internal_energy, parameter_w):
     return parameter_w * (1.0 + specific_internal_energy)
 
 
-def dark_energy_fluid_kappa_times_p_over_rho_squared_from_density(
+def dark_energy_fluid_kappa_times_p_over_rho_squared_from_density_and_energy(
         rest_mass_density, specific_internal_energy, parameter_w):
     return parameter_w**2 * (1.0 + specific_internal_energy)
 
@@ -34,33 +40,45 @@ def dark_energy_fluid_kappa_times_p_over_rho_squared_from_density(
 
 
 # Functions for testing IdealFluid.cpp
-def ideal_fluid_pressure_from_density(
+def ideal_fluid_pressure_from_density_and_energy(
         rest_mass_density, specific_internal_energy, adiabatic_index):
     return rest_mass_density * specific_internal_energy * (
         adiabatic_index - 1.0)
 
 
-def ideal_fluid_rel_specific_enthalpy_from_density(
+def ideal_fluid_rel_pressure_from_density_and_enthalpy(
+        rest_mass_density, specific_enthalpy, adiabatic_index):
+    return (rest_mass_density * (specific_enthalpy - 1.0) *
+            (adiabatic_index - 1.0) / adiabatic_index)
+
+
+def ideal_fluid_newt_pressure_from_density_and_enthalpy(
+        rest_mass_density, specific_enthalpy, adiabatic_index):
+    return (rest_mass_density * specific_enthalpy *
+            (adiabatic_index - 1.0) / adiabatic_index)
+
+
+def ideal_fluid_rel_specific_enthalpy_from_density_and_energy(
         rest_mass_density, specific_internal_energy, adiabatic_index):
     return 1.0 + adiabatic_index * specific_internal_energy
 
 
-def ideal_fluid_newt_specific_enthalpy_from_density(
+def ideal_fluid_newt_specific_enthalpy_from_density_and_energy(
         rest_mass_density, specific_internal_energy, adiabatic_index):
     return adiabatic_index * specific_internal_energy
 
 
-def ideal_fluid_specific_internal_energy_from_density(
+def ideal_fluid_specific_internal_energy_from_density_and_pressure(
         rest_mass_density, pressure, adiabatic_index):
     return pressure / (adiabatic_index - 1.0) / rest_mass_density
 
 
-def ideal_fluid_chi_from_density(rest_mass_density, specific_internal_energy,
-                                 adiabatic_index):
+def ideal_fluid_chi_from_density_and_energy(
+        rest_mass_density, specific_internal_energy, adiabatic_index):
     return specific_internal_energy * (adiabatic_index - 1.0)
 
 
-def ideal_fluid_kappa_times_p_over_rho_squared_from_density(
+def ideal_fluid_kappa_times_p_over_rho_squared_from_density_and_energy(
         rest_mass_density, specific_internal_energy, adiabatic_index):
     return specific_internal_energy * (adiabatic_index - 1.0)**2
 
@@ -118,3 +136,13 @@ def polytropic_kappa_times_p_over_rho_squared_from_density(
 
 
 # End functions for testing PolytropicFluid.cpp
+
+
+# Functions for testing SpecificEnthalpy.cpp
+
+
+def specific_enthalpy(rest_mass_density, specific_internal_energy, pressure):
+    return pressure / rest_mass_density + 1.0 + specific_internal_energy
+
+
+# End functions for testing SpecificEnthalpy.cpp

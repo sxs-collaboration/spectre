@@ -3,7 +3,13 @@
 
 #pragma once
 
+#include <boost/preprocessor/arithmetic/dec.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
+#include <boost/preprocessor/control/expr_iif.hpp>
+#include <boost/preprocessor/list/adt.hpp>
+#include <boost/preprocessor/repetition/for.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/tuple/to_list.hpp>
 #include <limits>
 #include <pup.h>
 
@@ -27,10 +33,8 @@ namespace EquationsOfState {
  * p = w(z) \rho ( 1.0 + \epsilon)
  * \f]
  * where \f$\rho\f$ is the rest mass density, \f$\epsilon\f$ is the specific
- * internal energy, and \f$w(z)\f$ is a parameter depending on the redshift
+ * internal energy, and \f$w(z) > 0\f$ is a parameter depending on the redshift
  * \f$z\f$.
- *
- * \warning The numerical implementation requires \f$w\neq0\f$.
  */
 template <bool IsRelativistic>
 class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
@@ -62,13 +66,13 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
 
   explicit DarkEnergyFluid(double parameter_w) noexcept;
 
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DarkEnergyFluid, 2);
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DarkEnergyFluid, 2)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<IsRelativistic, 2>), DarkEnergyFluid);
 
  private:
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2);
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(2)
 
   double parameter_w_ = std::numeric_limits<double>::signaling_NaN();
 };

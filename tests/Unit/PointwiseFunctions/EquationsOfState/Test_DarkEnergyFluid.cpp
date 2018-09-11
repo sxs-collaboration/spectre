@@ -25,26 +25,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
       "PointwiseFunctions/EquationsOfState/"};
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
-  TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(-1.0),
-                                       "dark_energy_fluid", d_for_size, -1.0);
+
   TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(1.0),
                                        "dark_energy_fluid", d_for_size, 1.0);
   TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(1.0 / 3.0),
                                        "dark_energy_fluid", dv_for_size,
                                        1.0 / 3.0);
-  TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(-1.0),
-                                       "dark_energy_fluid", dv_for_size, -1.0);
   TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(1.0),
                                        "dark_energy_fluid", dv_for_size, 1.0);
   TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(1.0 / 3.0),
                                        "dark_energy_fluid", d_for_size,
                                        1.0 / 3.0);
 
-  TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
-          {"  DarkEnergyFluid:\n"
-           "    ParameterW: -1.0\n"}),
-      "dark_energy_fluid", d_for_size, -1.0);
   TestHelpers::EquationsOfState::check(
       test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  DarkEnergyFluid:\n"
@@ -56,11 +48,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
            "    ParameterW: 0.3333333333333333\n"}),
       "dark_energy_fluid", d_for_size, 1.0 / 3.0);
 
-  TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
-          {"  DarkEnergyFluid:\n"
-           "    ParameterW: -1.0\n"}),
-      "dark_energy_fluid", dv_for_size, -1.0);
   TestHelpers::EquationsOfState::check(
       test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  DarkEnergyFluid:\n"

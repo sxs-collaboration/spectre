@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   DarkEnergyFluid.cpp
   IdealFluid.cpp
   PolytropicFluid.cpp
+  SpecificEnthalpy.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

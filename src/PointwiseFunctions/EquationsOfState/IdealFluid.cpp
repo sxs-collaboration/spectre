@@ -31,7 +31,8 @@ void IdealFluid<IsRelativistic>::pup(PUP::er& p) noexcept {
 
 template <bool IsRelativistic>
 template <class DataType>
-Scalar<DataType> IdealFluid<IsRelativistic>::pressure_from_density_impl(
+Scalar<DataType>
+IdealFluid<IsRelativistic>::pressure_from_density_and_energy_impl(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy) const noexcept {
   return Scalar<DataType>{get(rest_mass_density) *
@@ -41,7 +42,27 @@ Scalar<DataType> IdealFluid<IsRelativistic>::pressure_from_density_impl(
 
 template <>
 template <class DataType>
-Scalar<DataType> IdealFluid<true>::specific_enthalpy_from_density_impl(
+Scalar<DataType> IdealFluid<true>::pressure_from_density_and_enthalpy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_enthalpy) const noexcept {
+  return Scalar<DataType>{get(rest_mass_density) *
+                          (get(specific_enthalpy) - 1.0) *
+                          (adiabatic_index_ - 1.0) / adiabatic_index_};
+}
+
+template <>
+template <class DataType>
+Scalar<DataType> IdealFluid<false>::pressure_from_density_and_enthalpy_impl(
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_enthalpy) const noexcept {
+  return Scalar<DataType>{get(rest_mass_density) * get(specific_enthalpy) *
+                          (adiabatic_index_ - 1.0) / adiabatic_index_};
+}
+
+template <>
+template <class DataType>
+Scalar<DataType>
+IdealFluid<true>::specific_enthalpy_from_density_and_energy_impl(
     const Scalar<DataType>& /*rest_mass_density*/,
     const Scalar<DataType>& specific_internal_energy) const noexcept {
   return Scalar<DataType>{1.0 +
@@ -50,7 +71,8 @@ Scalar<DataType> IdealFluid<true>::specific_enthalpy_from_density_impl(
 
 template <>
 template <class DataType>
-Scalar<DataType> IdealFluid<false>::specific_enthalpy_from_density_impl(
+Scalar<DataType>
+IdealFluid<false>::specific_enthalpy_from_density_and_energy_impl(
     const Scalar<DataType>& /*rest_mass_density*/,
     const Scalar<DataType>& specific_internal_energy) const noexcept {
   return Scalar<DataType>{adiabatic_index_ * get(specific_internal_energy)};
@@ -58,17 +80,17 @@ Scalar<DataType> IdealFluid<false>::specific_enthalpy_from_density_impl(
 
 template <bool IsRelativistic>
 template <class DataType>
-Scalar<DataType>
-IdealFluid<IsRelativistic>::specific_internal_energy_from_density_impl(
-    const Scalar<DataType>& rest_mass_density,
-    const Scalar<DataType>& pressure) const noexcept {
+Scalar<DataType> IdealFluid<IsRelativistic>::
+    specific_internal_energy_from_density_and_pressure_impl(
+        const Scalar<DataType>& rest_mass_density,
+        const Scalar<DataType>& pressure) const noexcept {
   return Scalar<DataType>{1.0 / (adiabatic_index_ - 1.0) * get(pressure) /
                           get(rest_mass_density)};
 }
 
 template <bool IsRelativistic>
 template <class DataType>
-Scalar<DataType> IdealFluid<IsRelativistic>::chi_from_density_impl(
+Scalar<DataType> IdealFluid<IsRelativistic>::chi_from_density_and_energy_impl(
     const Scalar<DataType>& /*rest_mass_density*/,
     const Scalar<DataType>& specific_internal_energy) const noexcept {
   return Scalar<DataType>{get(specific_internal_energy) *
@@ -77,10 +99,10 @@ Scalar<DataType> IdealFluid<IsRelativistic>::chi_from_density_impl(
 
 template <bool IsRelativistic>
 template <class DataType>
-Scalar<DataType>
-IdealFluid<IsRelativistic>::kappa_times_p_over_rho_squared_from_density_impl(
-    const Scalar<DataType>& /*rest_mass_density*/,
-    const Scalar<DataType>& specific_internal_energy) const noexcept {
+Scalar<DataType> IdealFluid<IsRelativistic>::
+    kappa_times_p_over_rho_squared_from_density_and_energy_impl(
+        const Scalar<DataType>& /*rest_mass_density*/,
+        const Scalar<DataType>& specific_internal_energy) const noexcept {
   return Scalar<DataType>{square(adiabatic_index_ - 1.0) *
                           get(specific_internal_energy)};
 }

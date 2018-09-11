@@ -146,7 +146,7 @@ void test_primitive_from_conservative(
       [&expected_rest_mass_density, &expected_specific_internal_energy ](
           const EquationsOfState::EquationOfState<true, 2>&
               the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(
+        return the_equation_of_state.pressure_from_density_and_energy(
             expected_rest_mass_density, expected_specific_internal_energy);
       })(equation_of_state);
 

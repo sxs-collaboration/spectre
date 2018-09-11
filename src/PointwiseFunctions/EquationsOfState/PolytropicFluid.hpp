@@ -3,7 +3,13 @@
 
 #pragma once
 
+#include <boost/preprocessor/arithmetic/dec.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
+#include <boost/preprocessor/control/expr_iif.hpp>
+#include <boost/preprocessor/list/adt.hpp>
+#include <boost/preprocessor/repetition/for.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/tuple/to_list.hpp>
 #include <limits>
 #include <pup.h>
 
@@ -61,22 +67,13 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
   PolytropicFluid(double polytropic_constant,
                   double polytropic_exponent) noexcept;
 
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(PolytropicFluid, 1);
-
-  Scalar<double> rest_mass_density_from_enthalpy(
-      const Scalar<double>& specific_enthalpy) const noexcept override;
-  Scalar<DataVector> rest_mass_density_from_enthalpy(
-      const Scalar<DataVector>& specific_enthalpy) const noexcept override;
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(PolytropicFluid, 1)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<IsRelativistic, 1>), PolytropicFluid);
 
  private:
-  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(1);
-
-  template <class DataType>
-  Scalar<DataType> rest_mass_density_from_enthalpy_impl(
-      const Scalar<DataType>& specific_enthalpy) const noexcept;
+  EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(1)
 
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();

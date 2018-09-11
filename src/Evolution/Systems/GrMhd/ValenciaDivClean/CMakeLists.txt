@@ -7,6 +7,8 @@ set(LIBRARY_SOURCES
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
+  NewmanHamlin.cpp
+  PrimitiveFromConservative.cpp
   Sources.cpp
   )
 
