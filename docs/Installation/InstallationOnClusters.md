@@ -11,6 +11,9 @@ necessary for the particular system. If you have already built SpECTRE and just
 want to load the modules, source the shell file for your system and run
 `spectre_load_modules`.
 
+\note Sample submit scripts for some systems are available in
+`support/SubmitScripts`.
+
 ## General Instructions
 
 1. Run `export SPECTRE_HOME=/path/to/where/you/want/to/clone`
