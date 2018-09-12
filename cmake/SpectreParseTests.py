@@ -40,6 +40,7 @@ allowed_tags = [
                 "Time",
                 "Unit",
                 "Utilities",
+                "VariableFixing",
                ]
 
 # Words disallowed in tests

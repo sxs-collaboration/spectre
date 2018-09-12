@@ -1234,3 +1234,18 @@ then typically look as follows:
  * \defgroup UtilitiesGroup Utilities
  * \brief A collection of useful classes, functions and metafunctions.
  */
+
+/*!
+ * \defgroup VariableFixingGroup Variable Fixing
+ * \brief A collection of different variable fixers ranging in sophistication.
+ *
+ * Build-up of numerical error can cause physical quantities to evolve
+ * toward non-physical values. For example, pressure and density may become
+ * negative. This will subsequently lead to failures in numerical inversion
+ * schemes to recover the corresponding convervative values. A rough fix that
+ * enforces physical quantities stay physical is to simply change them by hand
+ * when needed. This can be done at various degrees of sophistication, but in
+ * general the fixed quantities make up a negligible amount of the physics of
+ * the simulation; a rough fix is vastly preferred to a simulation that fails
+ * to complete due to nonphysical quantities.
+ */
