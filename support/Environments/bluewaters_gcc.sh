@@ -8,6 +8,8 @@ load_gcc() {
     module swap PrgEnv-cray PrgEnv-gnu
     module unload gcc
     module load gcc/6.3.0
+    module load craype-hugepages8M
+    module load rca
 }
 
 # Swap to Cray compiler env
@@ -83,19 +85,17 @@ spectre_setup_modules() {
     if [ -f libxsmm/lib/libxsmm.a ]; then
         echo "LIBXSMM is already installed"
     else
-        load_cray_cc
+        load_gcc
         echo "Installing LIBXSMM..."
         rm -rf $dep_dir/libxsmm
         wget https://github.com/hfp/libxsmm/archive/1.9.tar.gz -O libxsmm.tar.gz
         tar -xzf libxsmm.tar.gz
         mv libxsmm-* libxsmm
         cd libxsmm
-        load_cray_cc
         make CXX=CC CC=cc FC=ftn -j4
         cd $dep_dir
         rm libxsmm.tar.gz
         echo "Installed LIBXSMM into $dep_dir/libxsmm"
-        load_gcc
         echo "#%Module1.0" > $dep_dir/modules/libxsmm
         echo "prepend-path LIBRARY_PATH \"$dep_dir/libxsmm/lib\"" >> $dep_dir/modules/libxsmm
         echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/libxsmm/lib\"" >> $dep_dir/modules/libxsmm
@@ -166,13 +166,11 @@ spectre_setup_modules() {
     else
         echo "Installing Charm++..."
         load_gcc
-        module load craype-hugepages8M
         git clone https://charm.cs.illinois.edu/gerrit/charm
         cd $dep_dir/charm
         git checkout v6.8.2
         ./build charm++ gni-crayxe smp -j4 --with-production
         git apply $SPECTRE_HOME/support/Charm/v6.8.patch
-        module unload craype-hugepages8M
         cd $dep_dir
         rm charm.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
@@ -216,6 +214,7 @@ spectre_setup_modules() {
 spectre_unload_modules() {
     load_cray_cc
     # Unload system modules
+    module unload rca
     module unload craype-hugepages8M
     module unload gsl
     module unload cray-hdf5/1.8.16
