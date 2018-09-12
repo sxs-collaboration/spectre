@@ -24,12 +24,38 @@ Averager<DerivOrder>::Averager(const double avg_timescale_frac,
 }
 
 template <size_t DerivOrder>
-boost::optional<std::array<DataVector, DerivOrder + 1>> Averager<DerivOrder>::
-operator()(const double time) const noexcept {
+Averager<DerivOrder>::Averager(Averager&& rhs) noexcept
+    : avg_tscale_frac_(std::move(rhs.avg_tscale_frac_)),
+      average_0th_deriv_of_q_(std::move(rhs.average_0th_deriv_of_q_)),
+      averaged_values_(std::move(rhs.averaged_values_)),
+      boost_none_(std::move(rhs.boost_none_)),
+      times_(std::move(rhs.times_)),
+      raw_qs_(std::move(rhs.raw_qs_)),
+      weight_k_(std::move(rhs.weight_k_)),
+      tau_k_(std::move(rhs.tau_k_)) {}
+
+template <size_t DerivOrder>
+Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) noexcept {
+  if (this != &rhs) {
+    avg_tscale_frac_ = std::move(rhs.avg_tscale_frac_);
+    average_0th_deriv_of_q_ = std::move(rhs.average_0th_deriv_of_q_);
+    averaged_values_ = std::move(rhs.averaged_values_);
+    boost_none_ = std::move(rhs.boost_none_);
+    times_ = std::move(rhs.times_);
+    raw_qs_ = std::move(rhs.raw_qs_);
+    weight_k_ = std::move(rhs.weight_k_);
+    tau_k_ = std::move(rhs.tau_k_);
+  }
+  return *this;
+}
+
+template <size_t DerivOrder>
+const boost::optional<std::array<DataVector, DerivOrder + 1>>&
+Averager<DerivOrder>::operator()(const double time) const noexcept {
   if (times_.size() > DerivOrder and time == times_[0]) {
     return averaged_values_;
   }
-  return boost::none;
+  return boost_none_;
 }
 
 template <size_t DerivOrder>

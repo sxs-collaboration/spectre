@@ -3,9 +3,11 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <boost/optional/optional.hpp>
 #include <cstddef>
+#include <type_traits>
 
 #include "ControlSystem/Averager.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -212,4 +214,38 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadCallToAverageTime",
   ERROR_TEST();
   Averager<2> averager(1.0, true);
   averager.average_time(0.0);
+}
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
+                  "[ControlSystem][Unit]") {
+  Averager<2> averager(0.25, false);
+  static_assert(std::is_nothrow_move_constructible<Averager<2>>::value,
+                "Averager is not nothrow move constructible");
+  static_assert(std::is_nothrow_move_assignable<Averager<2>>::value,
+                "Averager is not nothrow move assignable");
+  // update with junk data
+  averager.update(0.3, {0.1}, {0.1});
+  averager.update(0.5, {0.2}, {0.1});
+  averager.update(0.7, {0.4}, {0.1});
+  averager.update(0.9, {0.6}, {0.1});
+  // get correct values for comparison
+  auto last_time = averager.last_time_updated();
+  auto avg_time = averager.average_time(0.9);
+  auto avg_q = averager.using_average_0th_deriv_of_q();
+  auto avg_values = averager(0.9).get();
+  // test move constructor
+  auto new_averager(std::move(averager));
+  // check moved values against stored values
+  CHECK(last_time == new_averager.last_time_updated());
+  CHECK(avg_time == new_averager.average_time(0.9));
+  CHECK(avg_q == new_averager.using_average_0th_deriv_of_q());
+  CHECK(avg_values[0][0] == new_averager(0.9).get()[0][0]);
+  // test move assignment
+  Averager<2> new_averager2(0.1, true);
+  new_averager2 = std::move(new_averager);
+  // check moved values against stored values
+  CHECK(last_time == new_averager2.last_time_updated());
+  CHECK(avg_time == new_averager2.average_time(0.9));
+  CHECK(avg_q == new_averager2.using_average_0th_deriv_of_q());
+  CHECK(avg_values[0][0] == new_averager2(0.9).get()[0][0]);
 }
