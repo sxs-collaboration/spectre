@@ -20,16 +20,11 @@
 #include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
+#include "IO/H5/Header.hpp"  // IWYU pragma: keep
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/PrettyType.hpp"
-
-/// \cond
-namespace h5 {
-class Header;
-}  // namespace h5
-/// \endcond
 
 namespace h5 {
 /*!
