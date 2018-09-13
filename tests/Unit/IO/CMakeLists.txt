@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Observers/Test_Initialize.cpp
   Observers/Test_RegisterElements.cpp
   Observers/Test_Tags.cpp
+  Observers/Test_ObservationId.cpp
   Observers/Test_TypeOfObservation.cpp
   Test_H5.cpp
   )
