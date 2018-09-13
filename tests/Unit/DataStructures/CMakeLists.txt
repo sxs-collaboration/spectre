@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_IdPair.cpp
   Test_Index.cpp
   Test_IndexIterator.cpp
+  Test_LeviCivitaIterator.cpp
   Test_OrientVariablesOnSlice.cpp
   Test_SliceIterator.cpp
   Test_StripeIterator.cpp
