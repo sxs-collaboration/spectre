@@ -3,12 +3,15 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -324,6 +327,16 @@ class MockArrayElementProxy {
     tuples::get<InboxTag>(inbox_)[id].emplace(data);
   }
 
+  template <typename Action, typename... Args>
+  void simple_action(std::tuple<Args...> args) noexcept {
+    local_algorithm_.template simple_action<Action>(std::move(args));
+  }
+
+  template <typename Action>
+  void simple_action() noexcept {
+    local_algorithm_.template simple_action<Action>();
+  }
+
   MockLocalAlgorithm<Component>* ckLocal() { return &local_algorithm_; }
 
  private:
@@ -367,6 +380,24 @@ class MockProxy {
     // We always retrieve the 0th local branch because we are assuming running
     // on a single core.
     return std::addressof(local_algorithms_->at(0));
+  }
+
+  template <typename Action, typename... Args>
+  void simple_action(std::tuple<Args...> args) noexcept {
+    std::for_each(
+        local_algorithms_->begin(), local_algorithms_->end(),
+        [&args](auto& index_and_local_algorithm) noexcept {
+          index_and_local_algorithm.second.template simple_action<Action>(args);
+        });
+  }
+
+  template <typename Action>
+  void simple_action() noexcept {
+    std::for_each(
+        local_algorithms_->begin(), local_algorithms_->end(),
+        [](auto& index_and_local_algorithm) noexcept {
+          index_and_local_algorithm.second.template simple_action<Action>();
+        });
   }
 
   // clang-tidy: no non-const references
