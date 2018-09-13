@@ -188,3 +188,63 @@ auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
   return std_array_helpers_detail::map_array_impl(
       array, f, std::make_index_sequence<Dim>{});
 }
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Declares a binary function on an array, intended for binary
+ * operators such as `+`
+ *
+ * \param RESULT_TYPE the `value_type` that is the result of the operation
+ * (e.g. `A` for resulting `std::array<A,2>`)
+ *
+ * \param LTYPE the `value_type` of the first argument of the function (so the
+ * left value if the function is an operator overload)
+ *
+ * \param RTYPE the `value_type` of the second argument of the function
+ *
+ * \param OP_FUNCTION_NAME the function which should be declared
+ * (e.g. `operator+`)
+ *
+ * \param BINARY_OP the binary function which should be applied elementwise to
+ * the pair of arrays. (e.g. `std::plus<>()`)
+ */
+// clang-tidy: complaints about uninitialized member, but the transform will set
+// data
+#define DEFINE_ARRAY_BINOP(RESULT_TYPE, LTYPE, RTYPE, OP_FUNCTION_NAME, \
+                           BINARY_OP)                                   \
+  template <size_t Dim>                                                 \
+  std::array<RESULT_TYPE, Dim> OP_FUNCTION_NAME(                        \
+      const std::array<LTYPE, Dim>& lhs,                                \
+      const std::array<RTYPE, Dim>& rhs) noexcept {                     \
+    std::array<RESULT_TYPE, Dim> result; /*NOLINT*/                     \
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), result.begin(), \
+                   BINARY_OP);                                          \
+    return result;                                                      \
+  }
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Declares an in-place binary function on an array, intended for
+ * operations such as `+=`
+ *
+ * \param LTYPE the `value_type` of the first argument of the function which is
+ * also the result `value_tye` of the operation (so the left value if the
+ * function is an operator overload)
+ *
+ * \param RTYPE the `value_type` of the second argument of the function
+ *
+ * \param OP_FUNCTION_NAME the function which should be declared
+ * (e.g. `operator+=`)
+ *
+ * \param BINARY_OP the binary function which should be applied elementwise to
+ * the pair of arrays. (e.g. `std::plus<>()`)
+ */
+#define DEFINE_ARRAY_INPLACE_BINOP(LTYPE, RTYPE, OP_FUNCTION_NAME, BINARY_OP) \
+  template <size_t Dim>                                                       \
+  std::array<LTYPE, Dim>& OP_FUNCTION_NAME(                                   \
+      std::array<LTYPE, Dim>& lhs,                                            \
+      const std::array<RTYPE, Dim>& rhs) noexcept {                           \
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(),          \
+                   BINARY_OP);                                                \
+    return lhs;                                                               \
+  }
