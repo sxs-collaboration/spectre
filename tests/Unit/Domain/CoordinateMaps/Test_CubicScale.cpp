@@ -143,23 +143,23 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
       const double space_space =
           6.0 * (b - a) * point_xi[0] / square(outer_boundary);
 
-      CHECK(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 0, 0) ==
+      CHECK(approx(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 0, 0)) ==
             time_time);
-      CHECK(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 1, 0) ==
+      CHECK(approx(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 1, 0)) ==
             time_space);
-      CHECK(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 0, 1) ==
+      CHECK(approx(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 0, 1)) ==
             time_space);
-      CHECK(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 1, 1) ==
+      CHECK(approx(scale_map.hessian(point_xi, t, f_of_t_list).get(0, 1, 1)) ==
             space_space);
 
-      CHECK(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
-                .get(0, 0, 0) == time_time);
-      CHECK(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
-                .get(0, 1, 0) == time_space);
-      CHECK(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
-                .get(0, 0, 1) == time_space);
-      CHECK(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
-                .get(0, 1, 1) == space_space);
+      CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
+                       .get(0, 0, 0)) == time_time);
+      CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
+                       .get(0, 1, 0)) == time_space);
+      CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
+                   .get(0, 0, 1)) == time_space);
+      CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
+                       .get(0, 1, 1)) == space_space);
 
       // Check inequivalence operator
       CHECK_FALSE(scale_map != scale_map);
