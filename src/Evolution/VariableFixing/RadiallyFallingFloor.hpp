@@ -40,8 +40,8 @@ struct MaskRadius {
 template <size_t Dim, typename Density, typename Pressure>
 struct RadiallyFallingFloor {
   using return_tags = tmpl::list<Density, Pressure>;
-  using argument_tags = tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>,
-                                   OptionTags::MaskRadius>;
+  using argument_tags = tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>>;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::MaskRadius>;
 
   static void apply(
       const gsl::not_null<Scalar<DataVector>*> density,
@@ -55,7 +55,6 @@ struct RadiallyFallingFloor {
       }
       const double& radius = radii.get()[i];
       const double radius_to_the_three_halves_power = sqrt(radius) * radius;
-
       pressure->get()[i] =
           std::max(pressure->get()[i],
                    (1.e-7 / 3.) / (radius * radius_to_the_three_halves_power));
