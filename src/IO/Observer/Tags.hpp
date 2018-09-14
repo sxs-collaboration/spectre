@@ -10,13 +10,8 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-
-/// \cond
-class DataVector;
-namespace observers {
-class ArrayComponentId;
-}  // namespace observers
-/// \endcond
+#include "DataStructures/DataVector.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
 
 namespace observers {
 /// \ingroup ObserversGroup
