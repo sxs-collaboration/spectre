@@ -10,6 +10,7 @@
 #include <string>
 #include <type_traits>
 
+#include "IO/H5/CheckH5.hpp"
 #include "Utilities/ForceInline.hpp"
 
 namespace h5 {
@@ -61,11 +62,28 @@ SPECTRE_ALWAYS_INLINE hid_t h5_type<char>() {
 template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<std::string>() {
   hid_t datatype = H5Tcopy(H5T_C_S1);
+  CHECK_H5(datatype, "Failed to allocate string.");
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-  H5Tset_size(datatype, H5T_VARIABLE);
+  CHECK_H5(H5Tset_size(datatype, H5T_VARIABLE),
+           "Failed to set size of string.");
 #pragma GCC diagnostic pop
   return datatype;
 }
 /// \endcond
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Create an H5 FORTRAN string.
+ */
+SPECTRE_ALWAYS_INLINE hid_t fortran_string() noexcept {
+  hid_t datatype = H5Tcopy(H5T_FORTRAN_S1);
+  CHECK_H5(datatype, "Failed to allocate string.");
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+  CHECK_H5(H5Tset_size(datatype, H5T_VARIABLE),
+           "Failed to set size of string.");
+#pragma GCC diagnostic pop
+  return datatype;
+}
 }  // namespace h5

@@ -16,6 +16,7 @@
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
+#include "IO/H5/Wrappers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -49,10 +50,7 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
       legend_(std::move(legend)),
       size_{{0, legend_.size()}} {
   if (exists) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    dataset_id_ = H5Dopen2(location, name_.c_str(), H5P_DEFAULT);
-#pragma GCC diagnostic pop
+    dataset_id_ = H5Dopen2(location, name_.c_str(), h5::h5p_default());
     CHECK_H5(dataset_id_, "Failed to open dataset");
     {
       const Version open_version(true, detail::OpenGroup{}, dataset_id_,
@@ -73,12 +71,9 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
     CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
     legend_ = detail::read_strings_from_attribute(dataset_id_, "Legend"s);
   } else {  // file does not exist
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
     dataset_id_ = h5::detail::create_extensible_dataset(
         location, name_, size_, std::array<hsize_t, 2>{{4, legend_.size()}},
-        {{H5S_UNLIMITED, legend_.size()}});
-#pragma GCC diagnostic pop
+        {{h5s_unlimited(), legend_.size()}});
     CHECK_H5(dataset_id_, "Failed to create dataset");
 
     {
@@ -132,12 +127,9 @@ void Dat::append_impl(const hsize_t number_of_rows,
   const hid_t memspace_id =
       H5Screate_simple(2, added_size.data(), added_size.data());
   CHECK_H5(memspace_id, "Failed to create new simple memspace while appending");
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
   CHECK_H5(H5Dwrite(dataset_id_, h5_type<double>(), memspace_id, dataspace_id,
-                    H5P_DEFAULT, data.data()),
+                    h5::h5p_default(), data.data()),
            "Failed to append to dataset while writing");
-#pragma GCC diagnostic pop
   CHECK_H5(H5Sclose(memspace_id), "Failed to close memspace after appending");
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace after appending");
   size_ = new_size;
@@ -218,12 +210,9 @@ Matrix Dat::get_data() const {
 
   std::vector<double> temp(size[0] * size[1]);
   if (0 != size[0] * size[1]) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-    CHECK_H5(H5Dread(dataset_id_, h5_type<double>(), H5S_ALL, H5S_ALL,
-                     H5P_DEFAULT, temp.data()),
+    CHECK_H5(H5Dread(dataset_id_, h5_type<double>(), h5::h5s_all(),
+                     h5::h5s_all(), h5::h5p_default(), temp.data()),
              "Failed to read data");
-#pragma GCC diagnostic pop
   }
   return vector_to_matrix(temp, size);
 }
@@ -277,12 +266,9 @@ Matrix Dat::get_data_subset(const std::vector<size_t>& these_columns,
   const hid_t memspace_id =
       H5Screate_simple(2, memspace_size.data(), memspace_size.data());
   CHECK_H5(memspace_id, "Failed to create memory space");
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
   CHECK_H5(H5Dread(dataset_id_, h5_type<double>(), memspace_id, dataspace_id,
-                   H5P_DEFAULT, raw_data.data()),
+                   h5::h5p_default(), raw_data.data()),
            "Failed to read data subset");
-#pragma GCC diagnostic pop
 
   CHECK_H5(H5Sclose(memspace_id), "Failed to close memory space");
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");

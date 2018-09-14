@@ -3,8 +3,8 @@
 
 #include "VolumeDataFile.hpp"
 
+#include <cerrno>
 #include <cstring>
-#include <errno.h>
 #include <numeric>
 
 #include "ErrorHandling/Assert.hpp"
@@ -12,6 +12,7 @@
 #include "IO/Connectivity.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Type.hpp"
+#include "IO/H5/Wrappers.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 class DataVector;
@@ -175,21 +176,15 @@ void VolumeFile::write_element_data(
 }
 
 void VolumeFile::create_file() {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  file_id_ =
-      H5Fcreate(h5_file_name_.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-#pragma GCC diagnostic pop
+  file_id_ = H5Fcreate(h5_file_name_.c_str(), H5F_ACC_TRUNC, h5::h5p_default(),
+                       h5::h5p_default());
   CHECK_H5(file_id_, "Failed to create file '" << h5_file_name_ << "'");
   const h5::detail::OpenGroup group(file_id_, "/", h5::AccessType::ReadWrite);
   hid_t s_id = H5Screate(H5S_SCALAR);
   CHECK_H5(s_id, "Failed to create dataspace");
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
   const hid_t att_id = H5Acreate2(group.id(), "FileFormatVersion",
                                   h5::h5_type<decltype(format_id_)>(), s_id,
-                                  H5P_DEFAULT, H5P_DEFAULT);
-#pragma GCC diagnostic pop
+                                  h5::h5p_default(), h5::h5p_default());
   CHECK_H5(att_id, "Failed to create attribute 'FileFormatVersion'");
   CHECK_H5(H5Awrite(att_id, h5::h5_type<decltype(format_id_)>(),
                     static_cast<void*>(&format_id_)),

@@ -12,6 +12,7 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "IO/H5/CheckH5.hpp"
+#include "IO/H5/Wrappers.hpp"
 
 namespace {
 std::vector<std::string> split_strings(const std::string& s,
@@ -39,21 +40,15 @@ OpenGroup::OpenGroup(hid_t file_id, const std::string& group_name,
     if (not current_group.empty()) {
       const auto status = H5Lexists(group_id, current_group.c_str(), 0);
       if (0 < status) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-        group_id = H5Gopen(group_id, current_group.c_str(), H5P_DEFAULT);
-#pragma GCC diagnostic pop
+        group_id = H5Gopen(group_id, current_group.c_str(), h5p_default());
       } else if (0 == status) {
         if (AccessType::ReadOnly == access_type) {
           ERROR("Cannot create group '" << current_group.c_str()
                                         << "' in path: " << group_name
                                         << " because the access is ReadOnly");
         }
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-        group_id = H5Gcreate(group_id, current_group.c_str(), H5P_DEFAULT,
-                             H5P_DEFAULT, H5P_DEFAULT);
-#pragma GCC diagnostic pop
+        group_id = H5Gcreate(group_id, current_group.c_str(), h5p_default(),
+                             h5p_default(), h5p_default());
       } else {
         ERROR("Failed to open the group '"
               << current_group
