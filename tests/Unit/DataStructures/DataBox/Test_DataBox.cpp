@@ -997,7 +997,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
 }
 
 namespace {
-/// [mutate_apply_apply_struct_example]
+/// [mutate_apply_struct_definition_example]
 struct test_databox_mutate_apply {
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
                     const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
@@ -1009,7 +1009,7 @@ struct test_databox_mutate_apply {
     CHECK(tag2 == "My Sample String"s);
   }
 };
-/// [mutate_apply_apply_struct_example]
+/// [mutate_apply_struct_definition_example]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
@@ -1036,12 +1036,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
         (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
 
-  /// [mutate_apply_example]
+  /// [mutate_apply_struct_example]
   db::mutate_apply<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
       tmpl::list<>>(test_databox_mutate_apply{}, make_not_null(&box),
                     db::get<test_databox_tags::Tag2>(box));
-  /// [mutate_apply_example]
+  /// [mutate_apply_struct_example]
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 6.)));
@@ -1052,7 +1052,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
         Scalar<DataVector>(DataVector(2, 12.)));
   CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
         (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-  /// [mutate_apply_apply_example]
+  /// [mutate_apply_lambda_example]
   db::mutate_apply<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
       tmpl::list<test_databox_tags::Tag2>>(
@@ -1066,7 +1066,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
         CHECK(tag2 == "My Sample String"s);
       },
       make_not_null(&box));
-  /// [mutate_apply_apply_example]
+  /// [mutate_apply_lambda_example]
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 12.)));
