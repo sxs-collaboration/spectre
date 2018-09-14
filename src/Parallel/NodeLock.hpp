@@ -23,7 +23,7 @@ inline CmiNodeLock create_lock() noexcept { return CmiCreateLock(); }
 inline void free_lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-  CmiDestroyLock(node_lock);
+  CmiDestroyLock(*node_lock);
 #pragma GCC diagnostic pop
 }
 
