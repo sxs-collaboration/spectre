@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Utilities")
 
 set(LIBRARY_SOURCES
+  Test_Algorithm.cpp
   Test_Array.cpp
   Test_Blas.cpp
   Test_BoostHelpers.cpp
@@ -21,6 +22,7 @@ set(LIBRARY_SOURCES
   Test_MakeVector.cpp
   Test_MakeWithValue.cpp
   Test_Math.cpp
+  Test_Numeric.cpp
   Test_Overloader.cpp
   Test_PrettyType.cpp
   Test_Rational.cpp
