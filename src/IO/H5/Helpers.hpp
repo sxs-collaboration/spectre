@@ -125,26 +125,6 @@ namespace h5 {
 namespace detail {
 /*!
  * \ingroup HDF5Group
- * \brief Write a vector of strings into an H5 dataset as an attribute
- *
- * \requires `dataset_id` is an open dataset
- * \effects Writes the `string_array` into an HDF5 attribute with name `name`
- */
-void write_strings_to_attribute(hid_t dataset_id, const std::string& name,
-                                const std::vector<std::string>& string_array);
-
-/*!
- * \ingroup HDF5Group
- * \brief Read a vector of strings from an attribute inside an H5 dataset
- *
- * \requires `dataset_id` is an open dataset
- * \effects Reads the HDF5 attribute with name `name` as a vector of strings
- */
-std::vector<std::string> read_strings_from_attribute(hid_t group_id,
-                                                     const std::string& name);
-
-/*!
- * \ingroup HDF5Group
  * \brief Create a dataset that can be extended/appended to
  *
  * \requires group_id is an open group, each element of `initial_size` is less

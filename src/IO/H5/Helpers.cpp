@@ -218,6 +218,78 @@ std::vector<T> read_rank1_attribute(const hid_t group_id,
   return data;
 }
 
+template <>
+void write_to_attribute<std::string>(
+    const hid_t group_id, const std::string& name,
+    const std::vector<std::string>& data) noexcept {
+  // See the HDF5 example:
+  // https://support.hdfgroup.org/ftp/HDF5/examples/examples-by-api/
+  // hdf5-examples/1_8/C/H5T/h5ex_t_stringatt.c
+
+  const hid_t type_id = fortran_string();
+  // Create dataspace and attribute in dataspace where we will store the strings
+  const hsize_t dim = data.size();
+  const hid_t space_id = H5Screate_simple(1, &dim, nullptr);
+  CHECK_H5(space_id, "Failed to create null space");
+  const hid_t attr_id = H5Acreate2(group_id, name.c_str(), type_id, space_id,
+                                   h5p_default(), h5p_default());
+  CHECK_H5(attr_id, "Could not create attribute");
+
+  // We are using C-style strings, which is type to be written into attribute
+  const auto memtype_id = h5_type<std::string>();
+
+  // In order to write strings to an attribute we must have a pointer to
+  // pointers, so we use a vector.
+  std::vector<const char*> string_pointers(data.size());
+  std::transform(data.begin(), data.end(), string_pointers.begin(),
+                 [](const auto& t) { return t.c_str(); });
+  CHECK_H5(H5Awrite(attr_id, memtype_id, string_pointers.data()),
+           "Failed attribute write");
+
+  CHECK_H5(H5Aclose(attr_id), "Failed to close attribute");
+  CHECK_H5(H5Sclose(space_id), "Failed to close space_id");
+  CHECK_H5(H5Tclose(memtype_id), "Failed to close memtype_id");
+  CHECK_H5(H5Tclose(type_id), "Failed to close type_id");
+}
+
+template <>
+std::vector<std::string> read_rank1_attribute<std::string>(
+    const hid_t group_id, const std::string& name) noexcept {
+  const auto attribute_exists =
+      static_cast<bool>(H5Aexists(group_id, name.c_str()));
+  if (not attribute_exists) {
+    ERROR("Could not find attribute '" << name << "'");  // LCOV_EXCL_LINE
+  }
+
+  // Open attribute that holds the strings
+  const hid_t attribute_id = H5Aopen(group_id, name.c_str(), h5p_default());
+  CHECK_H5(attribute_id, "Failed to open attribute: '" << name << "'");
+  const hid_t dataspace_id = H5Aget_space(attribute_id);
+  CHECK_H5(dataspace_id,
+           "Failed to open dataspace for attribute '" << name << "'");
+  // Get the size of the strings
+  hsize_t legend_dims[1];
+  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, legend_dims, nullptr),
+           "Failed to get size of strings");
+  // Read the strings as arrays of characters
+  std::vector<char*> temp(legend_dims[0]);
+  const hid_t memtype = h5_type<std::string>();
+  CHECK_H5(H5Aread(attribute_id, memtype, static_cast<void*>(temp.data())),
+           "Failed to read attribute");
+
+  std::vector<std::string> result(temp.size());
+  std::transform(temp.begin(), temp.end(), result.begin(),
+                 [](const auto& t) { return std::string(t); });
+
+  // Clean up memory from variable length arrays and close everything
+  CHECK_H5(H5Dvlen_reclaim(memtype, dataspace_id, h5p_default(), temp.data()),
+           "Failed H5Dvlen_reclaim at ");
+  CHECK_H5(H5Aclose(attribute_id), "Failed to close attribute");
+  CHECK_H5(H5Sclose(dataspace_id), "Failed to close space_id");
+  CHECK_H5(H5Tclose(memtype), "Failed to close memtype");
+  return result;
+}
+
 std::vector<std::string> get_attribute_names(const hid_t file_id,
                                              const std::string& group_name) {
   // Opens the group, loads the group info and then loops over all the
@@ -349,76 +421,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, uint32_t, int))
 
 namespace h5 {
 namespace detail {
-void write_strings_to_attribute(const hid_t dataset_id, const std::string& name,
-                                const std::vector<std::string>& string_array) {
-  // See the HDF5 example:
-  // https://support.hdfgroup.org/ftp/HDF5/examples/examples-by-api/
-  // hdf5-examples/1_8/C/H5T/h5ex_t_stringatt.c
-
-  const hid_t type_id = fortran_string();
-  // Create dataspace and attribute in dataspace where we will store the strings
-  const hsize_t dim = string_array.size();
-  const hid_t space_id = H5Screate_simple(1, &dim, nullptr);
-  CHECK_H5(space_id, "Failed to create null space");
-  const hid_t attr_id = H5Acreate2(dataset_id, name.c_str(), type_id, space_id,
-                                   h5p_default(), h5p_default());
-  CHECK_H5(attr_id, "Could not create attribute");
-
-  // We are using C-style strings, which is type to be written into attribute
-  const auto memtype_id = h5_type<std::string>();
-
-  // In order to write strings to an attribute we must have a pointer to
-  // pointers, so we use a vector.
-  std::vector<const char*> string_pointers(string_array.size());
-  std::transform(string_array.begin(), string_array.end(),
-                 string_pointers.begin(),
-                 [](const auto& t) { return t.c_str(); });
-  CHECK_H5(H5Awrite(attr_id, memtype_id, string_pointers.data()),
-           "Failed attribute write");
-
-  CHECK_H5(H5Aclose(attr_id), "Failed to close attribute");
-  CHECK_H5(H5Sclose(space_id), "Failed to close space_id");
-  CHECK_H5(H5Tclose(memtype_id), "Failed to close memtype_id");
-  CHECK_H5(H5Tclose(type_id), "Failed to close type_id");
-}
-
-std::vector<std::string> read_strings_from_attribute(const hid_t group_id,
-                                                     const std::string& name) {
-  const auto attribute_exists =
-      static_cast<bool>(H5Aexists(group_id, name.c_str()));
-  if (not attribute_exists) {
-    ERROR("Could not find attribute '" << name << "'");  // LCOV_EXCL_LINE
-  }
-
-  // Open attribute that holds the strings
-  const hid_t attribute_id = H5Aopen(group_id, name.c_str(), h5p_default());
-  CHECK_H5(attribute_id, "Failed to open attribute: '" << name << "'");
-  const hid_t dataspace_id = H5Aget_space(attribute_id);
-  CHECK_H5(dataspace_id,
-           "Failed to open dataspace for attribute '" << name << "'");
-  // Get the size of the strings
-  hsize_t legend_dims[1];
-  CHECK_H5(H5Sget_simple_extent_dims(dataspace_id, legend_dims, nullptr),
-           "Failed to get size of strings");
-  // Read the strings as arrays of characters
-  std::vector<char*> temp(legend_dims[0]);
-  const hid_t memtype = h5_type<std::string>();
-  CHECK_H5(H5Aread(attribute_id, memtype, static_cast<void*>(temp.data())),
-           "Failed to read attribute");
-
-  std::vector<std::string> result(temp.size());
-  std::transform(temp.begin(), temp.end(), result.begin(),
-                 [](const auto& t) { return std::string(t); });
-
-  // Clean up memory from variable length arrays and close everything
-  CHECK_H5(H5Dvlen_reclaim(memtype, dataspace_id, h5p_default(), temp.data()),
-           "Failed H5Dvlen_reclaim at ");
-  CHECK_H5(H5Aclose(attribute_id), "Failed to close attribute");
-  CHECK_H5(H5Sclose(dataspace_id), "Failed to close space_id");
-  CHECK_H5(H5Tclose(memtype), "Failed to close memtype");
-  return result;
-}
-
 template <size_t Dims>
 hid_t create_extensible_dataset(const hid_t group_id, const std::string& name,
                                 const std::array<hsize_t, Dims>& initial_size,
