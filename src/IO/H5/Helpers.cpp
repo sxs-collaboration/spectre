@@ -21,19 +21,6 @@
 #include "Utilities/MakeArray.hpp"
 
 namespace h5 {
-void write_time(const hid_t group_id, const double time) {
-  // Write the time as an attribute to the group
-  hid_t s_id = H5Screate(H5S_SCALAR);
-  CHECK_H5(s_id, "Failed to create scalar for time");
-  hid_t att_id = H5Acreate2(group_id, "Time", h5_type<double>(), s_id,
-                            h5p_default(), h5p_default());
-  CHECK_H5(att_id, "Failed to create attribute for time");
-  CHECK_H5(H5Awrite(att_id, h5_type<double>(), static_cast<const void*>(&time)),
-           "Failed to write time");
-  CHECK_H5(H5Sclose(s_id), "Failed to close space_id");
-  CHECK_H5(H5Aclose(att_id), "Failed to close attribute for time");
-}
-
 template <size_t Dim>
 void write_data(const hid_t group_id, const DataVector& data,
                 const Index<Dim>& extents, const std::string& name) {

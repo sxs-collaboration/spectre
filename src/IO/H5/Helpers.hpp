@@ -18,12 +18,6 @@
 namespace h5 {
 /*!
  * \ingroup HDF5Group
- * \brief Write a "Time" attribute to the group
- */
-void write_time(hid_t group_id, double time);
-
-/*!
- * \ingroup HDF5Group
  * \brief Write a DataVector named `name` to the group `group_id`
  */
 template <size_t Dim>

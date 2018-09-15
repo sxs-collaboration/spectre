@@ -42,7 +42,7 @@ void VolumeFile::write_element_time(const double time,
                                     const std::string& element_id) {
   const h5::detail::OpenGroup group(file_id_, "/" + element_id,
                                     h5::AccessType::ReadWrite);
-  h5::write_time(group.id(), time);
+  h5::write_to_attribute(group.id(), "Time", time);
 }
 
 template <size_t Dim>
