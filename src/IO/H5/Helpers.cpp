@@ -15,6 +15,8 @@
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Wrappers.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace h5 {
@@ -145,6 +147,77 @@ Type read_value_attribute(const hid_t location_id,
   return value;
 }
 
+template <typename T>
+void write_to_attribute(const hid_t group_id, const std::string& name,
+                        const std::vector<T>& data) noexcept {
+  const hsize_t size = data.size();
+  const hid_t space_id = H5Screate_simple(1, &size, nullptr);
+  CHECK_H5(space_id,
+           "Failed to create dataspace for attribute  '" << name << "'");
+  const hid_t att_id = H5Acreate2(group_id, name.c_str(), h5::h5_type<T>(),
+                                  space_id, h5p_default(), h5p_default());
+  CHECK_H5(att_id, "Failed to create attribute '" << name << "'");
+  CHECK_H5(
+      H5Awrite(att_id, h5::h5_type<T>(), static_cast<const void*>(data.data())),
+      "Failed to write extents into attribute '" << name << "'");
+  CHECK_H5(H5Sclose(space_id),
+           "Failed to close dataspace when writing attribute '" << name << "'");
+  CHECK_H5(H5Aclose(att_id),
+           "Failed to close attribute '" << name << "' when writing it.");
+}
+
+template <typename T>
+std::vector<T> read_rank1_attribute(const hid_t group_id,
+                                    const std::string& name) noexcept {
+  const hid_t attr_id = H5Aopen(group_id, name.c_str(), h5p_default());
+  CHECK_H5(attr_id, "Failed to open attribute");
+  {  // Check that the datatype in the file matches what we are reading.
+    const hid_t datatype_id = H5Aget_type(attr_id);
+    CHECK_H5(datatype_id, "Failed to get datatype from attribute " << name);
+    const hid_t datatype = H5Tget_native_type(datatype_id, H5T_DIR_DESCEND);
+    const auto size = H5Tget_size(datatype);
+    if (UNLIKELY(sizeof(h5_type<T>()) != size)) {
+      ERROR("The read HDF5 type of the attribute ("
+            << datatype
+            << ") has a different size than the type we are reading. The "
+               "stored size is "
+            << size << " while the expected size is " << sizeof(T));
+    }
+    CHECK_H5(H5Tclose(datatype_id),
+             "Failed to close datatype while reading attribute " << name);
+  }
+  const auto size = [&attr_id, &name] {
+    const hid_t dataspace_id = H5Aget_space(attr_id);
+    const auto rank_of_space =
+        H5Sget_simple_extent_ndims(dataspace_id);
+    if (UNLIKELY(rank_of_space < 0)) {
+      ERROR("Failed to get the rank of the dataspace inside the attribute "
+            << name);
+    }
+    if (UNLIKELY(rank_of_space != 1)) {
+      ERROR(
+          "The rank of the dataspace being read by read_rank1_attribute should "
+          "be 1 but is "
+          << rank_of_space);
+    }
+    std::array<hsize_t, 1> dims{};
+    if (UNLIKELY(H5Sget_simple_extent_dims(dataspace_id, dims.data(),
+                                           nullptr) != 1)) {
+      ERROR(
+          "The rank of the dataspace has changed after checking its rank. "
+          "Checked rank was "
+          << rank_of_space);
+    }
+    H5Sclose(dataspace_id);
+    return dims[0];
+  }();
+  std::vector<T> data(size);
+  CHECK_H5(H5Aread(attr_id, h5::h5_type<T>(), data.data()),
+           "Failed to read data from attribute " << name);
+  H5Aclose(attr_id);
+  return data;
+}
+
 std::vector<std::string> get_attribute_names(const hid_t file_id,
                                              const std::string& group_name) {
   // Opens the group, loads the group info and then loops over all the
@@ -254,22 +327,24 @@ template Index<2> read_extents<2>(const hid_t group_id,
 template Index<3> read_extents<3>(const hid_t group_id,
                                   const std::string& extents_name);
 
-template void write_to_attribute<double>(const hid_t location_id,
-                                         const std::string& name,
-                                         const double& value) noexcept;
-template void write_to_attribute<uint32_t>(const hid_t location_id,
-                                           const std::string& name,
-                                           const uint32_t& value) noexcept;
-template void write_to_attribute<int>(const hid_t location_id,
-                                      const std::string& name,
-                                      const int& value) noexcept;
+#define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template double read_value_attribute<double>(const hid_t location_id,
-                                             const std::string& name) noexcept;
-template uint32_t read_value_attribute<uint32_t>(
-    const hid_t location_id, const std::string& name) noexcept;
-template int read_value_attribute<int>(const hid_t location_id,
-                                       const std::string& name) noexcept;
+#define INSTANTIATE(_, DATA)                                         \
+  template void write_to_attribute<TYPE(DATA)>(                      \
+      const hid_t group_id, const std::string& name,                 \
+      const std::vector<TYPE(DATA)>& data) noexcept;                 \
+  template void write_to_attribute<TYPE(DATA)>(                      \
+      const hid_t location_id, const std::string& name,              \
+      const TYPE(DATA) & value) noexcept;                            \
+  template TYPE(DATA) read_value_attribute<TYPE(DATA)>(              \
+      const hid_t location_id, const std::string& name) noexcept;    \
+  template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>( \
+      const hid_t group_id, const std::string& name) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, uint32_t, int))
+
+#undef INSTANTIATE
+#undef TYPE
 }  // namespace h5
 
 namespace h5 {

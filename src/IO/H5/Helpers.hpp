@@ -49,10 +49,27 @@ void write_to_attribute(hid_t location_id, const std::string& name,
 
 /*!
  * \ingroup HDF5Group
+ * \brief Write the vector `data` to the attribute `attribute_name` in the group
+ * `group_id`.
+ */
+template <typename T>
+void write_to_attribute(hid_t group_id, const std::string& name,
+                        const std::vector<T>& data) noexcept;
+
+/*!
+ * \ingroup HDF5Group
  * \brief Read a value of type `Type` from an HDF5 attribute named `name`
  */
 template <typename Type>
 Type read_value_attribute(hid_t location_id, const std::string& name) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Read rank-1 of type `Type` from an HDF5 attribute named `name`
+ */
+template <typename T>
+std::vector<T> read_rank1_attribute(hid_t group_id,
+                                    const std::string& name) noexcept;
 
 /*!
  * \ingroup HDF5Group
