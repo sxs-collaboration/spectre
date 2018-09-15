@@ -80,11 +80,10 @@ make_array(Args&&... args) noexcept(
  * \tparam Size the size of the array
  */
 template <size_t Size, typename T>
-SPECTRE_ALWAYS_INLINE constexpr std::array<std::decay_t<T>, Size>
-make_array(T&& t) noexcept(noexcept(
+SPECTRE_ALWAYS_INLINE constexpr auto make_array(T&& t) noexcept(noexcept(
     MakeArray_detail::MakeArray<Size == 0>::template apply<std::decay_t<T>>(
         std::make_index_sequence<(Size == 0 ? Size : Size - 1)>{},
-        std::forward<T>(t)))) {
+        std::forward<T>(t)))) -> std::array<std::decay_t<T>, Size> {
   return MakeArray_detail::MakeArray<Size == 0>::template apply<
       std::decay_t<T>>(
       std::make_index_sequence<(Size == 0 ? Size : Size - 1)>{},
@@ -97,11 +96,10 @@ make_array(T&& t) noexcept(noexcept(
  * arguments
  */
 template <typename T, typename... V, Requires<(sizeof...(V) > 0)> = nullptr>
-SPECTRE_ALWAYS_INLINE constexpr std::array<typename std::decay_t<T>,
-                                           sizeof...(V) + 1>
-make_array(T&& t, V&&... values) noexcept(
+SPECTRE_ALWAYS_INLINE constexpr auto make_array(T&& t, V&&... values) noexcept(
     noexcept(std::array<std::decay_t<T>, sizeof...(V) + 1>{
-        {std::forward<T>(t), std::forward<V>(values)...}})) {
+        {std::forward<T>(t), std::forward<V>(values)...}}))
+    -> std::array<typename std::decay_t<T>, sizeof...(V) + 1> {
   static_assert(
       tmpl2::flat_all_v<cpp17::is_same_v<std::decay_t<T>, std::decay_t<V>>...>,
       "all types to make_array(...) must be the same");
