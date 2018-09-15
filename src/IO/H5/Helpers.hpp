@@ -94,6 +94,16 @@ std::vector<std::string> get_group_names(
 
 /*!
  * \ingroup HDF5Group
+ * \brief Check if `name` is a dataset or group in the subgroup `group_name` of
+ * `id`.
+ *
+ * \note To check the current id for `name`, pass `""` as `group_name`.
+ */
+bool contains_dataset_or_group(hid_t id, const std::string& group_name,
+                               const std::string& dataset_name) noexcept;
+
+/*!
+ * \ingroup HDF5Group
  * \brief Check if an attribute is in a group
  */
 bool contains_attribute(hid_t file_id, const std::string& group_name,

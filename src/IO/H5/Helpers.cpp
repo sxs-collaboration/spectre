@@ -15,6 +15,7 @@
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Wrappers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -114,6 +115,11 @@ std::vector<std::string> get_group_names(
     names.push_back(name);
   }
   return names;
+}
+
+bool contains_dataset_or_group(const hid_t id, const std::string& group_name,
+                               const std::string& dataset_name) noexcept {
+  return alg::found(get_group_names(id, group_name), dataset_name);
 }
 
 template <typename Type>
