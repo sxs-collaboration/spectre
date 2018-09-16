@@ -21,6 +21,25 @@
 #include "Utilities/MakeArray.hpp"
 
 namespace h5 {
+void write_data(const hid_t group_id, const DataVector& data,
+                const std::vector<size_t>& extents,
+                const std::string& name) noexcept {
+  // Write a DataVector into the group
+  const std::vector<hsize_t> dims(extents.begin(), extents.end());
+  const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
+  CHECK_H5(space_id, "Failed to create dataspace");
+  const hid_t contained_type = h5::h5_type<std::decay_t<decltype(data[0])>>();
+  const hid_t dataset_id =
+      H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
+                 h5p_default(), h5p_default(), h5p_default());
+  CHECK_H5(dataset_id, "Failed to create dataset");
+  CHECK_H5(H5Dwrite(dataset_id, contained_type, h5s_all(), h5s_all(),
+                    h5p_default(), static_cast<const void*>(data.data())),
+           "Failed to write data to dataset");
+  CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
+  CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
+}
+
 template <size_t Dim>
 void write_data(const hid_t group_id, const DataVector& data,
                 const Index<Dim>& extents, const std::string& name) {
@@ -406,7 +425,7 @@ template Index<3> read_extents<3>(const hid_t group_id,
   template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>( \
       const hid_t group_id, const std::string& name) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, uint32_t, int))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, uint32_t, uint64_t, int))
 
 #undef INSTANTIATE
 #undef TYPE

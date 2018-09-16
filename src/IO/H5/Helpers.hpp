@@ -26,6 +26,14 @@ void write_data(hid_t group_id, const DataVector& data,
 
 /*!
  * \ingroup HDF5Group
+ * \brief Write a DataVector named `name` to the group `group_id`
+ */
+void write_data(hid_t group_id, const DataVector& data,
+                const std::vector<size_t>& extents,
+                const std::string& name = "scalar") noexcept;
+
+/*!
+ * \ingroup HDF5Group
  * \brief Write the extents as an attribute named `name` to the group
  * `group_id`.
  */
