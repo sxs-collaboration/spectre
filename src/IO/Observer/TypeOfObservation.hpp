@@ -5,6 +5,8 @@
 
 #include <iosfwd>
 
+#include "Utilities/TypeTraits.hpp"
+
 namespace observers {
 /*!
  * \ingroup ObserversGroup
@@ -23,4 +25,21 @@ enum class TypeOfObservation {
 };
 
 std::ostream& operator<<(std::ostream& os, const TypeOfObservation& t) noexcept;
+
+// @{
+/// Inherits off of `std::true_type` if `T` has a member variable
+/// `RegisterWithObserver`
+template <class T, class = cpp17::void_t<>>
+struct has_register_with_observer : std::false_type {};
+
+/// \cond
+template <class T>
+struct has_register_with_observer<
+    T, cpp17::void_t<decltype(T::RegisterWithObserver)>> : std::true_type {};
+/// \endcond
+
+template <class T>
+constexpr bool has_register_with_observer_v =
+    has_register_with_observer<T>::value;
+// @}
 }  // namespace observers
