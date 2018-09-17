@@ -485,6 +485,9 @@
  * invert.
  */
 
+/// \defgroup LoggingGroup Logging
+/// \brief Functions for logging progress of running code
+
 /// \defgroup MathFunctionsGroup Math Functions
 /// \brief Useful analytic functions
 

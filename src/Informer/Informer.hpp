@@ -10,7 +10,7 @@
 class CkArgMsg;
 /// \endcond
 
-/// \ingroup UtilitiesGroup
+/// \ingroup LoggingGroup
 /// The Informer manages textual output regarding the status of a simulation.
 class Informer {
  public:
