@@ -17,12 +17,12 @@
 /// [executable_example_includes]
 
 /// [executable_example_options]
-namespace CacheTags {
+namespace OptionTags {
 struct Name {
   using type = std::string;
   static constexpr OptionString help{"A name"};
 };
-}  // namespace CacheTags
+}  // namespace OptionTags
 /// [executable_example_options]
 
 /// [executable_example_action]
@@ -38,8 +38,8 @@ struct PrintMessage {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
     Parallel::printf("Hello %s from process %d on node %d!\n",
-                     Parallel::get<CacheTags::Name>(cache), Parallel::my_proc(),
-                     Parallel::my_node());
+                     Parallel::get<OptionTags::Name>(cache),
+                     Parallel::my_proc(), Parallel::my_node());
   }
 };
 }  // namespace Actions
@@ -48,7 +48,7 @@ struct PrintMessage {
 /// [executable_example_singleton]
 template <class Metavariables>
 struct HelloWorld {
-  using const_global_cache_tag_list = tmpl::list<CacheTags::Name>;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::Name>;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;

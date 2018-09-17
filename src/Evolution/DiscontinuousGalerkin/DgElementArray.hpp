@@ -49,7 +49,7 @@ struct DgElementArray {
       typename Metavariables::domain_creator_tag, OptionTags::InitialTime,
       OptionTags::InitialTimeStep,
       tmpl::conditional_t<tmpl::list_contains_v<const_global_cache_tag_list,
-                                                CacheTags::StepController>,
+                                                OptionTags::StepController>,
                           OptionTags::InitialSlabSize, tmpl::list<>>>>;
 
   static void initialize(
@@ -101,7 +101,7 @@ void DgElementArray<Metavariables, ActionList>::initialize(
     ERROR("Step and slab size must agree for global time-stepping.");
   }
   if (Metavariables::local_time_stepping and
-      not Parallel::get<CacheTags::TimeStepper>(cache).is_self_starting()) {
+      not Parallel::get<OptionTags::TimeStepper>(cache).is_self_starting()) {
     ERROR("Local time stepping only supported with self-starting integrators.");
   }
 

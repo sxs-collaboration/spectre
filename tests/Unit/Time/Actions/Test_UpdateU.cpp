@@ -42,7 +42,7 @@ using history_tag =
 struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<CacheTags::TimeStepper>,
+                                        tmpl::list<OptionTags::TimeStepper>,
                                         tmpl::list<Actions::UpdateU>> {
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>;

@@ -440,18 +440,16 @@
  */
 
 /*!
- * \defgroup CacheTagsGroup Global Cache Tags
- * \brief Tags for common data stored in the GlabalCache
- */
-
-/*!
  * \defgroup HDF5Group HDF5
  * \brief Functions and classes for manipulating HDF5 files
  */
 
 /*!
  * \defgroup OptionTagsGroup Input File Options
- * \brief Tags used for options parsed from the input file
+ * \brief Tags used for options parsed from the input file.
+ *
+ * These can be stored in the ConstGlobalCache or passed to the `initialize`
+ * function of a parallel component.
  */
 
 /*!
@@ -557,7 +555,7 @@ specify the following:
   for one of the test executables is:
   \snippet Test_AlgorithmCore.cpp component_list_example
 - `using const_global_cache_tag_list` is set to a (possibly empty) `tmpl::list`
-  of CacheTags that are needed by the metavariables.
+  of OptionTags that are needed by the metavariables.
 - `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
 - `determine_next_phase`: a static function with the signature
@@ -672,7 +670,7 @@ Each %Parallel Component struct must have the following type aliases:
    structs. The options are read in from the input file specified in the main
    `Metavariables` struct. After being read in they are passed to the
    `initialize` function of the parallel component, which is described below.
-6. `using const_global_cache_tag_list` is set to a `tmpl::list` of CacheTags
+6. `using const_global_cache_tag_list` is set to a `tmpl::list` of OptionTags
    that are required by the parallel component.   This is usually obtained from
    the `action_list` using the `Parallel::get_const_global_cache_tags`
    metafunction.

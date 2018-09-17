@@ -22,7 +22,7 @@ namespace {
 struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<CacheTags::FinalTime>,
+                                        tmpl::list<OptionTags::FinalTime>,
                                         tmpl::list<Actions::FinalTime>> {
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>;
   using compute_tags = db::AddComputeTags<Tags::Time>;

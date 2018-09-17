@@ -67,7 +67,7 @@ namespace Actions {
 /// Uses:
 /// - ConstGlobalCache:
 ///   * A tag deriving off of Cache::AnalyticSolutionBase
-///   * CacheTags::TimeStepper
+///   * OptionTags::TimeStepper
 ///
 /// DataBox changes:
 /// - Adds:
@@ -159,7 +159,7 @@ struct InitializeElement {
           db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
-      using solution_tag = CacheTags::AnalyticSolutionBase;
+      using solution_tag = OptionTags::AnalyticSolutionBase;
       Vars vars{num_grid_points};
       vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
           inertial_coords, initial_time, typename Vars::tags_list{}));
@@ -194,7 +194,7 @@ struct InitializeElement {
           db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
-      using solution_tag = CacheTags::AnalyticSolutionBase;
+      using solution_tag = OptionTags::AnalyticSolutionBase;
       Vars vars{num_grid_points};
       vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
           inertial_coords, initial_time, typename Vars::tags_list{}));
@@ -289,7 +289,7 @@ struct InitializeElement {
         const Time& initial_time, const double initial_dt_value,
         const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
       const auto& step_controller =
-          Parallel::get<CacheTags::StepController>(cache);
+          Parallel::get<OptionTags::StepController>(cache);
       return step_controller.choose_step(initial_time, initial_dt_value);
     }
 
@@ -327,8 +327,8 @@ struct InitializeElement {
 
       typename Tags::HistoryEvolvedVariables<variables_tag,
                                              dt_variables_tag>::type history;
-      using solution_tag = CacheTags::AnalyticSolutionBase;
-      const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
+      using solution_tag = OptionTags::AnalyticSolutionBase;
+      const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
       if (not time_stepper.is_self_starting() and
           time_stepper.number_of_past_steps() > 0) {
         ASSERT(initial_dt == initial_dt.slab().duration() or

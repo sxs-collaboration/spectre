@@ -28,9 +28,9 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache:
-///   - CacheTags::StepChoosers<StepChooserRegistrars>
-///   - CacheTags::StepController
-///   - CacheTags::TimeStepper
+///   - OptionTags::StepChoosers<StepChooserRegistrars>
+///   - OptionTags::StepController
+///   - OptionTags::TimeStepper
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
 ///   - Tags::TimeId
@@ -42,9 +42,10 @@ namespace Actions {
 /// - Modifies: Tags::Next<Tags::TimeId>, Tags::TimeStep
 template <typename StepChooserRegistrars>
 struct ChangeStepSize {
-  using step_choosers_tag = CacheTags::StepChoosers<StepChooserRegistrars>;
-  using const_global_cache_tags = tmpl::list<
-      CacheTags::TimeStepper, step_choosers_tag, CacheTags::StepController>;
+  using step_choosers_tag = OptionTags::StepChoosers<StepChooserRegistrars>;
+  using const_global_cache_tags =
+      tmpl::list<OptionTags::TimeStepper, step_choosers_tag,
+                 OptionTags::StepController>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -61,10 +62,10 @@ struct ChangeStepSize {
     using variables_tag = typename Metavariables::system::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
-    const auto& time_stepper = Parallel::get<CacheTags::TimeStepper>(cache);
+    const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
     const auto& step_choosers = Parallel::get<step_choosers_tag>(cache);
     const auto& step_controller =
-        Parallel::get<CacheTags::StepController>(cache);
+        Parallel::get<OptionTags::StepController>(cache);
 
     const auto& time_id = db::get<Tags::TimeId>(box);
 

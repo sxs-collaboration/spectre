@@ -84,9 +84,9 @@ struct BoundaryHistory : db::SimpleTag {
 
 }  // namespace Tags
 
-namespace CacheTags {
+namespace OptionTags {
 
-/// \ingroup CacheTagsGroup
+/// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 /// \brief The final time
 struct FinalTime {
@@ -94,7 +94,7 @@ struct FinalTime {
   static constexpr OptionString help{"The final time"};
 };
 
-/// \ingroup CacheTagsGroup
+/// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 /// \brief The ::TimeStepper
 struct TimeStepper {
@@ -102,7 +102,7 @@ struct TimeStepper {
   static constexpr OptionString help{"The time stepper"};
 };
 
-/// \ingroup CacheTagsGroup
+/// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 template <typename Registrars>
 struct StepChoosers {
@@ -111,14 +111,14 @@ struct StepChoosers {
   static size_t lower_bound_on_size() noexcept { return 1; }
 };
 
-/// \ingroup CacheTagsGroup
+/// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 struct StepController {
   static constexpr OptionString help{"The LTS step controller"};
   using type = std::unique_ptr<::StepController>;
 };
 
-}  // namespace CacheTags
+}  // namespace OptionTags
 
 namespace OptionTags {
 
