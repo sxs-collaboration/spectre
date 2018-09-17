@@ -218,8 +218,15 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
   std::vector<std::string> legend{"Time", "Error L2", "Error L1", "Error"};
 
   h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  {
+    auto& error_file =
+        my_file.insert<h5::Dat>("/L2_errors", legend, version_number);
+  }
+  // pass bad values to make sure the original ones aren't overridden.
+  auto evil_legend = legend;
+  evil_legend.emplace_back("Uh oh");
   auto& error_file =
-      my_file.insert<h5::Dat>("/L2_errors", legend, version_number);
+      my_file.try_insert<h5::Dat>("/L2_errors", evil_legend, version_number);
 
   error_file.append(std::vector<std::vector<double>>{{0.00, 0.10, 0.20, 0.30},
                                                      {0.11, 0.40, 0.50, 0.60},
