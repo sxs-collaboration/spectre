@@ -4,6 +4,7 @@
 set(executable RunTests)
 
 set(SPECTRE_TESTS
+  "Test_ActionTesting.cpp"
   "Test_TestHelpers.cpp"
   "Test_TestingFramework.cpp"
   )

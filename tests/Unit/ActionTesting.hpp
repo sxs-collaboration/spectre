@@ -20,11 +20,39 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace ActionTesting {
+namespace detail {
+template <typename Component, typename = cpp17::void_t<>>
+struct get_mocking_list {
+  using replace_these_simple_actions = tmpl::list<>;
+  using with_these_simple_actions = tmpl::list<>;
+};
+
+template <typename Component>
+struct get_mocking_list<
+    Component, cpp17::void_t<typename Component::replace_these_simple_actions,
+                             typename Component::with_these_simple_actions>> {
+  using replace_these_simple_actions =
+      typename Component::replace_these_simple_actions;
+  using with_these_simple_actions =
+      typename Component::with_these_simple_actions;
+};
+
+template <typename Component>
+using replace_these_simple_actions_t =
+    typename get_mocking_list<Component>::replace_these_simple_actions;
+
+template <typename Component>
+using with_these_simple_actions_t =
+    typename get_mocking_list<Component>::with_these_simple_actions;
+}  // namespace detail
+
 // MockLocalAlgorithm mocks the AlgorithmImpl class.
 template <typename Component>
 class MockLocalAlgorithm {
@@ -102,7 +130,10 @@ class MockLocalAlgorithm {
   bool is_ready(
       std::index_sequence<Is...> /*meta*/) noexcept;
 
-  template <typename Action, typename... Args>
+  template <
+      typename Action, typename... Args,
+      Requires<not tmpl::list_contains_v<
+          detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
   void simple_action(std::tuple<Args...> args) noexcept {
     performing_action_ = true;
     forward_tuple_to_action<Action>(
@@ -110,11 +141,50 @@ class MockLocalAlgorithm {
     performing_action_ = false;
   }
 
-  template <typename Action>
+  template <
+      typename Action, typename... Args,
+      Requires<tmpl::list_contains_v<
+          detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
+  void simple_action(std::tuple<Args...> args) noexcept {
+    using index_of_action =
+        tmpl::index_of<detail::replace_these_simple_actions_t<Component>,
+                       Action>;
+    using new_action =
+        tmpl::at_c<detail::with_these_simple_actions_t<Component>,
+                   index_of_action::value>;
+    performing_action_ = true;
+    forward_tuple_to_action<new_action>(
+        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+    performing_action_ = false;
+  }
+
+  template <
+      typename Action,
+      Requires<not tmpl::list_contains_v<
+          detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
   void simple_action() noexcept {
     performing_action_ = true;
     Parallel::Algorithm_detail::simple_action_visitor<
         Action, typename Component::initial_databox>(
+        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+        actions_list{}, std::add_pointer_t<Component>{nullptr});
+    performing_action_ = false;
+  }
+
+  template <
+      typename Action,
+      Requires<tmpl::list_contains_v<
+          detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
+  void simple_action() noexcept {
+    using index_of_action =
+        tmpl::index_of<detail::replace_these_simple_actions_t<Component>,
+                       Action>;
+    using new_action =
+        tmpl::at_c<detail::with_these_simple_actions_t<Component>,
+                   index_of_action::value>;
+    performing_action_ = true;
+    Parallel::Algorithm_detail::simple_action_visitor<
+        new_action, typename Component::initial_databox>(
         box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
         actions_list{}, std::add_pointer_t<Component>{nullptr});
     performing_action_ = false;
