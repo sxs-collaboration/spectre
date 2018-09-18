@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
@@ -24,8 +25,6 @@ class not_null;
 }  // namespace gsl
 
 namespace Tags {
-template <typename, typename, typename>
-struct deriv;
 template <typename>
 struct NormalDotFlux;
 template <typename>

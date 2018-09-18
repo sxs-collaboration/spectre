@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -14,11 +15,6 @@
 class DataVector;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
-
-namespace Tags {
-template <typename, typename, typename>
-struct deriv;
-}  // namespace Tags
 
 namespace CurvedScalarWave {
 struct Psi;

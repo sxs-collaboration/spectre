@@ -85,10 +85,7 @@ namespace Actions {
 ///                       Tags::LogicalCoordinates<Dim>>
 ///   * Tags::InverseJacobian<Tags::ElementMap<Dim>,
 ///                           Tags::LogicalCoordinates<Dim>>
-///   * Tags::deriv<System::variables_tag::tags_list,
-///                 System::gradients_tags,
-///                 Tags::InverseJacobian<Tags::ElementMap<Dim>,
-///                                       Tags::LogicalCoordinates<Dim>>>
+///   * Tags::deriv<System::gradients_tags>
 ///   * db::add_tag_prefix<Tags::dt, System::variables_tag>
 ///   * Tags::UnnormalizedFaceNormal<Dim>
 /// - Removes: nothing
@@ -253,11 +250,11 @@ struct InitializeElement {
               bool IsConservative = LocalSystem::is_conservative>
     struct ComputeTags {
       using type = db::AddComputeTags<
-          Tags::Time,
-          Tags::deriv<typename variables_tag::tags_list,
-                      typename System::gradients_tags,
-                      Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                                            Tags::LogicalCoordinates<Dim>>>>;
+          Tags::Time, Tags::ComputeDeriv<
+                          variables_tag,
+                          Tags::InverseJacobian<Tags::ElementMap<Dim>,
+                                                Tags::LogicalCoordinates<Dim>>,
+                          typename System::gradients_tags>>;
     };
 
     template <typename LocalSystem>

@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
@@ -21,8 +22,6 @@ template <typename>
 class dt;
 template <typename>
 struct NormalDotFlux;
-template <typename, typename, typename>
-class deriv;
 }  // namespace Tags
 
 namespace gsl {
