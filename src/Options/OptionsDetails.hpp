@@ -26,6 +26,22 @@
 
 /// Holds details of the implementation of Options
 namespace Options_detail {
+template <typename T, typename = cpp17::void_t<>>
+struct name_helper {
+  static std::string name() noexcept { return pretty_type::short_name<T>(); }
+};
+
+template <typename T>
+struct name_helper<T, cpp17::void_t<decltype(T::name())>> {
+  static std::string name() noexcept { return T::name(); }
+};
+
+// The name in the YAML file for a struct.
+template <typename T>
+std::string name() noexcept {
+  return name_helper<T>::name();
+}
+
 // Display a type in a pseudo-YAML form, leaving out likely irrelevant
 // information.
 template <typename T>
@@ -174,8 +190,7 @@ struct print {
   template <typename T>
   void operator()(tmpl::type_<T> /*meta*/) noexcept {
     std::ostringstream ss;
-    ss << "  " << std::setw(max_label_size_) << std::left
-       << pretty_type::short_name<T>()
+    ss << "  " << std::setw(max_label_size_) << std::left << name<T>()
        << yaml_type<typename T::type>::value();
     std::string limits;
     for (const auto& limit : {
@@ -208,7 +223,7 @@ struct create_valid_names {
   value_type value{};
   template <typename T>
   void operator()(tmpl::type_<T> /*meta*/) noexcept {
-    const std::string label = pretty_type::short_name<T>();
+    const std::string label = name<T>();
     ASSERT(0 == value.count(label), "Duplicate option name: " << label);
     value.insert(label);
   }

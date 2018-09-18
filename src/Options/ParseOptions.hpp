@@ -240,9 +240,8 @@ class Options {
             Requires<not Options_detail::has_default<T>::value> = nullptr>
   [[noreturn]] typename T::type get_default() const {
     PARSE_ERROR(context_,
-                "You did not specify the option '"
-                << pretty_type::short_name<T>() << "'.\n"
-                << help());
+                "You did not specify the option '" << Options_detail::name<T>()
+                << "'.\n" << help());
   }
   //@}
 
@@ -289,8 +288,7 @@ class Options {
             Requires<Options_detail::has_default<T>::value> = nullptr>
   void validate_default() const {
     OptionContext context;
-    context.append("Checking DEFAULT value for " +
-                   pretty_type::short_name<T>());
+    context.append("Checking DEFAULT value for " + Options_detail::name<T>());
     const auto default_value = T::default_value();
     check_lower_bound_on_size<T>(default_value, context);
     check_upper_bound_on_size<T>(default_value, context);
@@ -321,9 +319,7 @@ Options<OptionList>::Options(std::string help_text) noexcept
           tmpl::for_each<opts_t>(Options_detail::create_valid_names{}).value) {
   tmpl::for_each<opts_t>([](auto t) noexcept {
     using T = typename decltype(t)::type;
-    const std::string label = pretty_type::short_name<T>();
-    // These could be checked at compile time, but we couldn't print
-    // a useful error message.
+    const std::string label = Options_detail::name<T>();
     ASSERT(label.size() < max_label_size_,
            "The option name " << label << " is too long for nice formatting, "
            "please shorten the name to be under " << max_label_size_
@@ -403,7 +399,7 @@ typename T::type Options<OptionList>::get() const {
       not cpp17::is_same_v<tmpl::index_of<opts_t, T>, tmpl::no_such_type_>,
       "Could not find requested option in the list of options provided. Did "
       "you forget to add the option struct to the OptionList?");
-  const std::string label = pretty_type::short_name<T>();
+  const std::string label = Options_detail::name<T>();
 
   validate_default<T>();
   if (0 == parsed_options_.count(label)) {
