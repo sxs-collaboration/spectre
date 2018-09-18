@@ -147,3 +147,18 @@ RUN apt-get update && apt-get install -y \
     export LC_ALL=en_US.UTF-8 && \
     locale-gen en_US.UTF-8 && \
     dpkg-reconfigure locales
+
+# Install bibtex for Doxygen bibliography management
+# We first install the TeXLive infrastructure according to the configuration in
+# support/TeXLive/texlive.profile and then use it to install the bibtex package.
+RUN mkdir /work/texlive
+WORKDIR /work/texlive
+RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
+    && tar -xzf install-tl-unx.tar.gz \
+    && rm install-tl-unx.tar.gz \
+    && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
+    && install-tl-*/install-tl -profile=texlive.profile \
+    && rm -r install-tl-* texlive.profile install-tl.log \
+    && echo "export PATH=\$PATH:/work/texlive/bin/x86_64-linux" >> /root/.bashrc \
+    && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
+WORKDIR /work
