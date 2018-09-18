@@ -319,7 +319,7 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,

@@ -64,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
 
   using simple_tags = db::AddSimpleTags<var_tag, Tags::dt<var_tag>>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(self_id, db::create<simple_tags>(3, -100));
   MockRuntimeSystem runner{{}, std::move(local_algs)};

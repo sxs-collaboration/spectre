@@ -62,7 +62,7 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   using my_component = component;
   using LocalAlgsTag =
       typename MockRuntimeSystem::template LocalAlgorithmsTag<my_component>;
-  typename MockRuntimeSystem::LocalAlgorithms local_algs{};
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs).emplace(0, db::DataBox<tmpl::list<>>{});
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {serialize_and_deserialize(events_and_triggers)}, std::move(local_algs)};

@@ -50,7 +50,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<simple_tags>(
@@ -88,7 +88,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 void check_abn(const Time& start, const TimeDelta& time_step) {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(

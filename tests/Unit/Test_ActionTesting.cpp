@@ -136,10 +136,11 @@ struct SimpleActionMockMetavariables {
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   using metavars = SimpleActionMockMetavariables;
-  using LocalAlgorithms =
-      typename ActionTesting::MockRuntimeSystem<metavars>::LocalAlgorithms;
+  using TupleOfMockDistributedObjects =
+      typename ActionTesting::MockRuntimeSystem<
+          metavars>::TupleOfMockDistributedObjects;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  LocalAlgorithms local_algs{};
+  TupleOfMockDistributedObjects local_algs{};
   using LocalAlgTag = typename MockRuntimeSystem::template LocalAlgorithmsTag<
       component_for_simple_action_mock<metavars>>;
   tuples::get<LocalAlgTag>(local_algs)

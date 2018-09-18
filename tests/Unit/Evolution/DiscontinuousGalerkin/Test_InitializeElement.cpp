@@ -218,7 +218,7 @@ void test_initialize_element(
   using my_component = component<dim, Metavariables>;
   using LocalAlgsTag =
       typename MockRuntimeSystem::template LocalAlgorithmsTag<my_component>;
-  typename MockRuntimeSystem::LocalAlgorithms local_algs{};
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(element_id,
                ActionTesting::MockDistributedObject<my_component>{});
@@ -369,7 +369,7 @@ void test_mortar_orientation() noexcept {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag =
       typename MockRuntimeSystem::template LocalAlgorithmsTag<my_component>;
-  typename MockRuntimeSystem::LocalAlgorithms local_algs{};
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(ElementIndex<3>{element_id},
                ActionTesting::MockDistributedObject<my_component>{});

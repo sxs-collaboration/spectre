@@ -65,7 +65,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(

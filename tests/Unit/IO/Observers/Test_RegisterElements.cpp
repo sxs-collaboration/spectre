@@ -56,8 +56,9 @@ struct Metavariables {
 
 template <observers::TypeOfObservation TypeOfObservation>
 void check_observer_registration() {
-  using LocalAlgorithms =
-      typename ActionTesting::MockRuntimeSystem<Metavariables>::LocalAlgorithms;
+  using TupleOfMockDistributedObjects =
+      typename ActionTesting::MockRuntimeSystem<
+          Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
   using element_comp = element_component<Metavariables>;
 
@@ -66,7 +67,7 @@ void check_observer_registration() {
       typename MockRuntimeSystem::template LocalAlgorithmsTag<obs_component>;
   using ElementLocalAlgsTag =
       typename MockRuntimeSystem::template LocalAlgorithmsTag<element_comp>;
-  LocalAlgorithms local_algs{};
+  TupleOfMockDistributedObjects local_algs{};
   tuples::get<ObserverLocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 

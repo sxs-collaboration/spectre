@@ -510,12 +510,13 @@ class MockProxy {
  public:
   using Inboxes =
       std::unordered_map<Index, tuples::TaggedTupleTypelist<InboxTagList>>;
-  using LocalAlgorithms =
+  using TupleOfMockDistributedObjects =
       std::unordered_map<Index, MockDistributedObject<Component>>;
 
   MockProxy() : inboxes_(nullptr) {}
 
-  void set_data(LocalAlgorithms* local_algorithms, Inboxes* inboxes) {
+  void set_data(TupleOfMockDistributedObjects* local_algorithms,
+                Inboxes* inboxes) {
     local_algorithms_ = local_algorithms;
     inboxes_ = inboxes;
   }
@@ -571,7 +572,7 @@ class MockProxy {
   }
 
  private:
-  LocalAlgorithms* local_algorithms_;
+  TupleOfMockDistributedObjects* local_algorithms_;
   Inboxes* inboxes_;
 };
 
@@ -655,7 +656,7 @@ class MockRuntimeSystem {
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
   using CacheTuple =
       tuples::TaggedTupleTypelist<typename GlobalCache::tag_list>;
-  using LocalAlgorithms = tuples::TaggedTupleTypelist<
+  using TupleOfMockDistributedObjects = tuples::TaggedTupleTypelist<
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<LocalAlgorithmsTag, tmpl::_1>>>;
   using Inboxes = tuples::TaggedTupleTypelist<
@@ -664,7 +665,7 @@ class MockRuntimeSystem {
 
   /// Construct from the tuple of ConstGlobalCache objects.
   explicit MockRuntimeSystem(CacheTuple cache_contents,
-                             LocalAlgorithms local_algorithms)
+                             TupleOfMockDistributedObjects local_algorithms)
       : cache_(std::move(cache_contents)),
         local_algorithms_(std::move(local_algorithms)) {
     tmpl::for_each<typename Metavariables::component_list>(
@@ -788,6 +789,6 @@ class MockRuntimeSystem {
  private:
   GlobalCache cache_;
   Inboxes inboxes_;
-  LocalAlgorithms local_algorithms_;
+  TupleOfMockDistributedObjects local_algorithms_;
 };
 }  // namespace ActionTesting

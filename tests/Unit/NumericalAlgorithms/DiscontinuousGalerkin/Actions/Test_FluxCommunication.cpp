@@ -369,7 +369,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs).emplace(self_id, std::move(start_box));
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(south_id,
@@ -546,7 +546,7 @@ SPECTRE_TEST_CASE(
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,
@@ -651,7 +651,7 @@ SPECTRE_TEST_CASE(
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,
@@ -781,7 +781,7 @@ SPECTRE_TEST_CASE(
 
     using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
     using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
-    MockRuntimeSystem::LocalAlgorithms local_algs{};
+    MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
     tuples::get<LocalAlgsTag>(local_algs)
         .emplace(
             self_id,

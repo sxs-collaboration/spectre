@@ -48,13 +48,14 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                   "[Unit][Evolution][VariableFixing]") {
-  using LocalAlgorithms =
-      typename ActionTesting::MockRuntimeSystem<Metavariables>::LocalAlgorithms;
+  using TupleOfMockDistributedObjects =
+      typename ActionTesting::MockRuntimeSystem<
+          Metavariables>::TupleOfMockDistributedObjects;
   using component = mock_component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag =
       typename MockRuntimeSystem::template LocalAlgorithmsTag<component>;
-  LocalAlgorithms local_algs{};
+  TupleOfMockDistributedObjects local_algs{};
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};

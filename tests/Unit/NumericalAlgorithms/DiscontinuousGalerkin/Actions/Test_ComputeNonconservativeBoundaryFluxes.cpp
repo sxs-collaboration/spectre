@@ -152,7 +152,7 @@ auto run_action(
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(ElementIndex<2>{element.id()},
                ActionTesting::MockDistributedObject<component>{

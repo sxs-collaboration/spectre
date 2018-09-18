@@ -199,7 +199,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
       ActionTesting::MockRuntimeSystem<Metavariables<2, NumericalFlux>>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
       component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(id, db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                            std::move(mortar_meshes),
@@ -308,7 +308,7 @@ SPECTRE_TEST_CASE(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
       component<3, RefinementNumericalFlux, metavariables>>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(id_0, make_initial_box({{3, 4, 5}}));
   tuples::get<LocalAlgsTag>(local_algs)
@@ -465,7 +465,7 @@ SPECTRE_TEST_CASE(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
       component<3, RefinementNumericalFlux, metavariables>>;
-  MockRuntimeSystem::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(self_id,
                db::create<simple_tags>(mesh, logical_coordinates(mesh),
