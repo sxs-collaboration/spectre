@@ -5,13 +5,13 @@
 
 #include "Options/Options.hpp"
 
-namespace CacheTags {
-/// \ingroup CacheTagsGroup
+namespace OptionTags {
+/// \ingroup OptionTagsGroup
 /// Can be used to retrieve the analytic solution from the cache without having
 /// to know the template parameters of AnalyticSolution.
 struct AnalyticSolutionBase {};
 
-/// \ingroup CacheTagsGroup
+/// \ingroup OptionTagsGroup
 /// The analytic solution, with the type of the analytic solution set as the
 /// template parameter
 template <typename SolutionType>
@@ -20,4 +20,4 @@ struct AnalyticSolution : AnalyticSolutionBase {
       "Analytic solution used for the initial data and errors";
   using type = SolutionType;
 };
-}  // namespace CacheTags
+}  // namespace OptionTags

@@ -32,7 +32,7 @@ namespace Actions {
 /// With `dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>`:
 ///
 /// Uses:
-/// - ConstGlobalCache: CacheTags::TimeStepper
+/// - ConstGlobalCache: OptionTags::TimeStepper
 /// - DataBox:
 ///   - variables_tag
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
@@ -45,7 +45,7 @@ namespace Actions {
 ///   - variables_tag
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
 struct UpdateU {
-  using const_global_cache_tags = tmpl::list<CacheTags::TimeStepper>;
+  using const_global_cache_tags = tmpl::list<OptionTags::TimeStepper>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -67,7 +67,7 @@ struct UpdateU {
                  const gsl::not_null<db::item_type<history_tag>*> history,
                  const db::item_type<Tags::TimeStep>& time_step) noexcept {
           const auto& time_stepper =
-              Parallel::get<CacheTags::TimeStepper>(cache);
+              Parallel::get<OptionTags::TimeStepper>(cache);
           time_stepper.update_u(vars, history, time_step);
         },
         db::get<Tags::TimeStep>(box));

@@ -49,9 +49,9 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
   using analytic_solution_tag =
-      CacheTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
+      OptionTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using normal_dot_numerical_flux =
-      CacheTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
+      OptionTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;

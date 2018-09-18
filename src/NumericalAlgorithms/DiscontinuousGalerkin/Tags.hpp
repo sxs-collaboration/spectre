@@ -49,9 +49,9 @@ struct MortarSize : db::SimpleTag {
 };
 }  // namespace Tags
 
-namespace CacheTags {
+namespace OptionTags {
 /*!
- * \ingroup CacheTagsGroup
+ * \ingroup OptionTagsGroup
  * \brief The global cache tag that retrieves the parameters for the numerical
  * flux from the input file
  */
@@ -60,4 +60,4 @@ struct NumericalFluxParams {
   static constexpr OptionString help = "The options for the numerical flux";
   using type = NumericalFluxType;
 };
-}  // namespace CacheTags
+}  // namespace OptionTags

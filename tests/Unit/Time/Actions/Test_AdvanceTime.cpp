@@ -30,7 +30,7 @@ namespace {
 struct Metavariables;
 struct component
     : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<CacheTags::TimeStepper>,
+                                        tmpl::list<OptionTags::TimeStepper>,
                                         tmpl::list<Actions::AdvanceTime>> {
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;

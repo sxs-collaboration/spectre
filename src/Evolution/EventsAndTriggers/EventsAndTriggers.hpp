@@ -67,7 +67,7 @@ namespace Tags {
 struct EventsAndTriggersTagBase {};
 /// \endcond
 
-/// \ingroup CacheTagsGroup
+/// \ingroup OptionTagsGroup
 /// \ingroup EventsAndTriggersGroup
 /// Contains the events and triggers
 template <typename KnownEvents, typename KnownTriggers>

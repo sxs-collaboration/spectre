@@ -37,7 +37,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache:
-///   - CacheTags::TimeStepper
+///   - OptionTags::TimeStepper
 ///   - Metavariables::normal_dot_numerical_flux
 /// - DataBox:
 ///   - Tags::Mesh<volume_dim>
@@ -92,7 +92,7 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
           ]() noexcept {
             const auto& normal_dot_numerical_flux_computer =
                 get<typename Metavariables::normal_dot_numerical_flux>(cache);
-            const auto& time_stepper = get<CacheTags::TimeStepper>(cache);
+            const auto& time_stepper = get<OptionTags::TimeStepper>(cache);
 
             for (auto& mortar_id_and_data : *mortar_data) {
               const auto& mortar_id = mortar_id_and_data.first;

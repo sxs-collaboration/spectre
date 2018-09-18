@@ -120,8 +120,8 @@ template <size_t Dim, typename Metavariables>
 struct component
     : ActionTesting::MockArrayComponent<
           Metavariables, ElementIndex<Dim>,
-          tmpl::list<CacheTags::TimeStepper,
-                     CacheTags::AnalyticSolution<SystemAnalyticSolution>>,
+          tmpl::list<OptionTags::TimeStepper,
+                     OptionTags::AnalyticSolution<SystemAnalyticSolution>>,
           tmpl::list<>> {
   using initial_databox =
       db::compute_databox_type<typename dg::Actions::InitializeElement<
@@ -270,7 +270,8 @@ void test_initialize_element(
         typename system::variables_tag,
         db::add_tag_prefix<Tags::dt, typename system::variables_tag>>>(
         box);
-    const auto& stepper = Parallel::get<CacheTags::TimeStepper>(runner.cache());
+    const auto& stepper =
+        Parallel::get<OptionTags::TimeStepper>(runner.cache());
     CHECK(history.size() ==
           (stepper.is_self_starting() ? 0 : stepper.number_of_past_steps()));
     const SystemAnalyticSolution solution{};
@@ -433,9 +434,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
 
   // local time-stepping
   test_initialize_element<
-      Metavariables<2, false, true, tmpl::list<CacheTags::StepController>>>(
+      Metavariables<2, false, true, tmpl::list<OptionTags::StepController>>>(
       ActionTesting::ActionRunner<Metavariables<
-          2, false, true, tmpl::list<CacheTags::StepController>>>::CacheTuple{
+          2, false, true, tmpl::list<OptionTags::StepController>>>::CacheTuple{
           std::make_unique<StepControllers::SplitRemaining>(),
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, true),
           SystemAnalyticSolution{}},

@@ -17,9 +17,9 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-namespace CacheTags {
+namespace OptionTags {
 struct TimeStepper;
-}  // namespace CacheTags
+}  // namespace OptionTags
 namespace Tags {
 template <typename Tag>
 struct Next;
@@ -35,7 +35,7 @@ namespace Actions {
 /// \brief Advance time one substep
 ///
 /// Uses:
-/// - ConstGlobalCache: CacheTags::TimeStepper
+/// - ConstGlobalCache: OptionTags::TimeStepper
 /// - DataBox: Tags::TimeId, Tags::TimeStep
 ///
 /// DataBox changes:
@@ -43,7 +43,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: Tags::TimeId, Tags::TimeStep
 struct AdvanceTime {
-  using const_global_cache_tags = tmpl::list<CacheTags::TimeStepper>;
+  using const_global_cache_tags = tmpl::list<OptionTags::TimeStepper>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -60,7 +60,7 @@ struct AdvanceTime {
                                       const gsl::not_null<TimeDelta*>
                                           time_step) noexcept {
           const auto& time_stepper =
-              Parallel::get<CacheTags::TimeStepper>(cache);
+              Parallel::get<OptionTags::TimeStepper>(cache);
           *time_id = *next_time_id;
           *time_step = time_step->with_slab(time_id->time().slab());
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);

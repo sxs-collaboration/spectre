@@ -15,7 +15,7 @@
 
 /// Contains all variable fixers.
 namespace VariableFixing {
-namespace CacheTags {
+namespace OptionTags {
 /// \ingroup VariableFixingGroup
 /// \brief The radius at which to begin applying the lower bound.
 ///
@@ -25,7 +25,7 @@ struct MaskRadius {
       "The radius at which to begin applying the lower bound";
   using type = double;
 };
-}  // namespace CacheTags
+}  // namespace OptionTags
 
 /// \ingroup VariableFixingGroup
 /// \brief Applies a pressure and density floor dependent on the distance
@@ -41,7 +41,7 @@ template <size_t Dim, typename Density, typename Pressure>
 struct RadiallyFallingFloor {
   using return_tags = tmpl::list<Density, Pressure>;
   using argument_tags = tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>,
-                                   CacheTags::MaskRadius>;
+                                   OptionTags::MaskRadius>;
 
   static void apply(
       const gsl::not_null<Scalar<DataVector>*> density,

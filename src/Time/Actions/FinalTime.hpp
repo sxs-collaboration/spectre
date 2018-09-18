@@ -20,7 +20,7 @@ namespace Actions {
 /// \brief Terminate after reaching a specified time
 ///
 /// Uses:
-/// - ConstGlobalCache: CacheTags::FinalTime
+/// - ConstGlobalCache: OptionTags::FinalTime
 /// - DataBox: Tags::Time, Tags::TimeStep
 ///
 /// DataBox changes:
@@ -28,7 +28,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 struct FinalTime {
-  using const_global_cache_tags = tmpl::list<CacheTags::FinalTime>;
+  using const_global_cache_tags = tmpl::list<OptionTags::FinalTime>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -39,7 +39,7 @@ struct FinalTime {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const double final_time = Parallel::get<CacheTags::FinalTime>(cache);
+    const double final_time = Parallel::get<OptionTags::FinalTime>(cache);
     const Time& time = db::get<Tags::Time>(box);
     const TimeDelta& time_step = db::get<Tags::TimeStep>(box);
 

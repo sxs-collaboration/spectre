@@ -80,7 +80,7 @@ template <typename Metavariables>
 struct component
     : ActionTesting::MockArrayComponent<
           Metavariables, ElementIndex<2>,
-          tmpl::list<CacheTags::TimeStepper, NumericalFluxTag>,
+          tmpl::list<OptionTags::TimeStepper, NumericalFluxTag>,
           tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>> {
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,

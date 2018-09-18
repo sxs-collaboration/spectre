@@ -51,9 +51,9 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = true;
   using analytic_solution_tag =
-      CacheTags::AnalyticSolution<Burgers::Solutions::Linear>;
+      OptionTags::AnalyticSolution<Burgers::Solutions::Linear>;
   using normal_dot_numerical_flux =
-      CacheTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
+      OptionTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
