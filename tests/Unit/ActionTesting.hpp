@@ -471,6 +471,8 @@ bool MockDistributedObject<Component>::is_ready(
 }
 
 namespace ActionTesting_detail {
+// A mock class for the Charm++ generated CProxyElement_AlgorithmArray (we use
+// an array for everything, so no need to mock groups, nodegroups, singletons).
 template <typename Component, typename InboxTagList>
 class MockArrayElementProxy {
  public:
@@ -506,6 +508,8 @@ class MockArrayElementProxy {
   Inbox& inbox_;
 };
 
+// A mock class for the Charm++ generated CProxy_AlgorithmArray (we use an array
+// for everything, so no need to mock groups, nodegroups, singletons).
 template <typename Component, typename Index, typename InboxTagList>
 class MockProxy {
  public:
@@ -579,6 +583,7 @@ class MockProxy {
 };
 }  // namespace ActionTesting_detail
 
+/// A mock class for the CMake-generated `Parallel::Algorithms::Array`
 struct MockArrayChare {
   template <typename Component, typename Metavariables, typename ActionList,
             typename Index, typename InitialDataBox>
