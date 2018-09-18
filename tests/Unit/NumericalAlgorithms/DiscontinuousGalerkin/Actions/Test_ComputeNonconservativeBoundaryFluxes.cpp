@@ -151,9 +151,10 @@ auto run_action(
   using compute_tags = typename component::compute_tags;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(ElementIndex<2>{element.id()},
                ActionTesting::MockDistributedObject<component>{
                    db::create<simple_tags, compute_tags>(

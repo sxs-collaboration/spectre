@@ -197,10 +197,11 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
 
   using MockRuntimeSystem =
       ActionTesting::MockRuntimeSystem<Metavariables<2, NumericalFlux>>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
-      component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<
+          component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(id, db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                            std::move(mortar_meshes),
                                            std::move(mortar_sizes), initial_dt,
@@ -306,12 +307,13 @@ SPECTRE_TEST_CASE(
   };
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
-      component<3, RefinementNumericalFlux, metavariables>>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<
+          component<3, RefinementNumericalFlux, metavariables>>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(id_0, make_initial_box({{3, 4, 5}}));
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(id_1, make_initial_box({{4, 2, 6}}));
   MockRuntimeSystem runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
 
@@ -463,10 +465,11 @@ SPECTRE_TEST_CASE(
   using db_type = db::compute_databox_type<simple_tags>;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
-      component<3, RefinementNumericalFlux, metavariables>>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<
+          component<3, RefinementNumericalFlux, metavariables>>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(self_id,
                db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                        typename mortar_meshes_tag::type{},
@@ -529,7 +532,7 @@ SPECTRE_TEST_CASE(
         mesh.extents(), direction.dimension(),
         index_to_slice_at(mesh.extents(), direction));
 
-    tuples::get<LocalAlgsTag>(local_algs)
+    tuples::get<MockDistributedObjectsTag>(local_algs)
         .emplace(neighbor_id, db::create<simple_tags>(
                                   mesh, std::move(neighbor_coords),
                                   typename mortar_meshes_tag::type{
@@ -542,7 +545,7 @@ SPECTRE_TEST_CASE(
                                   std::move(neighbor_dt_vars),
                                   std::move(neighbor_mortar_data)));
 
-    auto& self_box = tuples::get<LocalAlgsTag>(local_algs)
+    auto& self_box = tuples::get<MockDistributedObjectsTag>(local_algs)
                          .at(self_id)
                          .get_databox<db_type>();
     db::mutate<mortar_data_tag, mortar_meshes_tag, mortar_sizes_tag>(

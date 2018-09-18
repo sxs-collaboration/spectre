@@ -83,8 +83,8 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
                   "[Unit][Evolution][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag =
-      MockRuntimeSystem::LocalAlgorithmsTag<component<Metavariables>>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
 
   const ElementId<dim> self_id(1);
   const Scalar<DataVector> var1{{{{3., 4.}}}};
@@ -96,7 +96,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   using simple_tags =
       db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(self_id, db::create<simple_tags>(std::move(vars), var3,
                                                 db::item_type<source_tag>(2)));
   MockRuntimeSystem runner{{}, std::move(local_algs)};

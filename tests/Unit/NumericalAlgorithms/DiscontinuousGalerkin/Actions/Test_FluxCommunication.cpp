@@ -368,22 +368,24 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   };
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs).emplace(self_id, std::move(start_box));
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
+      .emplace(self_id, std::move(start_box));
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(south_id,
                create_neighbor_databox(
                    south_id, Direction<2>::lower_eta(), {},
                    data.remote_fluxes.at(Direction<2>::upper_eta()),
                    data.remote_other_data.at(Direction<2>::upper_eta())));
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(east_id,
                create_neighbor_databox(
                    east_id, Direction<2>::lower_xi(), {},
                    data.remote_fluxes.at(Direction<2>::upper_xi()),
                    data.remote_other_data.at(Direction<2>::upper_xi())));
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(west_id,
                create_neighbor_databox(
                    west_id, Direction<2>::lower_eta(),
@@ -545,9 +547,10 @@ SPECTRE_TEST_CASE(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(
           self_id,
           db::create<simple_tags,
@@ -650,9 +653,10 @@ SPECTRE_TEST_CASE(
       tmpl::append<simple_tags, compute_items<my_component>>>;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(
           self_id,
           db::create<simple_tags, compute_items<my_component>>(
@@ -666,7 +670,7 @@ SPECTRE_TEST_CASE(
                   {mortar_id,
                    {{Spectral::MortarSize::Full,
                      Spectral::MortarSize::Full}}}}));
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(
           neighbor_id,
           db::create<simple_tags, compute_items<my_component>>(
@@ -780,9 +784,10 @@ SPECTRE_TEST_CASE(
                                            0.);
 
     using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-    using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+    using MockDistributedObjectsTag =
+        MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
     MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-    tuples::get<LocalAlgsTag>(local_algs)
+    tuples::get<MockDistributedObjectsTag>(local_algs)
         .emplace(
             self_id,
             db::create<
@@ -802,7 +807,7 @@ SPECTRE_TEST_CASE(
                 db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
                 db::item_type<mortar_sizes_tag<2>>{
                     {mortar_id, {{test.first}}}}));
-    tuples::get<LocalAlgsTag>(local_algs)
+    tuples::get<MockDistributedObjectsTag>(local_algs)
         .emplace(
             neighbor_id,
             db::create<

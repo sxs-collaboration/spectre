@@ -141,8 +141,9 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
           metavars>::TupleOfMockDistributedObjects;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   TupleOfMockDistributedObjects local_algs{};
-  using LocalAlgTag = typename MockRuntimeSystem::template LocalAlgorithmsTag<
-      component_for_simple_action_mock<metavars>>;
+  using LocalAlgTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          component_for_simple_action_mock<metavars>>;
   tuples::get<LocalAlgTag>(local_algs)
       .emplace(0,
                ActionTesting::MockDistributedObject<

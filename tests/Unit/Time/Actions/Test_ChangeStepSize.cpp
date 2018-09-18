@@ -70,9 +70,10 @@ void check(const bool time_runs_forward,
       (time_runs_forward ? 1 : -1) * time.slab().duration();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_runs_forward, 0, time),

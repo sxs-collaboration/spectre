@@ -63,12 +63,14 @@ void check_observer_registration() {
   using element_comp = element_component<Metavariables>;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using ObserverLocalAlgsTag =
-      typename MockRuntimeSystem::template LocalAlgorithmsTag<obs_component>;
-  using ElementLocalAlgsTag =
-      typename MockRuntimeSystem::template LocalAlgorithmsTag<element_comp>;
+  using ObserverMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          obs_component>;
+  using ElementMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          element_comp>;
   TupleOfMockDistributedObjects local_algs{};
-  tuples::get<ObserverLocalAlgsTag>(local_algs)
+  tuples::get<ObserverMockDistributedObjectsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
   // Specific IDs have no significance, just need different IDs.
@@ -78,7 +80,7 @@ void check_observer_registration() {
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
   for (const auto& id : element_ids) {
-    tuples::get<ElementLocalAlgsTag>(local_algs)
+    tuples::get<ElementMockDistributedObjectsTag>(local_algs)
         .emplace(ElementIndex<2>{id},
                  ActionTesting::MockDistributedObject<element_comp>{});
   }

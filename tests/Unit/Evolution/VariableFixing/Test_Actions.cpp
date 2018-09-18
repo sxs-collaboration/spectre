@@ -53,14 +53,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
           Metavariables>::TupleOfMockDistributedObjects;
   using component = mock_component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag =
-      typename MockRuntimeSystem::template LocalAlgorithmsTag<component>;
+  using MockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<component>;
   TupleOfMockDistributedObjects local_algs{};
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
 
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(0,
                ActionTesting::MockDistributedObject<component>{db::create<
                    db::AddSimpleTags<hydro::Tags::RestMassDensity<DataVector>,

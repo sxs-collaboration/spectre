@@ -167,10 +167,10 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
                                          gsl::at(remote_data, 2));
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag =
-      MockRuntimeSystem::LocalAlgorithmsTag<component<Metavariables>>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(id, db::create<typename component<Metavariables>::simple_tags>(
                        mesh, mortar_meshes, mortar_sizes, time_step, variables,
                        std::move(mortar_data)));

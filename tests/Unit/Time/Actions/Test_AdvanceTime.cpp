@@ -49,9 +49,10 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
@@ -87,9 +88,10 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 
 void check_abn(const Time& start, const TimeDelta& time_step) {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),

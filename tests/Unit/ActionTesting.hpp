@@ -648,7 +648,7 @@ class MockRuntimeSystem {
   };
 
   template <typename Component>
-  struct LocalAlgorithmsTag {
+  struct MockDistributedObjectsTag {
     using type = std::unordered_map<typename Component::index,
                                     MockDistributedObject<Component>>;
   };
@@ -658,7 +658,7 @@ class MockRuntimeSystem {
       tuples::TaggedTupleTypelist<typename GlobalCache::tag_list>;
   using TupleOfMockDistributedObjects = tuples::TaggedTupleTypelist<
       tmpl::transform<typename Metavariables::component_list,
-                      tmpl::bind<LocalAlgorithmsTag, tmpl::_1>>>;
+                      tmpl::bind<MockDistributedObjectsTag, tmpl::_1>>>;
   using Inboxes = tuples::TaggedTupleTypelist<
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
@@ -672,7 +672,8 @@ class MockRuntimeSystem {
         [this](auto component) {
           using Component = tmpl::type_from<decltype(component)>;
           Parallel::get_parallel_component<Component>(cache_).set_data(
-              &tuples::get<LocalAlgorithmsTag<Component>>(local_algorithms_),
+              &tuples::get<MockDistributedObjectsTag<Component>>(
+                  local_algorithms_),
               &tuples::get<InboxesTag<Component>>(inboxes_));
 
           for (auto& local_alg_pair : this->template algorithms<Component>()) {
@@ -781,7 +782,7 @@ class MockRuntimeSystem {
   /// Access the mocked algorithms for a component, indexed by array index.
   template <typename Component>
   auto& algorithms() noexcept {
-    return tuples::get<LocalAlgorithmsTag<Component>>(local_algorithms_);
+    return tuples::get<MockDistributedObjectsTag<Component>>(local_algorithms_);
   }
 
   const GlobalCache& cache() noexcept { return cache_; }

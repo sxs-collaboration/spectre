@@ -39,10 +39,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
           Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using ObserverLocalAlgsTag =
-      typename MockRuntimeSystem::template LocalAlgorithmsTag<obs_component>;
+  using ObserverMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          obs_component>;
   TupleOfMockDistributedObjects local_algs{};
-  tuples::get<ObserverLocalAlgsTag>(local_algs)
+  tuples::get<ObserverMockDistributedObjectsTag>(local_algs)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{},
