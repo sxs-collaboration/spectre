@@ -69,7 +69,7 @@ void write_extents(const hid_t group_id, const Index<Dim>& extents,
 }
 
 void write_connectivity(const hid_t group_id,
-                        const std::vector<int>& connectivity) {
+                        const std::vector<int>& connectivity) noexcept {
   const hsize_t size = connectivity.size();
   const hid_t space_id = H5Screate_simple(1, &size, nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
@@ -85,8 +85,8 @@ void write_connectivity(const hid_t group_id,
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
 }
 
-std::vector<std::string> get_group_names(const hid_t file_id,
-                                         const std::string& group_name) {
+std::vector<std::string> get_group_names(
+    const hid_t file_id, const std::string& group_name) noexcept {
   // Opens the group, loads the group info and then loops over all the groups
   // retrieving their names and storing them in names
   detail::OpenGroup my_group(file_id, group_name, AccessType::ReadOnly);
@@ -112,6 +112,37 @@ std::vector<std::string> get_group_names(const hid_t file_id,
     names.push_back(name);
   }
   return names;
+}
+
+template <typename Type>
+void write_to_attribute(const hid_t location_id, const std::string& name,
+                        const Type& value) noexcept {
+  const hid_t space_id = H5Screate(H5S_SCALAR);
+  CHECK_H5(space_id, "Failed to create scalar");
+  const hid_t att_id = H5Acreate2(location_id, name.c_str(), h5_type<Type>(),
+                                  space_id, h5p_default(), h5p_default());
+  CHECK_H5(att_id, "Failed to create attribute '" << name << "'");
+  CHECK_H5(H5Awrite(att_id, h5_type<Type>(), static_cast<const void*>(&value)),
+           "Failed to write value: " << value);
+  CHECK_H5(H5Aclose(att_id), "Failed to close attribute '" << name << "'");
+  CHECK_H5(H5Sclose(space_id), "Unable to close dataspace");
+}
+
+template <typename Type>
+Type read_value_attribute(const hid_t location_id,
+                          const std::string& name) noexcept {
+  const htri_t attribute_exists = H5Aexists(location_id, name.c_str());
+  if (not attribute_exists) {
+    ERROR("Could not find attribute '" << name << "'");  // LCOV_EXCL_LINE
+  }
+  const hid_t attribute_id = H5Aopen(location_id, name.c_str(), h5p_default());
+  CHECK_H5(attribute_id, "Failed to open attribute '" << name << "'");
+  Type value;
+  CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value),
+           "Failed to read attribute '" << name << "'");
+  CHECK_H5(H5Aclose(attribute_id),
+           "Failed to close attribute '" << name << "'");
+  return value;
 }
 
 std::vector<std::string> get_attribute_names(const hid_t file_id,
@@ -222,6 +253,23 @@ template Index<2> read_extents<2>(const hid_t group_id,
                                   const std::string& extents_name);
 template Index<3> read_extents<3>(const hid_t group_id,
                                   const std::string& extents_name);
+
+template void write_to_attribute<double>(const hid_t location_id,
+                                         const std::string& name,
+                                         const double& value) noexcept;
+template void write_to_attribute<uint32_t>(const hid_t location_id,
+                                           const std::string& name,
+                                           const uint32_t& value) noexcept;
+template void write_to_attribute<int>(const hid_t location_id,
+                                      const std::string& name,
+                                      const int& value) noexcept;
+
+template double read_value_attribute<double>(const hid_t location_id,
+                                             const std::string& name) noexcept;
+template uint32_t read_value_attribute<uint32_t>(
+    const hid_t location_id, const std::string& name) noexcept;
+template int read_value_attribute<int>(const hid_t location_id,
+                                       const std::string& name) noexcept;
 }  // namespace h5
 
 namespace h5 {
@@ -296,37 +344,6 @@ std::vector<std::string> read_strings_from_attribute(const hid_t group_id,
   return result;
 }
 
-template <typename Type>
-void write_value_to_attribute(const hid_t location_id, const std::string& name,
-                              const Type& value) {
-  const hid_t space_id = H5Screate(H5S_SCALAR);
-  CHECK_H5(space_id, "Failed to create scalar");
-  const hid_t att_id = H5Acreate2(location_id, name.c_str(), h5_type<Type>(),
-                                  space_id, h5p_default(), h5p_default());
-  CHECK_H5(att_id, "Failed to create attribute '" << name << "'");
-  CHECK_H5(H5Awrite(att_id, h5_type<Type>(), static_cast<const void*>(&value)),
-           "Failed to write value: " << value);
-  CHECK_H5(H5Aclose(att_id), "Failed to close attribute '" << name << "'");
-  CHECK_H5(H5Sclose(space_id), "Unable to close dataspace");
-}
-
-template <typename Type>
-Type read_value_from_attribute(const hid_t location_id,
-                               const std::string& name) {
-  const htri_t attribute_exists = H5Aexists(location_id, name.c_str());
-  if (not attribute_exists) {
-    ERROR("Could not find attribute '" << name << "'");  // LCOV_EXCL_LINE
-  }
-  const hid_t attribute_id = H5Aopen(location_id, name.c_str(), h5p_default());
-  CHECK_H5(attribute_id, "Failed to open attribute '" << name << "'");
-  Type value;
-  CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value),
-           "Failed to read attribute '" << name << "'");
-  CHECK_H5(H5Aclose(attribute_id),
-           "Failed to close attribute '" << name << "'");
-  return value;
-}
-
 template <size_t Dims>
 hid_t create_extensible_dataset(const hid_t group_id, const std::string& name,
                                 const std::array<hsize_t, Dims>& initial_size,
@@ -349,23 +366,6 @@ hid_t create_extensible_dataset(const hid_t group_id, const std::string& name,
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
   return dataset_id;
 }
-
-template void write_value_to_attribute<double>(const hid_t location_id,
-                                               const std::string& name,
-                                               const double& value);
-template void write_value_to_attribute<uint32_t>(const hid_t location_id,
-                                                 const std::string& name,
-                                                 const uint32_t& value);
-template void write_value_to_attribute<int>(const hid_t location_id,
-                                            const std::string& name,
-                                            const int& value);
-
-template double read_value_from_attribute<double>(const hid_t location_id,
-                                                  const std::string& name);
-template uint32_t read_value_from_attribute<uint32_t>(const hid_t location_id,
-                                                      const std::string& name);
-template int read_value_from_attribute<int>(const hid_t location_id,
-                                            const std::string& name);
 
 template hid_t create_extensible_dataset<1>(
     const hid_t group_id, const std::string& name,

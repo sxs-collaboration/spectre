@@ -41,16 +41,18 @@ void write_extents(hid_t group_id, const Index<Dim>& extents,
 
 /*!
  * \ingroup HDF5Group
- * \brief Write the connectivity into the group in the H5 file
+ * \brief Write a value of type `Type` to an HDF5 attribute named `name`
  */
-void write_connectivity(hid_t group_id, const std::vector<int>& connectivity);
+template <typename Type>
+void write_to_attribute(hid_t location_id, const std::string& name,
+                        const Type& value) noexcept;
 
 /*!
  * \ingroup HDF5Group
- * \brief Get the names of all the groups in a group
+ * \brief Read a value of type `Type` from an HDF5 attribute named `name`
  */
-std::vector<std::string> get_group_names(hid_t file_id,
-                                         const std::string& group_name);
+template <typename Type>
+Type read_value_attribute(hid_t location_id, const std::string& name) noexcept;
 
 /*!
  * \ingroup HDF5Group
@@ -58,6 +60,20 @@ std::vector<std::string> get_group_names(hid_t file_id,
  */
 std::vector<std::string> get_attribute_names(hid_t file_id,
                                              const std::string& group_name);
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Write the connectivity into the group in the H5 file
+ */
+void write_connectivity(hid_t group_id,
+                        const std::vector<int>& connectivity) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Get the names of all the groups and datasets in a group
+ */
+std::vector<std::string> get_group_names(
+    hid_t file_id, const std::string& group_name) noexcept;
 
 /*!
  * \ingroup HDF5Group
@@ -86,7 +102,6 @@ DataVector read_data(hid_t group_id, const std::string& dataset_name);
 template <size_t Dim>
 Index<Dim> read_extents(hid_t group_id,
                         const std::string& extents_name = "Extents");
-
 }  // namespace h5
 
 namespace h5 {
@@ -110,21 +125,6 @@ void write_strings_to_attribute(hid_t dataset_id, const std::string& name,
  */
 std::vector<std::string> read_strings_from_attribute(hid_t group_id,
                                                      const std::string& name);
-
-/*!
- * \ingroup HDF5Group
- * \brief Write a value of type `Type` to an HDF5 attribute named `name`
- */
-template <typename Type>
-void write_value_to_attribute(hid_t location_id, const std::string& name,
-                              const Type& value);
-
-/*!
- * \ingroup HDF5Group
- * \brief Read a value of type `Type` from an HDF5 attribute named `name`
- */
-template <typename Type>
-Type read_value_from_attribute(hid_t location_id, const std::string& name);
 
 /*!
  * \ingroup HDF5Group

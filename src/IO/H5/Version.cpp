@@ -13,10 +13,9 @@ Version::Version(bool exists, detail::OpenGroup&& group, hid_t location,
                  std::string name, const uint32_t version)
     : version_([&exists, &location, &version, &name]() {
         if (exists) {
-          return detail::read_value_from_attribute<uint32_t>(
-              location, name + extension());
+          return read_value_attribute<uint32_t>(location, name + extension());
         }
-        detail::write_value_to_attribute(location, name + extension(), version);
+        write_to_attribute(location, name + extension(), version);
         return version;
       }()),
       group_(std::move(group)) {}
