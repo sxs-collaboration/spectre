@@ -339,24 +339,6 @@ bool contains_attribute(const hid_t file_id, const std::string& group_name,
          std::end(names);
 }
 
-double get_time(const hid_t file_id, const std::string& group_name,
-                const std::string& attr_name) {
-  if (not contains_attribute(file_id, group_name, attr_name)) {
-    ERROR("group " << group_name << " does not contain attribute '" << attr_name
-                   << "'");
-  }
-  detail::OpenGroup my_group(file_id, group_name, AccessType::ReadOnly);
-  const hid_t group_id = my_group.id();
-// Read the attr_name attribute and close the attribute.
-  const hid_t attr_id = H5Aopen(group_id, attr_name.c_str(), h5p_default());
-  CHECK_H5(attr_id, "Failed to open attribute");
-  double time;
-  CHECK_H5(H5Aread(attr_id, h5_type<double>(), &time),
-           "Failed to read attribute");
-  H5Aclose(attr_id);
-  return time;
-}
-
 DataVector read_data(const hid_t group_id, const std::string& dataset_name) {
   // Read a DataVector from the group
   const hid_t dataset_id =

@@ -113,13 +113,6 @@ bool contains_attribute(hid_t file_id, const std::string& group_name,
 
 /*!
  * \ingroup HDF5Group
- * \brief Get the "Time" attribute from a group
- */
-double get_time(hid_t file_id, const std::string& group_name,
-                const std::string& attr_name = "Time");
-
-/*!
- * \ingroup HDF5Group
  * \brief Read a DataVector from a dataset in a group
  */
 DataVector read_data(hid_t group_id, const std::string& dataset_name);
