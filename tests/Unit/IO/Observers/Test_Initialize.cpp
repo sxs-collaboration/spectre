@@ -42,7 +42,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
       typename MockRuntimeSystem::template LocalAlgorithmsTag<obs_component>;
   LocalAlgorithms local_algs{};
   tuples::get<ObserverLocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<obs_component>{});
+      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{},
                                                          std::move(local_algs)};

@@ -155,7 +155,7 @@ auto run_action(
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(ElementIndex<2>{element.id()},
-               ActionTesting::MockLocalAlgorithm<component>{
+               ActionTesting::MockDistributedObject<component>{
                    db::create<simple_tags, compute_tags>(
                        element, mesh, std::move(element_map), vars, other_arg,
                        std::move(n_dot_f_storage))});

@@ -43,7 +43,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
                           TimeId{}, TimeDelta{})});

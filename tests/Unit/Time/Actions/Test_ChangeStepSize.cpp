@@ -73,7 +73,7 @@ void check(const bool time_runs_forward,
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_runs_forward, 0, time),
                           TimeId(time_runs_forward, 0,

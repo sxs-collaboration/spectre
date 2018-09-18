@@ -323,7 +323,7 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,
-          ActionTesting::MockLocalAlgorithm<my_component>{db::create<
+          ActionTesting::MockDistributedObject<my_component>{db::create<
               db::AddSimpleTags<
                   TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
                   Tags::Element<2>, Tags::ElementMap<2>,

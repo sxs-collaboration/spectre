@@ -54,9 +54,9 @@ using with_these_simple_actions_t =
     typename get_mocking_list<Component>::with_these_simple_actions;
 }  // namespace detail
 
-// MockLocalAlgorithm mocks the AlgorithmImpl class.
+// MockDistributedObject mocks the AlgorithmImpl class.
 template <typename Component>
-class MockLocalAlgorithm {
+class MockDistributedObject {
  private:
   class InvokeSimpleActionBase {
    public:
@@ -78,10 +78,11 @@ class MockLocalAlgorithm {
   template <typename Action, typename... Args>
   class InvokeSimpleAction : public InvokeSimpleActionBase {
    public:
-    InvokeSimpleAction(MockLocalAlgorithm* local_alg, std::tuple<Args...> args)
+    InvokeSimpleAction(MockDistributedObject* local_alg,
+                       std::tuple<Args...> args)
         : local_algorithm_(local_alg), args_(std::move(args)) {}
 
-    explicit InvokeSimpleAction(MockLocalAlgorithm* local_alg)
+    explicit InvokeSimpleAction(MockDistributedObject* local_alg)
         : local_algorithm_(local_alg) {}
 
     void invoke_action() noexcept override {
@@ -107,7 +108,7 @@ class MockLocalAlgorithm {
       local_algorithm_->simple_action<Action>(true);
     }
 
-    MockLocalAlgorithm* local_algorithm_;
+    MockDistributedObject* local_algorithm_;
     std::tuple<Args...> args_{};
     bool valid_{true};
   };
@@ -138,9 +139,10 @@ class MockLocalAlgorithm {
  public:
   using databox_types = typename compute_databox_type<actions_list>::type;
 
-  MockLocalAlgorithm() = default;
+  MockDistributedObject() = default;
 
-  explicit MockLocalAlgorithm(typename Component::initial_databox initial_box)
+  explicit MockDistributedObject(
+      typename Component::initial_databox initial_box)
       : box_(std::move(initial_box)) {}
 
   void set_index(typename Component::index index) noexcept {
@@ -309,13 +311,13 @@ class MockLocalAlgorithm {
 
 template <typename Component>
 template <size_t... Is>
-void MockLocalAlgorithm<Component>::next_action(
+void MockDistributedObject<Component>::next_action(
     std::index_sequence<Is...> /*meta*/) noexcept {
   auto& const_global_cache = *const_global_cache_;
   if (UNLIKELY(performing_action_)) {
     ERROR(
         "Cannot call an Action while already calling an Action on the same "
-        "MockLocalAlgorithm (an element of a parallel component array, or a "
+        "MockDistributedObject (an element of a parallel component array, or a "
         "parallel component singleton).");
   }
   // Keep track of if we already evaluated an action since we want `next_action`
@@ -412,7 +414,7 @@ void MockLocalAlgorithm<Component>::next_action(
 
 template <typename Component>
 template <size_t... Is>
-bool MockLocalAlgorithm<Component>::is_ready(
+bool MockDistributedObject<Component>::is_ready(
     std::index_sequence<Is...> /*meta*/) noexcept {
   bool next_action_is_ready = false;
   const auto helper = [
@@ -473,7 +475,7 @@ class MockArrayElementProxy {
  public:
   using Inbox = tuples::TaggedTupleTypelist<InboxTagList>;
 
-  MockArrayElementProxy(MockLocalAlgorithm<Component>& local_algorithm,
+  MockArrayElementProxy(MockDistributedObject<Component>& local_algorithm,
                         Inbox& inbox)
       : local_algorithm_(local_algorithm), inbox_(inbox) {}
 
@@ -496,10 +498,10 @@ class MockArrayElementProxy {
     local_algorithm_.template simple_action<Action>();
   }
 
-  MockLocalAlgorithm<Component>* ckLocal() { return &local_algorithm_; }
+  MockDistributedObject<Component>* ckLocal() { return &local_algorithm_; }
 
  private:
-  MockLocalAlgorithm<Component>& local_algorithm_;
+  MockDistributedObject<Component>& local_algorithm_;
   Inbox& inbox_;
 };
 
@@ -509,7 +511,7 @@ class MockProxy {
   using Inboxes =
       std::unordered_map<Index, tuples::TaggedTupleTypelist<InboxTagList>>;
   using LocalAlgorithms =
-      std::unordered_map<Index, MockLocalAlgorithm<Component>>;
+      std::unordered_map<Index, MockDistributedObject<Component>>;
 
   MockProxy() : inboxes_(nullptr) {}
 
@@ -530,7 +532,7 @@ class MockProxy {
         local_algorithms_->at(index), inboxes_->operator[](index));
   }
 
-  MockLocalAlgorithm<Component>* ckLocalBranch() noexcept {
+  MockDistributedObject<Component>* ckLocalBranch() noexcept {
     ASSERT(
         local_algorithms_->size() == 1,
         "Can only have one algorithm when getting the ckLocalBranch, but have "
@@ -647,7 +649,7 @@ class MockRuntimeSystem {
   template <typename Component>
   struct LocalAlgorithmsTag {
     using type = std::unordered_map<typename Component::index,
-                                    MockLocalAlgorithm<Component>>;
+                                    MockDistributedObject<Component>>;
   };
 
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
@@ -738,7 +740,7 @@ class MockRuntimeSystem {
     algorithms<Component>()
         .at(array_index)
         .next_action(
-            std::make_index_sequence<tmpl::size<typename MockLocalAlgorithm<
+            std::make_index_sequence<tmpl::size<typename MockDistributedObject<
                 Component>::actions_list>::value>{});
   }
 
@@ -749,7 +751,7 @@ class MockRuntimeSystem {
     return algorithms<Component>()
         .at(array_index)
         .is_ready(
-            std::make_index_sequence<tmpl::size<typename MockLocalAlgorithm<
+            std::make_index_sequence<tmpl::size<typename MockDistributedObject<
                 Component>::actions_list>::value>{});
   }
 

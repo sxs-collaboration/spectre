@@ -68,7 +68,7 @@ void check_observer_registration() {
       typename MockRuntimeSystem::template LocalAlgorithmsTag<element_comp>;
   LocalAlgorithms local_algs{};
   tuples::get<ObserverLocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<obs_component>{});
+      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
@@ -79,7 +79,7 @@ void check_observer_registration() {
   for (const auto& id : element_ids) {
     tuples::get<ElementLocalAlgsTag>(local_algs)
         .emplace(ElementIndex<2>{id},
-                 ActionTesting::MockLocalAlgorithm<element_comp>{});
+                 ActionTesting::MockDistributedObject<element_comp>{});
   }
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{},

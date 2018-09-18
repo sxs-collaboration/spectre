@@ -66,7 +66,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
                           time_id, 4., 5., std::move(history))});

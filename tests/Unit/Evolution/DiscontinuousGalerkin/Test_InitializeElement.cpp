@@ -220,7 +220,8 @@ void test_initialize_element(
       typename MockRuntimeSystem::template LocalAlgorithmsTag<my_component>;
   typename MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(element_id, ActionTesting::MockLocalAlgorithm<my_component>{});
+      .emplace(element_id,
+               ActionTesting::MockDistributedObject<my_component>{});
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{std::move(cache_tuple),
                                                          std::move(local_algs)};
@@ -371,7 +372,7 @@ void test_mortar_orientation() noexcept {
   typename MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(ElementIndex<3>{element_id},
-               ActionTesting::MockLocalAlgorithm<my_component>{});
+               ActionTesting::MockDistributedObject<my_component>{});
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),

@@ -144,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
       component_for_simple_action_mock<metavars>>;
   tuples::get<LocalAlgTag>(local_algs)
       .emplace(0,
-               ActionTesting::MockLocalAlgorithm<
+               ActionTesting::MockDistributedObject<
                    component_for_simple_action_mock<metavars>>{
                    db::create<db::AddSimpleTags<ValueTag, PassedToB>>(0, -1)});
   ActionTesting::MockRuntimeSystem<metavars> runner{{}, std::move(local_algs)};

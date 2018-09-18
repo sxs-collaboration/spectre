@@ -61,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
 
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0,
-               ActionTesting::MockLocalAlgorithm<component>{db::create<
+               ActionTesting::MockDistributedObject<component>{db::create<
                    db::AddSimpleTags<hydro::Tags::RestMassDensity<DataVector>,
                                      hydro::Tags::Pressure<DataVector>,
                                      ::Tags::Coordinates<3, Frame::Inertial>>>(

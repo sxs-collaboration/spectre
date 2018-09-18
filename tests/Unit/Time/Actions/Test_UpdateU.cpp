@@ -67,7 +67,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           time_step, 1., history_tag::type{})});
   MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},

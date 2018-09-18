@@ -52,7 +52,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
                           TimeId(time_step.is_positive(), 8, start, 1,
@@ -90,7 +90,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
   using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
   MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
                           TimeId(time_step.is_positive(), 8, start + time_step),
