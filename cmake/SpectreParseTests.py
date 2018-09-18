@@ -22,6 +22,7 @@ allowed_tags = [
                 "GeneralizedHarmonic",
                 "GrMhd",
                 "H5",
+                "Hydro",
                 "IO",
                 "LinearAlgebra",
                 "LinearOperators",
