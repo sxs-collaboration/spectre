@@ -45,9 +45,12 @@ struct System {
 };
 
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>,
-                                        tmpl::list<change_step_size>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<change_step_size>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
                                         Tags::TimeStep, history_tag>;
   using initial_databox = db::compute_databox_type<simple_tags>;

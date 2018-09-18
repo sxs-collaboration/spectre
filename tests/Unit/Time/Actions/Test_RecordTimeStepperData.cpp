@@ -36,9 +36,12 @@ using history_tag =
     Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
 struct Metavariables;
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, int, tmpl::list<>,
-                       tmpl::list<Actions::RecordTimeStepperData>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<Actions::RecordTimeStepperData>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, variables_tag,
                                         dt_variables_tag, history_tag>;
   using compute_tags = db::AddComputeTags<Tags::Time>;

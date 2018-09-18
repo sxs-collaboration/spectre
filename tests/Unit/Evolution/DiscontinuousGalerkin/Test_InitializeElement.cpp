@@ -117,12 +117,14 @@ struct NormalDotNumericalFluxTag {
 };
 
 template <size_t Dim, typename Metavariables>
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<Dim>,
-          tmpl::list<OptionTags::TimeStepper,
-                     OptionTags::AnalyticSolution<SystemAnalyticSolution>>,
-          tmpl::list<>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TimeStepper,
+                 OptionTags::AnalyticSolution<SystemAnalyticSolution>>;
+  using action_list = tmpl::list<>;
   using initial_databox =
       db::compute_databox_type<typename dg::Actions::InitializeElement<
           Dim>::template return_tag_list<Metavariables>>;

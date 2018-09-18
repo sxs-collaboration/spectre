@@ -41,9 +41,12 @@ struct System {
 using ElementIndexType = ElementIndex<2>;
 
 template <typename Metavariables>
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, ElementIndexType, tmpl::list<>,
-                       tmpl::list<Actions::ComputeVolumeDuDt<2>>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndexType;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<Actions::ComputeVolumeDuDt<2>>;
   using initial_databox =
       db::compute_databox_type<tmpl::list<var_tag, Tags::dt<var_tag>>>;
 };

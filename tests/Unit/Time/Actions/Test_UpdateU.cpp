@@ -40,10 +40,12 @@ using history_tag =
     Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<OptionTags::TimeStepper>,
-                                        tmpl::list<Actions::UpdateU>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::TimeStepper>;
+  using action_list = tmpl::list<Actions::UpdateU>;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>;
   using initial_databox = db::compute_databox_type<simple_tags>;

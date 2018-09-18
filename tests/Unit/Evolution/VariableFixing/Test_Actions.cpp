@@ -28,10 +28,12 @@ using VariableFixer = VariableFixing::RadiallyFallingFloor<
     hydro::Tags::Pressure<DataVector>>;
 
 template <typename Metavariables>
-struct mock_component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, size_t, tmpl::list<>,
-          tmpl::list<::Actions::ApplyVariableFixer<VariableFixer>>> {
+struct mock_component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<::Actions::ApplyVariableFixer<VariableFixer>>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,

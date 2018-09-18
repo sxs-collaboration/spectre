@@ -37,9 +37,12 @@ struct PassedToB : db::SimpleTag {
 };
 
 template <typename Metavariables>
-struct component_for_simple_action_mock
-    : ActionTesting::MockArrayComponent<Metavariables, size_t, tmpl::list<>,
-                                        tmpl::list<>> {
+struct component_for_simple_action_mock {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
   using initial_databox =
       db::compute_databox_type<tmpl::list<ValueTag, PassedToB>>;
 

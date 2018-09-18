@@ -19,9 +19,12 @@
 
 namespace {
 template <typename Metavariables>
-struct observer_component
-    : ActionTesting::MockArrayComponent<Metavariables, size_t, tmpl::list<>,
-                                        tmpl::list<>> {
+struct observer_component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename observers::Actions::Initialize::return_tag_list>;
 };

@@ -155,11 +155,13 @@ struct MortarRecorderTag : Tags::VariablesBoundaryData,
                            Tags::Mortars<DataRecorderTag, 2> {};
 
 template <size_t Dim, typename MV>
-struct lts_component
-    : ActionTesting::MockArrayComponent<
-          MV, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Dim>>,
-          tmpl::list<dg::Actions::SendDataForFluxes<MV>,
-                     dg::Actions::ReceiveDataForFluxes<MV>>> {
+struct lts_component {
+  using metavariables = MV;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
+  using action_list = tmpl::list<dg::Actions::SendDataForFluxes<MV>,
+                                 dg::Actions::ReceiveDataForFluxes<MV>>;
   using flux_comm_types = dg::FluxCommunicationTypes<MV>;
 
   using simple_tags = db::AddSimpleTags<

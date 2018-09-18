@@ -29,17 +29,24 @@ namespace {
 using ElementIndexType = ElementIndex<2>;
 
 template <typename Metavariables>
-struct element_component
-    : ActionTesting::MockArrayComponent<Metavariables, ElementIndexType,
-                                        tmpl::list<>, tmpl::list<>> {
+struct element_component {
+  using component_being_mocked = void;  // Not needed
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndexType;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
 };
 
 template <typename Metavariables>
-struct observer_component
-    : ActionTesting::MockArrayComponent<Metavariables, size_t, tmpl::list<>,
-                                        tmpl::list<>,
-                                        observers::Observer<Metavariables>> {
+struct observer_component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
+  using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags = observers::Actions::Initialize::simple_tags;
   using compute_tags = observers::Actions::Initialize::compute_tags;
   using initial_databox =

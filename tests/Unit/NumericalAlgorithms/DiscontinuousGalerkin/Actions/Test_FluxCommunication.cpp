@@ -155,11 +155,14 @@ template <size_t Dim>
 using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>;
 
 template <size_t Dim, typename Metavariables>
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Dim>>,
-          tmpl::list<dg::Actions::SendDataForFluxes<Metavariables>,
-                     dg::Actions::ReceiveDataForFluxes<Metavariables>>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
+  using action_list =
+      tmpl::list<dg::Actions::SendDataForFluxes<Metavariables>,
+                 dg::Actions::ReceiveDataForFluxes<Metavariables>>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags =

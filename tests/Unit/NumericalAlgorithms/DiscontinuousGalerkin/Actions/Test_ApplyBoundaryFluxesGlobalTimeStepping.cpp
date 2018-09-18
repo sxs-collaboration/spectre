@@ -95,10 +95,13 @@ struct System {
 };
 
 template <size_t Dim, typename Flux, typename Metavariables>
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Flux>>,
-          tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Flux>>;
+  using action_list =
+      tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
                  Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,

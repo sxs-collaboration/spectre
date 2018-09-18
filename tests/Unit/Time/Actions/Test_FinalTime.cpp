@@ -20,10 +20,12 @@
 
 namespace {
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<OptionTags::FinalTime>,
-                                        tmpl::list<Actions::FinalTime>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::FinalTime>;
+  using action_list = tmpl::list<Actions::FinalTime>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>;
   using compute_tags = db::AddComputeTags<Tags::Time>;
   using initial_databox =

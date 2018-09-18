@@ -101,10 +101,13 @@ using VarsType = Variables<tmpl::list<Var, Var2>>;
 
 struct Metavariables;
 
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<2>, tmpl::list<>,
-          tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<2>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list =
+      tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes>;
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,

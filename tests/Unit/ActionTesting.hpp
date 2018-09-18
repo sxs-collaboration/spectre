@@ -145,7 +145,7 @@ class MockDistributedObject {
       typename Component::initial_databox initial_box)
       : box_(std::move(initial_box)) {}
 
-  void set_index(typename Component::index index) noexcept {
+  void set_index(typename Component::array_index index) noexcept {
     array_index_ = std::move(index);
   }
 
@@ -300,7 +300,7 @@ class MockDistributedObject {
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
 
-  typename Component::index array_index_{};
+  typename Component::array_index array_index_{};
   Parallel::ConstGlobalCache<typename Component::metavariables>*
       const_global_cache_{nullptr};
   tuples::TaggedTupleTypelist<
@@ -364,7 +364,7 @@ void MockDistributedObject<Component>::next_action(
                                this_action, this_databox,
                                tuples::TaggedTupleTypelist<inbox_tags_list>,
                                Parallel::ConstGlobalCache<metavariables>,
-                               typename Component::index>{},
+                               typename Component::array_index>{},
                            this_action{})) {
       ERROR("Tried to invoke the action '"
             << pretty_type::get_name<this_action>()
@@ -460,7 +460,7 @@ bool MockDistributedObject<Component>::is_ready(
                            this_action, this_databox,
                            tuples::TaggedTupleTypelist<inbox_tags_list>,
                            Parallel::ConstGlobalCache<metavariables>,
-                           typename Component::index>{},
+                           typename Component::array_index>{},
                        this_action{});
   };
   // Silence compiler warning when there are no Actions.
@@ -575,22 +575,23 @@ class MockProxy {
   TupleOfMockDistributedObjects* local_algorithms_;
   Inboxes* inboxes_;
 };
+}  // namespace ActionTesting_detail
 
 struct MockArrayChare {
   template <typename Component, typename Metavariables, typename ActionList,
             typename Index, typename InitialDataBox>
   using cproxy =
-      MockProxy<Component, Index, Parallel::get_inbox_tags<ActionList>>;
+      ActionTesting_detail::MockProxy<Component, Index,
+                                      Parallel::get_inbox_tags<ActionList>>;
 };
-}  // namespace ActionTesting_detail
 }  // namespace ActionTesting
 
 /// \cond HIDDEN_SYMBOLS
 namespace Parallel {
 template <>
-struct get_array_index<ActionTesting::ActionTesting_detail::MockArrayChare> {
+struct get_array_index<ActionTesting::MockArrayChare> {
   template <typename Component>
-  using f = typename Component::index;
+  using f = typename Component::array_index;
 };
 }  // namespace Parallel
 /// \endcond
@@ -601,29 +602,6 @@ struct get_array_index<ActionTesting::ActionTesting_detail::MockArrayChare> {
  * to test actions.
  */
 namespace ActionTesting {
-/// \ingroup TestingFrameworkGroup
-/// A mock parallel component that acts like a component with
-/// chare_type Parallel::Algorithms::Array.
-template <typename Metavariables, typename Index,
-          typename ConstGlobalCacheTagList, typename ActionList = tmpl::list<>,
-          typename ComponentBeingMocked = void>
-struct MockArrayComponent {
-  // We need a way of grabbing the correct proxy from the ConstGlobalCache. The
-  // way we do that is by checking if the component passed to
-  // `Parallel::get_parallel_component` is in the
-  // `Metavariables::component_list`, if not then we search for the element of
-  // `Metavariables::component_list` that has `component_being_mocked` equal to
-  // the `ParallelComponentTag` passed to `Parallel::get_parallel_component`.
-  using component_being_mocked = ComponentBeingMocked;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting_detail::MockArrayChare;
-  using index = Index;
-  using array_index = Index;
-  using const_global_cache_tag_list = ConstGlobalCacheTagList;
-  using action_list = ActionList;
-};
-
 /// \ingroup TestingFrameworkGroup
 /// A class that mocks the infrastructure needed to run actions.  It
 /// simulates message passing using the inbox infrastructure and
@@ -642,14 +620,14 @@ class MockRuntimeSystem {
   template <typename Component>
   struct InboxesTag {
     using type =
-        std::unordered_map<typename Component::index,
+        std::unordered_map<typename Component::array_index,
                            tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
                                typename Component::action_list>>>;
   };
 
   template <typename Component>
   struct MockDistributedObjectsTag {
-    using type = std::unordered_map<typename Component::index,
+    using type = std::unordered_map<typename Component::array_index,
                                     MockDistributedObject<Component>>;
   };
 
@@ -692,8 +670,8 @@ class MockRuntimeSystem {
   /// `array_index` immediately.
   template <typename Component, typename Action, typename Arg0,
             typename... Args>
-  void simple_action(const typename Component::index& array_index, Arg0&& arg0,
-                     Args&&... args) noexcept {
+  void simple_action(const typename Component::array_index& array_index,
+                     Arg0&& arg0, Args&&... args) noexcept {
     algorithms<Component>()
         .at(array_index)
         .template simple_action<Action>(
@@ -703,7 +681,8 @@ class MockRuntimeSystem {
   }
 
   template <typename Component, typename Action>
-  void simple_action(const typename Component::index& array_index) noexcept {
+  void simple_action(
+      const typename Component::array_index& array_index) noexcept {
     algorithms<Component>()
         .at(array_index)
         .template simple_action<Action>(true);
@@ -714,7 +693,7 @@ class MockRuntimeSystem {
   /// `array_index`.
   template <typename Component>
   void invoke_queued_simple_action(
-      const typename Component::index& array_index) noexcept {
+      const typename Component::array_index& array_index) noexcept {
     algorithms<Component>().at(array_index).invoke_queued_simple_action();
   }
 
@@ -722,7 +701,7 @@ class MockRuntimeSystem {
   /// the action list, force the next action to be `Action`
   template <typename Component, typename Action>
   void force_next_action_to_be(
-      const typename Component::index& array_index) noexcept {
+      const typename Component::array_index& array_index) noexcept {
     static_assert(
         tmpl::list_contains_v<typename Component::action_list, Action>,
         "Cannot force a next action that is not in the action list of the "
@@ -738,7 +717,8 @@ class MockRuntimeSystem {
   /// Invoke the next action in the ActionList on the parallel component
   /// `Component` on the component labeled by `array_index`.
   template <typename Component>
-  void next_action(const typename Component::index& array_index) noexcept {
+  void next_action(
+      const typename Component::array_index& array_index) noexcept {
     algorithms<Component>()
         .at(array_index)
         .next_action(
@@ -749,7 +729,7 @@ class MockRuntimeSystem {
   /// Call is_ready on the next action in the action list as if on the portion
   /// of Component labeled by array_index.
   template <typename Component>
-  bool is_ready(const typename Component::index& array_index) noexcept {
+  bool is_ready(const typename Component::array_index& array_index) noexcept {
     return algorithms<Component>()
         .at(array_index)
         .is_ready(
@@ -759,7 +739,7 @@ class MockRuntimeSystem {
 
   /// Access the inboxes for a given component.
   template <typename Component>
-  std::unordered_map<typename Component::index,
+  std::unordered_map<typename Component::array_index,
                      tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
                          typename Component::action_list>>>&
   inboxes() noexcept {
@@ -769,8 +749,9 @@ class MockRuntimeSystem {
   /// Find the set of array indices on Component where the specified
   /// inbox is not empty.
   template <typename Component, typename InboxTag>
-  std::unordered_set<typename Component::index> nonempty_inboxes() noexcept {
-    std::unordered_set<typename Component::index> result;
+  std::unordered_set<typename Component::array_index>
+  nonempty_inboxes() noexcept {
+    std::unordered_set<typename Component::array_index> result;
     for (const auto& element_box : inboxes<Component>()) {
       if (not tuples::get<InboxTag>(element_box.second).empty()) {
         result.insert(element_box.first);
