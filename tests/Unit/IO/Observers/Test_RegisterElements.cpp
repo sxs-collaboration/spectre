@@ -16,7 +16,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ArrayComponentId.hpp"
-#include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
