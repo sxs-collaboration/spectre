@@ -31,6 +31,13 @@ DataVector PowX::second_deriv(const DataVector& x) const noexcept {
   return apply_second_deriv(x);
 }
 
+double PowX::third_deriv(const double& x) const noexcept {
+  return apply_third_deriv(x);
+}
+DataVector PowX::third_deriv(const DataVector& x) const noexcept {
+  return apply_third_deriv(x);
+}
+
 template <typename T>
 T PowX::apply_call_operator(const T& x) const noexcept {
   return pow(x, power_);
@@ -47,6 +54,13 @@ T PowX::apply_second_deriv(const T& x) const noexcept {
   return 0 == power_ or 1 == power_
              ? make_with_value<T>(x, 0.0)
              : power_ * (power_ - 1) * pow(x, power_ - 2);
+}
+
+template <typename T>
+T PowX::apply_third_deriv(const T& x) const noexcept {
+  return 0 == power_ or 1 == power_ or 2 == power_
+             ? make_with_value<T>(x, 0.0)
+             : power_ * (power_ - 1) * (power_ - 2) * pow(x, power_ - 3);
 }
 
 void PowX::pup(PUP::er& p) {

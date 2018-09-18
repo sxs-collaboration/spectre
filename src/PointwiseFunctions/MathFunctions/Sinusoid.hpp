@@ -69,6 +69,9 @@ class Sinusoid : public MathFunction<1> {
   double second_deriv(const double& x) const noexcept override;
   DataVector second_deriv(const DataVector& x) const noexcept override;
 
+  double third_deriv(const double& x) const noexcept override;
+  DataVector third_deriv(const DataVector& x) const noexcept override;
+
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) override;  // NOLINT
 
@@ -80,6 +83,8 @@ class Sinusoid : public MathFunction<1> {
   T apply_first_deriv(const T& x) const noexcept;
   template <typename T>
   T apply_second_deriv(const T& x) const noexcept;
+  template <typename T>
+  T apply_third_deriv(const T& x) const noexcept;
 
   double amplitude_{};
   double wavenumber_{};

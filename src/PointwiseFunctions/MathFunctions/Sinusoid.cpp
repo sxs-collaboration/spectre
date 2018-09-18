@@ -35,6 +35,13 @@ DataVector Sinusoid::second_deriv(const DataVector& x) const noexcept {
   return apply_second_deriv(x);
 }
 
+double Sinusoid::third_deriv(const double& x) const noexcept {
+  return apply_third_deriv(x);
+}
+DataVector Sinusoid::third_deriv(const DataVector& x) const noexcept {
+  return apply_third_deriv(x);
+}
+
 template <typename T>
 T Sinusoid::apply_call_operator(const T& x) const noexcept {
   return amplitude_ * sin(wavenumber_ * x + phase_);
@@ -47,7 +54,12 @@ T Sinusoid::apply_first_deriv(const T& x) const noexcept {
 
 template <typename T>
 T Sinusoid::apply_second_deriv(const T& x) const noexcept {
-  return - amplitude_ * square(wavenumber_) * sin(wavenumber_ * x + phase_);
+  return -amplitude_ * square(wavenumber_) * sin(wavenumber_ * x + phase_);
+}
+
+template <typename T>
+T Sinusoid::apply_third_deriv(const T& x) const noexcept {
+  return -amplitude_ * cube(wavenumber_) * cos(wavenumber_ * x + phase_);
 }
 
 void Sinusoid::pup(PUP::er& p) {
