@@ -45,6 +45,11 @@ sudo: required
 services:
 - docker
 
+# Specify the order of stages.
+stages:
+  - Build Libraries
+  - Build and Run Tests, ClangTidy, IWYU, and Doxygen
+
 # Set up travis configurations of Linux and macOS.
 #
 # We also have separate targets for running shell scripts that enforce what
@@ -52,10 +57,11 @@ services:
 #
 # NOTE: The static analysis targets are run first since these are typically
 #       fast to run and provide the most useful feedback.
-matrix:
+jobs:
   fast_finish: true
   include:
-  - os: linux
+  - stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
+    os: linux
     dist: trusty
     env: CHECK_COMMITS=true
     compiler: clang
@@ -90,54 +96,92 @@ matrix:
     env: TEST_CHECK_FILES=true
     compiler: clang
     name: test check files
-    # Run full builds after static analysis
-  - os: linux
+
+  # Run full builds after static analysis
+  - &GccDebug
+    os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Debug COVERAGE=ON
-    name: gcc debug with coverage
-  - os: linux
+    env: BUILD_TYPE=Debug COVERAGE=OFF
+    name: gcc debug
+    stage: Build Libraries
+  - &GccRelease
+    os: linux
     compiler: gcc
     dist: trusty
     env: BUILD_TYPE=Release
     name: gcc release
-  - os: linux
+  - &Gcc6Debug
+    os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Debug COMPILER=gcc-6
     name: gcc-6 debug
-  - os: linux
+  - &Gcc6Release
+    os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-6
     name: gcc-6 release
-  - os: linux
+  - &ClangDebug
+    os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Debug
     name: clang debug
-  - os: linux
+  - &ClangRelease
+    os: linux
     compiler: clang
     dist: trusty
     env: BUILD_TYPE=Release
     name: clang release
-  - os: osx
-    env: BUILD_TYPE=Debug
-    osx_image: xcode9.2
-    compiler: clang
-    name: osx debug
-  - os: osx
-    osx_image: xcode9.2
-    env: BUILD_TYPE=Release
-    compiler: clang
-    name: osx release
+  # - &MacOsDebug9_2
+  #   os: osx
+  #   env: BUILD_TYPE=Debug
+  #   osx_image: xcode9.2
+  #   compiler: clang
+  #   name: osx xcode 9.2 debug
+  # - &MacOsRelease9_2
+  #   os: osx
+  #   osx_image: xcode9.2
+  #   env: BUILD_TYPE=Release
+  #   compiler: clang
+  #   name: osx xcode 9.2 release
+
+  # Build and run tests, clang tidy, IWYU, and docs.
+  - <<: *GccDebug
+    stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
+  - <<: *GccRelease
+  - <<: *Gcc6Debug
+  - <<: *Gcc6Release
+  - <<: *ClangDebug
+  - <<: *ClangRelease
+  # - <<: *MacOsDebug9_2
+  # - <<: *MacOsRelease9_2
 
 
 # Travis allows caching of data between builds to reduce build times or perform
 # regression testing. We use ccache (https://ccache.samba.org/) to reduce
 # compilation time.
+#
+# We cache the homebrew bottles (these are the downloaded compile copies of
+# software). The reason isn't that the downloads take too long but that
+# sometimes the download fails and then brew tries to build from source.
+#
+# We store manually installed dependencies such as LIBXSMM, Charm, Blaze,
+# etc. in $HOME/mac_cache (on macOS builds). This is essential for both reducing
+# the amount of time we spend building dependencies and for ensuring ccache
+# works. If we rebuild the dependencies then ccache might think that are objects
+# are out-of-date because they include a "newer" version of a header file.
+#
+# Unfortunately we have not yet had any success with getting ccache working on
+# macOS either with or without a precompiled header and so have needed to
+# disable macOS builds.
 cache:
-  ccache: true
+  directories:
+    - $HOME/Library/Caches/Homebrew
+    - $HOME/mac_cache
+    - $HOME/ccache
 
 # For macOS we install all dependencies in the before_install step of Travis.
 # Unfortunately installing ccache and jemalloc from brew causes a brew update,
@@ -146,6 +190,12 @@ cache:
 # linking errors. All dependencies are installed into the home directory.
 # ccache is used to reduce build times.
 before_install:
+  - export CHARM_VERSION=6.8.0
+  - export BLAZE_VERSION=3.2
+  - export HDF5_VERSION=1.8.17
+  - export NUMPY_VERSION=1.14
+  - export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11
+  - export DEP_CACHE=$HOME/mac_cache
   - export CHARM_PATCH=v6.8.patch
   - export CHARM_CC=${CC}
   - export FC=gfortran
@@ -164,73 +214,7 @@ before_install:
         export USE_PCH=ON;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      export CHARM_VERSION=6.8.0;
-      export BLAZE_VERSION=3.2;
-      export HDF5_VERSION=1.8.17;
-      export NUMPY_VERSION=1.14;
-      export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11;
-      cd $HOME;
-      rm /usr/local/include/c++;
-      brew update;
-      brew install gcc;
-      brew install ccache;
-      PATH=/usr/local/opt/ccache/libexec:$PATH;
-      brew install jemalloc;
-      brew install gsl;
-      brew install hdf5;
-      brew install openblas;
-
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-      chmod +x miniconda.sh;
-      ./miniconda.sh -b -p /Users/travis/mc;
-      export PATH=/Users/travis/mc/bin:$PATH;
-      conda info;
-      conda update --yes conda;
-      conda create -n osx_env --yes python=$TRAVIS_PYTHON_VERSION;
-      source activate osx_env;
-      conda install -y numpy=$NUMPY_VERSION;
-
-      ccache -z;
-      git clone https://github.com/hfp/libxsmm.git;
-      cd libxsmm && git checkout 1.8.1;
-      mkdir build && cd build && make -f ../Makefile;
-      ccache -s;
-      cd $HOME;
-
-      git clone https://github.com/philsquared/Catch.git;
-      cd Catch;
-      git checkout v2.1.2;
-      cd $HOME;
-
-      git clone https://github.com/edouarda/brigand.git;
-
-      wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-${BLAZE_VERSION}.tar.gz;
-      tar -xzf blaze-${BLAZE_VERSION}.tar.gz;
-
-      if [ "$(sw_vers -productVersion | cut -d '.' -f 1,2)" = "10.12" ]; then
-        printf "#ifndef _MACH_PORT_T\n#define _MACH_PORT_T\n#include <sys/_types.h> /* __darwin_mach_port_t */\ntypedef __darwin_mach_port_t mach_port_t;\n#include <pthread.h>\nmach_port_t pthread_mach_thread_np(pthread_t);\n#endif /* _MACH_PORT_T */" > ./new_threads;
-        cat /Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support >> ./new_threads;
-        sudo mv ./new_threads /Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support;
-      fi
-
-      ccache -z;
-      wget http://charm.cs.illinois.edu/distrib/charm-${CHARM_VERSION}.tar.bz2;
-      tar -xjf charm-${CHARM_VERSION}.tar.bz2;
-      cd ./charm-${CHARM_VERSION};
-      ./build charm++ multicore-darwin-x86_64 -j2 -O0 $SPECTRE_MIN_MACOS;
-      git apply $TRAVIS_BUILD_DIR/support/Charm/${CHARM_PATCH};
-      ccache -s;
-      cd $HOME;
-
-      ccache -z;
-      git clone https://github.com/jbeder/yaml-cpp.git;
-      cd ./yaml-cpp;
-      mkdir lib;
-      cd ./lib;
-      cmake -DBUILD_SHARED_LIBS=ON ../;
-      make -j2;
-      ccache -s;
-      cd $HOME;
+      ./.travis/MacOsBuildDependencies.sh;
     fi
 
 # We use different configs for Linux and macOS. For Linux we use a Docker
@@ -274,10 +258,14 @@ script:
   elif [ "${TEST_CHECK_FILES}" ==  "true" ]; then
     ./tools/CheckFiles.sh --test;
   elif [ "${TRAVIS_OS_NAME}" == "linux" ]; then
+    if [ ! -d ${HOME}/ccache/build_${CC}_${BUILD_TYPE} ]; then
+      mkdir ${HOME}/ccache/build_${CC}_${BUILD_TYPE};
+    fi;
     cp -vr containers ${HOME}/docker
     && cd ${HOME}
     && mv -v ${TRAVIS_BUILD_DIR} ${HOME}/docker/spectre
-    && cp -r ${HOME}/.ccache ${HOME}/docker/ccache
+    && rm -rf ${HOME}/docker/ccache
+    && mv ${HOME}/ccache/build_${CC}_${BUILD_TYPE} ${HOME}/docker/ccache
     && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
     && docker build
         --build-arg CXXFLAGS="-Werror -march=x86-64"
@@ -296,6 +284,7 @@ script:
         --build-arg TRAVIS_COMMIT=${TRAVIS_COMMIT}
         --build-arg TRAVIS_SECURE_ENV_VARS=${TRAVIS_SECURE_ENV_VARS}
         --build-arg TRAVIS_EVENT_TYPE=${TRAVIS_EVENT_TYPE}
+        --build-arg TRAVIS_BUILD_STAGE_NAME="${TRAVIS_BUILD_STAGE_NAME}"
         --build-arg ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
         --build-arg ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
         --build-arg GH_PAGES_REPO=${GH_PAGES_REPO}
@@ -308,33 +297,17 @@ script:
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
         --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
         --build-arg CHARM_PATCH=${CHARM_PATCH}
+        --build-arg CORE_LIBS=${CORE_LIBS}
         -t ${TRAVIS_REPO_SLUG}
         -f ${HOME}/docker/Dockerfile.travis
         ${HOME}/docker/
-    && rm -rf ${HOME}/.ccache
+    && rm -rf ${HOME}/ccache/*
     && CON=$(docker run -d ${TRAVIS_REPO_SLUG} /bin/bash)
-    && docker cp ${CON}:/root/.ccache ${HOME}/
+    && docker cp ${CON}:/root/.ccache ${HOME}/ccache/build_${CC}_${BUILD_TYPE}/
     && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
                  ${HOME}/docker/spectre;
   elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
-    cd $HOME
-    && mkdir build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
-    && cd ./build_${TRAVIS_OS_NAME}_${BUILD_TYPE}
-    && ccache -z
-    && cmake -D CHARM_ROOT=$HOME/charm-${CHARM_VERSION}
-             -D BLAZE_ROOT=$HOME/blaze-${BLAZE_VERSION}/
-             -D BRIGAND_ROOT=$HOME/brigand
-             -D CATCH_ROOT=$HOME/Catch
-             -D LIBXSMM_ROOT=$HOME/libxsmm/build
-             -D YAMLCPP_ROOT=$HOME/yaml-cpp/
-             -D MACOSX_MIN=10.11
-             -D BLAS_openblas_LIBRARY=/usr/local/opt/openblas/lib/libopenblas.dylib
-             -D LAPACK_openblas_LIBRARY=/usr/local/opt/openblas/lib/libopenblas.dylib
-             -D CMAKE_BUILD_TYPE=${BUILD_TYPE}
-             ${TRAVIS_BUILD_DIR}
-    && make test-executables -j2
-    && ctest --output-on-failure
-    && ccache -s;
+    ${TRAVIS_BUILD_DIR}/.travis/MacOsBuild.sh;
   else
     echo "Unknown build environment"
     && exit -1;

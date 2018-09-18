@@ -35,6 +35,7 @@ ARG TRAVIS_TAG
 ARG TRAVIS_REPO_SLUG
 ARG TRAVIS_COMMIT
 ARG TRAVIS_EVENT_TYPE
+ARG TRAVIS_BUILD_STAGE_NAME
 ARG TRAVIS_SECURE_ENV_VARS
 ARG ENCRYPTED_KEY
 ARG ENCRYPTED_IV
@@ -48,10 +49,30 @@ ARG USE_PCH
 ARG UPSTREAM_REPO
 ARG UPSTREAM_BRANCH
 ARG CHARM_PATCH
+ARG CORE_LIBS
+
+ENV SPECTRE_BUILD_DIR=/work/build_${BUILD_TYPE}_${CC}
+ENV SPECTRE_SOURCE_DIR=/work/spectre
+
+# In order to have ccache work on TravisCI with a precompiled header we need to:
+# - Hash the content of the compiler rather than the location and mtime
+# - Hash the header file in the repo that will generate the precompiled header
+# - Ignore the precompiled header in the build directory
+# ENV CCACHE_LOGFILE=/work/ccache_log.txt
+ENV CCACHE_COMPRESS=1
+# Default compression is 6
+ENV CCACHE_COMPRESSLEVEL=6
+ENV CCACHE_MAXSIZE=5G
+ENV CCACHE_COMPILERCHECK=content
+ENV CCACHE_EXTRAFILES="${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp"
+ENV CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:${SPECTRE_BUILD_DIR}/SpectrePch.hpp.gch"
+
+# Print the ccache configuration out
+RUN ccache -p
 
 # Copy the spectre repo from the TravisCI disk into the Docker image /work
 # directory
-COPY spectre /work/spectre
+COPY spectre ${SPECTRE_SOURCE_DIR}
 
 # We need the GitHub host added to known_hosts. It is safer to copy in the
 # known_hosts from Travis than to add the REPO host automatically, since that
@@ -64,121 +85,8 @@ COPY known_hosts /root/.ssh/known_hosts
 COPY ccache /root/.ccache
 
 # Create build directory
-RUN mkdir /work/build_${BUILD_TYPE}_${CC}
-WORKDIR /work/build_${BUILD_TYPE}_${CC}
+RUN mkdir ${SPECTRE_BUILD_DIR}
+WORKDIR ${SPECTRE_BUILD_DIR}
 
-RUN ccache -z
-
-RUN bash -c ". /etc/profile.d/lmod.sh; \
-    export PATH=$PATH:/work/spack/bin; \
-    . /work/spack/share/spack/setup-env.sh; \
-    spack load gsl; \
-    spack load pkg-config; \
-    spack load benchmark; \
-    spack load blaze; \
-    spack load brigand; \
-    spack load catch; \
-    spack load libxsmm; \
-    spack load yaml-cpp; \
-    cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_CXX_FLAGS=\"${CXXFLAGS}\" \
-          -D CMAKE_Fortran_COMPILER=${FC} \
-          -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC} \
-          -D USE_CCACHE=ON \
-          -D USE_PCH=${USE_PCH} \
-          -D COVERAGE=${COVERAGE} \
-          ../spectre/"
-
-# Build all Charm++ modules
-RUN make module_All
-
-RUN if [ ${RUN_CLANG_TIDY} ]; then \
-      /work/spectre/.travis/RunClangTidy.sh; \
-    fi
-
-RUN if [ ${RUN_IWYU} ]; then \
-      /work/spectre/.travis/RunIncludeWhatYouUse.sh; \
-    fi
-
-# TravisCI currently has 2 cores for a job, so we build on 2.
-RUN if [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ -z "${RUN_IWYU}" ] \
-    && [ -z "${BUILD_DOC}" ]; then \
-      bash -c ". /etc/profile.d/lmod.sh; \
-               export PATH=$PATH:/work/spack/bin; \
-               . /work/spack/share/spack/setup-env.sh; \
-               spack load gsl; \
-               spack load pkg-config; \
-               spack load benchmark; \
-               spack load blaze; \
-               spack load brigand; \
-               spack load catch; \
-               spack load libxsmm; \
-               spack load yaml-cpp; \
-               make test-executables \
-                    $([ $BUILD_TYPE = Release ] && echo Benchmark) -j2 && \
-               ccache -s && \
-               ctest --output-on-failure"; \
-    fi
-
-# Check documentation output for warnings write to stdout and to file so we
-# can search the file for warnings
-RUN if [ ${BUILD_DOC} ]; then \
-      make doc | tee doxygen.log; \
-      ! grep 'warning' ./doxygen.log; \
-    fi
-
-RUN if [ "${CHARM_CC}" = "gcc" ] \
-    && [ -z "${RUN_CLANG_TIDY}" ] \
-    && [ -z "${RUN_IWYU}" ] \
-    && [ -z "${BUILD_DOC}" ] \
-    && [ ${COVERAGE} = ON ]; then \
-    bash -c ". /etc/profile.d/lmod.sh; \
-               export PATH=$PATH:/work/spack/bin; \
-               . /work/spack/share/spack/setup-env.sh; \
-               spack load gsl; \
-               spack load blaze; \
-               spack load brigand; \
-               spack load catch; \
-               spack load libxsmm; \
-               spack load yaml-cpp; \
-               make unit-test-coverage"; \
-      if [ ${TRAVIS_SECURE_ENV_VARS} = true ]; then \
-        cd /work/spectre; \
-        coveralls-lcov -v --repo-token ${COVERALLS_TOKEN} /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \
-        cd /work/build_${BUILD_TYPE}_${CC}; \
-      fi; \
-    else \
-      touch /work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info; \
-    fi
-
-# We use cron jobs to deploy to gh-pages
-# Since this still runs all jobs we only actually build documentation
-# for one job but let the others run tests, i.e.
-# we add documentation only for one specific build matrix entry.
-RUN if [ ${BUILD_DOC} ] \
-    && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
-    && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
-    && [ ${TRAVIS_PULL_REQUEST} = false ]; then \
-      make doc-coverage; \
-
-      # the encrypted key is created using:
-      # travis encrypt-file -r sxs-collaboration/spectre deploy_key
-      # See:
-      # https://gist.github.com/domenic/ec8b0fc8ab45f39403dd
-      # https://docs.travis-ci.com/user/encrypting-files/
-      openssl aes-256-cbc -K $ENCRYPTED_KEY -iv $ENCRYPTED_IV \
-              -in /work/spectre/.travis/deploy_key.enc \
-              -out /root/.ssh/id_rsa -d; \
-      chmod 600 /root/.ssh/id_rsa; \
-
-      cd /work; \
-      git clone "$GH_PAGES_REPO" gh-pages; \
-    fi
-
-# push documentation to GitHub pages
-RUN if [ ${BUILD_DOC} ]; then \
-      /work/spectre/.travis/TravisPushDocumentation.sh; \
-    fi
+# Run the main build script
+RUN ${SPECTRE_SOURCE_DIR}/.travis/BuildLinux.sh;

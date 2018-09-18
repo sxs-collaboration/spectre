@@ -81,6 +81,7 @@ include(SetupIwyu)
 include(SetupCppCheck)
 include(SetupDoxygen)
 include(CodeCoverageDetection)
+include(SpectreAddLibraries)
 
 # Generate Charm++ files
 generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)
@@ -103,5 +104,8 @@ spectre_include_directories(${CMAKE_BINARY_DIR}/src/Parallel)
 add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(tests)
+
+# Set up stages for compiling test libraries in subsets.
+include(SetupBuildStageTargets)
 
 include(PrintUsefulCMakeInfo)

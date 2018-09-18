@@ -121,3 +121,42 @@ cause a problem leading to strange build failures.  If you suspect
 this may be the case, get a SpECTRE owner to click on the `More
 options` button in the top right, choose `Caches` and delete the cache
 for your pull request.
+
+## Precompiled Headers and ccache
+
+Getting ccache to work with precompiled headers on TravisCI is a little
+challenging. The header to be precompiled is
+`${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp` and is symbolically linked to
+`${SPECTRE_BUILD_DIR}/SpectrePch.hpp`. The configuration that seems to work is
+specifying the environment variables:
+
+\code{.sh}
+CCACHE_COMPILERCHECK=content
+CCACHE_EXTRAFILES="${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp"
+CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:${SPECTRE_BUILD_DIR}/SpectrePch.hpp.gch"
+\endcode
+
+On macOS builds we haven't yet had success with using `ccache` with a
+precompiled header. We disable the precompiled header and build in debug mode
+only to have reasonable build times.
+
+## Build Stages
+
+In order to avoid timeouts we build SpECTRE in various stages, carrying over the
+ccache from one stage to the next. This allows us to avoid recompiling the code
+in the next stage (there is some small overhead from running ccache instead of
+not doing anything at all). The first stage builds all the SpECTRE libraries but
+none of the executables or testing libraries. The second stage builds builds the
+test executables, runs the tests, and also runs ClangTidy, include-what-you-use,
+and various other checks. Another stage could be added that builds some of the
+test libraries if necessary.
+
+## Caching Dependencies on macOS Builds
+
+On macOS builds we cache all of our dependencies, like LIBXSMM and
+Charm++. These are cached in `$HOME/mac_cache`. Ultimately this saves about
+10-12 minutes even when compared to using ccache to cache the object files from
+building the dependencies. We also cache `$HOME/Library/Caches/Homebrew`, which
+is where Homebrew keeps the downloaded formulas. By caching the Homebrew bottles
+we are able to avoid brew formulas building from source because a tarball of the
+package was not available at the time.
