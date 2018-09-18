@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <deque>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -56,6 +57,61 @@ using with_these_simple_actions_t =
 // MockLocalAlgorithm mocks the AlgorithmImpl class.
 template <typename Component>
 class MockLocalAlgorithm {
+ private:
+  class InvokeSimpleActionBase {
+   public:
+    InvokeSimpleActionBase() = default;
+    InvokeSimpleActionBase(const InvokeSimpleActionBase&) = default;
+    InvokeSimpleActionBase& operator=(const InvokeSimpleActionBase&) = default;
+    InvokeSimpleActionBase(InvokeSimpleActionBase&&) = default;
+    InvokeSimpleActionBase& operator=(InvokeSimpleActionBase&&) = default;
+    virtual ~InvokeSimpleActionBase() = default;
+    virtual void invoke_action() noexcept = 0;
+  };
+
+  // Holds the arguments to be passed to the simple action once it is invoked.
+  // We delay simple action calls that are made from within an action for
+  // several reasons:
+  // - This is consistent with what actually happens in the parallel code
+  // - This prevents possible stack overflows
+  // - Allows better introspection and control over the Actions' behavior
+  template <typename Action, typename... Args>
+  class InvokeSimpleAction : public InvokeSimpleActionBase {
+   public:
+    InvokeSimpleAction(MockLocalAlgorithm* local_alg, std::tuple<Args...> args)
+        : local_algorithm_(local_alg), args_(std::move(args)) {}
+
+    explicit InvokeSimpleAction(MockLocalAlgorithm* local_alg)
+        : local_algorithm_(local_alg) {}
+
+    void invoke_action() noexcept override {
+      if (not valid_) {
+        ERROR(
+            "Cannot invoke the exact same simple action twice. This is an "
+            "internal bug in the action testing framework. Please file an "
+            "issue.");
+      }
+      valid_ = false;
+      invoke_action_impl(std::move(args_));
+    }
+
+   private:
+    template <typename Arg0, typename... Rest>
+    void invoke_action_impl(std::tuple<Arg0, Rest...> args) noexcept {
+      local_algorithm_->simple_action<Action>(std::move(args), true);
+    }
+
+    template <typename... LocalArgs,
+              Requires<sizeof...(LocalArgs) == 0> = nullptr>
+    void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) noexcept {
+      local_algorithm_->simple_action<Action>(true);
+    }
+
+    MockLocalAlgorithm* local_algorithm_;
+    std::tuple<Args...> args_{};
+    bool valid_{true};
+  };
+
  public:
   using actions_list = typename Component::action_list;
 
@@ -127,67 +183,100 @@ class MockLocalAlgorithm {
   void next_action(std::index_sequence<Is...> /*meta*/) noexcept;
 
   template <size_t... Is>
-  bool is_ready(
-      std::index_sequence<Is...> /*meta*/) noexcept;
+  bool is_ready(std::index_sequence<Is...> /*meta*/) noexcept;
 
   template <
       typename Action, typename... Args,
       Requires<not tmpl::list_contains_v<
           detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
-  void simple_action(std::tuple<Args...> args) noexcept {
-    performing_action_ = true;
-    forward_tuple_to_action<Action>(
-        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
-    performing_action_ = false;
+  void simple_action(std::tuple<Args...> args,
+                     const bool direct_from_action_runner = false) noexcept {
+    if (direct_from_action_runner) {
+      performing_action_ = true;
+      forward_tuple_to_action<Action>(
+          std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+      performing_action_ = false;
+    } else {
+      simple_action_queue_.push_back(
+          std::make_unique<InvokeSimpleAction<Action, Args...>>(
+              this, std::move(args)));
+    }
   }
 
   template <
       typename Action, typename... Args,
       Requires<tmpl::list_contains_v<
           detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
-  void simple_action(std::tuple<Args...> args) noexcept {
+  void simple_action(std::tuple<Args...> args,
+                     const bool direct_from_action_runner = false) noexcept {
     using index_of_action =
         tmpl::index_of<detail::replace_these_simple_actions_t<Component>,
                        Action>;
     using new_action =
         tmpl::at_c<detail::with_these_simple_actions_t<Component>,
                    index_of_action::value>;
-    performing_action_ = true;
-    forward_tuple_to_action<new_action>(
-        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
-    performing_action_ = false;
+    if (direct_from_action_runner) {
+      performing_action_ = true;
+      forward_tuple_to_action<new_action>(
+          std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+      performing_action_ = false;
+    } else {
+      simple_action_queue_.push_back(
+          std::make_unique<InvokeSimpleAction<new_action, Args...>>(
+              this, std::move(args)));
+    }
   }
 
   template <
       typename Action,
       Requires<not tmpl::list_contains_v<
           detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
-  void simple_action() noexcept {
-    performing_action_ = true;
-    Parallel::Algorithm_detail::simple_action_visitor<
-        Action, typename Component::initial_databox>(
-        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
-        actions_list{}, std::add_pointer_t<Component>{nullptr});
-    performing_action_ = false;
+  void simple_action(const bool direct_from_action_runner = false) noexcept {
+    if (direct_from_action_runner) {
+      performing_action_ = true;
+      Parallel::Algorithm_detail::simple_action_visitor<
+          Action, typename Component::initial_databox>(
+          box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+          actions_list{}, std::add_pointer_t<Component>{nullptr});
+      performing_action_ = false;
+    } else {
+      simple_action_queue_.push_back(
+          std::make_unique<InvokeSimpleAction<Action>>(this));
+    }
   }
 
   template <
       typename Action,
       Requires<tmpl::list_contains_v<
           detail::replace_these_simple_actions_t<Component>, Action>> = nullptr>
-  void simple_action() noexcept {
+  void simple_action(const bool direct_from_action_runner = false) noexcept {
     using index_of_action =
         tmpl::index_of<detail::replace_these_simple_actions_t<Component>,
                        Action>;
     using new_action =
         tmpl::at_c<detail::with_these_simple_actions_t<Component>,
                    index_of_action::value>;
-    performing_action_ = true;
-    Parallel::Algorithm_detail::simple_action_visitor<
-        new_action, typename Component::initial_databox>(
-        box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
-        actions_list{}, std::add_pointer_t<Component>{nullptr});
-    performing_action_ = false;
+    if (direct_from_action_runner) {
+      performing_action_ = true;
+      Parallel::Algorithm_detail::simple_action_visitor<
+          new_action, typename Component::initial_databox>(
+          box_, *inboxes_, *const_global_cache_, cpp17::as_const(array_index_),
+          actions_list{}, std::add_pointer_t<Component>{nullptr});
+      performing_action_ = false;
+    } else {
+      simple_action_queue_.push_back(
+          std::make_unique<InvokeSimpleAction<new_action>>(this));
+    }
+  }
+
+  void invoke_queued_simple_action() noexcept {
+    if (simple_action_queue_.empty()) {
+      ERROR(
+          "There are no queued simple actions to invoke. Are you sure a "
+          "previous action invoked a simple action on this component?");
+    }
+    simple_action_queue_.front()->invoke_action();
+    simple_action_queue_.pop_front();
   }
 
  private:
@@ -215,6 +304,7 @@ class MockLocalAlgorithm {
   tuples::TaggedTupleTypelist<
       Parallel::get_inbox_tags<typename Component::action_list>>* inboxes_{
       nullptr};
+  std::deque<std::unique_ptr<InvokeSimpleActionBase>> simple_action_queue_;
 };
 
 template <typename Component>
@@ -304,10 +394,9 @@ void MockLocalAlgorithm<Component>::next_action(
                   my_box, inboxes, const_global_cache,
                   cpp17::as_const(array_index), actions_list{}, component_ptr);
             })(
-        box,
-        typename std::tuple_size<decltype(this_action::apply(
-            box, inboxes, const_global_cache, cpp17::as_const(array_index),
-            actions_list{}, component_ptr))>::type{});
+        box, typename std::tuple_size<decltype(this_action::apply(
+                 box, inboxes, const_global_cache, cpp17::as_const(array_index),
+                 actions_list{}, component_ptr))>::type{});
     performing_action_ = false;
     already_did_an_action = true;
 
@@ -424,8 +513,7 @@ class MockProxy {
 
   MockProxy() : inboxes_(nullptr) {}
 
-  void set_data(LocalAlgorithms* local_algorithms,
-                Inboxes* inboxes) {
+  void set_data(LocalAlgorithms* local_algorithms, Inboxes* inboxes) {
     local_algorithms_ = local_algorithms;
     inboxes_ = inboxes;
   }
@@ -464,8 +552,8 @@ class MockProxy {
   template <typename Action>
   void simple_action() noexcept {
     std::for_each(
-        local_algorithms_->begin(), local_algorithms_->end(),
-        [](auto& index_and_local_algorithm) noexcept {
+        local_algorithms_->begin(),
+        local_algorithms_->end(), [](auto& index_and_local_algorithm) noexcept {
           index_and_local_algorithm.second.template simple_action<Action>();
         });
   }
@@ -595,17 +683,35 @@ class ActionRunner {
         });
   }
 
+  // @{
   /// Invoke the simple action `Action` on the `Component` labeled by
-  /// `array_index`
-  template <typename Component, typename Action, typename... Args>
-  void simple_action(const typename Component::index& array_index,
+  /// `array_index` immediately.
+  template <typename Component, typename Action, typename Arg0,
+            typename... Args>
+  void simple_action(const typename Component::index& array_index, Arg0&& arg0,
                      Args&&... args) noexcept {
-    Parallel::Algorithm_detail::simple_action_visitor<
-        Action, typename Component::initial_databox>(
-        algorithms<Component>().at(array_index).get_variant_box(),
-        inboxes<Component>()[array_index], cache_, array_index,
-        typename Component::action_list{},
-        std::add_pointer_t<Component>{nullptr}, std::forward<Args>(args)...);
+    algorithms<Component>()
+        .at(array_index)
+        .template simple_action<Action>(
+            std::make_tuple(std::forward<Arg0>(arg0),
+                            std::forward<Args>(args)...),
+            true);
+  }
+
+  template <typename Component, typename Action>
+  void simple_action(const typename Component::index& array_index) noexcept {
+    algorithms<Component>()
+        .at(array_index)
+        .template simple_action<Action>(true);
+  }
+  // @}
+
+  /// Invoke the next queued simple action on the `Component` labeled by
+  /// `array_index`.
+  template <typename Component>
+  void invoke_queued_simple_action(
+      const typename Component::index& array_index) noexcept {
+    algorithms<Component>().at(array_index).invoke_queued_simple_action();
   }
 
   /// Instead of the next call to `next_action` applying the next action in
@@ -659,8 +765,7 @@ class ActionRunner {
   /// Find the set of array indices on Component where the specified
   /// inbox is not empty.
   template <typename Component, typename InboxTag>
-  std::unordered_set<typename Component::index>
-  nonempty_inboxes() noexcept {
+  std::unordered_set<typename Component::index> nonempty_inboxes() noexcept {
     std::unordered_set<typename Component::index> result;
     for (const auto& element_box : inboxes<Component>()) {
       if (not tuples::get<InboxTag>(element_box.second).empty()) {

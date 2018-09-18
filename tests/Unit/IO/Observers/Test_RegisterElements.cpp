@@ -102,6 +102,9 @@ void check_observer_registration() {
     runner.simple_action<
         element_comp,
         observers::Actions::RegisterWithObservers<TypeOfObservation>>(id, 0);
+    // Invoke the simple_action RegisterSenderWithSelf that was called on the
+    // observer component by the RegisterWithObservers action.
+    runner.invoke_queued_simple_action<obs_component>(0);
   }
 
   // Test registration occurred as expected
