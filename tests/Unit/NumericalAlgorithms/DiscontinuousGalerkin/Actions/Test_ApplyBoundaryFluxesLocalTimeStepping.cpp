@@ -166,15 +166,15 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
                                          gsl::at(remote_data, 2));
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag =
-      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
-  ActionRunner::LocalAlgorithms local_algs{};
+      MockRuntimeSystem::LocalAlgorithmsTag<component<Metavariables>>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(id, db::create<typename component<Metavariables>::simple_tags>(
                        mesh, mortar_meshes, mortar_sizes, time_step, variables,
                        std::move(mortar_data)));
-  ActionRunner runner{
+  MockRuntimeSystem runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}},
       std::move(local_algs)};
 

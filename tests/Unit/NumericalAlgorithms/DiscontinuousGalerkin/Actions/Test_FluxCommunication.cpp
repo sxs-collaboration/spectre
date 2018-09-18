@@ -367,9 +367,9 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
         std::move(mortar_meshes), std::move(mortar_sizes));
   };
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs).emplace(self_id, std::move(start_box));
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(south_id,
@@ -391,8 +391,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                    data.remote_fluxes.at(Direction<2>::lower_xi()),
                    data.remote_other_data.at(Direction<2>::lower_xi())));
 
-  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}},
-                                                       std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
+      {NumericalFlux<2>{}}, std::move(local_algs)};
 
   using initial_databox_type = db::compute_databox_type<tmpl::append<
       db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
@@ -544,9 +544,9 @@ SPECTRE_TEST_CASE(
                                                   CoordinateMaps::Affine>(
                        {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,
@@ -559,8 +559,8 @@ SPECTRE_TEST_CASE(
               db::item_type<mortar_next_temporal_ids_tag<2>>{},
               db::item_type<mortar_meshes_tag<2>>{},
               db::item_type<mortar_sizes_tag<2>>{}));
-  ActionTesting::ActionRunner<Metavariables<2>> runner{{NumericalFlux<2>{}},
-                                                       std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
+      {NumericalFlux<2>{}}, std::move(local_algs)};
 
   runner.next_action<my_component>(self_id);
 
@@ -649,9 +649,9 @@ SPECTRE_TEST_CASE(
   using initial_databox_type = db::compute_databox_type<
       tmpl::append<simple_tags, compute_items<my_component>>>;
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,
@@ -679,8 +679,8 @@ SPECTRE_TEST_CASE(
               db::item_type<mortar_meshes_tag<3>>{{mortar_id, face_mesh}},
               db::item_type<mortar_sizes_tag<3>>{{mortar_id, {{}}}}));
 
-  ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<3>{}},
-                                                    std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<3>{}},
+                                                         std::move(local_algs)};
 
   runner.next_action<my_component>(self_id);
 
@@ -779,9 +779,9 @@ SPECTRE_TEST_CASE(
     other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(),
                                            0.);
 
-    using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-    using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
-    ActionRunner::LocalAlgorithms local_algs{};
+    using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+    using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+    MockRuntimeSystem::LocalAlgorithms local_algs{};
     tuples::get<LocalAlgsTag>(local_algs)
         .emplace(
             self_id,
@@ -824,8 +824,8 @@ SPECTRE_TEST_CASE(
                 db::item_type<mortar_sizes_tag<2>>{
                     {mortar_id, {{test.first}}}}));
 
-    ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<2>{}},
-                                                      std::move(local_algs)};
+    ActionTesting::MockRuntimeSystem<metavariables> runner{
+        {NumericalFlux<2>{}}, std::move(local_algs)};
 
     runner.next_action<my_component>(self_id);
 

@@ -137,17 +137,17 @@ struct SimpleActionMockMetavariables {
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   using metavars = SimpleActionMockMetavariables;
   using LocalAlgorithms =
-      typename ActionTesting::ActionRunner<metavars>::LocalAlgorithms;
-  using ActionRunner = ActionTesting::ActionRunner<metavars>;
+      typename ActionTesting::MockRuntimeSystem<metavars>::LocalAlgorithms;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   LocalAlgorithms local_algs{};
-  using LocalAlgTag = typename ActionRunner::template LocalAlgorithmsTag<
+  using LocalAlgTag = typename MockRuntimeSystem::template LocalAlgorithmsTag<
       component_for_simple_action_mock<metavars>>;
   tuples::get<LocalAlgTag>(local_algs)
       .emplace(0,
                ActionTesting::MockLocalAlgorithm<
                    component_for_simple_action_mock<metavars>>{
                    db::create<db::AddSimpleTags<ValueTag, PassedToB>>(0, -1)});
-  ActionTesting::ActionRunner<metavars> runner{{}, std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, std::move(local_algs)};
   const auto& box =
       runner.template algorithms<component_for_simple_action_mock<metavars>>()
           .at(0)

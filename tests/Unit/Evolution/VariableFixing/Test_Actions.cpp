@@ -49,11 +49,11 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                   "[Unit][Evolution][VariableFixing]") {
   using LocalAlgorithms =
-      typename ActionTesting::ActionRunner<Metavariables>::LocalAlgorithms;
+      typename ActionTesting::MockRuntimeSystem<Metavariables>::LocalAlgorithms;
   using component = mock_component<Metavariables>;
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<component>;
+      typename MockRuntimeSystem::template LocalAlgorithmsTag<component>;
   LocalAlgorithms local_algs{};
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
@@ -69,7 +69,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                    Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
                    tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
   const double radius_at_which_to_begin_applying_floor = 1.e-4;
-  ActionTesting::ActionRunner<Metavariables> runner{
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {radius_at_which_to_begin_applying_floor}, std::move(local_algs)};
   auto& box = runner.template algorithms<component>()
                   .at(0)

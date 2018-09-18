@@ -214,7 +214,7 @@ struct DataRecorder {
   std::vector<std::pair<int, PackagedData<flux_comm_types<2>>>> received_data{};
 };
 
-// Inserts the new neighbor element into the ActionRunner
+// Inserts the new neighbor element into the MockRuntimeSystem
 template <typename LocalAlg>
 void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
                      const Element<2>& element, const int start, const int end,
@@ -264,7 +264,7 @@ void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
 
 // Update the time and flux, then send the data
 void send_from_neighbor(
-    const gsl::not_null<ActionTesting::ActionRunner<LtsMetavariables<2>>*>
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<LtsMetavariables<2>>*>
         runner,
     const Element<2>& element, const int start, const int end,
     const double n_dot_f) noexcept {
@@ -317,9 +317,9 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
       {left_mortar_id, left_steps.front()},
       {right_mortar_id, right_steps.front()}};
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<my_component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(
           self_id,
@@ -357,8 +357,8 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   insert_neighbor(make_not_null(&tuples::get<LocalAlgsTag>(local_algs)),
                   right_element, 0, 1, 0.0);
 
-  ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<2>{}},
-                                                    std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}},
+                                                         std::move(local_algs)};
 
   runner.next_action<my_component>(self_id);  // SendDataForFluxes
 

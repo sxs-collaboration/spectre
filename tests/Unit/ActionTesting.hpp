@@ -525,7 +525,7 @@ class MockProxy {
                << index << "' but found " << local_algorithms_->count(index)
                << ". The known keys are " << keys_of(*local_algorithms_)
                << ". Did you forget to add a local algorithm when constructing "
-                  "the ActionRunner?");
+                  "the MockRuntimeSystem?");
     return MockArrayElementProxy<Component, InboxTagList>(
         local_algorithms_->at(index), inboxes_->operator[](index));
   }
@@ -627,14 +627,14 @@ struct MockArrayComponent {
 /// handles most of the arguments to the apply and is_ready action
 /// methods.
 template <typename Metavariables>
-class ActionRunner {
+class MockRuntimeSystem {
  public:
   // No moving, since MockProxy holds a pointer to us.
-  ActionRunner(const ActionRunner&) = delete;
-  ActionRunner(ActionRunner&&) = delete;
-  ActionRunner& operator=(const ActionRunner&) = delete;
-  ActionRunner& operator=(ActionRunner&&) = delete;
-  ~ActionRunner() = default;
+  MockRuntimeSystem(const MockRuntimeSystem&) = delete;
+  MockRuntimeSystem(MockRuntimeSystem&&) = delete;
+  MockRuntimeSystem& operator=(const MockRuntimeSystem&) = delete;
+  MockRuntimeSystem& operator=(MockRuntimeSystem&&) = delete;
+  ~MockRuntimeSystem() = default;
 
   template <typename Component>
   struct InboxesTag {
@@ -661,8 +661,8 @@ class ActionRunner {
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
   /// Construct from the tuple of ConstGlobalCache objects.
-  explicit ActionRunner(CacheTuple cache_contents,
-                        LocalAlgorithms local_algorithms)
+  explicit MockRuntimeSystem(CacheTuple cache_contents,
+                             LocalAlgorithms local_algorithms)
       : cache_(std::move(cache_contents)),
         local_algorithms_(std::move(local_algorithms)) {
     tmpl::for_each<typename Metavariables::component_list>(

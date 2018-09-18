@@ -195,17 +195,17 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
                         Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
                         mortar_data_tag>;
 
-  using ActionRunner =
-      ActionTesting::ActionRunner<Metavariables<2, NumericalFlux>>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
+  using MockRuntimeSystem =
+      ActionTesting::MockRuntimeSystem<Metavariables<2, NumericalFlux>>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
       component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(id, db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                            std::move(mortar_meshes),
                                            std::move(mortar_sizes), initial_dt,
                                            std::move(mortar_data)));
-  ActionRunner runner{{NumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{NumericalFlux{}}, std::move(local_algs)};
 
   runner.next_action<my_component>(id);
 
@@ -305,15 +305,15 @@ SPECTRE_TEST_CASE(
         typename mortar_data_tag::type{});
   };
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
       component<3, RefinementNumericalFlux, metavariables>>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(id_0, make_initial_box({{3, 4, 5}}));
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(id_1, make_initial_box({{4, 2, 6}}));
-  ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
 
   auto& box1 = runner.algorithms<my_component>()
                    .at(id_0)
@@ -462,10 +462,10 @@ SPECTRE_TEST_CASE(
                         mortar_data_tag>;
   using db_type = db::compute_databox_type<simple_tags>;
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<
       component<3, RefinementNumericalFlux, metavariables>>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(self_id,
                db::create<simple_tags>(mesh, logical_coordinates(mesh),
@@ -569,7 +569,7 @@ SPECTRE_TEST_CASE(
   add_neighbor({{MortarSize::LowerHalf, MortarSize::LowerHalf}}, {{-0.5, -0.5}},
                {{0.5, 0.5}}, ElementId<3>{13});
 
-  ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
   runner.next_action<my_component>(self_id);
 
   // These ids don't describe elements that fit together correctly,

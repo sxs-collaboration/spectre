@@ -63,15 +63,15 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const auto rhs =
       [](const double t, const double y) { return 2. * t - 2. * (y - t * t); };
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
                       db::create<typename component::simple_tags>(
                           time_step, 1., history_tag::type{})});
-  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                      std::move(local_algs)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                           std::move(local_algs)};
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};

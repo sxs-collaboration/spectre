@@ -39,15 +39,15 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
   const Slab slab(3., 6.);
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
                           TimeId{}, TimeDelta{})});
-  ActionRunner runner{{5.}, std::move(local_algs)};
+  MockRuntimeSystem runner{{5.}, std::move(local_algs)};
   auto& box = runner.algorithms<component>()
                   .at(0)
                   .get_databox<typename component::initial_databox>();

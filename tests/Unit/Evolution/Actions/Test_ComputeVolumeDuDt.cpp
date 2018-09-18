@@ -57,17 +57,17 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
                   "[Unit][Evolution][Actions]") {
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using LocalAlgsTag =
-      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
+      MockRuntimeSystem::LocalAlgorithmsTag<component<Metavariables>>;
 
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
 
   using simple_tags = db::AddSimpleTags<var_tag, Tags::dt<var_tag>>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(self_id, db::create<simple_tags>(3, -100));
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(local_algs)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
     return runner.algorithms<component<Metavariables>>()
         .at(self_id)

@@ -35,16 +35,17 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
   using LocalAlgorithms =
-      typename ActionTesting::ActionRunner<Metavariables>::LocalAlgorithms;
+      typename ActionTesting::MockRuntimeSystem<Metavariables>::LocalAlgorithms;
   using obs_component = observer_component<Metavariables>;
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using ObserverLocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<obs_component>;
+      typename MockRuntimeSystem::template LocalAlgorithmsTag<obs_component>;
   LocalAlgorithms local_algs{};
   tuples::get<ObserverLocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<obs_component>{});
 
-  ActionTesting::ActionRunner<Metavariables> runner{{}, std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{},
+                                                         std::move(local_algs)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
   const auto& observer_box =

@@ -150,16 +150,16 @@ auto run_action(
   using simple_tags = typename component::simple_tags;
   using compute_tags = typename component::compute_tags;
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(ElementIndex<2>{element.id()},
                ActionTesting::MockLocalAlgorithm<component>{
                    db::create<simple_tags, compute_tags>(
                        element, mesh, std::move(element_map), vars, other_arg,
                        std::move(n_dot_f_storage))});
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(local_algs)};
   runner.next_action<component>(element.id());
   // std::move call on returned value is intentional.
   return std::move(runner.algorithms<component>()

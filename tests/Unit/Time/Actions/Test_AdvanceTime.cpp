@@ -48,9 +48,9 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
                       db::create<simple_tags>(
@@ -58,8 +58,8 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
                           TimeId(time_step.is_positive(), 8, start, 1,
                                  start + substep_offsets[1]),
                           time_step)});
-  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                      std::move(local_algs)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                           std::move(local_algs)};
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
@@ -86,17 +86,17 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 }
 
 void check_abn(const Time& start, const TimeDelta& time_step) {
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
                           TimeId(time_step.is_positive(), 8, start + time_step),
                           time_step)});
-  ActionRunner runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
-                      std::move(local_algs)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
+                           std::move(local_algs)};
 
   for (const auto& step_start : {start, start + time_step}) {
     auto& box = runner.algorithms<component>()

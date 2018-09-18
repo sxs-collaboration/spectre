@@ -62,15 +62,15 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   history_tag::type history{};
   history.insert(slab.end(), 2., 3.);
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
                           time_id, 4., 5., std::move(history))});
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(local_algs)};
 
   runner.next_action<component>(0);
   const auto& box = runner.algorithms<component>()

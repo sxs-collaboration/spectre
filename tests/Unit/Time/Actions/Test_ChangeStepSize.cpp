@@ -69,9 +69,9 @@ void check(const bool time_runs_forward,
   const TimeDelta initial_step_size =
       (time_runs_forward ? 1 : -1) * time.slab().duration();
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using LocalAlgsTag = MockRuntimeSystem::LocalAlgorithmsTag<component>;
+  MockRuntimeSystem::LocalAlgorithms local_algs{};
   tuples::get<LocalAlgsTag>(local_algs)
       .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
                       db::create<typename component::simple_tags>(
@@ -81,7 +81,7 @@ void check(const bool time_runs_forward,
                                                     : time.slab().end()) +
                                      initial_step_size),
                           initial_step_size, db::item_type<history_tag>{})});
-  ActionRunner runner{
+  MockRuntimeSystem runner{
       {std::move(time_stepper),
        make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
