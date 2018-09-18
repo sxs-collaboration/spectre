@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
   NewmanHamlin.cpp
+  PalenzuelaEtAl.cpp
   PrimitiveFromConservative.cpp
   Sources.cpp
   )
