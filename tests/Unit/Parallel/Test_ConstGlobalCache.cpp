@@ -152,7 +152,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
                          tmpl::list<name, age, height, shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
-    tuples::TaggedTupleTypelist<tag_list> const_data_to_be_cached(
+    tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
         "Nobody", 178, 2.2, std::make_unique<Square>());
     Parallel::ConstGlobalCache<TestMetavariables> cache(
         std::move(const_data_to_be_cached));
@@ -171,7 +171,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
                          tmpl::list<name, age, height, shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
-    tuples::TaggedTupleTypelist<tag_list> const_data_to_be_cached(
+    tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
         "Nobody", 178, 2.2, std::make_unique<Square>());
 
     Parallel::CProxy_ConstGlobalCache<TestMetavariables>

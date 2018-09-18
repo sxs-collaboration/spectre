@@ -58,7 +58,7 @@ Scalar<DataType> IsentropicVortex::perturbation(const DataType& coord_z) const
 }
 
 template <typename DataType>
-tuples::TaggedTupleTypelist<IsentropicVortex::primitive_t<DataType>>
+tuples::tagged_tuple_from_typelist<IsentropicVortex::primitive_t<DataType>>
 IsentropicVortex::primitive_variables(const tnsr::I<DataType, 3>& x,
                                       const double t) const noexcept {
   const auto adiabatic_index_minus_one = adiabatic_index_ - 1.0;
@@ -75,9 +75,8 @@ IsentropicVortex::primitive_variables(const tnsr::I<DataType, 3>& x,
   }
   ();
 
-  auto result = make_with_value<
-      tuples::TaggedTupleTypelist<IsentropicVortex::primitive_t<DataType>>>(
-      x, 0.0);
+  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
+      IsentropicVortex::primitive_t<DataType>>>(x, 0.0);
 
   const DataType temp = 0.5 * strength_ *
                         exp(0.5 - 0.5 * get(dot_product(x_tilde, x_tilde))) /
@@ -106,14 +105,13 @@ IsentropicVortex::primitive_variables(const tnsr::I<DataType, 3>& x,
 }
 
 template <typename DataType>
-tuples::TaggedTupleTypelist<IsentropicVortex::conservative_t<DataType>>
+tuples::tagged_tuple_from_typelist<IsentropicVortex::conservative_t<DataType>>
 IsentropicVortex::conservative_variables(const tnsr::I<DataType, 3>& x,
                                          const double t) const noexcept {
   const auto primitives = primitive_variables(x, t);
 
-  auto result = make_with_value<
-      tuples::TaggedTupleTypelist<IsentropicVortex::conservative_t<DataType>>>(
-      x, 0.0);
+  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
+      IsentropicVortex::conservative_t<DataType>>>(x, 0.0);
 
   get<Tags::MassDensity<DataType>>(result) =
       get<Tags::MassDensity<DataType>>(primitives);
@@ -137,11 +135,11 @@ IsentropicVortex::conservative_variables(const tnsr::I<DataType, 3>& x,
   template Scalar<DTYPE(data)>                                               \
   NewtonianEuler::Solutions::IsentropicVortex::perturbation(                 \
       const DTYPE(data) & coord_z) const noexcept;                           \
-  template tuples::TaggedTupleTypelist<                                      \
+  template tuples::tagged_tuple_from_typelist<                               \
       NewtonianEuler::Solutions::IsentropicVortex::primitive_t<DTYPE(data)>> \
   NewtonianEuler::Solutions::IsentropicVortex::primitive_variables(          \
       const tnsr::I<DTYPE(data), 3>& x, const double t) const noexcept;      \
-  template tuples::TaggedTupleTypelist<                                      \
+  template tuples::tagged_tuple_from_typelist<                               \
       NewtonianEuler::Solutions::IsentropicVortex::conservative_t<DTYPE(     \
           data)>>                                                            \
   NewtonianEuler::Solutions::IsentropicVortex::conservative_variables(       \

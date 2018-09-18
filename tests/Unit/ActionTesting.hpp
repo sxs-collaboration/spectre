@@ -129,7 +129,7 @@ class MockDistributedObject {
     using type = Parallel::Algorithm_detail::build_action_return_typelist<
         typename Component::initial_databox,
         tmpl::list<
-            tuples::TaggedTupleTypelist<inbox_tags_list>,
+            tuples::tagged_tuple_from_typelist<inbox_tags_list>,
             Parallel::ConstGlobalCache<typename Component::metavariables>,
             typename Component::array_index, actions_list,
             std::add_pointer_t<Component>>,
@@ -154,7 +154,7 @@ class MockDistributedObject {
     const_global_cache_ = cache_ptr;
   }
 
-  void set_inboxes(tuples::TaggedTupleTypelist<
+  void set_inboxes(tuples::tagged_tuple_from_typelist<
                    Parallel::get_inbox_tags<typename Component::action_list>>*
                        inboxes_ptr) noexcept {
     inboxes_ = inboxes_ptr;
@@ -303,7 +303,7 @@ class MockDistributedObject {
   typename Component::array_index array_index_{};
   Parallel::ConstGlobalCache<typename Component::metavariables>*
       const_global_cache_{nullptr};
-  tuples::TaggedTupleTypelist<
+  tuples::tagged_tuple_from_typelist<
       Parallel::get_inbox_tags<typename Component::action_list>>* inboxes_{
       nullptr};
   std::deque<std::unique_ptr<InvokeSimpleActionBase>> simple_action_queue_;
@@ -360,12 +360,13 @@ void MockDistributedObject<Component>::next_action(
               const_global_cache, cpp17::as_const(array_index));
         },
         [](std::false_type /*has_is_ready*/, auto) { return true; });
-    if (not check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<
-                               this_action, this_databox,
-                               tuples::TaggedTupleTypelist<inbox_tags_list>,
-                               Parallel::ConstGlobalCache<metavariables>,
-                               typename Component::array_index>{},
-                           this_action{})) {
+    if (not check_if_ready(
+            Parallel::Algorithm_detail::is_is_ready_callable_t<
+                this_action, this_databox,
+                tuples::tagged_tuple_from_typelist<inbox_tags_list>,
+                Parallel::ConstGlobalCache<metavariables>,
+                typename Component::array_index>{},
+            this_action{})) {
       ERROR("Tried to invoke the action '"
             << pretty_type::get_name<this_action>()
             << "' but have not received all the "
@@ -458,7 +459,7 @@ bool MockDistributedObject<Component>::is_ready(
     next_action_is_ready =
         check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<
                            this_action, this_databox,
-                           tuples::TaggedTupleTypelist<inbox_tags_list>,
+                           tuples::tagged_tuple_from_typelist<inbox_tags_list>,
                            Parallel::ConstGlobalCache<metavariables>,
                            typename Component::array_index>{},
                        this_action{});
@@ -473,7 +474,7 @@ namespace ActionTesting_detail {
 template <typename Component, typename InboxTagList>
 class MockArrayElementProxy {
  public:
-  using Inbox = tuples::TaggedTupleTypelist<InboxTagList>;
+  using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
   MockArrayElementProxy(MockDistributedObject<Component>& local_algorithm,
                         Inbox& inbox)
@@ -509,7 +510,8 @@ template <typename Component, typename Index, typename InboxTagList>
 class MockProxy {
  public:
   using Inboxes =
-      std::unordered_map<Index, tuples::TaggedTupleTypelist<InboxTagList>>;
+      std::unordered_map<Index,
+                         tuples::tagged_tuple_from_typelist<InboxTagList>>;
   using TupleOfMockDistributedObjects =
       std::unordered_map<Index, MockDistributedObject<Component>>;
 
@@ -619,10 +621,10 @@ class MockRuntimeSystem {
 
   template <typename Component>
   struct InboxesTag {
-    using type =
-        std::unordered_map<typename Component::array_index,
-                           tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
-                               typename Component::action_list>>>;
+    using type = std::unordered_map<
+        typename Component::array_index,
+        tuples::tagged_tuple_from_typelist<
+            Parallel::get_inbox_tags<typename Component::action_list>>>;
   };
 
   template <typename Component>
@@ -633,11 +635,11 @@ class MockRuntimeSystem {
 
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
   using CacheTuple =
-      tuples::TaggedTupleTypelist<typename GlobalCache::tag_list>;
-  using TupleOfMockDistributedObjects = tuples::TaggedTupleTypelist<
+      tuples::tagged_tuple_from_typelist<typename GlobalCache::tag_list>;
+  using TupleOfMockDistributedObjects = tuples::tagged_tuple_from_typelist<
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<MockDistributedObjectsTag, tmpl::_1>>>;
-  using Inboxes = tuples::TaggedTupleTypelist<
+  using Inboxes = tuples::tagged_tuple_from_typelist<
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
@@ -739,9 +741,10 @@ class MockRuntimeSystem {
 
   /// Access the inboxes for a given component.
   template <typename Component>
-  std::unordered_map<typename Component::array_index,
-                     tuples::TaggedTupleTypelist<Parallel::get_inbox_tags<
-                         typename Component::action_list>>>&
+  std::unordered_map<
+      typename Component::array_index,
+      tuples::tagged_tuple_from_typelist<
+          Parallel::get_inbox_tags<typename Component::action_list>>>&
   inboxes() noexcept {
     return tuples::get<InboxesTag<Component>>(inboxes_);
   }

@@ -262,7 +262,7 @@ class KerrSchild {
       DerivSpatialMetric<DataType>>;
 
   template <typename DataType>
-  tuples::TaggedTupleTypelist<tags<DataType>> variables(
+  tuples::tagged_tuple_from_typelist<tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t, tags<DataType> /*meta*/) const
       noexcept;
 
