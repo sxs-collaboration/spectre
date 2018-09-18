@@ -63,11 +63,15 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   using MockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0, db::DataBox<tmpl::list<>>{});
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {serialize_and_deserialize(events_and_triggers)}, std::move(local_algs)};
+      {serialize_and_deserialize(events_and_triggers)},
+      std::move(dist_objects)};
+  auto& box = runner.template algorithms<my_component>()
+                  .at(0)
+                  .template get_databox<db::DataBox<tmpl::list<>>>();
 
   runner.next_action<component>(0);
 

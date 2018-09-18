@@ -200,13 +200,13 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<
           component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id, db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                            std::move(mortar_meshes),
                                            std::move(mortar_sizes), initial_dt,
                                            std::move(mortar_data)));
-  MockRuntimeSystem runner{{NumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{NumericalFlux{}}, std::move(dist_objects)};
 
   runner.next_action<my_component>(id);
 
@@ -310,12 +310,13 @@ SPECTRE_TEST_CASE(
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<
           component<3, RefinementNumericalFlux, metavariables>>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id_0, make_initial_box({{3, 4, 5}}));
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id_1, make_initial_box({{4, 2, 6}}));
-  MockRuntimeSystem runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{RefinementNumericalFlux{}},
+                           std::move(dist_objects)};
 
   auto& box1 = runner.algorithms<my_component>()
                    .at(id_0)
@@ -468,8 +469,8 @@ SPECTRE_TEST_CASE(
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<
           component<3, RefinementNumericalFlux, metavariables>>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id,
                db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                        typename mortar_meshes_tag::type{},
@@ -478,7 +479,7 @@ SPECTRE_TEST_CASE(
                                        typename mortar_data_tag::type{}));
 
   const auto add_neighbor =
-      [&direction, &face_coords, &mesh, &self_id, &local_algs ](
+      [&direction, &face_coords, &mesh, &self_id, &dist_objects ](
           const std::array<MortarSize, 2>& mortar_size,
           const std::array<double, 2>& center,
           const std::array<double, 2>& half_width,
@@ -532,7 +533,7 @@ SPECTRE_TEST_CASE(
         mesh.extents(), direction.dimension(),
         index_to_slice_at(mesh.extents(), direction));
 
-    tuples::get<MockDistributedObjectsTag>(local_algs)
+    tuples::get<MockDistributedObjectsTag>(dist_objects)
         .emplace(neighbor_id, db::create<simple_tags>(
                                   mesh, std::move(neighbor_coords),
                                   typename mortar_meshes_tag::type{
@@ -545,7 +546,7 @@ SPECTRE_TEST_CASE(
                                   std::move(neighbor_dt_vars),
                                   std::move(neighbor_mortar_data)));
 
-    auto& self_box = tuples::get<MockDistributedObjectsTag>(local_algs)
+    auto& self_box = tuples::get<MockDistributedObjectsTag>(dist_objects)
                          .at(self_id)
                          .get_databox<db_type>();
     db::mutate<mortar_data_tag, mortar_meshes_tag, mortar_sizes_tag>(
@@ -572,7 +573,8 @@ SPECTRE_TEST_CASE(
   add_neighbor({{MortarSize::LowerHalf, MortarSize::LowerHalf}}, {{-0.5, -0.5}},
                {{0.5, 0.5}}, ElementId<3>{13});
 
-  MockRuntimeSystem runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{RefinementNumericalFlux{}},
+                           std::move(dist_objects)};
   runner.next_action<my_component>(self_id);
 
   // These ids don't describe elements that fit together correctly,

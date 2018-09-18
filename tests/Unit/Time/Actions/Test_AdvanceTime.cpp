@@ -51,8 +51,8 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
@@ -60,7 +60,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
                                  start + substep_offsets[1]),
                           time_step)});
   MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                           std::move(local_algs)};
+                           std::move(dist_objects)};
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
@@ -90,15 +90,15 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
                           TimeId(time_step.is_positive(), 8, start + time_step),
                           time_step)});
   MockRuntimeSystem runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
-                           std::move(local_algs)};
+                           std::move(dist_objects)};
 
   for (const auto& step_start : {start, start + time_step}) {
     auto& box = runner.algorithms<component>()

@@ -140,16 +140,17 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
       typename ActionTesting::MockRuntimeSystem<
           metavars>::TupleOfMockDistributedObjects;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  TupleOfMockDistributedObjects local_algs{};
+  TupleOfMockDistributedObjects dist_objects{};
   using LocalAlgTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           component_for_simple_action_mock<metavars>>;
-  tuples::get<LocalAlgTag>(local_algs)
+  tuples::get<LocalAlgTag>(dist_objects)
       .emplace(0,
                ActionTesting::MockDistributedObject<
                    component_for_simple_action_mock<metavars>>{
                    db::create<db::AddSimpleTags<ValueTag, PassedToB>>(0, -1)});
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}, std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{},
+                                                    std::move(dist_objects)};
   const auto& box =
       runner.template algorithms<component_for_simple_action_mock<metavars>>()
           .at(0)

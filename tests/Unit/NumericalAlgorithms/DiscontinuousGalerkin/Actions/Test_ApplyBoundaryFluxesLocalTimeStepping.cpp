@@ -169,14 +169,14 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id, db::create<typename component<Metavariables>::simple_tags>(
                        mesh, mortar_meshes, mortar_sizes, time_step, variables,
                        std::move(mortar_data)));
   MockRuntimeSystem runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}},
-      std::move(local_algs)};
+      std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(id);
 

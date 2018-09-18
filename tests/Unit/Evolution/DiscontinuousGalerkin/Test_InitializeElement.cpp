@@ -219,13 +219,13 @@ void test_initialize_element(
   using MockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(element_id,
                ActionTesting::MockDistributedObject<my_component>{});
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{std::move(cache_tuple),
-                                                         std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      std::move(cache_tuple), std::move(dist_objects)};
 
   runner.template simple_action<my_component,
                                 dg::Actions::InitializeElement<dim>>(
@@ -371,15 +371,15 @@ void test_mortar_orientation() noexcept {
   using MockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(ElementIndex<3>{element_id},
                ActionTesting::MockDistributedObject<my_component>{});
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
        SystemAnalyticSolution{}},
-      std::move(local_algs)};
+      std::move(dist_objects)};
 
   runner.simple_action<my_component, dg::Actions::InitializeElement<3>>(
       element_id, extents, std::move(domain), 0., 1., 1.);

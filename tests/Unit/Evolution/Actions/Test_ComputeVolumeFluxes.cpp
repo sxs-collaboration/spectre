@@ -81,13 +81,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
   const ElementId<dim> self_id(1);
 
   using simple_tags = db::AddSimpleTags<Var1, Var2, flux_tag>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id,
                db::create<simple_tags>(db::item_type<Var1>{{{3.}}},
                                        db::item_type<Var2>{{{7., 12.}}},
                                        db::item_type<flux_tag>{{{-100.}}}));
-  MockRuntimeSystem runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(self_id);
 

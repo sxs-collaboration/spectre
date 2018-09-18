@@ -42,13 +42,13 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
                           TimeId{}, TimeDelta{})});
-  MockRuntimeSystem runner{{5.}, std::move(local_algs)};
+  MockRuntimeSystem runner{{5.}, std::move(dist_objects)};
   auto& box = runner.algorithms<component>()
                   .at(0)
                   .get_databox<typename component::initial_databox>();

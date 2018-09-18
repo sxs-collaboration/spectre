@@ -72,8 +72,8 @@ void check(const bool time_runs_forward,
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_runs_forward, 0, time),
@@ -91,7 +91,7 @@ void check(const bool time_runs_forward,
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
                                                                    request)),
        std::make_unique<StepControllers::BinaryFraction>()},
-      std::move(local_algs)};
+      std::move(dist_objects)};
 
   runner.next_action<component>(0);
   auto& box = runner.algorithms<component>()

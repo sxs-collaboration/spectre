@@ -42,12 +42,12 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
   using ObserverMockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           obs_component>;
-  TupleOfMockDistributedObjects local_algs{};
-  tuples::get<ObserverMockDistributedObjectsTag>(local_algs)
+  TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{},
-                                                         std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {}, std::move(dist_objects)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
   const auto& observer_box =

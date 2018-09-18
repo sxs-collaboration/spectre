@@ -69,8 +69,8 @@ void check_observer_registration() {
   using ElementMockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           element_comp>;
-  TupleOfMockDistributedObjects local_algs{};
-  tuples::get<ObserverMockDistributedObjectsTag>(local_algs)
+  TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
   // Specific IDs have no significance, just need different IDs.
@@ -80,13 +80,13 @@ void check_observer_registration() {
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
   for (const auto& id : element_ids) {
-    tuples::get<ElementMockDistributedObjectsTag>(local_algs)
+    tuples::get<ElementMockDistributedObjectsTag>(dist_objects)
         .emplace(ElementIndex<2>{id},
                  ActionTesting::MockDistributedObject<element_comp>{});
   }
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{},
-                                                         std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {}, std::move(dist_objects)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
   // Test initial state

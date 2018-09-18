@@ -55,12 +55,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<component>;
-  TupleOfMockDistributedObjects local_algs{};
+  TupleOfMockDistributedObjects dist_objects{};
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
 
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0,
                ActionTesting::MockDistributedObject<component>{db::create<
                    db::AddSimpleTags<hydro::Tags::RestMassDensity<DataVector>,
@@ -71,7 +71,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                    tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
   const double radius_at_which_to_begin_applying_floor = 1.e-4;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {radius_at_which_to_begin_applying_floor}, std::move(local_algs)};
+      {radius_at_which_to_begin_applying_floor}, std::move(dist_objects)};
   auto& box = runner.template algorithms<component>()
                   .at(0)
                   .template get_databox<typename component::initial_databox>();

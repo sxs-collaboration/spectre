@@ -153,14 +153,14 @@ auto run_action(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(ElementIndex<2>{element.id()},
                ActionTesting::MockDistributedObject<component>{
                    db::create<simple_tags, compute_tags>(
                        element, mesh, std::move(element_map), vars, other_arg,
                        std::move(n_dot_f_storage))});
-  MockRuntimeSystem runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
   runner.next_action<component>(element.id());
   // std::move call on returned value is intentional.
   return std::move(runner.algorithms<component>()

@@ -95,11 +95,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
 
   using simple_tags =
       db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id, db::create<simple_tags>(std::move(vars), var3,
                                                 db::item_type<source_tag>(2)));
-  MockRuntimeSystem runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(self_id);
 

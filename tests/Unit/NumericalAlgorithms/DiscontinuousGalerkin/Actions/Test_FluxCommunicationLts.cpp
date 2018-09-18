@@ -320,8 +320,8 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects local_algs{};
-  tuples::get<MockDistributedObjectsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(
           self_id,
           ActionTesting::MockDistributedObject<my_component>{db::create<
@@ -354,14 +354,14 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
                                  {{Direction<2>::lower_xi(), {{self_id}, {}}}});
 
   insert_neighbor(
-      make_not_null(&tuples::get<MockDistributedObjectsTag>(local_algs)),
+      make_not_null(&tuples::get<MockDistributedObjectsTag>(dist_objects)),
       left_element, 0, 1, 0.0);
   insert_neighbor(
-      make_not_null(&tuples::get<MockDistributedObjectsTag>(local_algs)),
+      make_not_null(&tuples::get<MockDistributedObjectsTag>(dist_objects)),
       right_element, 0, 1, 0.0);
 
-  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}},
-                                                         std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {NumericalFlux<2>{}}, std::move(dist_objects)};
 
   runner.next_action<my_component>(self_id);  // SendDataForFluxes
 
