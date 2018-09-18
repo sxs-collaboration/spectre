@@ -66,9 +66,6 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   tuples::get<LocalAlgsTag>(local_algs).emplace(0, db::DataBox<tmpl::list<>>{});
   ActionTesting::ActionRunner<Metavariables> runner{
       {serialize_and_deserialize(events_and_triggers)}, std::move(local_algs)};
-  auto& box = runner.template algorithms<my_component>()
-                  .at(0)
-                  .template get_databox<db::DataBox<tmpl::list<>>>();
 
   runner.next_action<component>(0);
 
