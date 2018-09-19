@@ -64,7 +64,7 @@ struct Var : db::SimpleTag {
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-  static std::string name() noexcept { return "ExtraData"; }
+    static std::string name() noexcept { return "ExtraData"; }
     using type = tnsr::I<DataVector, 1>;
   };
 
@@ -229,6 +229,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
               .get_databox<db::compute_databox_type<simple_tags>>())),
       get(get<Tags::dt<Var>>(initial_dt)) - 6. * xi_flux - 9. * eta_flux);
 }
+
 namespace {
 class RefinementNumericalFlux {
  public:
