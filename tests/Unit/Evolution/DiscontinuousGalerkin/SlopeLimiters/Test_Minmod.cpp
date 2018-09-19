@@ -30,6 +30,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -755,37 +756,42 @@ SPECTRE_TEST_CASE(
 }
 
 namespace {
-// Helper function for testing Minmod::data_for_neighbors()
+// Helper function for testing Minmod::package_data()
 template <size_t VolumeDim>
-void test_data_for_neighbors_work(
+void test_package_data_work(
     const Scalar<DataVector>& input_scalar,
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>&
-        logical_coords) noexcept {
+    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const tnsr::I<double, VolumeDim>& element_size) noexcept {
   // To streamline the testing of the apply function, the test sets up
   // identical data for all components of input_vector. To better test the
-  // data_for_neighbors function, we first modify the input so the data
+  // package_data function, we first modify the input so the data
   // aren't all identical:
   auto modified_vector = input_vector;
   for (size_t d = 0; d < VolumeDim; ++d) {
     modified_vector.get(d) += (d + 1.0) - 2.7 * square(logical_coords.get(d));
   }
 
-  Scalar<double> mean_of_scalar{{{0.0}}};
-  tnsr::I<double, VolumeDim> mean_of_vector =
-      make_with_value<tnsr::I<double, VolumeDim>>(0.0, 0.0);
-
   const SlopeLimiters::Minmod<VolumeDim, tmpl::list<scalar, vector<VolumeDim>>>
       minmod(SlopeLimiters::MinmodType::LambdaPi1);
-  minmod.data_for_neighbors(make_not_null(&mean_of_scalar),
-                            make_not_null(&mean_of_vector), input_scalar,
-                            modified_vector, mesh);
-  CHECK(get(mean_of_scalar) == approx(mean_value(get(input_scalar), mesh)));
+  typename SlopeLimiters::Minmod<
+      VolumeDim, tmpl::list<scalar, vector<VolumeDim>>>::PackagedData
+      packaged_data{};
+  minmod.package_data(make_not_null(&packaged_data), input_scalar,
+                      modified_vector, mesh, element_size);
+
+  // Should not normally look inside package, but we do so here for testing.
+  double lhs =
+      get(get<Minmod_detail::to_tensor_double<scalar>>(packaged_data.means_));
+  CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
   for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK(mean_of_vector.get(d) ==
-          approx(mean_value(modified_vector.get(d), mesh)));
+    lhs = get<Minmod_detail::to_tensor_double<vector<VolumeDim>>>(
+              packaged_data.means_)
+              .get(d);
+    CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
   }
+  CHECK(packaged_data.element_size_ == element_size);
 }
 
 // Helper function for testing Minmod::apply()
@@ -850,7 +856,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.1d_pipeline_test",
     "[SlopeLimiters][Unit]") {
   // The goals of this test are,
-  // 1. check Minmod::data_for_neighbors
+  // 1. check Minmod::package_data
   // 2. check that Minmod::apply limits different tensors independently
   // See comments in the 3D test for full details.
   //
@@ -870,8 +876,8 @@ SPECTRE_TEST_CASE(
   const auto input_scalar = scalar::type{data};
   const auto input_vector = vector<1>::type{data};
 
-  test_data_for_neighbors_work(input_scalar, input_vector, mesh,
-                               logical_coords);
+  test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
+                         element_size);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   // The scalar we treat as a shock: we want the slope to be reduced
@@ -903,7 +909,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.2d_pipeline_test",
     "[SlopeLimiters][Unit]") {
   // The goals of this test are,
-  // 1. check Minmod::data_for_neighbors
+  // 1. check Minmod::package_data
   // 2. check that Minmod::apply limits different tensors independently
   // 3. check that Minmod::apply limits different dimensions independently
   // See comments in the 3D test for full details.
@@ -927,8 +933,8 @@ SPECTRE_TEST_CASE(
   const auto input_scalar = scalar::type{data};
   const auto input_vector = vector<2>::type{data};
 
-  test_data_for_neighbors_work(input_scalar, input_vector, mesh,
-                               logical_coords);
+  test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
+                         element_size);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   // The scalar we treat as a 3D shock: we want each slope to be reduced
@@ -979,13 +985,13 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.3d_pipeline_test",
     "[SlopeLimiters][Unit]") {
   // The goals of this test are,
-  // 1. check Minmod::data_for_neighbors
+  // 1. check Minmod::package_data
   // 2. check that Minmod::apply limits different tensors independently
   // 3. check that Minmod::apply limits different dimensions independently
   //
   // The steps taken to meet these goals are:
   // a. set up values in two Tensor<DataVector>s, one scalar and one vector,
-  //    then test that Minmod::data_for_neighbors has correct output
+  //    then test that Minmod::package_data has correct output
   // b. set up neighbor values for these two tensors, then test that
   //    Minmod::apply has correct output
   //
@@ -1015,8 +1021,8 @@ SPECTRE_TEST_CASE(
   const auto input_scalar = scalar::type{data};
   const auto input_vector = vector<3>::type{data};
 
-  test_data_for_neighbors_work(input_scalar, input_vector, mesh,
-                               logical_coords);
+  test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
+                         element_size);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   // The scalar we treat as a 3D shock: we want each slope to be reduced

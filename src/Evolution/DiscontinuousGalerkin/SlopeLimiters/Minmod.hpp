@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -17,7 +18,9 @@
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 class DataVector;
@@ -78,6 +81,15 @@ bool limit_one_tensor(
     const tnsr::I<double, VolumeDim>& element_size,
     const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
         neighbor_sizes) noexcept;
+
+template <typename Tag>
+struct to_tensor_double : db::PrefixTag, db::SimpleTag {
+  using type = TensorMetafunctions::swap_type<double, db::item_type<Tag>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "TensorDouble(" + Tag::name() + ")";
+  }
+};
 }  // namespace Minmod_detail
 
 namespace SlopeLimiters {
@@ -188,28 +200,41 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   const MinmodType& minmod_type() const noexcept { return minmod_type_; }
   const double& tvbm_constant() const noexcept { return tvbm_constant_; }
 
-  /// \brief Computes data that must be communicated to neighbor elements.
+  /// \brief Data to send to neighbor elements.
+  struct PackagedData {
+    tuples::TaggedTuple<Minmod_detail::to_tensor_double<Tags>...> means_;
+    tnsr::I<double, VolumeDim> element_size_ =
+        make_with_value<tnsr::I<double, VolumeDim>>(
+            0.0, std::numeric_limits<double>::signaling_NaN());
+  };
+
+  /// \brief Package data for sending to neighbor elements.
   ///
-  /// The minmod limiter needs only the cell-averaged means of the tensors in
-  /// each neighboring DG element. This function computes and packages the cell-
-  /// averaged data.
+  /// The following quantities are stored in `PackagedData` and communicated
+  /// between neighboring elements:
+  /// - the cell-averaged mean of each tensor component, and
+  /// - the size of the cell along each logical coordinate direction.
   ///
-  /// \param means The cell-averaged means of each tensor.
+  /// \param packaged_data The data package to fill with this element's values.
   /// \param tensors The tensors to be averaged and packaged.
   /// \param mesh The mesh on which the tensor values are measured.
-  void data_for_neighbors(
-      const gsl::not_null<std::add_pointer_t<TensorMetafunctions::swap_type<
-          double, db::item_type<Tags>>>>... means,
-      const db::item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh) const
+  /// \param element_size The size of the element in inertial coordinates, along
+  ///        each dimension of logical coordinates.
+  void package_data(const gsl::not_null<PackagedData*>& packaged_data,
+                    const db::item_type<Tags>&... tensors,
+                    const Mesh<VolumeDim>& mesh,
+                    const tnsr::I<double, VolumeDim>& element_size) const
       noexcept {
-    const auto wrap_compute_mean = [&mesh](const auto& mean,
-                                           const auto& tensor) noexcept {
+    const auto wrap_compute_means =
+        [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
       for (size_t i = 0; i < tensor.size(); ++i) {
-        (*mean)[i] = mean_value(tensor[i], mesh);
+        get<Minmod_detail::to_tensor_double<decltype(tag)>>(
+            packaged_data->means_)[i] = mean_value(tensor[i], mesh);
       }
       return '0';
     };
-    expand_pack(wrap_compute_mean(means, tensors)...);
+    expand_pack(wrap_compute_means(Tags{}, tensors)...);
+    packaged_data->element_size_ = element_size;
   }
 
   /// \brief Limits the solution on the element.
