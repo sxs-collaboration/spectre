@@ -56,12 +56,24 @@ struct Simple {
   using type = int;
   static constexpr OptionString help = {"halp"};
 };
+struct NamedSimple {
+  using type = int;
+  static std::string name() noexcept { return "SomeName"; }
+  static constexpr OptionString help = {"halp"};
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.Simple.success", "[Unit][Options]") {
-  Options<tmpl::list<Simple>> opts("");
-  opts.parse("Simple: -4");
-  CHECK(opts.get<Simple>() == -4);
+  {
+    Options<tmpl::list<Simple>> opts("");
+    opts.parse("Simple: -4");
+    CHECK(opts.get<Simple>() == -4);
+  }
+  {
+    Options<tmpl::list<NamedSimple>> opts("");
+    opts.parse("SomeName: -4");
+    CHECK(opts.get<NamedSimple>() == -4);
+  }
 }
 
 // [[OutputRegex, In string:.*At line 2 column 1:.Option 'Simple' specified
@@ -74,12 +86,30 @@ SPECTRE_TEST_CASE("Unit.Options.Simple.duplicate", "[Unit][Options]") {
   opts.get<Simple>();
 }
 
+// [[OutputRegex, In string:.*At line 2 column 1:.Option 'SomeName' specified
+// twice.]]
+SPECTRE_TEST_CASE("Unit.Options.NamedSimple.duplicate", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<NamedSimple>> opts("");
+  opts.parse("SomeName: -4\n"
+             "SomeName: -3");
+  opts.get<NamedSimple>();
+}
+
 // [[OutputRegex, In string:.*You did not specify the option 'Simple']]
 SPECTRE_TEST_CASE("Unit.Options.Simple.missing", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Simple>> opts("");
   opts.parse("");
   opts.get<Simple>();
+}
+
+// [[OutputRegex, In string:.*You did not specify the option 'SomeName']]
+SPECTRE_TEST_CASE("Unit.Options.NamedSimple.missing", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<NamedSimple>> opts("");
+  opts.parse("");
+  opts.get<NamedSimple>();
 }
 
 // [[OutputRegex, In string:.*While parsing option Simple:.At line 1 column
@@ -91,6 +121,15 @@ SPECTRE_TEST_CASE("Unit.Options.Simple.missing_arg", "[Unit][Options]") {
   opts.get<Simple>();
 }
 
+// [[OutputRegex, In string:.*While parsing option SomeName:.At line 1 column
+// 1:.Failed to convert value to type int:]]
+SPECTRE_TEST_CASE("Unit.Options.NamedSimple.missing_arg", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<NamedSimple>> opts("");
+  opts.parse("SomeName:");
+  opts.get<NamedSimple>();
+}
+
 // [[OutputRegex, In string:.*While parsing option Simple:.At line 1 column
 // 9:.Failed to convert value to type int: 2.3]]
 SPECTRE_TEST_CASE("Unit.Options.Simple.invalid", "[Unit][Options]") {
@@ -98,6 +137,15 @@ SPECTRE_TEST_CASE("Unit.Options.Simple.invalid", "[Unit][Options]") {
   Options<tmpl::list<Simple>> opts("");
   opts.parse("Simple: 2.3");
   opts.get<Simple>();
+}
+
+// [[OutputRegex, In string:.*While parsing option SomeName:.At line 1 column
+// 11:.Failed to convert value to type int: 2.3]]
+SPECTRE_TEST_CASE("Unit.Options.NamedSimple.invalid", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<NamedSimple>> opts("");
+  opts.parse("SomeName: 2.3");
+  opts.get<NamedSimple>();
 }
 
 namespace {
@@ -165,6 +213,13 @@ struct BadDefault {
   static type default_value() { return 3; }
   static type lower_bound() { return 4; }
 };
+struct NamedBadDefault {
+  using type = int;
+  static std::string name() noexcept { return "SomeName"; }
+  static constexpr OptionString help = {"halp"};
+  static type default_value() { return 3; }
+  static type lower_bound() { return 4; }
+};
 }  // namespace
 
 // [[OutputRegex, Checking DEFAULT value for BadDefault:.Value 3 is below the
@@ -176,12 +231,24 @@ SPECTRE_TEST_CASE("Unit.Options.BadDefault", "[Unit][Options]") {
   opts.get<BadDefault>();
 }
 
+// [[OutputRegex, Checking DEFAULT value for SomeName:.Value 3 is below the
+// lower bound of 4]]
+SPECTRE_TEST_CASE("Unit.Options.NamedBadDefault", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<NamedBadDefault>> opts("");
+  opts.parse("");
+  opts.get<NamedBadDefault>();
+}
+
 namespace {
 /// [options_example_vector_struct]
-struct Vector {
+struct VectorOption {
   using type = std::vector<int>;
   static constexpr OptionString help = {"A vector with length limits"};
   // These are optional
+  static std::string name() noexcept {
+    return "Vector";  // defaults to "VectorOption"
+  }
   static size_t lower_bound_on_size() { return 2; }
   static size_t upper_bound_on_size() { return 5; }
 };
@@ -192,39 +259,39 @@ struct Vector {
 // 9:.Value must have at least 2 entries, but 1 were given.]]
 SPECTRE_TEST_CASE("Unit.Options.Vector.too_short", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<Vector>> opts("");
+  Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector: [2]");
-  opts.get<Vector>();
+  opts.get<VectorOption>();
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Vector.lower_bound", "[Unit][Options]") {
-  Options<tmpl::list<Vector>> opts("");
+  Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector: [2,3]");
-  CHECK(opts.get<Vector>() == (std::vector<int>{2, 3}));
+  CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3}));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Vector.upper_bound", "[Unit][Options]") {
-  Options<tmpl::list<Vector>> opts("");
+  Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector: [2, 3, 3, 3, 5]");
-  CHECK(opts.get<Vector>() == (std::vector<int>{2, 3, 3, 3, 5}));
+  CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3, 3, 3, 5}));
 }
 
 // [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
 // 9:.Value must have at most 5 entries, but 6 were given.]]
 SPECTRE_TEST_CASE("Unit.Options.Vector.too_long", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<Vector>> opts("");
+  Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector: [2, 3, 3, 3, 5, 6]");
-  opts.get<Vector>();
+  opts.get<VectorOption>();
 }
 
 // [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
 // 1:.Value must have at least 2 entries, but 0 were given.]]
 SPECTRE_TEST_CASE("Unit.Options.Vector.empty_too_short", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<Vector>> opts("");
+  Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector:");
-  opts.get<Vector>();
+  opts.get<VectorOption>();
 }
 
 namespace {
@@ -442,17 +509,14 @@ SPECTRE_TEST_CASE("Unit.Options.ComplexContainers", "[Unit][Options]") {
 
 #ifdef SPECTRE_DEBUG
 namespace {
-struct A {
-  struct Duplicate {
-    using type = int;
-    static constexpr OptionString help = {"halp"};
-  };
+struct Duplicate {
+  using type = int;
+  static constexpr OptionString help = {"halp"};
 };
-struct B {
-  struct Duplicate {
+struct NamedDuplicate {
     using type = int;
-    static constexpr OptionString help = {"halp"};
-  };
+  static std::string name() noexcept { return "Duplicate"; }
+  static constexpr OptionString help = {"halp"};
 };
 }  // namespace
 #endif  // SPECTRE_DEBUG
@@ -461,7 +525,7 @@ struct B {
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.Duplicate", "[Unit][Options]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Options<tmpl::list<A::Duplicate, B::Duplicate>> opts("");
+  Options<tmpl::list<Duplicate, NamedDuplicate>> opts("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -472,12 +536,28 @@ struct TooooooooooooooooooooLong {
   using type = int;
   static constexpr OptionString help = {"halp"};
 };
+struct NamedTooLong {
+  using type = int;
+  static std::string name() noexcept { return "TooooooooooooooooooooLong"; }
+  static constexpr OptionString help = {"halp"};
+};
 struct NoHelp {
   using type = int;
   static constexpr OptionString help = {""};
 };
+struct NamedNoHelp {
+  using type = int;
+  static std::string name() noexcept { return "NoHelp"; }
+  static constexpr OptionString help = {""};
+};
 struct TooLongHelp {
   using type = int;
+  static constexpr OptionString help = {
+    "halp halp halp halp halp halp halp halp halp halp halp halp"};
+};
+struct NamedTooLongHelp {
+  using type = int;
+  static std::string name() noexcept { return "TooLongHelp"; }
   static constexpr OptionString help = {
     "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
@@ -494,11 +574,30 @@ struct TooLongHelp {
 #endif
 }
 
-// [[OutputRegex, You must supply a help string]]
+// [[OutputRegex, The option name TooooooooooooooooooooLong is too long for
+// nice formatting]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedTooLong", "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<NamedTooLong>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, You must supply a help string of non-zero length for NoHelp]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NoHelp", "[Unit][Options]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Options<tmpl::list<NoHelp>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, You must supply a help string of non-zero length for NoHelp]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedNoHelp", "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<NamedNoHelp>> opts("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -508,6 +607,16 @@ struct TooLongHelp {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Options<tmpl::list<TooLongHelp>> opts("");
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The help string for TooLongHelp should be less than]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedTooLongHelp",
+                               "[Unit][Options]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Options<tmpl::list<NamedTooLongHelp>> opts("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

@@ -682,10 +682,6 @@ SPECTRE_TEST_CASE(
   ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<3>{}},
                                                     std::move(local_algs)};
 
-  auto& start_box = runner.algorithms<my_component>()
-                        .at(self_id)
-                        .get_databox<typename my_component::initial_databox>();
-
   runner.next_action<my_component>(self_id);
 
   // Check local data

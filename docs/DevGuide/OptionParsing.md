@@ -13,13 +13,14 @@ are declared in `Options/Options.hpp`.
 
 ## General option format
 
-An option is defined by an "option struct".  The name of the struct
-(excluding any template parameters and scope information) is the name
-that will be expected in the input file.  At minimum, the struct must
-declare the type of the object to be parsed and provide a brief
-description of the meaning.  Several other pieces of information, such
-as defaults and limits, may be provided if desired.  This information
-is all included in the generated help output.
+An option is defined by an "option struct".  At minimum, the struct
+must declare the type of the object to be parsed and provide a brief
+description of the meaning.  The name of the option in the input file
+defaults to the name of the struct (excluding any template parameters
+and scope information), but can be overridden by providing a static
+`name()` function.  Several other pieces of information, such as
+defaults and limits, may be provided if desired.  This information is
+all included in the generated help output.
 
 Examples:
 \snippet Test_Options.cpp options_example_scalar_struct
