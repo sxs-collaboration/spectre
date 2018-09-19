@@ -22,7 +22,8 @@ struct Initialize {
   using simple_tags =
       db::AddSimpleTags<Tags::NumberOfEvents, Tags::ReductionArrayComponentIds,
                         Tags::VolumeArrayComponentIds, Tags::TensorData,
-                        Tags::ReductionDataLock, Tags::VolumeDataLock>;
+                        Tags::ReductionDataLock, Tags::VolumeDataLock,
+                        Tags::ReductionFileLock, Tags::VolumeFileLock>;
   using compute_tags = db::AddComputeTags<>;
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
@@ -40,6 +41,7 @@ struct Initialize {
         db::item_type<Tags::ReductionArrayComponentIds>{},
         db::item_type<Tags::VolumeArrayComponentIds>{},
         db::item_type<Tags::TensorData>{}, Parallel::create_lock(),
+        Parallel::create_lock(), Parallel::create_lock(),
         Parallel::create_lock()));
   }
 };
