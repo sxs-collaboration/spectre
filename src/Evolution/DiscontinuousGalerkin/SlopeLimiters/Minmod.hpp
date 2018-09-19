@@ -5,12 +5,12 @@
 
 #include <cstddef>
 #include <limits>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
@@ -72,13 +72,13 @@ template <size_t VolumeDim>
 bool limit_one_tensor(
     gsl::not_null<DataVector*> tensor_begin,
     gsl::not_null<DataVector*> tensor_end,
-    const std::unordered_map<Direction<VolumeDim>,
-                             gsl::not_null<const double*>>&
-        neighbor_tensor_begin,
     const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const tnsr::I<double, VolumeDim>& element_size,
+    const std::unordered_map<Direction<VolumeDim>,
+                             gsl::not_null<const double*>>&
+        neighbor_tensor_begin,
     const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
         neighbor_sizes) noexcept;
 
@@ -244,12 +244,11 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// no longer looks oscillatory.
   ///
   /// \param tensors The tensors to be limited.
-  /// \param neighbor_tensors The tensor cell-averages from each neighbor.
   /// \param element The element on which the tensors to limit live.
   /// \param mesh The mesh on which the tensor values are measured.
   /// \param logical_coords The logical coordinates of the mesh gridpoints.
   /// \param element_size The size of the element, in the inertial coordinates.
-  /// \param neighbor_sizes The sizes of the neighboring elements.
+  /// \param neighbor_data The data from each neighbor.
   ///
   /// \return whether the limiter modified the solution or not.
   ///
@@ -263,47 +262,62 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///   the linearization step did not actually modify the data. This is
   ///   somewhat contrived and is unlikely to occur outside of code tests or
   ///   test cases with very clean initial data.
-  bool apply(
+  bool operator()(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-      const std::unordered_map<
-          Direction<VolumeDim>,
-          TensorMetafunctions::swap_type<
-              double, db::item_type<Tags>>>&... neighbor_tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
       const tnsr::I<double, VolumeDim>& element_size,
-      const std::unordered_map<Direction<VolumeDim>,
-                               tnsr::I<double, VolumeDim>>& neighbor_sizes)
-      const noexcept {
+      const std::unordered_map<Direction<VolumeDim>, PackagedData>&
+          neighbor_data) const noexcept {
     bool limiter_activated = false;
     const auto wrap_limit_one_tensor = [
-      this, &element, &mesh, &logical_coords, &element_size, &neighbor_sizes,
-      &limiter_activated
-    ](const auto& tensor, const auto& neighbor_tensor) noexcept {
+      this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
+      &neighbor_data
+    ](auto tag, const auto& tensor) noexcept {
+      // Because we hide the types of Tags from limit_one_tensor (we do this so
+      // that its implementation isn't templated on Tags and can be moved out of
+      // this header file), we cannot pass it PackagedData as currently
+      // implemented. So we unpack everything from PackagedData. In the future
+      // we may want a PackagedData type that erases types inherently, as this
+      // would avoid the need for unpacking as done here.
+      //
       // Get iterators into the local and neighbor tensors, because these are
       // independent from the structure of the tensor being limited.
       const auto tensor_begin = make_not_null(tensor->begin());
       const auto tensor_end = make_not_null(tensor->end());
-      const auto neighbor_tensor_begin = [&neighbor_tensor]() noexcept {
+      const auto neighbor_tensor_begin = [&neighbor_data]() noexcept {
         std::unordered_map<Direction<VolumeDim>, gsl::not_null<const double*>>
             result;
-        for (const auto& dir_and_tensor : neighbor_tensor) {
-          result.insert(
-              std::make_pair(dir_and_tensor.first,
-                             make_not_null(dir_and_tensor.second.cbegin())));
+        for (const auto& neighbor_and_data : neighbor_data) {
+          result.insert(std::make_pair(
+              neighbor_and_data.first,
+              make_not_null(get<Minmod_detail::to_tensor_double<decltype(tag)>>(
+                                neighbor_and_data.second.means_)
+                                .cbegin())));
+        }
+        return result;
+      }
+      ();
+      const auto neighbor_sizes = [&neighbor_data]() noexcept {
+        std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>
+            result;
+        for (const auto& neighbor_and_data : neighbor_data) {
+          result.insert(std::make_pair(neighbor_and_data.first,
+                                       neighbor_and_data.second.element_size_));
         }
         return result;
       }
       ();
 
-      limiter_activated = Minmod_detail::limit_one_tensor<VolumeDim>(
-                              tensor_begin, tensor_end, neighbor_tensor_begin,
-                              minmod_type_, tvbm_constant_, element, mesh,
-                              logical_coords, element_size, neighbor_sizes) or
-                          limiter_activated;
+      limiter_activated =
+          Minmod_detail::limit_one_tensor<VolumeDim>(
+              tensor_begin, tensor_end, minmod_type_, tvbm_constant_, element,
+              mesh, logical_coords, element_size, neighbor_tensor_begin,
+              neighbor_sizes) or
+          limiter_activated;
       return '0';
     };
-    expand_pack(wrap_limit_one_tensor(tensors, neighbor_tensors)...);
+    expand_pack(wrap_limit_one_tensor(Tags{}, tensors)...);
     return limiter_activated;
   }
 
