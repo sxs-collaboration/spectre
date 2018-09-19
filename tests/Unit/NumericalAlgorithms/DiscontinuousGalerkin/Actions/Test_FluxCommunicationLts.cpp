@@ -120,19 +120,12 @@ using interface_compute_tag =
     Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename FluxCommTypes>
-using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
-template <typename FluxCommTypes>
 using LocalData = typename FluxCommTypes::LocalData;
-template <typename FluxCommTypes>
-using LocalMortarData = typename FluxCommTypes::LocalMortarData;
 template <typename FluxCommTypes>
 using PackagedData = typename FluxCommTypes::PackagedData;
 template <size_t Dim, typename FluxCommTypes>
 using normal_dot_fluxes_tag =
     interface_tag<Dim, typename FluxCommTypes::normal_dot_fluxes_tag>;
-
-template <typename FluxCommTypes>
-using fluxes_tag = typename FluxCommTypes::FluxesTag;
 
 template <size_t Dim>
 using other_data_tag =
@@ -196,9 +189,6 @@ struct LtsMetavariables {
 
 template <size_t Dim>
 using flux_comm_types = dg::FluxCommunicationTypes<LtsMetavariables<Dim>>;
-
-template <typename Component>
-using simple_items = typename Component::simple_tags;
 
 template <typename Component>
 using compute_items = typename Component::compute_tags;
