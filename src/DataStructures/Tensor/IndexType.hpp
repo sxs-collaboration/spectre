@@ -100,7 +100,7 @@ inline std::ostream& operator<<(std::ostream& os,
 /// For Frame::Inertial it is the empty string, otherwise, it is the name of
 /// the Frame followed by an underscore (as the name will be used in I/O).
 /// \example
-/// \snippet Test_GrMhd.cpp prefix_example
+/// \snippet Hydro/Test_Tags.cpp prefix_example
 template <typename Fr>
 inline std::string prefix() noexcept;
 

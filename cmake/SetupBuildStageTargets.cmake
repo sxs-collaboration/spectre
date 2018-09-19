@@ -32,7 +32,6 @@ add_dependencies(test-libs-stage1
   Test_CurvedScalarWave
   Test_GeneralizedHarmonic
   Test_ValenciaDivClean
-  Test_GrMhd
   Test_NewtonianEulerSources
   Test_NewtonianEuler
   Test_Valencia
