@@ -13,9 +13,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Systems/GrMhd/Tags.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -23,9 +23,9 @@
 // IWYU pragma: no_forward_declare Actions::ApplyVariableFixer
 
 namespace {
-using VariableFixer =
-    VariableFixing::RadiallyFallingFloor<3, grmhd::Tags::RestMassDensity,
-                                         grmhd::Tags::Pressure>;
+using VariableFixer = VariableFixing::RadiallyFallingFloor<
+    3, hydro::Tags::RestMassDensity<DataVector>,
+    hydro::Tags::Pressure<DataVector>>;
 
 template <typename Metavariables>
 struct mock_component
@@ -33,7 +33,8 @@ struct mock_component
           Metavariables, size_t, tmpl::list<>,
           tmpl::list<::Actions::ApplyVariableFixer<VariableFixer>>> {
   using initial_databox = db::compute_databox_type<
-      tmpl::list<grmhd::Tags::RestMassDensity, grmhd::Tags::Pressure,
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
                  ::Tags::Coordinates<3, Frame::Inertial>>>;
 };
 
@@ -59,15 +60,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
 
   tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(
-          0,
-          ActionTesting::MockLocalAlgorithm<component>{
-              db::create<db::AddSimpleTags<
-                  grmhd::Tags::RestMassDensity, grmhd::Tags::Pressure,
-                  ::Tags::Coordinates<3, Frame::Inertial>>>(
-                  Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
-                  Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
-                  tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
+      .emplace(0,
+               ActionTesting::MockLocalAlgorithm<component>{db::create<
+                   db::AddSimpleTags<hydro::Tags::RestMassDensity<DataVector>,
+                                     hydro::Tags::Pressure<DataVector>,
+                                     ::Tags::Coordinates<3, Frame::Inertial>>>(
+                   Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
+                   Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
+                   tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
   const double radius_at_which_to_begin_applying_floor = 1.e-4;
   ActionTesting::ActionRunner<Metavariables> runner{
       {radius_at_which_to_begin_applying_floor}, std::move(local_algs)};
@@ -86,8 +86,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                // `radius_at_which_to_begin_applying_floor` do not get fixed.
       1.e-5 * pow(3, -0.75), 1.e-5 * pow(2.0 * root_three, -1.5)};
 
-  CHECK_ITERABLE_APPROX(db::get<grmhd::Tags::Pressure>(box).get(),
+  CHECK_ITERABLE_APPROX(db::get<hydro::Tags::Pressure<DataVector>>(box).get(),
                         fixed_pressure);
-  CHECK_ITERABLE_APPROX(db::get<grmhd::Tags::RestMassDensity>(box).get(),
-                        fixed_density);
+  CHECK_ITERABLE_APPROX(
+      db::get<hydro::Tags::RestMassDensity<DataVector>>(box).get(),
+      fixed_density);
 }
