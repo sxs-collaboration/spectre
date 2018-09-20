@@ -189,6 +189,12 @@ static_assert(
         SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
     "Failed testing check_index_symmetry");
 
+// Test swap_type
+static_assert(
+    cpp17::is_same_v<tnsr::ij<double, 3>, TensorMetafunctions::swap_type<
+                                              double, tnsr::ij<DataVector, 3>>>,
+    "Failed testing swap_type");
+
 static_assert(not cpp17::is_constructible_v<
                   Tensor<double, Symmetry<>, tmpl::list<>>, tmpl::list<>>,
               "Tensor construction failed to be SFINAE friendly");

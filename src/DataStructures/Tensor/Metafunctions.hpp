@@ -111,4 +111,12 @@ template <typename Tensor>
 using remove_first_index =
     ::Tensor<typename Tensor::type, tmpl::pop_front<typename Tensor::symmetry>,
              tmpl::pop_front<typename Tensor::index_list>>;
+
+/// \ingroup TensorGroup
+/// \brief Swap the data type of a tensor for a new type
+/// \tparam NewType the new data type
+/// \tparam Tensor the tensor from which to keep symmetry and index information
+template <typename NewType, typename Tensor>
+using swap_type =
+    ::Tensor<NewType, typename Tensor::symmetry, typename Tensor::index_list>;
 }  // namespace TensorMetafunctions
