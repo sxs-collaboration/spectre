@@ -27,6 +27,7 @@
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
+#include "Parallel/TraceActions.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
