@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
     LeviCivitaIterator.cpp
     SliceIterator.cpp
     StripeIterator.cpp
+    Tensor/TensorData.cpp
     VariablesHelpers.cpp
     )
 

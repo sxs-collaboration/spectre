@@ -7,11 +7,15 @@
 
 #include "IO/Observer/Tags.hpp"
 
+namespace observers {
+namespace Tags {
 SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
-  CHECK(observers::Tags::NumberOfEvents::name() == "NumberOfEvents");
-  CHECK(observers::Tags::ReductionArrayComponentIds::name() ==
-        "ReductionArrayComponentIds");
-  CHECK(observers::Tags::VolumeArrayComponentIds::name() ==
-        "VolumeArrayComponentIds");
-  CHECK(observers::Tags::TensorData::name() == "TensorData");
+  CHECK(NumberOfEvents::name() == "NumberOfEvents");
+  CHECK(ReductionArrayComponentIds::name() == "ReductionArrayComponentIds");
+  CHECK(VolumeArrayComponentIds::name() == "VolumeArrayComponentIds");
+  CHECK(TensorData::name() == "TensorData");
+  CHECK(VolumeDataLock::name() == "VolumeDataLock");
+  CHECK(ReductionDataLock::name() == "ReductionDataLock");
 }
+}  // namespace Tags
+}  // namespace observers

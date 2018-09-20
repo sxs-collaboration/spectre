@@ -40,12 +40,10 @@ struct observer_component
     : ActionTesting::MockArrayComponent<Metavariables, size_t, tmpl::list<>,
                                         tmpl::list<>,
                                         observers::Observer<Metavariables>> {
-  using simple_tags =
-      db::AddSimpleTags<observers::Tags::NumberOfEvents,
-                        observers::Tags::ReductionArrayComponentIds,
-                        observers::Tags::VolumeArrayComponentIds,
-                        observers::Tags::TensorData>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+  using simple_tags = observers::Actions::Initialize::simple_tags;
+  using compute_tags = observers::Actions::Initialize::compute_tags;
+  using initial_databox =
+      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
 
 struct Metavariables {

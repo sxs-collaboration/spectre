@@ -4,19 +4,17 @@
 #pragma once
 
 #include <cstddef>
+#include <lrtslock.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-
-/// \cond
-class DataVector;
-namespace observers {
-class ArrayComponentId;
-}  // namespace observers
-/// \endcond
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/TensorData.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/ObservationId.hpp"
 
 namespace observers {
 /// \ingroup ObserversGroup
@@ -47,8 +45,21 @@ struct VolumeArrayComponentIds : db::SimpleTag {
 struct TensorData : db::SimpleTag {
   static std::string name() noexcept { return "TensorData"; }
   using type =
-      std::unordered_map<std::string,
-                         std::vector<std::pair<std::string, DataVector>>>;
+      std::unordered_map<observers::ObservationId,
+                         std::unordered_map<observers::ArrayComponentId,
+                                            ExtentsAndTensorVolumeData>>;
+};
+
+/// Node lock used when needing a lock for volume data.
+struct VolumeDataLock : db::SimpleTag {
+  static std::string name() noexcept { return "VolumeDataLock"; }
+  using type = CmiNodeLock;
+};
+
+/// Node lock used when needing a lock for reduction data.
+struct ReductionDataLock : db::SimpleTag {
+  static std::string name() noexcept { return "ReductionDataLock"; }
+  using type = CmiNodeLock;
 };
 }  // namespace Tags
 }  // namespace observers
