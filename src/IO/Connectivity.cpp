@@ -97,7 +97,7 @@ std::vector<CellInTopology> tensor_product_cells(
 }
 
 template <size_t Dim>
-std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) {
+std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) noexcept {
   std::vector<CellInTopology> cells;
   std::vector<std::vector<CellInTopology>> cells_per_topology;
   std::vector<size_t> size_per_topology;
@@ -118,9 +118,27 @@ std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) {
   return cells;
 }
 
+std::vector<CellInTopology> compute_cells(
+    const std::vector<size_t>& extents) noexcept {
+  if (extents.size() == 1) {
+    return compute_cells(Index<1>{extents[0]});
+  } else if (extents.size() == 2) {
+    return compute_cells(Index<2>{extents[0], extents[1]});
+  } else if (extents.size() == 3) {
+    return compute_cells(Index<3>{extents[0], extents[1], extents[2]});
+  }
+  ERROR(
+      "Only know how to compute connectivity for extents of size 1, 2, and 3, "
+      "not "
+      << extents.size());
+}
+
 // Explicit instantiations
-template std::vector<CellInTopology> compute_cells<1>(const Index<1>& extents);
-template std::vector<CellInTopology> compute_cells<2>(const Index<2>& extents);
-template std::vector<CellInTopology> compute_cells<3>(const Index<3>& extents);
+template std::vector<CellInTopology> compute_cells<1>(
+    const Index<1>& extents) noexcept;
+template std::vector<CellInTopology> compute_cells<2>(
+    const Index<2>& extents) noexcept;
+template std::vector<CellInTopology> compute_cells<3>(
+    const Index<3>& extents) noexcept;
 }  // namespace detail
 }  // namespace vis

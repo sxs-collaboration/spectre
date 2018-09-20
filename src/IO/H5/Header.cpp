@@ -18,8 +18,8 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
                const hid_t location, const std::string& name)
     : group_(std::move(group)) {
   if (exists) {
-    header_info_ = h5::detail::read_strings_from_attribute(
-        location, name + extension())[0];
+    header_info_ =
+        h5::read_rank1_attribute<std::string>(location, name + extension())[0];
   } else {
     std::vector<std::string> header_info{[]() {
       std::stringstream ss;
@@ -28,8 +28,7 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
       ss << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
       return ss.str();
     }()};
-    detail::write_strings_to_attribute(location, name + extension(),
-                                       header_info);
+    write_to_attribute(location, name + extension(), header_info);
     header_info_ = header_info[0];
   }
 }

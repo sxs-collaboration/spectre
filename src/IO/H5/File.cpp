@@ -12,6 +12,7 @@
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
 #include "IO/H5/Object.hpp"
+#include "IO/H5/Wrappers.hpp"
 #include "Utilities/FileSystem.hpp"
 
 namespace h5 {
@@ -38,16 +39,13 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
                       "explicitly delete the file first using the file_system "
                       "library in SpECTRE or through your shell.");
   }
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
   file_id_ = file_exists
                  ? H5Fopen(file_name_.c_str(),
-                           AccessType::ReadOnly == Access_t ? H5F_ACC_RDONLY
-                                                            : H5F_ACC_RDWR,
-                           H5P_DEFAULT)
-                 : H5Fcreate(file_name_.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
-                             H5P_DEFAULT);
-#pragma GCC diagnostic pop
+                           AccessType::ReadOnly == Access_t ? h5f_acc_rdonly()
+                                                            : h5f_acc_rdwr(),
+                           h5p_default())
+                 : H5Fcreate(file_name_.c_str(), h5f_acc_trunc(), h5p_default(),
+                             h5p_default());
   CHECK_H5(file_id_, "Failed to open file '" << file_name_ << "'");
   if (not file_exists) {
     insert_header();

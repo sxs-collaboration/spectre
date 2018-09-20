@@ -158,6 +158,7 @@ EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 
 PREDEFINED             = SPECTRE_ALWAYS_INLINE= \
+                         OVERLOADER_CONSTEXPR= \
                          SPECTRE_DOXYGEN_INVOKED
 
 #---------------------------------------------------------------------------

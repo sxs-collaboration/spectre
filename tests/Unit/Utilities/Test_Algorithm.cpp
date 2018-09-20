@@ -4,11 +4,13 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <iterator>
+#include <vector>
 
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Array.hpp"  // IWYU pragma: associated
 #include "Utilities/Numeric.hpp"
 
+namespace {
 constexpr bool check_swap() noexcept {
   int x = 4;
   int y = 444;
@@ -56,6 +58,7 @@ constexpr bool check_next_permutation() noexcept {
   cpp17::array<size_t, size> expected{{1, 2, 4, 6, 5, 3}};
   return a == expected;
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   // Check the functions at runtime
@@ -73,4 +76,50 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
                 "Failed test Unit.Utilities.Algorithm");
   static_assert(check_next_permutation(),
                 "Failed test Unit.Utilities.Algorithm");
+
+  // Test wrappers around STL algorithms
+  CHECK(alg::all_of(std::vector<int>{1, 1, 1, 1},
+                    [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::all_of(std::vector<int>{1, 2, 1, 1},
+                          [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::all_of(std::vector<int>{2, 1, 1, 1},
+                          [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::all_of(std::vector<int>{1, 1, 1, 2},
+                          [](const int t) { return t == 1; }));
+  CHECK(alg::any_of(std::vector<int>{4, 2, 1, 3},
+                    [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::any_of(std::vector<int>{4, 2, -1, 3},
+                          [](const int t) { return t == 1; }));
+  CHECK(alg::none_of(std::vector<int>{4, 2, -1, 3},
+                     [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::none_of(std::vector<int>{4, 2, 1, 3},
+                           [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::none_of(std::vector<int>{1, 2, -1, 3},
+                           [](const int t) { return t == 1; }));
+  CHECK_FALSE(alg::none_of(std::vector<int>{4, 2, -1, 1},
+                           [](const int t) { return t == 1; }));
+  const std::vector<int> a{1, 2, 3, 4};
+  CHECK(alg::find(a, 3) == a.begin() + 2);
+  CHECK(alg::find(a, 5) == a.end());
+  CHECK(alg::found(a, 3));
+  CHECK_FALSE(alg::found(a, 5));
+
+  CHECK(alg::find_if(a, [](const int t) { return t > 3; }) == a.end() - 1);
+  CHECK(alg::find_if(a, [](const int t) { return t < 0; }) == a.end());
+  CHECK(alg::found_if(a, [](const int t) { return t > 3; }));
+  CHECK_FALSE(alg::found_if(a, [](const int t) { return t < 0; }));
+
+  CHECK(alg::find_if_not(a, [](const int t) { return t < 3; }) == a.end() - 2);
+  CHECK(alg::find_if_not(a, [](const int t) { return t < 8; }) == a.end());
+  CHECK(alg::found_if_not(a, [](const int t) { return t < 3; }));
+  CHECK_FALSE(alg::found_if_not(a, [](const int t) { return t < 8; }));
+
+  int count = 0;
+  alg::for_each(std::vector<size_t>{1, 7, 234, 987, 32},
+                [&count](const size_t value) {
+                  if (value > 100) {
+                    count++;
+                  }
+                });
+  CHECK(count == 2);
 }

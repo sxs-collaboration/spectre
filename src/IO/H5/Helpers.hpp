@@ -18,17 +18,19 @@
 namespace h5 {
 /*!
  * \ingroup HDF5Group
- * \brief Write a "Time" attribute to the group
- */
-void write_time(hid_t group_id, double time);
-
-/*!
- * \ingroup HDF5Group
  * \brief Write a DataVector named `name` to the group `group_id`
  */
 template <size_t Dim>
 void write_data(hid_t group_id, const DataVector& data,
                 const Index<Dim>& extents, const std::string& name = "scalar");
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Write a DataVector named `name` to the group `group_id`
+ */
+void write_data(hid_t group_id, const DataVector& data,
+                const std::vector<size_t>& extents,
+                const std::string& name = "scalar") noexcept;
 
 /*!
  * \ingroup HDF5Group
@@ -41,16 +43,35 @@ void write_extents(hid_t group_id, const Index<Dim>& extents,
 
 /*!
  * \ingroup HDF5Group
- * \brief Write the connectivity into the group in the H5 file
+ * \brief Write a value of type `Type` to an HDF5 attribute named `name`
  */
-void write_connectivity(hid_t group_id, const std::vector<int>& connectivity);
+template <typename Type>
+void write_to_attribute(hid_t location_id, const std::string& name,
+                        const Type& value) noexcept;
 
 /*!
  * \ingroup HDF5Group
- * \brief Get the names of all the groups in a group
+ * \brief Write the vector `data` to the attribute `attribute_name` in the group
+ * `group_id`.
  */
-std::vector<std::string> get_group_names(hid_t file_id,
-                                         const std::string& group_name);
+template <typename T>
+void write_to_attribute(hid_t group_id, const std::string& name,
+                        const std::vector<T>& data) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Read a value of type `Type` from an HDF5 attribute named `name`
+ */
+template <typename Type>
+Type read_value_attribute(hid_t location_id, const std::string& name) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Read rank-1 of type `Type` from an HDF5 attribute named `name`
+ */
+template <typename T>
+std::vector<T> read_rank1_attribute(hid_t group_id,
+                                    const std::string& name) noexcept;
 
 /*!
  * \ingroup HDF5Group
@@ -61,17 +82,34 @@ std::vector<std::string> get_attribute_names(hid_t file_id,
 
 /*!
  * \ingroup HDF5Group
+ * \brief Write the connectivity into the group in the H5 file
+ */
+void write_connectivity(hid_t group_id,
+                        const std::vector<int>& connectivity) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Get the names of all the groups and datasets in a group
+ */
+std::vector<std::string> get_group_names(
+    hid_t file_id, const std::string& group_name) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Check if `name` is a dataset or group in the subgroup `group_name` of
+ * `id`.
+ *
+ * \note To check the current id for `name`, pass `""` as `group_name`.
+ */
+bool contains_dataset_or_group(hid_t id, const std::string& group_name,
+                               const std::string& dataset_name) noexcept;
+
+/*!
+ * \ingroup HDF5Group
  * \brief Check if an attribute is in a group
  */
 bool contains_attribute(hid_t file_id, const std::string& group_name,
                         const std::string& attribute_name);
-
-/*!
- * \ingroup HDF5Group
- * \brief Get the "Time" attribute from a group
- */
-double get_time(hid_t file_id, const std::string& group_name,
-                const std::string& attr_name = "Time");
 
 /*!
  * \ingroup HDF5Group
@@ -86,46 +124,10 @@ DataVector read_data(hid_t group_id, const std::string& dataset_name);
 template <size_t Dim>
 Index<Dim> read_extents(hid_t group_id,
                         const std::string& extents_name = "Extents");
-
 }  // namespace h5
 
 namespace h5 {
 namespace detail {
-/*!
- * \ingroup HDF5Group
- * \brief Write a vector of strings into an H5 dataset as an attribute
- *
- * \requires `dataset_id` is an open dataset
- * \effects Writes the `string_array` into an HDF5 attribute with name `name`
- */
-void write_strings_to_attribute(hid_t dataset_id, const std::string& name,
-                                const std::vector<std::string>& string_array);
-
-/*!
- * \ingroup HDF5Group
- * \brief Read a vector of strings from an attribute inside an H5 dataset
- *
- * \requires `dataset_id` is an open dataset
- * \effects Reads the HDF5 attribute with name `name` as a vector of strings
- */
-std::vector<std::string> read_strings_from_attribute(hid_t group_id,
-                                                     const std::string& name);
-
-/*!
- * \ingroup HDF5Group
- * \brief Write a value of type `Type` to an HDF5 attribute named `name`
- */
-template <typename Type>
-void write_value_to_attribute(hid_t location_id, const std::string& name,
-                              const Type& value);
-
-/*!
- * \ingroup HDF5Group
- * \brief Read a value of type `Type` from an HDF5 attribute named `name`
- */
-template <typename Type>
-Type read_value_from_attribute(hid_t location_id, const std::string& name);
-
 /*!
  * \ingroup HDF5Group
  * \brief Create a dataset that can be extended/appended to

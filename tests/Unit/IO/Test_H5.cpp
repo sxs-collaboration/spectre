@@ -459,17 +459,6 @@ SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }
 
-/// [[OutputRegex, group / does not contain attribute 'Time']]
-SPECTRE_TEST_CASE("Unit.IO.H5.get_time_error", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  const std::string file_name("Unit.IO.H5.get_time_error.h5");
-  const hid_t file_id =
-      H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-  CHECK_H5(file_id, "Failed to open file: " << file_name);
-  h5::get_time(file_id, "/");
-  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
-}
-
 /// [[OutputRegex, could not open dataset 'no_dataset']]
 SPECTRE_TEST_CASE("Unit.IO.H5.read_data_error", "[Unit][IO][H5]") {
   ERROR_TEST();
@@ -587,7 +576,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile1D", "[Unit][IO][H5]") {
   CHECK(std::vector<std::string>{"[0][0]"} ==
         h5::get_group_names(file_id, "/"));
   CHECK(h5::contains_attribute(file_id, "/[0][0]", "Extents"));
-  CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
+  CHECK(3.8 ==
+        h5::read_value_attribute<double>(
+            h5::detail::OpenGroup{file_id, "/[0][0]", h5::AccessType::ReadOnly}
+                .id(),
+            "Time"));
   h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
   CHECK(extents == h5::read_extents<1>(group.id(), "Extents"));
   CHECK((DataVector{0., 1., 2.}) == h5::read_data(group.id(), "x-coord"));
@@ -625,7 +618,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile2D", "[Unit][IO][H5]") {
   CHECK(std::vector<std::string>{"[0][0]"} ==
         h5::get_group_names(file_id, "/"));
   CHECK(h5::contains_attribute(file_id, "/[0][0]", "Extents"));
-  CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
+  CHECK(3.8 ==
+        h5::read_value_attribute<double>(
+            h5::detail::OpenGroup{file_id, "/[0][0]", h5::AccessType::ReadOnly}
+                .id(),
+            "Time"));
   h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
   CHECK(extents == h5::read_extents<dim>(group.id(), "Extents"));
   CHECK(get<0>(grid_coords) == h5::read_data(group.id(), "x-coord"));
@@ -668,7 +665,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeFile3D", "[Unit][IO][H5]") {
   CHECK(std::vector<std::string>{"[0][0]"} ==
         h5::get_group_names(file_id, "/"));
   CHECK(h5::contains_attribute(file_id, "/[0][0]", "Extents"));
-  CHECK(3.8 == h5::get_time(file_id, "/[0][0]"));
+  CHECK(3.8 ==
+        h5::read_value_attribute<double>(
+            h5::detail::OpenGroup{file_id, "/[0][0]", h5::AccessType::ReadOnly}
+                .id(),
+            "Time"));
   h5::detail::OpenGroup group(file_id, "/[0][0]", h5::AccessType::ReadOnly);
   CHECK(extents == h5::read_extents<dim>(group.id(), "Extents"));
   CHECK(get<0>(grid_coords) == h5::read_data(group.id(), "x-coord"));

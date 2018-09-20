@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <iterator>
 
@@ -127,3 +128,101 @@ constexpr bool next_permutation(BidirectionalIterator first,
           typename std::iterator_traits<BidirectionalIterator>::value_type>());
 }
 }  // namespace cpp20
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Utility functions wrapping STL algorithms and additional algorithms.
+ */
+namespace alg {
+/// Convenience wrapper around std::all_of
+template <class Container, class UnaryPredicate>
+decltype(auto) all_of(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::all_of(begin(c), end(c),
+                     std::forward<UnaryPredicate>(unary_predicate));
+}
+
+/// Convenience wrapper around std::any_of
+template <class Container, class UnaryPredicate>
+decltype(auto) any_of(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::any_of(begin(c), end(c),
+                     std::forward<UnaryPredicate>(unary_predicate));
+}
+
+/// Convenience wrapper around std::none_of
+template <class Container, class UnaryPredicate>
+decltype(auto) none_of(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::none_of(begin(c), end(c),
+                      std::forward<UnaryPredicate>(unary_predicate));
+}
+
+/// Convenience wrapper around std::find
+template <class Container, class T>
+decltype(auto) find(const Container& c, const T& value) {
+  using std::begin;
+  using std::end;
+  return std::find(begin(c), end(c), value);
+}
+
+/// Convenience wrapper around std::find_if
+template <class Container, class UnaryPredicate>
+decltype(auto) find_if(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::find_if(begin(c), end(c),
+                      std::forward<UnaryPredicate>(unary_predicate));
+}
+
+/// Convenience wrapper around std::find_if_not
+template <class Container, class UnaryPredicate>
+decltype(auto) find_if_not(const Container& c,
+                           UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::find_if_not(begin(c), end(c),
+                          std::forward<UnaryPredicate>(unary_predicate));
+}
+
+/// Convenience wrapper around std::find, returns `true` if `value` is in `c`.
+template <class Container, class T>
+bool found(const Container& c, const T& value) {
+  using std::begin;
+  using std::end;
+  return std::find(begin(c), end(c), value) != end(c);
+}
+
+/// Convenience wrapper around std::find_if, returns `true` if the result of
+/// `std::find_if` is not equal to `end(c)`.
+template <class Container, class UnaryPredicate>
+bool found_if(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::find_if(begin(c), end(c),
+                      std::forward<UnaryPredicate>(unary_predicate)) != end(c);
+}
+
+/// Convenience wrapper around std::find_if_not, returns `true` if the result of
+/// `std::find_if_not` is not equal to `end(c)`.
+template <class Container, class UnaryPredicate>
+bool found_if_not(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::find_if_not(begin(c), end(c),
+                          std::forward<UnaryPredicate>(unary_predicate)) !=
+         end(c);
+}
+
+/// Convenience wrapper around std::for_each, returns the result of
+/// `std::for_each(begin(c), end(c), f)`.
+template <class Container, class UnaryFunction>
+decltype(auto) for_each(const Container& c, UnaryFunction&& f) {
+  using std::begin;
+  using std::end;
+  return std::for_each(begin(c), end(c), std::forward<UnaryFunction>(f));
+}
+}  // namespace alg
