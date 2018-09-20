@@ -95,10 +95,13 @@ struct System {
 };
 
 template <size_t Dim, typename Flux, typename Metavariables>
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Flux>>,
-          tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Flux>>;
+  using action_list =
+      tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
                  Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
@@ -195,17 +198,18 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
                         Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
                         mortar_data_tag>;
 
-  using ActionRunner =
-      ActionTesting::ActionRunner<Metavariables<2, NumericalFlux>>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
-      component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem =
+      ActionTesting::MockRuntimeSystem<Metavariables<2, NumericalFlux>>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<
+          component<2, NumericalFlux, Metavariables<2, NumericalFlux>>>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id, db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                            std::move(mortar_meshes),
                                            std::move(mortar_sizes), initial_dt,
                                            std::move(mortar_data)));
-  ActionRunner runner{{NumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{NumericalFlux{}}, std::move(dist_objects)};
 
   runner.next_action<my_component>(id);
 
@@ -305,15 +309,17 @@ SPECTRE_TEST_CASE(
         typename mortar_data_tag::type{});
   };
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
-      component<3, RefinementNumericalFlux, metavariables>>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<
+          component<3, RefinementNumericalFlux, metavariables>>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id_0, make_initial_box({{3, 4, 5}}));
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id_1, make_initial_box({{4, 2, 6}}));
-  ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{RefinementNumericalFlux{}},
+                           std::move(dist_objects)};
 
   auto& box1 = runner.algorithms<my_component>()
                    .at(id_0)
@@ -462,11 +468,12 @@ SPECTRE_TEST_CASE(
                         mortar_data_tag>;
   using db_type = db::compute_databox_type<simple_tags>;
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<
-      component<3, RefinementNumericalFlux, metavariables>>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<
+          component<3, RefinementNumericalFlux, metavariables>>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id,
                db::create<simple_tags>(mesh, logical_coordinates(mesh),
                                        typename mortar_meshes_tag::type{},
@@ -475,7 +482,7 @@ SPECTRE_TEST_CASE(
                                        typename mortar_data_tag::type{}));
 
   const auto add_neighbor =
-      [&direction, &face_coords, &mesh, &self_id, &local_algs ](
+      [&direction, &face_coords, &mesh, &self_id, &dist_objects ](
           const std::array<MortarSize, 2>& mortar_size,
           const std::array<double, 2>& center,
           const std::array<double, 2>& half_width,
@@ -529,7 +536,7 @@ SPECTRE_TEST_CASE(
         mesh.extents(), direction.dimension(),
         index_to_slice_at(mesh.extents(), direction));
 
-    tuples::get<LocalAlgsTag>(local_algs)
+    tuples::get<MockDistributedObjectsTag>(dist_objects)
         .emplace(neighbor_id, db::create<simple_tags>(
                                   mesh, std::move(neighbor_coords),
                                   typename mortar_meshes_tag::type{
@@ -542,7 +549,7 @@ SPECTRE_TEST_CASE(
                                   std::move(neighbor_dt_vars),
                                   std::move(neighbor_mortar_data)));
 
-    auto& self_box = tuples::get<LocalAlgsTag>(local_algs)
+    auto& self_box = tuples::get<MockDistributedObjectsTag>(dist_objects)
                          .at(self_id)
                          .get_databox<db_type>();
     db::mutate<mortar_data_tag, mortar_meshes_tag, mortar_sizes_tag>(
@@ -569,7 +576,8 @@ SPECTRE_TEST_CASE(
   add_neighbor({{MortarSize::LowerHalf, MortarSize::LowerHalf}}, {{-0.5, -0.5}},
                {{0.5, 0.5}}, ElementId<3>{13});
 
-  ActionRunner runner{{RefinementNumericalFlux{}}, std::move(local_algs)};
+  MockRuntimeSystem runner{{RefinementNumericalFlux{}},
+                           std::move(dist_objects)};
   runner.next_action<my_component>(self_id);
 
   // These ids don't describe elements that fit together correctly,

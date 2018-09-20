@@ -19,9 +19,12 @@
 
 namespace {
 template <typename Metavariables>
-struct observer_component
-    : ActionTesting::MockArrayComponent<Metavariables, size_t, tmpl::list<>,
-                                        tmpl::list<>> {
+struct observer_component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename observers::Actions::Initialize::return_tag_list>;
 };
@@ -34,17 +37,20 @@ struct Metavariables {
 };
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
-  using LocalAlgorithms =
-      typename ActionTesting::ActionRunner<Metavariables>::LocalAlgorithms;
+  using TupleOfMockDistributedObjects =
+      typename ActionTesting::MockRuntimeSystem<
+          Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using ObserverLocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<obs_component>;
-  LocalAlgorithms local_algs{};
-  tuples::get<ObserverLocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<obs_component>{});
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using ObserverMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          obs_component>;
+  TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
-  ActionTesting::ActionRunner<Metavariables> runner{{}, std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {}, std::move(dist_objects)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
   const auto& observer_box =

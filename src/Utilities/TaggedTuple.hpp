@@ -710,7 +710,7 @@ struct tagged_tuple_typelist_impl<List<Tags...>> {
 
 /// \ingroup UtilitiesGroup
 template <typename T>
-using TaggedTupleTypelist =
+using tagged_tuple_from_typelist =
     typename TaggedTuple_detail::tagged_tuple_typelist_impl<T>::type;
 
 /// Stream operator for TaggedTuple

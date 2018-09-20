@@ -157,7 +157,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   // The types held by the boost::variant, box_
   using databox_types = Algorithm_detail::build_action_return_typelist<
       InitialDataBox,
-      tmpl::list<tuples::TaggedTupleTypelist<inbox_tags_list>,
+      tmpl::list<tuples::tagged_tuple_from_typelist<inbox_tags_list>,
                  Parallel::ConstGlobalCache<metavariables>, array_index,
                  actions_list, std::add_pointer_t<ParallelComponent>>,
       ActionsPack...>;
@@ -308,7 +308,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   make_boost_variant_over<tmpl::remove_duplicates<
       tmpl::append<tmpl::list<db::DataBox<tmpl::list<>>>, databox_types>>>
       box_;
-  tuples::TaggedTupleTypelist<inbox_tags_list> inboxes_{};
+  tuples::tagged_tuple_from_typelist<inbox_tags_list> inboxes_{};
   array_index array_index_;
 };
 
@@ -544,7 +544,8 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         [this, &box](std::true_type /*has_is_ready*/, auto t) {
           return decltype(t)::is_ready(
               static_cast<const this_databox&>(*box),
-              static_cast<const tuples::TaggedTupleTypelist<inbox_tags_list>&>(
+              static_cast<
+                  const tuples::tagged_tuple_from_typelist<inbox_tags_list>&>(
                   inboxes_),
               *const_global_cache_,
               static_cast<const array_index&>(array_index_));
@@ -554,7 +555,7 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     if (not check_if_ready(
             Algorithm_detail::is_is_ready_callable_t<
                 this_action, this_databox,
-                tuples::TaggedTupleTypelist<inbox_tags_list>,
+                tuples::tagged_tuple_from_typelist<inbox_tags_list>,
                 Parallel::ConstGlobalCache<Metavariables>, array_index>{},
             this_action{})) {
       take_next_action = false;

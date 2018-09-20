@@ -40,10 +40,12 @@ using history_tag =
     Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<OptionTags::TimeStepper>,
-                                        tmpl::list<Actions::UpdateU>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::TimeStepper>;
+  using action_list = tmpl::list<Actions::UpdateU>;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>;
   using initial_databox = db::compute_databox_type<simple_tags>;
@@ -63,15 +65,16 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const auto rhs =
       [](const double t, const double y) { return 2. * t - 2. * (y - t * t); };
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           time_step, 1., history_tag::type{})});
-  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                      std::move(local_algs)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                           std::move(dist_objects)};
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};

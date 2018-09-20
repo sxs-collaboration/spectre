@@ -66,9 +66,12 @@ using source_tag =
     Tags::Source<Tags::Variables<tmpl::list<Tags::Source<Var2>>>>;
 
 template <typename Metavariables>
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, ElementIndexType, tmpl::list<>,
-                       tmpl::list<Actions::ComputeVolumeSources>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndexType;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<Actions::ComputeVolumeSources>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<System::variables_tag, Var3, source_tag>>;
 };
@@ -82,9 +85,9 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
                   "[Unit][Evolution][Actions]") {
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag =
-      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
 
   const ElementId<dim> self_id(1);
   const Scalar<DataVector> var1{{{{3., 4.}}}};
@@ -95,11 +98,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
 
   using simple_tags =
       db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id, db::create<simple_tags>(std::move(vars), var3,
                                                 db::item_type<source_tag>(2)));
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(self_id);
 

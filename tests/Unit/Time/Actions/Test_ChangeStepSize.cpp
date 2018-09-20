@@ -45,9 +45,12 @@ struct System {
 };
 
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int, tmpl::list<>,
-                                        tmpl::list<change_step_size>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<change_step_size>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
                                         Tags::TimeStep, history_tag>;
   using initial_databox = db::compute_databox_type<simple_tags>;
@@ -69,11 +72,12 @@ void check(const bool time_runs_forward,
   const TimeDelta initial_step_size =
       (time_runs_forward ? 1 : -1) * time.slab().duration();
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_runs_forward, 0, time),
                           TimeId(time_runs_forward, 0,
@@ -81,7 +85,7 @@ void check(const bool time_runs_forward,
                                                     : time.slab().end()) +
                                      initial_step_size),
                           initial_step_size, db::item_type<history_tag>{})});
-  ActionRunner runner{
+  MockRuntimeSystem runner{
       {std::move(time_stepper),
        make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
@@ -90,7 +94,7 @@ void check(const bool time_runs_forward,
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
                                                                    request)),
        std::make_unique<StepControllers::BinaryFraction>()},
-      std::move(local_algs)};
+      std::move(dist_objects)};
 
   runner.next_action<component>(0);
   auto& box = runner.algorithms<component>()

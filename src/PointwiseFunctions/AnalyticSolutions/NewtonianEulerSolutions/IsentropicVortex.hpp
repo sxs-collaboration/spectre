@@ -146,12 +146,13 @@ class IsentropicVortex {
   Scalar<DataType> perturbation(const DataType& coord_z) const noexcept;
 
   template <typename DataType>
-  tuples::TaggedTupleTypelist<primitive_t<DataType>> primitive_variables(
+  tuples::tagged_tuple_from_typelist<primitive_t<DataType>> primitive_variables(
       const tnsr::I<DataType, 3>& x, double t) const noexcept;
 
   template <typename DataType>
-  tuples::TaggedTupleTypelist<conservative_t<DataType>> conservative_variables(
-      const tnsr::I<DataType, 3>& x, double t) const noexcept;
+  tuples::tagged_tuple_from_typelist<conservative_t<DataType>>
+  conservative_variables(const tnsr::I<DataType, 3>& x, double t) const
+      noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT

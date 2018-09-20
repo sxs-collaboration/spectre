@@ -39,9 +39,12 @@ using events_and_triggers_tag =
     Tags::EventsAndTriggers<DefaultClasses, DefaultClasses>;
 
 struct Metavariables;
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, int, tmpl::list<events_and_triggers_tag>,
-                       tmpl::list<Actions::RunEventsAndTriggers>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<events_and_triggers_tag>;
+  using action_list = tmpl::list<Actions::RunEventsAndTriggers>;
   using initial_databox = db::DataBox<tmpl::list<>>;
 };
 
@@ -58,14 +61,20 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   Parallel::register_derived_classes_with_charm<Event<DefaultClasses>>();
   Parallel::register_derived_classes_with_charm<Trigger<DefaultClasses>>();
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using my_component = component;
-  using LocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<my_component>;
-  typename ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs).emplace(0, db::DataBox<tmpl::list<>>{});
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {serialize_and_deserialize(events_and_triggers)}, std::move(local_algs)};
+  using MockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          my_component>;
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(0, db::DataBox<tmpl::list<>>{});
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {serialize_and_deserialize(events_and_triggers)},
+      std::move(dist_objects)};
+  auto& box = runner.template algorithms<my_component>()
+                  .at(0)
+                  .template get_databox<db::DataBox<tmpl::list<>>>();
 
   runner.next_action<component>(0);
 

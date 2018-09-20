@@ -58,9 +58,12 @@ struct System {
 using ElementIndexType = ElementIndex<dim>;
 
 template <typename Metavariables>
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, ElementIndexType, tmpl::list<>,
-                       tmpl::list<Actions::ComputeVolumeFluxes>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndexType;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<Actions::ComputeVolumeFluxes>;
   using initial_databox =
       db::compute_databox_type<tmpl::list<Var1, Var2, flux_tag>>;
 };
@@ -74,20 +77,20 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
                   "[Unit][Evolution][Actions]") {
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag =
-      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
 
   const ElementId<dim> self_id(1);
 
   using simple_tags = db::AddSimpleTags<Var1, Var2, flux_tag>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id,
                db::create<simple_tags>(db::item_type<Var1>{{{3.}}},
                                        db::item_type<Var2>{{{7., 12.}}},
                                        db::item_type<flux_tag>{{{-100.}}}));
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(self_id);
 

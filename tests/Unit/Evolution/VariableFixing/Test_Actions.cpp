@@ -28,10 +28,12 @@ using VariableFixer = VariableFixing::RadiallyFallingFloor<
     hydro::Tags::Pressure<DataVector>>;
 
 template <typename Metavariables>
-struct mock_component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, size_t, tmpl::list<>,
-          tmpl::list<::Actions::ApplyVariableFixer<VariableFixer>>> {
+struct mock_component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<::Actions::ApplyVariableFixer<VariableFixer>>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
@@ -48,20 +50,21 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                   "[Unit][Evolution][VariableFixing]") {
-  using LocalAlgorithms =
-      typename ActionTesting::ActionRunner<Metavariables>::LocalAlgorithms;
+  using TupleOfMockDistributedObjects =
+      typename ActionTesting::MockRuntimeSystem<
+          Metavariables>::TupleOfMockDistributedObjects;
   using component = mock_component<Metavariables>;
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<component>;
-  LocalAlgorithms local_algs{};
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<component>;
+  TupleOfMockDistributedObjects dist_objects{};
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
 
-  tuples::get<LocalAlgsTag>(local_algs)
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0,
-               ActionTesting::MockLocalAlgorithm<component>{db::create<
+               ActionTesting::MockDistributedObject<component>{db::create<
                    db::AddSimpleTags<hydro::Tags::RestMassDensity<DataVector>,
                                      hydro::Tags::Pressure<DataVector>,
                                      ::Tags::Coordinates<3, Frame::Inertial>>>(
@@ -69,8 +72,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                    Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
                    tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
   const double radius_at_which_to_begin_applying_floor = 1.e-4;
-  ActionTesting::ActionRunner<Metavariables> runner{
-      {radius_at_which_to_begin_applying_floor}, std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {radius_at_which_to_begin_applying_floor}, std::move(dist_objects)};
   auto& box = runner.template algorithms<component>()
                   .at(0)
                   .template get_databox<typename component::initial_databox>();

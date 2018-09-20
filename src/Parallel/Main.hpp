@@ -199,11 +199,11 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
   const_global_cache_proxy_ =
       options_.template apply<const_global_cache_tags>([](auto... args) {
         return CProxy_ConstGlobalCache<Metavariables>::ckNew(
-            tuples::TaggedTupleTypelist<const_global_cache_tags>(
+            tuples::tagged_tuple_from_typelist<const_global_cache_tags>(
                 std::move(args)...));
       });
 
-  tuples::TaggedTupleTypelist<parallel_component_tag_list>
+  tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
   // Construct the group proxies with a dependency on the ConstGlobalCache proxy

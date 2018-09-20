@@ -77,11 +77,14 @@ struct System {
 };
 
 template <typename Metavariables>
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<2>,
-          tmpl::list<OptionTags::TimeStepper, NumericalFluxTag>,
-          tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<2>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TimeStepper, NumericalFluxTag>;
+  using action_list =
+      tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
                         Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
@@ -166,17 +169,17 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
                                          gsl::at(remote_data, 2));
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag =
-      ActionRunner::LocalAlgorithmsTag<component<Metavariables>>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(id, db::create<typename component<Metavariables>::simple_tags>(
                        mesh, mortar_meshes, mortar_sizes, time_step, variables,
                        std::move(mortar_data)));
-  ActionRunner runner{
+  MockRuntimeSystem runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}},
-      std::move(local_algs)};
+      std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(id);
 

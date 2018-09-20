@@ -16,7 +16,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ArrayComponentId.hpp"
-#include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
@@ -29,17 +29,24 @@ namespace {
 using ElementIndexType = ElementIndex<2>;
 
 template <typename Metavariables>
-struct element_component
-    : ActionTesting::MockArrayComponent<Metavariables, ElementIndexType,
-                                        tmpl::list<>, tmpl::list<>> {
+struct element_component {
+  using component_being_mocked = void;  // Not needed
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndexType;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
   using initial_databox = db::DataBox<tmpl::list<>>;
 };
 
 template <typename Metavariables>
-struct observer_component
-    : ActionTesting::MockArrayComponent<Metavariables, size_t, tmpl::list<>,
-                                        tmpl::list<>,
-                                        observers::Observer<Metavariables>> {
+struct observer_component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<>;
+  using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags = observers::Actions::Initialize::simple_tags;
   using compute_tags = observers::Actions::Initialize::compute_tags;
   using initial_databox =
@@ -56,19 +63,22 @@ struct Metavariables {
 
 template <observers::TypeOfObservation TypeOfObservation>
 void check_observer_registration() {
-  using LocalAlgorithms =
-      typename ActionTesting::ActionRunner<Metavariables>::LocalAlgorithms;
+  using TupleOfMockDistributedObjects =
+      typename ActionTesting::MockRuntimeSystem<
+          Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
   using element_comp = element_component<Metavariables>;
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using ObserverLocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<obs_component>;
-  using ElementLocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<element_comp>;
-  LocalAlgorithms local_algs{};
-  tuples::get<ObserverLocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<obs_component>{});
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using ObserverMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          obs_component>;
+  using ElementMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          element_comp>;
+  TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
@@ -77,12 +87,13 @@ void check_observer_registration() {
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
   for (const auto& id : element_ids) {
-    tuples::get<ElementLocalAlgsTag>(local_algs)
+    tuples::get<ElementMockDistributedObjectsTag>(dist_objects)
         .emplace(ElementIndex<2>{id},
-                 ActionTesting::MockLocalAlgorithm<element_comp>{});
+                 ActionTesting::MockDistributedObject<element_comp>{});
   }
 
-  ActionTesting::ActionRunner<Metavariables> runner{{}, std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {}, std::move(dist_objects)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
   // Test initial state
@@ -102,6 +113,9 @@ void check_observer_registration() {
     runner.simple_action<
         element_comp,
         observers::Actions::RegisterWithObservers<TypeOfObservation>>(id, 0);
+    // Invoke the simple_action RegisterSenderWithSelf that was called on the
+    // observer component by the RegisterWithObservers action.
+    runner.invoke_queued_simple_action<obs_component>(0);
   }
 
   // Test registration occurred as expected

@@ -155,11 +155,13 @@ struct MortarRecorderTag : Tags::VariablesBoundaryData,
                            Tags::Mortars<DataRecorderTag, 2> {};
 
 template <size_t Dim, typename MV>
-struct lts_component
-    : ActionTesting::MockArrayComponent<
-          MV, ElementIndex<Dim>, tmpl::list<NumericalFluxTag<Dim>>,
-          tmpl::list<dg::Actions::SendDataForFluxes<MV>,
-                     dg::Actions::ReceiveDataForFluxes<MV>>> {
+struct lts_component {
+  using metavariables = MV;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
+  using action_list = tmpl::list<dg::Actions::SendDataForFluxes<MV>,
+                                 dg::Actions::ReceiveDataForFluxes<MV>>;
   using flux_comm_types = dg::FluxCommunicationTypes<MV>;
 
   using simple_tags = db::AddSimpleTags<
@@ -214,7 +216,7 @@ struct DataRecorder {
   std::vector<std::pair<int, PackagedData<flux_comm_types<2>>>> received_data{};
 };
 
-// Inserts the new neighbor element into the ActionRunner
+// Inserts the new neighbor element into the MockRuntimeSystem
 template <typename LocalAlg>
 void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
                      const Element<2>& element, const int start, const int end,
@@ -264,7 +266,7 @@ void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
 
 // Update the time and flux, then send the data
 void send_from_neighbor(
-    const gsl::not_null<ActionTesting::ActionRunner<LtsMetavariables<2>>*>
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<LtsMetavariables<2>>*>
         runner,
     const Element<2>& element, const int start, const int end,
     const double n_dot_f) noexcept {
@@ -317,13 +319,14 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
       {left_mortar_id, left_steps.front()},
       {right_mortar_id, right_steps.front()}};
 
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<my_component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(
           self_id,
-          ActionTesting::MockLocalAlgorithm<my_component>{db::create<
+          ActionTesting::MockDistributedObject<my_component>{db::create<
               db::AddSimpleTags<
                   TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
                   Tags::Element<2>, Tags::ElementMap<2>,
@@ -352,13 +355,15 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   const Element<2> right_element(right_id,
                                  {{Direction<2>::lower_xi(), {{self_id}, {}}}});
 
-  insert_neighbor(make_not_null(&tuples::get<LocalAlgsTag>(local_algs)),
-                  left_element, 0, 1, 0.0);
-  insert_neighbor(make_not_null(&tuples::get<LocalAlgsTag>(local_algs)),
-                  right_element, 0, 1, 0.0);
+  insert_neighbor(
+      make_not_null(&tuples::get<MockDistributedObjectsTag>(dist_objects)),
+      left_element, 0, 1, 0.0);
+  insert_neighbor(
+      make_not_null(&tuples::get<MockDistributedObjectsTag>(dist_objects)),
+      right_element, 0, 1, 0.0);
 
-  ActionTesting::ActionRunner<metavariables> runner{{NumericalFlux<2>{}},
-                                                    std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {NumericalFlux<2>{}}, std::move(dist_objects)};
 
   runner.next_action<my_component>(self_id);  // SendDataForFluxes
 

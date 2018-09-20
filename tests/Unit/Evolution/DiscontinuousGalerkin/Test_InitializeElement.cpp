@@ -117,12 +117,14 @@ struct NormalDotNumericalFluxTag {
 };
 
 template <size_t Dim, typename Metavariables>
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<Dim>,
-          tmpl::list<OptionTags::TimeStepper,
-                     OptionTags::AnalyticSolution<SystemAnalyticSolution>>,
-          tmpl::list<>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TimeStepper,
+                 OptionTags::AnalyticSolution<SystemAnalyticSolution>>;
+  using action_list = tmpl::list<>;
   using initial_databox =
       db::compute_databox_type<typename dg::Actions::InitializeElement<
           Dim>::template return_tag_list<Metavariables>>;
@@ -214,16 +216,18 @@ void test_initialize_element(
 
   const auto domain = domain_creator.create_domain();
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using my_component = component<dim, Metavariables>;
-  using LocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<my_component>;
-  typename ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(element_id, ActionTesting::MockLocalAlgorithm<my_component>{});
+  using MockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          my_component>;
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(element_id,
+               ActionTesting::MockDistributedObject<my_component>{});
 
-  ActionTesting::ActionRunner<Metavariables> runner{std::move(cache_tuple),
-                                                    std::move(local_algs)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      std::move(cache_tuple), std::move(dist_objects)};
 
   runner.template simple_action<my_component,
                                 dg::Actions::InitializeElement<dim>>(
@@ -365,18 +369,19 @@ void test_mortar_orientation() noexcept {
   const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
 
   using my_component = component<3, metavariables>;
-  using ActionRunner = ActionTesting::ActionRunner<metavariables>;
-  using LocalAlgsTag =
-      typename ActionRunner::template LocalAlgorithmsTag<my_component>;
-  typename ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using MockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          my_component>;
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(ElementIndex<3>{element_id},
-               ActionTesting::MockLocalAlgorithm<my_component>{});
+               ActionTesting::MockDistributedObject<my_component>{});
 
-  ActionTesting::ActionRunner<metavariables> runner{
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
        SystemAnalyticSolution{}},
-      std::move(local_algs)};
+      std::move(dist_objects)};
 
   runner.simple_action<my_component, dg::Actions::InitializeElement<3>>(
       element_id, extents, std::move(domain), 0., 1., 1.);
@@ -393,7 +398,7 @@ void test_mortar_orientation() noexcept {
 SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                   "[Unit][Evolution][Actions]") {
   test_initialize_element<Metavariables<1, false, false, tmpl::list<>>>(
-      ActionTesting::ActionRunner<
+      ActionTesting::MockRuntimeSystem<
           Metavariables<1, false, false, tmpl::list<>>>::CacheTuple{
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
           SystemAnalyticSolution{}},
@@ -402,7 +407,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
   test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
-      ActionTesting::ActionRunner<
+      ActionTesting::MockRuntimeSystem<
           Metavariables<2, false, false, tmpl::list<>>>::CacheTuple{
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
           SystemAnalyticSolution{}},
@@ -411,7 +416,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
-      ActionTesting::ActionRunner<
+      ActionTesting::MockRuntimeSystem<
           Metavariables<3, false, false, tmpl::list<>>>::CacheTuple{
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
           SystemAnalyticSolution{}},
@@ -424,7 +429,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                                              {{4, 5, 3}}});
 
   test_initialize_element<Metavariables<2, true, false, tmpl::list<>>>(
-      ActionTesting::ActionRunner<
+      ActionTesting::MockRuntimeSystem<
           Metavariables<2, true, false, tmpl::list<>>>::CacheTuple{
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
           SystemAnalyticSolution{}},
@@ -435,7 +440,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   // local time-stepping
   test_initialize_element<
       Metavariables<2, false, true, tmpl::list<OptionTags::StepController>>>(
-      ActionTesting::ActionRunner<Metavariables<
+      ActionTesting::MockRuntimeSystem<Metavariables<
           2, false, true, tmpl::list<OptionTags::StepController>>>::CacheTuple{
           std::make_unique<StepControllers::SplitRemaining>(),
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, true),

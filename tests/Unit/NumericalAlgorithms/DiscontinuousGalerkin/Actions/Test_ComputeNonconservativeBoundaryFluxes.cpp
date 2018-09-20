@@ -101,10 +101,13 @@ using VarsType = Variables<tmpl::list<Var, Var2>>;
 
 struct Metavariables;
 
-struct component
-    : ActionTesting::MockArrayComponent<
-          Metavariables, ElementIndex<2>, tmpl::list<>,
-          tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<2>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list =
+      tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes>;
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
@@ -150,16 +153,17 @@ auto run_action(
   using simple_tags = typename component::simple_tags;
   using compute_tags = typename component::compute_tags;
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(ElementIndex<2>{element.id()},
-               ActionTesting::MockLocalAlgorithm<component>{
+               ActionTesting::MockDistributedObject<component>{
                    db::create<simple_tags, compute_tags>(
                        element, mesh, std::move(element_map), vars, other_arg,
                        std::move(n_dot_f_storage))});
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
   runner.next_action<component>(element.id());
   // std::move call on returned value is intentional.
   return std::move(runner.algorithms<component>()

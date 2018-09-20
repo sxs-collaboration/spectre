@@ -28,10 +28,12 @@
 
 namespace {
 struct Metavariables;
-struct component
-    : ActionTesting::MockArrayComponent<Metavariables, int,
-                                        tmpl::list<OptionTags::TimeStepper>,
-                                        tmpl::list<Actions::AdvanceTime>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::TimeStepper>;
+  using action_list = tmpl::list<Actions::AdvanceTime>;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
   using initial_databox = db::compute_databox_type<simple_tags>;
@@ -48,18 +50,19 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
                           TimeId(time_step.is_positive(), 8, start, 1,
                                  start + substep_offsets[1]),
                           time_step)});
-  ActionRunner runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                      std::move(local_algs)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
+                           std::move(dist_objects)};
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
@@ -86,17 +89,18 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 }
 
 void check_abn(const Time& start, const TimeDelta& time_step) {
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags>(
                           TimeId(time_step.is_positive(), 8, start),
                           TimeId(time_step.is_positive(), 8, start + time_step),
                           time_step)});
-  ActionRunner runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
-                      std::move(local_algs)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
+                           std::move(dist_objects)};
 
   for (const auto& step_start : {start, start + time_step}) {
     auto& box = runner.algorithms<component>()

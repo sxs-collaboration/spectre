@@ -36,9 +36,12 @@ using history_tag =
     Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
 struct Metavariables;
-struct component : ActionTesting::MockArrayComponent<
-                       Metavariables, int, tmpl::list<>,
-                       tmpl::list<Actions::RecordTimeStepperData>> {
+struct component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using action_list = tmpl::list<Actions::RecordTimeStepperData>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, variables_tag,
                                         dt_variables_tag, history_tag>;
   using compute_tags = db::AddComputeTags<Tags::Time>;
@@ -62,15 +65,16 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   history_tag::type history{};
   history.insert(slab.end(), 2., 3.);
 
-  using ActionRunner = ActionTesting::ActionRunner<Metavariables>;
-  using LocalAlgsTag = ActionRunner::LocalAlgorithmsTag<component>;
-  ActionRunner::LocalAlgorithms local_algs{};
-  tuples::get<LocalAlgsTag>(local_algs)
-      .emplace(0, ActionTesting::MockLocalAlgorithm<component>{
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  using MockDistributedObjectsTag =
+      MockRuntimeSystem::MockDistributedObjectsTag<component>;
+  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  tuples::get<MockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
                           time_id, 4., 5., std::move(history))});
-  ActionRunner runner{{}, std::move(local_algs)};
+  MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   runner.next_action<component>(0);
   const auto& box = runner.algorithms<component>()
