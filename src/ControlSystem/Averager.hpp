@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/none.hpp>
 #include <boost/optional.hpp>
 #include <cstddef>
 #include <deque>
@@ -45,6 +46,15 @@ class Averager {
   /// whether to return an averaged value for the 0th derivative piece of the
   /// function.
   Averager(double avg_timescale_frac, bool average_0th_deriv_of_q) noexcept;
+
+  // Explicitly defined move constructor due to the fact that the std::deque
+  // move constructor is not marked noexcept
+  Averager(Averager&& rhs) noexcept;
+  Averager& operator=(Averager&& rhs) noexcept;
+  Averager(const Averager&) = delete;
+  Averager& operator=(const Averager&) = delete;
+  ~Averager() = default;
+
   /// Returns \f$Q\f$ and its derivatives at \f$t=\f$`time`, provided there is
   /// sufficient data. The averager is limited by the need for at least
   /// (`DerivOrder` + 1) data points in order to provide the `DerivOrder`'th
@@ -54,7 +64,7 @@ class Averager {
   /// returned 0th derivative of \f$Q\f$ is also averaged. In the case that
   /// there is insufficient data, the operator returns an
   /// unitialized `boost::optional` (`boost::none`).
-  boost::optional<std::array<DataVector, DerivOrder + 1>> operator()(
+  const boost::optional<std::array<DataVector, DerivOrder + 1>>& operator()(
       double time) const noexcept;
   /// A function that allows for resetting the averager.
   void clear() noexcept;
@@ -94,6 +104,8 @@ class Averager {
   double avg_tscale_frac_;
   bool average_0th_deriv_of_q_;
   boost::optional<std::array<DataVector, DerivOrder + 1>> averaged_values_{};
+  boost::optional<std::array<DataVector, DerivOrder + 1>> boost_none_ =
+      boost::none;
   std::deque<double> times_;
   std::deque<DataVector> raw_qs_;
   DataVector weight_k_{0.0};
