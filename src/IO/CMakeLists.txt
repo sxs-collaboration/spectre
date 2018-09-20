@@ -15,7 +15,6 @@ set(LIBRARY_SOURCES
     Observer/ArrayComponentId.cpp
     Observer/ObservationId.cpp
     Observer/TypeOfObservation.cpp
-    VolumeDataFile.cpp
 )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
