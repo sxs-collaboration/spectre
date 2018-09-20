@@ -966,17 +966,15 @@ temporal identifier, and the second is the data to be sent.
 
 Finally, there are reduction actions which are used when reducing data over an
 array. For example, you may want to know the sum of a `int` from every
-element in the array. You can do this by using Charm++'s built-in reduction
-function for summing `int`s as follows:
+element in the array. You can do this as follows:
 
 \snippet Test_AlgorithmReduction.cpp contribute_to_reduction_example
 
 This reduces over the parallel component
 `ArrayParallelComponent<Metavariables>`, reduces to the parallel component
 `SingletonParallelComponent<Metavariables>`, and calls the action
-`ProcessReducedSumOfInts` after the reduction has been performed. The
-`CkReduction::sum_int` argument tells Charm++ that you want to sum integers
-instead of some other type or operation. The reduction action is:
+`ProcessReducedSumOfInts` after the reduction has been performed. The reduction
+action is:
 
 \snippet Test_AlgorithmReduction.cpp reduce_sum_int_action
 
@@ -993,10 +991,18 @@ layer on top of Charm++.
 Custom reductions require one additional step to calling
 `contribute_to_reduction`, which is writing a reduction function to reduce the
 custom data. We provide a generic type that can be used in custom reductions,
-`Parallel::ReductionData`, which takes as template parameters the types it
-holds, similar to `std::tuple`. An example of a custom reduction function is:
-
-\snippet Test_AlgorithmReduction.cpp custom_reduce_function
+`Parallel::ReductionData`, which takes a series of `Parallel::ReductionDatum` as
+template parameters and `ReductionDatum::value_type`s as the arguments to the
+constructor. Each `ReductionDatum` takes up to four template parameters (two
+are required). The first is the type of data to reduce, and the second is a
+binary invokable that is called at each step of the reduction to combine two
+messages. The last two template parameters are used after the reduction has
+completed. The third parameter is an n-ary invokable that is called once the
+reduction is complete, whose first argument is the result of the reduction. The
+additional arguments can be any `ReductionDatum::value_type` in the
+`ReductionData` that are before the current one. The fourth template parameter
+of `ReductionDatum` is used to specify which data should be passed. It is a
+`std::index_sequence` indexing into the `ReductionData`.
 
 The action that is invoked with the result of the reduction is:
 

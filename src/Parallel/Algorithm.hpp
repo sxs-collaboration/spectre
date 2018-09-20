@@ -411,10 +411,9 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         "no sense for a reduction.");
   }
   performing_action_ = true;
-  Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
-      box_, inboxes_, *const_global_cache_,
-      static_cast<const array_index&>(array_index_), actions_list{},
-      std::add_pointer_t<ParallelComponent>{}, std::forward<Arg>(arg));
+  arg.finalize();
+  forward_tuple_to_action<Action>(std::move(arg.data()),
+                                  std::make_index_sequence<Arg::pack_size()>{});
   performing_action_ = false;
   unlock(&node_lock_);
 }
