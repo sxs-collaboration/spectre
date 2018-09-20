@@ -133,6 +133,11 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>> {
   using metavariables = typename ParallelComponent::metavariables;
   /// List of Actions in the order they will be executed
   using actions_list = tmpl::list<ActionsPack...>;
+#ifdef SPECTRE_CHARM_PROJECTIONS
+  /// List of Actions traced for profiling; at the moment this contains all
+  /// Actions
+  using trace_actions_list = actions_list;
+#endif
   /// List off all the Tags that can be received into the Inbox
   using inbox_tags_list = Parallel::get_inbox_tags<actions_list>;
   /// The type of the object used to identify the element of the array, group
@@ -538,7 +543,8 @@ constexpr bool AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
 #ifdef SPECTRE_CHARM_PROJECTIONS
     traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
                           non_action_time_start_, Parallel::wall_time());
-    double start_time = detail::start_trace_action<this_action>();
+    double start_time =
+        Parallel::start_trace_action<this_action, trace_actions_list>();
 #endif
     performing_action_ = true;
     algorithm_step_++;
@@ -571,7 +577,7 @@ constexpr bool AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
 
     performing_action_ = false;
 #ifdef SPECTRE_CHARM_PROJECTIONS
-    detail::stop_trace_action<this_action>(start_time);
+    Parallel::stop_trace_action<this_action, trace_actions_list>(start_time);
     non_action_time_start_ = Parallel::wall_time();
 #endif
     // Wrap counter if necessary
