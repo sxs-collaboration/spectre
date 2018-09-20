@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
@@ -77,10 +78,6 @@ bool limit_one_tensor(
     const tnsr::I<double, VolumeDim>& element_size,
     const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
         neighbor_sizes) noexcept;
-
-template <typename TensorType>
-using tensor_double_from = Tensor<double, typename TensorType::symmetry,
-                                  typename TensorType::index_list>;
 }  // namespace Minmod_detail
 
 namespace SlopeLimiters {
@@ -201,8 +198,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param tensors The tensors to be averaged and packaged.
   /// \param mesh The mesh on which the tensor values are measured.
   void data_for_neighbors(
-      const gsl::not_null<std::add_pointer_t<
-          Minmod_detail::tensor_double_from<db::item_type<Tags>>>>... means,
+      const gsl::not_null<std::add_pointer_t<TensorMetafunctions::swap_type<
+          double, db::item_type<Tags>>>>... means,
       const db::item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh) const
       noexcept {
     const auto wrap_compute_mean = [&mesh](const auto& mean,
@@ -243,9 +240,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///   test cases with very clean initial data.
   bool apply(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-      const std::unordered_map<Direction<VolumeDim>,
-                               Minmod_detail::tensor_double_from<
-                                   db::item_type<Tags>>>&... neighbor_tensors,
+      const std::unordered_map<
+          Direction<VolumeDim>,
+          TensorMetafunctions::swap_type<
+              double, db::item_type<Tags>>>&... neighbor_tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
       const tnsr::I<double, VolumeDim>& element_size,
