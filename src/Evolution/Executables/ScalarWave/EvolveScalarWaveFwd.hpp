@@ -3,5 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
+
 template <size_t Dim>
 struct EvolutionMetavars;

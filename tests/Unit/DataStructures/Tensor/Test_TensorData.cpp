@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.TensorData", "[Unit]") {
