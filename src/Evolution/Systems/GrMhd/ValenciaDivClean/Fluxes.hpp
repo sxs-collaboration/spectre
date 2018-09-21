@@ -4,6 +4,14 @@
 #pragma once
 
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
 
 /// \cond
 namespace gsl {
@@ -12,6 +20,11 @@ class not_null;
 }  // namespace gsl
 
 class DataVector;
+
+namespace Tags {
+template <typename>
+struct Fluxes;
+}  // namespace Tags
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
@@ -45,23 +58,45 @@ namespace ValenciaDivClean {
  * \f$p\f$ is the fluid pressure, and \f$p_m = \frac{1}{2} \left[ \left( B^n v_n
  * \right)^2 + B^n B_n / W^2 \right]\f$ is the magnetic pressure.
  */
-void fluxes(
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
-    gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
-    gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-    const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept;
+struct ComputeFluxes {
+  using return_tags =
+      tmpl::list<::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeD>,
+                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeTau>,
+                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeS<>>,
+                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeB<>>,
+                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildePhi>>;
+
+  using argument_tags =
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeTau,
+                 grmhd::ValenciaDivClean::Tags::TildeS<>,
+                 grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 grmhd::ValenciaDivClean::Tags::TildePhi, gr::Tags::Lapse<>,
+                 gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
+                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>>;
+
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
+      gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
+      gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+      const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& pressure,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+      const Scalar<DataVector>& lorentz_factor,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept;
+};
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
