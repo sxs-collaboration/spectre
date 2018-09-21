@@ -32,4 +32,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.Numeric", "[Unit][Utilities]") {
   // Check the functions at compile time
   static_assert(check_iota(), "Failed test Unit.Utilities.Numeric");
   static_assert(check_accumulate(), "Failed test Unit.Utilities.Numeric");
+
+  // Check STL wrappers
+  CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}}, 4) == 9);
+  CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}}, 4,
+                        std::multiplies<>{}) == -84);
+  CHECK(alg::accumulate(std::array<int, 3>{{1, -3, 7}},
+                        4, [](const int state, const int element) noexcept {
+                          return state * element;
+                        }) == -84);
 }

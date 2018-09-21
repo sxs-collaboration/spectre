@@ -1,6 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
+
 #pragma once
+
+#include <iterator>
+#include <numeric>
 
 #include "Utilities/Gsl.hpp"
 
@@ -33,3 +37,24 @@ constexpr T accumulate(InputIt first, InputIt last, T init) {
   return init;
 }
 }  // namespace cpp2b
+
+namespace alg {
+/// Convenience wrapper around std::accumulate, returns
+/// `std::accumulate(begin(c), end(c), init)`.
+template <class Container, class T>
+decltype(auto) accumulate(const Container& c, T init) {
+  using std::begin;
+  using std::end;
+  return std::accumulate(begin(c), end(c), std::move(init));
+}
+
+/// Convenience wrapper around std::accumulate, returns
+/// `std::accumulate(begin(c), end(c), init, f)`.
+template <class Container, class T, class BinaryFunction>
+decltype(auto) accumulate(const Container& c, T init, BinaryFunction&& f) {
+  using std::begin;
+  using std::end;
+  return std::accumulate(begin(c), end(c), std::move(init),
+                         std::forward<BinaryFunction>(f));
+}
+}  // namespace alg
