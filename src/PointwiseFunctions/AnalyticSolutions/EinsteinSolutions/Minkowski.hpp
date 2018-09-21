@@ -12,6 +12,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+// IWYU pragma: no_forward_declare Tags::deriv
+
 /// \cond
 namespace PUP {
 class er;
@@ -45,9 +47,8 @@ class Minkowski {
   ~Minkowski() = default;
 
   template <typename DataType>
-  using DerivLapse =
-      Tags::deriv<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>;
+  using DerivLapse = Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                                 Frame::Inertial>;
   template <typename DataType>
   using DerivShift =
       Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
@@ -58,8 +59,7 @@ class Minkowski {
                   tmpl::size_t<Dim>, Frame::Inertial>;
   template <typename DataType>
   using tags = tmpl::list<
-      gr::Tags::Lapse<Dim, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>>,
+      gr::Tags::Lapse<DataType>, Tags::dt<gr::Tags::Lapse<DataType>>,
       DerivLapse<DataType>, gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
       Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>,
       DerivShift<DataType>,
@@ -76,29 +76,21 @@ class Minkowski {
   }
 
   template <typename DataType>
-  tuples::TaggedTuple<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>>
-  variables(
+  tuples::TaggedTuple<gr::Tags::Lapse<DataType>> variables(
       const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>> /*meta*/)
-      const noexcept;
+      tmpl::list<gr::Tags::Lapse<DataType>> /*meta*/) const noexcept;
 
   template <typename DataType>
-  tuples::TaggedTuple<Tags::dt<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>>>
-  variables(
+  tuples::TaggedTuple<Tags::dt<gr::Tags::Lapse<DataType>>> variables(
       const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<
-          Tags::dt<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>>> /*meta*/)
-      const noexcept;
+      tmpl::list<Tags::dt<gr::Tags::Lapse<DataType>>> /*meta*/) const noexcept;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      Tags::deriv<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>>
-  variables(
-      const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<Tags::deriv<gr::Tags::Lapse<Dim, Frame::Inertial, DataType>,
-                             tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/)
-      const noexcept;
+  tuples::TaggedTuple<Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                                  Frame::Inertial>>
+  variables(const tnsr::I<DataType, Dim>& x, double t,
+            tmpl::list<Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                                   Frame::Inertial>> /*meta*/) const noexcept;
 
   template <typename DataType>
   tuples::TaggedTuple<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>
@@ -167,19 +159,17 @@ class Minkowski {
       noexcept;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial, DataType>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial,
-                                                      DataType>> /*meta*/) const
+  tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>> /*meta*/) const
       noexcept;
 
   template <typename DataType>
-  tuples::TaggedTuple<
-      Tags::dt<gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial, DataType>>>
-  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-            tmpl::list<Tags::dt<gr::Tags::SqrtDetSpatialMetric<
-                Dim, Frame::Inertial, DataType>>> /*meta*/) const noexcept;
+  tuples::TaggedTuple<Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>>
+  variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>> /*meta*/)
+      const noexcept;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT

@@ -48,7 +48,7 @@ struct ComputeDuDt {
                  Tags::deriv<Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
                  Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
                  ConstraintGamma0, ConstraintGamma1, ConstraintGamma2,
-                 GaugeH<Dim>, SpacetimeDerivGaugeH<Dim>, gr::Tags::Lapse<Dim>,
+                 GaugeH<Dim>, SpacetimeDerivGaugeH<Dim>, gr::Tags::Lapse<>,
                  gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
                  gr::Tags::InverseSpacetimeMetric<Dim>,
                  gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim>,
@@ -112,7 +112,7 @@ struct ComputeNormalDotFluxes {
  public:
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<Dim>, Pi<Dim>, Phi<Dim>,
-                 ConstraintGamma1, ConstraintGamma2, gr::Tags::Lapse<Dim>,
+                 ConstraintGamma1, ConstraintGamma2, gr::Tags::Lapse<>,
                  gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>>;
 
   static void apply(

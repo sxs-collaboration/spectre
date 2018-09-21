@@ -33,6 +33,8 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+// IWYU pragma: no_forward_declare Tags::deriv
+
 namespace {
 
 FastFlow::Status do_iteration(
@@ -69,7 +71,7 @@ FastFlow::Status do_iteration(
     const auto status_and_info = flow->iterate_horizon_finder<Frame::Inertial>(
         strahlkorper, inverse_spatial_metric,
         gr::extrinsic_curvature(
-            get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
+            get<gr::Tags::Lapse<DataVector>>(vars),
             get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
             get<EinsteinSolutions::KerrSchild::DerivShift<DataVector>>(vars),
             spatial_metric,

@@ -241,8 +241,8 @@ class KerrSchild {
   ~KerrSchild() = default;
 
   template <typename DataType>
-  using DerivLapse = Tags::deriv<gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-                                 tmpl::size_t<3>, Frame::Inertial>;
+  using DerivLapse =
+      Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
   using DerivShift = Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
                                  tmpl::size_t<3>, Frame::Inertial>;
@@ -252,8 +252,7 @@ class KerrSchild {
                   tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
   using tags = tmpl::list<
-      gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>,
+      gr::Tags::Lapse<DataType>, Tags::dt<gr::Tags::Lapse<DataType>>,
       DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
       Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
       DerivShift<DataType>,

@@ -180,8 +180,7 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   const DataType lapse_squared = 1.0 / (1.0 + 2.0 * H * square(null_vector_0));
 
   auto result = make_with_value<tuples::TaggedTuple<
-      gr::Tags::Lapse<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>,
+      gr::Tags::Lapse<DataType>, Tags::dt<gr::Tags::Lapse<DataType>>,
       DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
       Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
       DerivShift<DataType>,
@@ -189,14 +188,12 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
       Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>>>(x, 0.0);
 
-  get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) =
-      sqrt(lapse_squared);
+  get(get<gr::Tags::Lapse<DataType>>(result)) = sqrt(lapse_squared);
 
   {
-    const DataType temp =
-        -square(null_vector_0) *
-        get(get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(result)) *
-        lapse_squared;
+    const DataType temp = -square(null_vector_0) *
+                          get(get<gr::Tags::Lapse<DataType>>(result)) *
+                          lapse_squared;
     for (size_t i = 0; i < 3; ++i) {
       get<DerivLapse<DataType>>(result).get(i) = temp * deriv_H.get(i);
     }

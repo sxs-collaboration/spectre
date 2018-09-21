@@ -81,8 +81,8 @@ void verify_time_independent_einstein_solution(
   // Evaluate analytic solution
   const auto vars =
       solution.variables(x, t, typename Solution::template tags<DataVector>{});
-  const auto& lapse = get<gr::Tags::Lapse<3>>(vars);
-  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<3>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
   const auto& d_lapse =
       get<typename Solution::template DerivLapse<DataVector>>(vars);
   const auto& shift = get<gr::Tags::Shift<3>>(vars);

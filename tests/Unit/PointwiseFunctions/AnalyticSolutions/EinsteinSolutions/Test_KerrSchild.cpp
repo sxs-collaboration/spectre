@@ -5,10 +5,10 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <type_traits>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -26,6 +26,8 @@
 #include "tests/Unit/PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/VerifyEinsteinSolution.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
 
@@ -71,9 +73,8 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
 
   const auto vars =
       solution.variables(x, t, EinsteinSolutions::KerrSchild::tags<DataType>{});
-  const auto& lapse = get<gr::Tags::Lapse<3, Frame::Inertial, DataType>>(vars);
-  const auto& dt_lapse =
-      get<Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataType>>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataType>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
   const auto& d_lapse =
       get<EinsteinSolutions::KerrSchild::DerivLapse<DataType>>(vars);
   const auto& shift = get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(vars);
@@ -196,9 +197,8 @@ void test_double_vs_datavector() noexcept {
 
   const auto vars1 =
       solution.variables(x1, t, EinsteinSolutions::KerrSchild::tags<double>{});
-  const auto& lapse1 = get<gr::Tags::Lapse<3, Frame::Inertial, double>>(vars1);
-  const auto& dt_lapse1 =
-      get<Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, double>>>(vars1);
+  const auto& lapse1 = get<gr::Tags::Lapse<double>>(vars1);
+  const auto& dt_lapse1 = get<Tags::dt<gr::Tags::Lapse<double>>>(vars1);
   const auto& d_lapse1 =
       get<EinsteinSolutions::KerrSchild::DerivLapse<double>>(vars1);
   const auto& shift1 = get<gr::Tags::Shift<3, Frame::Inertial, double>>(vars1);
@@ -215,10 +215,8 @@ void test_double_vs_datavector() noexcept {
 
   const auto vars2 = solution.variables(
       x2, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
-  const auto& lapse2 =
-      get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars2);
-  const auto& dt_lapse2 =
-      get<Tags::dt<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>>(vars2);
+  const auto& lapse2 = get<gr::Tags::Lapse<DataVector>>(vars2);
+  const auto& dt_lapse2 = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars2);
   const auto& d_lapse2 =
       get<EinsteinSolutions::KerrSchild::DerivLapse<DataVector>>(vars2);
   const auto& shift2 =

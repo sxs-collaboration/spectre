@@ -32,7 +32,7 @@ struct InverseSpatialMetric : db::SimpleTag {
   using type = tnsr::II<DataType, Dim, Frame>;
   static std::string name() noexcept { return "InverseSpatialMetric"; }
 };
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType>
 struct SqrtDetSpatialMetric : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "SqrtDetSpatialMetric"; }
@@ -42,7 +42,7 @@ struct Shift : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
   static std::string name() noexcept { return "Shift"; }
 };
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType>
 struct Lapse : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "Lapse"; }
@@ -92,7 +92,7 @@ struct ExtrinsicCurvature : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
   static std::string name() noexcept { return "ExtrinsicCurvature"; }
 };
-template <size_t Dim, typename Frame, typename DataType>
+template <typename DataType>
 struct TraceExtrinsicCurvature : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "TraceExtrinsicCurvature"; }
