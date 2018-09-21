@@ -198,7 +198,7 @@ void test_primitive_from_conservative(
   tnsr::I<DataVector, 3> tilde_b(number_of_points);
   Scalar<DataVector> tilde_phi(number_of_points);
 
-  grmhd::ValenciaDivClean::conservative_from_primitive(
+  grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
       make_not_null(&tilde_d), make_not_null(&tilde_tau),
       make_not_null(&tilde_s), make_not_null(&tilde_b),
       make_not_null(&tilde_phi), expected_rest_mass_density,
