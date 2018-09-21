@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_Index.cpp
   Test_IndexIterator.cpp
   Test_LeviCivitaIterator.cpp
+  Test_ModalVector.cpp
   Test_OrientVariables.cpp
   Test_SliceIterator.cpp
   Test_SpinWeighted.cpp
