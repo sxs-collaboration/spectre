@@ -6,7 +6,15 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
 
 /// \cond
 namespace gsl {
@@ -34,23 +42,45 @@ namespace ValenciaDivClean {
  * compares several inversion methods.
  */
 template <typename PrimitiveRecoveryScheme, size_t ThermodynamicDim>
-void primitive_from_conservative(
-    gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
-    gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
-    gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    gsl::not_null<Scalar<DataVector>*> pressure,
-    gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept;
+struct PrimitiveFromConservative {
+  using return_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 hydro::Tags::DivergenceCleaningField<DataVector>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>>;
+
+  using argument_tags =
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeTau,
+                 grmhd::ValenciaDivClean::Tags::TildeS<>,
+                 grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 grmhd::ValenciaDivClean::Tags::TildePhi,
+                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
+                 gr::Tags::SqrtDetSpatialMetric<>,
+                 hydro::Tags::EquationOfState<true, ThermodynamicDim>>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
+      gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+      const Scalar<DataVector>& tilde_phi,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) noexcept;
+};
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
