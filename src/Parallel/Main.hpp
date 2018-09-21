@@ -20,6 +20,7 @@
 #include "Parallel/Exit.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
+#include "Parallel/TraceRegister.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
@@ -291,8 +292,15 @@ void Main<Metavariables>::initialize() noexcept {
         [this](auto... opts) {
           ParallelComponent::initialize(const_global_cache_proxy_,
                                         std::move(opts)...);
+
+#ifdef SPECTRE_CHARM_PROJECTIONS
+          // register the events that are traced for projections
+          using trace_actions_list = typename ParallelComponent::action_list;
+          Parallel::register_events_to_trace<trace_actions_list>();
+#endif
         });
   });
+
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));
 }
