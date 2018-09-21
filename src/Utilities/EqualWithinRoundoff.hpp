@@ -11,7 +11,7 @@
 
 /// \ingroup UtilitiesGroup
 /// Checks if two values `a` and `b` are equal within roundoff,
-/// by comparing `abs(a-b) < ( max(abs(a),abs(b)) + scale) * eps`
+/// by comparing `abs(a - b) < (max(abs(a), abs(b)) + scale) * eps`.
 constexpr SPECTRE_ALWAYS_INLINE bool equal_within_roundoff(
     const double a, const double b,
     const double eps = std::numeric_limits<double>::epsilon() * 100.0,

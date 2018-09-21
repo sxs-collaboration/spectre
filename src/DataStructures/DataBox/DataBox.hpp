@@ -1046,14 +1046,14 @@ db::DataBox<tmpl::list<Tags...>>::mutate_subitem_tags_in_box(
  * `MutateTags`. The objects corresponding to the `MutateTags` are then passed
  * to `invokable`, which is a lambda or a function object taking as many
  * arguments as there are `MutateTags` and with the arguments being of types
- * `db::item_type<MutateTags>...`. Inside the `invokable` no items can be
- * retrieved from the DataBox `box`. This is to avoid confusing subtleties with
- * order of evaluation of compute items, as well as dangling references. If an
- * `invokable` needs read access to items in `box` they should be passed as
- * additional arguments to `mutate`. Capturing them by reference in a lambda
- * does not work because of a bug in GCC 6.3 and earlier. For a function object
- * the read-only items can also be stored as const references inside the object
- * by passing `db::get<TAG>(t)` to the constructor.
+ * `gsl::not_null<db::item_type<MutateTags>*>...`. Inside the `invokable` no
+ * items can be retrieved from the DataBox `box`. This is to avoid confusing
+ * subtleties with order of evaluation of compute items, as well as dangling
+ * references. If an `invokable` needs read access to items in `box` they should
+ * be passed as additional arguments to `mutate`. Capturing them by reference in
+ * a lambda does not work because of a bug in GCC 6.3 and earlier. For a
+ * function object the read-only items can also be stored as const references
+ * inside the object by passing `db::get<TAG>(t)` to the constructor.
  *
  * \example
  * \snippet Test_DataBox.cpp databox_mutate_example
@@ -1519,7 +1519,7 @@ struct Apply<tmpl::list<Tags...>> {
  * DataBox `box`
  *
  * \details
- * `f` must either by invokable with the arguments of type
+ * `f` must either be invokable with the arguments of type
  * `db::item_type<TagsList>..., Args...` where the first pack expansion
  * is over the elements in the type list `TagsList`, or have a static
  * `apply` function that is callable with the same types.
@@ -1710,21 +1710,21 @@ constexpr bool check_mutate_apply_argument_tags(
  * additional arguments `ArgumentTags` and `args`.
  *
  * \details
- * `f` must either by invokable with the arguments of type
- * `db::item_type<MutateTags>..., db::item_type<ArgumentTags>..., Args...` where
- * the first two pack expansions are over the elements in the type lists
- * `MutateTags` and `ArgumentTags`, or have a static `apply` function  that is
+ * `f` must either be invokable with the arguments of type
+ * `gsl::not_null<db::item_type<MutateTags>*>...,
+ * db::item_type<ArgumentTags>..., Args...`
+ * where the first two pack expansions are over the elements in the type lists
+ * `MutateTags` and `ArgumentTags`, or have a static `apply` function that is
  * callable with the same types.
  *
  * \example
  * An example of using `mutate_apply` with a lambda:
- * \snippet Test_DataBox.cpp mutate_apply_example
+ * \snippet Test_DataBox.cpp mutate_apply_lambda_example
  *
  * An example of a class with a static `apply` function
- *
- * \snippet Test_DataBox.cpp mutate_apply_apply_struct_example
- * and how to use `mutate_apply` with the class
- * \snippet Test_DataBox.cpp mutate_apply_apply_example
+ * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
+ * and how to use `mutate_apply` with the above class
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example
  *
  * \see box
  * \tparam MutateTags typelist of Tags to mutate

@@ -32,8 +32,9 @@ Stylistic Items:
   [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation),
   e.g. `double* pd_blah` is bad
 * Header order:
-  1. hpp corresponding to cpp (only in cpp files) or `tests/Unit/TestingFramework.hpp` (only in tests)
-  2. Blank line (only in cpp files and tests)
+  1. (If a test:) `tests/Unit/TestingFramework.hpp`, followed by one blank line
+  2. (If a cpp file with a corresponding hpp file:) hpp corresponding to cpp,
+     followed by one blank line
   3. STL and externals (in alphabetical order)
   4. Blank line
   5. SpECTRE includes (in alphabetical order)

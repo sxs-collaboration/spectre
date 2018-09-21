@@ -41,7 +41,7 @@
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -120,9 +120,6 @@ struct System {
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
 
-template <typename Metavariables>
-using send_data_for_fluxes = dg::Actions::SendDataForFluxes<Metavariables>;
-
 template <size_t Dim, typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 template <size_t Dim, typename Tag>
@@ -131,8 +128,6 @@ using interface_compute_tag =
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
-template <typename FluxCommTypes>
-using LocalData = typename FluxCommTypes::LocalData;
 template <typename FluxCommTypes>
 using LocalMortarData = typename FluxCommTypes::LocalMortarData;
 template <typename FluxCommTypes>
@@ -196,9 +191,6 @@ struct Metavariables {
 
   using normal_dot_numerical_flux = NumericalFluxTag<Dim>;
 };
-
-template <typename Component>
-using simple_items = typename Component::simple_tags;
 
 template <typename Component>
 using compute_items = typename Component::compute_tags;
@@ -396,7 +388,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                    data.remote_fluxes.at(Direction<2>::lower_xi()),
                    data.remote_other_data.at(Direction<2>::lower_xi())));
 
-  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
       {NumericalFlux<2>{}}, std::move(dist_objects)};
 
   using initial_databox_type = db::compute_databox_type<tmpl::append<
@@ -413,12 +405,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   // Here, we just check that messages are sent to the correct places.
   // We will check the received values on the central element later.
   {
-    CHECK(runner.nonempty_inboxes<component<2, Metavariables<2>>,
-                                  fluxes_tag<flux_comm_types<2>>>() ==
-          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
+    CHECK(
+        runner
+            .nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>() ==
+        std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
     const auto check_sent_data = [&runner, &self_id ](
         const ElementId<2>& id, const Direction<2>& direction) noexcept {
-      const auto& inboxes = runner.inboxes<component<2, Metavariables<2>>>();
+      const auto& inboxes = runner.inboxes<my_component>();
       const auto& flux_inbox =
           tuples::get<fluxes_tag<flux_comm_types<2>>>(inboxes.at(id));
       CHECK(flux_inbox.size() == 1);
@@ -534,7 +527,7 @@ SPECTRE_TEST_CASE(
                         mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
                         mortar_sizes_tag<2>>;
   using initial_databox_type = db::compute_databox_type<
-      tmpl::append<simple_tags, compute_items<component<2, Metavariables<2>>>>>;
+      tmpl::append<simple_tags, compute_items<my_component>>>;
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -556,8 +549,7 @@ SPECTRE_TEST_CASE(
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(
           self_id,
-          db::create<simple_tags,
-                     compute_items<component<2, Metavariables<2>>>>(
+          db::create<simple_tags, compute_items<my_component>>(
               0, 1, mesh, element, std::move(map),
               db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
               db::item_type<other_data_tag<2>>{},
@@ -565,7 +557,7 @@ SPECTRE_TEST_CASE(
               db::item_type<mortar_next_temporal_ids_tag<2>>{},
               db::item_type<mortar_meshes_tag<2>>{},
               db::item_type<mortar_sizes_tag<2>>{}));
-  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
       {NumericalFlux<2>{}}, std::move(dist_objects)};
 
   runner.next_action<my_component>(self_id);
