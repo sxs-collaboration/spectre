@@ -6,27 +6,28 @@
 
 #pragma once
 
-#include <array>
+#include <array>                // IWYU pragma: keep
 #include <cmath>
-#include <cstddef>
-#include <initializer_list>
-#include <limits>
-#include <ostream>
-#include <type_traits>
-#include <vector>
+#include <cstddef>              // IWYU pragma: keep
+#include <initializer_list>     // IWYU pragma: keep
+#include <limits>               // IWYU pragma: keep
+#include <ostream>              // IWYU pragma: keep
+#include <type_traits>          // IWYU pragma: keep
+#include <vector>               // IWYU pragma: keep
 
-#include "ErrorHandling/Assert.hpp"
+#include "DataStructures/VectorMacros.hpp"
+#include "ErrorHandling/Assert.hpp"    // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Gsl.hpp"           // IWYU pragma: keep
+#include "Utilities/MakeWithValue.hpp" // IWYU pragma: keep
 #include "Utilities/PointerVector.hpp" // IWYU pragma: keep
-#include "Utilities/Requires.hpp"
+#include "Utilities/Requires.hpp"      // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"          // for list
 
 /// \cond HIDDEN_SYMBOLS
-namespace PUP {
-class er;
-}  // namespace PUP
+namespace PUP {       // IWYU pragma: keep
+class er;             // IWYU pragma: keep
+} // namespace PUP    // IWYU pragma: keep
 
 // clang-tidy: no using declarations in header files
 //             We want the std::abs to be used
@@ -60,6 +61,7 @@ using std::abs;  // NOLINT
 // IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
 // IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"
+// IWYU pragma: no_include "DataStructures/ModalVector.hpp"
 
 // IWYU pragma: no_forward_declare blaze::DenseVector
 // IWYU pragma: no_forward_declare blaze::UnaryMapTrait
@@ -79,7 +81,7 @@ using std::abs;  // NOLINT
  * addition to addition, subtraction, multiplication, division, there
  * are the following element-wise operations:
  *
- * - abs/fabs/magnitude
+ * - abs/fabs
  * - max
  * - min
  *
@@ -87,237 +89,30 @@ using std::abs;  // NOLINT
  * operations with a DenseVectors (holding filters) is supported.
  *
  */
-class ModalVector
-    : public PointerVector<double, blaze::unaligned, blaze::unpadded,
-                           blaze::defaultTransposeFlag, ModalVector> {
-  /// \cond HIDDEN_SYMBOLS
-  static constexpr int private_asserts() {
-    static_assert(std::is_nothrow_move_constructible<ModalVector>::value,
-                  "Missing move semantics");
-    return 0;
-  }
-  /// \endcond
- public:
-  using value_type = double;
-  using allocator_type = std::allocator<value_type>;
-  using size_type = size_t;
-  using difference_type = std::ptrdiff_t;
-  using BaseType = PointerVector<value_type, blaze::unaligned, blaze::unpadded,
-                                 blaze::defaultTransposeFlag, ModalVector>;
-  static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
+/// ModalVector class
+MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(ModalVector)
 
-  using BaseType::ElementType;
-  using TransposeType = ModalVector;
-  using CompositeType = const ModalVector&;
-
-  /// Iterators etc obtained from base class PointerVector
-  using BaseType::operator[];
-  using BaseType::begin;
-  using BaseType::cbegin;
-  using BaseType::cend;
-  using BaseType::data;
-  using BaseType::end;
-  using BaseType::size;
-
-  /// Do we need an upcast from ModalVector to PointerVector?
-  // @{
-  // Upcast to `BaseType`
-  const BaseType& operator~() const noexcept {
-    return static_cast<const BaseType&>(*this);
-  }
-  BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
-  // @}
-
-  /// Create with the given size and value.
-  ///
-  /// \param size number of values
-  /// \param value the value to initialize each element.
-  explicit
-  ModalVector(size_t size,
-              double value = std::numeric_limits<double>::signaling_NaN());
-
-  /// Create a non-owning ModalVector that points to `start`
-  ModalVector(double* start, size_t size) noexcept;
-
-  /// Create from an initializer list of doubles (must have decimal points)
-  template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>
-  ModalVector(std::initializer_list<T> list);
-
-  /// Empty ModalVector
-  ModalVector() noexcept = default;
-  /// \cond HIDDEN_SYMBOLS
-  ~ModalVector() = default;
-
-  // Initialize ModalVector with expressions involving itself
-  ModalVector(const ModalVector& rhs);
-  ModalVector(ModalVector&& rhs) noexcept;
-  ModalVector& operator=(const ModalVector& rhs);
-  ModalVector& operator=(ModalVector&& rhs) noexcept;
-
-  /// Catch DenseVector expressions into ModalVectors, only if their return
-  /// types are defined as ModalVectors
-  //
-  // This is a converting constructor. clang-tidy complains that it's not
-  // explicit, but we want it to allow conversion.
-  // clang-tidy: mark as explicit (we want conversion to ModalVector)
-  template <typename VT, bool VF>
-  ModalVector(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
-
-  template <typename VT, bool VF>
-  ModalVector& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
-  /// \endcond
-
-  ModalVector& operator=(const double& rhs) noexcept {
-    ~*this = rhs;
-    return *this;
-  }
-
-  // Using expression macro, defined in PointerVector.hpp, these lines overload
-  // assignment operators { +=, -=, *=, /= } for LHS = ModalVector and RHS =
-  // (i) ModalVector, (ii) blaze::DenseVector (to hold spectral filters), and
-  // (iii) double (i.e. the ElementType)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, ModalVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, ModalVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, ModalVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, ModalVector)
-
-  // @{
-  /// Set ModalVector to be a reference to another ModalVector object
-  void set_data_ref(gsl::not_null<ModalVector*> rhs) noexcept {
-    set_data_ref(rhs->data(), rhs->size());
-  }
-  void set_data_ref(double* start, size_t size) noexcept {
-    owned_data_ = decltype(owned_data_){};
-    (~*this).reset(start, size);
-    owning_ = false;
-  }
-  // @}
-
-  /// Returns true if the class owns the data
-  bool is_owning() const noexcept { return owning_; }
-
-  /// Serialization for Charm++
-  // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept;  // NOLINT
-
- private:
-  SPECTRE_ALWAYS_INLINE void reset_pointer_vector() noexcept {
-    reset(owned_data_.data(), owned_data_.size());
-  }
-
-  /// \cond HIDDEN_SYMBOLS
-  std::vector<value_type, allocator_type> owned_data_;
-  bool owning_{true};
-  /// \endcond
-};
-
-/// Output operator for ModalVector
-std::ostream& operator<<(std::ostream& os, const ModalVector& d);
-
-/// Equivalence operator for ModalVector
-bool operator==(const ModalVector& lhs, const ModalVector& rhs) noexcept;
-
-/// Inequivalence operator for ModalVector
-bool operator!=(const ModalVector& lhs, const ModalVector& rhs) noexcept;
+/// Declare shift and (in)equivalence operators for ModalVector with itself
+MAKE_EXPRESSION_VECMATH_OP_COMP_SELF(ModalVector)
 
 /// \cond
-// Used for comparing ModalVector to an expression
-template <typename VT, bool VF>
-bool operator==(const ModalVector& lhs,
-                const blaze::DenseVector<VT, VF>& rhs) noexcept {
-  return lhs == ModalVector(rhs);
-}
-
-template <typename VT, bool VF>
-bool operator!=(const ModalVector& lhs,
-                const blaze::DenseVector<VT, VF>& rhs) noexcept {
-  return not(lhs == rhs);
-}
-
-template <typename VT, bool VF>
-bool operator==(const blaze::DenseVector<VT, VF>& lhs,
-                const ModalVector& rhs) noexcept {
-  return ModalVector(lhs) == rhs;
-}
-
-template <typename VT, bool VF>
-bool operator!=(const blaze::DenseVector<VT, VF>& lhs,
-                const ModalVector& rhs) noexcept {
-  return not(lhs == rhs);
-}
+/// Define shift and (in)equivalence operators for ModalVector with
+/// blaze::DenseVector
+MAKE_EXPRESSION_VECMATH_OP_COMP_DV(ModalVector)
 /// \endcond
 
-// Specialize the Blaze type traits to correctly handle ModalVector
+// Specialize Blaze type traits to correctly handle ModalVector
+MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS(ModalVector)
+
+// Specialize the Blaze {Unary,Binary}Map traits to correctly handle ModalVector
 namespace blaze {
-template <>
-struct IsVector<ModalVector> : std::true_type {};
-
-template <>
-struct TransposeFlag<ModalVector> : BoolConstant<
-                ModalVector::transpose_flag> {};
-
-template <>
-struct AddTrait<ModalVector, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct AddTrait<ModalVector, double> {
-  using Type = ModalVector;
-};
-
-template <>
-struct AddTrait<double, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct SubTrait<ModalVector, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct SubTrait<ModalVector, double> {
-  using Type = ModalVector;
-};
-
-template <>
-struct SubTrait<double, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct MultTrait<ModalVector, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct MultTrait<ModalVector, double> {
-  using Type = ModalVector;
-};
-
-template <>
-struct MultTrait<double, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct DivTrait<ModalVector, ModalVector> {
-  using Type = ModalVector;
-};
-
-template <>
-struct DivTrait<ModalVector, double> {
-  using Type = ModalVector;
-};
-
-// Forbid math operations in this specialization of UnaryMap traits for
-// ModalVector that are unlikely to be used on spectral coefficients
+using ::ModalVector; // for ModalVector::ElementType
 template <typename Operator>
 struct UnaryMapTrait<ModalVector, Operator> {
-  static_assert(not tmpl::list_contains_v<tmpl::list<//blaze::Max, blaze::Min,
-                //blaze::Sqrt,
-                blaze::Cbrt,
+  // Forbid math operations in this specialization of UnaryMap traits for
+  // ModalVector that are inapplicable to spectral coefficients
+  static_assert(not tmpl::list_contains_v<tmpl::list<
+                blaze::Sqrt, blaze::Cbrt,
                 blaze::InvSqrt, blaze::InvCbrt,
                 blaze::Acos, blaze::Acosh, blaze::Cos, blaze::Cosh,
                 blaze::Asin, blaze::Asinh, blaze::Sin, blaze::Sinh,
@@ -328,142 +123,48 @@ struct UnaryMapTrait<ModalVector, Operator> {
                 blaze::Erf, blaze::Erfc, blaze::StepFunction
                 >, Operator>,
                 "This operation is not permitted on a ModalVector."
-                "Only unary operation permitted are: abs, fabs, sqrt.");
+                "Only unary operation permitted are: max, min, abs, fabs.");
+  // Selectively allow unary operations for spectral coefficients
+  static_assert(tmpl::list_contains_v<tmpl::list<
+                blaze::Abs,
+                blaze::Max, blaze::Min,
+                // Following 3 reqd. by operator(+,+=), (-,-=), (-) w/doubles
+                blaze::AddScalar<ModalVector::ElementType>,
+                blaze::SubScalarRhs<ModalVector::ElementType>,
+                blaze::SubScalarLhs<ModalVector::ElementType>
+                >, Operator>,
+                "Only unary operation permitted on a ModalVector are:"
+                " max, min, abs, fabs.");
   using Type = ModalVector;
 };
 
-// Forbid math operations in this specialization of BinaryMap traits for
-// ModalVector that are unlikely to be used on spectral coefficients
+// Specialize Blaze UnaryMap traits to handle ModalVector
 template <typename Operator>
 struct BinaryMapTrait<ModalVector, ModalVector, Operator> {
-  static_assert(not tmpl::list_contains_v<tmpl::list<blaze::Max, blaze::Min
+  // Forbid math operations in this specialization of BinaryMap traits for
+  // ModalVector that are unlikely to be used on spectral coefficients
+  static_assert(not tmpl::list_contains_v<tmpl::list<
+                blaze::Max, blaze::Min
                 >, Operator>,
-                "This operation is not permitted on a ModalVector."
-                "Only unary operation are permitted: abs, fabs, sqrt.");
+                "This binary operation is not permitted on a ModalVector.");
   using Type = ModalVector;
 };
-
 }  // namespace blaze
+
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const ModalVector& t) noexcept {
   return abs(~t);
 }
 
-SPECTRE_ALWAYS_INLINE decltype(auto) abs(const ModalVector& t) noexcept {
-  return abs(~t);
-}
 
-template <typename T, size_t Dim>
-std::array<ModalVector, Dim> operator+(
-    const std::array<T, Dim>& lhs,
-    const std::array<ModalVector, Dim>& rhs) noexcept {
-  std::array<ModalVector, Dim> result;
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
-  }
-  return result;
-}
-template <typename U, size_t Dim>
-std::array<ModalVector, Dim> operator+(
-    const std::array<ModalVector, Dim>& lhs,
-    const std::array<U, Dim>& rhs) noexcept {
-  return rhs + lhs;
-}
-template <size_t Dim>
-std::array<ModalVector, Dim> operator+(
-    const std::array<ModalVector, Dim>& lhs,
-    const std::array<ModalVector, Dim>& rhs) noexcept {
-  std::array<ModalVector, Dim> result;
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(result, i) = gsl::at(lhs, i) + gsl::at(rhs, i);
-  }
-  return result;
-}
-template <size_t Dim>
-std::array<ModalVector, Dim>& operator+=(
-    std::array<ModalVector, Dim>& lhs,
-    const std::array<ModalVector, Dim>& rhs) noexcept {
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(lhs, i) += gsl::at(rhs, i);
-  }
-  return lhs;
-}
-
-template <typename T, size_t Dim>
-std::array<ModalVector, Dim> operator-(
-    const std::array<T, Dim>& lhs,
-    const std::array<ModalVector, Dim>& rhs) noexcept {
-  std::array<ModalVector, Dim> result;
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
-  }
-  return result;
-}
-template <typename U, size_t Dim>
-std::array<ModalVector, Dim> operator-(
-    const std::array<ModalVector, Dim>& lhs,
-    const std::array<U, Dim>& rhs) noexcept {
-  std::array<ModalVector, Dim> result;
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
-  }
-  return result;
-}
-template <size_t Dim>
-std::array<ModalVector, Dim> operator-(
-    const std::array<ModalVector, Dim>& lhs,
-    const std::array<ModalVector, Dim>& rhs) noexcept {
-  std::array<ModalVector, Dim> result;
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(result, i) = gsl::at(lhs, i) - gsl::at(rhs, i);
-  }
-  return result;
-}
-template <size_t Dim>
-std::array<ModalVector, Dim>& operator-=(
-    std::array<ModalVector, Dim>& lhs,
-    const std::array<ModalVector, Dim>& rhs) noexcept {
-  for (size_t i = 0; i < Dim; i++) {
-    gsl::at(lhs, i) -= gsl::at(rhs, i);
-  }
-  return lhs;
-}
+/// Define +, +=, -, -= operations between std::array's of ModalVectors
+MAKE_EXPRESSION_VECMATH_OP_ADD_ARRAYS_OF_VEC(ModalVector)
+MAKE_EXPRESSION_VECMATH_OP_SUB_ARRAYS_OF_VEC(ModalVector)
 
 /// \cond HIDDEN_SYMBOLS
-template <typename VT, bool VF>
-ModalVector::ModalVector(const blaze::DenseVector<VT, VF>& expression) noexcept
-    : owned_data_((~expression).size()) {
-  static_assert(cpp17::is_same_v<typename VT::ResultType, ModalVector>,
-                "You are attempting to assign the result of an expression that "
-                "is not a ModalVector to a ModalVector.");
-  reset_pointer_vector();
-  ~*this = expression;
-}
-
-template <typename VT, bool VF>
-ModalVector& ModalVector::operator=(
-    const blaze::DenseVector<VT, VF>& expression) noexcept {
-  static_assert(cpp17::is_same_v<typename VT::ResultType, ModalVector>,
-                "You are attempting to assign the result of an expression that "
-                "is not a ModalVector to a ModalVector.");
-  if (owning_ and (~expression).size() != size()) {
-    owned_data_.resize((~expression).size());
-    reset_pointer_vector();
-  } else if (not owning_) {
-    ASSERT((~expression).size() == size(), "Must copy into same size");
-  }
-  ~*this = expression;
-  return *this;
-}
+/// Forbid assignment of blaze::DenseVector<VT,VF>'s to ModalVector, if its
+/// result type VT::ResultType is not ModalVector
+MAKE_EXPRESSION_VEC_OP_ASSIGNMENT_RESTRICT_TYPE(ModalVector)
 /// \endcond
 
-namespace MakeWithValueImpls {
-/// \brief Returns a ModalVector the same size as `input`, with each element
-/// equal to `value`.
-template <>
-SPECTRE_ALWAYS_INLINE ModalVector
-MakeWithValueImpl<ModalVector, ModalVector>::apply(const ModalVector& input,
-                                                 const double value) {
-  return ModalVector(input.size(), value);
-}
-}  // namespace MakeWithValueImpls
+MAKE_EXPRESSION_VEC_OP_MAKE_WITH_VALUE(ModalVector)

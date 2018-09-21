@@ -5,7 +5,7 @@
 
 #include <algorithm>                         // for move
 #include <array>                             // for array, operator==
-#include <cmath>                             // for abs
+//~ #include <cmath>                             // for abs
 #include <cstddef>                           // for size_t
 #include <functional>                        // for std::reference_wrapper
 #include <numeric>                           // for iota
@@ -307,14 +307,14 @@ void test_ModalVector_math() noexcept {
 
   check_vectors(ModalVector(num_pts, -1.0 / 9.0),
                 -one / wrap<WrapRightOp>(nine));
-  check_vectors(ModalVector(num_pts, -8.0 / 9.0),
-                -(wrap<WrapLeftOp>(nine) - wrap<WrapRightOp>(one)) /
-                    wrap<WrapLeftOp>(nine));
+  //~ check_vectors(ModalVector(num_pts, -8.0 / 9.0),
+                //~ -(wrap<WrapLeftOp>(nine) - wrap<WrapRightOp>(one)) /
+                    //~ wrap<WrapLeftOp>(nine));
   check_vectors(ModalVector(num_pts, 18.0),
                 (wrap<WrapLeftOp>(one) / 0.5) * wrap<WrapRightOp>(nine));
-  check_vectors(ModalVector(num_pts, 1.0), 9.0 / wrap<WrapRightOp>(nine));
-  check_vectors(ModalVector(num_pts, 1.0),
-                (wrap<WrapLeftOp>(one) * 9.0) / wrap<WrapRightOp>(nine));
+  //~ check_vectors(ModalVector(num_pts, 1.0), 9.0 / wrap<WrapRightOp>(nine));
+  //~ check_vectors(ModalVector(num_pts, 1.0),
+                //~ (wrap<WrapLeftOp>(one) * 9.0) / wrap<WrapRightOp>(nine));
 
   check_vectors(ModalVector(num_pts, 81.0),
                 wrap<WrapLeftOp>(nine) * wrap<WrapRightOp>(nine));
@@ -329,9 +329,9 @@ void test_ModalVector_math() noexcept {
   check_vectors(ModalVector(num_pts, 1.0), wrap<WrapLeftOp>(nine) / 9.0);
   check_vectors(ModalVector(num_pts, 1.0),
                 wrap<WrapLeftOp>(nine) / (wrap<WrapRightOp>(one) * 9.0));
-  check_vectors(ModalVector(num_pts, 9.0),
-                (wrap<WrapLeftOp>(one) * wrap<WrapLeftOp>(nine)) /
-                    wrap<WrapRightOp>(one));
+  //~ check_vectors(ModalVector(num_pts, 9.0),
+                //~ (wrap<WrapLeftOp>(one) * wrap<WrapLeftOp>(nine)) /
+                    //~ wrap<WrapRightOp>(one));
 
   CHECK(-14 == min(wrap<WrapLeftOp>(val)));
   CHECK(12 == max(wrap<WrapLeftOp>(val)));
@@ -339,8 +339,6 @@ void test_ModalVector_math() noexcept {
                 abs(wrap<WrapLeftOp>(val)));
   check_vectors(ModalVector{1., 2., 3., 4., 8., 12., 14.},
                 fabs(wrap<WrapLeftOp>(val)));
-
-  check_vectors(sqrt(wrap<WrapLeftOp>(nine)), ModalVector(num_pts, 3.0));
 
   ModalVector dummy(wrap<WrapLeftOp>(nine) * wrap<WrapLeftOp>(nine) * 1.0);
   check_vectors(ModalVector(num_pts, 81.0), dummy);
@@ -418,12 +416,8 @@ void test_ModalVector_math() noexcept {
   check_vectors(ModalVector(num_pts, 1.0 / 3.0), test_assignment);
 
   // Test assignment where the RHS is an expression that contains the LHS
-  ModalVector x(num_pts, 4.);
-  x += sqrt(wrap<WrapLeftOp>(x));
-  check_vectors(ModalVector(num_pts, 6.0), x);
-  x -= sqrt(wrap<WrapLeftOp>(x) - 2.0);
-  check_vectors(ModalVector(num_pts, 4.0), x);
-  x = sqrt(wrap<WrapLeftOp>(x));
+  ModalVector x(num_pts, -2.);
+  x = abs(wrap<WrapLeftOp>(x));
   check_vectors(ModalVector(num_pts, 2.0), x);
   x *= wrap<WrapLeftOp>(x);
   check_vectors(ModalVector(num_pts, 4.0), x);
@@ -432,11 +426,11 @@ void test_ModalVector_math() noexcept {
 
   // Test composition of constant expressions with ModalVector math member
   // functions
-  x = ModalVector(num_pts, 2.);
-  check_vectors(ModalVector(num_pts, 1.4142135623730951),
-                sqrt(abs(wrap<WrapLeftOp>(x))));
+  x = ModalVector(num_pts, -2.);
   check_vectors(ModalVector(num_pts, 2.),
-                sqrt(wrap<WrapLeftOp>(x) * wrap<WrapRightOp>(x)));
+                abs(wrap<WrapLeftOp>(x)));
+  check_vectors(ModalVector(num_pts, 4.),
+                fabs(wrap<WrapLeftOp>(x) * wrap<WrapRightOp>(x)));
 }
 
 void test_ModalVector_array_math() noexcept {
@@ -490,15 +484,6 @@ void test_ModalVector_array_math() noexcept {
   const ModalVector expected_d1{2.5, 3.4};
   const auto magnitude_d1 = magnitude(d1);
   CHECK_ITERABLE_APPROX(expected_d1, magnitude_d1);
-  const std::array<ModalVector, 2> d2{{ModalVector(2, 3.), ModalVector(2, 4.)}};
-  const ModalVector expected_d2(2, 5.);
-  const auto magnitude_d2 = magnitude(d2);
-  CHECK_ITERABLE_APPROX(expected_d2, magnitude_d2);
-  const std::array<ModalVector, 3> d3{
-      {ModalVector(2, 3.), ModalVector(2, -4.), ModalVector(2, 12.)}};
-  const ModalVector expected_d3(2, 13.);
-  const auto magnitude_d3 = magnitude(d3);
-  CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
 }
 }  // namespace
 
