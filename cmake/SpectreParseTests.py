@@ -24,6 +24,7 @@ allowed_tags = [
                 "H5",
                 "Hydro",
                 "IO",
+                "Informer",
                 "LinearAlgebra",
                 "LinearOperators",
                 "LinearSolver",
