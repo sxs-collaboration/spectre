@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Observers/Test_ObservationId.cpp
   Observers/Test_TypeOfObservation.cpp
   Test_H5.cpp
+  Test_VolumeData.cpp
   )
 
 add_test_library(

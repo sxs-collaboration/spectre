@@ -53,6 +53,8 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
     dataset_id_ = H5Dopen2(location, name_.c_str(), h5::h5p_default());
     CHECK_H5(dataset_id_, "Failed to open dataset");
     {
+      // We treat this as an internal version for now. We'll need to deal with
+      // proper versioning later.
       const Version open_version(true, detail::OpenGroup{}, dataset_id_,
                                  "version");
       version_ = open_version.get_version();
@@ -70,6 +72,7 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
     }
     CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
     legend_ = read_rank1_attribute<std::string>(dataset_id_, "Legend"s);
+    size_[1] = legend_.size();
   } else {  // file does not exist
     dataset_id_ = h5::detail::create_extensible_dataset(
         location, name_, size_, std::array<hsize_t, 2>{{4, legend_.size()}},

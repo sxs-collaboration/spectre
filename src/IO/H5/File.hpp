@@ -129,6 +129,13 @@ class H5File {
   ObjectType& insert(const std::string& path, Args&&... args);
 
   /*!
+   * \brief Inserts an object like `insert` if it does not exist, returns the
+   * object if it does.
+   */
+  template <typename ObjectType, typename... Args>
+  ObjectType& try_insert(const std::string& path, Args&&... args) noexcept;
+
+  /*!
    * \effects Closes the current object, if there is none then has no effect
    */
   void close_current_object() const noexcept { current_object_ = nullptr; }
@@ -232,6 +239,24 @@ ObjectType& H5File<Access_t>::insert(const std::string& path,
         << path);
   }
 
+  hid_t group_id = std::get<1>(exists_group_name).id();
+  return convert_to_derived<ObjectType>(
+      current_object_ = std::make_unique<ObjectType>(
+          std::get<0>(exists_group_name),
+          std::move(std::get<1>(exists_group_name)), group_id,
+          std::move(std::get<2>(exists_group_name)),
+          std::forward<Args>(args)...));
+}
+
+template <AccessType Access_t>
+template <typename ObjectType, typename... Args>
+ObjectType& H5File<Access_t>::try_insert(const std::string& path,
+                                         Args&&... args) noexcept {
+  static_assert(AccessType::ReadWrite == Access_t,
+                "Can only insert into ReadWrite access H5 files.");
+  current_object_ = nullptr;
+  // C++17: structured bindings
+  auto exists_group_name = check_if_object_exists<ObjectType>(path);
   hid_t group_id = std::get<1>(exists_group_name).id();
   return convert_to_derived<ObjectType>(
       current_object_ = std::make_unique<ObjectType>(

@@ -11,10 +11,10 @@ set(LIBRARY_SOURCES
     H5/Helpers.cpp
     H5/OpenGroup.cpp
     H5/Version.cpp
+    H5/VolumeData.cpp
     Observer/ArrayComponentId.cpp
     Observer/ObservationId.cpp
     Observer/TypeOfObservation.cpp
-    VolumeDataFile.cpp
 )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

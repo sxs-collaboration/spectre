@@ -61,5 +61,17 @@ struct ReductionDataLock : db::SimpleTag {
   static std::string name() noexcept { return "ReductionDataLock"; }
   using type = CmiNodeLock;
 };
+
+/// Node lock used when needing to lock the H5 file on disk.
+struct VolumeFileLock : db::SimpleTag {
+  static std::string name() noexcept { return "VolumeFileLock"; }
+  using type = CmiNodeLock;
+};
+
+/// Node lock used when needing to lock the H5 file on disk.
+struct ReductionFileLock : db::SimpleTag {
+  static std::string name() noexcept { return "ReductionFileLock"; }
+  using type = CmiNodeLock;
+};
 }  // namespace Tags
 }  // namespace observers
