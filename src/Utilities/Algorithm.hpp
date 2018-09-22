@@ -225,4 +225,24 @@ decltype(auto) for_each(const Container& c, UnaryFunction&& f) {
   using std::end;
   return std::for_each(begin(c), end(c), std::forward<UnaryFunction>(f));
 }
+
+/// Convenience wrapper around std::equal, assumes containers `lhs` has at least
+/// as many elements as `rhs`.
+template <class Container, class Container2>
+decltype(auto) equal(const Container& lhs, const Container2& rhs) {
+  using std::begin;
+  using std::end;
+  return std::equal(begin(lhs), end(lhs), begin(rhs));
+}
+
+/// Convenience wrapper around std::equal, assumes containers `lhs` has at least
+/// as many elements as `rhs`.
+template <class Container, class Container2, class BinaryPredicate>
+decltype(auto) equal(const Container& lhs, const Container2& rhs,
+                     BinaryPredicate&& p) {
+  using std::begin;
+  using std::end;
+  return std::equal(begin(lhs), end(lhs), begin(rhs),
+                    std::forward<BinaryPredicate>(p));
+}
 }  // namespace alg

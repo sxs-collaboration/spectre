@@ -122,4 +122,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
                   }
                 });
   CHECK(count == 2);
+
+  // Test alg::equal
+  CHECK(alg::equal(std::vector<int>{1, -7, 8, 9},
+                   std::array<int, 4>{{1, -7, 8, 9}}));
+  CHECK_FALSE(alg::equal(std::vector<int>{1, 7, 8, 9},
+                         std::array<int, 4>{{1, -7, 8, 9}}));
+
+  CHECK(alg::equal(
+      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, 7, -8, -9}},
+      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
+  CHECK_FALSE(alg::equal(
+      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, -7, -8, -9}},
+      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
 }
