@@ -8,6 +8,8 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to hydrodynamic systems.
@@ -25,7 +27,7 @@ struct AlfvenSpeedSquared : db::SimpleTag {
 /// The magnetic field \f$b^\mu = u_\nu F^{\mu \nu}\f$ measured by an observer
 /// comoving with the fluid with 4-velocity \f$u_\nu\f$ where \f$F^{\mu \nu}\f$
 /// is the Faraday tensor.
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr>
 struct ComovingMagneticField : db::SimpleTag {
   using type = tnsr::A<DataType, Dim, Fr>;
   static std::string name() noexcept {
@@ -40,6 +42,14 @@ struct DivergenceCleaningField : db::SimpleTag {
   static std::string name() noexcept { return "DivergenceCleaningField"; }
 };
 
+/// The equation of state
+template <bool IsRelativistic, size_t ThermodynamicDim>
+struct EquationOfState : db::SimpleTag {
+  using type = std::unique_ptr<
+      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
+  static std::string name() noexcept { return "EquationOfState"; }
+};
+
 /// The Lorentz factor \f$W\f$.
 template <typename DataType>
 struct LorentzFactor : db::SimpleTag {
@@ -50,7 +60,7 @@ struct LorentzFactor : db::SimpleTag {
 /// The magnetic field \f$B^i = n_\mu F^{i \mu}\f$ measured by an Eulerian
 /// observer, where \f$n_\mu\f$ is the normal to the spatial hypersurface and
 /// \f$F^{\mu \nu}\f$ is the Faraday tensor.
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr>
 struct MagneticField : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
   static std::string name() noexcept {
@@ -87,7 +97,7 @@ struct SoundSpeedSquared : db::SimpleTag {
 };
 
 /// The spatial velocity \f$v^i\f$.
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr>
 struct SpatialVelocity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
   static std::string name() noexcept {
@@ -96,7 +106,7 @@ struct SpatialVelocity : db::SimpleTag {
 };
 
 /// The spatial velocity one-form \f$v_i\f$.
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr>
 struct SpatialVelocityOneForm : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Fr>;
   static std::string name() noexcept {

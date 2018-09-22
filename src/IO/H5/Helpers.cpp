@@ -407,7 +407,7 @@ template Index<3> read_extents<3>(const hid_t group_id,
   template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>( \
       const hid_t group_id, const std::string& name) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, uint32_t, uint64_t, int))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, unsigned int, unsigned long, int))
 
 #undef INSTANTIATE
 #undef TYPE

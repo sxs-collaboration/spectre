@@ -4,13 +4,23 @@
 #pragma once
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
 
+// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
+
+/// \cond
 namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
 
 class DataVector;
+/// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -48,21 +58,40 @@ namespace ValenciaDivClean {
  *  W^2 \left[ \rho \left( \epsilon + v^2
  * \frac{W}{W + 1} \right) + p v^2 \right] .\f]
  */
-void conservative_from_primitive(
-    gsl::not_null<Scalar<DataVector>*> tilde_d,
-    gsl::not_null<Scalar<DataVector>*> tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
-    gsl::not_null<Scalar<DataVector>*> tilde_phi,
-    const Scalar<DataVector>& rest_mass_density,
-    const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
-    const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-    const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const Scalar<DataVector>& divergence_cleaning_field) noexcept;
+struct ConservativeFromPrimitive {
+  using return_tags = tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                                 grmhd::ValenciaDivClean::Tags::TildeTau,
+                                 grmhd::ValenciaDivClean::Tags::TildeS<>,
+                                 grmhd::ValenciaDivClean::Tags::TildeB<>,
+                                 grmhd::ValenciaDivClean::Tags::TildePhi>;
+
+  using argument_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
+                 hydro::Tags::DivergenceCleaningField<DataVector>>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> tilde_d,
+      gsl::not_null<Scalar<DataVector>*> tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
+      gsl::not_null<Scalar<DataVector>*> tilde_phi,
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& specific_internal_energy,
+      const Scalar<DataVector>& specific_enthalpy,
+      const Scalar<DataVector>& pressure,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+      const Scalar<DataVector>& lorentz_factor,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const Scalar<DataVector>& divergence_cleaning_field) noexcept;
+};
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

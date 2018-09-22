@@ -32,6 +32,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
 
+// IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -84,7 +85,7 @@ void test_expansion(const Solution& solution,
   const auto residual = StrahlkorperGr::expansion(
       grad_unit_normal_one_form, inverse_surface_metric,
       gr::extrinsic_curvature(
-          get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
+          get<gr::Tags::Lapse<DataVector>>(vars),
           get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
           get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                           tmpl::size_t<3>, Frame::Inertial>>(vars),
@@ -325,7 +326,7 @@ void test_spin_function(const Solution& solution,
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
   const auto& extrinsic_curvature = gr::extrinsic_curvature(
-      get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
+      get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars),
@@ -398,7 +399,7 @@ void test_dimensionful_spin_magnitude(
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
   const auto& extrinsic_curvature = gr::extrinsic_curvature(
-      get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
+      get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars),
@@ -483,7 +484,7 @@ void test_spin_vector(
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
   const auto& extrinsic_curvature = gr::extrinsic_curvature(
-      get<gr::Tags::Lapse<3, Frame::Inertial, DataVector>>(vars),
+      get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars),

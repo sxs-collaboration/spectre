@@ -198,7 +198,7 @@ void test_primitive_from_conservative(
   tnsr::I<DataVector, 3> tilde_b(number_of_points);
   Scalar<DataVector> tilde_phi(number_of_points);
 
-  grmhd::ValenciaDivClean::conservative_from_primitive(
+  grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
       make_not_null(&tilde_d), make_not_null(&tilde_tau),
       make_not_null(&tilde_s), make_not_null(&tilde_b),
       make_not_null(&tilde_phi), expected_rest_mass_density,
@@ -215,15 +215,19 @@ void test_primitive_from_conservative(
   Scalar<DataVector> lorentz_factor(number_of_points);
   Scalar<DataVector> pressure(number_of_points);
   Scalar<DataVector> specific_enthalpy(number_of_points);
-  grmhd::ValenciaDivClean::primitive_from_conservative<PrimitiveRecoveryScheme,
-                                                       ThermodynamicDim>(
-      make_not_null(&rest_mass_density),
-      make_not_null(&specific_internal_energy),
-      make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
-      make_not_null(&divergence_cleaning_field), make_not_null(&lorentz_factor),
-      make_not_null(&pressure), make_not_null(&specific_enthalpy), tilde_d,
-      tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_metric,
-      inv_spatial_metric, sqrt_det_spatial_metric, equation_of_state);
+  grmhd::ValenciaDivClean::PrimitiveFromConservative<
+      PrimitiveRecoveryScheme,
+      ThermodynamicDim>::apply(make_not_null(&rest_mass_density),
+                               make_not_null(&specific_internal_energy),
+                               make_not_null(&spatial_velocity),
+                               make_not_null(&magnetic_field),
+                               make_not_null(&divergence_cleaning_field),
+                               make_not_null(&lorentz_factor),
+                               make_not_null(&pressure),
+                               make_not_null(&specific_enthalpy), tilde_d,
+                               tilde_tau, tilde_s, tilde_b, tilde_phi,
+                               spatial_metric, inv_spatial_metric,
+                               sqrt_det_spatial_metric, equation_of_state);
 
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e7);

@@ -17,6 +17,8 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+// IWYU pragma: no_forward_declare Tags::deriv
+
 namespace {
 template <size_t Dim, typename T>
 void test_minkowski(const T& value) {
@@ -28,19 +30,16 @@ void test_minkowski(const T& value) {
   const auto one = make_with_value<T>(value, 1.);
   const auto zero = make_with_value<T>(value, 0.);
 
-  const auto lapse =
-      get<gr::Tags::Lapse<Dim, Frame::Inertial, T>>(minkowski.variables(
-          x, t, tmpl::list<gr::Tags::Lapse<Dim, Frame::Inertial, T>>{}));
-  const auto dt_lapse = get<Tags::dt<gr::Tags::Lapse<Dim, Frame::Inertial, T>>>(
-      minkowski.variables(
-          x, t,
-          tmpl::list<Tags::dt<gr::Tags::Lapse<Dim, Frame::Inertial, T>>>{}));
-  const auto d_lapse = get<Tags::deriv<gr::Tags::Lapse<Dim, Frame::Inertial, T>,
-                                       tmpl::size_t<Dim>, Frame::Inertial>>(
-      minkowski.variables(
-          x, t,
-          tmpl::list<Tags::deriv<gr::Tags::Lapse<Dim, Frame::Inertial, T>,
-                                 tmpl::size_t<Dim>, Frame::Inertial>>{}));
+  const auto lapse = get<gr::Tags::Lapse<T>>(
+      minkowski.variables(x, t, tmpl::list<gr::Tags::Lapse<T>>{}));
+  const auto dt_lapse = get<Tags::dt<gr::Tags::Lapse<T>>>(
+      minkowski.variables(x, t, tmpl::list<Tags::dt<gr::Tags::Lapse<T>>>{}));
+  const auto d_lapse =
+      get<Tags::deriv<gr::Tags::Lapse<T>, tmpl::size_t<Dim>, Frame::Inertial>>(
+          minkowski.variables(
+              x, t,
+              tmpl::list<Tags::deriv<gr::Tags::Lapse<T>, tmpl::size_t<Dim>,
+                                     Frame::Inertial>>{}));
   const auto shift =
       get<gr::Tags::Shift<Dim, Frame::Inertial, T>>(minkowski.variables(
           x, t, tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, T>>{}));
@@ -83,18 +82,11 @@ void test_minkowski(const T& value) {
       minkowski.variables(
           x, t,
           tmpl::list<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, T>>{}));
-  const auto det_g =
-      get<gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial, T>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<
-                  gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial, T>>{}));
+  const auto det_g = get<gr::Tags::SqrtDetSpatialMetric<T>>(minkowski.variables(
+      x, t, tmpl::list<gr::Tags::SqrtDetSpatialMetric<T>>{}));
   const auto dt_det_g =
-      get<Tags::dt<gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial, T>>>(
-          minkowski.variables(
-              x, t,
-              tmpl::list<Tags::dt<
-                  gr::Tags::SqrtDetSpatialMetric<Dim, Frame::Inertial, T>>>{}));
+      get<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>(minkowski.variables(
+          x, t, tmpl::list<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>{}));
 
   CHECK(lapse.get() == one);
   CHECK(dt_lapse.get() == zero);

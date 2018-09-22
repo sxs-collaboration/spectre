@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 
 class DataVector;
 
@@ -30,14 +31,14 @@ struct TildeTau : db::SimpleTag {
 };
 
 /// The densitized momentum density \f${\tilde S_i}\f$
-template <typename Fr = Frame::Inertial>
+template <typename Fr>
 struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
   static std::string name() noexcept { return Frame::prefix<Fr>() + "TildeS"; }
 };
 
 /// The densitized magnetic field \f${\tilde B^i}\f$
-template <typename Fr = Frame::Inertial>
+template <typename Fr>
 struct TildeB : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Fr>;
   static std::string name() noexcept { return Frame::prefix<Fr>() + "TildeB"; }
