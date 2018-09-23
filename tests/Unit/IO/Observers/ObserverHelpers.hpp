@@ -30,7 +30,8 @@ struct observer_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<observers::OptionTags::VolumeFileName>;
   using action_list = tmpl::list<>;
   using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags = observers::Actions::Initialize::simple_tags;

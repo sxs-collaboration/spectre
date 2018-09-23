@@ -14,8 +14,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   CHECK(ReductionArrayComponentIds::name() == "ReductionArrayComponentIds");
   CHECK(VolumeArrayComponentIds::name() == "VolumeArrayComponentIds");
   CHECK(TensorData::name() == "TensorData");
-  CHECK(VolumeDataLock::name() == "VolumeDataLock");
-  CHECK(ReductionDataLock::name() == "ReductionDataLock");
+  CHECK(VolumeObserversContributed::name() == "VolumeObserversContributed");
+  CHECK(VolumeFileLock::name() == "VolumeFileLock");
+  CHECK(ReductionFileLock::name() == "ReductionFileLock");
 }
 }  // namespace Tags
 }  // namespace observers

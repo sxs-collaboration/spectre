@@ -7,6 +7,7 @@
 #include "AlgorithmNodegroup.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 
@@ -23,7 +24,7 @@ namespace observers {
 template <class Metavariables>
 struct Observer {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::VolumeFileName>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
 
@@ -53,7 +54,7 @@ struct Observer {
 template <class Metavariables>
 struct ObserverWriter {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list = tmpl::list<OptionTags::VolumeFileName>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
 

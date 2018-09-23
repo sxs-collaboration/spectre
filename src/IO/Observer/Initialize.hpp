@@ -48,8 +48,8 @@ struct Initialize {
  */
 struct InitializeWriter {
   using simple_tags =
-      db::AddSimpleTags<Tags::TensorData, Tags::ReductionFileLock,
-                        Tags::VolumeFileLock>;
+      db::AddSimpleTags<Tags::TensorData, Tags::VolumeObserversContributed,
+                        Tags::ReductionFileLock, Tags::VolumeFileLock>;
   using compute_tags = db::AddComputeTags<>;
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
@@ -63,8 +63,9 @@ struct InitializeWriter {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(db::create<simple_tags>(
-        db::item_type<Tags::TensorData>{}, Parallel::create_lock(),
-        Parallel::create_lock()));
+        db::item_type<Tags::TensorData>{},
+        db::item_type<Tags::VolumeObserversContributed>{},
+        Parallel::create_lock(), Parallel::create_lock()));
   }
 };
 }  // namespace Actions
