@@ -72,9 +72,6 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {serialize_and_deserialize(events_and_triggers)},
       std::move(dist_objects)};
-  auto& box = runner.template algorithms<my_component>()
-                  .at(0)
-                  .template get_databox<db::DataBox<tmpl::list<>>>();
 
   runner.next_action<component>(0);
 
