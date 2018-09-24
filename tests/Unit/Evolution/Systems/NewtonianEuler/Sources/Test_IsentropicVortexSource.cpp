@@ -4,7 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include "DataStructures/DataVector.hpp"
-#include "Evolution/Systems/NewtonianEuler/NewtonianEulerSources/IsentropicVortexSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/IsentropicVortexSource.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -33,7 +33,7 @@ void test_isentropic_vortex_sources(const DataVector& used_for_size) noexcept {
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Sources.Vortex",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/NewtonianEuler/NewtonianEulerSources"};
+      "Evolution/Systems/NewtonianEuler/Sources"};
 
   test_isentropic_vortex_sources(DataVector(5));
 }

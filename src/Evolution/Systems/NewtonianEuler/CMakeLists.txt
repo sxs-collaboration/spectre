@@ -12,7 +12,7 @@ set(LIBRARY_SOURCES
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
-add_subdirectory(NewtonianEulerSources)
+add_subdirectory(Sources)
 
 target_link_libraries(
   ${LIBRARY}
