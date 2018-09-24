@@ -4,6 +4,6 @@
 add_subdirectory(Burgers)
 add_subdirectory(EinsteinSolutions)
 add_subdirectory(GrMhd)
-add_subdirectory(NewtonianEulerSolutions)
+add_subdirectory(NewtonianEuler)
 add_subdirectory(Poisson)
 add_subdirectory(WaveEquation)

@@ -14,7 +14,7 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEulerSolutions/IsentropicVortex.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
@@ -85,11 +85,10 @@ void test_variables(const DataType& used_for_size) noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.Vortex",
-    "[Unit][PointwiseFunctions]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
+                  "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/NewtonianEulerSolutions"};
+      "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
 
   test_create_from_options();
   test_serialize();
@@ -106,7 +105,7 @@ struct Vortex {
 
 // [[OutputRegex, The adiabatic index must be in the range \(1, 2\)]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.VortexAdIndex",
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexAdIndex",
     "[Unit][PointwiseFunctions]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -120,7 +119,7 @@ struct Vortex {
 
 // [[OutputRegex, The strength must be non-negative.]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.VortexStrength",
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrength",
     "[Unit][PointwiseFunctions]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -133,7 +132,7 @@ struct Vortex {
 // [[OutputRegex, In string:.*At line 2 column 19:.Value 0.4 is below the lower
 // bound of 1.]]
 SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.VortexAdIndexOLo",
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexAdIndexOptLo",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   Options<tmpl::list<Vortex>> test_options("");
@@ -150,7 +149,7 @@ SPECTRE_TEST_CASE(
 // [[OutputRegex, In string:.*At line 2 column 19:.Value 2.7 is above the upper
 // bound of 2.]]
 SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.VortexAdIndexOUp",
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexAdIndexOptUp",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   Options<tmpl::list<Vortex>> test_options("");
@@ -167,7 +166,7 @@ SPECTRE_TEST_CASE(
 // [[OutputRegex, In string:.*At line 6 column 13:.Value -0.2 is below the lower
 // bound of 0]]
 SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEulerSolns.VortexStrengthO",
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrengthOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   Options<tmpl::list<Vortex>> test_options("");
