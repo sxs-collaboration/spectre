@@ -19,8 +19,8 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"   // IWYU prgma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"

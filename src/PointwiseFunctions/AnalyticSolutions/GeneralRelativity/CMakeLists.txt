@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY EinsteinSolutions)
+set(LIBRARY GeneralRelativitySolutions)
 
 set(LIBRARY_SOURCES
     KerrSchild.cpp

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -232,9 +232,8 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
       for (size_t m = 0; m < 3; ++m) {
         get<DerivSpatialMetric<DataType>>(result).get(m, i, j) =
             2.0 * null_form.get(i) * null_form.get(j) * deriv_H.get(m) +
-            2.0 * H *
-                (null_form.get(i) * deriv_null_form.get(m, j) +
-                 null_form.get(j) * deriv_null_form.get(m, i));
+            2.0 * H * (null_form.get(i) * deriv_null_form.get(m, j) +
+                       null_form.get(j) * deriv_null_form.get(m, i));
       }
     }
   }

@@ -17,13 +17,13 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/VerifyEinsteinSolution.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -273,9 +273,8 @@ void test_construct_from_options() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.KerrSchild",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
+                  "[PointwiseFunctions][Unit]") {
   test_schwarzschild<DataVector>(DataVector{0.0, 0.0, 0.0});
   test_schwarzschild<double>(0.0);
   test_einstein_solution();
@@ -286,18 +285,16 @@ SPECTRE_TEST_CASE(
 }
 
 // [[OutputRegex, Spin magnitude must be < 1]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.KerrSchildSpin",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildSpin",
+                  "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   EinsteinSolutions::KerrSchild solution(1.0, {{1.0, 1.0, 1.0}},
                                          {{0.0, 0.0, 0.0}});
 }
 
 // [[OutputRegex, Mass must be non-negative]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.KerrSchildMass",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildMass",
+                  "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   EinsteinSolutions::KerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
                                          {{0.0, 0.0, 0.0}});
@@ -305,9 +302,8 @@ SPECTRE_TEST_CASE(
 
 // [[OutputRegex, In string:.*At line 2 column 9:.Value -0.5 is below the lower
 // bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.KerrSchildOptM",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildOptM",
+                  "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   Options<tmpl::list<KerrSchild>> opts("");
   opts.parse(
@@ -319,9 +315,8 @@ SPECTRE_TEST_CASE(
 }
 
 // [[OutputRegex, In string:.*At line 2 column 3:.Spin magnitude must be < 1]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.KerrSchildOptS",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildOptS",
+                  "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   Options<tmpl::list<KerrSchild>> opts("");
   opts.parse(

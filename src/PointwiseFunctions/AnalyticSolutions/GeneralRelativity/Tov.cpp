@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 
 #include <algorithm>
 #include <array>

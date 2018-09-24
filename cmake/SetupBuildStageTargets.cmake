@@ -47,7 +47,6 @@ add_dependencies(test-libs-stage1
   Test_Spectral
   Test_Options
   Test_BurgersSolutions
-  Test_EinsteinSolutions
   Test_NewtonianEulerSolutions
   Test_PoissonSolutions
   Test_WaveEquation

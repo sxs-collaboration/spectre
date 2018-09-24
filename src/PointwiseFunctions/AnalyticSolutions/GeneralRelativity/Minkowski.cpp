@@ -1,11 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 

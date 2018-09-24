@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Literals.hpp"
@@ -134,9 +134,8 @@ void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
   CHECK(intermediate_enthalpy_ds == custom_approx(interpolated_enthalpy_ds));
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolutions.TOV",
-    "[Unit][PointwiseFunctions]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
+                  "[Unit][PointwiseFunctions]") {
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
       equation_of_state =
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(

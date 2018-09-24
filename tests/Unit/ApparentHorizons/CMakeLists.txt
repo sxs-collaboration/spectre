@@ -18,5 +18,5 @@ add_test_library(
   ${LIBRARY}
   "ApparentHorizons"
   "${LIBRARY_SOURCES}"
-  "ApparentHorizons;EinsteinSolutions;RootFinding;Utilities"
+  "ApparentHorizons;GeneralRelativitySolutions;RootFinding;Utilities"
   )

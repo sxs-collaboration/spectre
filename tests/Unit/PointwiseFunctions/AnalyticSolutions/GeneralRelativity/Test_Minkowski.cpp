@@ -9,7 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,9 +50,8 @@ void test_minkowski(const T& value) {
   const auto d_shift = get<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
                                        tmpl::size_t<Dim>, Frame::Inertial>>(
       minkowski.variables(
-          x, t,
-          tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
-                                 tmpl::size_t<Dim>, Frame::Inertial>>{}));
+          x, t, tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
+                                       tmpl::size_t<Dim>, Frame::Inertial>>{}));
   const auto g =
       get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>(minkowski.variables(
           x, t,
@@ -60,9 +59,8 @@ void test_minkowski(const T& value) {
   const auto dt_g =
       get<Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>(
           minkowski.variables(
-              x, t,
-              tmpl::list<Tags::dt<
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
+              x, t, tmpl::list<Tags::dt<
+                        gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
   const auto d_g =
       get<Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>,
                       tmpl::size_t<Dim>, Frame::Inertial>>(
@@ -122,9 +120,8 @@ void test_option_creation() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.Minkowski",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Minkowski",
+                  "[PointwiseFunctions][Unit]") {
   const double x = 1.2;
   const DataVector x_dv{1., 2., 3.};
 
