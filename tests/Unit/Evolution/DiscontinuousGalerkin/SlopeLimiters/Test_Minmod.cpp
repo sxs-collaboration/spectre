@@ -95,7 +95,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Serialization",
 namespace {
 template <size_t VolumeDim>
 Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
-  return {std::unordered_set<ElementId<VolumeDim>>{id},
+  return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
           OrientationMap<VolumeDim>{}};
 }
 
