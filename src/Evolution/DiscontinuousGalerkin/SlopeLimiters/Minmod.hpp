@@ -41,6 +41,17 @@ namespace SlopeLimiters {
 template <size_t VolumeDim, typename TagsToLimit>
 class Minmod;
 }  // namespace SlopeLimiters
+
+namespace Tags {
+template <size_t Dim, typename Frame>
+struct Coordinates;
+template <size_t VolumeDim>
+struct Element;
+template <size_t VolumeDim>
+struct Mesh;
+template <size_t VolumeDim>
+struct SizeOfElement;
+}  // namespace Tags
 /// \endcond
 
 namespace SlopeLimiters {
@@ -216,6 +227,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
   };
 
+  using package_argument_tags = tmpl::list<Tags..., ::Tags::Mesh<VolumeDim>,
+                                           ::Tags::SizeOfElement<VolumeDim>>;
+
   /// \brief Package data for sending to neighbor elements.
   ///
   /// The following quantities are stored in `PackagedData` and communicated
@@ -244,6 +258,12 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     expand_pack(wrap_compute_means(Tags{}, tensors)...);
     packaged_data->element_size_ = element_size;
   }
+
+  using limit_tags = tmpl::list<Tags...>;
+  using limit_argument_tags =
+      tmpl::list<::Tags::Element<VolumeDim>, ::Tags::Mesh<VolumeDim>,
+                 ::Tags::Coordinates<VolumeDim, Frame::Logical>,
+                 ::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limits the solution on the element.
   ///
