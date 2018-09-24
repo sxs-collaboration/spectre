@@ -45,6 +45,15 @@ def create_interface_file(args):
               "    entry void perform_algorithm();\n" \
               "\n" % (args['algorithm_name'], args['algorithm_name'])
 
+    if (args['algorithm_type'] == "nodegroup"):
+        ci_str += "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
+            "    entry void threaded_action(\n" \
+            "               std::tuple<COMPUTE_VARIADIC_ARGS>& args);\n" \
+            "\n" \
+            "    template <typename Action>\n" \
+            "    entry void threaded_action();\n" \
+            "\n"
+
     # A bug in Charm++ prevents entry methods with default argument values.
     # The workaround is to have two entry methods and default the argument in
     # the AlgorithmImpl member function.

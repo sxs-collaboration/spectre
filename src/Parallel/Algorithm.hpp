@@ -201,6 +201,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   template <typename Action>
   void simple_action() noexcept;
 
+  // @{
   /// Call an Action on a local nodegroup requiring the Action to handle thread
   /// safety.
   ///
@@ -214,7 +215,24 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       Requires<(sizeof...(Args),
                 cpp17::is_same_v<Parallel::Algorithms::Nodegroup, ChareType>)> =
           nullptr>
-  void threaded_action(Args&&... args) noexcept;
+  void threaded_action(std::tuple<Args...> args) noexcept {
+    (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
+                                                    Args...>::registrar;
+    forward_tuple_to_threaded_action<Action>(
+        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+  }
+
+  template <typename Action>
+  void threaded_action() noexcept {
+    // NOLINTNEXTLINE(modernize-redundant-void-arg)
+    (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
+                                                    Action>::registrar;
+    Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
+        box_, inboxes_, *const_global_cache_,
+        static_cast<const array_index&>(array_index_), actions_list{},
+        std::add_pointer_t<ParallelComponent>{}, make_not_null(&node_lock_));
+  }
+  // @}
 
   /// \brief Receive data and store it in the Inbox, and try to continue
   /// executing the algorithm
@@ -269,6 +287,18 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
         std::add_pointer_t<ParallelComponent>{},
+        std::forward<Args>(std::get<Is>(args))...);
+  }
+
+  template <typename Action, typename... Args, size_t... Is>
+  void forward_tuple_to_threaded_action(
+      std::tuple<Args...>&& args,
+      std::index_sequence<Is...> /*meta*/) noexcept {
+    const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
+    Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
+        box_, inboxes_, *const_global_cache_,
+        static_cast<const array_index&>(array_index_), actions_list{},
+        std::add_pointer_t<ParallelComponent>{}, node_lock,
         std::forward<Args>(std::get<Is>(args))...);
   }
 
@@ -438,23 +468,6 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       std::add_pointer_t<ParallelComponent>{});
   performing_action_ = false;
   unlock(&node_lock_);
-}
-
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-template <
-    typename Action, typename... Args,
-    Requires<(sizeof...(Args),
-              cpp17::is_same_v<Parallel::Algorithms::Nodegroup, ChareType>)>>
-void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::threaded_action(Args&&... args) noexcept {
-  const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
-  Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
-      box_, inboxes_, *const_global_cache_,
-      static_cast<const array_index&>(array_index_), node_lock,
-      std::forward<Args>(args)...);
 }
 
 template <typename ParallelComponent, typename ChareType,
