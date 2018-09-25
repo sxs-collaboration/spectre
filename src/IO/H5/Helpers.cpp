@@ -188,7 +188,7 @@ std::vector<T> read_rank1_attribute(const hid_t group_id,
     CHECK_H5(datatype_id, "Failed to get datatype from attribute " << name);
     const hid_t datatype = H5Tget_native_type(datatype_id, H5T_DIR_DESCEND);
     const auto size = H5Tget_size(datatype);
-    if (UNLIKELY(sizeof(h5_type<T>()) != size)) {
+    if (UNLIKELY(sizeof(T) != size)) {
       ERROR("The read HDF5 type of the attribute ("
             << datatype
             << ") has a different size than the type we are reading. The "
