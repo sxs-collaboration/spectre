@@ -68,7 +68,7 @@ struct EvolutionMetavars {
                  Actions::ChangeStepSize<step_choosers>,
                  Actions::ComputeVolumeFluxes,
                  dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-                 Actions::ComputeVolumeDuDt<1>,
+                 Actions::ComputeVolumeDuDt,
                  dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                  Actions::RecordTimeStepperData,
                  dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,

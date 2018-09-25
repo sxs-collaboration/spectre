@@ -3,18 +3,20 @@
 
 #pragma once
 
-#include <cstddef>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
+// IWYU pragma: no_forward_declare db::DataBox
 namespace tuples {
 template <typename...>
-class TaggedTuple;
+class TaggedTuple;  // IWYU pragma: keep
 }  // namespace tuples
 
 namespace Parallel {
@@ -38,7 +40,6 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: db::add_tag_prefix<Tags::dt, typename system::variables_tag>
-template <size_t Dim>
 struct ComputeVolumeDuDt {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
