@@ -465,22 +465,36 @@
  * global matrix \f$A\f$. Instead, we solve the problem iteratively so that we
  * never need to construct \f$A\f$ globally but only need \f$Ax\f$ that can be
  * evaluated locally by virtue of the DG formulation. This action of the
- * operator we have to supply in each step of the iterative algorithms
+ * operator is what we have to supply in each step of the iterative algorithms
  * implemented here. It is where most of the computational cost goes and usually
  * involves computing a volume contribution for each element and communicating
- * fluxes with neighboring elements.
+ * fluxes with neighboring elements. Since the iterative algorithms typically
+ * scale badly with increasing grid size, a preconditioner \f$P\f$ is needed
+ * in order to make \f$P^{-1}A\f$ easier to invert.
  *
  * In the iterative algorithms we usually don't work with the physical field
  * \f$x\f$ directly. Instead we need to apply the operator to an internal
- * variable defined by the respective algorithm. This variable is exposed as
- * `LinearSolver::Tags::Operand`, and the algorithm expects that the computed
- * operator action is written into
+ * variable defined by the respective algorithm. This variable is exposed as the
+ * `LinearSolver::Tags::Operand` prefix, and the algorithm expects that the
+ * computed operator action is written into
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- * LinearSolver::Tags::Operand>` in each step.
+ * LinearSolver::Tags::Operand<...>>` in each step.
  *
- * Since the iterative algorithms typically scale badly with increasing grid
- * size, a preconditioner \f$P\f$ is needed such that \f$P^{-1}A\f$ is easier to
- * invert.
+ * Each linear solver is expected to expose the following compile-time
+ * interface:
+ * - `component_list`: A `tmpl::list` that collects the additional parallel
+ * components this linear solver uses. The executables will append these to
+ * their own `component_list`.
+ * - `tags`: A type that follows the same structure as those that initialize
+ * other parts of the DataBox in `InitializeElement.hpp` files. This means it
+ * exposes `simple_tags`, `compute_tags` and a static `initialize` function so
+ * that it can be chained into the DataBox initialization.
+ * - `perform_step`: The action to be executed after the linear operator has
+ * been applied to the operand and written to the DataBox (see above). It will
+ * converge the fields towards their solution and update the operand before
+ * handing responsibility back to the algorithm for the next application of the
+ * linear operator:
+ * \snippet Test_ConjugateGradientAlgorithm.cpp action_list
  */
 
 /// \defgroup LoggingGroup Logging
