@@ -13,9 +13,9 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/EquationsOfState/SpecificEnthalpy.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

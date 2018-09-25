@@ -5,12 +5,12 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 // IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
 
 /// \cond

@@ -14,7 +14,7 @@
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"

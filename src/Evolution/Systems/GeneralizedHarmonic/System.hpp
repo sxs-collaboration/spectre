@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
 /// \cond
 namespace brigand {
