@@ -35,18 +35,24 @@ void check_observer_registration() {
       typename ActionTesting::MockRuntimeSystem<
           Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
+  using obs_writer = observer_writer_component<Metavariables>;
   using element_comp = element_component<Metavariables>;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using ObserverMockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           obs_component>;
+  using WriterMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          obs_writer>;
   using ElementMockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           element_comp>;
   TupleOfMockDistributedObjects dist_objects{};
   tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
+  tuples::get<WriterMockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<obs_writer>{});
 
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
@@ -64,6 +70,7 @@ void check_observer_registration() {
       {}, std::move(dist_objects)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
+  runner.simple_action<obs_writer, observers::Actions::InitializeWriter>(0);
   // Test initial state
   const auto& observer_box =
       runner.template algorithms<obs_component>()
