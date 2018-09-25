@@ -19,20 +19,21 @@ namespace {
 template <size_t Dim, typename DataType>
 void test_compute_phi(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::phi<Dim, Frame::Inertial, DataType>, "GrTests",
-      "spatial_deriv_spacetime_metric", {{{-10., 10.}}}, used_for_size);
+      &GeneralizedHarmonic::phi<Dim, Frame::Inertial, DataType>,
+      "TestFunctions", "spatial_deriv_spacetime_metric", {{{-10., 10.}}},
+      used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_pi(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::pi<Dim, Frame::Inertial, DataType>, "GrTests",
+      &GeneralizedHarmonic::pi<Dim, Frame::Inertial, DataType>, "TestFunctions",
       "gh_pi", {{{-10., 10.}}}, used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_gauge_source(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>,
-      "GrTests", "gh_gauge_source", {{{-10., 10.}}}, used_for_size);
+      "TestFunctions", "gh_gauge_source", {{{-10., 10.}}}, used_for_size);
 }
 
 template <size_t Dim, typename T>

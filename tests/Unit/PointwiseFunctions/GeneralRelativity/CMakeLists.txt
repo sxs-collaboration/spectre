@@ -4,7 +4,7 @@
 set(LIBRARY "Test_GeneralRelativity")
 
 set(LIBRARY_SOURCES
-  GrTestHelpers.cpp
+  TestHelpers.cpp
   Test_Christoffel.cpp
   Test_ComputeGhQuantities.cpp
   Test_ComputeSpacetimeQuantities.cpp

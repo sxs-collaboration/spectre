@@ -16,7 +16,8 @@ template <size_t Dim, IndexType Index, typename DataType>
 void test_christoffel(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &gr::christoffel_first_kind<Dim, Frame::Inertial, Index, DataType>,
-      "GrTests", "christoffel_first_kind", {{{-10.0, 10.0}}}, used_for_size);
+      "TestFunctions", "christoffel_first_kind", {{{-10.0, 10.0}}},
+      used_for_size);
 }
 }  // namespace
 
