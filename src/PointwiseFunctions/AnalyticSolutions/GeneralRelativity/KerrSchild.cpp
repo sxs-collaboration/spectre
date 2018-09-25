@@ -21,7 +21,9 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-namespace EinsteinSolutions {
+/// \cond
+namespace gr {
+namespace Solutions {
 
 KerrSchild::KerrSchild(const double mass,
                        KerrSchild::Spin::type dimensionless_spin,
@@ -180,12 +182,12 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   const DataType lapse_squared = 1.0 / (1.0 + 2.0 * H * square(null_vector_0));
 
   auto result = make_with_value<tuples::TaggedTuple<
-      gr::Tags::Lapse<DataType>, Tags::dt<gr::Tags::Lapse<DataType>>,
+      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
       DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
       DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>>>(x, 0.0);
 
   get(get<gr::Tags::Lapse<DataType>>(result)) = sqrt(lapse_squared);
@@ -240,15 +242,18 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
 
   return result;
 }
-}  // namespace EinsteinSolutions
+}  // namespace Solutions
+}  // namespace gr
 
 template tuples::tagged_tuple_from_typelist<
-    EinsteinSolutions::KerrSchild::tags<DataVector>>
-EinsteinSolutions::KerrSchild::variables(
+    gr::Solutions::KerrSchild::tags<DataVector>>
+gr::Solutions::KerrSchild::variables(
     const tnsr::I<DataVector, 3>& x, const double /*t*/,
     KerrSchild::tags<DataVector> /*meta*/) const noexcept;
 template tuples::tagged_tuple_from_typelist<
-    EinsteinSolutions::KerrSchild::tags<double>>
-EinsteinSolutions::KerrSchild::variables(
-    const tnsr::I<double, 3>& x, const double /*t*/,
-    KerrSchild::tags<double> /*meta*/) const noexcept;
+    gr::Solutions::KerrSchild::tags<double>>
+gr::Solutions::KerrSchild::variables(const tnsr::I<double, 3>& x,
+                                     const double /*t*/,
+                                     KerrSchild::tags<double> /*meta*/) const
+    noexcept;
+/// \endcond

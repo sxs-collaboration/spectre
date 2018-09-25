@@ -22,7 +22,7 @@
 namespace {
 template <size_t Dim, typename T>
 void test_minkowski(const T& value) {
-  EinsteinSolutions::Minkowski<Dim> minkowski{};
+  gr::Solutions::Minkowski<Dim> minkowski{};
 
   const tnsr::I<T, Dim> x{value};
   const double t = 1.2;
@@ -116,7 +116,7 @@ void test_minkowski(const T& value) {
 
 template <size_t Dim>
 void test_option_creation() {
-  test_creation<EinsteinSolutions::Minkowski<Dim>>("");
+  test_creation<gr::Solutions::Minkowski<Dim>>("");
 }
 }  // namespace
 

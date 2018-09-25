@@ -48,7 +48,7 @@ void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
   const double step = (surface_log_enthalpy - initial_log_enthalpy) / num_pts;
   const double final_log_enthalpy =
       initial_log_enthalpy + (current_iteration + 1.0) * step;
-  const EinsteinSolutions::TovSolution tov_out_full(
+  const gr::Solutions::TovSolution tov_out_full(
       equation_of_state, central_mass_density, surface_log_enthalpy);
 
   if (newtonian_limit) {
@@ -70,7 +70,7 @@ void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
 
   // Integrate only to some intermediate value, not the surface. Then compare to
   // interpolated values.
-  const EinsteinSolutions::TovSolution tov_out_intermediate(
+  const gr::Solutions::TovSolution tov_out_intermediate(
       equation_of_state, central_mass_density, final_log_enthalpy);
   const double intermediate_radius{tov_out_intermediate.outer_radius()};
   const double intermediate_mass{

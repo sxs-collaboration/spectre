@@ -32,7 +32,7 @@
 namespace {
 
 struct KerrSchild {
-  using type = EinsteinSolutions::KerrSchild;
+  using type = gr::Solutions::KerrSchild;
   static constexpr OptionString help{"A Kerr-Schild solution"};
 };
 
@@ -69,17 +69,17 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   const double t = 1.3;
 
   // Evaluate solution
-  EinsteinSolutions::KerrSchild solution(mass, spin, center);
+  gr::Solutions::KerrSchild solution(mass, spin, center);
 
   const auto vars =
-      solution.variables(x, t, EinsteinSolutions::KerrSchild::tags<DataType>{});
+      solution.variables(x, t, gr::Solutions::KerrSchild::tags<DataType>{});
   const auto& lapse = get<gr::Tags::Lapse<DataType>>(vars);
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
   const auto& d_lapse =
-      get<EinsteinSolutions::KerrSchild::DerivLapse<DataType>>(vars);
+      get<gr::Solutions::KerrSchild::DerivLapse<DataType>>(vars);
   const auto& shift = get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(vars);
   const auto& d_shift =
-      get<EinsteinSolutions::KerrSchild::DerivShift<DataType>>(vars);
+      get<gr::Solutions::KerrSchild::DerivShift<DataType>>(vars);
   const auto& dt_shift =
       get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>>(vars);
   const auto& g =
@@ -88,7 +88,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
       get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>(
           vars);
   const auto& d_g =
-      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataType>>(vars);
+      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataType>>(vars);
 
   // Check those quantities that should be zero.
   const auto zero = make_with_value<DataType>(x, 0.);
@@ -178,7 +178,7 @@ void test_einstein_solution() noexcept {
   const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
 
-  EinsteinSolutions::KerrSchild solution(mass, spin, center);
+  gr::Solutions::KerrSchild solution(mass, spin, center);
   verify_time_independent_einstein_solution(
       solution, grid_size, lower_bound, upper_bound,
       std::numeric_limits<double>::epsilon() * 1.e5);
@@ -189,21 +189,21 @@ void test_double_vs_datavector() noexcept {
   const double mass = 1.7;
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{0.3, 0.2, 0.4}};
-  EinsteinSolutions::KerrSchild solution(mass, spin, center);
+  gr::Solutions::KerrSchild solution(mass, spin, center);
 
   const double t = 1.3;
   const auto x1 = spatial_coords(0.0);
   const auto x2 = spatial_coords(DataVector{0.0, 0.0, 0.0});
 
   const auto vars1 =
-      solution.variables(x1, t, EinsteinSolutions::KerrSchild::tags<double>{});
+      solution.variables(x1, t, gr::Solutions::KerrSchild::tags<double>{});
   const auto& lapse1 = get<gr::Tags::Lapse<double>>(vars1);
   const auto& dt_lapse1 = get<Tags::dt<gr::Tags::Lapse<double>>>(vars1);
   const auto& d_lapse1 =
-      get<EinsteinSolutions::KerrSchild::DerivLapse<double>>(vars1);
+      get<gr::Solutions::KerrSchild::DerivLapse<double>>(vars1);
   const auto& shift1 = get<gr::Tags::Shift<3, Frame::Inertial, double>>(vars1);
   const auto& d_shift1 =
-      get<EinsteinSolutions::KerrSchild::DerivShift<double>>(vars1);
+      get<gr::Solutions::KerrSchild::DerivShift<double>>(vars1);
   const auto& dt_shift1 =
       get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, double>>>(vars1);
   const auto& g1 =
@@ -211,18 +211,18 @@ void test_double_vs_datavector() noexcept {
   const auto& dt_g1 =
       get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, double>>>(vars1);
   const auto& d_g1 =
-      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<double>>(vars1);
+      get<gr::Solutions::KerrSchild::DerivSpatialMetric<double>>(vars1);
 
-  const auto vars2 = solution.variables(
-      x2, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
+  const auto vars2 =
+      solution.variables(x2, t, gr::Solutions::KerrSchild::tags<DataVector>{});
   const auto& lapse2 = get<gr::Tags::Lapse<DataVector>>(vars2);
   const auto& dt_lapse2 = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars2);
   const auto& d_lapse2 =
-      get<EinsteinSolutions::KerrSchild::DerivLapse<DataVector>>(vars2);
+      get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(vars2);
   const auto& shift2 =
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars2);
   const auto& d_shift2 =
-      get<EinsteinSolutions::KerrSchild::DerivShift<DataVector>>(vars2);
+      get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(vars2);
   const auto& dt_shift2 =
       get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(vars2);
   const auto& g2 =
@@ -231,7 +231,7 @@ void test_double_vs_datavector() noexcept {
       get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
           vars2);
   const auto& d_g2 =
-      get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars2);
+      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars2);
 
   check_tensor_doubles_approx_equals_tensor_datavectors(lapse2, lapse1);
   check_tensor_doubles_approx_equals_tensor_datavectors(shift2, shift1);
@@ -245,14 +245,12 @@ void test_double_vs_datavector() noexcept {
 }
 
 void test_serialize() noexcept {
-  EinsteinSolutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}},
-                                         {{0.0, 3.0, 4.0}});
+  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
   test_serialization(solution);
 }
 
 void test_copy_and_move() noexcept {
-  EinsteinSolutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}},
-                                         {{0.0, 3.0, 4.0}});
+  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
   test_copy_semantics(solution);
   auto solution_copy = solution;
   // clang-tidy: std::move of trivially copyable type
@@ -266,9 +264,8 @@ void test_construct_from_options() {
       "  Mass: 0.5\n"
       "  Spin: [0.1,0.2,0.3]\n"
       "  Center: [1.0,3.0,2.0]");
-  CHECK(
-      opts.get<KerrSchild>() ==
-      EinsteinSolutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}}, {{1.0, 3.0, 2.0}}));
+  CHECK(opts.get<KerrSchild>() ==
+        gr::Solutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}}, {{1.0, 3.0, 2.0}}));
 }
 
 }  // namespace
@@ -288,16 +285,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildSpin",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  EinsteinSolutions::KerrSchild solution(1.0, {{1.0, 1.0, 1.0}},
-                                         {{0.0, 0.0, 0.0}});
+  gr::Solutions::KerrSchild solution(1.0, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}});
 }
 
 // [[OutputRegex, Mass must be non-negative]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildMass",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  EinsteinSolutions::KerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
-                                         {{0.0, 0.0, 0.0}});
+  gr::Solutions::KerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
+                                     {{0.0, 0.0, 0.0}});
 }
 
 // [[OutputRegex, In string:.*At line 2 column 9:.Value -0.5 is below the lower
