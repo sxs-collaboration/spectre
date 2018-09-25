@@ -5,12 +5,13 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <functional>
 #include <limits>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -137,30 +138,44 @@ Element<3> make_element() noexcept {
           {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
 }
 
-std::unordered_map<Direction<1>,
-                   SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData>
-make_neighbor_packaged_data(
+// Values of left_id, right_id based on make_element<1> above.
+auto make_neighbor_packaged_data(
     const double left, const double right,
     const tnsr::I<double, 1>& local_size_for_neighbor_size) noexcept {
+  constexpr size_t left_id = 1;
+  constexpr size_t right_id = 2;
   return std::unordered_map<
-      Direction<1>, SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData>{
-      {Direction<1>::lower_xi(),
-       {Scalar<double>(left), local_size_for_neighbor_size}},
-      {Direction<1>::upper_xi(),
-       {Scalar<double>(right), local_size_for_neighbor_size}}};
+      std::pair<Direction<1>, ElementId<1>>,
+      SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
+      boost::hash<std::pair<Direction<1>, ElementId<1>>>>{
+      std::make_pair(
+          std::make_pair(Direction<1>::lower_xi(), ElementId<1>(left_id)),
+          SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
+              Scalar<double>(left), local_size_for_neighbor_size}),
+      std::make_pair(
+          std::make_pair(Direction<1>::upper_xi(), ElementId<1>(right_id)),
+          SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
+              Scalar<double>(right), local_size_for_neighbor_size})};
 }
 
-std::unordered_map<Direction<1>,
-                   SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData>
-make_neighbor_packaged_data(const double left, const double right,
-                            const double left_size,
-                            const double right_size) noexcept {
+// Values of left_id, right_id based on make_element<1> above.
+auto make_neighbor_packaged_data(const double left, const double right,
+                                 const double left_size,
+                                 const double right_size) noexcept {
+  constexpr size_t left_id = 1;
+  constexpr size_t right_id = 2;
   return std::unordered_map<
-      Direction<1>, SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData>{
-      {Direction<1>::lower_xi(),
-       {Scalar<double>(left), tnsr::I<double, 1>(left_size)}},
-      {Direction<1>::upper_xi(),
-       {Scalar<double>(right), tnsr::I<double, 1>(right_size)}}};
+      std::pair<Direction<1>, ElementId<1>>,
+      SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
+      boost::hash<std::pair<Direction<1>, ElementId<1>>>>{
+      std::make_pair(
+          std::make_pair(Direction<1>::lower_xi(), ElementId<1>(left_id)),
+          SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
+              Scalar<double>(left), tnsr::I<double, 1>(left_size)}),
+      std::make_pair(
+          std::make_pair(Direction<1>::upper_xi(), ElementId<1>(right_id)),
+          SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
+              Scalar<double>(right), tnsr::I<double, 1>(right_size)})};
 }
 
 void test_limiter_activates_work(
@@ -169,9 +184,9 @@ void test_limiter_activates_work(
     const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
     const tnsr::I<double, 1>& element_size,
     const std::unordered_map<
-        Direction<1>,
-        SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData>&
-        neighbor_data,
+        std::pair<Direction<1>, ElementId<1>>,
+        SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
     const double expected_slope) noexcept {
   auto input_to_limit = input;
   const bool limiter_activated =
@@ -193,8 +208,9 @@ void test_limiter_does_not_activate_work(
     const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
     const tnsr::I<double, 1>& element_size,
     const std::unordered_map<
-        Direction<1>,
-        SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData>&
+        std::pair<Direction<1>, ElementId<1>>,
+        SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
         neighbor_data) noexcept {
   auto input_to_limit = input;
   const bool limiter_activated =
@@ -555,7 +571,9 @@ void test_limiter_action_at_boundary(
     test_limiter_activates_work(
         minmod, input, element_at_lower_xi_boundary, mesh, logical_coords,
         element_size,
-        {{Direction<1>::upper_xi(), {Scalar<double>{neighbor}, element_size}}},
+        {{std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2)),
+          SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
+              Scalar<double>{neighbor}, element_size}}},
         0.0);
   }
 
@@ -568,7 +586,9 @@ void test_limiter_action_at_boundary(
     test_limiter_activates_work(
         minmod, input, element_at_upper_xi_boundary, mesh, logical_coords,
         element_size,
-        {{Direction<1>::lower_xi(), {Scalar<double>{neighbor}, element_size}}},
+        {{std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1)),
+          SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
+              Scalar<double>{neighbor}, element_size}}},
         0.0);
   }
 }
@@ -761,9 +781,10 @@ void test_work(
     const Scalar<DataVector>& input_scalar,
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const std::unordered_map<
-        Direction<VolumeDim>,
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         typename SlopeLimiters::Minmod<
-            VolumeDim, tmpl::list<scalar, vector<VolumeDim>>>::PackagedData>&
+            VolumeDim, tmpl::list<scalar, vector<VolumeDim>>>::PackagedData,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
     const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -834,29 +855,33 @@ SPECTRE_TEST_CASE(
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
-      Direction<1>,
-      SlopeLimiters::Minmod<1, tmpl::list<scalar, vector<1>>>::PackagedData>
+      std::pair<Direction<1>, ElementId<1>>,
+      SlopeLimiters::Minmod<1, tmpl::list<scalar, vector<1>>>::PackagedData,
+      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
       neighbor_data{};
-  neighbor_data[Direction<1>::lower_xi()].element_size_ = element_size;
-  neighbor_data[Direction<1>::upper_xi()].element_size_ = element_size;
+  const std::array<std::pair<Direction<1>, ElementId<1>>, 2> dir_keys = {
+      {{Direction<1>::lower_xi(), ElementId<1>(1)},
+       {Direction<1>::upper_xi(), ElementId<1>(2)}}};
+  neighbor_data[dir_keys[0]].element_size_ = element_size;
+  neighbor_data[dir_keys[1]].element_size_ = element_size;
 
   // The scalar we treat as a shock: we want the slope to be reduced
   const auto target_scalar_slope = std::array<double, 1>{{1.2}};
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<1>::lower_xi()].means_) =
+      neighbor_data[dir_keys[0]].means_) =
       Scalar<double>(mean - target_scalar_slope[0]);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<1>::upper_xi()].means_) =
+      neighbor_data[dir_keys[1]].means_) =
       Scalar<double>(mean + target_scalar_slope[0]);
 
   // The vector x-component we treat as a smooth function: no limiter action
   const auto target_vector_slope =
       std::array<std::array<double, 1>, 1>{{true_slope}};
   get<Minmod_detail::to_tensor_double<vector<1>>>(
-      neighbor_data[Direction<1>::lower_xi()].means_) =
+      neighbor_data[dir_keys[0]].means_) =
       tnsr::I<double, 1>(mean - 2.0 * true_slope[0]);
   get<Minmod_detail::to_tensor_double<vector<1>>>(
-      neighbor_data[Direction<1>::upper_xi()].means_) =
+      neighbor_data[dir_keys[1]].means_) =
       tnsr::I<double, 1>(mean + 2.0 * true_slope[0]);
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
@@ -896,13 +921,19 @@ SPECTRE_TEST_CASE(
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
-      Direction<2>,
-      SlopeLimiters::Minmod<2, tmpl::list<scalar, vector<2>>>::PackagedData>
+      std::pair<Direction<2>, ElementId<2>>,
+      SlopeLimiters::Minmod<2, tmpl::list<scalar, vector<2>>>::PackagedData,
+      boost::hash<std::pair<Direction<2>, ElementId<2>>>>
       neighbor_data{};
-  neighbor_data[Direction<2>::lower_xi()].element_size_ = element_size;
-  neighbor_data[Direction<2>::upper_xi()].element_size_ = element_size;
-  neighbor_data[Direction<2>::lower_eta()].element_size_ = element_size;
-  neighbor_data[Direction<2>::upper_eta()].element_size_ = element_size;
+  const std::array<std::pair<Direction<2>, ElementId<2>>, 4> dir_keys = {
+      {{Direction<2>::lower_xi(), ElementId<2>(1)},
+       {Direction<2>::upper_xi(), ElementId<2>(2)},
+       {Direction<2>::lower_eta(), ElementId<2>(3)},
+       {Direction<2>::upper_eta(), ElementId<2>(4)}}};
+  neighbor_data[dir_keys[0]].element_size_ = element_size;
+  neighbor_data[dir_keys[1]].element_size_ = element_size;
+  neighbor_data[dir_keys[2]].element_size_ = element_size;
+  neighbor_data[dir_keys[3]].element_size_ = element_size;
 
   // The scalar we treat as a 3D shock: we want each slope to be reduced
   const auto target_scalar_slope = std::array<double, 2>{{1.2, -2.2}};
@@ -911,17 +942,13 @@ SPECTRE_TEST_CASE(
     return Scalar<double>(mean + sign * gsl::at(target_scalar_slope, dim));
   };
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<2>::lower_xi()].means_) =
-      neighbor_scalar_func(0, -1);
+      neighbor_data[dir_keys[0]].means_) = neighbor_scalar_func(0, -1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<2>::upper_xi()].means_) =
-      neighbor_scalar_func(0, 1);
+      neighbor_data[dir_keys[1]].means_) = neighbor_scalar_func(0, 1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<2>::lower_eta()].means_) =
-      neighbor_scalar_func(1, -1);
+      neighbor_data[dir_keys[2]].means_) = neighbor_scalar_func(1, -1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<2>::upper_eta()].means_) =
-      neighbor_scalar_func(1, 1);
+      neighbor_data[dir_keys[3]].means_) = neighbor_scalar_func(1, 1);
 
   // The vector we treat differently in each component, to check the limiter
   // acts independently on each:
@@ -943,17 +970,13 @@ SPECTRE_TEST_CASE(
           mean + sign * gsl::at(neighbor_vector_slope[1], dim)}}};
   };
   get<Minmod_detail::to_tensor_double<vector<2>>>(
-      neighbor_data[Direction<2>::lower_xi()].means_) =
-      neighbor_vector_func(0, -1);
+      neighbor_data[dir_keys[0]].means_) = neighbor_vector_func(0, -1);
   get<Minmod_detail::to_tensor_double<vector<2>>>(
-      neighbor_data[Direction<2>::upper_xi()].means_) =
-      neighbor_vector_func(0, 1);
+      neighbor_data[dir_keys[1]].means_) = neighbor_vector_func(0, 1);
   get<Minmod_detail::to_tensor_double<vector<2>>>(
-      neighbor_data[Direction<2>::lower_eta()].means_) =
-      neighbor_vector_func(1, -1);
+      neighbor_data[dir_keys[2]].means_) = neighbor_vector_func(1, -1);
   get<Minmod_detail::to_tensor_double<vector<2>>>(
-      neighbor_data[Direction<2>::upper_eta()].means_) =
-      neighbor_vector_func(1, 1);
+      neighbor_data[dir_keys[3]].means_) = neighbor_vector_func(1, 1);
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);
@@ -1004,15 +1027,20 @@ SPECTRE_TEST_CASE(
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
-      Direction<3>,
-      SlopeLimiters::Minmod<3, tmpl::list<scalar, vector<3>>>::PackagedData>
+      std::pair<Direction<3>, ElementId<3>>,
+      SlopeLimiters::Minmod<3, tmpl::list<scalar, vector<3>>>::PackagedData,
+      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
-  neighbor_data[Direction<3>::lower_xi()].element_size_ = element_size;
-  neighbor_data[Direction<3>::upper_xi()].element_size_ = element_size;
-  neighbor_data[Direction<3>::lower_eta()].element_size_ = element_size;
-  neighbor_data[Direction<3>::upper_eta()].element_size_ = element_size;
-  neighbor_data[Direction<3>::lower_zeta()].element_size_ = element_size;
-  neighbor_data[Direction<3>::upper_zeta()].element_size_ = element_size;
+  const std::array<std::pair<Direction<3>, ElementId<3>>, 6> dir_keys = {
+      {{Direction<3>::lower_xi(), ElementId<3>(1)},
+       {Direction<3>::upper_xi(), ElementId<3>(2)},
+       {Direction<3>::lower_eta(), ElementId<3>(3)},
+       {Direction<3>::upper_eta(), ElementId<3>(4)},
+       {Direction<3>::lower_zeta(), ElementId<3>(5)},
+       {Direction<3>::upper_zeta(), ElementId<3>(6)}}};
+  for (const auto& id_pair : dir_keys) {
+    neighbor_data[id_pair].element_size_ = element_size;
+  }
 
   // The scalar we treat as a 3D shock: we want each slope to be reduced
   const auto target_scalar_slope = std::array<double, 3>{{1.2, -2.2, 0.1}};
@@ -1028,23 +1056,17 @@ SPECTRE_TEST_CASE(
     return Scalar<double>(mean + sign * gsl::at(target_scalar_slope, dim));
   };
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<3>::lower_xi()].means_) =
-      neighbor_scalar_func(0, -1);
+      neighbor_data[dir_keys[0]].means_) = neighbor_scalar_func(0, -1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<3>::upper_xi()].means_) =
-      neighbor_scalar_func(0, 1);
+      neighbor_data[dir_keys[1]].means_) = neighbor_scalar_func(0, 1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<3>::lower_eta()].means_) =
-      neighbor_scalar_func(1, -1);
+      neighbor_data[dir_keys[2]].means_) = neighbor_scalar_func(1, -1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<3>::upper_eta()].means_) =
-      neighbor_scalar_func(1, 1);
+      neighbor_data[dir_keys[3]].means_) = neighbor_scalar_func(1, 1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<3>::lower_zeta()].means_) =
-      neighbor_scalar_func(2, -1);
+      neighbor_data[dir_keys[4]].means_) = neighbor_scalar_func(2, -1);
   get<Minmod_detail::to_tensor_double<scalar>>(
-      neighbor_data[Direction<3>::upper_zeta()].means_) =
-      neighbor_scalar_func(2, 1);
+      neighbor_data[dir_keys[5]].means_) = neighbor_scalar_func(2, 1);
 
   // The vector we treat differently in each component, to verify that the
   // limiter acts independently on each:
@@ -1075,23 +1097,17 @@ SPECTRE_TEST_CASE(
           mean - 1.1 - dim - sign}}};  // arbitrary, but smaller than mean
   };
   get<Minmod_detail::to_tensor_double<vector<3>>>(
-      neighbor_data[Direction<3>::lower_xi()].means_) =
-      neighbor_vector_func(0, -1);
+      neighbor_data[dir_keys[0]].means_) = neighbor_vector_func(0, -1);
   get<Minmod_detail::to_tensor_double<vector<3>>>(
-      neighbor_data[Direction<3>::upper_xi()].means_) =
-      neighbor_vector_func(0, 1);
+      neighbor_data[dir_keys[1]].means_) = neighbor_vector_func(0, 1);
   get<Minmod_detail::to_tensor_double<vector<3>>>(
-      neighbor_data[Direction<3>::lower_eta()].means_) =
-      neighbor_vector_func(1, -1);
+      neighbor_data[dir_keys[2]].means_) = neighbor_vector_func(1, -1);
   get<Minmod_detail::to_tensor_double<vector<3>>>(
-      neighbor_data[Direction<3>::upper_eta()].means_) =
-      neighbor_vector_func(1, 1);
+      neighbor_data[dir_keys[3]].means_) = neighbor_vector_func(1, 1);
   get<Minmod_detail::to_tensor_double<vector<3>>>(
-      neighbor_data[Direction<3>::lower_zeta()].means_) =
-      neighbor_vector_func(2, -1);
+      neighbor_data[dir_keys[4]].means_) = neighbor_vector_func(2, -1);
   get<Minmod_detail::to_tensor_double<vector<3>>>(
-      neighbor_data[Direction<3>::upper_zeta()].means_) =
-      neighbor_vector_func(2, 1);
+      neighbor_data[dir_keys[5]].means_) = neighbor_vector_func(2, 1);
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <limits>
 #include <string>
@@ -26,6 +27,8 @@
 class DataVector;
 template <size_t VolumeDim>
 class Direction;
+template <size_t VolumeDim>
+class ElementId;
 template <size_t>
 class Mesh;
 
@@ -76,10 +79,15 @@ bool limit_one_tensor(
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const tnsr::I<double, VolumeDim>& element_size,
-    const std::unordered_map<Direction<VolumeDim>,
-                             gsl::not_null<const double*>>&
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        gsl::not_null<const double*>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_tensor_begin,
-    const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        tnsr::I<double, VolumeDim>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_sizes) noexcept;
 
 template <typename Tag>
@@ -267,7 +275,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
       const tnsr::I<double, VolumeDim>& element_size,
-      const std::unordered_map<Direction<VolumeDim>, PackagedData>&
+      const std::unordered_map<
+          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
+          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
           neighbor_data) const noexcept {
     bool limiter_activated = false;
     const auto wrap_limit_one_tensor = [
@@ -286,7 +296,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const auto tensor_begin = make_not_null(tensor->begin());
       const auto tensor_end = make_not_null(tensor->end());
       const auto neighbor_tensor_begin = [&neighbor_data]() noexcept {
-        std::unordered_map<Direction<VolumeDim>, gsl::not_null<const double*>>
+        std::unordered_map<
+            std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+            gsl::not_null<const double*>,
+            boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
             result;
         for (const auto& neighbor_and_data : neighbor_data) {
           result.insert(std::make_pair(
@@ -299,7 +312,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       }
       ();
       const auto neighbor_sizes = [&neighbor_data]() noexcept {
-        std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>
+        std::unordered_map<
+            std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+            tnsr::I<double, VolumeDim>,
+            boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
             result;
         for (const auto& neighbor_and_data : neighbor_data) {
           result.insert(std::make_pair(neighbor_and_data.first,
