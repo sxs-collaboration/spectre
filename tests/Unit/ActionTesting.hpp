@@ -62,14 +62,14 @@ ACTION_TESTING_CHECK_MOCK_ACTION_LIST(threaded_actions);
 template <typename Component>
 class MockDistributedObject {
  private:
-  class InvokeSimpleActionBase {
+  class InvokeActionBase {
    public:
-    InvokeSimpleActionBase() = default;
-    InvokeSimpleActionBase(const InvokeSimpleActionBase&) = default;
-    InvokeSimpleActionBase& operator=(const InvokeSimpleActionBase&) = default;
-    InvokeSimpleActionBase(InvokeSimpleActionBase&&) = default;
-    InvokeSimpleActionBase& operator=(InvokeSimpleActionBase&&) = default;
-    virtual ~InvokeSimpleActionBase() = default;
+    InvokeActionBase() = default;
+    InvokeActionBase(const InvokeActionBase&) = default;
+    InvokeActionBase& operator=(const InvokeActionBase&) = default;
+    InvokeActionBase(InvokeActionBase&&) = default;
+    InvokeActionBase& operator=(InvokeActionBase&&) = default;
+    virtual ~InvokeActionBase() = default;
     virtual void invoke_action() noexcept = 0;
   };
 
@@ -80,7 +80,7 @@ class MockDistributedObject {
   // - This prevents possible stack overflows
   // - Allows better introspection and control over the Actions' behavior
   template <typename Action, typename... Args>
-  class InvokeSimpleAction : public InvokeSimpleActionBase {
+  class InvokeSimpleAction : public InvokeActionBase {
    public:
     InvokeSimpleAction(MockDistributedObject* local_alg,
                        std::tuple<Args...> args)
@@ -118,7 +118,7 @@ class MockDistributedObject {
   };
 
   template <typename Action, typename... Args>
-  class InvokeThreadedAction : public InvokeSimpleActionBase {
+  class InvokeThreadedAction : public InvokeActionBase {
    public:
     InvokeThreadedAction(MockDistributedObject* local_alg,
                        std::tuple<Args...> args)
@@ -378,8 +378,8 @@ class MockDistributedObject {
   tuples::tagged_tuple_from_typelist<
       Parallel::get_inbox_tags<typename Component::action_list>>* inboxes_{
       nullptr};
-  std::deque<std::unique_ptr<InvokeSimpleActionBase>> simple_action_queue_;
-  std::deque<std::unique_ptr<InvokeSimpleActionBase>> threaded_action_queue_;
+  std::deque<std::unique_ptr<InvokeActionBase>> simple_action_queue_;
+  std::deque<std::unique_ptr<InvokeActionBase>> threaded_action_queue_;
   CmiNodeLock node_lock_ = Parallel::create_lock();
 };
 
