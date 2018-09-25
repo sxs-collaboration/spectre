@@ -12,6 +12,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 
