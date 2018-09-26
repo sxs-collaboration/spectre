@@ -104,6 +104,9 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
   # First block:
   # Move into user class from charm for receive_data, allowing perfect
   # forwarding
+  # The string for the variadic "simple_action" is non-temporary on purpose.
+  # For charm projectionsnot we need either a constant string or a string
+  # that is not freed by the program.
   #
   # Second block:
   # Handle entry methods that take a variadic std::tuple. Charm++ cannot
@@ -118,7 +121,7 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
      \
      && perl -pi -e 's/LDOTLDOTLDOT/.../g' Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/LDOTLDOTLDOT/.../g' Algorithm${ALGORITHM_NAME}.decl.h \
-     && perl -pi -e 's/\(\\\"simple_action\\\(const\\s+std::tuple<\\s*\)COMPUTE_VARIADIC_ARGS\(\\s*>\\s*&args\\\)\\\"\)/std::string\(std::string\(\\1\"\) + Parallel::charmxx::get_template_parameters_as_string<Args...>\(\) + std::string\(\"\\2\)\).c_str\(\)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/\(\\\"simple_action\\\(const\\s+std::tuple<\\s*\)COMPUTE_VARIADIC_ARGS\(\\s*>\\s*&args\\\)\\\"\)/\(::new std::string\(std::string\(\\1\"\) + Parallel::charmxx::get_template_parameters_as_string<Args...>\(\) + std::string\(\"\\2\)\)\)->c_str\(\)/g' Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/COMPUTE_VARIADIC_ARGS/Args.../g' \
              Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/COMPUTE_VARIADIC_ARGS/Args.../g' \

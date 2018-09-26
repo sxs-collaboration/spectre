@@ -129,7 +129,10 @@ struct RegisterParallelComponent : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    ckindex::__register(get_template_parameters_as_string<algorithm>().c_str(),
+
+    // note: non-temporary string is on purpose, not freed string is
+    // necessary for projections output
+    ckindex::__register((::new std::string(name()))->c_str(),
                         sizeof(algorithm));
   }
 
@@ -177,8 +180,10 @@ struct RegisterChare : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    CkIndex::__register(get_template_parameters_as_string<Chare>().c_str(),
-                        sizeof(Chare));
+
+    // note: non-temporary string is on purpose, not freed string is
+    // necessary for projections output
+    CkIndex::__register((::new std::string(name()))->c_str(), sizeof(Chare));
   }
 
   bool is_registering_chare() const noexcept override { return true; }
