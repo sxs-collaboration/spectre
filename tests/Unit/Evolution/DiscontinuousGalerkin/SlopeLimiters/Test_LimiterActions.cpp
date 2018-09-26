@@ -183,8 +183,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
                   {Direction<2>::upper_eta(), {{south_id}, {}}}});
     auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
     auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
-    return db::create<db::AddSimpleTags<
-        TemporalId, Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>, Var>>(
+    return db::create<my_component::simple_tags>(
         0, mesh, element, std::move(map), std::move(var));
   }
   ();
@@ -195,9 +194,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
       const Scalar<DataVector>& var) noexcept {
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
-    return db::create<db::AddSimpleTags<
-        TemporalId, Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>, Var>>(
-        0, mesh, element, std::move(map), var);
+    return db::create<my_component::simple_tags>(0, mesh, element,
+                                                 std::move(map), var);
   };
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
@@ -222,9 +220,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {DummyLimiterForTest{}}, std::move(dist_objects)};
-
-  using initial_databox_type = db::compute_databox_type<db::AddSimpleTags<
-      TemporalId, Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>, Var>>;
 
   // Call SendDataForLimiter on self, sending data to neighbors
   runner.next_action<my_component>(self_id);
@@ -281,7 +276,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   const auto& var_to_limit =
       db::get<Var>(runner.algorithms<my_component>()
                        .at(self_id)
-                       .get_databox<initial_databox_type>());
+                       .get_databox<my_component::initial_databox>());
   CHECK_ITERABLE_APPROX(
       var_to_limit, Scalar<DataVector>(mesh.number_of_grid_points(), 1234.));
 
@@ -320,25 +315,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
                                                   CoordinateMaps::Affine>(
                        xi_map, eta_map)));
 
-  using initial_databox_type = db::compute_databox_type<db::AddSimpleTags<
-      TemporalId, Tags::Mesh<2>, Tags::Element<2>, Tags::ElementMap<2>, Var>>;
-
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using MockDistributedObjectsTag =
       MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
   MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          self_id,
-          db::create<
-              db::AddSimpleTags<TemporalId, Tags::Mesh<2>, Tags::Element<2>,
-                                Tags::ElementMap<2>, Var>>(
-              0, mesh, element, std::move(map), std::move(input_var)));
+      .emplace(self_id,
+               db::create<my_component::simple_tags>(
+                   0, mesh, element, std::move(map), std::move(input_var)));
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {DummyLimiterForTest{}}, std::move(dist_objects)};
 
-  // Call SendDataForLimiter on self. Except empty inboxes all around.
+  // Call SendDataForLimiter on self. Expect empty inboxes all around.
   runner.next_action<my_component>(self_id);
 
   CHECK(runner.nonempty_inboxes<my_component, limiter_comm_tag>().empty());
@@ -350,7 +339,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
   const auto& var_to_limit =
       db::get<Var>(runner.algorithms<my_component>()
                        .at(self_id)
-                       .get_databox<initial_databox_type>());
+                       .get_databox<my_component::initial_databox>());
   CHECK_ITERABLE_APPROX(
       var_to_limit, Scalar<DataVector>(mesh.number_of_grid_points(), 1234.));
 
