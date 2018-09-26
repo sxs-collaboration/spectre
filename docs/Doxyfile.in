@@ -153,6 +153,9 @@ ENABLE_PREPROCESSING   = YES
 
 MACRO_EXPANSION        = YES
 
+# Macros we actually want to expand during preprocessing
+EXPAND_AS_DEFINED      = MAKE_BINARY_OPERATOR
+
 EXPAND_ONLY_PREDEF     = YES
 
 SEARCH_INCLUDES        = YES
