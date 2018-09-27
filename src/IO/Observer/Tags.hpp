@@ -16,6 +16,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Reduction.hpp"
 
 namespace observers {
 /// \ingroup ObserversGroup
@@ -51,10 +52,48 @@ struct TensorData : db::SimpleTag {
                                             ExtentsAndTensorVolumeData>>;
 };
 
+/// \cond
+template <class... ReductionDatums>
+struct ReductionDataNames;
+/// \endcond
+
+/// Reduction data to be written to disk.
+template <class... ReductionDatums>
+struct ReductionData : db::SimpleTag {
+  static std::string name() noexcept { return "ReductionData"; }
+  using type = std::unordered_map<observers::ObservationId,
+                                  Parallel::ReductionData<ReductionDatums...>>;
+  using names_tag = ReductionDataNames<ReductionDatums...>;
+};
+
+/// Names of the reduction data to be written to disk.
+template <class... ReductionDatums>
+struct ReductionDataNames : db::SimpleTag {
+  static std::string name() noexcept { return "ReductionDataNames"; }
+  using type =
+      std::unordered_map<observers::ObservationId, std::vector<std::string>>;
+  using data_tag = ReductionData<ReductionDatums...>;
+};
+
+/// The number of nodes that have contributed to the reduction data so far.
+struct NumberOfNodesContributedToReduction : db::SimpleTag {
+  static std::string name() noexcept {
+    return "NumberOfNodesContributedToReduction";
+  }
+  using type = std::unordered_map<ObservationId, size_t>;
+};
+
 /// The number of observer components that have contributed data at the
 /// observation ids.
 struct VolumeObserversContributed : db::SimpleTag {
   static std::string name() noexcept { return "VolumeObserversContributed"; }
+  using type = std::unordered_map<observers::ObservationId, size_t>;
+};
+
+/// The number of observer components that have contributed data at the
+/// observation ids.
+struct ReductionObserversContributed : db::SimpleTag {
+  static std::string name() noexcept { return "ReductionObserversContributed"; }
   using type = std::unordered_map<observers::ObservationId, size_t>;
 };
 
@@ -79,6 +118,15 @@ struct VolumeFileName {
   static constexpr OptionString help = {
       "Name of the volume data file without extension"};
   static type default_value() noexcept { return "./VolumeData"; }
+};
+
+/// \ingroup ObserversGroup
+/// The name of the H5 file on disk to which all reduction data is written.
+struct ReductionFileName {
+  using type = std::string;
+  static constexpr OptionString help = {
+      "Name of the reduction data file without extension"};
+  static type default_value() noexcept { return "./TimeSeriesData"; }
 };
 }  // namespace OptionTags
 }  // namespace observers
