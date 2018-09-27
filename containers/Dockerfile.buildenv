@@ -19,7 +19,7 @@ ARG PARALLEL_MAKE_ARG=-j2
 
 # Install required packages for SpECTRE
 RUN apt-get update -y && \
-    apt-get install -y gcc g++ gfortran gcc-6 g++-6 gfortran-6 git cmake \
+    apt-get install -y gcc g++ gfortran gcc-6 g++-6 gfortran-6 gdb git cmake \
                        libopenblas-dev liblapack-dev libhdf5-dev \
                        libgsl0-dev \
                        clang-5.0 clang-format-5.0 clang-tidy-5.0 \
