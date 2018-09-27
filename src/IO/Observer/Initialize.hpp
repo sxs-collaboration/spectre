@@ -49,7 +49,7 @@ struct Initialize {
 struct InitializeWriter {
   using simple_tags =
       db::AddSimpleTags<Tags::TensorData, Tags::VolumeObserversContributed,
-                        Tags::ReductionFileLock, Tags::VolumeFileLock>;
+                        Tags::H5FileLock>;
   using compute_tags = db::AddComputeTags<>;
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
@@ -65,7 +65,7 @@ struct InitializeWriter {
     return std::make_tuple(db::create<simple_tags>(
         db::item_type<Tags::TensorData>{},
         db::item_type<Tags::VolumeObserversContributed>{},
-        Parallel::create_lock(), Parallel::create_lock()));
+        Parallel::create_lock()));
   }
 };
 }  // namespace Actions

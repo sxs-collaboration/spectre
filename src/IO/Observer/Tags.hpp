@@ -97,15 +97,13 @@ struct ReductionObserversContributed : db::SimpleTag {
   using type = std::unordered_map<observers::ObservationId, size_t>;
 };
 
-/// Node lock used when needing to lock the H5 file on disk.
-struct VolumeFileLock : db::SimpleTag {
-  static std::string name() noexcept { return "VolumeFileLock"; }
-  using type = CmiNodeLock;
-};
-
-/// Node lock used when needing to lock the H5 file on disk.
-struct ReductionFileLock : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionFileLock"; }
+/// Node lock used when needing to read/write to H5 files on disk.
+///
+/// The reason for only having one lock for all files is that we currently don't
+/// require a thread-safe HDF5 installation. In the future we will need to
+/// experiment with different HDF5 configurations.
+struct H5FileLock : db::SimpleTag {
+  static std::string name() noexcept { return "H5FileLock"; }
   using type = CmiNodeLock;
 };
 }  // namespace Tags
