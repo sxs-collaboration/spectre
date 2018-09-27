@@ -2,12 +2,14 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines EinsteinSolutions namespace
+/// Defines gr::Solutions
 
 #pragma once
 
+namespace gr {
 /*!
  * \ingroup AnalyticSolutionsGroup
  * \brief Classes which implement analytic solutions to Einstein's equations
  */
-namespace EinsteinSolutions {}
+namespace Solutions {}
+}  // namespace gr

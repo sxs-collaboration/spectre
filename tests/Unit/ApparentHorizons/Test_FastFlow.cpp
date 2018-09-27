@@ -21,11 +21,11 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -40,7 +40,7 @@ namespace {
 FastFlow::Status do_iteration(
     const gsl::not_null<Strahlkorper<Frame::Inertial>*> strahlkorper,
     const gsl::not_null<FastFlow*> flow,
-    const EinsteinSolutions::KerrSchild& solution) {
+    const gr::Solutions::KerrSchild& solution) {
   FastFlow::Status status = FastFlow::Status::SuccessfulIteration;
 
   while (status == FastFlow::Status::SuccessfulIteration) {
@@ -58,13 +58,12 @@ FastFlow::Status do_iteration(
     const auto& cart_coords =
         db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
     const auto vars = solution.variables(
-        cart_coords, t, EinsteinSolutions::KerrSchild::tags<DataVector>{});
+        cart_coords, t, gr::Solutions::KerrSchild::tags<DataVector>{});
 
     const auto& spatial_metric =
         get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
     const auto& deriv_spatial_metric =
-        get<EinsteinSolutions::KerrSchild::DerivSpatialMetric<DataVector>>(
-            vars);
+        get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars);
     const auto inverse_spatial_metric =
         determinant_and_inverse(spatial_metric).second;
 
@@ -73,7 +72,7 @@ FastFlow::Status do_iteration(
         gr::extrinsic_curvature(
             get<gr::Tags::Lapse<DataVector>>(vars),
             get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
-            get<EinsteinSolutions::KerrSchild::DerivShift<DataVector>>(vars),
+            get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(vars),
             spatial_metric,
             get<Tags::dt<
                 gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(vars),
@@ -177,8 +176,7 @@ void test_negative_radius_error() {
   Strahlkorper<Frame::Inertial> strahlkorper(5, 5, -1.0, {{0, 0, 0}});
   FastFlow flow(FastFlow::FlowType::Fast, 1.0, 0.5, 1e-12, 1e-10, 1.2, 5, 100);
 
-  const EinsteinSolutions::KerrSchild solution(1.0, {{0., 0., 0.}},
-                                               {{0., 0., 0.}});
+  const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
 
   const auto status = do_iteration(&strahlkorper, &flow, solution);
   CHECK(status == FastFlow::Status::NegativeRadius);
@@ -189,8 +187,7 @@ void test_too_many_iterations_error() {
   // Set number of iterations to 1 on purpose to get error exit status.
   FastFlow flow(FastFlow::FlowType::Fast, 1.0, 0.5, 1e-12, 1e-10, 1.2, 5, 1);
 
-  const EinsteinSolutions::KerrSchild solution(1.0, {{0., 0., 0.}},
-                                               {{0., 0., 0.}});
+  const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
 
   const auto status = do_iteration(&strahlkorper, &flow, solution);
   CHECK(status == FastFlow::Status::MaxIts);
@@ -201,8 +198,7 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
   Strahlkorper<Frame::Inertial> strahlkorper(5, 5, 3.0, {{0, 0, 0}});
   FastFlow flow(type_of_flow, 1.0, 0.5, 1e-12, 1e-10, 1.2, 5, max_iterations);
 
-  const EinsteinSolutions::KerrSchild solution(1.0, {{0., 0., 0.}},
-                                               {{0., 0., 0.}});
+  const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
 
   const auto status = do_iteration(&strahlkorper, &flow, solution);
   CHECK(converged(status));
@@ -224,7 +220,7 @@ void test_kerr(FastFlow::Flow::type type_of_flow, const double mass,
   FastFlow flow(type_of_flow, 1.0, 0.5, 1e-12, 1e-2, 1.2, 5, max_iterations);
 
   const std::array<double, 3> spin = {{0.1, 0.2, 0.3}};
-  const EinsteinSolutions::KerrSchild solution(mass, spin, {{0., 0., 0.}});
+  const gr::Solutions::KerrSchild solution(mass, spin, {{0., 0., 0.}});
 
   const auto status = do_iteration(&strahlkorper, &flow, solution);
   CHECK(converged(status));

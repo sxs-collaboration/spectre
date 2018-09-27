@@ -23,7 +23,8 @@ class DataVector;
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
-namespace EinsteinSolutions {
+namespace gr {
+namespace Solutions {
 
 /*!
  * \brief TOV solver based on Lindblom's method
@@ -79,4 +80,5 @@ class TovSolution {
   intrp::BarycentricRational log_enthalpy_interpolant_;
 };
 
-}  // namespace EinsteinSolutions
+}  // namespace Solutions
+}  // namespace gr

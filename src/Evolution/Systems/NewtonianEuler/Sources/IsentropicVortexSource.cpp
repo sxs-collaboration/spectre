@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/NewtonianEuler/NewtonianEulerSources/IsentropicVortexSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/IsentropicVortexSource.hpp"
 
 #include <cstddef>
 

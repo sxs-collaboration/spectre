@@ -20,28 +20,30 @@ namespace {
 template <size_t Dim, typename DataType>
 void test_compute_spacetime_metric(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::spacetime_metric<Dim, Frame::Inertial, DataType>, "GrTests",
+      &gr::spacetime_metric<Dim, Frame::Inertial, DataType>, "TestFunctions",
       "spacetime_metric", {{{-10., 10.}}}, used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_inverse_spacetime_metric(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::inverse_spacetime_metric<Dim, Frame::Inertial, DataType>, "GrTests",
-      "inverse_spacetime_metric", {{{-10., 10.}}}, used_for_size);
+      &gr::inverse_spacetime_metric<Dim, Frame::Inertial, DataType>,
+      "TestFunctions", "inverse_spacetime_metric", {{{-10., 10.}}},
+      used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_derivatives_of_spacetime_metric(
     const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &gr::derivatives_of_spacetime_metric<Dim, Frame::Inertial, DataType>,
-      "GrTests", "derivatives_of_spacetime_metric", {{{-10., 10.}}},
+      "TestFunctions", "derivatives_of_spacetime_metric", {{{-10., 10.}}},
       used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_spacetime_normal_vector(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::spacetime_normal_vector<Dim, Frame::Inertial, DataType>, "GrTests",
-      "spacetime_normal_vector", {{{-10., 10.}}}, used_for_size);
+      &gr::spacetime_normal_vector<Dim, Frame::Inertial, DataType>,
+      "TestFunctions", "spacetime_normal_vector", {{{-10., 10.}}},
+      used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_spacetime_normal_one_form(const DataType& used_for_size) {
@@ -64,7 +66,7 @@ void test_compute_spacetime_normal_one_form(const DataType& used_for_size) {
 template <size_t Dim, typename DataType>
 void test_compute_extrinsic_curvature(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>, "GrTests",
+      &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>, "TestFunctions",
       "extrinsic_curvature", {{{-10., 10.}}}, used_for_size);
 }
 

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 
 #include <algorithm>
 #include <array>
@@ -24,6 +24,7 @@
 // IWYU pragma: no_include <boost/numeric/odeint/stepper/generation/make_dense_output.hpp>
 // IWYU pragma: no_include <boost/numeric/odeint/stepper/runge_kutta_dopri5.hpp>
 
+/// \cond
 namespace {
 
 void lindblom_rhs(
@@ -75,7 +76,8 @@ class Observer {
 
 }  // namespace
 
-namespace EinsteinSolutions {
+namespace gr {
+namespace Solutions {
 
 TovSolution::TovSolution(
     const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
@@ -160,4 +162,6 @@ void TovSolution::pup(PUP::er& p) noexcept {  // NOLINT
   p | mass_interpolant_;
   p | log_enthalpy_interpolant_;
 }
-}  // namespace EinsteinSolutions
+}  // namespace Solutions
+}  // namespace gr
+/// \endcond

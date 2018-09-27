@@ -2,8 +2,8 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Burgers)
-add_subdirectory(EinsteinSolutions)
+add_subdirectory(GeneralRelativity)
 add_subdirectory(GrMhd)
-add_subdirectory(NewtonianEulerSolutions)
+add_subdirectory(NewtonianEuler)
 add_subdirectory(Poisson)
 add_subdirectory(WaveEquation)

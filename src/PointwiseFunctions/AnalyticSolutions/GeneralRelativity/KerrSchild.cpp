@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -14,14 +14,16 @@
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-namespace EinsteinSolutions {
+/// \cond
+namespace gr {
+namespace Solutions {
 
 KerrSchild::KerrSchild(const double mass,
                        KerrSchild::Spin::type dimensionless_spin,
@@ -180,12 +182,12 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   const DataType lapse_squared = 1.0 / (1.0 + 2.0 * H * square(null_vector_0));
 
   auto result = make_with_value<tuples::TaggedTuple<
-      gr::Tags::Lapse<DataType>, Tags::dt<gr::Tags::Lapse<DataType>>,
+      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
       DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
       DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>>>(x, 0.0);
 
   get(get<gr::Tags::Lapse<DataType>>(result)) = sqrt(lapse_squared);
@@ -232,24 +234,26 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
       for (size_t m = 0; m < 3; ++m) {
         get<DerivSpatialMetric<DataType>>(result).get(m, i, j) =
             2.0 * null_form.get(i) * null_form.get(j) * deriv_H.get(m) +
-            2.0 * H *
-                (null_form.get(i) * deriv_null_form.get(m, j) +
-                 null_form.get(j) * deriv_null_form.get(m, i));
+            2.0 * H * (null_form.get(i) * deriv_null_form.get(m, j) +
+                       null_form.get(j) * deriv_null_form.get(m, i));
       }
     }
   }
 
   return result;
 }
-}  // namespace EinsteinSolutions
+}  // namespace Solutions
+}  // namespace gr
 
 template tuples::tagged_tuple_from_typelist<
-    EinsteinSolutions::KerrSchild::tags<DataVector>>
-EinsteinSolutions::KerrSchild::variables(
+    gr::Solutions::KerrSchild::tags<DataVector>>
+gr::Solutions::KerrSchild::variables(
     const tnsr::I<DataVector, 3>& x, const double /*t*/,
     KerrSchild::tags<DataVector> /*meta*/) const noexcept;
 template tuples::tagged_tuple_from_typelist<
-    EinsteinSolutions::KerrSchild::tags<double>>
-EinsteinSolutions::KerrSchild::variables(
-    const tnsr::I<double, 3>& x, const double /*t*/,
-    KerrSchild::tags<double> /*meta*/) const noexcept;
+    gr::Solutions::KerrSchild::tags<double>>
+gr::Solutions::KerrSchild::variables(const tnsr::I<double, 3>& x,
+                                     const double /*t*/,
+                                     KerrSchild::tags<double> /*meta*/) const
+    noexcept;
+/// \endcond

@@ -19,12 +19,12 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"   // IWYU prgma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/KerrSchild.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -112,7 +112,7 @@ void test_minkowski() {
   const auto& cart_coords =
       db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
 
-  EinsteinSolutions::Minkowski<3> solution{};
+  gr::Solutions::Minkowski<3> solution{};
 
   const auto deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
@@ -517,10 +517,10 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
       Strahlkorper<Frame::Inertial>(8, 8, 2.0, {{0.0, 0.0, 0.0}});
 
   test_expansion(
-      EinsteinSolutions::KerrSchild{1.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
+      gr::Solutions::KerrSchild{1.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
       sphere, [](const size_t size) noexcept { return DataVector(size, 0.0); });
   test_expansion(
-      EinsteinSolutions::Minkowski<3>{},
+      gr::Solutions::Minkowski<3>{},
       sphere, [](const size_t size) noexcept { return DataVector(size, 1.0); });
 
   constexpr int l_max = 20;
@@ -537,7 +537,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
   const auto kerr_horizon =
       Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
 
-  test_expansion(EinsteinSolutions::KerrSchild{mass, spin, center},
+  test_expansion(gr::Solutions::KerrSchild{mass, spin, center},
                  kerr_horizon, [](const size_t size) noexcept {
                    return DataVector(size, 0.0);
                  });
@@ -555,17 +555,17 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.ExtrinsicCurvature",
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RicciScalar",
                   "[ApparentHorizons][Unit]") {
   const double mass = 1.0;
+  test_ricci_scalar(gr::Solutions::KerrSchild(mass, {{0.0, 0.0, 0.0}},
+                                              {{0.0, 0.0, 0.0}}),
+                    [&mass](const auto& cartesian_coords) noexcept {
+                      return TestHelpers::Schwarzschild::spatial_ricci(
+                          cartesian_coords, mass);
+                    },
+                    [&mass](const size_t size) noexcept {
+                      return DataVector(size, 0.5 / square(mass));
+                    });
   test_ricci_scalar(
-      EinsteinSolutions::KerrSchild(mass, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}),
-      [&mass](const auto& cartesian_coords) noexcept {
-        return TestHelpers::Schwarzschild::spatial_ricci(cartesian_coords,
-                                                         mass);
-      },
-      [&mass](const size_t size) noexcept {
-        return DataVector(size, 0.5 / square(mass));
-      });
-  test_ricci_scalar(
-      EinsteinSolutions::Minkowski<3>{},
+      gr::Solutions::Minkowski<3>{},
       [](const auto& cartesian_coords) noexcept {
         return make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(
             cartesian_coords, 0.0);
@@ -578,10 +578,10 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
                   "[ApparentHorizons][Unit]") {
   // Check value of dA for a Schwarzschild horizon and a sphere in flat space
   test_area_element(
-      EinsteinSolutions::KerrSchild{4.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
+      gr::Solutions::KerrSchild{4.0, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}},
       8.0, [](const size_t size) noexcept { return DataVector(size, 64.0); });
   test_area_element(
-      EinsteinSolutions::Minkowski<3>{},
+      gr::Solutions::Minkowski<3>{},
       2.0, [](const size_t size) noexcept { return DataVector(size, 4.0); });
 
   // Check the area of a Kerr horizon
@@ -604,7 +604,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
   const auto kerr_horizon =
       Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
 
-  test_area(EinsteinSolutions::KerrSchild{mass, spin, center}, kerr_horizon,
+  test_area(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
             expected_area);
 }
 
@@ -627,9 +627,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinFunction",
 
   // Check value of SpinFunction^2 integrated over the surface for
   // Schwarzschild. Expected result is zero.
-  test_spin_function(
-      EinsteinSolutions::KerrSchild{mass, {{0.0, 0.0, 0.0}}, center},
-      Strahlkorper<Frame::Inertial>(l_max, l_max, 8.888, center), 0.0);
+  test_spin_function(gr::Solutions::KerrSchild{mass, {{0.0, 0.0, 0.0}}, center},
+                     Strahlkorper<Frame::Inertial>(l_max, l_max, 8.888, center),
+                     0.0);
 
   // Check value of SpinFunction^2 integrated over the surface for
   // Kerr. Derive this by integrating the square of the imaginary
@@ -641,7 +641,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinFunction",
   // enter the expected numerical value for this test.
   const double expected_spin_function_sq_integral = 4.0 * 0.0125109627941394;
 
-  test_spin_function(EinsteinSolutions::KerrSchild{mass, spin, center},
+  test_spin_function(gr::Solutions::KerrSchild{mass, spin, center},
                      kerr_horizon, expected_spin_function_sq_integral);
 }
 
@@ -668,7 +668,7 @@ SPECTRE_TEST_CASE(
   const auto aligned_kerr_horizon = Strahlkorper<Frame::Inertial>(
       aligned_l_max, aligned_l_max, get(aligned_horizon_radius), center);
   test_dimensionful_spin_magnitude(
-      EinsteinSolutions::KerrSchild{mass, aligned_dimensionless_spin, center},
+      gr::Solutions::KerrSchild{mass, aligned_dimensionless_spin, center},
       aligned_kerr_horizon, mass, aligned_dimensionless_spin,
       aligned_horizon_radius, aligned_kerr_horizon.ylm_spherepack(),
       expected_spin_magnitude, aligned_tolerance);
@@ -697,7 +697,7 @@ SPECTRE_TEST_CASE(
   const auto rotated_kerr_horizon = Strahlkorper<Frame::Inertial>(
       generic_l_max, generic_l_max, get(rotated_horizon_radius), center);
   test_dimensionful_spin_magnitude(
-      EinsteinSolutions::KerrSchild{mass, generic_dimensionless_spin, center},
+      gr::Solutions::KerrSchild{mass, generic_dimensionless_spin, center},
       generic_kerr_horizon, mass, generic_dimensionless_spin,
       rotated_horizon_radius, rotated_kerr_horizon.ylm_spherepack(),
       expected_generic_spin_magnitude, generic_tolerance);
@@ -731,7 +731,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinVector",
 
   // Check that the StrahlkorperGr::spin_vector() correctly recovers the
   // chosen dimensionless spin
-  test_spin_vector(EinsteinSolutions::KerrSchild{mass, spin, center},
-                   kerr_horizon, mass, spin, horizon_radius_with_spin_on_z_axis,
+  test_spin_vector(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
+                   mass, spin, horizon_radius_with_spin_on_z_axis,
                    kerr_horizon_with_spin_on_z_axis.ylm_spherepack());
 }

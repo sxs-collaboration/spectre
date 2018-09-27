@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/Systems/NewtonianEuler/NewtonianEulerSources"
+  "Evolution/Systems/NewtonianEuler/Sources"
   "${LIBRARY_SOURCES}"
   "NewtonianEulerSources"
   )

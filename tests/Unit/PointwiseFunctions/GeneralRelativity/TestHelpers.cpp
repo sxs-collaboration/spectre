@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/PointwiseFunctions/GeneralRelativity/GrTestHelpers.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"

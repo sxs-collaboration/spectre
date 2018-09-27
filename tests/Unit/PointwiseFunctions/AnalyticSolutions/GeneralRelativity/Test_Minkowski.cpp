@@ -9,8 +9,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/Minkowski.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -22,7 +22,7 @@
 namespace {
 template <size_t Dim, typename T>
 void test_minkowski(const T& value) {
-  EinsteinSolutions::Minkowski<Dim> minkowski{};
+  gr::Solutions::Minkowski<Dim> minkowski{};
 
   const tnsr::I<T, Dim> x{value};
   const double t = 1.2;
@@ -50,9 +50,8 @@ void test_minkowski(const T& value) {
   const auto d_shift = get<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
                                        tmpl::size_t<Dim>, Frame::Inertial>>(
       minkowski.variables(
-          x, t,
-          tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
-                                 tmpl::size_t<Dim>, Frame::Inertial>>{}));
+          x, t, tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
+                                       tmpl::size_t<Dim>, Frame::Inertial>>{}));
   const auto g =
       get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>(minkowski.variables(
           x, t,
@@ -60,9 +59,8 @@ void test_minkowski(const T& value) {
   const auto dt_g =
       get<Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>(
           minkowski.variables(
-              x, t,
-              tmpl::list<Tags::dt<
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
+              x, t, tmpl::list<Tags::dt<
+                        gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
   const auto d_g =
       get<Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>,
                       tmpl::size_t<Dim>, Frame::Inertial>>(
@@ -118,13 +116,12 @@ void test_minkowski(const T& value) {
 
 template <size_t Dim>
 void test_option_creation() {
-  test_creation<EinsteinSolutions::Minkowski<Dim>>("");
+  test_creation<gr::Solutions::Minkowski<Dim>>("");
 }
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolution.Minkowski",
-    "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Minkowski",
+                  "[PointwiseFunctions][Unit]") {
   const double x = 1.2;
   const DataVector x_dv{1., 2., 3.};
 

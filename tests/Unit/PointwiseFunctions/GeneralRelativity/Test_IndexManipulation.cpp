@@ -24,7 +24,8 @@ void test_raise_or_lower_first_index(const DataType& used_for_size) {
           Tensor_detail::TensorIndexType<Dim, UpOrLo, Frame::Inertial, Index>,
           Tensor_detail::TensorIndexType<Dim, UpLo::Lo, Frame::Inertial,
                                          Index>>,
-      "GrTests", "raise_or_lower_first_index", {{{-10., 10.}}}, used_for_size);
+      "TestFunctions", "raise_or_lower_first_index", {{{-10., 10.}}},
+      used_for_size);
 }
 
 template <size_t Dim, UpLo UpOrLo, IndexType Index, typename DataType>
@@ -39,10 +40,9 @@ template <size_t Dim, UpLo UpLo0, UpLo UpLo1, typename Fr,
 void test_trace_last_indices(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &trace_last_indices<
-          DataType,
-          Tensor_detail::TensorIndexType<Dim, UpLo0, Fr, TypeOfIndex>,
+          DataType, Tensor_detail::TensorIndexType<Dim, UpLo0, Fr, TypeOfIndex>,
           Tensor_detail::TensorIndexType<Dim, UpLo1, Fr, TypeOfIndex>>,
-      "GrTests", "trace_last_indices", {{{-10., 10.}}}, used_for_size);
+      "TestFunctions", "trace_last_indices", {{{-10., 10.}}}, used_for_size);
 }
 template <size_t Dim, UpLo UpOrLo, typename Fr, IndexType TypeOfIndex,
           typename DataType>

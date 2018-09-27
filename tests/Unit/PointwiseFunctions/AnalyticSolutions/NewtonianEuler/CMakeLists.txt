@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "PointwiseFunctions/AnalyticSolutions/NewtonianEulerSolutions/"
+  "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/"
   "${LIBRARY_SOURCES}"
   "NewtonianEulerSolutions;Utilities"
   )

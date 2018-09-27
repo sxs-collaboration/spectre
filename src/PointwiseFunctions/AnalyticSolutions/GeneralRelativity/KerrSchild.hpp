@@ -8,7 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
-#include "PointwiseFunctions/GeneralRelativity/GrTagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -25,7 +25,8 @@ struct dt;
 
 // IWYU pragma: no_include <pup.h>
 
-namespace EinsteinSolutions {
+namespace gr {
+namespace Solutions {
 
 /*!
  * \brief Kerr black hole in Kerr-Schild coordinates
@@ -241,23 +242,24 @@ class KerrSchild {
   ~KerrSchild() = default;
 
   template <typename DataType>
-  using DerivLapse =
-      Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame::Inertial>;
+  using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
+                                   Frame::Inertial>;
   template <typename DataType>
-  using DerivShift = Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                                 tmpl::size_t<3>, Frame::Inertial>;
+  using DerivShift =
+      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
+                    tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
   using DerivSpatialMetric =
-      Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                  tmpl::size_t<3>, Frame::Inertial>;
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
+                    tmpl::size_t<3>, Frame::Inertial>;
   template <typename DataType>
   using tags = tmpl::list<
-      gr::Tags::Lapse<DataType>, Tags::dt<gr::Tags::Lapse<DataType>>,
+      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
       DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
       DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>>;
 
   template <typename DataType>
@@ -294,4 +296,5 @@ SPECTRE_ALWAYS_INLINE bool operator!=(const KerrSchild& lhs,
                                       const KerrSchild& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace EinsteinSolutions
+}  // namespace Solutions
+}  // namespace gr

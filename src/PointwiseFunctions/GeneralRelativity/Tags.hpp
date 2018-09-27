@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "GrTagsDeclarations.hpp"
+#include "TagsDeclarations.hpp"
 
 namespace gr {
 namespace Tags {

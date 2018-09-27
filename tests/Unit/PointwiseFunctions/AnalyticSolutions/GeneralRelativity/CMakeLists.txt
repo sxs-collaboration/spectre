@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_EinsteinSolutions")
+set(LIBRARY "Test_GeneralRelativitySolutions")
 
 set(LIBRARY_SOURCES
   Test_KerrSchild.cpp
@@ -11,7 +11,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "PointwiseFunctions/AnalyticSolutions/EinsteinSolutions/"
+  "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/"
   "${LIBRARY_SOURCES}"
-  "EinsteinSolutions;GeneralizedHarmonic;GeneralRelativity;Utilities"
+  "GeneralRelativitySolutions;GeneralizedHarmonic;GeneralRelativity;Utilities"
   )
