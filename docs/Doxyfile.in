@@ -71,6 +71,8 @@ GENERATE_BUGLIST       = NO
 
 STRIP_CODE_COMMENTS    = NO
 
+CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
+
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------

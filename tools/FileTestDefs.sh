@@ -218,6 +218,7 @@ license() {
               'docs/config/header.html' \
               'docs/config/layout.xml' \
               'LICENSE' \
+              'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' \
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
