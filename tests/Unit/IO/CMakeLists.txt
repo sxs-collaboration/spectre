@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Observers/Test_RegisterElements.cpp
   Observers/Test_Tags.cpp
   Observers/Test_ObservationId.cpp
+  Observers/Test_ReductionObserver.cpp
   Observers/Test_TypeOfObservation.cpp
   Observers/Test_VolumeObserver.cpp
   Test_H5.cpp

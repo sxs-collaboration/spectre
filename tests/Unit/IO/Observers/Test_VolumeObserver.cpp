@@ -76,15 +76,19 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
                  ActionTesting::MockDistributedObject<element_comp>{});
   }
 
-  tuples::TaggedTuple<observers::OptionTags::VolumeFileName> cache_data{};
+  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
+                      observers::OptionTags::VolumeFileName>
+      cache_data{};
   const auto& output_file_prefix =
       tuples::get<observers::OptionTags::VolumeFileName>(cache_data) =
           "./Unit.IO.Observers.VolumeObserver";
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       cache_data, std::move(dist_objects)};
 
-  runner.simple_action<obs_component, observers::Actions::Initialize>(0);
-  runner.simple_action<obs_writer, observers::Actions::InitializeWriter>(0);
+  runner.simple_action<obs_component,
+                       observers::Actions::Initialize<Metavariables>>(0);
+  runner.simple_action<obs_writer,
+                       observers::Actions::InitializeWriter<Metavariables>>(0);
 
   // Register elements
   for (const auto& id : element_ids) {

@@ -10,11 +10,14 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -22,13 +25,14 @@ namespace ScalarWave {
 /// %Actions specific to scalar wave evolutions.
 namespace Actions {
 /*!
- * \brief Temporary action for observing volume (and in the future, reduction)
- * data
+ * \brief Temporary action for observing volume and reduction data
  *
  * A few notes:
  * - Observation frequency is currently hard-coded and must manually be updated.
  *   Look for `time_by_timestep_value` to update.
- * - Writes the solution and error in \f$\Psi, \Pi\f$, and \f$\Phi_i\f$ to disk.
+ * - Writes the solution and error in \f$\Psi, \Pi\f$, and \f$\Phi_i\f$ to disk
+ *   as volume data.
+ * - The RMS error of \f$\Psi\f$ and \f$\Pi\f$ are written to disk.
  */
 struct Observe {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
@@ -69,12 +73,15 @@ struct Observe {
 
       components.emplace_back(element_name + ScalarWave::Psi::name(),
                               psi.get());
+      using PlusSquare = funcl::Plus<funcl::Identity, funcl::Square<>>;
       DataVector error =
           tuples::get<ScalarWave::Psi>(exact_solution).get() - psi.get();
+      const double psi_error = alg::accumulate(error, 0.0, PlusSquare{});
       components.emplace_back(element_name + "Error" + ScalarWave::Psi::name(),
                               error);
       components.emplace_back(element_name + ScalarWave::Pi::name(), pi.get());
       error = tuples::get<ScalarWave::Pi>(exact_solution).get() - pi.get();
+      const double pi_error = alg::accumulate(error, 0.0, PlusSquare{});
       components.emplace_back(element_name + "Error" + ScalarWave::Pi::name(),
                               error);
       for (size_t d = 0; d < Dim; ++d) {
@@ -96,17 +103,32 @@ struct Observe {
             inertial_coordinates.get(d));
       }
 
-      // Send data to observer
-      auto& local_volume_observer =
+      // Send data to volume observer
+      auto& local_observer =
           *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
                cache)
                .ckLocalBranch();
       Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-          local_volume_observer, observers::ObservationId(time),
+          local_observer, observers::ObservationId(time),
           observers::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},
               Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
           std::move(components), extents);
+
+      // Send data to reduction observer
+      using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
+                                             funcl::Sqrt<funcl::Divides<>>,
+                                             std::index_sequence<1>>;
+      using ReData = Parallel::ReductionData<
+          Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+          Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>;
+      Parallel::simple_action<observers::Actions::ContributeReductionData>(
+          local_observer, observers::ObservationId(time),
+          std::vector<std::string>{"Time", "NumberOfPoints", "PsiError",
+                                   "PiError"},
+          ReData{time.value(),
+                 db::get<Tags::Mesh<Dim>>(box).number_of_grid_points(),
+                 psi_error, pi_error});
     }
     return std::forward_as_tuple(std::move(box));
   }

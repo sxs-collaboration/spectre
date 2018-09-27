@@ -78,6 +78,8 @@ template <class... Ts, class... InvokeCombines, class... InvokeFinals,
           class... InvokeFinalExtraArgsIndices>
 struct ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                     InvokeFinalExtraArgsIndices>...> {
+  static_assert(sizeof...(Ts) > 0,
+                "Must be reducing at least one piece of data.");
   static constexpr size_t pack_size() noexcept { return sizeof...(Ts); }
 
   explicit ReductionData(
