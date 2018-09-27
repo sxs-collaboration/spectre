@@ -7,6 +7,9 @@
 #include <cstddef>
 #include <tuple>
 
+#include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/StaticAssert.hpp"
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief Higher order function objects similar to `std::plus`, etc.
@@ -59,6 +62,21 @@ struct Identity;
     }                                                                   \
   };                                                                    \
   /** \endcond*/
+
+/// Functional that asserts the first and second arguments are equal and returns
+/// the first argument.
+template <class C = Identity>
+struct AssertEqual : Functional<2> {
+  template <class T>
+  const T& operator()(const T& t0, const T& t1) noexcept {
+    DEBUG_STATIC_ASSERT(
+        C::arity == 1,
+        "The arity of the functional passed to AssertEqual must be 1");
+    ASSERT(t0 == t1, "Values are not equal in funcl::AssertEqual "
+                         << t0 << " and " << t1);
+    return C{}(t0);
+  }
+};
 
 /// Functional for dividing two objects
 MAKE_BINARY_OPERATOR(Divides, /)

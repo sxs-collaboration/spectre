@@ -5,10 +5,14 @@
 
 #include <cmath>
 
+#include "ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 
 namespace funcl {
 namespace {
+void test_assert_equal() {
+  CHECK(AssertEqual<>{}(7, 7) == 7);
+}
 void test_divides() {
   CHECK(Divides<>{}(1, -2) == 0);
   CHECK(Divides<>{}(1, -2.0) == -0.5);
@@ -61,6 +65,7 @@ void test_composition() {
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Unit][Utilities]") {
+  test_assert_equal();
   test_divides();
   test_get_argument();
   test_identity();
@@ -72,6 +77,16 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Unit][Utilities]") {
   test_square();
 
   test_composition();
+}
+
+// [[OutputRegex, Values are not equal in funcl::AssertEqual 7 and 8]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Functional.AssertEqual",
+                               "[Unit][Utilities]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  AssertEqual<>{}(7, 8);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
 }  // namespace
 }  // namespace funcl
