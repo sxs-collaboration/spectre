@@ -272,6 +272,86 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
 };
 /// \endcond
 
+/*!
+ * \ingroup CharmExtensionsGroup
+ * \brief Derived class for registering threaded actions.
+ *
+ * Calls the appropriate Charm++ function to register a threaded action.
+ */
+template <typename ParallelComponent, typename Action, typename... Args>
+struct RegisterThreadedAction : RegistrationHelper {
+  using chare_type = typename ParallelComponent::chare_type;
+  using charm_type = charm_types_with_parameters<
+      ParallelComponent, typename ParallelComponent::metavariables,
+      typename ParallelComponent::action_list,
+      typename get_array_index<chare_type>::template f<ParallelComponent>,
+      typename ParallelComponent::initial_databox>;
+  using cproxy = typename charm_type::cproxy;
+  using ckindex = typename charm_type::ckindex;
+  using algorithm = typename charm_type::algorithm;
+
+  RegisterThreadedAction() = default;
+  RegisterThreadedAction(const RegisterThreadedAction&) = default;
+  RegisterThreadedAction& operator=(const RegisterThreadedAction&) = default;
+  RegisterThreadedAction(RegisterThreadedAction&&) = default;
+  RegisterThreadedAction& operator=(RegisterThreadedAction&&) = default;
+  ~RegisterThreadedAction() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    ckindex::template idx_threaded_action<Action>(
+        static_cast<void (algorithm::*)(const std::tuple<Args...>&)>(nullptr));
+  }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterThreadedAction>();
+  }
+
+  static bool registrar;
+};
+
+/// \cond
+template <typename ParallelComponent, typename Action>
+struct RegisterThreadedAction<ParallelComponent, Action> : RegistrationHelper {
+  using chare_type = typename ParallelComponent::chare_type;
+  using charm_type = charm_types_with_parameters<
+      ParallelComponent, typename ParallelComponent::metavariables,
+      typename ParallelComponent::action_list,
+      typename get_array_index<chare_type>::template f<ParallelComponent>,
+      typename ParallelComponent::initial_databox>;
+  using cproxy = typename charm_type::cproxy;
+  using ckindex = typename charm_type::ckindex;
+  using algorithm = typename charm_type::algorithm;
+
+  RegisterThreadedAction() = default;
+  RegisterThreadedAction(const RegisterThreadedAction&) = default;
+  RegisterThreadedAction& operator=(const RegisterThreadedAction&) = default;
+  RegisterThreadedAction(RegisterThreadedAction&&) = default;
+  RegisterThreadedAction& operator=(RegisterThreadedAction&&) = default;
+  ~RegisterThreadedAction() override = default;
+
+  void register_with_charm() const noexcept override {
+    static bool done_registration{false};
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+    ckindex::template idx_threaded_action<Action>(
+        static_cast<void (algorithm::*)()>(nullptr));
+  }
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterThreadedAction>();
+  }
+
+  static bool registrar;
+};
+/// \endcond
+
 namespace detail {
 template <class T>
 struct get_value_type;
@@ -473,6 +553,20 @@ bool Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                              Action>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
         RegisterSimpleAction<ParallelComponent, Action>>();
+
+// clang-tidy: redundant declaration
+template <typename ParallelComponent, typename Action, typename... Args>
+bool Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
+                                               Args...>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterThreadedAction<ParallelComponent, Action, Args...>>();
+
+// clang-tidy: redundant declaration
+template <typename ParallelComponent, typename Action>
+bool Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
+                                               Action>::registrar =  // NOLINT
+    Parallel::charmxx::register_func_with_charm<
+        RegisterThreadedAction<ParallelComponent, Action>>();
 
 // clang-tidy: redundant declaration
 template <typename ParallelComponent, typename ReceiveTag>

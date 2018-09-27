@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
+#include "Options/Options.hpp"
 
 namespace observers {
 /// \ingroup ObserversGroup
@@ -50,16 +51,11 @@ struct TensorData : db::SimpleTag {
                                             ExtentsAndTensorVolumeData>>;
 };
 
-/// Node lock used when needing a lock for volume data.
-struct VolumeDataLock : db::SimpleTag {
-  static std::string name() noexcept { return "VolumeDataLock"; }
-  using type = CmiNodeLock;
-};
-
-/// Node lock used when needing a lock for reduction data.
-struct ReductionDataLock : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionDataLock"; }
-  using type = CmiNodeLock;
+/// The number of observer components that have contributed data at the
+/// observation ids.
+struct VolumeObserversContributed : db::SimpleTag {
+  static std::string name() noexcept { return "VolumeObserversContributed"; }
+  using type = std::unordered_map<observers::ObservationId, size_t>;
 };
 
 /// Node lock used when needing to lock the H5 file on disk.
@@ -74,4 +70,15 @@ struct ReductionFileLock : db::SimpleTag {
   using type = CmiNodeLock;
 };
 }  // namespace Tags
+
+namespace OptionTags {
+/// \ingroup ObserversGroup
+/// The name of the H5 file on disk to which all volume data is written.
+struct VolumeFileName {
+  using type = std::string;
+  static constexpr OptionString help = {
+      "Name of the volume data file without extension"};
+  static type default_value() noexcept { return "./VolumeData"; }
+};
+}  // namespace OptionTags
 }  // namespace observers

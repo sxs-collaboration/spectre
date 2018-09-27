@@ -53,13 +53,22 @@ void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
 }
 // @}
 
+// @{
 /*!
  * \ingroup ParallelGroup
  * \brief Invoke a threaded action on `proxy`, where the proxy must be a
  * nodegroup.
  */
-template <typename Action, typename Proxy, typename... Args>
-void threaded_action(Proxy&& proxy, Args&&... args) noexcept {
-  proxy.template threaded_action<Action>(std::forward<Args>(args)...);
+template <typename Action, typename Proxy>
+void threaded_action(Proxy&& proxy) noexcept {
+  proxy.template threaded_action<Action>();
 }
+
+template <typename Action, typename Proxy, typename Arg0, typename... Args>
+void threaded_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) noexcept {
+  proxy.template threaded_action<Action>(
+      std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
+          std::forward<Arg0>(arg0), std::forward<Args>(args)...));
+}
+// @}
 }  // namespace Parallel

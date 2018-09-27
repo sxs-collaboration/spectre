@@ -16,12 +16,13 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/Algorithm.hpp"
+#include "Parallel/Algorithm.hpp"  // IWYU pragma: keep
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -141,13 +142,17 @@ struct nodegroup_check_first_result {
 
 struct nodegroup_threaded_receive {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename NodeLock,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent, typename NodeLock,
             Requires<sizeof...(DbTags) == 2> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const NodeLock& node_lock, const int& id_of_array) {
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    const gsl::not_null<NodeLock*> node_lock,
+                    const int& id_of_array) {
     Parallel::lock(node_lock);
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
         make_not_null(&box),

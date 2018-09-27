@@ -11,11 +11,12 @@
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"                     // IWYU pragma: keep
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -27,6 +28,12 @@
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
+namespace observers {
+namespace Actions {
+template <observers::TypeOfObservation TypeOfObservation>
+struct RegisterWithObservers;
+}  // namespace Actions
+}  // namespace observers
 /// \endcond
 
 template <class Metavariables, class ActionList>
@@ -67,11 +74,42 @@ struct DgElementArray {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::Evolve) {
       Parallel::get_parallel_component<DgElementArray>(local_cache)
           .perform_algorithm();
+    } else {
+      try_register_with_observers(next_phase, global_cache);
+    }
+  }
+
+ private:
+  template <typename PhaseType,
+            Requires<not observers::has_register_with_observer_v<PhaseType>> =
+                nullptr>
+  static void try_register_with_observers(
+      const PhaseType /*next_phase*/,
+      Parallel::CProxy_ConstGlobalCache<
+          Metavariables>& /*global_cache*/) noexcept {}
+
+  template <
+      typename PhaseType,
+      Requires<observers::has_register_with_observer_v<PhaseType>> = nullptr>
+  static void try_register_with_observers(
+      const PhaseType next_phase,
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+    if (next_phase == Metavariables::Phase::RegisterWithObserver) {
+      auto& local_cache = *(global_cache.ckLocalBranch());
+      // We currently use a fake temporal id when registering observers but in
+      // the future when we start doing load balancing and elements migrate
+      // around the system they will need to register and unregister themselves
+      // at specific times.
+      const size_t fake_temporal_id = 0;
+      Parallel::simple_action<observers::Actions::RegisterWithObservers<
+          observers::TypeOfObservation::Volume>>(
+          Parallel::get_parallel_component<DgElementArray>(local_cache),
+          fake_temporal_id);
     }
   }
 };

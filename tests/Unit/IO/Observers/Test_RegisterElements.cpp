@@ -21,45 +21,13 @@
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+#include "tests/Unit/IO/Observers/ObserverHelpers.hpp"
 
 namespace {
-using ElementIndexType = ElementIndex<2>;
-
-template <typename Metavariables>
-struct element_component {
-  using component_being_mocked = void;  // Not needed
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
-};
-
-template <typename Metavariables>
-struct observer_component {
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using component_being_mocked = observers::Observer<Metavariables>;
-  using simple_tags = observers::Actions::Initialize::simple_tags;
-  using compute_tags = observers::Actions::Initialize::compute_tags;
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
-};
-
-struct Metavariables {
-  using component_list = tmpl::list<element_component<Metavariables>,
-                                    observer_component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
-
-  enum class Phase { Initialize, Exit };
-};
+// NOLINTNEXTLINE(google-build-using-namespace)
+using namespace TestObservers_detail;
 
 template <observers::TypeOfObservation TypeOfObservation>
 void check_observer_registration() {
@@ -67,18 +35,24 @@ void check_observer_registration() {
       typename ActionTesting::MockRuntimeSystem<
           Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
+  using obs_writer = observer_writer_component<Metavariables>;
   using element_comp = element_component<Metavariables>;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using ObserverMockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           obs_component>;
+  using WriterMockDistributedObjectsTag =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          obs_writer>;
   using ElementMockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           element_comp>;
   TupleOfMockDistributedObjects dist_objects{};
   tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
+  tuples::get<WriterMockDistributedObjectsTag>(dist_objects)
+      .emplace(0, ActionTesting::MockDistributedObject<obs_writer>{});
 
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
@@ -96,6 +70,7 @@ void check_observer_registration() {
       {}, std::move(dist_objects)};
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
+  runner.simple_action<obs_writer, observers::Actions::InitializeWriter>(0);
   // Test initial state
   const auto& observer_box =
       runner.template algorithms<obs_component>()
@@ -147,7 +122,7 @@ void check_observer_registration() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterElements", "[Unit]") {
+SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterElements", "[Unit][Observers]") {
   SECTION("Register as requiring reduction observer support") {
     check_observer_registration<observers::TypeOfObservation::Reduction>();
   }
