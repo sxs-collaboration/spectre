@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -141,7 +142,7 @@ Element<3> make_element() noexcept {
 // Values of left_id, right_id based on make_element<1> above.
 auto make_neighbor_packaged_data(
     const double left, const double right,
-    const tnsr::I<double, 1>& local_size_for_neighbor_size) noexcept {
+    const std::array<double, 1>& local_size_for_neighbor_size) noexcept {
   constexpr size_t left_id = 1;
   constexpr size_t right_id = 2;
   return std::unordered_map<
@@ -171,18 +172,18 @@ auto make_neighbor_packaged_data(const double left, const double right,
       std::make_pair(
           std::make_pair(Direction<1>::lower_xi(), ElementId<1>(left_id)),
           SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
-              Scalar<double>(left), tnsr::I<double, 1>(left_size)}),
+              Scalar<double>(left), make_array<1>(left_size)}),
       std::make_pair(
           std::make_pair(Direction<1>::upper_xi(), ElementId<1>(right_id)),
           SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData{
-              Scalar<double>(right), tnsr::I<double, 1>(right_size)})};
+              Scalar<double>(right), make_array<1>(right_size)})};
 }
 
 void test_limiter_activates_work(
     const SlopeLimiters::Minmod<1, tmpl::list<scalar>>& minmod,
     const scalar::type& input, const Element<1>& element, const Mesh<1>& mesh,
     const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
-    const tnsr::I<double, 1>& element_size,
+    const std::array<double, 1>& element_size,
     const std::unordered_map<
         std::pair<Direction<1>, ElementId<1>>,
         SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
@@ -206,7 +207,7 @@ void test_limiter_does_not_activate_work(
     const SlopeLimiters::Minmod<1, tmpl::list<scalar>>& minmod,
     const scalar::type& input, const Element<1>& element, const Mesh<1>& mesh,
     const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
-    const tnsr::I<double, 1>& element_size,
+    const std::array<double, 1>& element_size,
     const std::unordered_map<
         std::pair<Direction<1>, ElementId<1>>,
         SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
@@ -254,7 +255,7 @@ void test_limiter_action_on_constant_function(
   const double value = 0.3;
   const auto input =
       make_with_value<scalar::type>(get<0>(logical_coords), value);
-  const auto element_size = tnsr::I<double, 1>{1.2};
+  const auto element_size = make_array<1>(1.2);
   for (const double left : {-0.4, value, 1.2}) {
     for (const double right : {0.2, value, 0.9}) {
       test_limiter_does_not_activate_work(
@@ -273,7 +274,7 @@ void test_limiter_action_on_linear_function(
   const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 1>{2.0};
+  const auto element_size = make_array<1>(2.0);
 
   const auto test_limiter_activates =
       [&minmod, &element, &mesh, &logical_coords, &element_size ](
@@ -359,7 +360,7 @@ void test_limiter_action_on_quadratic_function(
   const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 1>{2.0};
+  const auto element_size = make_array<1>(2.0);
 
   const auto test_limiter_activates =
       [&minmod, &element, &mesh, &logical_coords, &element_size ](
@@ -430,7 +431,7 @@ void test_limiter_action_with_tvbm_correction(
   const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 1>{2.0};
+  const auto element_size = make_array<1>(2.0);
 
   const auto test_limiter_activates =
       [&element, &mesh, &logical_coords, &element_size ](
@@ -487,7 +488,7 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
   const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 1>{2.0};
+  const auto element_size = make_array<1>(2.0);
 
   const auto test_limiter_activates =
       [&element, &mesh, &logical_coords, &element_size ](
@@ -554,7 +555,7 @@ void test_limiter_action_at_boundary(
   const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 1>{2.0};
+  const auto element_size = make_array<1>(2.0);
 
   const auto func = [](
       const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
@@ -603,7 +604,7 @@ void test_limiter_action_with_different_size_neighbor(
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const double dx = 1.0;
-  const auto element_size = tnsr::I<double, 1>{dx};
+  const auto element_size = make_array<1>(dx);
 
   const auto test_limiter_activates =
       [&minmod, &element, &mesh, &logical_coords, &element_size ](
@@ -744,7 +745,7 @@ void test_package_data_work(
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const tnsr::I<double, VolumeDim>& element_size) noexcept {
+    const std::array<double, VolumeDim>& element_size) noexcept {
   // To streamline the testing of the op() function, the test sets up
   // identical data for all components of input_vector. To better test the
   // package_data function, we first modify the input so the data
@@ -788,7 +789,7 @@ void test_work(
         neighbor_data,
     const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const tnsr::I<double, VolumeDim>& element_size,
+    const std::array<double, VolumeDim>& element_size,
     const std::array<double, VolumeDim>& target_scalar_slope,
     const std::array<std::array<double, VolumeDim>, VolumeDim>&
         target_vector_slope) noexcept {
@@ -838,7 +839,7 @@ SPECTRE_TEST_CASE(
   const auto mesh =
       Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 1>{{{0.5}}};
+  const auto element_size = make_array<1>(0.5);
   const auto true_slope = std::array<double, 1>{{2.0}};
   const auto func = [&true_slope](
       const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
@@ -902,7 +903,7 @@ SPECTRE_TEST_CASE(
       Mesh<2>(std::array<size_t, 2>{{3, 3}}, Spectral::Basis::Legendre,
               Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 2>{{{0.5, 1.0}}};
+  const auto element_size = make_array(0.5, 1.0);
   const auto true_slope = std::array<double, 2>{{2.0, -3.0}};
   const auto& func = [&true_slope](
       const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
@@ -1007,7 +1008,7 @@ SPECTRE_TEST_CASE(
       Mesh<3>(std::array<size_t, 3>{{3, 3, 4}}, Spectral::Basis::Legendre,
               Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = tnsr::I<double, 3>{{{0.5, 1.0, 0.8}}};
+  const auto element_size = make_array(0.5, 1.0, 0.8);
   const auto true_slope = std::array<double, 3>{{2.0, -3.0, 1.0}};
   const auto func = [&true_slope](
       const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {

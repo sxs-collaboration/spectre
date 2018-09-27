@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <limits>
@@ -19,7 +20,7 @@
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -78,7 +79,7 @@ bool limit_one_tensor(
     const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const tnsr::I<double, VolumeDim>& element_size,
+    const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         gsl::not_null<const double*>,
@@ -86,7 +87,7 @@ bool limit_one_tensor(
         neighbor_tensor_begin,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        tnsr::I<double, VolumeDim>,
+        std::array<double, VolumeDim>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_sizes) noexcept;
 
@@ -211,9 +212,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \brief Data to send to neighbor elements.
   struct PackagedData {
     tuples::TaggedTuple<Minmod_detail::to_tensor_double<Tags>...> means_;
-    tnsr::I<double, VolumeDim> element_size_ =
-        make_with_value<tnsr::I<double, VolumeDim>>(
-            0.0, std::numeric_limits<double>::signaling_NaN());
+    std::array<double, VolumeDim> element_size_ =
+        make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
   };
 
   /// \brief Package data for sending to neighbor elements.
@@ -231,7 +231,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   void package_data(const gsl::not_null<PackagedData*>& packaged_data,
                     const db::item_type<Tags>&... tensors,
                     const Mesh<VolumeDim>& mesh,
-                    const tnsr::I<double, VolumeDim>& element_size) const
+                    const std::array<double, VolumeDim>& element_size) const
       noexcept {
     const auto wrap_compute_means =
         [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
@@ -274,7 +274,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-      const tnsr::I<double, VolumeDim>& element_size,
+      const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -314,7 +314,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const auto neighbor_sizes = [&neighbor_data]() noexcept {
         std::unordered_map<
             std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-            tnsr::I<double, VolumeDim>,
+            std::array<double, VolumeDim>,
             boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
             result;
         for (const auto& neighbor_and_data : neighbor_data) {
