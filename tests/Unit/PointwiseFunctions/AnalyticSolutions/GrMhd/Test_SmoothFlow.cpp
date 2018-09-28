@@ -21,6 +21,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tags::dt
+// IWYU pragma: no_include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 
 namespace {
 
@@ -28,16 +29,16 @@ struct SmoothFlowProxy : grmhd::Solutions::SmoothFlow {
   using grmhd::Solutions::SmoothFlow::SmoothFlow;
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_t<DataType>> primitive_variables(
-      const tnsr::I<DataType, 3>& x, double t) const noexcept {
-    return variables(x, t, variables_t<DataType>{});
+  tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
+  primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, variables_tags<DataType>{});
   }
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_t<DataType>>
+  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>>
   dt_primitive_variables(const tnsr::I<DataType, 3>& x, double t) const
       noexcept {
-    return variables(x, t, dt_variables_t<DataType>{});
+    return variables(x, t, dt_variables_tags<DataType>{});
   }
 };
 

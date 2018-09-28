@@ -9,10 +9,13 @@
 #include "DataStructures/DataBox/Prefixes.hpp"             // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+// IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
+
 /// \cond
 namespace grmhd {
 namespace Solutions {
@@ -28,7 +31,8 @@ AlfvenWave::AlfvenWave(const WaveNumber::type wavenumber,
       rest_mass_density_(rest_mass_density),
       adiabatic_exponent_(adiabatic_exponent),
       background_mag_field_(background_mag_field),
-      perturbation_size_(perturbation_size) {
+      perturbation_size_(perturbation_size),
+      equation_of_state_{adiabatic_exponent_} {
   alfven_speed_ = background_mag_field /
                   sqrt((rest_mass_density_ + pressure_ * adiabatic_exponent_ /
                                                  (adiabatic_exponent_ - 1.0)) +
@@ -45,6 +49,8 @@ void AlfvenWave::pup(PUP::er& p) noexcept {
   p | perturbation_size_;
   p | alfven_speed_;
   p | fluid_speed_;
+  p | equation_of_state_;
+  p | background_spacetime_;
 }
 
 template <typename DataType>
@@ -56,13 +62,13 @@ DataType AlfvenWave::k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x,
 }
 
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<AlfvenWave::variables_t<DataType>>
+tuples::tagged_tuple_from_typelist<AlfvenWave::variables_tags<DataType>>
 AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      AlfvenWave::variables_t<DataType> /*meta*/) const
+                      AlfvenWave::variables_tags<DataType> /*meta*/) const
     noexcept {
   // Explicitly set all variables to zero:
   auto result = make_with_value<
-      tuples::tagged_tuple_from_typelist<AlfvenWave::variables_t<DataType>>>(
+      tuples::tagged_tuple_from_typelist<AlfvenWave::variables_tags<DataType>>>(
       x, 0.0);
 
   const DataType phase = k_dot_x_minus_vt(x, t);
@@ -88,14 +94,13 @@ AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
 }
 
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<AlfvenWave::dt_variables_t<DataType>>
+tuples::tagged_tuple_from_typelist<AlfvenWave::dt_variables_tags<DataType>>
 AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      AlfvenWave::dt_variables_t<DataType> /*meta*/) const
+                      AlfvenWave::dt_variables_tags<DataType> /*meta*/) const
     noexcept {
   // Explicitly set all variables to zero:
-  auto result = make_with_value<
-      tuples::tagged_tuple_from_typelist<AlfvenWave::dt_variables_t<DataType>>>(
-      x, 0.0);
+  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
+      AlfvenWave::dt_variables_tags<DataType>>>(x, 0.0);
 
   const DataType phase = k_dot_x_minus_vt(x, t);
 
@@ -131,6 +136,8 @@ AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
 }
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
+  // there is no comparison operator for the EoS, but should be okay as
+  // the adiabatic_exponents are compared
   return lhs.wavenumber() == rhs.wavenumber() and
          lhs.pressure() == rhs.pressure() and
          lhs.rest_mass_density() == rhs.rest_mass_density() and
@@ -138,7 +145,8 @@ bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
          lhs.background_mag_field() == rhs.background_mag_field() and
          lhs.perturbation_size() == rhs.perturbation_size() and
          lhs.alfven_speed() == rhs.alfven_speed() and
-         lhs.fluid_speed() == rhs.fluid_speed();
+         lhs.fluid_speed() == rhs.fluid_speed() and
+         lhs.background_spacetime() == rhs.background_spacetime();
 }
 
 bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
@@ -150,18 +158,18 @@ bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                              \
-  template tuples::tagged_tuple_from_typelist<                            \
-      grmhd::Solutions::AlfvenWave::variables_t<DTYPE(data)>>             \
-  grmhd::Solutions::AlfvenWave::variables(                                \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                   \
-      grmhd::Solutions::AlfvenWave::variables_t<DTYPE(data)> /*meta*/)    \
-      const noexcept;                                                     \
-  template tuples::tagged_tuple_from_typelist<                            \
-      grmhd::Solutions::AlfvenWave::dt_variables_t<DTYPE(data)>>          \
-  grmhd::Solutions::AlfvenWave::variables(                                \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                   \
-      grmhd::Solutions::AlfvenWave::dt_variables_t<DTYPE(data)> /*meta*/) \
+#define INSTANTIATE(_, data)                                                 \
+  template tuples::tagged_tuple_from_typelist<                               \
+      grmhd::Solutions::AlfvenWave::variables_tags<DTYPE(data)>>             \
+  grmhd::Solutions::AlfvenWave::variables(                                   \
+      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
+      grmhd::Solutions::AlfvenWave::variables_tags<DTYPE(data)> /*meta*/)    \
+      const noexcept;                                                        \
+  template tuples::tagged_tuple_from_typelist<                               \
+      grmhd::Solutions::AlfvenWave::dt_variables_tags<DTYPE(data)>>          \
+  grmhd::Solutions::AlfvenWave::variables(                                   \
+      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
+      grmhd::Solutions::AlfvenWave::dt_variables_tags<DTYPE(data)> /*meta*/) \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

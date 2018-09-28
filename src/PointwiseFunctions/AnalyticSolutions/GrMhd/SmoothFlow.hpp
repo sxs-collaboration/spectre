@@ -11,6 +11,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -39,6 +41,9 @@ namespace Solutions {
  */
 class SmoothFlow {
  public:
+  using equation_of_state_type = EquationsOfState::IdealFluid<true>;
+  using background_spacetime_type = gr::Solutions::Minkowski<3>;
+
   /// The mean flow velocity.
   struct MeanVelocity {
     using type = std::array<double, 3>;
@@ -96,7 +101,7 @@ class SmoothFlow {
   explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept {}
 
   template <typename DataType>
-  using variables_t =
+  using variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                  hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
@@ -104,20 +109,21 @@ class SmoothFlow {
                  hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
 
   template <typename DataType>
-  using dt_variables_t = db::wrap_tags_in<Tags::dt, variables_t<DataType>>;
+  using dt_variables_tags =
+      db::wrap_tags_in<Tags::dt, variables_tags<DataType>>;
 
   /// Retrieve the primitive variables at time `t` and spatial coordinates `x`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_t<DataType>> variables(
+  tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t,
-      variables_t<DataType> /*meta*/) const noexcept;
+      variables_tags<DataType> /*meta*/) const noexcept;
 
   /// Retrieve the time derivative of the primitive variables at time `t` and
   /// spatial coordinates `x`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_t<DataType>> variables(
+  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t,
-      dt_variables_t<DataType> /*meta*/) const noexcept;
+      dt_variables_tags<DataType> /*meta*/) const noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
@@ -131,6 +137,14 @@ class SmoothFlow {
     return perturbation_size_;
   }
   double k_dot_v() const noexcept { return k_dot_v_; }
+
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+    return equation_of_state_;
+  }
+
+  const gr::Solutions::Minkowski<3>& background_spacetime() const noexcept {
+    return background_spacetime_;
+  }
 
  private:
   // Computes the phase.
@@ -148,15 +162,20 @@ class SmoothFlow {
       std::numeric_limits<double>::signaling_NaN();
   // The angular frequency.
   double k_dot_v_ = std::numeric_limits<double>::signaling_NaN();
+  EquationsOfState::IdealFluid<true> equation_of_state_{};
+  gr::Solutions::Minkowski<3> background_spacetime_{};
 };
 
 inline bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
+  // there is no comparison operator for the EoS, but should be okay as
+  // the adiabatic_exponents are compared
   return lhs.mean_velocity() == rhs.mean_velocity() and
          lhs.wavevector() == rhs.wavevector() and
          lhs.pressure() == rhs.pressure() and
          lhs.adiabatic_exponent() == rhs.adiabatic_exponent() and
          lhs.perturbation_size() == rhs.perturbation_size() and
-         lhs.k_dot_v() == rhs.k_dot_v();
+         lhs.k_dot_v() == rhs.k_dot_v() and
+         lhs.background_spacetime() == rhs.background_spacetime();
 }
 
 inline bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
