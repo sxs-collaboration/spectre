@@ -23,6 +23,8 @@ template <bool IsRelativistic, size_t ThermodynamicDim>
 struct EquationOfState;
 template <typename DataType>
 struct LorentzFactor;
+template <typename DataType, size_t Dim, typename Fr>
+struct LorentzFactorCompute;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MagneticField;
 template <typename DataType>
