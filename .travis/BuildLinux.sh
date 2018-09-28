@@ -44,7 +44,7 @@ fi
 # can search the file for warnings
 if [ ${BUILD_DOC} ]; then
     make doc | tee doxygen.log
-    ! grep 'warning' ./doxygen.log
+    grep 'warning' ./doxygen.log && exit 1
 fi
 
 # Build the code and run tests
