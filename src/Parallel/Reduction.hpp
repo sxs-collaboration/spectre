@@ -101,13 +101,15 @@ struct ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
   static CkReductionMsg* combine(int number_of_messages,
                                  CkReductionMsg** msgs) noexcept;
 
-  void combine(ReductionData&& t) noexcept {
+  ReductionData& combine(ReductionData&& t) noexcept {
     ReductionData::combine_helper(this, std::move(t),
                                   std::make_index_sequence<sizeof...(Ts)>{});
+    return *this;
   }
 
-  void finalize() noexcept {
+  ReductionData& finalize() noexcept {
     invoke_final_loop_over_tuple(std::make_index_sequence<sizeof...(Ts)>{});
+    return *this;
   }
 
   /// \cond
