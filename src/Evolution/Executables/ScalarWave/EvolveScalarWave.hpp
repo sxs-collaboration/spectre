@@ -11,6 +11,7 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Evolution/Systems/ScalarWave/Actions.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/System.hpp"
@@ -72,7 +73,7 @@ struct EvolutionMetavars {
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
-          EvolutionMetavars,
+          EvolutionMetavars, dg::Actions::InitializeElement<Dim>,
           tmpl::list<Actions::AdvanceTime, ScalarWave::Actions::Observe,
                      Actions::FinalTime, Actions::ComputeVolumeDuDt,
                      dg::Actions::ComputeNonconservativeBoundaryFluxes,

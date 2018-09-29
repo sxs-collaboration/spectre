@@ -15,7 +15,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -36,7 +35,7 @@ struct RegisterWithObservers;
 }  // namespace observers
 /// \endcond
 
-template <class Metavariables, class ActionList>
+template <class Metavariables, class InitializeAction, class ActionList>
 struct DgElementArray {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
@@ -49,8 +48,7 @@ struct DgElementArray {
       Parallel::get_const_global_cache_tags<action_list>;
 
   using initial_databox = db::compute_databox_type<
-      typename dg::Actions::InitializeElement<volume_dim>::
-          template return_tag_list<Metavariables>>;
+      typename InitializeAction::template return_tag_list<Metavariables>>;
 
   using options = tmpl::flatten<tmpl::list<
       typename Metavariables::domain_creator_tag, OptionTags::InitialTime,
@@ -114,8 +112,8 @@ struct DgElementArray {
   }
 };
 
-template <class Metavariables, class ActionList>
-void DgElementArray<Metavariables, ActionList>::initialize(
+template <class Metavariables, class InitializeAction, class ActionList>
+void DgElementArray<Metavariables, InitializeAction, ActionList>::initialize(
     Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
     std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>> domain_creator,
     const double initial_time, const double initial_dt) noexcept {
@@ -123,8 +121,8 @@ void DgElementArray<Metavariables, ActionList>::initialize(
              std::abs(initial_dt));
 }
 
-template <class Metavariables, class ActionList>
-void DgElementArray<Metavariables, ActionList>::initialize(
+template <class Metavariables, class InitializeAction, class ActionList>
+void DgElementArray<Metavariables, InitializeAction, ActionList>::initialize(
     Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
     const std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
         domain_creator,
@@ -159,7 +157,7 @@ void DgElementArray<Metavariables, ActionList>::initialize(
   }
   dg_element_array.doneInserting();
 
-  Parallel::simple_action<dg::Actions::InitializeElement<volume_dim>>(
+  Parallel::simple_action<InitializeAction>(
       dg_element_array, domain_creator->initial_extents(), std::move(domain),
       initial_time, initial_dt, initial_slab_size);
 }
