@@ -42,11 +42,13 @@ struct DivergenceCleaningField : db::SimpleTag {
   static std::string name() noexcept { return "DivergenceCleaningField"; }
 };
 
+/// Base tag for the equation of state
+struct EquationOfStateBase : db::BaseTag {};
+
 /// The equation of state
-template <bool IsRelativistic, size_t ThermodynamicDim>
-struct EquationOfState : db::SimpleTag {
-  using type = std::unique_ptr<
-      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
+template <typename EquationOfStateType>
+struct EquationOfState : EquationOfStateBase, db::SimpleTag {
+  using type = EquationOfStateType;
   static std::string name() noexcept { return "EquationOfState"; }
 };
 

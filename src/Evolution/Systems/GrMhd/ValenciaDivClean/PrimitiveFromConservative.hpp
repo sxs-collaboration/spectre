@@ -61,7 +61,7 @@ struct PrimitiveFromConservative {
                  grmhd::ValenciaDivClean::Tags::TildePhi,
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
                  gr::Tags::SqrtDetSpatialMetric<>,
-                 hydro::Tags::EquationOfState<true, ThermodynamicDim>>;
+                 hydro::Tags::EquationOfStateBase>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,

@@ -19,7 +19,8 @@ template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct ComovingMagneticField;
 template <typename DataType>
 struct DivergenceCleaningField;
-template <bool IsRelativistic, size_t ThermodynamicDim>
+struct EquationOfStateBase;
+template <typename EquationOfStateType>
 struct EquationOfState;
 template <typename DataType>
 struct LorentzFactor;

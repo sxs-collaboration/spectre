@@ -18,6 +18,12 @@ namespace ValenciaDivClean {
 /// with divergence cleaning.
 namespace Tags {
 
+/// The characteristic speeds
+struct CharacteristicSpeeds : db::SimpleTag {
+  using type = std::array<DataVector, 9>;
+  static std::string name() noexcept { return "CharacteristicSpeeds"; }
+};
+
 /// The densitized rest-mass density \f${\tilde D}\f$
 struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
