@@ -44,6 +44,8 @@ struct SpatialVelocitySquared;
 template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>
+struct SpecificEnthalpyCompute;
+template <typename DataType>
 struct SpecificInternalEnergy;
 }  // namespace Tags
 }  // namespace hydro

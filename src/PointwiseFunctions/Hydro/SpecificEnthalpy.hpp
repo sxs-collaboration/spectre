@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace hydro {
 /*!
@@ -18,4 +21,17 @@ Scalar<DataType> specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& pressure) noexcept;
+
+namespace Tags {
+/// Compute item for specific enthalpy \f$h\f$.
+///
+/// Can be retrieved using `hydro::Tags::SpecificEnthalpy`
+template <typename DataType>
+struct SpecificEnthalpyCompute : SpecificEnthalpy<DataType>, db::ComputeTag {
+  static constexpr auto function = &specific_enthalpy<DataType>;
+  using argument_tags =
+      tmpl::list<RestMassDensity<DataType>, SpecificInternalEnergy<DataType>,
+                 Pressure<DataType>>;
+};
+}  // namespace Tags
 }  // namespace hydro
