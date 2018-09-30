@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -67,10 +67,9 @@ template <class DataType>
 Scalar<DataType> PolytropicFluid<true>::specific_enthalpy_from_density_impl(
     const Scalar<DataType>& rest_mass_density) const noexcept {
   return Scalar<DataType>{
-      1.0 +
-      polytropic_exponent_ / (polytropic_exponent_ - 1.0) *
-          polytropic_constant_ *
-          pow(get(rest_mass_density), polytropic_exponent_ - 1.0)};
+      1.0 + polytropic_exponent_ / (polytropic_exponent_ - 1.0) *
+                polytropic_constant_ *
+                pow(get(rest_mass_density), polytropic_exponent_ - 1.0)};
 }
 
 template <>

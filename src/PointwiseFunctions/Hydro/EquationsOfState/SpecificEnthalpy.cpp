@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/EquationsOfState/SpecificEnthalpy.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/SpecificEnthalpy.hpp"
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"

@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "DataStructures/DataVector.hpp"
-#include "PointwiseFunctions/EquationsOfState/SpecificEnthalpy.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/SpecificEnthalpy.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -23,7 +23,7 @@ void test_specific_enthalpy(const DataType& used_for_size) noexcept {
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.SpecificEnthalpy",
                   "[Unit][EquationsOfState]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/EquationsOfState"};
+      "PointwiseFunctions/Hydro/EquationsOfState"};
 
   test_specific_enthalpy(std::numeric_limits<double>::signaling_NaN());
   test_specific_enthalpy(DataVector(5));

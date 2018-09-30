@@ -371,6 +371,6 @@ class EquationOfState<IsRelativistic, 2, std::index_sequence<Is, Js>>
           BOOST_PP_SUB(DIM, 1),                                   \
           (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D))))
 
-#include "PointwiseFunctions/EquationsOfState/DarkEnergyFluid.hpp"
-#include "PointwiseFunctions/EquationsOfState/IdealFluid.hpp"
-#include "PointwiseFunctions/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"

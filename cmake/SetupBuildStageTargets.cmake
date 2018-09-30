@@ -50,7 +50,6 @@ add_dependencies(test-libs-stage1
   Test_NewtonianEulerSolutions
   Test_PoissonSolutions
   Test_WaveEquation
-  Test_EquationsOfState
   Test_GeneralRelativity
   Test_MathFunctions
   Test_Pypp

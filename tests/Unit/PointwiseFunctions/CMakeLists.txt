@@ -2,7 +2,6 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(AnalyticSolutions)
-add_subdirectory(EquationsOfState)
 add_subdirectory(GeneralRelativity)
 add_subdirectory(Hydro)
 add_subdirectory(MathFunctions)

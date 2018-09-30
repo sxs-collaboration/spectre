@@ -9,8 +9,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"
-#include "tests/Unit/PointwiseFunctions/EquationsOfState/TestHelpers.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
@@ -24,7 +24,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
   Parallel::register_derived_classes_with_charm<
       EoS::EquationOfState<false, 1>>();
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/EquationsOfState/"};
+      "PointwiseFunctions/Hydro/EquationsOfState/"};
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
   TestHelpers::EquationsOfState::check(EoS::PolytropicFluid<true>{100.0, 2.0},

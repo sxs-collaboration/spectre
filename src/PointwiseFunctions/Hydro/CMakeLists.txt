@@ -4,6 +4,10 @@
 set(LIBRARY Hydro)
 
 set(LIBRARY_SOURCES
+  EquationsOfState/DarkEnergyFluid.cpp
+  EquationsOfState/IdealFluid.cpp
+  EquationsOfState/PolytropicFluid.cpp
+  EquationsOfState/SpecificEnthalpy.cpp
   LorentzFactor.cpp
   )
 
