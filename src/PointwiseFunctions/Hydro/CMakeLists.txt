@@ -7,8 +7,8 @@ set(LIBRARY_SOURCES
   EquationsOfState/DarkEnergyFluid.cpp
   EquationsOfState/IdealFluid.cpp
   EquationsOfState/PolytropicFluid.cpp
-  EquationsOfState/SpecificEnthalpy.cpp
   LorentzFactor.cpp
+  SpecificEnthalpy.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

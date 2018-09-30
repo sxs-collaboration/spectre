@@ -12,8 +12,8 @@ def dark_energy_fluid_pressure_from_density_and_energy(
 
 def dark_energy_fluid_rel_pressure_from_density_and_enthalpy(
         rest_mass_density, specific_enthalpy, parameter_w):
-    return (parameter_w * rest_mass_density *
-            specific_enthalpy / (parameter_w + 1.0))
+    return (parameter_w * rest_mass_density * specific_enthalpy /
+            (parameter_w + 1.0))
 
 
 def dark_energy_fluid_rel_specific_enthalpy_from_density_and_energy(
@@ -54,8 +54,8 @@ def ideal_fluid_rel_pressure_from_density_and_enthalpy(
 
 def ideal_fluid_newt_pressure_from_density_and_enthalpy(
         rest_mass_density, specific_enthalpy, adiabatic_index):
-    return (rest_mass_density * specific_enthalpy *
-            (adiabatic_index - 1.0) / adiabatic_index)
+    return (rest_mass_density * specific_enthalpy * (adiabatic_index - 1.0) /
+            adiabatic_index)
 
 
 def ideal_fluid_rel_specific_enthalpy_from_density_and_energy(
@@ -94,13 +94,15 @@ def polytropic_pressure_from_density(rest_mass_density, polytropic_constant,
 
 def polytropic_rel_rest_mass_density_from_enthalpy(
         specific_enthalpy, polytropic_constant, polytropic_exponent):
-    return ((polytropic_exponent - 1.0) / (polytropic_constant*polytropic_exponent) *
+    return ((polytropic_exponent - 1.0) /
+            (polytropic_constant * polytropic_exponent) *
             (specific_enthalpy - 1.0))**(1.0 / (polytropic_exponent - 1.0))
 
 
 def polytropic_newt_rest_mass_density_from_enthalpy(
         specific_enthalpy, polytropic_constant, polytropic_exponent):
-    return ((polytropic_exponent - 1.0) / (polytropic_constant*polytropic_exponent) *
+    return ((polytropic_exponent - 1.0) /
+            (polytropic_constant * polytropic_exponent) *
             (specific_enthalpy))**(1.0 / (polytropic_exponent - 1.0))
 
 
@@ -136,13 +138,3 @@ def polytropic_kappa_times_p_over_rho_squared_from_density(
 
 
 # End functions for testing PolytropicFluid.cpp
-
-
-# Functions for testing SpecificEnthalpy.cpp
-
-
-def specific_enthalpy(rest_mass_density, specific_internal_energy, pressure):
-    return pressure / rest_mass_density + 1.0 + specific_internal_energy
-
-
-# End functions for testing SpecificEnthalpy.cpp

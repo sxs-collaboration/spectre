@@ -12,3 +12,12 @@ def lorentz_factor(spatial_velocity, spatial_velocity_one_form):
 
 
 # End functions for testing LorentzFactor.cpp
+
+# Functions for testing SpecificEnthalpy.cpp
+
+
+def specific_enthalpy(rest_mass_density, specific_internal_energy, pressure):
+    return pressure / rest_mass_density + 1.0 + specific_internal_energy
+
+
+# End functions for testing SpecificEnthalpy.cpp

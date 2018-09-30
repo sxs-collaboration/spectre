@@ -5,7 +5,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
-namespace EquationsOfState {
+namespace hydro {
 /*!
  * \ingroup EquationsOfStateGroup
  * \brief Computes the relativistic specific enthalpy \f$h\f$ as:
@@ -18,4 +18,4 @@ Scalar<DataType> specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& pressure) noexcept;
-}  // namespace EquationsOfState
+}  // namespace hydro
