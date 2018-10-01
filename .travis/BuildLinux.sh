@@ -3,7 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Setup lmod and spack to load dependencies
+# Load what we need from `/root/.bashrc`
 . /etc/profile.d/lmod.sh
 export PATH=$PATH:/work/spack/bin
 . /work/spack/share/spack/setup-env.sh
@@ -15,6 +15,7 @@ spack load gsl
 spack load libxsmm
 spack load pkg-config
 spack load yaml-cpp
+export PATH=$PATH:/work/texlive/bin/x86_64-linux
 
 ccache -z
 
