@@ -761,7 +761,7 @@ void test_package_data_work(
       VolumeDim, tmpl::list<scalar, vector<VolumeDim>>>::PackagedData
       packaged_data{};
   minmod.package_data(make_not_null(&packaged_data), input_scalar,
-                      modified_vector, mesh, element_size);
+                      modified_vector, mesh, element_size, {});
 
   // Should not normally look inside package, but we do so here for testing.
   double lhs =

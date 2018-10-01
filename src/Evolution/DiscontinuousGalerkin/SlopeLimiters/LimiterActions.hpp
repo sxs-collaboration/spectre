@@ -46,7 +46,6 @@ namespace Actions {
 /// \brief Receive limiter data from neighbors, then apply limiter.
 ///
 /// Currently, is not tested for support of:
-/// - Blocks with differing Orientations
 /// - h-refinement
 /// Currently, does not support:
 /// - Local time-stepping
@@ -135,7 +134,6 @@ struct Limit {
 /// \brief Send local data needed for limiting.
 ///
 /// Currently, is not tested for support of:
-/// - Blocks with differing Orientations
 /// - h-refinement
 /// Currently, does not support:
 /// - Local time-stepping
@@ -196,11 +194,12 @@ struct SendData {
           typename Metavariables::limiter::type::package_argument_tags;
       const auto packaged_data = db::apply<argument_tags>(
           [&limiter](const auto&... args) noexcept {
+            // Note: orientation is received as last element of pack `args`
             typename Metavariables::limiter::type::PackagedData pack{};
             limiter.package_data(make_not_null(&pack), args...);
             return pack;
           },
-          box);
+          box, orientation);
 
       for (const auto& neighbor : neighbors_in_direction) {
         Parallel::receive_data<limiter_comm_tag>(

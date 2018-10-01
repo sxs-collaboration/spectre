@@ -242,10 +242,12 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param mesh The mesh on which the tensor values are measured.
   /// \param element_size The size of the element in inertial coordinates, along
   ///        each dimension of logical coordinates.
+  /// \param orientation_map The orientation of the neighbor
   void package_data(const gsl::not_null<PackagedData*>& packaged_data,
                     const db::item_type<Tags>&... tensors,
                     const Mesh<VolumeDim>& mesh,
-                    const std::array<double, VolumeDim>& element_size) const
+                    const std::array<double, VolumeDim>& element_size,
+                    const OrientationMap<VolumeDim>& /*orientation_map*/) const
       noexcept {
     const auto wrap_compute_means =
         [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
