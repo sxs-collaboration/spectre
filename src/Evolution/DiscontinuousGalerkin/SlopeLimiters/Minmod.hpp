@@ -247,18 +247,22 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                     const db::item_type<Tags>&... tensors,
                     const Mesh<VolumeDim>& mesh,
                     const std::array<double, VolumeDim>& element_size,
-                    const OrientationMap<VolumeDim>& /*orientation_map*/) const
+                    const OrientationMap<VolumeDim>& orientation_map) const
       noexcept {
     const auto wrap_compute_means =
         [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
       for (size_t i = 0; i < tensor.size(); ++i) {
+        // Compute the mean using the local orientation of the tensor and mesh:
+        // this avoids the work of reorienting the tensor while giving the same
+        // result.
         get<Minmod_detail::to_tensor_double<decltype(tag)>>(
             packaged_data->means_)[i] = mean_value(tensor[i], mesh);
       }
       return '0';
     };
     expand_pack(wrap_compute_means(Tags{}, tensors)...);
-    packaged_data->element_size_ = element_size;
+    packaged_data->element_size_ =
+        orientation_map.permute_from_neighbor(element_size);
   }
 
   using limit_tags = tmpl::list<Tags...>;
