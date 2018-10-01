@@ -7,14 +7,13 @@
 #include <cstddef>
 #include <iosfwd>
 
-
 #include "Domain/Direction.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/Mesh.hpp"
+#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-class SegmentId;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -67,6 +66,9 @@ class OrientationMap {
   /// The corresponding SegmentIds in the neighbor.
   std::array<SegmentId, VolumeDim> operator()(
       const std::array<SegmentId, VolumeDim>& segmentIds) const noexcept;
+
+  /// The corresponding Mesh in the neighbor
+  Mesh<VolumeDim> operator()(const Mesh<VolumeDim>& mesh) const noexcept;
 
   /// An array whose elements are permuted such that
   /// `result[d] = array_in_neighbor[this->operator()(d)]`

@@ -12,10 +12,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -47,6 +49,10 @@ void test_1d() {
   CHECK(parallel_orientation(segment_ids) == segment_ids);
   CHECK(antiparallel_orientation(segment_ids) ==
         expected_antiparallel_segment_ids);
+  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+  CHECK(parallel_orientation(mesh) == mesh);
+  CHECK(antiparallel_orientation(mesh) == mesh);
   CHECK(std::array<int, 1>{{1}} ==
         parallel_orientation.permute_from_neighbor(std::array<int, 1>{{1}}));
   CHECK(
@@ -164,6 +170,18 @@ void test_2d() {
   CHECK(rotated2d_pos_eta_neg_xi(segment_ids) ==
         expected_pos_eta_neg_xi_segment_ids);
 
+  // Check mapped(Mesh<2> mesh)
+  const Mesh<2> input_mesh(
+      {{3, 4}}, {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}});
+  const Mesh<2> flipped_mesh(
+      {{4, 3}}, {{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}});
+  CHECK(rotated2d_pos_xi_pos_eta(input_mesh) == input_mesh);
+  CHECK(rotated2d_neg_xi_neg_eta(input_mesh) == input_mesh);
+  CHECK(rotated2d_neg_eta_pos_xi(input_mesh) == flipped_mesh);
+  CHECK(rotated2d_pos_eta_neg_xi(input_mesh) == flipped_mesh);
+
   // Check permute_from_neighbor(std::array<T, 2> array)
   const std::array<int, 2> input_array{{1, -3}};
   const std::array<int, 2> flipped_array{{-3, 1}};
@@ -277,6 +295,14 @@ void test_3d() {
       {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
        Direction<3>::lower_eta()}}};
   CHECK(custom3.inverse_map() == custom4);
+  CHECK(Mesh<3>({{4, 5, 3}}, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto) ==
+        custom3(Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto)));
+  CHECK(Mesh<3>({{5, 3, 4}}, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto) ==
+        custom4(Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto)));
   CHECK(std::array<int, 3>{{-8, 12, 4}} ==
         custom3.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
   CHECK(std::array<int, 3>{{12, 4, -8}} ==

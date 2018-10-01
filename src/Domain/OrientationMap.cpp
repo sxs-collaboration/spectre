@@ -76,6 +76,14 @@ std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
 }
 
 template <size_t VolumeDim>
+Mesh<VolumeDim> OrientationMap<VolumeDim>::operator()(
+    const Mesh<VolumeDim>& mesh) const noexcept {
+  return Mesh<VolumeDim>(this->permute_from_neighbor(mesh.extents().indices()),
+                         this->permute_from_neighbor(mesh.basis()),
+                         this->permute_from_neighbor(mesh.quadrature()));
+}
+
+template <size_t VolumeDim>
 OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const
     noexcept {
   std::array<Direction<VolumeDim>, VolumeDim> result;
