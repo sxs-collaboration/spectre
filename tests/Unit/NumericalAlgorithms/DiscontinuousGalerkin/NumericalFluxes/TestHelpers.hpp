@@ -71,7 +71,7 @@ std::array<DataVector, (Dim + 1) * (Dim + 1)> characteristic_speeds(
 template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
-  using variables_tags =
+  using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::Variable1, Tags::Variable2<Dim>,
                                    Tags::Variable3<Dim>, Tags::Variable4<Dim>>>;
   using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;

@@ -32,7 +32,7 @@ void test_llf_flux_tags() noexcept {
       cpp17::is_same_v<typename llf_flux::argument_tags,
                        tmpl::push_back<tmpl::append<
                            TestHelpers::NumericalFluxes::n_dot_f_tags<Dim>,
-                           db::split_tag<typename system::variables_tags>,
+                           db::split_tag<typename system::variables_tag>,
                            typename system::char_speeds_tag>>>,
       "Failed testing dg::NumericalFluxes::LocalLaxFriedrichs::argument_tags");
 
@@ -41,7 +41,7 @@ void test_llf_flux_tags() noexcept {
           typename llf_flux::package_tags,
           tmpl::push_back<
               tmpl::append<TestHelpers::NumericalFluxes::n_dot_f_tags<Dim>,
-                           db::split_tag<typename system::variables_tags>>,
+                           db::split_tag<typename system::variables_tag>>,
               typename llf_flux::MaxAbsCharSpeed>>,
       "Failed testing dg::NumericalFluxes::LocalLaxFriedrichs::package_tags");
 }
