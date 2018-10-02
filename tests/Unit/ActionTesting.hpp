@@ -693,7 +693,7 @@ class MockProxy {
 /// A mock class for the CMake-generated `Parallel::Algorithms::Array`
 struct MockArrayChare {
   template <typename Component, typename Metavariables, typename ActionList,
-            typename Index, typename InitialDataBox>
+            typename Index>
   using cproxy =
       ActionTesting_detail::MockProxy<Component, Index,
                                       Parallel::get_inbox_tags<ActionList>>;

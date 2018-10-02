@@ -112,8 +112,7 @@ struct RegisterParallelComponent : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
 
@@ -204,8 +203,7 @@ struct RegisterSimpleAction : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -241,8 +239,7 @@ struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -284,8 +281,7 @@ struct RegisterThreadedAction : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -321,8 +317,7 @@ struct RegisterThreadedAction<ParallelComponent, Action> : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -390,8 +385,7 @@ struct RegisterReceiveData : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -453,8 +447,7 @@ struct RegisterReductionAction : RegistrationHelper {
   using charm_type = charm_types_with_parameters<
       ParallelComponent, typename ParallelComponent::metavariables,
       typename ParallelComponent::action_list,
-      typename get_array_index<chare_type>::template f<ParallelComponent>,
-      typename ParallelComponent::initial_databox>;
+      typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;

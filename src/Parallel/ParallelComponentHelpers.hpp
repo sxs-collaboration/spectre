@@ -112,8 +112,7 @@ using proxy_from_parallel_component =
         ParallelComponent, typename ParallelComponent::metavariables,
         typename ParallelComponent::action_list,
         typename get_array_index<typename ParallelComponent::chare_type>::
-            template f<ParallelComponent>,
-        typename ParallelComponent::initial_databox>;
+            template f<ParallelComponent>>;
 
 template <typename ParallelComponent>
 using index_from_parallel_component =
@@ -121,8 +120,7 @@ using index_from_parallel_component =
         ParallelComponent, typename ParallelComponent::metavariables,
         typename ParallelComponent::action_list,
         typename get_array_index<typename ParallelComponent::chare_type>::
-            template f<ParallelComponent>,
-        typename ParallelComponent::initial_databox>;
+            template f<ParallelComponent>>;
 
 template <class ParallelComponent, class... Args>
 struct charm_types_with_parameters {

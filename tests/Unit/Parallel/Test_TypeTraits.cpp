@@ -13,10 +13,6 @@
 namespace PUP {
 class er;
 }  // namespace PUP
-namespace db {
-template <typename TagsList>
-class DataBox;
-}  // namespace db
 
 namespace {
 class PupableClass {
@@ -33,18 +29,14 @@ struct ArrayParallelComponent {};
 struct GroupParallelComponent {};
 struct NodegroupParallelComponent {};
 
-using singleton_proxy =
-    CProxy_AlgorithmSingleton<SingletonParallelComponent, MV, tmpl::list<>, int,
-                              db::DataBox<tmpl::list<>>>;
+using singleton_proxy = CProxy_AlgorithmSingleton<SingletonParallelComponent,
+                                                  MV, tmpl::list<>, int>;
 using array_proxy =
-    CProxy_AlgorithmArray<ArrayParallelComponent, MV, tmpl::list<>, int,
-                          db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmArray<ArrayParallelComponent, MV, tmpl::list<>, int>;
 using group_proxy =
-    CProxy_AlgorithmGroup<ArrayParallelComponent, MV, tmpl::list<>, int,
-                          db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmGroup<ArrayParallelComponent, MV, tmpl::list<>, int>;
 using nodegroup_proxy =
-    CProxy_AlgorithmNodegroup<ArrayParallelComponent, MV, tmpl::list<>, int,
-                              db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmNodegroup<ArrayParallelComponent, MV, tmpl::list<>, int>;
 }  // namespace
 
 static_assert(Parallel::is_array_proxy<array_proxy>::value,

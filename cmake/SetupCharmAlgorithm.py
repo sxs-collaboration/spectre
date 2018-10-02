@@ -20,8 +20,7 @@ def create_interface_file(args):
              "  template <typename ParallelComponent, " \
              "typename Metavariables, \n" \
              "            typename OrderedActionsList,\n" \
-             "            typename SpectreArrayIndex, \n" \
-             "typename InitialDataBox>\n" % args['algorithm_name']
+             "            typename SpectreArrayIndex>\n" % args['algorithm_name']
     # The chare type needs to be checked
     if args['algorithm_type'] == "array":
         ci_str += "  array [SpectreArrayIndex]"
@@ -111,33 +110,31 @@ def create_header_file(args):
         "struct %s {\n" \
         "  template <typename ParallelComponent, typename Metavariables,\n" \
         "            typename OrderedActionsList,\n" \
-        "            typename SpectreArrayIndex, typename InitialDataBox>\n" \
+        "            typename SpectreArrayIndex>\n" \
         "  using cproxy = CProxy_Algorithm%s<ParallelComponent,\n" \
         "                           Metavariables, OrderedActionsList,\n" \
-        "                           SpectreArrayIndex,\n" \
-        "                           InitialDataBox>;\n" \
+        "                           SpectreArrayIndex>;\n" \
         "\n" \
         "  template <typename ParallelComponent, typename Metavariables,\n" \
         "            typename OrderedActionsList,\n" \
-        "            typename SpectreArrayIndex, typename InitialDataBox>\n" \
+        "            typename SpectreArrayIndex>\n" \
         "  using cbase = CBase_Algorithm%s<ParallelComponent,\n" \
         "                          Metavariables, OrderedActionsList,\n" \
-        "                          SpectreArrayIndex,\n" \
-        "                          InitialDataBox>;\n" \
+        "                          SpectreArrayIndex>;\n" \
         "\n" \
         "  template <typename ParallelComponent, typename Metavariables,\n" \
         "            typename OrderedActionsList,\n" \
-        "            typename SpectreArrayIndex, typename InitialDataBox>\n" \
+        "            typename SpectreArrayIndex>\n" \
         "  using algorithm_type = Algorithm%s<ParallelComponent,\n" \
         "                             Metavariables, OrderedActionsList,\n" \
-        "                             SpectreArrayIndex, InitialDataBox>;\n" \
+        "                             SpectreArrayIndex>;\n" \
         "\n" \
         "  template <typename ParallelComponent, typename Metavariables,\n" \
         "            typename OrderedActionsList,\n" \
-        "            typename SpectreArrayIndex, typename InitialDataBox>\n" \
+        "            typename SpectreArrayIndex>\n" \
         "  using ckindex = CkIndex_Algorithm%s<ParallelComponent,\n" \
         "                             Metavariables, OrderedActionsList,\n" \
-        "                              SpectreArrayIndex, InitialDataBox>;\n" \
+        "                              SpectreArrayIndex>;\n" \
         "};\n" \
         "}  // namespace Algorithms\n" \
         "}  // namespace Parallel\n\n" % \
@@ -148,25 +145,22 @@ def create_header_file(args):
     header_str += \
         "template <typename ParallelComponent, typename Metavariables,\n" \
         "          typename OrderedActionsList,\n" \
-        "          typename SpectreArrayIndex, typename InitialDataBox>\n" \
+        "          typename SpectreArrayIndex>\n" \
         "class Algorithm%s\n" \
         "    : public CBase_Algorithm%s<ParallelComponent, \n" \
         "                      Metavariables, OrderedActionsList,\n" \
-        "                      SpectreArrayIndex,\n" \
-        "                      InitialDataBox>,\n" \
+        "                      SpectreArrayIndex>,\n" \
         "      public Parallel::AlgorithmImpl<ParallelComponent,\n" \
         "                                     Parallel::Algorithms::%s,\n" \
         "                                     Metavariables,\n" \
         "                                     OrderedActionsList,\n" \
-        "                                     SpectreArrayIndex,\n" \
-        "                                     InitialDataBox> {\n" \
+        "                                     SpectreArrayIndex> {\n" \
         "  using algorithm = Parallel::Algorithms::%s;\n" \
         " public:\n" \
         "  using Parallel::AlgorithmImpl<ParallelComponent,algorithm,\n" \
         "                                Metavariables,\n" \
         "                                OrderedActionsList,\n" \
-        "                                SpectreArrayIndex,\n" \
-        "                                InitialDataBox>::AlgorithmImpl;\n" \
+        "                                SpectreArrayIndex>::AlgorithmImpl;\n" \
         "};\n\n" % (args['algorithm_name'], args['algorithm_name'],
                     args['algorithm_name'], args['algorithm_name'])
     # Write include of the def file, but including only the template definitions
