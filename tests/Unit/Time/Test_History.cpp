@@ -83,7 +83,7 @@ void check_history_state(const HistoryType& hist) noexcept {
     auto it = hist.begin();
     for (size_t i = 0; i < hist.size(); ++i, ++it) {
       CHECK(*it == hist[i]);
-      const auto entry_num = static_cast<ssize_t>(i) - 1;
+      const auto entry_num = static_cast<double>(i) - 1.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
       CHECK(it.value() == entry_num);
@@ -149,7 +149,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
     auto it = history.begin();
     for (size_t i = 0; i < 2; ++i, ++it) {
       CHECK(*it == history[i]);
-      const auto entry_num = static_cast<ssize_t>(i) + 1;
+      const auto entry_num = static_cast<double>(i) + 1.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
       CHECK(it.value() == entry_num);
@@ -175,7 +175,7 @@ size_t check_boundary_state(gsl::not_null<BoundaryHistoryType*> hist) noexcept {
   {
     auto it = hist->local_begin();
     for (size_t i = 0; i < hist->local_size(); ++i, ++it) {
-      const auto entry_num = static_cast<ssize_t>(i) - 1;
+      const auto entry_num = static_cast<double>(i) - 1.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
     }
@@ -186,7 +186,7 @@ size_t check_boundary_state(gsl::not_null<BoundaryHistoryType*> hist) noexcept {
   {
     auto it = hist->remote_begin();
     for (size_t i = 0; i < hist->remote_size(); ++i, ++it) {
-      const auto entry_num = static_cast<ssize_t>(i) - 2;
+      const auto entry_num = static_cast<double>(i) - 2.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
     }
@@ -271,7 +271,7 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   {
     auto it = history.local_begin();
     for (size_t i = 0; i < history.local_size(); ++i, ++it) {
-      const auto entry_num = static_cast<ssize_t>(i) + 1;
+      const auto entry_num = static_cast<double>(i) + 1.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
     }
@@ -285,7 +285,7 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   {
     auto it = history.remote_begin();
     for (size_t i = 0; i < history.remote_size(); ++i, ++it) {
-      const auto entry_num = static_cast<ssize_t>(i);
+      const auto entry_num = static_cast<double>(i);
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
     }

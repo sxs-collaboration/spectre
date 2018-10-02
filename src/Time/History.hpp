@@ -59,7 +59,9 @@ class History {
   /// HistoryIterator::value() and HistoryIterator::derivative().
   //@{
   const_iterator begin() const noexcept {
-    return data_.begin() + static_cast<ssize_t>(first_needed_entry_);
+    return data_.begin() +
+           static_cast<typename decltype(data_.begin())::difference_type>(
+               first_needed_entry_);
   }
   const_iterator end() const noexcept { return data_.end(); }
   const_iterator cbegin() const noexcept { return begin(); }
@@ -74,7 +76,7 @@ class History {
   /// through HistoryIterator methods.
   //@{
   const_reference operator[](size_type n) const noexcept {
-    return *(begin() + static_cast<ssize_t>(n));
+    return *(begin() + static_cast<difference_type>(n));
   }
 
   const_reference front() const noexcept { return *begin(); }
@@ -202,8 +204,11 @@ inline void History<Vars, DerivVars>::mark_unneeded(
 
 template <typename Vars, typename DerivVars>
 inline void History<Vars, DerivVars>::shrink_to_fit() noexcept {
-  data_.erase(data_.begin(),
-              data_.begin() + static_cast<ssize_t>(first_needed_entry_));
+  data_.erase(
+      data_.begin(),
+      data_.begin() +
+          static_cast<typename decltype(data_.begin())::difference_type>(
+              first_needed_entry_));
   first_needed_entry_ = 0;
 }
 
