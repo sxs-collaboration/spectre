@@ -18,7 +18,6 @@ def create_interface_file(args):
              "  include \"Parallel/ConstGlobalCache.decl.h\";\n" \
              "\n" \
              "  template <typename ParallelComponent,\n" \
-             "            typename OrderedActionsList,\n" \
              "            typename SpectreArrayIndex>\n" % args['algorithm_name']
     # The chare type needs to be checked
     if args['algorithm_type'] == "array":
@@ -109,31 +108,23 @@ def create_header_file(args):
         "namespace Algorithms {\n" \
         "struct %s {\n" \
         "  template <typename ParallelComponent,\n" \
-        "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using cproxy = CProxy_Algorithm%s<ParallelComponent,\n" \
-        "                           OrderedActionsList,\n" \
         "                           SpectreArrayIndex>;\n" \
         "\n" \
         "  template <typename ParallelComponent,\n" \
-        "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using cbase = CBase_Algorithm%s<ParallelComponent,\n" \
-        "                          OrderedActionsList,\n" \
         "                          SpectreArrayIndex>;\n" \
         "\n" \
         "  template <typename ParallelComponent,\n" \
-        "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using algorithm_type = Algorithm%s<ParallelComponent,\n" \
-        "                             OrderedActionsList,\n" \
         "                             SpectreArrayIndex>;\n" \
         "\n" \
         "  template <typename ParallelComponent,\n" \
-        "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using ckindex = CkIndex_Algorithm%s<ParallelComponent,\n" \
-        "                             OrderedActionsList,\n" \
         "                             SpectreArrayIndex>;\n" \
         "};\n" \
         "}  // namespace Algorithms\n" \
@@ -144,20 +135,18 @@ def create_header_file(args):
     # Write Algorithm class
     header_str += \
         "template <typename ParallelComponent,\n" \
-        "          typename OrderedActionsList,\n" \
         "          typename SpectreArrayIndex>\n" \
         "class Algorithm%s\n" \
         "    : public CBase_Algorithm%s<ParallelComponent, \n" \
-        "                      OrderedActionsList,\n" \
         "                      SpectreArrayIndex>,\n" \
         "      public Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                                     OrderedActionsList,\n" \
-        "                                     SpectreArrayIndex> {\n" \
+        "                       typename ParallelComponent::action_list,\n" \
+        "                       SpectreArrayIndex> {\n" \
         "  using algorithm = Parallel::Algorithms::%s;\n" \
         " public:\n" \
         "  using Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                                OrderedActionsList,\n" \
-        "                                SpectreArrayIndex>::AlgorithmImpl;\n" \
+        "                  typename ParallelComponent::action_list,\n" \
+        "                  SpectreArrayIndex>::AlgorithmImpl;\n" \
         "};\n\n" % (args['algorithm_name'],
                     args['algorithm_name'], args['algorithm_name'])
     # Write include of the def file, but including only the template definitions

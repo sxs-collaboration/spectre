@@ -8,7 +8,6 @@
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
 #include "Parallel/TypeTraits.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace PUP {
 class er;
@@ -38,13 +37,10 @@ struct NodegroupParallelComponent {
 };
 
 using singleton_proxy =
-    CProxy_AlgorithmSingleton<SingletonParallelComponent, tmpl::list<>, int>;
-using array_proxy =
-    CProxy_AlgorithmArray<ArrayParallelComponent, tmpl::list<>, int>;
-using group_proxy =
-    CProxy_AlgorithmGroup<ArrayParallelComponent, tmpl::list<>, int>;
-using nodegroup_proxy =
-    CProxy_AlgorithmNodegroup<ArrayParallelComponent, tmpl::list<>, int>;
+    CProxy_AlgorithmSingleton<SingletonParallelComponent, int>;
+using array_proxy = CProxy_AlgorithmArray<ArrayParallelComponent, int>;
+using group_proxy = CProxy_AlgorithmGroup<ArrayParallelComponent, int>;
+using nodegroup_proxy = CProxy_AlgorithmNodegroup<ArrayParallelComponent, int>;
 }  // namespace
 
 static_assert(Parallel::is_array_proxy<array_proxy>::value,

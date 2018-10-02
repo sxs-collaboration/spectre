@@ -143,12 +143,10 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>, ArrayIndex> {
   using chare_type = typename ParallelComponent::chare_type;
   /// The Charm++ proxy object type
   using cproxy_type =
-      typename chare_type::template cproxy<ParallelComponent, actions_list,
-                                           array_index>;
+      typename chare_type::template cproxy<ParallelComponent, array_index>;
   /// The Charm++ base object type
   using cbase_type =
-      typename chare_type::template cbase<ParallelComponent, actions_list,
-                                          array_index>;
+      typename chare_type::template cbase<ParallelComponent, array_index>;
   /// \cond
   // The types held by the boost::variant, box_
   using databox_types = Algorithm_detail::build_action_return_typelist<
@@ -266,7 +264,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>, ArrayIndex> {
     // down cast to the algorithm_type, so that the `thisIndex` method can be
     // called, which is defined in the CBase class
     array_index_ = static_cast<typename chare_type::template algorithm_type<
-        ParallelComponent, tmpl::list<ActionsPack...>, ArrayIndex>&>(*this)
+        ParallelComponent, ArrayIndex>&>(*this)
                        .thisIndex;
   }
 
@@ -481,9 +479,9 @@ constexpr void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>,
   non_action_time_start_ = Parallel::wall_time();
 #endif
   lock(&node_lock_);
-  while (sizeof...(ActionsPack) > 0 and not get_terminate() and
+  while (tmpl::size<actions_list>::value > 0 and not get_terminate() and
          iterate_over_actions(
-             std::make_index_sequence<sizeof...(ActionsPack)>{})) {
+             std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
   }
   unlock(&node_lock_);
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -587,7 +585,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>, ArrayIndex>::
     non_action_time_start_ = Parallel::wall_time();
 #endif
     // Wrap counter if necessary
-    if (algorithm_step_ >= sizeof...(ActionsPack)) {
+    if (algorithm_step_ >= tmpl::size<actions_list>::value) {
       algorithm_step_ = 0;
     }
   };

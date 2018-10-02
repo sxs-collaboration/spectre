@@ -110,7 +110,7 @@ template <typename ParallelComponent>
 struct RegisterParallelComponent : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using ckindex = typename charm_type::ckindex;
   using algorithm = typename charm_type::algorithm;
@@ -200,7 +200,7 @@ template <typename ParallelComponent, typename Action, typename... Args>
 struct RegisterSimpleAction : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
@@ -235,7 +235,7 @@ template <typename ParallelComponent, typename Action>
 struct RegisterSimpleAction<ParallelComponent, Action> : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
@@ -276,7 +276,7 @@ template <typename ParallelComponent, typename Action, typename... Args>
 struct RegisterThreadedAction : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
@@ -311,7 +311,7 @@ template <typename ParallelComponent, typename Action>
 struct RegisterThreadedAction<ParallelComponent, Action> : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
@@ -378,7 +378,7 @@ template <typename ParallelComponent, typename ReceiveTag>
 struct RegisterReceiveData : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
@@ -439,7 +439,7 @@ template <typename ParallelComponent, typename Action, typename ReductionType>
 struct RegisterReductionAction : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
-      ParallelComponent, typename ParallelComponent::action_list,
+      ParallelComponent,
       typename get_array_index<chare_type>::template f<ParallelComponent>>;
   using cproxy = typename charm_type::cproxy;
   using ckindex = typename charm_type::ckindex;
