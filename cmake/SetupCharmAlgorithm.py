@@ -140,13 +140,12 @@ def create_header_file(args):
         "    : public CBase_Algorithm%s<ParallelComponent, \n" \
         "                      SpectreArrayIndex>,\n" \
         "      public Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                       typename ParallelComponent::action_list,\n" \
-        "                       SpectreArrayIndex> {\n" \
+        "                       typename ParallelComponent::action_list> {\n" \
         "  using algorithm = Parallel::Algorithms::%s;\n" \
         " public:\n" \
         "  using Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                  typename ParallelComponent::action_list,\n" \
-        "                  SpectreArrayIndex>::AlgorithmImpl;\n" \
+        "                  typename ParallelComponent::action_list\n" \
+        "                  >::AlgorithmImpl;\n" \
         "};\n\n" % (args['algorithm_name'],
                     args['algorithm_name'], args['algorithm_name'])
     # Write include of the def file, but including only the template definitions
