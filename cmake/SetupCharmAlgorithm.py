@@ -17,8 +17,7 @@ def create_interface_file(args):
              "  include \"Utilities/TaggedTuple.hpp\";\n" \
              "  include \"Parallel/ConstGlobalCache.decl.h\";\n" \
              "\n" \
-             "  template <typename ParallelComponent, " \
-             "typename Metavariables, \n" \
+             "  template <typename ParallelComponent,\n" \
              "            typename OrderedActionsList,\n" \
              "            typename SpectreArrayIndex>\n" % args['algorithm_name']
     # The chare type needs to be checked
@@ -29,7 +28,8 @@ def create_interface_file(args):
 
     ci_str += " Algorithm%s {\n" \
               "    entry Algorithm%s(" \
-              "Parallel::CProxy_ConstGlobalCache<Metavariables>);\n" \
+              "Parallel::CProxy_ConstGlobalCache<\n" \
+              "                      METAVARIABLES_FROM_COMPONENT>);\n" \
               "\n" \
               "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
               "    entry void simple_action(\n" \
@@ -108,33 +108,33 @@ def create_header_file(args):
         "namespace Parallel {\n" \
         "namespace Algorithms {\n" \
         "struct %s {\n" \
-        "  template <typename ParallelComponent, typename Metavariables,\n" \
+        "  template <typename ParallelComponent,\n" \
         "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using cproxy = CProxy_Algorithm%s<ParallelComponent,\n" \
-        "                           Metavariables, OrderedActionsList,\n" \
+        "                           OrderedActionsList,\n" \
         "                           SpectreArrayIndex>;\n" \
         "\n" \
-        "  template <typename ParallelComponent, typename Metavariables,\n" \
+        "  template <typename ParallelComponent,\n" \
         "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using cbase = CBase_Algorithm%s<ParallelComponent,\n" \
-        "                          Metavariables, OrderedActionsList,\n" \
+        "                          OrderedActionsList,\n" \
         "                          SpectreArrayIndex>;\n" \
         "\n" \
-        "  template <typename ParallelComponent, typename Metavariables,\n" \
+        "  template <typename ParallelComponent,\n" \
         "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using algorithm_type = Algorithm%s<ParallelComponent,\n" \
-        "                             Metavariables, OrderedActionsList,\n" \
+        "                             OrderedActionsList,\n" \
         "                             SpectreArrayIndex>;\n" \
         "\n" \
-        "  template <typename ParallelComponent, typename Metavariables,\n" \
+        "  template <typename ParallelComponent,\n" \
         "            typename OrderedActionsList,\n" \
         "            typename SpectreArrayIndex>\n" \
         "  using ckindex = CkIndex_Algorithm%s<ParallelComponent,\n" \
-        "                             Metavariables, OrderedActionsList,\n" \
-        "                              SpectreArrayIndex>;\n" \
+        "                             OrderedActionsList,\n" \
+        "                             SpectreArrayIndex>;\n" \
         "};\n" \
         "}  // namespace Algorithms\n" \
         "}  // namespace Parallel\n\n" % \
@@ -143,22 +143,20 @@ def create_header_file(args):
          args['algorithm_name'])
     # Write Algorithm class
     header_str += \
-        "template <typename ParallelComponent, typename Metavariables,\n" \
+        "template <typename ParallelComponent,\n" \
         "          typename OrderedActionsList,\n" \
         "          typename SpectreArrayIndex>\n" \
         "class Algorithm%s\n" \
         "    : public CBase_Algorithm%s<ParallelComponent, \n" \
-        "                      Metavariables, OrderedActionsList,\n" \
+        "                      OrderedActionsList,\n" \
         "                      SpectreArrayIndex>,\n" \
         "      public Parallel::AlgorithmImpl<ParallelComponent,\n" \
         "                                     Parallel::Algorithms::%s,\n" \
-        "                                     Metavariables,\n" \
         "                                     OrderedActionsList,\n" \
         "                                     SpectreArrayIndex> {\n" \
         "  using algorithm = Parallel::Algorithms::%s;\n" \
         " public:\n" \
         "  using Parallel::AlgorithmImpl<ParallelComponent,algorithm,\n" \
-        "                                Metavariables,\n" \
         "                                OrderedActionsList,\n" \
         "                                SpectreArrayIndex>::AlgorithmImpl;\n" \
         "};\n\n" % (args['algorithm_name'], args['algorithm_name'],

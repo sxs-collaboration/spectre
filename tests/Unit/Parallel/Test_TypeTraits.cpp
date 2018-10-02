@@ -24,19 +24,27 @@ class NonpupableClass {};
 
 struct MV {};
 
-struct SingletonParallelComponent {};
-struct ArrayParallelComponent {};
-struct GroupParallelComponent {};
-struct NodegroupParallelComponent {};
+struct SingletonParallelComponent {
+  using metavariables = MV;
+};
+struct ArrayParallelComponent {
+  using metavariables = MV;
+};
+struct GroupParallelComponent {
+  using metavariables = MV;
+};
+struct NodegroupParallelComponent {
+  using metavariables = MV;
+};
 
-using singleton_proxy = CProxy_AlgorithmSingleton<SingletonParallelComponent,
-                                                  MV, tmpl::list<>, int>;
+using singleton_proxy =
+    CProxy_AlgorithmSingleton<SingletonParallelComponent, tmpl::list<>, int>;
 using array_proxy =
-    CProxy_AlgorithmArray<ArrayParallelComponent, MV, tmpl::list<>, int>;
+    CProxy_AlgorithmArray<ArrayParallelComponent, tmpl::list<>, int>;
 using group_proxy =
-    CProxy_AlgorithmGroup<ArrayParallelComponent, MV, tmpl::list<>, int>;
+    CProxy_AlgorithmGroup<ArrayParallelComponent, tmpl::list<>, int>;
 using nodegroup_proxy =
-    CProxy_AlgorithmNodegroup<ArrayParallelComponent, MV, tmpl::list<>, int>;
+    CProxy_AlgorithmNodegroup<ArrayParallelComponent, tmpl::list<>, int>;
 }  // namespace
 
 static_assert(Parallel::is_array_proxy<array_proxy>::value,
