@@ -67,7 +67,7 @@ template <typename System>
 struct Hll {
  private:
   using char_speeds_tag = typename System::char_speeds_tag;
-  using variables_tags = typename System::variables_tags;
+  using variables_tag = typename System::variables_tag;
 
  public:
   /// The minimum signal velocity bounding
@@ -86,13 +86,13 @@ struct Hll {
 
   using package_tags =
       tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
-                                       ::Tags::NormalDotFlux, variables_tags>>,
-                                   db::split_tag<variables_tags>>,
+                                       ::Tags::NormalDotFlux, variables_tag>>,
+                                   db::split_tag<variables_tag>>,
                       MinSignalSpeed, MaxSignalSpeed>;
 
   using argument_tags = tmpl::append<
-      db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tags>>,
-      db::split_tag<variables_tags>, char_speeds_tag>;
+      db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
+      db::split_tag<variables_tag>, char_speeds_tag>;
 
  private:
   template <typename VariablesTagList, typename NormalDoFluxTagList>
@@ -200,19 +200,19 @@ struct Hll {
   template <class... Args>
   void package_data(const Args&... args) const noexcept {
     package_data_helper<
-        db::split_tag<variables_tags>,
+        db::split_tag<variables_tag>,
         db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tags>>>::function(args...);
+                                         variables_tag>>>::function(args...);
   }
 
   template <class... Args>
   void operator()(const Args&... args) const noexcept {
     call_operator_helper<
         db::split_tag<
-            db::add_tag_prefix<::Tags::NormalDotNumericalFlux, variables_tags>>,
-        db::split_tag<variables_tags>,
+            db::add_tag_prefix<::Tags::NormalDotNumericalFlux, variables_tag>>,
+        db::split_tag<variables_tag>,
         db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tags>>>::function(args...);
+                                         variables_tag>>>::function(args...);
   }
 };
 
