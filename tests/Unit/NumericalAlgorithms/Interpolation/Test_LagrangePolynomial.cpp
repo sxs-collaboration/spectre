@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <sys/types.h>
 
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Utilities/Gsl.hpp"
@@ -19,7 +18,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.LagrangePolynomial",
       CHECK(lagrange_polynomial(j, gsl::at(control, i),
                                 control.begin(), control.end())
             == approx(i == j ? 1. : 0.));
-      CHECK(lagrange_polynomial(control.begin() + static_cast<ssize_t>(j),
+      CHECK(lagrange_polynomial(control.begin() + static_cast<ptrdiff_t>(j),
                                 gsl::at(control, i),
                                 control.begin(),
                                 control.end()) ==
