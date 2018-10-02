@@ -160,8 +160,12 @@ struct DiscontinuousGalerkin {
         Tags::InterfaceComputeItem<Tags::InternalDirections<dim>, Tag>;
 
     template <typename Tag>
-    using boundary_compute_tag =
-        Tags::InterfaceComputeItem<Tags::BoundaryDirections<dim>, Tag>;
+    using boundary_interior_compute_tag =
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<dim>, Tag>;
+
+    template <typename Tag>
+    using boundary_exterior_compute_tag =
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<dim>, Tag>;
 
     using char_speed_tag = typename LocalSystem::char_speeds_tag;
 
@@ -174,10 +178,16 @@ struct DiscontinuousGalerkin {
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         interface_compute_tag<char_speed_tag>,
         Tags::Slice<
-            Tags::BoundaryDirections<dim>,
+            Tags::BoundaryDirectionsInterior<dim>,
             db::add_tag_prefix<Tags::Flux, typename LocalSystem::variables_tag,
                                tmpl::size_t<dim>, Frame::Inertial>>,
-        boundary_compute_tag<Tags::ComputeNormalDotFlux<
+        boundary_interior_compute_tag<Tags::ComputeNormalDotFlux<
+            typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
+        Tags::Slice<Tags::BoundaryDirectionsExterior<dim>,
+                    db::add_tag_prefix<Tags::Flux,
+                                       typename LocalSystem::variables_tag,
+                                       tmpl::size_t<dim>, Frame::Inertial>>,
+        boundary_exterior_compute_tag<Tags::ComputeNormalDotFlux<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>>;
 
     template <typename TagsList>

@@ -210,7 +210,9 @@ struct InitializeElement {
   // Items related to the structure of the interfaces
   template <typename System>
   struct DomainInterfaceTags {
-    using simple_tags = db::AddSimpleTags<>;
+    using simple_tags =
+        db::AddSimpleTags<Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>,
+                                          typename System::variables_tag>>;
 
     template <typename Directions>
     using face_tags = tmpl::list<
@@ -226,14 +228,44 @@ struct InitializeElement {
         Tags::InterfaceComputeItem<
             Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
+    using ext_tags = tmpl::list<
+        Tags::BoundaryDirectionsExterior<Dim>,
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>,
+                                   Tags::Direction<Dim>>,
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>,
+                                   Tags::InterfaceMesh<Dim>>,
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>,
+                                   Tags::BoundaryCoordinates<Dim>>,
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>,
+                                   Tags::UnnormalizedFaceNormal<Dim>>,
+        Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>,
+                                   typename System::template magnitude_tag<
+                                       Tags::UnnormalizedFaceNormal<Dim>>>,
+        Tags::InterfaceComputeItem<
+            Tags::BoundaryDirectionsExterior<Dim>,
+            Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+
     using compute_tags =
         tmpl::append<face_tags<Tags::InternalDirections<Dim>>,
-                     face_tags<Tags::BoundaryDirectionsInterior<Dim>>>;
+                     face_tags<Tags::BoundaryDirectionsInterior<Dim>>,
+                     ext_tags>;
 
     template <typename TagsList>
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+      const auto& mesh = db::get<Tags::Mesh<Dim>>(box);
+      std::unordered_map<Direction<Dim>,
+                         db::item_type<typename System::variables_tag>>
+          external_boundary_vars{};
+
+      for (const auto& direction :
+           db::get<Tags::Element<Dim>>(box).external_boundaries()) {
+        external_boundary_vars[direction] =
+            db::item_type<typename System::variables_tag>{
+                mesh.slice_away(direction.dimension()).number_of_grid_points()};
+      }
+
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-          std::move(box));
+          std::move(box), std::move(external_boundary_vars));
     }
   };
 
@@ -386,6 +418,11 @@ struct InitializeElement {
     template <typename Tag>
     using interior_boundary_tag =
         Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+
+    template <typename Tag>
+    using external_boundary_tag =
+        Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+
     template <typename TagsList>
     static auto add_mortar_data(
         db::DataBox<TagsList>&& box,
@@ -420,6 +457,20 @@ struct InitializeElement {
         }
       }
 
+      for (const auto& direction : element.external_boundaries()) {
+        const auto mortar_id = std::make_pair(
+            direction, ElementId<Dim>::external_boundary_id());
+        mortar_data[mortar_id];
+        // Since no communication needs to happen for boundary conditions,
+        // the temporal id is not advanced on the boundary, so we set it equal
+        // to the current temporal id in the element
+        mortar_next_temporal_ids.insert({mortar_id, temporal_id});
+        mortar_meshes.emplace(mortar_id,
+                              mesh.slice_away(direction.dimension()));
+        mortar_sizes.emplace(mortar_id,
+                             make_array<Dim - 1>(Spectral::MortarSize::Full));
+      }
+
       return db::create_from<
           db::RemoveTags<>,
           db::AddSimpleTags<mortar_data_tag,
@@ -441,7 +492,9 @@ struct InitializeElement {
           Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
           interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
           interior_boundary_tag<
-              typename flux_comm_types::normal_dot_fluxes_tag>;
+              typename flux_comm_types::normal_dot_fluxes_tag>,
+          external_boundary_tag<
+              typename flux_comm_types::normal_dot_fluxes_tag>>;
 
       using compute_tags = db::AddComputeTags<>;
 
@@ -471,12 +524,15 @@ struct InitializeElement {
 
         typename interior_boundary_tag<
             typename flux_comm_types::normal_dot_fluxes_tag>::type
+            normal_dot_fluxes_boundary_exterior{},
             normal_dot_fluxes_boundary_interior{};
         for (const auto& direction : boundary_directions) {
           const auto& boundary_num_points =
               db::get<interior_boundary_tag<Tags::Mesh<Dim - 1>>>(box2)
                   .at(direction)
                   .number_of_grid_points();
+          normal_dot_fluxes_boundary_exterior[direction].initialize(
+              boundary_num_points, 0.);
           normal_dot_fluxes_boundary_interior[direction].initialize(
               boundary_num_points, 0.);
         }
@@ -486,9 +542,12 @@ struct InitializeElement {
             db::AddSimpleTags<
                 interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
                 interior_boundary_tag<
+                    typename flux_comm_types::normal_dot_fluxes_tag>,
+                external_boundary_tag<
                     typename flux_comm_types::normal_dot_fluxes_tag>>>(
             std::move(box2), std::move(normal_dot_fluxes_interface),
-            std::move(normal_dot_fluxes_boundary_interior));
+            std::move(normal_dot_fluxes_boundary_interior),
+            std::move(normal_dot_fluxes_boundary_exterior));
       }
     };
 
@@ -505,8 +564,13 @@ struct InitializeElement {
           Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
 
       template <typename Tag>
-      using boundary_compute_tag =
+      using boundary_interior_compute_tag =
           Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
+                                     Tag>;
+
+      template <typename Tag>
+      using boundary_exterior_compute_tag =
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>,
                                      Tag>;
 
       using compute_tags = db::AddComputeTags<
@@ -520,7 +584,13 @@ struct InitializeElement {
                       db::add_tag_prefix<Tags::Flux,
                                            typename LocalSystem::variables_tag,
                                            tmpl::size_t<Dim>, Frame::Inertial>>,
-          boundary_compute_tag<Tags::ComputeNormalDotFlux<
+          boundary_interior_compute_tag<Tags::ComputeNormalDotFlux<
+              typename LocalSystem::variables_tag, Dim, Frame::Inertial>>,
+          Tags::Slice<Tags::BoundaryDirectionsExterior<Dim>,
+                      db::add_tag_prefix<Tags::Flux,
+                                         typename LocalSystem::variables_tag,
+                                         tmpl::size_t<Dim>, Frame::Inertial>>,
+          boundary_exterior_compute_tag<Tags::ComputeNormalDotFlux<
               typename LocalSystem::variables_tag, Dim, Frame::Inertial>>>;
 
       template <typename TagsList>

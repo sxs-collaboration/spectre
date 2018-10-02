@@ -102,10 +102,12 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   constexpr size_t dim = 3;
   using internal_directions = Tags::InternalDirections<dim>;
   using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
+  using boundary_directions_exterior = Tags::BoundaryDirectionsExterior<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
 
   CHECK(internal_directions::name() == "InternalDirections");
   CHECK(boundary_directions_interior::name() == "BoundaryDirectionsInterior");
+  CHECK(boundary_directions_exterior::name() == "BoundaryDirectionsExterior");
 
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), {}},
@@ -151,7 +153,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
           Tags::InterfaceComputeItem<boundary_directions_interior,
                                      TestTags::Negate<TestTags::Double>>,
           Tags::InterfaceComputeItem<boundary_directions_interior,
-                                     TestTags::ComplexComputeItem<dim>>>(
+                                     TestTags::ComplexComputeItem<dim>>,
+          boundary_directions_exterior>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::lower_xi(), 1.5},
@@ -179,12 +182,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
               {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
 
-      CHECK(
-      (get<Tags::Interface<boundary_directions, Tags::Direction<dim>>>(box)) ==
-      (std::unordered_map<Direction<dim>, Direction<dim>>{
-              {Direction<dim>::upper_eta(), Direction<dim>::upper_eta()},
-              {Direction<dim>::lower_eta(), Direction<dim>::lower_eta()},
-              {Direction<dim>::lower_zeta(), Direction<dim>::lower_zeta()}}));
+  CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
+        get<Tags::BoundaryDirectionsExterior<dim>>(box));
 
     CHECK(get<TestTags::Negate<TestTags::Int>>(box) == -5);
 

@@ -166,6 +166,20 @@ struct BoundaryDirectionsInterior : db::ComputeTag {
   }
 };
 
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The set of directions which correspond to external boundaries. To be used
+/// to represent data which exists on the exterior side of the external boundary
+/// faces.
+template <size_t VolumeDim>
+struct BoundaryDirectionsExterior : db::ComputeTag {
+  static std::string name() noexcept { return "BoundaryDirectionsExterior"; }
+  using argument_tags = tmpl::list<Element<VolumeDim>>;
+  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
+    return element.external_boundaries();
+  }
+};
+
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
