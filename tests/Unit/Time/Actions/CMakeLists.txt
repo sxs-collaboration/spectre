@@ -7,5 +7,6 @@ set(LIBRARY_SOURCES
   Actions/Test_ChangeStepSize.cpp
   Actions/Test_FinalTime.cpp
   Actions/Test_RecordTimeStepperData.cpp
+  Actions/Test_SelfStartActions.cpp
   Actions/Test_UpdateU.cpp
   PARENT_SCOPE)

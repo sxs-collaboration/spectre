@@ -9,7 +9,6 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -86,11 +85,6 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
 
   runner.simple_action<obs_component, observers::Actions::Initialize>(0);
   runner.simple_action<obs_writer, observers::Actions::InitializeWriter>(0);
-  // Test initial state
-  const auto& observer_box =
-      runner.template algorithms<obs_component>()
-          .at(0)
-          .template get_databox<typename obs_component::initial_databox>();
 
   // Register elements
   for (const auto& id : element_ids) {

@@ -3,13 +3,20 @@
 
 #pragma once
 
-#include <unordered_set>
-#include <vector>
+#include <cstdint>
+#include <pup.h>
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
+#include "Time/TimeId.hpp"
 #include "Options/Options.hpp"
-#include "Time/Tags.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeId;
+}  // namespace Tags
+/// \endcond
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
@@ -26,12 +33,12 @@ class EveryNSlabs : public Trigger<KnownTriggers> {
   /// \endcond
 
   struct N {
-    using type = size_t;
+    using type = uint64_t;
     static constexpr OptionString help{"How frequently to trigger."};
     static type lower_bound() { return 1; }
   };
   struct Offset {
-    using type = size_t;
+    using type = uint64_t;
     static constexpr OptionString help{"First slab to trigger on."};
     static type default_value() { return 0; }
   };
@@ -40,13 +47,13 @@ class EveryNSlabs : public Trigger<KnownTriggers> {
   static constexpr OptionString help{
     "Trigger every N time slabs after a given offset."};
 
-  EveryNSlabs(const size_t interval, const size_t offset) noexcept
+  EveryNSlabs(const uint64_t interval, const uint64_t offset) noexcept
       : interval_(interval), offset_(offset) {}
 
   using argument_tags = tmpl::list<Tags::TimeId>;
 
   bool operator()(const TimeId& time_id) const noexcept {
-    const size_t slab_number = time_id.slab_number();
+    const auto slab_number = static_cast<uint64_t>(time_id.slab_number());
     return slab_number >= offset_ and (slab_number - offset_) % interval_ == 0;
   }
 
@@ -57,8 +64,8 @@ class EveryNSlabs : public Trigger<KnownTriggers> {
   }
 
  private:
-  size_t interval_{0};
-  size_t offset_{0};
+  uint64_t interval_{0};
+  uint64_t offset_{0};
 };
 
 /// \cond

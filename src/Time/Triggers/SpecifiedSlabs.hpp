@@ -3,13 +3,22 @@
 
 #pragma once
 
+#include <cstdint>
+#include <pup.h>
 #include <unordered_set>
 #include <vector>
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
-#include "Time/Tags.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeId;
+}  // namespace Tags
+/// \endcond
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
@@ -26,7 +35,8 @@ class SpecifiedSlabs : public Trigger<KnownTriggers> {
   /// \endcond
 
   struct Slabs {
-    using type = std::vector<size_t>;
+    // No observing negative slabs.  That's the initialization phase.
+    using type = std::vector<uint64_t>;
     static constexpr OptionString help{
       "List of slab numbers on which to trigger."};
   };
@@ -35,13 +45,13 @@ class SpecifiedSlabs : public Trigger<KnownTriggers> {
   static constexpr OptionString help{
     "Trigger at specified numbers of slabs after the simulation start."};
 
-  explicit SpecifiedSlabs(const std::vector<size_t>& slabs) noexcept
+  explicit SpecifiedSlabs(const std::vector<uint64_t>& slabs) noexcept
       : slabs_(slabs.begin(), slabs.end()) {}
 
   using argument_tags = tmpl::list<Tags::TimeId>;
 
   bool operator()(const TimeId& time_id) const noexcept {
-    return slabs_.count(time_id.slab_number()) == 1;
+    return slabs_.count(static_cast<uint64_t>(time_id.slab_number())) == 1;
   }
 
   // clang-tidy: google-runtime-references
@@ -50,7 +60,7 @@ class SpecifiedSlabs : public Trigger<KnownTriggers> {
   }
 
  private:
-  std::unordered_set<size_t> slabs_;
+  std::unordered_set<uint64_t> slabs_;
 };
 
 /// \cond

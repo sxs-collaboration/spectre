@@ -66,7 +66,7 @@ struct EvolutionMetavars {
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<Actions::AdvanceTime, ScalarWave::Actions::Observe,
-                     Actions::FinalTime, Actions::ComputeVolumeDuDt<Dim>,
+                     Actions::FinalTime, Actions::ComputeVolumeDuDt,
                      dg::Actions::ComputeNonconservativeBoundaryFluxes,
                      dg::Actions::SendDataForFluxes<EvolutionMetavars>,
                      dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,

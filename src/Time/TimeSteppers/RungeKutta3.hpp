@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <pup.h>
 #include <type_traits>
 
@@ -64,7 +65,7 @@ class RungeKutta3 : public TimeStepper::Inherit {
           history,
       const TimeDelta& time_step) const noexcept;
 
-  size_t number_of_substeps() const noexcept override;
+  uint64_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
 

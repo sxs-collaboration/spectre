@@ -118,6 +118,7 @@ add_algorithm_test("AlgorithmNodelock" "")
 # Tests that do not require their own Chare setup and can work with the
 # unit tests
 set(PARALLEL_TESTS
+  Parallel/Test_GotoAction.cpp
   Parallel/Test_Parallel.cpp
   Parallel/Test_ParallelComponentHelpers.cpp
   Parallel/Test_PupStlCpp11.cpp

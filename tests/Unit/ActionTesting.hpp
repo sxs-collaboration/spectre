@@ -223,6 +223,10 @@ class MockDistributedObject {
     algorithm_step_ = next_action_id;
   }
 
+  size_t get_next_action_index() const noexcept {
+    return algorithm_step_;
+  }
+
   template <size_t... Is>
   void next_action(std::index_sequence<Is...> /*meta*/) noexcept;
 
@@ -830,6 +834,13 @@ class MockRuntimeSystem {
         .at(array_index)
         .force_next_action_to_be(
             tmpl::index_of<typename Component::action_list, Action>::value);
+  }
+
+  /// Obtain the index into the action list of the next action.
+  template <typename Component>
+  size_t get_next_action_index(
+      const typename Component::array_index& array_index) noexcept {
+    return algorithms<Component>().at(array_index).get_next_action_index();
   }
 
   /// Invoke the next action in the ActionList on the parallel component

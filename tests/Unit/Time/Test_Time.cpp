@@ -4,7 +4,9 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+// IWYU pragma: no_include <cmath>  // for abs
 #include <functional>
+#include <initializer_list>  // IWYU pragma: keep
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
@@ -268,6 +270,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta", "[Unit][Time]") {
 
   CHECK(rational_t(2, 5) * TimeDelta(slab, rational_t(1, 5)) ==
         TimeDelta(slab, rational_t(2, 25)));
+
+  CHECK(abs(TimeDelta(slab, rational_t(1, 5))) ==
+        TimeDelta(slab, rational_t(1, 5)));
+  CHECK(abs(TimeDelta(slab, -rational_t(1, 5))) ==
+        TimeDelta(slab, rational_t(1, 5)));
 
   // Slab boundary arithmetic
   CHECK(TimeDelta(slab.advance(), rational_t(1, 3)) + Time(slab, 1) ==
