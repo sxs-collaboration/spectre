@@ -285,7 +285,10 @@ void test_initialize_element(
     const SystemAnalyticSolution solution{};
     double past_t = start_time;
     for (size_t i = history.size(); i > 0; --i) {
-      const auto entry = history.begin() + static_cast<ssize_t>(i - 1);
+      const auto entry =
+          history.begin() +
+          static_cast<
+              typename std::decay_t<decltype(history)>::difference_type>(i - 1);
       past_t -= dt;
 
       CHECK(entry->value() == past_t);
