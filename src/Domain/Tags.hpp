@@ -21,6 +21,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"
+#include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
@@ -32,10 +33,6 @@
 
 /// \cond
 class DataVector;
-namespace Tags {
-template<size_t Dim>
-struct LogicalCoordinates;
-} // namespace Tags
 /// \endcond
 
 namespace OptionTags {

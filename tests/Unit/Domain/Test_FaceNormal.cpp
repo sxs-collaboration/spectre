@@ -12,6 +12,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -21,15 +22,19 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare CoordinateMaps::Rotation
@@ -133,12 +138,21 @@ struct Directions : db::SimpleTag {
 }  // namespace
 SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
   const auto box = db::create<
-      db::AddSimpleTags<Directions, Tags::Mesh<2>, Tags::ElementMap<2>>,
+      db::AddSimpleTags<Tags::Element<2>, Directions, Tags::Mesh<2>,
+                        Tags::ElementMap<2>>,
       db::AddComputeTags<
+          Tags::BoundaryDirectionsExterior<2>,
           Tags::InterfaceComputeItem<Directions, Tags::Direction<2>>,
           Tags::InterfaceComputeItem<Directions, Tags::InterfaceMesh<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                     Tags::Direction<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                     Tags::InterfaceMesh<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                     Tags::UnnormalizedFaceNormal<2>>,
           Tags::InterfaceComputeItem<Directions,
                                      Tags::UnnormalizedFaceNormal<2>>>>(
+      Element<2>(ElementId<2>(0), {}),
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
                                        Direction<2>::lower_eta()},
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
@@ -147,13 +161,76 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
+  CHECK((Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                    Tags::UnnormalizedFaceNormal<2>>::name()) ==
+        "BoundaryDirectionsExterior<UnnormalizedFaceNormal>"s);
+
   std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>> expected;
   expected[Direction<2>::upper_xi()] =
       tnsr::i<DataVector, 2>{{{{0.6, 0.6}, {0.8, 0.8}}}};
   expected[Direction<2>::lower_eta()] =
       tnsr::i<DataVector, 2>{{{{0.8, 0.8}, {-0.6, -0.6}}}};
 
+  std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>>
+      expected_external_normal;
+  expected_external_normal[Direction<2>::lower_xi()] =
+      tnsr::i<DataVector, 2>{{{{0.6, 0.6}, {0.8, 0.8}}}};
+  expected_external_normal[Direction<2>::upper_xi()] =
+      tnsr::i<DataVector, 2>{{{{-0.6, -0.6}, {-0.8, -0.8}}}};
+  expected_external_normal[Direction<2>::lower_eta()] =
+      tnsr::i<DataVector, 2>{{{{-0.8, -0.8}, {0.6, 0.6}}}};
+  expected_external_normal[Direction<2>::upper_eta()] =
+      tnsr::i<DataVector, 2>{{{{0.8, 0.8}, {-0.6, -0.6}}}};
+
   CHECK_ITERABLE_APPROX(
       (get<Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<2>>>(box)),
       expected);
+  CHECK_ITERABLE_APPROX(
+      (get<Tags::Interface<Tags::BoundaryDirectionsExterior<2>,
+                           Tags::UnnormalizedFaceNormal<2>>>(box)),
+      expected_external_normal);
+
+  // Now test the external normals with a non-affine map, to ensure that the
+  // exterior face normal is the inverted interior one
+  const auto box_with_non_affine_map = db::create<
+      db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>>,
+      db::AddComputeTags<
+          Tags::BoundaryDirectionsExterior<2>,
+          Tags::BoundaryDirectionsInterior<2>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                     Tags::Direction<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                     Tags::InterfaceMesh<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
+                                     Tags::UnnormalizedFaceNormal<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
+                                     Tags::Direction<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
+                                     Tags::InterfaceMesh<2>>,
+          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
+                                     Tags::UnnormalizedFaceNormal<2>>>>(
+      Element<2>(ElementId<2>(0), {}),
+      Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      ElementMap<2, Frame::Inertial>(
+          ElementId<2>(0),
+          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+              CoordinateMaps::Wedge2D(1., 2., 0., 1., OrientationMap<2>{},
+                                      false))));
+
+  auto invert = [](std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>>
+                       map_of_vectors) noexcept {
+    for(auto& vector : map_of_vectors) {
+      for(auto& dv : vector.second){
+        dv *= -1.;
+      }
+    }
+    return map_of_vectors;
+  };
+
+  CHECK((db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::UnnormalizedFaceNormal<2>>>(
+            box_with_non_affine_map)) ==
+        (invert(db::get<Tags::Interface<Tags::BoundaryDirectionsInterior<2>,
+                                        Tags::UnnormalizedFaceNormal<2>>>(
+            box_with_non_affine_map))));
 }
