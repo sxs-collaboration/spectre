@@ -151,15 +151,14 @@ def create_header_file(args):
         "                      OrderedActionsList,\n" \
         "                      SpectreArrayIndex>,\n" \
         "      public Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                                     Parallel::Algorithms::%s,\n" \
         "                                     OrderedActionsList,\n" \
         "                                     SpectreArrayIndex> {\n" \
         "  using algorithm = Parallel::Algorithms::%s;\n" \
         " public:\n" \
-        "  using Parallel::AlgorithmImpl<ParallelComponent,algorithm,\n" \
+        "  using Parallel::AlgorithmImpl<ParallelComponent,\n" \
         "                                OrderedActionsList,\n" \
         "                                SpectreArrayIndex>::AlgorithmImpl;\n" \
-        "};\n\n" % (args['algorithm_name'], args['algorithm_name'],
+        "};\n\n" % (args['algorithm_name'],
                     args['algorithm_name'], args['algorithm_name'])
     # Write include of the def file, but including only the template definitions
     header_str += "#define CK_TEMPLATES_ONLY\n" \
