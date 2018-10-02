@@ -4,6 +4,7 @@
 #include "Domain/ElementId.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <limits>
 #include <ostream>
 
 #include "Domain/ElementIndex.hpp"
@@ -65,6 +66,16 @@ template <size_t VolumeDim>
 void ElementId<VolumeDim>::pup(PUP::er& p) noexcept {
   p | block_id_;
   p | segment_ids_;
+}
+
+template <size_t VolumeDim>
+ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
+  // To ensure that this does not correspond to an actual element, we set the
+  // block id to be much larger than the possible number of blocks.
+  // We use half of the maximum possible value in case the id of an actual block
+  // underflows to the maximum.
+  return ElementId<VolumeDim>(std::numeric_limits<size_t>::max() / 2,
+                              make_array<VolumeDim>(SegmentId(0, 0)));
 }
 
 template <size_t VolumeDim>
