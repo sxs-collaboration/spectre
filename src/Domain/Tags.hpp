@@ -48,6 +48,15 @@ struct DomainCreator {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// The ::Domain.
+template <size_t VolumeDim, typename Frame>
+struct Domain : db::SimpleTag {
+  static std::string name() noexcept { return "Domain"; }
+  using type = ::Domain<VolumeDim, Frame>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::SimpleTag {
