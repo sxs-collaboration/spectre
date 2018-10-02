@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>  // IWYU pragma: keep
 #include <memory>
 #include <string>
@@ -155,7 +156,7 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
           0, ActionTesting::MockDistributedObject<component>{
                  db::create<component::simple_tags, component::compute_tags>(
                      initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-                     TimeId(forward_in_time, 1 - static_cast<ssize_t>(order),
+                     TimeId(forward_in_time, 1 - static_cast<int64_t>(order),
                             initial_time),
                      initial_time_step)});
   MockRuntimeSystem runner{
@@ -256,7 +257,7 @@ double error_in_step(const size_t order, const double step) noexcept {
           0, ActionTesting::MockDistributedObject<component>{
                  db::create<component::simple_tags, component::compute_tags>(
                      initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-                     TimeId(forward_in_time, 1 - static_cast<ssize_t>(order),
+                     TimeId(forward_in_time, 1 - static_cast<int64_t>(order),
                             initial_time),
                      initial_time_step)});
   MockRuntimeSystem runner{
