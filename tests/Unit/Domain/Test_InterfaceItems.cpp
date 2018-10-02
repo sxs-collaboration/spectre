@@ -4,8 +4,11 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <pup.h>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -18,9 +21,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
@@ -374,29 +381,51 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
   const DataVector boundary_vars_xi{10., 11., 12.};
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::Mesh<dim>, sliced_simple_item_tag,
-                                   Tags::Interface<Dirs, simple_item_tag>>,
-                 db::AddComputeTags<
-                     Dirs, sliced_compute_item_tag,
-                     Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
-                     Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
-                     Tags::InterfaceComputeItem<Dirs, compute_item_tag>,
-                     Tags::Slice<Dirs, sliced_compute_item_tag>,
-                     Tags::Slice<Dirs, sliced_simple_item_tag>>>(
-          mesh, std::move(volume_vars),
-          make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+  ElementMap<2, Frame::Inertial> element_map(
+      ElementId<2>(0),
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          CoordinateMaps::Rotation<2>(atan2(4., 3.))));
+
+  const std::unordered_map<Direction<dim>, Mesh<dim - 1>>
+      expected_interface_mesh{
+          {Direction<dim>::lower_xi(),
+           Mesh<dim - 1>{3, Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto}},
+          {Direction<dim>::upper_eta(),
+           Mesh<dim - 1>{4, Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto}}};
+
+  const auto expected_boundary_coords = [&expected_interface_mesh,
+                                         &element_map]() {
+    std::unordered_map<Direction<dim>, tnsr::I<DataVector, dim>> coords{};
+    for (const auto& direction : Dirs::function()) {
+      coords[direction] = element_map(interface_logical_coordinates(
+          expected_interface_mesh.at(direction), direction));
+    }
+    return coords;
+  }();
+
+  auto box = db::create<
+      db::AddSimpleTags<Tags::Mesh<dim>, Tags::ElementMap<dim>,
+                        sliced_simple_item_tag,
+                        Tags::Interface<Dirs, simple_item_tag>>,
+      db::AddComputeTags<
+          Dirs, sliced_compute_item_tag,
+          Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
+          Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
+          Tags::InterfaceComputeItem<Dirs, compute_item_tag>,
+          Tags::InterfaceComputeItem<Dirs, Tags::BoundaryCoordinates<dim>>,
+          Tags::Slice<Dirs, sliced_compute_item_tag>,
+          Tags::Slice<Dirs, sliced_simple_item_tag>>>(
+      mesh, std::move(element_map), std::move(volume_vars),
+      make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
   CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
         make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
   CHECK((db::get<Tags::Interface<Dirs, Tags::Mesh<dim - 1>>>(box)) ==
-        (std::unordered_map<Direction<dim>, Mesh<dim - 1>>{
-            {Direction<dim>::lower_xi(),
-             Mesh<dim - 1>{3, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto}},
-            {Direction<dim>::upper_eta(),
-             Mesh<dim - 1>{4, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto}}}));
+        expected_interface_mesh);
+  CHECK(db::get<Tags::Interface<Dirs, Tags::Coordinates<dim, Frame::Inertial>>>(
+            box) == expected_boundary_coords);
   CHECK((db::get<Tags::Interface<Dirs, compute_item_tag>>(box)) ==
         (make_interface_variables<1, 10>({1., 1., 1.}, {5., 5., 5.},
                                          {1., 1., 1., 1.}, {5., 5., 5., 5.})));
