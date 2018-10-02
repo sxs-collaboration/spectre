@@ -84,15 +84,16 @@ struct Hll {
     static std::string name() noexcept { return "MaxSignalSpeed"; }
   };
 
-  using package_tags =
+  using package_tags = tmpl::append<
+      db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
+      db::split_tag<variables_tag>,
+      tmpl::list<MinSignalSpeed, MaxSignalSpeed>>;
+
+  using argument_tags =
       tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
                                        ::Tags::NormalDotFlux, variables_tag>>,
                                    db::split_tag<variables_tag>>,
-                      MinSignalSpeed, MaxSignalSpeed>;
-
-  using argument_tags = tmpl::append<
-      db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
-      db::split_tag<variables_tag>, char_speeds_tag>;
+                      char_speeds_tag>;
 
  private:
   template <typename VariablesTagList, typename NormalDoFluxTagList>

@@ -58,9 +58,11 @@ struct LocalLaxFriedrichs {
                                    db::split_tag<variables_tag>>,
                       MaxAbsCharSpeed>;
 
-  using argument_tags = tmpl::append<
-      db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
-      db::split_tag<variables_tag>, char_speeds_tag>;
+  using argument_tags =
+      tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
+                                       ::Tags::NormalDotFlux, variables_tag>>,
+                                   db::split_tag<variables_tag>>,
+                      char_speeds_tag>;
 
  private:
   template <typename VariablesTagList, typename NormalDoFluxTagList>
