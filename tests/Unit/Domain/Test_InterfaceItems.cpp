@@ -101,11 +101,11 @@ struct TemplatedDirections : db::SimpleTag {
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   constexpr size_t dim = 3;
   using internal_directions = Tags::InternalDirections<dim>;
-  using boundary_directions = Tags::BoundaryDirections<dim>;
+  using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
 
   CHECK(internal_directions::name() == "InternalDirections");
-  CHECK(boundary_directions::name() == "BoundaryDirections");
+  CHECK(boundary_directions_interior::name() == "BoundaryDirectionsInterior");
 
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), {}},
@@ -124,10 +124,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
       db::AddSimpleTags<
           Tags::Element<dim>, TestTags::Int,
           Tags::Interface<internal_directions, TestTags::Double>,
-          Tags::Interface<boundary_directions, TestTags::Double>,
+          Tags::Interface<boundary_directions_interior, TestTags::Double>,
           TestTags::NoCopy<1>,
           Tags::Interface<internal_directions, TestTags::NoCopy<2>>,
-          Tags::Interface<boundary_directions, TestTags::NoCopy<2>>,
+          Tags::Interface<boundary_directions_interior, TestTags::NoCopy<2>>,
           templated_directions,
           Tags::Interface<templated_directions, TestTags::Double>>,
       db::AddComputeTags<
@@ -143,13 +143,15 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
                                      Tags::Direction<dim>>,
           Tags::InterfaceComputeItem<templated_directions,
                                      TestTags::Negate<TestTags::Double>>,
-          boundary_directions,
-          Tags::InterfaceComputeItem<boundary_directions, Tags::Direction<dim>>,
-          Tags::InterfaceComputeItem<boundary_directions, TestTags::AddThree>,
-          Tags::InterfaceComputeItem<boundary_directions,
+          boundary_directions_interior,
+          Tags::InterfaceComputeItem<boundary_directions_interior,
+                                     Tags::Direction<dim>>,
+          Tags::InterfaceComputeItem<boundary_directions_interior,
+                                     TestTags::AddThree>,
+          Tags::InterfaceComputeItem<boundary_directions_interior,
                                      TestTags::Negate<TestTags::Double>>,
-          Tags::InterfaceComputeItem<boundary_directions,
-                                     TestTags::ComplexComputeItem<dim>>>>(
+          Tags::InterfaceComputeItem<boundary_directions_interior,
+                                     TestTags::ComplexComputeItem<dim>>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::lower_xi(), 1.5},
@@ -165,17 +167,17 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::upper_xi(), 4.5}});
 
-    CHECK(get<Tags::BoundaryDirections<dim>>(box) ==
+    CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
           std::unordered_set<Direction<dim>>{Direction<dim>::lower_eta(),
                                              Direction<dim>::upper_eta(),
                                              Direction<dim>::lower_zeta()});
 
-    CHECK(
-      (get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(box)) ==
-      (std::unordered_map<Direction<dim>, Direction<dim>>{
-            {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
-            {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
-            {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
+    CHECK((get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(
+              box)) ==
+          (std::unordered_map<Direction<dim>, Direction<dim>>{
+              {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
+              {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
+              {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
 
       CHECK(
       (get<Tags::Interface<boundary_directions, Tags::Direction<dim>>>(box)) ==
@@ -197,7 +199,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), -2.5},
               {Direction<dim>::upper_zeta(), -3.5}}));
 
-    CHECK((get<Tags::Interface<boundary_directions,
+    CHECK((get<Tags::Interface<boundary_directions_interior,
                                TestTags::Negate<TestTags::Double>>>(box)) ==
           (std::unordered_map<Direction<dim>, double>{
               {Direction<dim>::lower_eta(), -10.5},
@@ -210,20 +212,20 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), 8},
               {Direction<dim>::upper_zeta(), 8}}));
 
-    CHECK((get<Tags::Interface<boundary_directions, TestTags::Int>>(box)) ==
-          (std::unordered_map<Direction<dim>, int>{
-              {Direction<dim>::lower_eta(), 8},
-              {Direction<dim>::upper_eta(), 8},
-              {Direction<dim>::lower_zeta(), 8}}));
+    CHECK((get<Tags::Interface<boundary_directions_interior, TestTags::Int>>(
+              box)) == (std::unordered_map<Direction<dim>, int>{
+                           {Direction<dim>::lower_eta(), 8},
+                           {Direction<dim>::upper_eta(), 8},
+                           {Direction<dim>::lower_zeta(), 8}}));
 
-      CHECK((get<Tags::Interface<internal_directions,
-                                 TestTags::ComplexComputeItem<dim>>>(box)) ==
-            (std::unordered_map<Direction<dim>, std::pair<int, double>>{
-                {Direction<dim>::lower_xi(), {5, 1.5}},
-                {Direction<dim>::upper_xi(), {5, 2.5}},
-                {Direction<dim>::upper_zeta(), {5, 3.5}}}));
+    CHECK((get<Tags::Interface<internal_directions,
+                               TestTags::ComplexComputeItem<dim>>>(box)) ==
+          (std::unordered_map<Direction<dim>, std::pair<int, double>>{
+              {Direction<dim>::lower_xi(), {5, 1.5}},
+              {Direction<dim>::upper_xi(), {5, 2.5}},
+              {Direction<dim>::upper_zeta(), {5, 3.5}}}));
 
-    CHECK((get<Tags::Interface<boundary_directions,
+    CHECK((get<Tags::Interface<boundary_directions_interior,
                                TestTags::ComplexComputeItem<dim>>>(box)) ==
           (std::unordered_map<Direction<dim>, std::pair<int, double>>{
               {Direction<dim>::lower_eta(), {5, 10.5}},
