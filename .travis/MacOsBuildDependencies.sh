@@ -85,6 +85,7 @@ if [ ! -d ./mc ]; then
     conda create -n osx_env --yes python=$TRAVIS_PYTHON_VERSION
     source activate osx_env
     conda install -y numpy=$NUMPY_VERSION
+    conda install -y scipy
     rm ./miniconda.sh
 else
     export PATH=$DEP_CACHE/mc/bin:$PATH

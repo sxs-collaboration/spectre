@@ -32,6 +32,7 @@ installation_on_clusters "Installation on clusters" page.
   are released)
 * [Python](https://www.python.org/) 2.7, or 3.5 or later
 * [NumPy](http://www.numpy.org/) 1.10 or later
+* [SciPy](https://www.scipy.org)
 
 #### Optional:
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate

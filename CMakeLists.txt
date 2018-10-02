@@ -65,6 +65,7 @@ include(SetupLapack)
 include(SetupNumPy)
 include(SetupPapi)
 include(SetupPythonLibs)
+include(SetupSciPy)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
