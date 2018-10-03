@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <ostream>
 #include <sstream>
 #include <string>
 
@@ -41,3 +42,8 @@ class MakeString {
  private:
   std::stringstream stream_{};
 };
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const MakeString& t) noexcept {
+  return os << std::string{t};
+}

@@ -107,7 +107,7 @@ struct DgElementArray {
       // at specific times.
       const size_t fake_temporal_id = 0;
       Parallel::simple_action<observers::Actions::RegisterWithObservers<
-          observers::TypeOfObservation::Volume>>(
+          observers::TypeOfObservation::ReductionAndVolume>>(
           Parallel::get_parallel_component<DgElementArray>(local_cache),
           fake_temporal_id);
     }

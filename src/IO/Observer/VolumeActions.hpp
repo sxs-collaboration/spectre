@@ -192,7 +192,7 @@ struct WriteVolumeData {
     std::unordered_map<observers::ArrayComponentId, ExtentsAndTensorVolumeData>
         volume_data{};
     CmiNodeLock file_lock;
-    db::mutate<Tags::VolumeFileLock, Tags::TensorData>(
+    db::mutate<Tags::H5FileLock, Tags::TensorData>(
         make_not_null(&box),
         [&observation_id, &file_lock, &volume_data ](
             const gsl::not_null<CmiNodeLock*> in_file_lock,
@@ -209,16 +209,20 @@ struct WriteVolumeData {
     // are, what other users are doing, etc.) and we want to be able to continue
     // to work on the nodegroup while we are writing data to disk.
     Parallel::lock(&file_lock);
-    const auto& file_prefix = Parallel::get<OptionTags::VolumeFileName>(cache);
-    h5::H5File<h5::AccessType::ReadWrite> h5file(
-        file_prefix + std::to_string(Parallel::my_node()) + ".h5", true);
-    constexpr size_t version_number = 0;
-    auto& volume_file =
-        h5file.try_insert<h5::VolumeData>("/element_data", version_number);
-    for (const auto& id_and_tensor_data_for_grid : volume_data) {
-      const auto& extents_and_tensors = id_and_tensor_data_for_grid.second;
-      volume_file.insert_tensor_data(
-          observation_id.hash(), observation_id.value(), extents_and_tensors);
+    {
+      // Scoping is for closing HDF5 file before we release the lock.
+      const auto& file_prefix =
+          Parallel::get<OptionTags::VolumeFileName>(cache);
+      h5::H5File<h5::AccessType::ReadWrite> h5file(
+          file_prefix + std::to_string(Parallel::my_node()) + ".h5", true);
+      constexpr size_t version_number = 0;
+      auto& volume_file =
+          h5file.try_insert<h5::VolumeData>("/element_data", version_number);
+      for (const auto& id_and_tensor_data_for_grid : volume_data) {
+        const auto& extents_and_tensors = id_and_tensor_data_for_grid.second;
+        volume_file.insert_tensor_data(
+            observation_id.hash(), observation_id.value(), extents_and_tensors);
+      }
     }
     Parallel::unlock(&file_lock);
   }

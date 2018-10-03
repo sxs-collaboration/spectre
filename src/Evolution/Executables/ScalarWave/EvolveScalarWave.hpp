@@ -32,6 +32,7 @@
 #include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -59,6 +60,13 @@ struct EvolutionMetavars {
   // metavariables
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
+
+  using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
+                                         funcl::Sqrt<funcl::Divides<>>,
+                                         std::index_sequence<1>>;
+  using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
+      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>>;
 
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,

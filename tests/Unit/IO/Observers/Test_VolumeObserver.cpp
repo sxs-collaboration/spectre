@@ -76,15 +76,19 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
                  ActionTesting::MockDistributedObject<element_comp>{});
   }
 
-  tuples::TaggedTuple<observers::OptionTags::VolumeFileName> cache_data{};
+  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
+                      observers::OptionTags::VolumeFileName>
+      cache_data{};
   const auto& output_file_prefix =
       tuples::get<observers::OptionTags::VolumeFileName>(cache_data) =
           "./Unit.IO.Observers.VolumeObserver";
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       cache_data, std::move(dist_objects)};
 
-  runner.simple_action<obs_component, observers::Actions::Initialize>(0);
-  runner.simple_action<obs_writer, observers::Actions::InitializeWriter>(0);
+  runner.simple_action<obs_component,
+                       observers::Actions::Initialize<Metavariables>>(0);
+  runner.simple_action<obs_writer,
+                       observers::Actions::InitializeWriter<Metavariables>>(0);
 
   // Register elements
   for (const auto& id : element_ids) {
@@ -146,58 +150,62 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
             /* get<0> = index of dimensions */
             std::get<0>(volume_data_fakes));
   }
-  // Invoke the simple_action RegisterSenderWithSelf that was called on the
-  // observer component by the RegisterWithObservers action.
+  // Invoke the simple action 'ContributeVolumeDataToWriter' to move the volume
+  // data to the Writer parallel component.
   runner.invoke_queued_simple_action<obs_writer>(0);
+  // Invoke the threaded action 'WriteVolumeData' to write the data to disk.
   runner.invoke_queued_threaded_action<obs_writer>(0);
 
   // Check that the H5 file was written correctly.
-  h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
-  auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
+  {
+    h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
+    auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
 
-  const auto temporal_id = observers::ObservationId(TimeId(3)).hash();
-  CHECK(volume_file.list_observation_ids() == std::vector<size_t>{temporal_id});
-  const auto grids = volume_file.list_grids(temporal_id);
-  const std::vector<std::string> expected_grids(
-      boost::make_transform_iterator(element_ids.begin(),
-                                     get_output<ElementId<2>>),
-      boost::make_transform_iterator(element_ids.end(),
-                                     get_output<ElementId<2>>));
-  REQUIRE(alg::all_of(grids, [&expected_grids](const std::string& name) {
-    return alg::found(expected_grids, name);
-  }));
-  REQUIRE(alg::all_of(expected_grids, [&grids](const std::string& name) {
-    return alg::found(grids, name);
-  }));
+    const auto temporal_id = observers::ObservationId(TimeId(3)).hash();
+    CHECK(volume_file.list_observation_ids() ==
+          std::vector<size_t>{temporal_id});
+    const auto grids = volume_file.list_grids(temporal_id);
+    const std::vector<std::string> expected_grids(
+        boost::make_transform_iterator(element_ids.begin(),
+                                       get_output<ElementId<2>>),
+        boost::make_transform_iterator(element_ids.end(),
+                                       get_output<ElementId<2>>));
+    REQUIRE(alg::all_of(grids, [&expected_grids](const std::string& name) {
+      return alg::found(expected_grids, name);
+    }));
+    REQUIRE(alg::all_of(expected_grids, [&grids](const std::string& name) {
+      return alg::found(grids, name);
+    }));
 
-  for (const auto& element_id : element_ids) {
-    const std::string grid_name = MakeString{} << element_id;
-    const auto tensor_names =
-        volume_file.list_tensor_components(temporal_id, grid_name);
-    const std::vector<std::string> expected_tensor_names{
-        "T_x", "T_y", "S_xx", "S_yy", "S_xy", "S_yx"};
-    CAPTURE(element_id);
-    CAPTURE(tensor_names);
-    CAPTURE(expected_tensor_names);
-    REQUIRE(alg::all_of(tensor_names,
-                        [&expected_tensor_names](const std::string& name) {
-                          return alg::found(expected_tensor_names, name);
-                        }));
-    REQUIRE(alg::all_of(expected_tensor_names,
-                        [&tensor_names](const std::string& name) {
-                          return alg::found(tensor_names, name);
-                        }));
-    const observers::ArrayComponentId array_id(
-        std::add_pointer_t<element_comp>{nullptr},
-        Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{element_id}});
-    const auto volume_data_fakes = make_fake_volume_data(array_id, "");
-    CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes)[0],
-                              std::get<0>(volume_data_fakes)[1]} ==
-          volume_file.get_extents(temporal_id, grid_name));
-    for (const auto& tensor_component : std::get<1>(volume_data_fakes)) {
-      CHECK(tensor_component.data ==
-            volume_file.get_tensor_component(temporal_id, grid_name,
-                                             tensor_component.name));
+    for (const auto& element_id : element_ids) {
+      const std::string grid_name = MakeString{} << element_id;
+      const auto tensor_names =
+          volume_file.list_tensor_components(temporal_id, grid_name);
+      const std::vector<std::string> expected_tensor_names{
+          "T_x", "T_y", "S_xx", "S_yy", "S_xy", "S_yx"};
+      CAPTURE(element_id);
+      CAPTURE(tensor_names);
+      CAPTURE(expected_tensor_names);
+      REQUIRE(alg::all_of(tensor_names,
+                          [&expected_tensor_names](const std::string& name) {
+                            return alg::found(expected_tensor_names, name);
+                          }));
+      REQUIRE(alg::all_of(expected_tensor_names,
+                          [&tensor_names](const std::string& name) {
+                            return alg::found(tensor_names, name);
+                          }));
+      const observers::ArrayComponentId array_id(
+          std::add_pointer_t<element_comp>{nullptr},
+          Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{element_id}});
+      const auto volume_data_fakes = make_fake_volume_data(array_id, "");
+      CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes)[0],
+                                std::get<0>(volume_data_fakes)[1]} ==
+            volume_file.get_extents(temporal_id, grid_name));
+      for (const auto& tensor_component : std::get<1>(volume_data_fakes)) {
+        CHECK(tensor_component.data ==
+              volume_file.get_tensor_component(temporal_id, grid_name,
+                                               tensor_component.name));
+      }
     }
   }
   if (file_system::check_if_file_exists(h5_file_name)) {

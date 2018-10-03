@@ -6,6 +6,7 @@
 #include <string>
 
 #include "IO/Observer/Tags.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace observers {
 namespace Tags {
@@ -15,8 +16,21 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   CHECK(VolumeArrayComponentIds::name() == "VolumeArrayComponentIds");
   CHECK(TensorData::name() == "TensorData");
   CHECK(VolumeObserversContributed::name() == "VolumeObserversContributed");
-  CHECK(VolumeFileLock::name() == "VolumeFileLock");
-  CHECK(ReductionFileLock::name() == "ReductionFileLock");
+  CHECK(H5FileLock::name() == "H5FileLock");
+  CHECK(ReductionData<double>::name() == "ReductionData");
+  CHECK(ReductionDataNames<double>::name() == "ReductionDataNames");
+  CHECK(NumberOfNodesContributedToReduction::name() ==
+        "NumberOfNodesContributedToReduction");
+  CHECK(ReductionObserversContributed::name() ==
+        "ReductionObserversContributed");
+  static_assert(
+      cpp17::is_same_v<typename ReductionData<double, int, char>::names_tag,
+                       ReductionDataNames<double, int, char>>,
+      "Failed testing Observers tags");
+  static_assert(
+      cpp17::is_same_v<typename ReductionDataNames<double, int, char>::data_tag,
+                       ReductionData<double, int, char>>,
+      "Failed testing Observers tags");
 }
 }  // namespace Tags
 }  // namespace observers

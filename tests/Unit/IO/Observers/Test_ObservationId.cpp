@@ -5,10 +5,13 @@
 
 #include <cstddef>
 #include <functional>
+#include <string>
 
 #include "IO/Observer/ObservationId.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeString.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace observer_testing_detail {
@@ -56,6 +59,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ObservationId", "[Unit][Observers]") {
   CHECK(time0.hash() != time1.hash());
   CHECK(time0.value() == 0.0);
   CHECK(time1.value() == 0.5);
+
+  CHECK(get_output(id0) == std::string(MakeString{} << '(' << id0.hash() << ','
+                                                    << id0.value() << ')'));
 
   // Test PUP
   test_serialization(id0);

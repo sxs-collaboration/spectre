@@ -26,12 +26,13 @@ struct observer_component {
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
-      typename observers::Actions::Initialize::return_tag_list>;
+      typename observers::Actions::Initialize<Metavariables>::return_tag_list>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<observer_component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+  using reduction_data_tags = tmpl::list<>;
 
   enum class Phase { Initialize, Exit };
 };
@@ -52,7 +53,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {}, std::move(dist_objects)};
 
-  runner.simple_action<obs_component, observers::Actions::Initialize>(0);
+  runner.simple_action<obs_component,
+                       observers::Actions::Initialize<Metavariables>>(0);
   const auto& observer_box =
       runner.template algorithms<obs_component>()
           .at(0)

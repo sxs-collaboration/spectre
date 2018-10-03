@@ -24,19 +24,19 @@ namespace observers {
 template <class Metavariables>
 struct Observer {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<OptionTags::VolumeFileName>;
+  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
 
-  using initial_databox =
-      db::compute_databox_type<typename Actions::Initialize::return_tag_list>;
+  using initial_databox = db::compute_databox_type<
+      typename Actions::Initialize<Metavariables>::return_tag_list>;
 
   using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::simple_action<Actions::Initialize>(
+    Parallel::simple_action<Actions::Initialize<Metavariables>>(
         Parallel::get_parallel_component<Observer>(local_cache));
   }
 
@@ -54,19 +54,20 @@ struct Observer {
 template <class Metavariables>
 struct ObserverWriter {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<OptionTags::VolumeFileName>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::ReductionFileName, OptionTags::VolumeFileName>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
 
   using initial_databox = db::compute_databox_type<
-      typename Actions::InitializeWriter::return_tag_list>;
+      typename Actions::InitializeWriter<Metavariables>::return_tag_list>;
 
   using options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::simple_action<Actions::InitializeWriter>(
+    Parallel::simple_action<Actions::InitializeWriter<Metavariables>>(
         Parallel::get_parallel_component<ObserverWriter>(local_cache));
   }
 

@@ -6,6 +6,7 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <functional>
+#include <iosfwd>
 #include <string>
 
 #include "Utilities/PrettyType.hpp"
@@ -72,6 +73,8 @@ ObservationId::ObservationId(const Id& t) noexcept
 
 bool operator==(const ObservationId& lhs, const ObservationId& rhs) noexcept;
 bool operator!=(const ObservationId& lhs, const ObservationId& rhs) noexcept;
+
+std::ostream& operator<<(std::ostream& os, const ObservationId& t) noexcept;
 }  // namespace observers
 
 namespace std {

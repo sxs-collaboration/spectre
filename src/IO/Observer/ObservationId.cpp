@@ -3,6 +3,7 @@
 
 #include "IO/Observer/ObservationId.hpp"
 
+#include <ostream>
 #include <pup.h>
 
 namespace observers {
@@ -17,5 +18,9 @@ bool operator==(const ObservationId& lhs, const ObservationId& rhs) noexcept {
 
 bool operator!=(const ObservationId& lhs, const ObservationId& rhs) noexcept {
   return not(lhs == rhs);
+}
+
+std::ostream& operator<<(std::ostream& os, const ObservationId& t) noexcept {
+  return os << '(' << t.hash() << ',' << t.value() << ')';
 }
 }  // namespace observers

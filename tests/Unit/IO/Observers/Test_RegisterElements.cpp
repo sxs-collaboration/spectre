@@ -69,8 +69,10 @@ void check_observer_registration() {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {}, std::move(dist_objects)};
 
-  runner.simple_action<obs_component, observers::Actions::Initialize>(0);
-  runner.simple_action<obs_writer, observers::Actions::InitializeWriter>(0);
+  runner.simple_action<obs_component,
+                       observers::Actions::Initialize<Metavariables>>(0);
+  runner.simple_action<obs_writer,
+                       observers::Actions::InitializeWriter<Metavariables>>(0);
   // Test initial state
   const auto& observer_box =
       runner.template algorithms<obs_component>()
