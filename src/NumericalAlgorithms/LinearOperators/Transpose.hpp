@@ -22,11 +22,14 @@
 // would make non-intuitive choices of the return-by-pointer version
 // below over this function.
 template <typename T>
-void raw_transpose(const gsl::not_null<T*> result,
-                   const T* const data, const size_t chunk_size,
+void raw_transpose(const gsl::not_null<T*> result, const T* const data,
+                   const size_t chunk_size,
                    const size_t number_of_chunks) noexcept {
-  for (size_t j = 0; j < number_of_chunks; ++j) {
-    for (size_t i = 0; i < chunk_size; ++i) {
+  // The i outside loop order is faster, but that could be architecture
+  // dependent and so may need updating in the future. Changing this made the
+  // logical derivatives in 3D with 50 variables 20% faster.
+  for (size_t i = 0; i < chunk_size; ++i) {
+    for (size_t j = 0; j < number_of_chunks; ++j) {
       // clang-tidy: pointer arithmetic
       result.get()[j + number_of_chunks * i] =  // NOLINT
           data[i + chunk_size * j];             // NOLINT

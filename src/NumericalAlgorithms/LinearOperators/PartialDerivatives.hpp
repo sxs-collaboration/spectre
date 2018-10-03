@@ -17,6 +17,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim>
 class Mesh;
 
@@ -63,33 +64,62 @@ struct deriv<Tag, Dim, Frame,
 
 }  // namespace Tags
 
+// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the logical coordinate.
 ///
 /// \requires `DerivativeTags` to be the head of `VariableTags`
 ///
-/// \return a `Variables` with a spatial tensor index appended to the front
+/// Returns a `Variables` with a spatial tensor index appended to the front
 /// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.
 ///
 /// \tparam DerivativeTags the subset of `VariableTags` for which derivatives
 /// are computed.
 template <typename DerivativeTags, typename VariableTags, size_t Dim>
+void logical_partial_derivatives(
+    gsl::not_null<std::array<Variables<DerivativeTags>, Dim>*>
+        logical_partial_derivatives_of_u,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) noexcept;
+
+template <typename DerivativeTags, typename VariableTags, size_t Dim>
 auto logical_partial_derivatives(const Variables<VariableTags>& u,
                                  const Mesh<Dim>& mesh) noexcept
     -> std::array<Variables<DerivativeTags>, Dim>;
+// @}
 
+// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
 ///
 /// \requires `DerivativeTags` to be the head of `VariableTags`
 ///
-/// \return a `Variables` with a spatial tensor index appended to the front
+/// Returns a `Variables` with a spatial tensor index appended to the front
 /// of each tensor within `u` and each `Tag` wrapped with a `Tags::deriv`.
 ///
 /// \tparam DerivativeTags the subset of `VariableTags` for which derivatives
 /// are computed.
+template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
+void partial_derivatives(
+    gsl::not_null<Variables<db::wrap_tags_in<
+        Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
+        du,
+    const std::array<Variables<DerivativeTags>, Dim>&
+        logical_partial_derivatives_of_u,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
+        inverse_jacobian) noexcept;
+
+template <typename DerivativeTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivatives(
+    gsl::not_null<Variables<db::wrap_tags_in<
+        Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
+        du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
+        inverse_jacobian) noexcept;
+
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 auto partial_derivatives(
@@ -98,6 +128,7 @@ auto partial_derivatives(
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                   tmpl::size_t<Dim>, DerivativeFrame>>;
+// @}
 
 namespace Tags {
 
@@ -128,12 +159,17 @@ struct ComputeDeriv
   using inv_jac_indices =
       typename db::item_type<InverseJacobianTag>::index_list;
   static constexpr auto Dim = tmpl::back<inv_jac_indices>::dim;
+  using deriv_frame = typename tmpl::back<inv_jac_indices>::Frame;
 
  public:
-  static constexpr auto function =
+  static constexpr ::Variables<db::wrap_tags_in<
+      Tags::deriv, DerivTags, tmpl::size_t<Dim>, deriv_frame>> (*function)(
+      const ::Variables<typename db::item_type<VariablesTag>::tags_list>&,
+      const ::Mesh<Dim>&,
+      const ::InverseJacobian<DataVector, Dim, Frame::Logical, deriv_frame>&) =
       partial_derivatives<DerivTags,
                           typename db::item_type<VariablesTag>::tags_list, Dim,
-                          typename tmpl::back<inv_jac_indices>::Frame>;
+                          deriv_frame>;
   using argument_tags =
       tmpl::list<VariablesTag, Tags::Mesh<Dim>, InverseJacobianTag>;
 };
