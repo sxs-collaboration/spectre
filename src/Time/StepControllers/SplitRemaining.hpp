@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <pup.h>
 
 #include "Options/Options.hpp"
@@ -43,8 +44,8 @@ class SplitRemaining : public StepController {
     const Time goal =
         desired_step > 0 ? time.slab().end() : time.slab().start();
     const TimeDelta remaining = goal - time;
-    const ssize_t steps = static_cast<ssize_t>(
-        std::max(std::ceil(remaining.value() / desired_step), 1.));
+    const auto steps = std::max(
+        static_cast<int32_t>(std::ceil(remaining.value() / desired_step)), 1);
 
     return remaining / steps;
   }

@@ -40,8 +40,6 @@ class History;
 }  // namespace TimeSteppers
 /// \endcond
 
-// IWYU pragma: no_include <sys/types.h>
-
 namespace TimeSteppers {
 
 /// \ingroup TimeSteppersGroup
@@ -294,7 +292,10 @@ void AdamsBashforthN::update_u(
     *u += time_step.value() * constexpr_sum<order>(
         [order, &coefficients, &history](auto i) noexcept {
           return coefficients[order - 1 - i] *
-              (history->begin() + static_cast<ssize_t>(i)).derivative();
+              (history->begin() +
+               static_cast<
+                   typename History<Vars, DerivVars>::difference_type>(i))
+                  .derivative();
         });
   };
 
@@ -340,7 +341,9 @@ AdamsBashforthN::compute_boundary_delta(
   const auto order = history->local_size();
 
   // Avoid billions of casts
-  const auto order_s = static_cast<ssize_t>(order);
+  const auto order_s = static_cast<typename BoundaryHistoryType<
+      LocalVars, RemoteVars, Coupling>::remote_iterator::difference_type>(
+      order);
 
   ASSERT(is_self_starting_ or order == target_order_,
          "Local history has wrong length (" << order
@@ -448,7 +451,12 @@ AdamsBashforthN::compute_boundary_delta(
   // to create out-of-range iterators.
   const auto advance_within_step =
       [order_s, union_step_end](const UnionIter& it) noexcept {
-    return union_step_end - it > order_s ? it + order_s : union_step_end;
+    return union_step_end - it >
+                   static_cast<typename decltype(union_times)::difference_type>(
+                       order_s)
+               ? it + static_cast<typename decltype(
+                          union_times)::difference_type>(order_s)
+               : union_step_end;
   };
 
   // Calculating the Adams-Bashforth coefficients is somewhat
@@ -456,8 +464,10 @@ AdamsBashforthN::compute_boundary_delta(
   // coefficients used to step from it to *(it + 1).
   auto ab_coefs = make_cached_function<UnionIter, std::map>([order_s](
       const UnionIter& times_end) noexcept {
-    return get_coefficients(times_end - (order_s - 1), times_end + 1,
-                            *(times_end + 1) - *times_end);
+    return get_coefficients(
+        times_end -
+            static_cast<typename UnionIter::difference_type>(order_s - 1),
+        times_end + 1, *(times_end + 1) - *times_end);
   });
 
   for (auto local_evaluation_step = history->local_begin();
@@ -547,12 +557,14 @@ AdamsBashforthN::compute_boundary_delta(
           for (auto step = union_step_lower_bound;
                step < union_step_upper_bound;
                ++step, ++control_points) {
-            deriv_coef += base_summand(step, union_local_evaluation_step) *
-                          lagrange_polynomial(
-                              make_lagrange_iterator(remote_evaluation_step),
-                              local_evaluation_step->value(),
-                              control_points,
-                              control_points + order_s);
+            deriv_coef +=
+                base_summand(step, union_local_evaluation_step) *
+                lagrange_polynomial(
+                    make_lagrange_iterator(remote_evaluation_step),
+                    local_evaluation_step->value(), control_points,
+                    control_points +
+                        static_cast<typename decltype(
+                            control_points)::difference_type>(order_s));
           }
         }
       }

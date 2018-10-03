@@ -7,6 +7,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 
 #include "ErrorHandling/Assert.hpp"
@@ -270,7 +271,7 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
   {
     const Slab init_slab = slab.advance_towards(-dt[0]);
 
-    for (ssize_t step = 1; step <= 3; ++step) {
+    for (int32_t step = 1; step <= 3; ++step) {
       {
         const Time now = t - step * dt[0].with_slab(init_slab);
         history.local_insert_initial(make_time_id(now),
@@ -374,7 +375,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     const TimeDelta init_dt = init_slab.duration() / 4;
 
     // clang-tidy misfeature: warns about boost internals here
-    for (ssize_t step = 1; step <= 3; ++step) {  // NOLINT
+    for (int32_t step = 1; step <= 3; ++step) {  // NOLINT
       // clang-tidy misfeature: warns about boost internals here
       const Time now = t - step * init_dt;  // NOLINT
       history.local_insert_initial(make_time_id(now),

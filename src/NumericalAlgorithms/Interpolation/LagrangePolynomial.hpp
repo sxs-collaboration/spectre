@@ -35,11 +35,11 @@ template <typename Iterator>
 double lagrange_polynomial(size_t j, double x,
                            const Iterator& control_points_begin,
                            const Iterator& control_points_end) {
-  ASSERT(j < static_cast<size_t>(std::distance(control_points_begin,
-                                               control_points_end)),
+  const auto j_diff =
+      static_cast<typename std::iterator_traits<Iterator>::difference_type>(j);
+  ASSERT(j_diff < std::distance(control_points_begin, control_points_end),
          "Polynomial number out of range " << j << " > "
          << (std::distance(control_points_begin, control_points_end) - 1));
-  return lagrange_polynomial(std::next(control_points_begin,
-                                       static_cast<ssize_t>(j)),
+  return lagrange_polynomial(std::next(control_points_begin, j_diff),
                              x, control_points_begin, control_points_end);
 }

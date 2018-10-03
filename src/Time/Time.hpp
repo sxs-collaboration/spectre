@@ -23,8 +23,6 @@ class er;
 class TimeDelta;
 /// \endcond
 
-// IWYU pragma: no_include <sys/types.h>
-
 /// \ingroup TimeGroup
 ///
 /// The time in a simulation.  Times can be safely compared for exact
