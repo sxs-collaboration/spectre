@@ -84,8 +84,15 @@ void test_copy_semantics(const T& a) {
   // constructor
   const T c(a);  // NOLINT
   CHECK(c == a);
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif  // defined(__clang__) && __clang_major__ > 6
   // clang-tidy: self-assignment
   b = b;  // NOLINT
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic pop
+#endif  // defined(__clang__) && __clang_major__ > 6
   CHECK(b == a);
 }
 
