@@ -8,15 +8,10 @@
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
 #include "Parallel/TypeTraits.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace PUP {
 class er;
 }  // namespace PUP
-namespace db {
-template <typename TagsList>
-class DataBox;
-}  // namespace db
 
 namespace {
 class PupableClass {
@@ -28,23 +23,24 @@ class NonpupableClass {};
 
 struct MV {};
 
-struct SingletonParallelComponent {};
-struct ArrayParallelComponent {};
-struct GroupParallelComponent {};
-struct NodegroupParallelComponent {};
+struct SingletonParallelComponent {
+  using metavariables = MV;
+};
+struct ArrayParallelComponent {
+  using metavariables = MV;
+};
+struct GroupParallelComponent {
+  using metavariables = MV;
+};
+struct NodegroupParallelComponent {
+  using metavariables = MV;
+};
 
 using singleton_proxy =
-    CProxy_AlgorithmSingleton<SingletonParallelComponent, MV, tmpl::list<>, int,
-                              db::DataBox<tmpl::list<>>>;
-using array_proxy =
-    CProxy_AlgorithmArray<ArrayParallelComponent, MV, tmpl::list<>, int,
-                          db::DataBox<tmpl::list<>>>;
-using group_proxy =
-    CProxy_AlgorithmGroup<ArrayParallelComponent, MV, tmpl::list<>, int,
-                          db::DataBox<tmpl::list<>>>;
-using nodegroup_proxy =
-    CProxy_AlgorithmNodegroup<ArrayParallelComponent, MV, tmpl::list<>, int,
-                              db::DataBox<tmpl::list<>>>;
+    CProxy_AlgorithmSingleton<SingletonParallelComponent, int>;
+using array_proxy = CProxy_AlgorithmArray<ArrayParallelComponent, int>;
+using group_proxy = CProxy_AlgorithmGroup<ArrayParallelComponent, int>;
+using nodegroup_proxy = CProxy_AlgorithmNodegroup<ArrayParallelComponent, int>;
 }  // namespace
 
 static_assert(Parallel::is_array_proxy<array_proxy>::value,

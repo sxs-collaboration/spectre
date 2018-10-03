@@ -54,9 +54,7 @@ struct Singleton;
 
 namespace Parallel {
 /// \cond
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename ActionList, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename ActionList>
 class AlgorithmImpl;
 /// \endcond
 
@@ -67,8 +65,9 @@ class AlgorithmImpl;
  * Charm++.
  *
  * ### Different Types of Algorithms
- * Charm++ chares can be one of four types, which is specified by the first
- * template parameter, `ChareType`. The four available types of Algorithms are:
+ * Charm++ chares can be one of four types, which is specified by the type alias
+ * `chare_type` inside the `ParallelComponent`. The four available types of
+ * Algorithms are:
  * 1. A Parallel::Algorithms::Singleton where there is only one
  * in the entire execution of the program.
  * 2. A Parallel::Algorithms::Array which holds zero or more
@@ -124,39 +123,34 @@ class AlgorithmImpl;
  * If you encounter this issue please file a bug report supplying everything
  * necessary to reproduce the issue.
  */
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                    tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox> {
+template <typename ParallelComponent, typename... ActionsPack>
+class AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>> {
  public:
+  using initial_databox = typename ParallelComponent::initial_databox;
   /// The metavariables class passed to the Algorithm
-  using metavariables = Metavariables;
+  using metavariables = typename ParallelComponent::metavariables;
   /// List of Actions in the order they will be executed
   using actions_list = tmpl::list<ActionsPack...>;
   /// List off all the Tags that can be received into the Inbox
   using inbox_tags_list = Parallel::get_inbox_tags<actions_list>;
   /// The type of the object used to identify the element of the array, group
   /// or nodegroup spatially. The default should be an `int`.
-  using array_index = ArrayIndex;
+  using array_index = typename get_array_index<
+      typename ParallelComponent::chare_type>::template f<ParallelComponent>;
 
   using parallel_component = ParallelComponent;
   /// The type of the Chare
-  using chare_type = ChareType;
+  using chare_type = typename ParallelComponent::chare_type;
   /// The Charm++ proxy object type
   using cproxy_type =
-      typename ChareType::template cproxy<ParallelComponent, metavariables,
-                                          actions_list, array_index,
-                                          InitialDataBox>;
+      typename chare_type::template cproxy<ParallelComponent, array_index>;
   /// The Charm++ base object type
   using cbase_type =
-      typename ChareType::template cbase<ParallelComponent, metavariables,
-                                         actions_list, array_index,
-                                         InitialDataBox>;
+      typename chare_type::template cbase<ParallelComponent, array_index>;
   /// \cond
   // The types held by the boost::variant, box_
   using databox_types = Algorithm_detail::build_action_return_typelist<
-      InitialDataBox,
+      initial_databox,
       tmpl::list<tuples::tagged_tuple_from_typelist<inbox_tags_list>,
                  Parallel::ConstGlobalCache<metavariables>, array_index,
                  actions_list, std::add_pointer_t<ParallelComponent>>,
@@ -210,11 +204,10 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   /// be locked with the `Parallel::lock()` function, and unlocked with
   /// `Parallel::unlock()`. `Parallel::try_lock()` is also provided in case
   /// something useful can be done if the lock couldn't be acquired.
-  template <
-      typename Action, typename... Args,
-      Requires<(sizeof...(Args),
-                cpp17::is_same_v<Parallel::Algorithms::Nodegroup, ChareType>)> =
-          nullptr>
+  template <typename Action, typename... Args,
+            Requires<(sizeof...(Args),
+                      cpp17::is_same_v<Parallel::Algorithms::Nodegroup,
+                                       chare_type>)> = nullptr>
   void threaded_action(std::tuple<Args...> args) noexcept {
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
                                                     Args...>::registrar;
@@ -227,7 +220,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
                                                     Action>::registrar;
-    Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
+    Algorithm_detail::simple_action_visitor<Action, initial_databox>(
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
         std::add_pointer_t<ParallelComponent>{}, make_not_null(&node_lock_));
@@ -260,7 +253,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
 
  private:
   static constexpr bool is_singleton =
-      cpp17::is_same_v<ChareType, Parallel::Algorithms::Singleton>;
+      cpp17::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
 
   template <class Dummy = int,
             Requires<(sizeof(Dummy), is_singleton)> = nullptr>
@@ -270,9 +263,8 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   void set_array_index() noexcept {
     // down cast to the algorithm_type, so that the `thisIndex` method can be
     // called, which is defined in the CBase class
-    array_index_ = static_cast<typename ChareType::template algorithm_type<
-        ParallelComponent, Metavariables, tmpl::list<ActionsPack...>,
-        ArrayIndex, InitialDataBox>&>(*this)
+    array_index_ = static_cast<typename chare_type::template algorithm_type<
+        ParallelComponent, array_index>&>(*this)
                        .thisIndex;
   }
 
@@ -283,7 +275,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_action(std::tuple<Args...>&& args,
                                std::index_sequence<Is...> /*meta*/) noexcept {
-    Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
+    Algorithm_detail::simple_action_visitor<Action, initial_databox>(
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
         std::add_pointer_t<ParallelComponent>{},
@@ -295,7 +287,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
       std::tuple<Args...>&& args,
       std::index_sequence<Is...> /*meta*/) noexcept {
     const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
-    Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
+    Algorithm_detail::simple_action_visitor<Action, initial_databox>(
         box_, inboxes_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), actions_list{},
         std::add_pointer_t<ParallelComponent>{}, node_lock,
@@ -326,7 +318,7 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   double non_action_time_start_;
 #endif
 
-  Parallel::ConstGlobalCache<Metavariables>* const_global_cache_{nullptr};
+  Parallel::ConstGlobalCache<metavariables>* const_global_cache_{nullptr};
   bool performing_action_ = false;
   std::size_t algorithm_step_ = 0;
   tmpl::conditional_t<Parallel::is_node_group_proxy<cproxy_type>::value,
@@ -347,43 +339,29 @@ class AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
 ////////////////////////////////////////////////////////////////
 
 /// \cond
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-              tmpl::list<ActionsPack...>, ArrayIndex,
-              InitialDataBox>::AlgorithmImpl() noexcept {
+template <typename ParallelComponent, typename... ActionsPack>
+AlgorithmImpl<ParallelComponent,
+              tmpl::list<ActionsPack...>>::AlgorithmImpl() noexcept {
   make_overloader([](CmiNodeLock& node_lock) { node_lock = create_lock(); },
                   [](NoSuchType /*unused*/) {})(node_lock_);
   set_array_index();
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-              tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
-    AlgorithmImpl(const Parallel::CProxy_ConstGlobalCache<metavariables>&
-                      global_cache_proxy) noexcept
+template <typename ParallelComponent, typename... ActionsPack>
+AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::AlgorithmImpl(
+    const Parallel::CProxy_ConstGlobalCache<metavariables>&
+        global_cache_proxy) noexcept
     : AlgorithmImpl() {
   const_global_cache_ = global_cache_proxy.ckLocalBranch();
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-constexpr AlgorithmImpl<
-    ParallelComponent, ChareType, Metavariables, tmpl::list<ActionsPack...>,
-    ArrayIndex,
-    InitialDataBox>::AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept
+template <typename ParallelComponent, typename... ActionsPack>
+constexpr AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
+    AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept
     : AlgorithmImpl() {}
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-              tmpl::list<ActionsPack...>, ArrayIndex,
-              InitialDataBox>::~AlgorithmImpl() {
+template <typename ParallelComponent, typename... ActionsPack>
+AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::~AlgorithmImpl() {
   // We place the registrar in the destructor since every AlgorithmImpl will
   // have a destructor, but we have different constructors so it's not clear
   // which will be instantiated.
@@ -393,13 +371,10 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
                   [](NoSuchType /*unused*/) {})(node_lock_);
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <typename Action, typename Arg>
-void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::reduction_action(Arg arg) noexcept {
+void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
+    reduction_action(Arg arg) noexcept {
   (void)Parallel::charmxx::RegisterReductionAction<
       ParallelComponent, Action, std::decay_t<Arg>>::registrar;
   lock(&node_lock_);
@@ -418,14 +393,10 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   unlock(&node_lock_);
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <typename Action, typename... Args>
-void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::simple_action(std::tuple<Args...>
-                                                      args) noexcept {
+void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
+    simple_action(std::tuple<Args...> args) noexcept {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
                                                 Args...>::registrar;
   lock(&node_lock_);
@@ -443,13 +414,10 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   unlock(&node_lock_);
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <typename Action>
-void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex,
-                   InitialDataBox>::simple_action() noexcept {
+void AlgorithmImpl<ParallelComponent,
+                   tmpl::list<ActionsPack...>>::simple_action() noexcept {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                 Action>::registrar;
   lock(&node_lock_);
@@ -461,7 +429,7 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
         "we do not allow.");
   }
   performing_action_ = true;
-  Algorithm_detail::simple_action_visitor<Action, InitialDataBox>(
+  Algorithm_detail::simple_action_visitor<Action, initial_databox>(
       box_, inboxes_, *const_global_cache_,
       static_cast<const array_index&>(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{});
@@ -469,14 +437,11 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   unlock(&node_lock_);
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <typename ReceiveTag, typename ReceiveDataType>
-void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
-    receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
-                 const bool enable_if_disabled) noexcept {
+void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::receive_data(
+    typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
+    const bool enable_if_disabled) noexcept {
   (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
                                                ReceiveTag>::registrar;
   try {
@@ -493,12 +458,10 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   perform_algorithm();
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
-constexpr void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                             tmpl::list<ActionsPack...>, ArrayIndex,
-                             InitialDataBox>::perform_algorithm() noexcept {
+template <typename ParallelComponent, typename... ActionsPack>
+constexpr void
+AlgorithmImpl<ParallelComponent,
+              tmpl::list<ActionsPack...>>::perform_algorithm() noexcept {
   if (performing_action_ or get_terminate()) {
     return;
   }
@@ -506,9 +469,9 @@ constexpr void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   non_action_time_start_ = Parallel::wall_time();
 #endif
   lock(&node_lock_);
-  while (sizeof...(ActionsPack) > 0 and not get_terminate() and
+  while (tmpl::size<actions_list>::value > 0 and not get_terminate() and
          iterate_over_actions(
-             std::make_index_sequence<sizeof...(ActionsPack)>{})) {
+             std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
   }
   unlock(&node_lock_);
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -518,13 +481,9 @@ constexpr void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
 }
 /// \endcond
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <size_t... Is>
-constexpr bool
-AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-              tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
+constexpr bool AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
     iterate_over_actions(const std::index_sequence<Is...> /*meta*/) noexcept {
   bool take_next_action = true;
   const auto helper = [ this, &take_next_action ](auto iteration) noexcept {
@@ -568,7 +527,7 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
             Algorithm_detail::is_is_ready_callable_t<
                 this_action, this_databox,
                 tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                Parallel::ConstGlobalCache<Metavariables>, array_index>{},
+                Parallel::ConstGlobalCache<metavariables>, array_index>{},
             this_action{})) {
       take_next_action = false;
       return;
@@ -614,7 +573,7 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
     non_action_time_start_ = Parallel::wall_time();
 #endif
     // Wrap counter if necessary
-    if (algorithm_step_ >= sizeof...(ActionsPack)) {
+    if (algorithm_step_ >= tmpl::size<actions_list>::value) {
       algorithm_step_ = 0;
     }
   };
@@ -627,13 +586,10 @@ AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
   return take_next_action;
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <typename ReceiveTag, typename ReceiveDataType,
           Requires<tt::is_maplike_v<typename ReceiveTag::type::mapped_type>>>
-void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-                   tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
+void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
     receive_data_impl(typename ReceiveTag::temporal_id& instance,
                       ReceiveDataType&& t) {
   static_assert(
@@ -663,17 +619,13 @@ void AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
 #endif
 }
 
-template <typename ParallelComponent, typename ChareType,
-          typename Metavariables, typename... ActionsPack, typename ArrayIndex,
-          typename InitialDataBox>
+template <typename ParallelComponent, typename... ActionsPack>
 template <typename ReceiveTag, typename ReceiveDataType,
           Requires<tt::is_a_v<std::unordered_multiset,
                               typename ReceiveTag::type::mapped_type>>>
 constexpr void
-AlgorithmImpl<ParallelComponent, ChareType, Metavariables,
-              tmpl::list<ActionsPack...>, ArrayIndex, InitialDataBox>::
-    receive_data_impl(typename ReceiveTag::temporal_id& instance,
-                      ReceiveDataType&& t) {
+AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::receive_data_impl(
+    typename ReceiveTag::temporal_id& instance, ReceiveDataType&& t) {
   tuples::get<ReceiveTag>(inboxes_)[instance].insert(
       std::forward<ReceiveDataType>(t));
 }

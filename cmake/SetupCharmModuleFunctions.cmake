@@ -127,6 +127,10 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
              Algorithm${ALGORITHM_NAME}.def.h \
      && perl -pi -e 's/<\\s*Action, Args\\s*>/<Action, Args...>/g' \
              Algorithm${ALGORITHM_NAME}.decl.h \
+     && perl -pi -e 's/METAVARIABLES_FROM_COMPONENT/typename ParallelComponent::metavariables/g' \
+             Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/METAVARIABLES_FROM_COMPONENT/typename ParallelComponent::metavariables/g' \
+             Algorithm${ALGORITHM_NAME}.decl.h \
      \
      \
      && perl -pi -e 's/\(\\s*impl_obj->template\\s+simple_action<\\s*Action\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \

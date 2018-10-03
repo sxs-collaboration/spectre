@@ -109,20 +109,16 @@ struct get_array_index<Parallel::Algorithms::Nodegroup> {
 template <typename ParallelComponent>
 using proxy_from_parallel_component =
     typename ParallelComponent::chare_type::template cproxy<
-        ParallelComponent, typename ParallelComponent::metavariables,
-        typename ParallelComponent::action_list,
+        ParallelComponent,
         typename get_array_index<typename ParallelComponent::chare_type>::
-            template f<ParallelComponent>,
-        typename ParallelComponent::initial_databox>;
+            template f<ParallelComponent>>;
 
 template <typename ParallelComponent>
 using index_from_parallel_component =
     typename ParallelComponent::chare_type::template ckindex<
-        ParallelComponent, typename ParallelComponent::metavariables,
-        typename ParallelComponent::action_list,
+        ParallelComponent,
         typename get_array_index<typename ParallelComponent::chare_type>::
-            template f<ParallelComponent>,
-        typename ParallelComponent::initial_databox>;
+            template f<ParallelComponent>>;
 
 template <class ParallelComponent, class... Args>
 struct charm_types_with_parameters {
