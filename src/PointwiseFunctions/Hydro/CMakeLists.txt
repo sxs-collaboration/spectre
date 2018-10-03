@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY EquationsOfState)
+set(LIBRARY Hydro)
 
 set(LIBRARY_SOURCES
-  DarkEnergyFluid.cpp
-  IdealFluid.cpp
-  PolytropicFluid.cpp
+  EquationsOfState/DarkEnergyFluid.cpp
+  EquationsOfState/IdealFluid.cpp
+  EquationsOfState/PolytropicFluid.cpp
+  LorentzFactor.cpp
   SpecificEnthalpy.cpp
   )
 

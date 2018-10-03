@@ -12,10 +12,10 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/EquationsOfState/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -112,7 +112,7 @@ void PrimitiveFromConservative<PrimitiveRecoveryScheme, ThermodynamicDim>::
             .specific_internal_energy_from_density_and_pressure(
                 *rest_mass_density, *pressure);
       })(equation_of_state);
-  *specific_enthalpy = EquationsOfState::specific_enthalpy(
+  *specific_enthalpy = hydro::specific_enthalpy(
       *rest_mass_density, *specific_internal_energy, *pressure);
 }
 }  // namespace ValenciaDivClean

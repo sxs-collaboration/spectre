@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/EquationsOfState/DarkEnergyFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"

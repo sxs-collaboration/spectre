@@ -12,7 +12,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
@@ -187,9 +187,9 @@ void check_impl(
  * \brief Test an equation of state by comparing to python functions
  *
  * The python functions must be added to
- * tests/Unit/PointwiseFunctions/EquationsOfState/TestFunctions.py. The prefix
- * for each class of equation of state is arbitrary, but should generally be
- * something like "polytropic" for polytropic fluids.
+ * tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/TestFunctions.py. The
+ * prefix for each class of equation of state is arbitrary, but should generally
+ * be something like "polytropic" for polytropic fluids.
  *
  * The `python_function_prefix` argument passed to `check` must be `PREFIX`. If
  * an EoS class has member variables (these must be `double`s currently) that

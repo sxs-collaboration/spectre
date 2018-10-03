@@ -73,6 +73,19 @@ struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
+/// The magnitude of a (co)vector with respect to a specific metric
+///
+/// This tag inherits from `Tags::Magnitude<Tag>`
+template <typename Tag, typename MetricTag>
+struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
+  using base = Magnitude<Tag>;
+  static constexpr Scalar<DataVector> (*function)(
+      const db::item_type<Tag>&, const db::item_type<MetricTag>&) = magnitude;
+  using argument_tags = tmpl::list<Tag, MetricTag>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DataStructuresGroup
 /// The normalized (co)vector represented by Tag
 ///
 /// \snippet Test_Magnitude.cpp normalized_name

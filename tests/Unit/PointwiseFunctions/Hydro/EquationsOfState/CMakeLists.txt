@@ -12,7 +12,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "PointwiseFunctions/EquationsOfState/"
+  "PointwiseFunctions/Hydro/EquationsOfState/"
   "${LIBRARY_SOURCES}"
   "EquationsOfState;DataStructures;Utilities"
   )

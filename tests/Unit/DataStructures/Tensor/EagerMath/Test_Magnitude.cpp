@@ -13,10 +13,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanMagnitude",
-                  "[DataStructures][Unit]") {
+// IWYU pragma: no_forward_declare Tensor
+
+namespace {
+void test_euclidean_magnitude() {
   // Check for DataVectors
   {
     const size_t npts = 5;
@@ -66,8 +69,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.EuclideanMagnitude",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
-                  "[DataStructures][Unit]") {
+void test_magnitude() {
   // Check for DataVectors
   {
     const size_t npts = 5;
@@ -131,35 +133,43 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
   }
 }
 
-namespace {
 struct Vector : db::SimpleTag {
   static std::string name() noexcept { return "Vector"; }
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
+template <size_t Dim>
 struct Covector : db::SimpleTag {
   static std::string name() noexcept { return "Covector"; }
-  using type = tnsr::i<DataVector, 2, Frame::Grid>;
+  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
 };
-}  // namespace
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
-                  "[DataStructures][Unit]") {
-  const auto box = db::create<
-      db::AddSimpleTags<Vector, Covector>,
-      db::AddComputeTags<Tags::EuclideanMagnitude<Vector>,
-                         Tags::EuclideanMagnitude<Covector>,
-                         Tags::Normalized<Vector>, Tags::Normalized<Covector>>>(
-      db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
-      db::item_type<Covector>({{{3., 5.}, {4., 12.}}}));
+struct Metric : db::SimpleTag {
+  static std::string name() noexcept { return "Metric"; }
+  using type = tnsr::ii<DataVector, 3, Frame::Grid>;
+};
+struct InverseMetric : db::SimpleTag {
+  static std::string name() noexcept { return "InverseMetric"; }
+  using type = tnsr::II<DataVector, 3, Frame::Grid>;
+};
+void test_magnitude_tags() {
+  const auto box =
+      db::create<db::AddSimpleTags<Vector, Covector<2>>,
+                 db::AddComputeTags<Tags::EuclideanMagnitude<Vector>,
+                                    Tags::EuclideanMagnitude<Covector<2>>,
+                                    Tags::Normalized<Vector>,
+                                    Tags::Normalized<Covector<2>>>>(
+          db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
+          db::item_type<Covector<2>>({{{3., 5.}, {4., 12.}}}));
 
   CHECK(db::get<Tags::EuclideanMagnitude<Vector>>(box) ==
         Scalar<DataVector>({{{3., 7.}}}));
-  CHECK(db::get<Tags::EuclideanMagnitude<Covector>>(box) ==
+  CHECK(db::get<Tags::EuclideanMagnitude<Covector<2>>>(box) ==
         Scalar<DataVector>({{{5., 13.}}}));
   CHECK(db::get<Tags::Normalized<Vector>>(box) ==
         db::item_type<Vector>(
             {{{1. / 3., 2. / 7.}, {2. / 3., 3. / 7.}, {2. / 3., 6. / 7.}}}));
-  CHECK(db::get<Tags::Normalized<Covector>>(box) ==
-        db::item_type<Covector>({{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
+  CHECK(db::get<Tags::Normalized<Covector<2>>>(box) ==
+        db::item_type<Covector<2>>(
+            {{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
 
   using Tag = Vector;
   /// [magnitude_name]
@@ -168,4 +178,74 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude.Tags",
   /// [normalized_name]
   CHECK(Tags::Normalized<Tag>::name() == "Normalized(" + Tag::name() + ")");
   /// [normalized_name]
+}
+
+void test_general_magnitude_tags() {
+  constexpr size_t npts = 5;
+  const tnsr::i<DataVector, 3, Frame::Grid> covector{
+      {{DataVector{npts, -3.0}, DataVector{npts, 12.0},
+        DataVector{npts, 4.0}}}};
+  const tnsr::II<DataVector, 3, Frame::Grid> inv_metric = []() noexcept {
+    auto tensor = make_with_value<tnsr::II<DataVector, 3, Frame::Grid>>(
+        DataVector{npts}, 0.0);
+    get<0, 0>(tensor) = 2.0;
+    get<0, 1>(tensor) = -3.0;
+    get<0, 2>(tensor) = 4.0;
+    get<1, 1>(tensor) = -5.0;
+    get<1, 2>(tensor) = 12.0;
+    get<2, 2>(tensor) = 13.0;
+    return tensor;
+  }
+  ();
+
+  const tnsr::I<DataVector, 3, Frame::Grid> vector{
+      {{DataVector{npts, -3.0}, DataVector{npts, 12.0},
+        DataVector{npts, 4.0}}}};
+  const tnsr::ii<DataVector, 3, Frame::Grid> metric = []() noexcept {
+    auto tensor = make_with_value<tnsr::ii<DataVector, 3, Frame::Grid>>(
+        DataVector{npts}, 0.0);
+    get<0, 0>(tensor) = 2.0;
+    get<0, 1>(tensor) = -3.0;
+    get<0, 2>(tensor) = 4.0;
+    get<1, 1>(tensor) = -5.0;
+    get<1, 2>(tensor) = 12.0;
+    get<2, 2>(tensor) = 13.0;
+    return tensor;
+  }
+  ();
+
+  const auto box =
+      db::create<db::AddSimpleTags<Vector, Covector<3>, Metric, InverseMetric>,
+                 db::AddComputeTags<
+                     Tags::NonEuclideanMagnitude<Vector, Metric>,
+                     Tags::NonEuclideanMagnitude<Covector<3>, InverseMetric>,
+                     Tags::Normalized<Vector>, Tags::Normalized<Covector<3>>>>(
+          vector, covector, metric, inv_metric);
+
+  CHECK_ITERABLE_APPROX(get(db::get<Tags::Magnitude<Vector>>(box)),
+                        (DataVector{npts, sqrt(778.0)}));
+  CHECK_ITERABLE_APPROX(get<0>(db::get<Tags::Normalized<Vector>>(box)),
+                        get<0>(vector) / sqrt(778.0));
+  CHECK_ITERABLE_APPROX(get<1>(db::get<Tags::Normalized<Vector>>(box)),
+                        get<1>(vector) / sqrt(778.0));
+  CHECK_ITERABLE_APPROX(get<2>(db::get<Tags::Normalized<Vector>>(box)),
+                        get<2>(vector) / sqrt(778.0));
+
+  CHECK_ITERABLE_APPROX(get(db::get<Tags::Magnitude<Covector<3>>>(box)),
+                        (DataVector{npts, sqrt(778.0)}));
+  CHECK_ITERABLE_APPROX(get<0>(db::get<Tags::Normalized<Covector<3>>>(box)),
+                        get<0>(covector) / sqrt(778.0));
+  CHECK_ITERABLE_APPROX(get<1>(db::get<Tags::Normalized<Covector<3>>>(box)),
+                        get<1>(covector) / sqrt(778.0));
+  CHECK_ITERABLE_APPROX(get<2>(db::get<Tags::Normalized<Covector<3>>>(box)),
+                        get<2>(covector) / sqrt(778.0));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
+                  "[DataStructures][Unit]") {
+  test_euclidean_magnitude();
+  test_magnitude();
+  test_magnitude_tags();
+  test_general_magnitude_tags();
 }

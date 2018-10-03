@@ -8,7 +8,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
-#include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 
 /// \cond
 namespace PUP {

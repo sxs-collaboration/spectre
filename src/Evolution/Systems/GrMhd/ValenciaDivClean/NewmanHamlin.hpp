@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "PointwiseFunctions/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 

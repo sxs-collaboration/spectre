@@ -359,8 +359,7 @@ void check_with_random_values(
              tmpl::size<argument_types>::value>
       distributions;
   for (size_t i = 0; i < tmpl::size<argument_types>::value; ++i) {
-    gsl::at(distributions,
-            NumberOfBounds == 1 ? 0 : i) = std::uniform_real_distribution<>{
+    gsl::at(distributions, i) = std::uniform_real_distribution<>{
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).first,
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).second};
   }
@@ -454,8 +453,7 @@ void check_with_random_values(
              tmpl::size<argument_types>::value>
       distributions;
   for (size_t i = 0; i < tmpl::size<argument_types>::value; ++i) {
-    gsl::at(distributions,
-            NumberOfBounds == 1 ? 0 : i) = std::uniform_real_distribution<>{
+    gsl::at(distributions, i) = std::uniform_real_distribution<>{
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).first,
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).second};
   }
@@ -547,8 +545,7 @@ void check_with_random_values(
              tmpl::size<argument_types>::value>
       distributions;
   for (size_t i = 0; i < tmpl::size<argument_types>::value; ++i) {
-    gsl::at(distributions,
-            NumberOfBounds == 1 ? 0 : i) = std::uniform_real_distribution<>{
+    gsl::at(distributions, i) = std::uniform_real_distribution<>{
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).first,
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).second};
   }
@@ -665,8 +662,7 @@ void check_with_random_values(
              tmpl::size<argument_types>::value>
       distributions;
   for (size_t i = 0; i < tmpl::size<argument_types>::value; ++i) {
-    gsl::at(distributions,
-            NumberOfBounds == 1 ? 0 : i) = std::uniform_real_distribution<>{
+    gsl::at(distributions, i) = std::uniform_real_distribution<>{
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).first,
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).second};
   }
