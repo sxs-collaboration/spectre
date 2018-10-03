@@ -1245,3 +1245,8 @@ SPECTRE_TEST_CASE("Unit.Pypp.AnalyticSolution", "[Pypp][Unit]") {
       {"check_solution_scalar", "check_solution_vector"}, {{{-10.0, 10.0}}},
       std::make_tuple(a, b), used_for_size);
 }
+
+SPECTRE_TEST_CASE("Unit.Pypp.SciPy", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  CHECK((pypp::call<size_t>("scipy", "ndim", tnsr::abcc<double, 3>{})) == 4);
+}
