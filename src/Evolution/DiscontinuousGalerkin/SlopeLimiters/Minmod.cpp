@@ -48,14 +48,19 @@ template <size_t VolumeDim>
 bool limit_one_tensor(
     const gsl::not_null<DataVector*> tensor_begin,
     const gsl::not_null<DataVector*> tensor_end,
-    const std::unordered_map<Direction<VolumeDim>,
-                             gsl::not_null<const double*>>&
-        neighbor_tensor_begin,
     const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const tnsr::I<double, VolumeDim>& element_size,
-    const std::unordered_map<Direction<VolumeDim>, tnsr::I<double, VolumeDim>>&
+    const std::array<double, VolumeDim>& element_size,
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        gsl::not_null<const double*>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_tensor_begin,
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        std::array<double, VolumeDim>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_sizes) noexcept {
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
@@ -63,7 +68,7 @@ bool limit_one_tensor(
   const double tvbm_scale = [&tvbm_constant, &element_size ]() noexcept {
     double max_h_sqr = 0.0;
     for (size_t d = 0; d < VolumeDim; ++d) {
-      max_h_sqr = std::max(max_h_sqr, square(element_size.get(d)));
+      max_h_sqr = std::max(max_h_sqr, square(gsl::at(element_size, d)));
     }
     return tvbm_constant * max_h_sqr;
   }
@@ -89,6 +94,11 @@ bool limit_one_tensor(
       const auto dir = Direction<VolumeDim>(dim, side);
       const bool has_neighbors = (externals.find(dir) == externals.end());
       if (has_neighbors) {
+        const auto& neighbor_ids = element.neighbors().at(dir).ids();
+        ASSERT(neighbor_ids.size() == 1,
+               "Minmod does not yet support h-refinment");
+        // We've checked for a single neighbor, so just read first element:
+        const auto dir_key = std::make_pair(dir, *(neighbor_ids.cbegin()));
         // Compute an effective element-center-to-neighbor-center distance
         // that accounts for the possibility of different refinement levels
         // or discontinuous maps (e.g., at Block boundaries). Treated naively,
@@ -101,11 +111,11 @@ bool limit_one_tensor(
         // Note that this is not "by the book" Minmod, but an attempt to
         // generalize Minmod to work on non-uniform grids.
         const double distance_factor =
-            0.5 *
-            (1.0 + neighbor_sizes.at(dir).get(dim) / element_size.get(dim));
+            0.5 * (1.0 + gsl::at(neighbor_sizes.at(dir_key), dim) /
+                             gsl::at(element_size, dim));
         const double neighbor_mean =
             // clang-tidy: do not use pointer arithmetic
-            *(neighbor_tensor_begin.at(dir).get() + iter_offset);  // NOLINT
+            *(neighbor_tensor_begin.at(dir_key).get() + iter_offset);  // NOLINT
         return (side == Side::Lower ? -1.0 : 1.0) * (neighbor_mean - u_mean) /
                distance_factor;
       } else {
@@ -194,25 +204,37 @@ bool limit_one_tensor(
 // Explicit instantiations
 template bool limit_one_tensor<1>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
-    const std::unordered_map<Direction<1>, gsl::not_null<const double*>>&,
     const SlopeLimiters::MinmodType&, const double, const Element<1>&,
     const Mesh<1>&, const tnsr::I<DataVector, 1, Frame::Logical>&,
-    const tnsr::I<double, 1>&,
-    const std::unordered_map<Direction<1>, tnsr::I<double, 1>>&) noexcept;
+    const std::array<double, 1>&,
+    const std::unordered_map<
+        std::pair<Direction<1>, ElementId<1>>, gsl::not_null<const double*>,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>&,
+    const std::unordered_map<
+        std::pair<Direction<1>, ElementId<1>>, std::array<double, 1>,
+        boost::hash<std::pair<Direction<1>, ElementId<1>>>>&) noexcept;
 template bool limit_one_tensor<2>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
-    const std::unordered_map<Direction<2>, gsl::not_null<const double*>>&,
     const SlopeLimiters::MinmodType&, const double, const Element<2>&,
     const Mesh<2>&, const tnsr::I<DataVector, 2, Frame::Logical>&,
-    const tnsr::I<double, 2>&,
-    const std::unordered_map<Direction<2>, tnsr::I<double, 2>>&) noexcept;
+    const std::array<double, 2>&,
+    const std::unordered_map<
+        std::pair<Direction<2>, ElementId<2>>, gsl::not_null<const double*>,
+        boost::hash<std::pair<Direction<2>, ElementId<2>>>>&,
+    const std::unordered_map<
+        std::pair<Direction<2>, ElementId<2>>, std::array<double, 2>,
+        boost::hash<std::pair<Direction<2>, ElementId<2>>>>&) noexcept;
 template bool limit_one_tensor<3>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
-    const std::unordered_map<Direction<3>, gsl::not_null<const double*>>&,
     const SlopeLimiters::MinmodType&, const double, const Element<3>&,
     const Mesh<3>&, const tnsr::I<DataVector, 3, Frame::Logical>&,
-    const tnsr::I<double, 3>&,
-    const std::unordered_map<Direction<3>, tnsr::I<double, 3>>&) noexcept;
+    const std::array<double, 3>&,
+    const std::unordered_map<
+        std::pair<Direction<3>, ElementId<3>>, gsl::not_null<const double*>,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>&,
+    const std::unordered_map<
+        std::pair<Direction<3>, ElementId<3>>, std::array<double, 3>,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>&) noexcept;
 }  // namespace Minmod_detail
 
 SlopeLimiters::MinmodType create_from_yaml<SlopeLimiters::MinmodType>::create(
