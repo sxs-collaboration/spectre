@@ -27,6 +27,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
+#include "Domain/SizeOfElement.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/Conservative/Tags.hpp"  // IWYU pragma: keep
@@ -370,6 +371,24 @@ struct InitializeElement {
     }
   };
 
+  // Tags related to limiting
+  template <typename Metavariables>
+  struct LimiterTags {
+    // Add the tags needed by the minmod limiter, whether or not the limiter is
+    // in use. This struct will have to be generalized to handle initialization
+    // of arbitrary limiters. Doing so will require more precise type aliases
+    // in the limiters, and then adding these tags to (minus anything already
+    // present in) the databox.
+    using simple_tags = db::AddSimpleTags<>;
+    using compute_tags = tmpl::list<Tags::SizeOfElement<Dim>>;
+
+    template <typename TagsList>
+    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+      return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
+          std::move(box));
+    }
+  };
+
   // Tags related to DG details (numerical fluxes, etc.).
   template <typename Metavariables>
   struct DgTags {
@@ -590,12 +609,14 @@ struct InitializeElement {
       typename DomainInterfaceTags<typename Metavariables::system>::simple_tags,
       typename EvolutionTags<typename Metavariables::system>::simple_tags,
       typename DgTags<Metavariables>::simple_tags,
+      typename LimiterTags<Metavariables>::simple_tags,
       typename DomainTags::compute_tags,
       typename SystemTags<typename Metavariables::system>::compute_tags,
       typename DomainInterfaceTags<
           typename Metavariables::system>::compute_tags,
       typename EvolutionTags<typename Metavariables::system>::compute_tags,
-      typename DgTags<Metavariables>::compute_tags>;
+      typename DgTags<Metavariables>::compute_tags,
+      typename LimiterTags<Metavariables>::compute_tags>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>
@@ -621,7 +642,10 @@ struct InitializeElement {
         initial_slab_size);
     auto dg_box = DgTags<Metavariables>::initialize(std::move(evolution_box),
                                                     initial_extents);
-    return std::make_tuple(std::move(dg_box));
+    auto limiter_box =
+        LimiterTags<Metavariables>::initialize(std::move(dg_box));
+
+    return std::make_tuple(std::move(limiter_box));
   }
 };
 }  // namespace Actions

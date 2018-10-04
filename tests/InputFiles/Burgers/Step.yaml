@@ -5,7 +5,9 @@
 # Check: execute
 
 AnalyticSolution:
-  ShockTime: -1.
+  LeftValue: 2.
+  RightValue: 1.
+  InitialPosition: -0.5
 
 InitialTime: 0.0
 FinalTime: 0.1
@@ -24,3 +26,6 @@ TimeStepper:
     Order: 3
 
 NumericalFluxParams:
+
+SlopeLimiterParams:
+  Type: LambdaPi1
