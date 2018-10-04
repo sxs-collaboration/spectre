@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EagerMath")
 
 set(LIBRARY_SOURCES
+  Test_CrossProduct.cpp
   Test_Determinant.cpp
   Test_DeterminantAndInverse.cpp
   Test_DivideBy.cpp
