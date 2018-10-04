@@ -163,6 +163,8 @@ struct DiscontinuousGalerkin {
     using boundary_compute_tag =
         Tags::InterfaceComputeItem<Tags::BoundaryDirections<dim>, Tag>;
 
+    using char_speed_tag = typename LocalSystem::char_speeds_tag;
+
     using compute_tags = db::AddComputeTags<
         Tags::Slice<
             Tags::InternalDirections<dim>,
@@ -170,6 +172,7 @@ struct DiscontinuousGalerkin {
                                tmpl::size_t<dim>, Frame::Inertial>>,
         interface_compute_tag<Tags::ComputeNormalDotFlux<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
+        interface_compute_tag<char_speed_tag>,
         Tags::Slice<
             Tags::BoundaryDirections<dim>,
             db::add_tag_prefix<Tags::Flux, typename LocalSystem::variables_tag,

@@ -7,9 +7,12 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -37,15 +40,14 @@ struct System {
   static constexpr bool is_conservative = true;
   static constexpr size_t volume_dim = 3;
 
-  using primitive_variables_tag = ::Tags::Variables<
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
-                 hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
-                 hydro::Tags::SpecificEnthalpy<DataVector>,
-                 hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::DivergenceCleaningField<DataVector>>>;
+  using primitive_variables_tag = ::Tags::Variables<tmpl::list<
+      hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::SpecificInternalEnergy<DataVector>,
+      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::DivergenceCleaningField<DataVector>,
+      hydro::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
+      hydro::Tags::SpecificEnthalpy<DataVector>>>;
 
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,
@@ -62,9 +64,20 @@ struct System {
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 
-  using char_speeds_tag = Tags::CharacteristicSpeeds;
+  using char_speeds_tag = ComputeCharacteristicSpeeds<2>;
+  using compute_largest_characteristic_speed =
+      ComputeLargestCharacteristicSpeed;
 
   using conservative_from_primitive = ConservativeFromPrimitive;
+  using primitive_from_conservative =
+      PrimitiveFromConservative<PrimitiveRecoverySchemes::NewmanHamlin, 2>;
+
+  using volume_fluxes = ComputeFluxes;
+
+  using du_dt = ConservativeDuDt<System>;
+
+  // hack for Minkowski plus not constraint damping
+  using sourced_variables = tmpl::list<>;
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

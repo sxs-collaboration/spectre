@@ -6,15 +6,16 @@
 
 InitialTime: 0.0
 InitialTimeStep: 0.001
-FinalTime: 0.0
+FinalTime: 0.1
+InitialSlabSize: 0.01
 
 DomainCreator:
   Brick:
     LowerBound: [0.0, 0.0, 0.0]
     UpperBound: [6.283185307179586, 6.283185307179586, 6.283185307179586]
     IsPeriodicIn: [true, true, true]
-    InitialRefinement: [2, 2, 2]
-    InitialGridPoints: [8, 8, 8]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [5, 5, 5]
 
 AnalyticSolution:
   WaveVector: [1.0, 1.0, 1.0]
@@ -26,6 +27,17 @@ AnalyticSolution:
 TimeStepper:
   AdamsBashforthN:
     TargetOrder: 3
+    SelfStart: true
+
+StepController: BinaryFraction
+
+StepChoosers:
+  - Constant: 0.05
+  - Increase:
+      Factor: 2
+  - Cfl:
+      SafetyFactor: 0.2
 
 VolumeFileName: "./GrMhd"
 
+NumericalFluxParams:

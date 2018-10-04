@@ -45,6 +45,7 @@ struct Interface {
       Tags::InterfaceComputeItem<Directions, Tags::InterfaceMesh<dim>>,
       Tags::Slice<Directions, typename System::variables_tag>,
       Tags::Slice<Directions, typename System::spacetime_variables_tag>,
+      Tags::Slice<Directions, typename System::primitive_variables_tag>,
       Tags::InterfaceComputeItem<Directions, Tags::UnnormalizedFaceNormal<dim>>,
       Tags::InterfaceComputeItem<Directions,
                                  typename System::template magnitude_tag<

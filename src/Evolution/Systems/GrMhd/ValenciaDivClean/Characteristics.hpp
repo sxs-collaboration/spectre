@@ -152,5 +152,10 @@ struct ComputeCharacteristicSpeeds : Tags::CharacteristicSpeeds,
   }
 };
 
+struct ComputeLargestCharacteristicSpeed {
+  using argument_tags = tmpl::list<>;
+  static double apply() noexcept { return 1.0; }
+};
+
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
