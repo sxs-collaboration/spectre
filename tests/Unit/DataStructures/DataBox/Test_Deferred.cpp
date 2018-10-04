@@ -279,6 +279,24 @@ void serialization() {
     counting_func::count = 0;
   }
 }
+
+// Test that the special case of a Deferred<const T&>, which is used for data
+// that is pointing to elsewhere (such as a global cache).
+void test_deferred_const_ref() {
+  const double a_value = 5.0;
+  const Deferred<const double*> a(&a_value);
+  const auto helper = [](const double* const t) -> const double& { return *t; };
+  auto deferred_double = make_deferred<const double&>(helper, a);
+  CHECK(deferred_double.get() == 5.0);
+  CHECK(&deferred_double.get() == &a_value);
+
+  // Check updating the args works correctly
+  const double b_value = -10.0;
+  const Deferred<const double*> b(&b_value);
+  update_deferred_args(make_not_null(&deferred_double), helper, b);
+  CHECK(deferred_double.get() == -10.0);
+  CHECK(&deferred_double.get() == &b_value);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred",
@@ -289,6 +307,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred",
   mutating_deferred();
   update_deferred();
   serialization();
+  test_deferred_const_ref();
 }
 
 // [[OutputRegex, Cannot cast the Deferred class to:

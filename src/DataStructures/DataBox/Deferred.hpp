@@ -184,10 +184,74 @@ class deferred_assoc_state : public assoc_state<Rt> {
     func_(make_not_null(&t_), retrieve_from_deferred(std::get<Is>(args_))...);
   }
 };
+
+// Specialization to handle functions that return a `const Rt&`. We treat the
+// return value as pointer to the data we actually want to have visible to us
+// when we retrieve the data. The reason for using a pointer is because we need
+// to be able to rebind in case the memory address of `const Rt&` changes (for
+// example, if we point to a `ConstGlobalCache` and we are migrated to a
+// different node). Since lvalue references cannot be rebound, we store a
+// pointer. The `get` function dereferences the pointer we store so that we have
+// a const lvalue reference to work with when retrieving the data being pointed
+// to. Dereferencing the pointer ensures that all functions that use the DataBox
+// will be able to take a `const T& t` as input argument regardless of where the
+// data is stored (in the DataBox or as a reference to somewhere else).
+template <typename Rt, typename Fp, typename... Args>
+class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
+ public:
+  explicit deferred_assoc_state(Fp f, Args... args) noexcept
+      : func_(std::move(f)), args_(std::make_tuple(std::move(args)...)) {}
+  deferred_assoc_state(const deferred_assoc_state& /*rhs*/) = delete;
+  deferred_assoc_state& operator=(const deferred_assoc_state& /*rhs*/) = delete;
+  deferred_assoc_state(deferred_assoc_state&& /*rhs*/) = delete;
+  deferred_assoc_state& operator=(deferred_assoc_state&& /*rhs*/) = delete;
+  ~deferred_assoc_state() override = default;
+
+  const Rt& get() const override {
+    if (not t_) {
+      apply(std::make_index_sequence<sizeof...(Args)>{});
+    }
+    return *t_;
+  }
+
+  Rt& mutate() override {
+    ERROR("Cannot mutate a compute tag.");
+  }
+
+  void reset() noexcept override { t_ = nullptr; }
+
+  void update_args(std::decay_t<Args>... args) noexcept {
+    t_ = nullptr;
+    args_ = std::tuple<std::decay_t<Args>...>{std::move(args)...};
+  }
+
+  // clang-tidy: no non-const references
+  void pack_unpack_lazy_function(PUP::er& /*p*/) noexcept override {}  // NOLINT
+
+  bool evaluated() const noexcept override { return t_ != nullptr; }
+
+  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
+    ERROR(
+        "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
+        "not at all clear if this is even possible because it is incorrect to "
+        "assume that the args_ have not changed.");
+    return nullptr;
+  }
+
+ private:
+  const Fp func_;
+  std::tuple<std::decay_t<Args>...> args_;
+  mutable const Rt* t_ = nullptr;
+
+  template <size_t... Is>
+  void apply(std::integer_sequence<size_t, Is...> /*meta*/) const noexcept {
+    t_ = &(func_(retrieve_from_deferred(std::get<Is>(args_))...));
+  }
+};
 }  // namespace Deferred_detail
 
 /*!
- * \ingroup UtilitiesGroup
+ * \ingroup DataBoxGroup
  * \brief Provides deferred or lazy evaluation of a function or function object,
  * as well as efficient storage of an object that is mutable.
  *
@@ -202,12 +266,32 @@ class deferred_assoc_state : public assoc_state<Rt> {
  * \example
  * Construction of a Deferred with an object followed by mutation:
  * \snippet Test_Deferred.cpp deferred_with_update
+ *
+ * \warning If passed a lazy function that returns a `const Rt& t` (a const
+ * lvalue reference) the underlying data stored is actually a pointer to `t`,
+ * which will be dereferenced upon retrieval. This could lead to a dangling
+ * pointer/reference if care isn't taken. The reason for this design is that:
+ * 1. We need to be able to retrieve data stored in the ConstGlobalCache from
+ *    the DataBox. The way to do this is to have a pointer to the
+ *    ConstGlobalCache inside the DataBox alongside compute items that return
+ *    `const Rt&` to the ConstGlobalCache data.
+ * 2. Functions used in the DataBox shouldn't return references, they are
+ *    compute tags and should return by value. If we find an actual use-case for
+ *    compute tags returning `const Rt&` where referencing behavior is undesired
+ *    then this design needs to be reconsidered. It is currently the least
+ *    breaking way to implement referencing DataBox members that can point to
+ *    any memory.
+ *
  * @tparam Rt the type being stored
  */
 template <typename Rt>
 class Deferred {
  public:
+  using value_type = std::remove_const_t<std::remove_reference_t<Rt>>;
+
   Deferred() = default;
+  template <typename Dummy = Rt,
+            Requires<cpp17::is_same_v<Dummy, value_type>> = nullptr>
   explicit Deferred(Rt t)
       : state_(boost::make_shared<Deferred_detail::simple_assoc_state<Rt>>(
             std::move(t))) {}
@@ -217,9 +301,9 @@ class Deferred {
   Deferred& operator=(Deferred&&) = default;
   ~Deferred() = default;
 
-  constexpr const Rt& get() const { return state_->get(); }
+  constexpr const value_type& get() const { return state_->get(); }
 
-  constexpr Rt& mutate() { return state_->mutate(); }
+  constexpr value_type& mutate() { return state_->mutate(); }
 
   // clang-tidy: no non-const references
   void pack_unpack_lazy_function(PUP::er& p) noexcept {  // NOLINT
@@ -235,9 +319,10 @@ class Deferred {
   }
 
  private:
-  boost::shared_ptr<Deferred_detail::assoc_state<Rt>> state_{nullptr};
+  boost::shared_ptr<Deferred_detail::assoc_state<value_type>> state_{nullptr};
 
-  explicit Deferred(boost::shared_ptr<Deferred_detail::assoc_state<Rt>>&& state)
+  explicit Deferred(
+      boost::shared_ptr<Deferred_detail::assoc_state<value_type>>&& state)
       : state_(std::move(state)) {}
 
   // clang-tidy: redundant declaration
@@ -257,7 +342,7 @@ class Deferred {
 };
 
 /*!
- * \ingroup UtilitiesGroup
+ * \ingroup DataBoxGroup
  * \brief Create a deferred function call object
  *
  * If creating a Deferred with a function object the call operator of the
@@ -297,7 +382,7 @@ Deferred<Rt> make_deferred(Fp f, Args&&... args) {
 
 // @{
 /*!
- * \ingroup UtilitiesGroup
+ * \ingroup DataBoxGroup
  * \brief Change the arguments to the Deferred function
  *
  * In order to make mutating Deferred functions really powerful, the `args` to

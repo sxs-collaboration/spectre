@@ -6,10 +6,14 @@
 
 #pragma once
 
+#include <string>
+
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCacheHelper.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -210,6 +214,36 @@ auto get(const ConstGlobalCache<Metavariables>& cache) noexcept -> const
             local_cache.const_global_cache_);
       })(typename tt::is_a<std::unique_ptr, typename tag::type>::type{}, cache);
 }
+
+namespace Tags {
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ParallelGroup
+/// Tag to retrieve the `Parallel::ConstGlobalCache` from the DataBox.
+struct ConstGlobalCache : db::BaseTag {};
+
+template <class Metavariables>
+struct ConstGlobalCacheImpl : ConstGlobalCache, db::SimpleTag {
+  using type = const Parallel::ConstGlobalCache<Metavariables>*;
+  static std::string name() noexcept { return "ConstGlobalCache"; }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ParallelGroup
+/// Tag used to retrieve data from the `Parallel::ConstGlobalCache`. This is the
+/// recommended way for compute tags to retrieve data out of the global cache.
+template <class CacheTag>
+struct FromConstGlobalCache : CacheTag, db::ComputeTag {
+  static std::string name() noexcept {
+    return "FromConstGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
+  }
+  template <class Metavariables>
+  static const auto& function(
+      const Parallel::ConstGlobalCache<Metavariables>* const& cache) noexcept {
+    return Parallel::get<CacheTag>(*cache);
+  }
+  using argument_tags = tmpl::list<ConstGlobalCache>;
+};
+}  // namespace Tags
 }  // namespace Parallel
 
 #define CK_TEMPLATES_ONLY
