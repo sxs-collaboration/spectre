@@ -39,5 +39,6 @@ target_link_libraries(
   INTERFACE CoordinateMaps
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE LinearOperators
   INTERFACE Spectral
   )
