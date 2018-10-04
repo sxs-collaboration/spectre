@@ -54,7 +54,7 @@ class CProxy_ConstGlobalCache;
 struct EvolutionMetavars {
   using system = Burgers::System;
   using temporal_id = Tags::TimeId;
-  static constexpr bool local_time_stepping = true;
+  static constexpr bool local_time_stepping = false;
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<Burgers::Solutions::Linear>;
   using boundary_condition_tag = analytic_solution_tag;
@@ -120,9 +120,6 @@ struct EvolutionMetavars {
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &DomainCreators::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<
-        StepChooser<EvolutionMetavars::step_choosers>>,
-    &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
