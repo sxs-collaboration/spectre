@@ -146,7 +146,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Functionality",
 
   Averager<deriv_order> averager(0.5, false);
 
-  // test the have_sufficient_data function:
+  // test the validity of data functionality
   // data not valid yet
   CHECK_FALSE(static_cast<bool>(averager(t)));
   // first update
@@ -177,6 +177,26 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Functionality",
   // clear the averager, which should make the data no longer valid
   averager.clear();
   CHECK_FALSE(static_cast<bool>(averager(t)));
+}
+
+// [[OutputRegex, at or before the last time]]
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadUpdateTwice",
+                  "[ControlSystem][Unit]") {
+  ERROR_TEST();
+  Averager<2> averager(0.5, false);
+
+  averager.update(0.5, {0.0}, {0.1});
+  averager.update(0.5, {0.0}, {0.1});
+}
+
+// [[OutputRegex, at or before the last time]]
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadUpdatePast",
+                  "[ControlSystem][Unit]") {
+  ERROR_TEST();
+  Averager<2> averager(0.5, false);
+
+  averager.update(0.5, {0.0}, {0.1});
+  averager.update(0.3, {0.0}, {0.1});
 }
 
 // [[OutputRegex, The number of components in the raw_q provided \(2\) does]]

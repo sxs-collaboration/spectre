@@ -86,6 +86,13 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
     tau_k_ = averaged_values_.get()[0];
   }
 
+  // Do not allow updates at or before last update time
+  if (not times_.empty() and time <= last_time_updated()) {
+    ERROR("The specified time t=" << time << " is at or before the last time "
+                                             "updated, t_update="
+                                  << last_time_updated() << ".");
+  }
+
   // update deques
   times_.emplace_front(time);
   raw_qs_.emplace_front(raw_q);
