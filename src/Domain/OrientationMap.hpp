@@ -57,7 +57,8 @@ class OrientationMap {
   }
 
   /// The corresponding direction in the neighbor.
-  Direction<VolumeDim> operator()(const Direction<VolumeDim>& direction) const {
+  Direction<VolumeDim> operator()(const Direction<VolumeDim>& direction) const
+      noexcept {
     return direction.side() == Side::Upper
                ? gsl::at(mapped_directions_, direction.dimension())
                : gsl::at(mapped_directions_, direction.dimension()).opposite();
@@ -65,7 +66,7 @@ class OrientationMap {
 
   /// The corresponding SegmentIds in the neighbor.
   std::array<SegmentId, VolumeDim> operator()(
-      const std::array<SegmentId, VolumeDim>& segmentIds) const;
+      const std::array<SegmentId, VolumeDim>& segmentIds) const noexcept;
 
   /// An array whose elements are permuted such that
   /// `result[d] = array_in_neighbor[this->operator()(d)]`

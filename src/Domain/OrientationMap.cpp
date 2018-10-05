@@ -64,7 +64,7 @@ OrientationMap<VolumeDim>::OrientationMap(
 
 template <size_t VolumeDim>
 std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
-    const std::array<SegmentId, VolumeDim>& segmentIds) const {
+    const std::array<SegmentId, VolumeDim>& segmentIds) const noexcept {
   std::array<SegmentId, VolumeDim> result = segmentIds;
   for (size_t d = 0; d < VolumeDim; d++) {
     gsl::at(result, gsl::at(mapped_directions_, d).dimension()) =
