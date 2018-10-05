@@ -17,6 +17,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InterfaceActionHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -117,7 +118,10 @@ struct ReceiveDataForFluxes {
                        neighbor_next_temporal_ids->begin(),
                        neighbor_next_temporal_ids->end(),
                        [&local_next_temporal_id](const auto& next) noexcept {
-                         return next.second >= local_next_temporal_id;
+                         return next.first.second ==
+                                    ElementId<
+                                        volume_dim>::external_boundary_id() or
+                                next.second >= local_next_temporal_id;
                        });
                  }()),
                  "apply called before all data received");
@@ -144,12 +148,15 @@ struct ReceiveDataForFluxes {
 
     const auto& inbox =
         tuples::get<typename flux_comm_types::FluxesTag>(inboxes);
-
     const auto& local_next_temporal_id = db::get<Tags::Next<temporal_id>>(box);
     const auto& mortars_next_temporal_id =
         db::get<Tags::Mortars<Tags::Next<temporal_id>, volume_dim>>(box);
     for (const auto& mortar_id_next_temporal_id : mortars_next_temporal_id) {
       const auto& mortar_id = mortar_id_next_temporal_id.first;
+      // If on an external boundary
+      if (mortar_id.second == ElementId<volume_dim>::external_boundary_id()) {
+        continue;
+      }
       auto next_temporal_id = mortar_id_next_temporal_id.second;
       while (next_temporal_id < local_next_temporal_id) {
         const auto temporal_received = inbox.find(next_temporal_id);
@@ -242,21 +249,10 @@ struct SendDataForFluxes {
       // from this side of the mortar now, then package it into a Variables.
       // We store one copy of the Variables and send another, since we need
       // the data on both sides of the mortar.
-      using package_arguments = typename Metavariables::
-          normal_dot_numerical_flux::type::argument_tags;
-      const auto packaged_data = db::apply<tmpl::transform<
-          package_arguments,
-          tmpl::bind<Tags::Interface, Tags::InternalDirections<volume_dim>,
-                     tmpl::_1>>>(
-          [&boundary_mesh, &direction,
-           &normal_dot_numerical_flux_computer ](const auto&... args) noexcept {
-            typename flux_comm_types::PackagedData ret(
-                boundary_mesh.number_of_grid_points(), 0.0);
-            normal_dot_numerical_flux_computer.package_data(
-                make_not_null(&ret), args.at(direction)...);
-            return ret;
-          },
-          box);
+
+      const auto packaged_data = DgActions_detail::compute_packaged_data(
+          box, direction, normal_dot_numerical_flux_computer,
+          Tags::InternalDirections<volume_dim>{}, Metavariables{});
 
       const auto direction_from_neighbor = orientation(direction.opposite());
 

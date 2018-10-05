@@ -8,5 +8,6 @@ set(LIBRARY_SOURCES
   Actions/Test_ComputeNonconservativeBoundaryFluxes.cpp
   Actions/Test_FluxCommunication.cpp
   Actions/Test_FluxCommunicationLts.cpp
+  Actions/Test_ImposeBoundaryConditions.cpp
   PARENT_SCOPE
   )

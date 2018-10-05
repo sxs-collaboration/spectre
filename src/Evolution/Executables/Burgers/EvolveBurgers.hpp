@@ -18,6 +18,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
@@ -56,6 +57,7 @@ struct EvolutionMetavars {
   static constexpr bool local_time_stepping = true;
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<Burgers::Solutions::Linear>;
+  using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
       OptionTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
@@ -70,6 +72,8 @@ struct EvolutionMetavars {
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeVolumeDuDt,
+      dg::Actions::ImposeDirichletBoundaryConditions<
+          EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
