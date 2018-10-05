@@ -29,3 +29,9 @@ NumericalFluxParams:
 
 SlopeLimiterParams:
   Type: LambdaPi1
+
+# Avoid observations during input-file testing:
+ObserveNSlabs: 1000000
+ObserveAtT0: false
+
+VolumeFileName: "./Burgers"
