@@ -723,3 +723,11 @@ SPECTRE_TEST_CASE("Unit.Options.Format.UnorderedMap.Error", "[Unit][Options]") {
   opts.parse("FormatUnorderedMap: X");
   opts.get<FormatUnorderedMap>();
 }
+
+// [[OutputRegex, At line 3 column 1:.Unable to correctly parse the
+// input file because of a syntax error]]
+SPECTRE_TEST_CASE("Unit.Options.bad_colon", "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<>> opts("");
+  opts.parse("\n\n:");
+}

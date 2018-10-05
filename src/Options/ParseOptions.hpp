@@ -304,7 +304,7 @@ class Options {
   std::string parsing_help(const YAML::Node& options) const noexcept;
 
   /// Error message when failed to parse an input file.
-  [[noreturn]] void parser_error(const YAML::ParserException& e) const noexcept;
+  [[noreturn]] void parser_error(const YAML::Exception& e) const noexcept;
 
   std::string help_text_{};
   OptionContext context_{};
@@ -338,10 +338,10 @@ void Options<OptionList>::parse_file(const std::string& file_name) noexcept {
   context_.append("In " + file_name);
   try {
     parse(YAML::LoadFile(file_name));
-  } catch (const YAML::ParserException& e) {
-    parser_error(e);
   } catch (YAML::BadFile& /*e*/) {
     ERROR("Could not open the input file " << file_name);
+  } catch (const YAML::Exception& e) {
+    parser_error(e);
   }
 }
 
@@ -350,7 +350,7 @@ void Options<OptionList>::parse(const std::string& options) noexcept {
   context_.append("In string");
   try {
     parse(YAML::Load(options));
-  } catch (YAML::ParserException& e) {
+  } catch (YAML::Exception& e) {
     parser_error(e);
   }
 }
@@ -533,7 +533,7 @@ std::string Options<OptionList>::parsing_help(
 
 template <typename OptionList>
 [[noreturn]] void Options<OptionList>::parser_error(
-    const YAML::ParserException& e) const noexcept {
+    const YAML::Exception& e) const noexcept {
   auto context = context_;
   context.line = e.mark.line;
   context.column = e.mark.column;
