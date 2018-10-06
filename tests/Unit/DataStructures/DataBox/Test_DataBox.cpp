@@ -749,17 +749,55 @@ struct MultiplyVariablesByTwo : db::ComputeTag {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
                   "[Unit][DataStructures]") {
-  auto box = db::create<
-      db::AddSimpleTags<Tags::Variables<tmpl::list<
-          test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>,
-      db::AddComputeTags<test_databox_tags::MultiplyScalarByTwo,
-                         test_databox_tags::MultiplyScalarByFour,
-                         test_databox_tags::MultiplyScalarByThree,
-                         test_databox_tags::DivideScalarByThree,
-                         test_databox_tags::DivideScalarByTwo,
-                         test_databox_tags::MultiplyVariablesByTwo>>(
-      Variables<tmpl::list<test_databox_tags::ScalarTag,
-                           test_databox_tags::VectorTag>>(2, 3.));
+  using vars_tag = Tags::Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
+  auto box =
+      db::create<db::AddSimpleTags<vars_tag>,
+                 db::AddComputeTags<test_databox_tags::MultiplyScalarByTwo,
+                                    test_databox_tags::MultiplyScalarByFour,
+                                    test_databox_tags::MultiplyScalarByThree,
+                                    test_databox_tags::DivideScalarByThree,
+                                    test_databox_tags::DivideScalarByTwo,
+                                    test_databox_tags::MultiplyVariablesByTwo>>(
+          Variables<tmpl::list<test_databox_tags::ScalarTag,
+                               test_databox_tags::VectorTag>>(2, 3.));
+  const auto check_references_match = [&box]() noexcept {
+    const auto& vars_original = db::get<vars_tag>(box);
+    CHECK(get(db::get<test_databox_tags::ScalarTag>(box)).data() ==
+          get(get<test_databox_tags::ScalarTag>(vars_original)).data());
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(db::get<test_databox_tags::VectorTag>(box).get(i).data() ==
+            get<test_databox_tags::VectorTag>(vars_original).get(i).data());
+    }
+
+    const auto& vars_mul_scalar =
+        db::get<test_databox_tags::MultiplyScalarByTwo>(box);
+    CHECK(get(db::get<test_databox_tags::ScalarTag2>(box)).data() ==
+          get(get<test_databox_tags::ScalarTag2>(vars_mul_scalar)).data());
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(db::get<test_databox_tags::VectorTag2>(box).get(i).data() ==
+            get<test_databox_tags::VectorTag2>(vars_mul_scalar).get(i).data());
+    }
+
+    const auto& vars_div_scalar =
+        db::get<test_databox_tags::DivideScalarByTwo>(box);
+    CHECK(get(db::get<test_databox_tags::ScalarTag3>(box)).data() ==
+          get(get<test_databox_tags::ScalarTag3>(vars_div_scalar)).data());
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(db::get<test_databox_tags::VectorTag3>(box).get(i).data() ==
+            get<test_databox_tags::VectorTag3>(vars_div_scalar).get(i).data());
+    }
+
+    const auto& vars_mul_two =
+        db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
+    CHECK(get(db::get<test_databox_tags::ScalarTag4>(box)).data() ==
+          get(get<test_databox_tags::ScalarTag4>(vars_mul_two)).data());
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(db::get<test_databox_tags::VectorTag4>(box).get(i).data() ==
+            get<test_databox_tags::VectorTag4>(vars_mul_two).get(i).data());
+    }
+  };
+
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
   CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -789,6 +827,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
   }
+  check_references_match();
 
   db::mutate<test_databox_tags::ScalarTag>(
       make_not_null(&box), [](const gsl::not_null<Scalar<DataVector>*> scalar) {
@@ -824,6 +863,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
   }
+  check_references_match();
 
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
@@ -860,6 +900,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
   }
+  check_references_match();
 
   db::mutate<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
@@ -898,6 +939,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
     CHECK(get<test_databox_tags::VectorTag4>(vars) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 12.))));
   }
+  check_references_match();
 }
 
 namespace {

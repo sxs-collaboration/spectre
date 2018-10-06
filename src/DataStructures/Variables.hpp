@@ -823,7 +823,7 @@ struct Subitems<TagList, Tag,
   }
 
   template <typename Subtag>
-  static item_type<Subtag> create_compute_item(
+  static const item_type<Subtag>& create_compute_item(
       const item_type<Tag>& parent_value) noexcept {
     return get<Subtag>(parent_value);
   }

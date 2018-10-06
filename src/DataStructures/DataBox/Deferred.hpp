@@ -18,7 +18,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-template <typename Rt>
+template <typename Rt, typename MakeConstReference = std::false_type>
 class Deferred;
 
 namespace Deferred_detail {
@@ -27,8 +27,9 @@ decltype(auto) retrieve_from_deferred(const T& t) {
   return t;
 }
 
-template <typename T>
-decltype(auto) retrieve_from_deferred(const Deferred<T>& t) {
+template <typename T, typename MakeConstReference>
+decltype(auto) retrieve_from_deferred(
+    const Deferred<T, MakeConstReference>& t) {
   return t.get();
 }
 
@@ -37,8 +38,8 @@ struct remove_deferred {
   using type = T;
 };
 
-template <typename T>
-struct remove_deferred<Deferred<T>> {
+template <typename T, typename MakeConstReference>
+struct remove_deferred<Deferred<T, MakeConstReference>> {
   using type = T;
 };
 
@@ -284,7 +285,7 @@ class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
  *
  * @tparam Rt the type being stored
  */
-template <typename Rt>
+template <typename Rt, typename MakeConstReference>
 class Deferred {
  public:
   using value_type = std::remove_const_t<std::remove_reference_t<Rt>>;
@@ -318,12 +319,15 @@ class Deferred {
     return Deferred{state_->deep_copy()};
   }
 
- private:
-  boost::shared_ptr<Deferred_detail::assoc_state<value_type>> state_{nullptr};
-
   explicit Deferred(
-      boost::shared_ptr<Deferred_detail::assoc_state<value_type>>&& state)
+      boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
+          MakeConstReference::value, const value_type&, value_type>>>&& state)
       : state_(std::move(state)) {}
+
+ private:
+  boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
+      MakeConstReference::value, const value_type&, value_type>>>
+      state_{nullptr};
 
   // clang-tidy: redundant declaration
   template <typename Rt1, typename Fp, typename... Args>
@@ -378,6 +382,33 @@ Deferred<Rt> make_deferred(Fp f, Args&&... args) {
   return Deferred<Rt>(boost::make_shared<Deferred_detail::deferred_assoc_state<
                           Rt, std::decay_t<Fp>, std::decay_t<Args>...>>(
       f, std::forward<Args>(args)...));
+}
+
+namespace Deferred_detail {
+template <class Rt>
+struct MakeDeferredForSubitemImpl {
+  template <typename Fp, typename... Args>
+  static Deferred<Rt> apply(Fp f, Args&&... args) noexcept {
+    return make_deferred<Rt>(f, std::forward<Args>(args)...);
+  }
+};
+
+template <class Rt>
+struct MakeDeferredForSubitemImpl<const Rt&> {
+  template <typename Fp, typename... Args>
+  static Deferred<Rt> apply(Fp f, Args&&... args) noexcept {
+    return Deferred<Rt>(
+        boost::make_shared<Deferred_detail::deferred_assoc_state<
+            const Rt&, std::decay_t<Fp>, std::decay_t<Args>...>>(
+            f, std::forward<Args>(args)...));
+  }
+};
+}  // namespace Deferred_detail
+
+template <typename Rt, typename Fp, typename... Args>
+auto make_deferred_for_subitem(Fp&& f, Args&&... args) noexcept {
+  return Deferred_detail::MakeDeferredForSubitemImpl<Rt>::apply(
+      std::forward<Fp>(f), std::forward<Args>(args)...);
 }
 
 // @{
