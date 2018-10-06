@@ -320,6 +320,21 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   // @}
 
   // @{
+  /// Get the storage index of the tensor index. Should only be used when
+  /// optimizing code in which computing the storage index is a bottleneck.
+  template <typename... N>
+  SPECTRE_ALWAYS_INLINE static constexpr size_t get_storage_index(
+      const N... args) noexcept {
+    return structure::get_storage_index(args...);
+  }
+  template <typename I>
+  SPECTRE_ALWAYS_INLINE static constexpr size_t get_storage_index(
+      const std::array<I, sizeof...(Indices)>& tensor_index) noexcept {
+    return structure::get_storage_index(tensor_index);
+  }
+  // @}
+
+  // @{
   /// Given an iterator or storage index, get the multiplicity of an index
   ///
   /// \see TensorMetafunctions::compute_multiplicity
