@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cmath>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -29,5 +30,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     CHECK_ITERABLE_APPROX(
         evaluate_polynomial(poly_variable_coeffs, DataVector({0., 0.5, 1.})),
         DataVector({1., 1., 3.}));
+  }
+
+  SECTION("Test inverse roots and step_function") {
+    CHECK(step_function(1.0) == 1.0);
+    CHECK(step_function(0.5) == 1.0);
+    CHECK(step_function(-10) == 0);
+    CHECK(step_function(0.0) == 1.0);
+    CHECK(step_function(0) == 1);
+    CHECK(invsqrt(4.0) == 0.5);
+    CHECK(invsqrt(10) == 1.0 / sqrt(10));
+    CHECK(approx(invcbrt(27.0)) == (1 / 3.0));
+    CHECK(approx(invcbrt(1.0 / 64.0)) == 4.0);
   }
 }
