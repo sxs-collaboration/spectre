@@ -97,16 +97,9 @@ void test_1d_domains() {
         Domain<1, Frame::Inertial>{std::move(vector_of_blocks)},
         expected_neighbors, expected_boundaries, expected_maps);
 
-    CHECK(get_output(domain) ==
-          "Domain with 2 blocks:\n"
-          "Block 0:\n"
-          "Neighbors:\n"
-          "+0: Id = 1; orientation = (-0)\n"
-          "External boundaries: (-0)\n\n"
-          "Block 1:\n"
-          "Neighbors:\n"
-          "+0: Id = 0; orientation = (-0)\n"
-          "External boundaries: (-0)\n\n");
+    CHECK(get_output(domain) == "Domain with 2 blocks:\n" +
+                                    get_output(domain.blocks()[0]) + "\n" +
+                                    get_output(domain.blocks()[1]) + "\n");
   }
 
   {
