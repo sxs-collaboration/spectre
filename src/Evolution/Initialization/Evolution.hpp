@@ -72,7 +72,7 @@ struct Evolution {
   struct ComputeTags<LocalSystem, true> {
     using type = db::AddComputeTags<
         Tags::Time,
-        Tags::ComputeDiv<db::add_tag_prefix<Tags::Flux, variables_tag,
+        Tags::DivCompute<db::add_tag_prefix<Tags::Flux, variables_tag,
                                             tmpl::size_t<dim>, Frame::Inertial>,
                          Tags::InverseJacobian<Tags::ElementMap<dim>,
                                                Tags::LogicalCoordinates<dim>>>>;

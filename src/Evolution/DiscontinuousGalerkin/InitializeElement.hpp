@@ -295,7 +295,7 @@ struct InitializeElement {
     struct ComputeTags<LocalSystem, true> {
       using type = db::AddComputeTags<
           Tags::Time,
-          Tags::ComputeDiv<
+          Tags::DivCompute<
               db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<Dim>,
                                  Frame::Inertial>,
               Tags::InverseJacobian<Tags::ElementMap<Dim>,
