@@ -225,6 +225,12 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     tuples::TaggedTuple<Minmod_detail::to_tensor_double<Tags>...> means_;
     std::array<double, VolumeDim> element_size_ =
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
+
+    // clang-tidy: google-runtime-references
+    void pup(PUP::er& p) noexcept {  // NOLINT
+      p | means_;
+      p | element_size_;
+    }
   };
 
   using package_argument_tags = tmpl::list<Tags..., ::Tags::Mesh<VolumeDim>,

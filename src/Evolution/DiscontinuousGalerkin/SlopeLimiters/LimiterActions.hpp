@@ -67,7 +67,7 @@ namespace Actions {
 /// \see SendDataForLimiter
 template <typename Metavariables>
 struct Limit {
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<typename Metavariables::limiter>;
 
   static_assert(
       not Metavariables::local_time_stepping,
@@ -156,7 +156,7 @@ struct Limit {
 /// \see ApplyLimiter
 template <typename Metavariables>
 struct SendData {
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<typename Metavariables::limiter>;
   using limiter_comm_tag =
       SlopeLimiters::Tags::LimiterCommunicationTag<Metavariables>;
 
