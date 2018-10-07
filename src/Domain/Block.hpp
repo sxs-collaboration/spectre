@@ -49,7 +49,7 @@ class Block {
             CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>&& map,
         size_t id,
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
-            neighbors);
+            neighbors) noexcept;
 
   Block() = default;
   ~Block() = default;
@@ -81,7 +81,7 @@ class Block {
   }
 
   /// Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>
@@ -93,7 +93,7 @@ class Block {
 
 template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
-                         const Block<VolumeDim, TargetFrame>& block);
+                         const Block<VolumeDim, TargetFrame>& block) noexcept;
 
 template <size_t VolumeDim, typename TargetFrame>
 bool operator==(const Block<VolumeDim, TargetFrame>& lhs,

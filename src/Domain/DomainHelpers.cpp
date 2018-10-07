@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <numeric>
 #include <utility>
 
 #include "DataStructures/IndexIterator.hpp"
@@ -28,8 +27,10 @@
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Numeric.hpp"
 
 namespace {
 
@@ -37,12 +38,13 @@ namespace {
 template <size_t VolumeDim>
 std::vector<size_t> get_common_global_corners(
     const std::array<size_t, two_to_the(VolumeDim)>& block_1_global_corners,
-    const std::array<size_t, two_to_the(VolumeDim)>& block_2_global_corners) {
+    const std::array<size_t, two_to_the(VolumeDim)>&
+        block_2_global_corners) noexcept {
   std::vector<size_t> result;
 
   for (size_t id_i : block_1_global_corners) {
-    if (std::find(block_2_global_corners.begin(), block_2_global_corners.end(),
-                  id_i) != block_2_global_corners.end()) {
+    if (alg::find(block_2_global_corners, id_i) !=
+        block_2_global_corners.end()) {
       result.push_back(id_i);
     }
   }
@@ -62,7 +64,7 @@ create_correspondence_between_blocks(
     const std::vector<Direction<VolumeDim>>&
         alignment_of_shared_face_in_self_frame,
     const std::vector<Direction<VolumeDim>>&
-        alignment_of_shared_face_in_neighbor_frame) {
+        alignment_of_shared_face_in_neighbor_frame) noexcept {
   std::array<Direction<VolumeDim>, VolumeDim> result1;
   result1[0] = direction_to_neighbor_in_self_frame;
 
@@ -85,17 +87,15 @@ template <size_t VolumeDim>
 size_t find_block_id_of_external_face(
     const std::vector<size_t>& global_corners_external_face,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) {
+        corners_of_all_blocks) noexcept {
   size_t number_of_blocks_found = 0;
   size_t id_of_found_block = std::numeric_limits<size_t>::max();
   for (size_t j = 0; j < corners_of_all_blocks.size(); j++) {
     const auto& corners_set = corners_of_all_blocks[j];
-    auto is_in_corners_set = [&corners_set](const auto element) {
-      return std::find(corners_set.begin(), corners_set.end(), element) !=
-             corners_set.end();
+    auto is_in_corners_set = [&corners_set](const auto element) noexcept {
+      return alg::find(corners_set, element) != corners_set.end();
     };
-    if (std::all_of(global_corners_external_face.begin(),
-                    global_corners_external_face.end(), is_in_corners_set)) {
+    if (alg::all_of(global_corners_external_face, is_in_corners_set)) {
       number_of_blocks_found++;
       id_of_found_block = j;
     }
@@ -108,17 +108,16 @@ size_t find_block_id_of_external_face(
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim - 1)> get_common_local_corners(
     const std::array<size_t, two_to_the(VolumeDim)>& block_global_corners,
-    const std::vector<size_t> block_global_common_corners) {
+    const std::vector<size_t> block_global_common_corners) noexcept {
   std::array<size_t, two_to_the(VolumeDim - 1)> result{{0}};
   size_t i = 0;
   for (const auto global_id : block_global_common_corners) {
-    ASSERT(std::find(block_global_corners.begin(), block_global_corners.end(),
-                     global_id) != block_global_corners.end(),
+    ASSERT(alg::find(block_global_corners, global_id) !=
+               block_global_corners.end(),
            "Elements of block_global_common_corners must be in "
            "block_global_corners.");
     gsl::at(result, i) =
-        static_cast<size_t>(std::find(block_global_corners.begin(),
-                                      block_global_corners.end(), global_id) -
+        static_cast<size_t>(alg::find(block_global_corners, global_id) -
                             block_global_corners.begin());
     i++;
   }
@@ -129,12 +128,12 @@ template <size_t VolumeDim>
 std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
            two_to_the(VolumeDim - 1)>
 logical_coords_of_corners(
-    const std::array<size_t, two_to_the(VolumeDim - 1)>& local_ids) {
+    const std::array<size_t, two_to_the(VolumeDim - 1)>& local_ids) noexcept {
   std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
              two_to_the(VolumeDim - 1)>
       result{};
   std::transform(local_ids.begin(), local_ids.end(), result.begin(),
-                 [](const size_t id) {
+                 [](const size_t id) noexcept {
                    tnsr::I<double, VolumeDim, Frame::Logical> point{};
                    for (size_t i = 0; i < VolumeDim; i++) {
                      point[i] = 2.0 * get_nth_bit(id, i) - 1.0;
@@ -147,12 +146,11 @@ logical_coords_of_corners(
 template <size_t VolumeDim>
 Direction<VolumeDim> get_direction_normal_to_face(
     const std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
-                     two_to_the(VolumeDim - 1)>& face_pts) {
-  const auto summed_point = std::accumulate(
-      face_pts.begin(), face_pts.end(),
-      tnsr::I<double, VolumeDim, Frame::Logical>(0.0),
-      [](tnsr::I<double, VolumeDim, Frame::Logical>& prior,
-         const tnsr::I<double, VolumeDim, Frame::Logical>& point) {
+                     two_to_the(VolumeDim - 1)>& face_pts) noexcept {
+  const auto summed_point = alg::accumulate(
+      face_pts, tnsr::I<double, VolumeDim, Frame::Logical>(0.0),
+      [](tnsr::I<double, VolumeDim, Frame::Logical> & prior,
+         const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
         for (size_t i = 0; i < prior.size(); i++) {
           prior[i] += point[i];
         }
@@ -161,17 +159,18 @@ Direction<VolumeDim> get_direction_normal_to_face(
   ASSERT(VolumeDim - 1 == static_cast<size_t>(std::count(
                               summed_point.begin(), summed_point.end(), 0.0)),
          "The face_pts passed in do not correspond to a face.");
-  const auto index =
-      static_cast<size_t>(std::find_if(summed_point.begin(), summed_point.end(),
-                                       [](const double x) { return x != 0; }) -
-                          summed_point.begin());
+  const auto index = static_cast<size_t>(
+      alg::find_if(summed_point,
+                   [](const double x) noexcept { return x != 0; }) -
+      summed_point.begin());
   return Direction<VolumeDim>(
       index, summed_point[index] > 0 ? Side::Upper : Side::Lower);
 }
 
 template <size_t VolumeDim>
 std::vector<Direction<VolumeDim>> get_directions_along_face(
-    const std::array<size_t, two_to_the(VolumeDim - 1)>& face_local_corners) {
+    const std::array<size_t, two_to_the(VolumeDim - 1)>&
+        face_local_corners) noexcept {
   std::vector<Direction<VolumeDim>> result;
 
   // Directions encoded as powers of 2. (xi:1, eta:2, zeta:4)
@@ -216,7 +215,7 @@ Direction<VolumeDim> mapped(
     size_t block_id1, size_t block_id2,
     const Direction<VolumeDim>& dir_in_block1,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) {
+        corners_of_all_blocks) noexcept {
   const auto correspondence = obtain_correspondence_between_blocks(
       block_id1, block_id2, corners_of_all_blocks);
   for (size_t i = 0; i < VolumeDim; i++) {
@@ -235,7 +234,7 @@ std::pair<std::array<Direction<VolumeDim>, VolumeDim>,
 obtain_correspondence_between_blocks(
     size_t block_id1, size_t block_id2,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks) {
+        corners_of_all_blocks) noexcept {
   const auto& self = corners_of_all_blocks[block_id1];
   const auto& nhbr = corners_of_all_blocks[block_id2];
   const auto common = get_common_global_corners<VolumeDim>(self, nhbr);
@@ -271,7 +270,7 @@ void set_cartesian_periodic_boundaries(
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) {
+        neighbors_of_all_blocks) noexcept {
   ASSERT(orientations_of_all_blocks.size() == corners_of_all_blocks.size(),
          "Each block must have an OrientationMap relative to an edifice.");
   size_t block_id = 0;
@@ -367,7 +366,7 @@ void set_internal_boundaries(
         corners_of_all_blocks,
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) {
+        neighbors_of_all_blocks) noexcept {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
        block1_index++) {
     std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>> neighbor;
@@ -399,7 +398,7 @@ void set_identified_boundaries(
         corners_of_all_blocks,
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) {
+        neighbors_of_all_blocks) noexcept {
   for (const auto& pair : identifications) {
     const auto& face1 = pair.first;
     const auto& face2 = pair.second;
@@ -950,45 +949,45 @@ template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
     gsl::not_null<
         std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 template std::vector<std::array<size_t, 2>> corners_for_rectilinear_domains(
     const Index<1>& domain_extents,
-    const std::vector<Index<1>>& block_indices_to_exclude);
+    const std::vector<Index<1>>& block_indices_to_exclude) noexcept;
 template std::vector<std::array<size_t, 4>> corners_for_rectilinear_domains(
     const Index<2>& domain_extents,
-    const std::vector<Index<2>>& block_indices_to_exclude);
+    const std::vector<Index<2>>& block_indices_to_exclude) noexcept;
 template std::vector<std::array<size_t, 8>> corners_for_rectilinear_domains(
     const Index<3>& domain_extents,
-    const std::vector<Index<3>>& block_indices_to_exclude);
+    const std::vector<Index<3>>& block_indices_to_exclude) noexcept;
 template std::array<size_t, 2> discrete_rotation(
     const OrientationMap<1>& orientation,
     const std::array<size_t, 2>& corners_of_aligned) noexcept;

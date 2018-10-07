@@ -8,23 +8,25 @@
 
 #include "Domain/ElementId.hpp"      // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-                                OrientationMap<VolumeDim> orientation)
+                                OrientationMap<VolumeDim> orientation) noexcept
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {}
 
 template <size_t VolumeDim>
 void Neighbors<VolumeDim>::add_ids(
-    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) {
+    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) noexcept {
   for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n) {
+std::ostream& operator<<(std::ostream& os,
+                         const Neighbors<VolumeDim>& n) noexcept {
   os << "Ids = " << n.ids() << "; orientation = " << n.orientation();
   return os;
 }
@@ -47,19 +49,18 @@ void Neighbors<VolumeDim>::pup(PUP::er& p) noexcept {
   p | orientation_;
 }
 
-// Explicit instantiations
-template class Neighbors<1>;
-template class Neighbors<2>;
-template class Neighbors<3>;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template std::ostream& operator<<(std::ostream&, const Neighbors<1>&);
-template std::ostream& operator<<(std::ostream&, const Neighbors<2>&);
-template std::ostream& operator<<(std::ostream&, const Neighbors<3>&);
+#define INSTANTIATION(r, data)                                            \
+  template class Neighbors<GET_DIM(data)>;                                \
+  template std::ostream& operator<<(                                      \
+      std::ostream& os, const Neighbors<GET_DIM(data)>& block) noexcept;  \
+  template bool operator==(const Neighbors<GET_DIM(data)>& lhs,           \
+                           const Neighbors<GET_DIM(data)>& rhs) noexcept; \
+  template bool operator!=(const Neighbors<GET_DIM(data)>& lhs,           \
+                           const Neighbors<GET_DIM(data)>& rhs) noexcept;
 
-template bool operator==(const Neighbors<1>&, const Neighbors<1>&) noexcept;
-template bool operator==(const Neighbors<2>&, const Neighbors<2>&) noexcept;
-template bool operator==(const Neighbors<3>&, const Neighbors<3>&) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
-template bool operator!=(const Neighbors<1>&, const Neighbors<1>&) noexcept;
-template bool operator!=(const Neighbors<2>&, const Neighbors<2>&) noexcept;
-template bool operator!=(const Neighbors<3>&, const Neighbors<3>&) noexcept;
+#undef GET_DIM
+#undef INSTANTIATION

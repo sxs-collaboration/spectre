@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-std::ostream& operator<<(std::ostream& os, const Side& side) {
+std::ostream& operator<<(std::ostream& os, const Side& side) noexcept {
   switch (side) {
     case Side::Lower:
       os << "Lower";

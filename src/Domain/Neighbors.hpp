@@ -32,7 +32,7 @@ class Neighbors {
   /// \param ids the ids of the neighbors.
   /// \param orientation the OrientationMap of the neighbors.
   Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-            OrientationMap<VolumeDim> orientation);
+            OrientationMap<VolumeDim> orientation) noexcept;
 
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
@@ -58,7 +58,8 @@ class Neighbors {
 
   /// Add ids of neighbors.
   /// Adding an existing neighbor is allowed.
-  void add_ids(const std::unordered_set<ElementId<VolumeDim>>& additional_ids);
+  void add_ids(
+      const std::unordered_set<ElementId<VolumeDim>>& additional_ids) noexcept;
 
   /// Serialization for Charm++
   void pup(PUP::er& p) noexcept;  // NOLINT
@@ -66,31 +67,31 @@ class Neighbors {
   /// The number of neighbors
   size_t size() const noexcept { return ids_.size(); }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::iterator begin() {
+  typename std::unordered_set<ElementId<VolumeDim>>::iterator begin() noexcept {
     return ids_.begin();
   }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::iterator end() {
+  typename std::unordered_set<ElementId<VolumeDim>>::iterator end() noexcept {
     return ids_.end();
   }
 
   typename std::unordered_set<ElementId<VolumeDim>>::const_iterator begin()
-      const {
+      const noexcept {
     return ids_.begin();
   }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator end()
-      const {
+  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator end() const
+      noexcept {
     return ids_.end();
   }
 
   typename std::unordered_set<ElementId<VolumeDim>>::const_iterator cbegin()
-      const {
+      const noexcept {
     return ids_.begin();
   }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator cend()
-      const {
+  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator cend() const
+      noexcept {
     return ids_.end();
   }
 
@@ -101,7 +102,8 @@ class Neighbors {
 
 /// Output operator for Neighborss.
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n);
+std::ostream& operator<<(std::ostream& os,
+                         const Neighbors<VolumeDim>& n) noexcept;
 
 template <size_t VolumeDim>
 bool operator==(const Neighbors<VolumeDim>& lhs,

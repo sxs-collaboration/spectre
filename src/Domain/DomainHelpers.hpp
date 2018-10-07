@@ -52,7 +52,7 @@ void set_internal_boundaries(
         corners_of_all_blocks,
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up additional BlockNeighbors corresponding to any
@@ -65,7 +65,7 @@ void set_identified_boundaries(
         corners_of_all_blocks,
     gsl::not_null<std::vector<
         std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks);
+        neighbors_of_all_blocks) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a rectilinear domain made of n-cubes.
@@ -216,6 +216,7 @@ template <size_t VolumeDim>
 class VolumeCornerIterator {
  public:
   VolumeCornerIterator() noexcept { setup_from_local_corner_number(); }
+
   explicit VolumeCornerIterator(size_t initial_local_corner_number) noexcept
       : local_corner_number_(initial_local_corner_number) {
     setup_from_local_corner_number();
@@ -229,16 +230,20 @@ class VolumeCornerIterator {
             collapsed_index(block_index, global_corner_extents)),
         global_corner_index_(block_index),
         global_corner_extents_(global_corner_extents) {}
+
   void operator++() noexcept {
     ++local_corner_number_;
     setup_from_local_corner_number();
   }
+
   explicit operator bool() const noexcept {
     return local_corner_number_ < two_to_the(VolumeDim);
   }
+
   const size_t& local_corner_number() const noexcept {
     return local_corner_number_;
   }
+
   size_t global_corner_number() const noexcept {
     std::array<size_t, VolumeDim> new_indices{};
     for (size_t i = 0; i < VolumeDim; i++) {
@@ -249,19 +254,24 @@ class VolumeCornerIterator {
     const Index<VolumeDim> interior_multi_index(new_indices);
     return collapsed_index(interior_multi_index, global_corner_extents_);
   }
+
   const std::array<Side, VolumeDim>& operator()() const noexcept {
     return array_sides_;
   }
+
   const std::array<Side, VolumeDim>& operator*() const noexcept {
     return array_sides_;
   }
+
   const std::array<double, VolumeDim>& coords_of_corner() const noexcept {
     return coords_of_corner_;
   }
+
   const std::array<Direction<VolumeDim>, VolumeDim>& directions_of_corner()
       const noexcept {
     return array_directions_;
   }
+
   void setup_from_local_corner_number() noexcept {
     for (size_t i = 0; i < VolumeDim; i++) {
       gsl::at(coords_of_corner_, i) =
@@ -291,6 +301,7 @@ template <size_t VolumeDim>
 class FaceCornerIterator {
  public:
   explicit FaceCornerIterator(Direction<VolumeDim> direction) noexcept;
+
   void operator++() noexcept {
     face_index_++;
     do {
@@ -301,18 +312,22 @@ class FaceCornerIterator {
       corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
     }
   }
+
   explicit operator bool() const noexcept {
     return face_index_ < two_to_the(VolumeDim - 1);
   }
+
   tnsr::I<double, VolumeDim, Frame::Logical> operator()() const noexcept {
     return corner_;
   }
+
   tnsr::I<double, VolumeDim, Frame::Logical> operator*() const noexcept {
     return corner_;
   }
 
   // Returns the value used to construct the logical corner.
   size_t volume_index() const noexcept { return index_; }
+
   // Returns the number of times operator++ has been called.
   size_t face_index() const noexcept { return face_index_; }
 

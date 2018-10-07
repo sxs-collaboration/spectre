@@ -9,6 +9,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -38,7 +39,7 @@ ElementId<VolumeDim>::ElementId(const ElementIndex<VolumeDim>& index) noexcept {
 template <size_t VolumeDim>
 ElementId<VolumeDim>::
 operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>()  // NOLINT
-    const {
+    const noexcept {
   return {ElementIndex<VolumeDim>{*this}};
 }
 
@@ -67,7 +68,8 @@ void ElementId<VolumeDim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id) {
+std::ostream& operator<<(std::ostream& os,
+                         const ElementId<VolumeDim>& id) noexcept {
   os << "[B" << id.block_id() << ',' << id.segment_ids() << ']';
   return os;
 }
@@ -91,21 +93,18 @@ size_t hash<ElementId<VolumeDim>>::operator()(
 }  // namespace std
 // LCOV_EXCL_STOP
 
-template class ElementId<1>;
-template class ElementId<2>;
-template class ElementId<3>;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template std::ostream& operator<<(std::ostream&, const ElementId<1>&);
-template std::ostream& operator<<(std::ostream&, const ElementId<2>&);
-template std::ostream& operator<<(std::ostream&, const ElementId<3>&);
+#define INSTANTIATION(r, data)                                                 \
+  template class ElementId<GET_DIM(data)>;                                     \
+  template std::ostream& operator<<(std::ostream&,                             \
+                                    const ElementId<GET_DIM(data)>&) noexcept; \
+  template size_t hash_value(const ElementId<GET_DIM(data)>&) noexcept;        \
+  namespace std { /* NOLINT */                                                 \
+  template struct hash<ElementId<GET_DIM(data)>>;                              \
+  }
 
-template size_t hash_value(const ElementId<1>&) noexcept;
-template size_t hash_value(const ElementId<2>&) noexcept;
-template size_t hash_value(const ElementId<3>&) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
-// clang-tidy: do not modify namespace std
-namespace std {  // NOLINT
-template struct hash<ElementId<1>>;
-template struct hash<ElementId<2>>;
-template struct hash<ElementId<3>>;
-}  // namespace std
+#undef GET_DIM
+#undef INSTANTIATION

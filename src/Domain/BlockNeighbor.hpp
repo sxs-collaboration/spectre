@@ -11,9 +11,11 @@
 
 #include "Domain/OrientationMap.hpp"
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 /// \ingroup ComputationalDomainGroup
 /// Information about the neighbor of a Block in a particular direction.
@@ -28,7 +30,7 @@ class BlockNeighbor {
   ///
   /// \param id the Id of the neighbor.
   /// \param orientation the OrientationMap of the neighbor.
-  BlockNeighbor(size_t id, OrientationMap<VolumeDim> orientation);
+  BlockNeighbor(size_t id, OrientationMap<VolumeDim> orientation) noexcept;
   ~BlockNeighbor() = default;
   BlockNeighbor(const BlockNeighbor<VolumeDim>& neighbor) = default;
   BlockNeighbor(BlockNeighbor<VolumeDim>&&) noexcept = default;
@@ -44,7 +46,7 @@ class BlockNeighbor {
   }
 
   // Serialization for Charm++
-  void pup(PUP::er& p);  // NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   size_t id_{0};
@@ -53,8 +55,8 @@ class BlockNeighbor {
 
 /// Output operator for BlockNeighbor.
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os,
-                         const BlockNeighbor<VolumeDim>& block_neighbor);
+std::ostream& operator<<(
+    std::ostream& os, const BlockNeighbor<VolumeDim>& block_neighbor) noexcept;
 
 template <size_t VolumeDim>
 bool operator==(const BlockNeighbor<VolumeDim>& lhs,

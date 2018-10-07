@@ -57,7 +57,7 @@ class SegmentId {
   SegmentId& operator=(const SegmentId& segment_id) noexcept = default;
   SegmentId& operator=(SegmentId&& segment_id) noexcept = default;
 
-  SegmentId(size_t refinement_level, size_t index);
+  SegmentId(size_t refinement_level, size_t index) noexcept;
 
   constexpr size_t refinement_level() const noexcept {
     return refinement_level_;
@@ -101,7 +101,7 @@ class SegmentId {
 };
 
 /// Output operator for SegmentId.
-std::ostream& operator<<(std::ostream& os, const SegmentId& id);
+std::ostream& operator<<(std::ostream& os, const SegmentId& id) noexcept;
 
 /// Equivalence operator for SegmentId.
 bool operator==(const SegmentId& lhs, const SegmentId& rhs) noexcept;

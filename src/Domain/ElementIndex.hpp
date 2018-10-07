@@ -32,7 +32,7 @@ static_assert(two_to_the(refinement_bits) >= max_refinement_level,
 
 class SegmentIndex {
  public:
-  SegmentIndex() = default;
+  SegmentIndex() noexcept = default;
   SegmentIndex(size_t block_id, const SegmentId& segment_id) noexcept;
   size_t block_id() const noexcept { return block_id_; }
   size_t index() const noexcept { return index_; }

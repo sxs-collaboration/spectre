@@ -10,6 +10,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
 
@@ -39,9 +40,14 @@ std::array<double, VolumeDim> size_of_element(
 }
 
 // Explicit instantiations
-template std::array<double, 1> size_of_element(
-    const Mesh<1>&, const tnsr::I<DataVector, 1>&) noexcept;
-template std::array<double, 2> size_of_element(
-    const Mesh<2>&, const tnsr::I<DataVector, 2>&) noexcept;
-template std::array<double, 3> size_of_element(
-    const Mesh<3>&, const tnsr::I<DataVector, 3>&) noexcept;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                                \
+  template std::array<double, GET_DIM(data)> size_of_element( \
+      const Mesh<GET_DIM(data)>&,                             \
+      const tnsr::I<DataVector, GET_DIM(data)>&) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef GET_DIM
+#undef INSTANTIATION

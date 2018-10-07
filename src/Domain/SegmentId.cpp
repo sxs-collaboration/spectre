@@ -7,7 +7,7 @@
 #include <ostream>
 #include <pup.h>
 
-SegmentId::SegmentId(const size_t refinement_level, const size_t index)
+SegmentId::SegmentId(const size_t refinement_level, const size_t index) noexcept
     : refinement_level_(refinement_level), index_(index) {
   ASSERT(index < two_to_the(refinement_level),
          "index = " << index << ", refinement_level = " << refinement_level);
@@ -18,7 +18,7 @@ void SegmentId::pup(PUP::er& p) noexcept {
   p | index_;
 }
 
-std::ostream& operator<<(std::ostream& os, const SegmentId& id) {
+std::ostream& operator<<(std::ostream& os, const SegmentId& id) noexcept {
   os << 'L' << id.refinement_level() << 'I' << id.index();
   return os;
 }

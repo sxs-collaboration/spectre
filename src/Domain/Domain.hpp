@@ -35,7 +35,7 @@ class CoordinateMapBase;
 template <size_t VolumeDim, typename TargetFrame>
 class Domain {
  public:
-  explicit Domain(std::vector<Block<VolumeDim, TargetFrame>> blocks);
+  explicit Domain(std::vector<Block<VolumeDim, TargetFrame>> blocks) noexcept;
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -59,9 +59,9 @@ class Domain {
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,
-         const std::vector<PairOfFaces>& identifications = {});
+         const std::vector<PairOfFaces>& identifications = {}) noexcept;
 
-  Domain() = default;
+  Domain() noexcept = default;
   ~Domain() = default;
   Domain(const Domain&) = delete;
   Domain(Domain&&) = default;
@@ -70,12 +70,12 @@ class Domain {
   Domain<VolumeDim, TargetFrame>& operator=(Domain<VolumeDim, TargetFrame>&&) =
       default;
 
-  const std::vector<Block<VolumeDim, TargetFrame>>& blocks() const {
+  const std::vector<Block<VolumeDim, TargetFrame>>& blocks() const noexcept {
     return blocks_;
   }
 
   //clang-tidy: google-runtime-references
-  void pup(PUP::er& p); //NOLINT
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
   std::vector<Block<VolumeDim, TargetFrame>> blocks_{};
@@ -91,4 +91,4 @@ bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
 
 template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
-                         const Domain<VolumeDim, TargetFrame>& d);
+                         const Domain<VolumeDim, TargetFrame>& d) noexcept;

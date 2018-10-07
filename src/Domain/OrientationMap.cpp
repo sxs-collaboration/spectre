@@ -23,7 +23,7 @@ std::set<size_t> set_of_dimensions(
 }  // namespace
 
 template <size_t VolumeDim>
-OrientationMap<VolumeDim>::OrientationMap() {
+OrientationMap<VolumeDim>::OrientationMap() noexcept {
   for (size_t j = 0; j < VolumeDim; j++) {
     gsl::at(mapped_directions_, j) = Direction<VolumeDim>(j, Side::Upper);
   }
@@ -31,7 +31,7 @@ OrientationMap<VolumeDim>::OrientationMap() {
 
 template <size_t VolumeDim>
 OrientationMap<VolumeDim>::OrientationMap(
-    std::array<Direction<VolumeDim>, VolumeDim> mapped_directions)
+    std::array<Direction<VolumeDim>, VolumeDim> mapped_directions) noexcept
     : mapped_directions_(std::move(mapped_directions)) {
   for (size_t j = 0; j < VolumeDim; j++) {
     if (gsl::at(mapped_directions_, j).dimension() != j or
@@ -46,7 +46,8 @@ OrientationMap<VolumeDim>::OrientationMap(
 template <size_t VolumeDim>
 OrientationMap<VolumeDim>::OrientationMap(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
-    const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_neighbor) {
+    const std::array<Direction<VolumeDim>, VolumeDim>&
+        directions_in_neighbor) noexcept {
   for (size_t j = 0; j < VolumeDim; j++) {
     gsl::at(mapped_directions_, gsl::at(directions_in_host, j).dimension()) =
         (gsl::at(directions_in_host, j).side() == Side::Upper
@@ -102,14 +103,14 @@ void OrientationMap<VolumeDim>::pup(PUP::er& p) noexcept {
 
 template <>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<1>& orientation) {
+                         const OrientationMap<1>& orientation) noexcept {
   os << "(" << orientation(Direction<1>::upper_xi()) << ")";
   return os;
 }
 
 template <>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<2>& orientation) {
+                         const OrientationMap<2>& orientation) noexcept {
   os << "(" << orientation(Direction<2>::upper_xi()) << ", "
      << orientation(Direction<2>::upper_eta()) << ")";
   return os;
@@ -117,7 +118,7 @@ std::ostream& operator<<(std::ostream& os,
 
 template <>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<3>& orientation) {
+                         const OrientationMap<3>& orientation) noexcept {
   os << "(" << orientation(Direction<3>::upper_xi()) << ", "
      << orientation(Direction<3>::upper_eta()) << ", "
      << orientation(Direction<3>::upper_zeta()) << ")";
