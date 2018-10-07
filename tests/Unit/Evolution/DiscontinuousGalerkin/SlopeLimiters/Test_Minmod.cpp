@@ -745,7 +745,8 @@ void test_package_data_work(
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const std::array<double, VolumeDim>& element_size) noexcept {
+    const std::array<double, VolumeDim>& element_size,
+    const OrientationMap<VolumeDim>& orientation_map) noexcept {
   // To streamline the testing of the op() function, the test sets up
   // identical data for all components of input_vector. To better test the
   // package_data function, we first modify the input so the data
@@ -760,10 +761,12 @@ void test_package_data_work(
   typename SlopeLimiters::Minmod<
       VolumeDim, tmpl::list<scalar, vector<VolumeDim>>>::PackagedData
       packaged_data{};
-  minmod.package_data(make_not_null(&packaged_data), input_scalar,
-                      modified_vector, mesh, element_size);
 
-  // Should not normally look inside package, but we do so here for testing.
+  // First we test package_data with an identity orientation_map
+  minmod.package_data(make_not_null(&packaged_data), input_scalar,
+                      modified_vector, mesh, element_size, {});
+
+  // Should not normally look inside the package, but we do so here for testing.
   double lhs =
       get(get<Minmod_detail::to_tensor_double<scalar>>(packaged_data.means_));
   CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
@@ -774,6 +777,20 @@ void test_package_data_work(
     CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
   }
   CHECK(packaged_data.element_size_ == element_size);
+
+  // Then we test with a reorientation, as if sending the data to another Block
+  minmod.package_data(make_not_null(&packaged_data), input_scalar,
+                      modified_vector, mesh, element_size, orientation_map);
+  lhs = get(get<Minmod_detail::to_tensor_double<scalar>>(packaged_data.means_));
+  CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    lhs = get<Minmod_detail::to_tensor_double<vector<VolumeDim>>>(
+              packaged_data.means_)
+              .get(d);
+    CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
+  }
+  CHECK(packaged_data.element_size_ ==
+        orientation_map.permute_from_neighbor(element_size));
 }
 
 // Helper function for testing Minmod::op()
@@ -851,8 +868,10 @@ SPECTRE_TEST_CASE(
   const auto input_scalar = scalar::type{data};
   const auto input_vector = vector<1>::type{data};
 
+  const OrientationMap<1> test_reorientation(
+      std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
   test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
-                         element_size);
+                         element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
@@ -917,8 +936,10 @@ SPECTRE_TEST_CASE(
   const auto input_scalar = scalar::type{data};
   const auto input_vector = vector<2>::type{data};
 
+  const OrientationMap<2> test_reorientation(std::array<Direction<2>, 2>{
+      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
   test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
-                         element_size);
+                         element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
@@ -1023,8 +1044,11 @@ SPECTRE_TEST_CASE(
   const auto input_scalar = scalar::type{data};
   const auto input_vector = vector<3>::type{data};
 
+  const OrientationMap<3> test_reorientation(std::array<Direction<3>, 3>{
+      {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
+       Direction<3>::lower_zeta()}});
   test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
-                         element_size);
+                         element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<

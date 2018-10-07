@@ -64,12 +64,14 @@ class DummyLimiterForTest {
   // Data sent by the limiter to its neighbors
   struct PackagedData {
     double mean_;
+    Mesh<2> mesh_;
   };
   using package_argument_tags = tmpl::list<Var, Tags::Mesh<2>>;
   void package_data(const gsl::not_null<PackagedData*> packaged_data,
-                    const Scalar<DataVector>& var, const Mesh<2>& mesh) const
-      noexcept {
+                    const Scalar<DataVector>& var, const Mesh<2>& mesh,
+                    const OrientationMap<2>& orientation_map) const noexcept {
     packaged_data->mean_ = mean_value(get(var), mesh);
+    packaged_data->mesh_ = orientation_map(mesh);
   }
 
   using limit_tags = tmpl::list<Var>;
@@ -128,8 +130,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   using limiter_comm_tag =
       SlopeLimiters::Tags::LimiterCommunicationTag<metavariables>;
 
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{
+      {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
   //      xi      Block       +- xi
   //      |     0   |   1     |
@@ -259,16 +261,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   {
     const auto check_inbox = [&runner, &self_id ](
         const ElementId<2>& id, const Direction<2>& direction,
-        const double expected_mean_data) noexcept {
-      CHECK(
+        const double expected_mean_data,
+        const Mesh<2>& expected_mesh) noexcept {
+      const auto received_package =
           tuples::get<limiter_comm_tag>(runner.inboxes<my_component>()[self_id])
               .at(0)
-              .at(std::make_pair(direction, id))
-              .mean_ == approx(expected_mean_data));
+              .at(std::make_pair(direction, id));
+      CHECK(received_package.mean_ == approx(expected_mean_data));
+      CHECK(received_package.mesh_ == expected_mesh);
     };
-    check_inbox(west_id, Direction<2>::lower_xi(), 5.);
-    check_inbox(east_id, Direction<2>::upper_xi(), 6.);
-    check_inbox(south_id, Direction<2>::upper_eta(), 7.);
+
+    const Mesh<2> rotated_mesh{{{4, 3}},
+                               Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
+    check_inbox(west_id, Direction<2>::lower_xi(), 5., rotated_mesh);
+    check_inbox(east_id, Direction<2>::upper_xi(), 6., mesh);
+    check_inbox(south_id, Direction<2>::upper_eta(), 7., mesh);
   }
 
   // Now we run the ApplyLimiter action. We verify the pre- and post-limiting
@@ -300,8 +308,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
   using limiter_comm_tag =
       SlopeLimiters::Tags::LimiterCommunicationTag<metavariables>;
 
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{
+      {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
   const Element<2> element(self_id, {});
 

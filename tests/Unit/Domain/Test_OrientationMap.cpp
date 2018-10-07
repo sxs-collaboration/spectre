@@ -12,10 +12,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -36,7 +38,7 @@ void test_1d() {
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
   CHECK_FALSE(custom2.is_aligned());
 
-  // Test if OrientationMap can encode a 1D parallel/ antiparallel.
+  // Test if OrientationMap can encode a 1D parallel/antiparallel.
   std::array<Direction<1>, 1> block1_directions{{Direction<1>::upper_xi()}};
   std::array<Direction<1>, 1> block2_directions{{Direction<1>::lower_xi()}};
   OrientationMap<1> parallel_orientation(block1_directions, block1_directions);
@@ -47,13 +49,18 @@ void test_1d() {
   CHECK(parallel_orientation(segment_ids) == segment_ids);
   CHECK(antiparallel_orientation(segment_ids) ==
         expected_antiparallel_segment_ids);
-  CHECK(get_output(parallel_orientation) == "(+0)");
-  CHECK(get_output(antiparallel_orientation) == "(-0)");
+  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+  CHECK(parallel_orientation(mesh) == mesh);
+  CHECK(antiparallel_orientation(mesh) == mesh);
   CHECK(std::array<int, 1>{{1}} ==
         parallel_orientation.permute_from_neighbor(std::array<int, 1>{{1}}));
   CHECK(
       std::array<int, 1>{{1}} ==
       antiparallel_orientation.permute_from_neighbor(std::array<int, 1>{{1}}));
+
+  CHECK(get_output(parallel_orientation) == "(+0)");
+  CHECK(get_output(antiparallel_orientation) == "(-0)");
 
   // Test comparison:
   CHECK(custom1 != custom2);
@@ -127,6 +134,11 @@ void test_2d() {
   std::array<SegmentId, 2> expected_pos_eta_neg_xi_segment_ids{
       {SegmentId(3, 5), SegmentId(2, 2)}};
 
+  CHECK_FALSE(rotated2d_neg_eta_pos_xi.is_aligned());
+  CHECK_FALSE(rotated2d_neg_xi_neg_eta.is_aligned());
+  CHECK_FALSE(rotated2d_pos_eta_neg_xi.is_aligned());
+  CHECK(rotated2d_pos_xi_pos_eta.is_aligned());
+
   // Check mapped(size_t dimension) function
   CHECK(rotated2d_neg_xi_neg_eta(0) == 0);
   CHECK(rotated2d_neg_xi_neg_eta(1) == 1);
@@ -135,7 +147,7 @@ void test_2d() {
   CHECK(rotated2d_pos_eta_neg_xi(0) == 1);
   CHECK(rotated2d_pos_eta_neg_xi(1) == 0);
 
-  // Check mapped(Direction<2> direction function)
+  // Check mapped(Direction<2> direction) function
   CHECK(rotated2d_neg_xi_neg_eta(upper_xi) == lower_xi);
   CHECK(rotated2d_neg_xi_neg_eta(upper_eta) == lower_eta);
   CHECK(rotated2d_neg_xi_neg_eta(lower_xi) == upper_xi);
@@ -157,11 +169,20 @@ void test_2d() {
         expected_neg_xi_neg_eta_segment_ids);
   CHECK(rotated2d_pos_eta_neg_xi(segment_ids) ==
         expected_pos_eta_neg_xi_segment_ids);
-  CHECK_FALSE(rotated2d_neg_eta_pos_xi.is_aligned());
-  CHECK_FALSE(rotated2d_neg_xi_neg_eta.is_aligned());
-  CHECK_FALSE(rotated2d_pos_eta_neg_xi.is_aligned());
-  CHECK(rotated2d_pos_xi_pos_eta.is_aligned());
 
+  // Check mapped(Mesh<2> mesh)
+  const Mesh<2> input_mesh(
+      {{3, 4}}, {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}});
+  const Mesh<2> flipped_mesh(
+      {{4, 3}}, {{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre}},
+      {{Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}});
+  CHECK(rotated2d_pos_xi_pos_eta(input_mesh) == input_mesh);
+  CHECK(rotated2d_neg_xi_neg_eta(input_mesh) == input_mesh);
+  CHECK(rotated2d_neg_eta_pos_xi(input_mesh) == flipped_mesh);
+  CHECK(rotated2d_pos_eta_neg_xi(input_mesh) == flipped_mesh);
+
+  // Check permute_from_neighbor(std::array<T, 2> array)
   const std::array<int, 2> input_array{{1, -3}};
   const std::array<int, 2> flipped_array{{-3, 1}};
   CHECK(rotated2d_neg_xi_neg_eta.permute_from_neighbor(input_array) ==
@@ -172,7 +193,7 @@ void test_2d() {
         flipped_array);
 
   // The naming convention used in this test:
-  //"neg_eta_pos_xi" means that -1 in the host maps to +0,
+  // "neg_eta_pos_xi" means that -1 in the host maps to +0,
   // and that +0 in the host maps to +1, in the neighbor.
   // For the output operator, the directions that correspond
   // to the +0 and +1 directions in the host are outputted.
@@ -274,6 +295,14 @@ void test_3d() {
       {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
        Direction<3>::lower_eta()}}};
   CHECK(custom3.inverse_map() == custom4);
+  CHECK(Mesh<3>({{4, 5, 3}}, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto) ==
+        custom3(Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto)));
+  CHECK(Mesh<3>({{5, 3, 4}}, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto) ==
+        custom4(Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto)));
   CHECK(std::array<int, 3>{{-8, 12, 4}} ==
         custom3.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
   CHECK(std::array<int, 3>{{12, 4, -8}} ==
@@ -351,18 +380,18 @@ SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.AllOrientations",
                  ? gsl::at(original_point, map_i()(d))
                  : -1.0 * gsl::at(original_point, map_i()(d))));
     }
+  }
+  for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
+    const std::array<double, 3> original_point{{0.5, -2.0, 1.5}};
+    const std::array<double, 3> new_point =
+        discrete_rotation(map_i(), original_point);
+    for (size_t d = 0; d < 3; d++) {
+      CHECK(gsl::at(new_point, d) ==
+            (map_i()(Direction<3>{d, Side::Upper}).side() == Side::Upper
+                 ? gsl::at(original_point, map_i()(d))
+                 : -1.0 * gsl::at(original_point, map_i()(d))));
     }
-    for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
-      const std::array<double, 3> original_point{{0.5, -2.0, 1.5}};
-      const std::array<double, 3> new_point =
-          discrete_rotation(map_i(), original_point);
-      for (size_t d = 0; d < 3; d++) {
-        CHECK(gsl::at(new_point, d) ==
-              (map_i()(Direction<3>{d, Side::Upper}).side() == Side::Upper
-                   ? gsl::at(original_point, map_i()(d))
-                   : -1.0 * gsl::at(original_point, map_i()(d))));
-      }
-    }
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.Rotation", "[Domain][Unit]") {
