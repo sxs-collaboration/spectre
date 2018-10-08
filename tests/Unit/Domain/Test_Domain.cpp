@@ -24,6 +24,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -34,6 +35,8 @@
 namespace {
 void test_1d_domains() {
   {
+    CHECK(Tags::Domain<1, Frame::Logical>::name() == "Domain");
+    CHECK(Tags::Domain<1, Frame::Inertial>::name() == "Domain");
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Affine>));
 
@@ -195,6 +198,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
+  CHECK(Tags::Domain<2, Frame::Inertial>::name() == "Domain");
   const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
@@ -239,6 +243,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
+  CHECK(Tags::Domain<3, Frame::Inertial>::name() == "Domain");
   const OrientationMap<3> aligned{};
   const OrientationMap<3> quarter_turn_cw_xi{std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),

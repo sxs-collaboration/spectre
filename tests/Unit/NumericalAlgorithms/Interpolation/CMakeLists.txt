@@ -5,6 +5,7 @@ set(LIBRARY "Test_NumericalInterpolation")
 
 set(LIBRARY_SOURCES
   Test_BarycentricRational.cpp
+  Test_InitializeInterpolationTarget.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
   )
