@@ -5,6 +5,7 @@ set(LIBRARY WaveEquation)
 
 set(LIBRARY_SOURCES
   PlaneWave.cpp
+  RegularSphericalWave.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

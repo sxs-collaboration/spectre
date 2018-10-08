@@ -64,6 +64,12 @@ class MathFunction<1> : public PUP::able {
   virtual double second_deriv(const double& x) const noexcept = 0;
   virtual DataVector second_deriv(const DataVector& x) const noexcept = 0;
   //@}
+
+  //@{
+  /// Returns the third derivative at 'x'.
+  virtual double third_deriv(const double& x) const noexcept = 0;
+  virtual DataVector third_deriv(const DataVector& x) const noexcept = 0;
+  //@}
 };
 
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"

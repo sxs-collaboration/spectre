@@ -35,6 +35,13 @@ DataVector Gaussian::second_deriv(const DataVector& x) const noexcept {
   return apply_second_deriv(x);
 }
 
+double Gaussian::third_deriv(const double& x) const noexcept {
+  return apply_third_deriv(x);
+}
+DataVector Gaussian::third_deriv(const DataVector& x) const noexcept {
+  return apply_third_deriv(x);
+}
+
 template <typename T>
 T Gaussian::apply_call_operator(const T& x) const noexcept {
   return amplitude_ * exp(-square((x - center_) * inverse_width_));
@@ -50,6 +57,13 @@ template <typename T>
 T Gaussian::apply_second_deriv(const T& x) const noexcept {
   return (-2.0 * amplitude_ * square(inverse_width_)) *
          (1.0 - 2.0 * square(x - center_) * square(inverse_width_)) *
+         exp(-square((x - center_) * inverse_width_));
+}
+
+template <typename T>
+T Gaussian::apply_third_deriv(const T& x) const noexcept {
+  return 4.0 * amplitude_ * pow<4>(inverse_width_) * (x - center_) *
+         (3.0 - 2.0 * square((x - center_) * inverse_width_)) *
          exp(-square((x - center_) * inverse_width_));
 }
 
