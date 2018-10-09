@@ -35,4 +35,6 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
 void check_convergence_order(const TimeStepper& stepper,
                              int expected_order) noexcept;
 
+void check_dense_output(const TimeStepper& stepper,
+                        int expected_order) noexcept;
 }  // namespace TimeStepperTestUtils

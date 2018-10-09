@@ -38,6 +38,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
       TimeStepperTestUtils::integrate_test(stepper, start_points, 1., epsilon);
     }
     TimeStepperTestUtils::check_convergence_order(stepper, order);
+    TimeStepperTestUtils::check_dense_output(stepper, order);
   }
 
   const Slab slab(0., 1.);
