@@ -5,10 +5,12 @@
 
 #include <cmath>
 #include <numeric>
+#include <type_traits>
 #include <vector>
 
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -44,4 +46,30 @@ T evaluate_polynomial(const std::vector<U>& coeffs, const T& x) noexcept {
   return std::accumulate(
       coeffs.rbegin(), coeffs.rend(), make_with_value<T>(x, 0.),
       [&x](const T& state, const U& element) { return state * x + element; });
+}
+
+/// \ingroup UtilitiesGroup
+
+/// \brief Defines the Heaviside step function \f$\Theta\f$ for arithmetic
+/// types.  \f$\Theta(0) = 1\f$.
+template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
+constexpr T step_function(const T& arg) noexcept {
+  return static_cast<T>((arg >= static_cast<T>(0)) ? 1 : 0);
+}
+
+/// \ingroup UtilitiesGroup
+/// \brief Defines the inverse square-root (\f$1/\sqrt{x}\f$) for arithmetic
+/// and complex types
+template <typename T, Requires<std::is_arithmetic<T>::value or
+                               tt::is_a_v<std::complex, T>> = nullptr>
+auto invsqrt(const T& arg) noexcept {
+  return static_cast<T>(1.0) / sqrt(arg);
+}
+
+/// \ingroup UtilitiesGroup
+/// \brief Defines the inverse cube-root (\f$1/\sqrt[3]{x}\f$) for arithmetic
+/// types
+template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
+auto invcbrt(const T& arg) noexcept {
+  return static_cast<T>(1.0) / cbrt(arg);
 }

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <complex>
 #include <cstddef>  // for std::nullptr_t
 #include <limits>
 #include <random>
@@ -33,6 +34,22 @@ struct FillWithRandomValuesImpl<T, Requires<cpp17::is_fundamental_v<T>>> {
         cpp17::is_same_v<T, typename RandomNumberDistribution::result_type>,
         "Mismatch between data type and random number type.");
     *data = (*distribution)(*generator);
+  }
+};
+
+template <typename T>
+struct FillWithRandomValuesImpl<std::complex<T>> {
+  template <typename UniformRandomBitGenerator,
+            typename RandomNumberDistribution>
+  static void apply(
+      const gsl::not_null<std::complex<T>*> data,
+      const gsl::not_null<UniformRandomBitGenerator*> generator,
+      const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
+    static_assert(
+        cpp17::is_same_v<T, typename RandomNumberDistribution::result_type>,
+        "Mismatch between data type and random number type.");
+    data->real((*distribution)(*generator));
+    data->imag((*distribution)(*generator));
   }
 };
 
@@ -70,6 +87,36 @@ struct FillWithRandomValuesImpl<Variables<tmpl::list<Tags...>>,
 /// \endcond
 }  // namespace TestHelpers_detail
 
+// {@
+/// \ingroup TestingFrameworkGroup
+///
+/// \brief A uniform distribution function object which redirects appropriately
+/// to either the `std::uniform_int_distribution` or the
+/// `std::uniform_real_distribution`. This also provides a convenience
+/// constructor which takes a 2-element array for the bounds for either
+/// floating point or int distributions.
+template <typename T>
+class UniformCustomDistribution
+    : public tmpl::conditional_t<cpp17::is_integral_v<T>,
+                                std::uniform_int_distribution<T>,
+                                std::uniform_real_distribution<T>> {
+  using base = tmpl::conditional_t<cpp17::is_integral_v<T>,
+                                  std::uniform_int_distribution<T>,
+                                  std::uniform_real_distribution<T>>;
+  static_assert(cpp17::is_integral_v<T> or cpp17::is_floating_point_v<T>,
+                "UniformCustomDistribution currently supports only floating"
+                "point and integral values");
+
+ public:
+  using base::base;
+  template <typename Bound>
+  explicit UniformCustomDistribution(std::array<Bound, 2> arr) noexcept
+      : base(arr[0], arr[1]) {}
+  using base::operator=;
+  using base::operator();
+};
+// @}
+
 /// \ingroup TestingFrameworkGroup
 /// \brief Fill an existing data structure with random values
 template <typename T, typename UniformRandomBitGenerator,
@@ -102,3 +149,38 @@ ReturnType make_with_random_values(
   fill_with_random_values(make_not_null(&result), generator, distribution);
   return result;
 }
+
+// {@
+/// \ingroup TestingFrameworkGroup
+/// \brief Make a fixed-size data structure and fill with random values
+///
+/// \details Given a template argument type `T`, create an object of the same
+/// type, fills it with random values, and returns the result. Acts as a
+/// convenience function to avoid users needing to put in constructors with
+/// `signaling_NaN()`s or `max()`s themselves when making with random values.
+/// Used as
+/// `make_with_random_values<Type>(make_not_null(&gen),make_not_null(&dist))`
+template <typename T, typename UniformRandomBitGenerator,
+          typename RandomNumberDistribution,
+          Requires<cpp17::is_floating_point_v<tt::get_fundamental_type_t<T>>> =
+              nullptr>
+T make_with_random_values(
+    const gsl::not_null<UniformRandomBitGenerator*> generator,
+    const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
+  T result{std::numeric_limits<tt::get_fundamental_type_t<T>>::signaling_NaN()};
+  fill_with_random_values(make_not_null(&result), generator, distribution);
+  return result;
+}
+
+template <
+    typename T, typename UniformRandomBitGenerator,
+    typename RandomNumberDistribution,
+    Requires<cpp17::is_integral_v<tt::get_fundamental_type_t<T>>> = nullptr>
+T make_with_random_values(
+    const gsl::not_null<UniformRandomBitGenerator*> generator,
+    const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
+  T result{std::numeric_limits<tt::get_fundamental_type_t<T>>::max()};
+  fill_with_random_values(make_not_null(&result), generator, distribution);
+  return result;
+}
+// @}
