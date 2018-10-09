@@ -22,4 +22,4 @@ constexpr inline Side opposite(const Side side) {
 }
 
 /// Output operator for a Side.
-std::ostream& operator<<(std::ostream& os, const Side& side);
+std::ostream& operator<<(std::ostream& os, const Side& side) noexcept;

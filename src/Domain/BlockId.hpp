@@ -7,9 +7,11 @@
 #include <ostream>
 #include <pup.h>
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 namespace domain {
 /*!

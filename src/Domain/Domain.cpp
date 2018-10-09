@@ -22,7 +22,7 @@ struct Logical;
 
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>::Domain(
-    std::vector<Block<VolumeDim, TargetFrame>> blocks)
+    std::vector<Block<VolumeDim, TargetFrame>> blocks) noexcept
     : blocks_(std::move(blocks)) {}
 
 template <size_t VolumeDim, typename TargetFrame>
@@ -32,7 +32,7 @@ Domain<VolumeDim, TargetFrame>::Domain(
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    const std::vector<PairOfFaces>& identifications) {
+    const std::vector<PairOfFaces>& identifications) noexcept {
   ASSERT(maps.size() == corners_of_all_blocks.size(),
          "Must pass same number of maps as block corner sets.");
   std::vector<
@@ -62,17 +62,17 @@ bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
 
 template <size_t VolumeDim, typename TargetFrame>
 std::ostream& operator<<(std::ostream& os,
-                         const Domain<VolumeDim, TargetFrame>& d) {
+                         const Domain<VolumeDim, TargetFrame>& d) noexcept {
   const auto& blocks = d.blocks();
   os << "Domain with " << blocks.size() << " blocks:\n";
   for (const auto& block : blocks) {
-    os << block << "\n";
+    os << block << '\n';
   }
   return os;
 }
 
 template <size_t VolumeDim, typename TargetFrame>
-void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) {
+void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) noexcept {
   p | blocks_;
 }
 

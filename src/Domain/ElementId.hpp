@@ -48,7 +48,8 @@ class ElementId {
 
   /// Conversion operator needed to index `proxy`s using `ElementId`
   // clang-tidy: mark explicit, we want implicit conversion
-  operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>() const;  // NOLINT
+  operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>() const  // NOLINT
+      noexcept;
 
   /// Create an arbitrary ElementId.
   ElementId(size_t block_id,
@@ -75,7 +76,8 @@ class ElementId {
 
 /// Output operator for ElementId.
 template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const ElementId<VolumeDim>& id);
+std::ostream& operator<<(std::ostream& os,
+                         const ElementId<VolumeDim>& id) noexcept;
 
 /// Equivalence operator for ElementId.
 template <size_t VolumeDim>

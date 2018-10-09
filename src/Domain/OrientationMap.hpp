@@ -34,13 +34,13 @@ class OrientationMap {
  public:
   /// The default orientation is the identity map on directions.
   /// The bool `is_aligned_` is correspondingly set to `true`.
-  OrientationMap();
+  OrientationMap() noexcept;
   explicit OrientationMap(
-      std::array<Direction<VolumeDim>, VolumeDim> mapped_directions);
+      std::array<Direction<VolumeDim>, VolumeDim> mapped_directions) noexcept;
   OrientationMap(
       const std::array<Direction<VolumeDim>, VolumeDim>& directions_in_host,
       const std::array<Direction<VolumeDim>, VolumeDim>&
-          directions_in_neighbor);
+          directions_in_neighbor) noexcept;
   ~OrientationMap() = default;
   OrientationMap(const OrientationMap&) = default;
   OrientationMap& operator=(const OrientationMap&) = default;
@@ -99,7 +99,7 @@ class OrientationMap {
 /// Output operator for OrientationMap.
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const OrientationMap<VolumeDim>& orientation);
+                         const OrientationMap<VolumeDim>& orientation) noexcept;
 
 template <size_t VolumeDim>
 bool operator!=(const OrientationMap<VolumeDim>& lhs,

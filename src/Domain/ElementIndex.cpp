@@ -11,6 +11,7 @@
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 SegmentIndex::SegmentIndex(size_t block_id,
@@ -92,38 +93,22 @@ std::ostream& operator<<(std::ostream& s,
   return s;
 }
 
-template struct ElementIndex<1>;
-template struct ElementIndex<2>;
-template struct ElementIndex<3>;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template bool operator==(const ElementIndex<1>& a,
-                         const ElementIndex<1>& b) noexcept;
-template bool operator==(const ElementIndex<2>& a,
-                         const ElementIndex<2>& b) noexcept;
-template bool operator==(const ElementIndex<3>& a,
-                         const ElementIndex<3>& b) noexcept;
+#define INSTANTIATION(r, data)                                             \
+  template struct ElementIndex<GET_DIM(data)>;                             \
+  template bool operator==(const ElementIndex<GET_DIM(data)>& a,           \
+                           const ElementIndex<GET_DIM(data)>& b) noexcept; \
+  template bool operator!=(const ElementIndex<GET_DIM(data)>& a,           \
+                           const ElementIndex<GET_DIM(data)>& b) noexcept; \
+  template size_t hash_value(                                              \
+      const ElementIndex<GET_DIM(data)>& index) noexcept;                  \
+  template size_t std::hash<ElementIndex<GET_DIM(data)>>::operator()(      \
+      const ElementIndex<GET_DIM(data)>& x) const noexcept;                \
+  template std::ostream& operator<<(                                       \
+      std::ostream& s, const ElementIndex<GET_DIM(data)>& index) noexcept;
 
-template bool operator!=(const ElementIndex<1>& a,
-                         const ElementIndex<1>& b) noexcept;
-template bool operator!=(const ElementIndex<2>& a,
-                         const ElementIndex<2>& b) noexcept;
-template bool operator!=(const ElementIndex<3>& a,
-                         const ElementIndex<3>& b) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
-template size_t hash_value(const ElementIndex<1>& index) noexcept;
-template size_t hash_value(const ElementIndex<2>& index) noexcept;
-template size_t hash_value(const ElementIndex<3>& index) noexcept;
-
-template size_t std::hash<ElementIndex<1>>::operator()(
-    const ElementIndex<1>& x) const noexcept;
-template size_t std::hash<ElementIndex<2>>::operator()(
-    const ElementIndex<2>& x) const noexcept;
-template size_t std::hash<ElementIndex<3>>::operator()(
-    const ElementIndex<3>& x) const noexcept;
-
-template std::ostream& operator<<(std::ostream& s,
-                                  const ElementIndex<1>& index) noexcept;
-template std::ostream& operator<<(std::ostream& s,
-                                  const ElementIndex<2>& index) noexcept;
-template std::ostream& operator<<(std::ostream& s,
-                                  const ElementIndex<3>& index) noexcept;
+#undef GET_DIM
+#undef INSTANTIATION

@@ -9,6 +9,7 @@
 #include <pup.h>
 
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 

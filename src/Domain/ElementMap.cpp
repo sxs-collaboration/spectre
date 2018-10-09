@@ -6,6 +6,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 
 /// \cond
 template <size_t Dim, typename TargetFrame>
@@ -63,11 +64,17 @@ void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) noexcept {
   p | inverse_jacobian_;
 }
 
-template class ElementMap<1, Frame::Inertial>;
-template class ElementMap<2, Frame::Inertial>;
-template class ElementMap<3, Frame::Inertial>;
 // For dual frame evolutions the ElementMap only goes to the grid frame
-template class ElementMap<1, Frame::Grid>;
-template class ElementMap<2, Frame::Grid>;
-template class ElementMap<3, Frame::Grid>;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define GET_FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATION(r, data) \
+  template class ElementMap<GET_DIM(data), GET_FRAME(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
+                        (Frame::Inertial, Frame::Grid))
+
+#undef GET_DIM
+#undef GET_FRAME
+#undef INSTANTIATION
 /// \endcond

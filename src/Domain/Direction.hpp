@@ -78,7 +78,7 @@ class Direction {
 /// Output operator for a Direction.
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const Direction<VolumeDim>& direction);
+                         const Direction<VolumeDim>& direction) noexcept;
 
 //##############################################################################
 // INLINE DEFINITIONS
@@ -173,14 +173,14 @@ inline const std::array<Direction<3>, 6>& Direction<3>::all_directions()
 /// \endcond
 
 template <size_t VolumeDim>
-inline bool operator==(const Direction<VolumeDim>& lhs,
-                       const Direction<VolumeDim>& rhs) {
+bool operator==(const Direction<VolumeDim>& lhs,
+                const Direction<VolumeDim>& rhs) noexcept {
   return lhs.dimension() == rhs.dimension() and lhs.sign() == rhs.sign();
 }
 
 template <size_t VolumeDim>
-inline bool operator!=(const Direction<VolumeDim>& lhs,
-                       const Direction<VolumeDim>& rhs) {
+bool operator!=(const Direction<VolumeDim>& lhs,
+                const Direction<VolumeDim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 

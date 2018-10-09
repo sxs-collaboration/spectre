@@ -7,7 +7,9 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 
+/// \cond
 template <size_t VolumeDim>
 void Direction<VolumeDim>::pup(PUP::er& p) noexcept {
   p | axis_;
@@ -23,7 +25,6 @@ Direction<1>::Direction(const size_t dimension, const Side side) noexcept {
   side_ = side;
 }
 
-/// \cond NEVER
 template <>
 Direction<2>::Direction(const size_t dimension, const Side side) noexcept {
   ASSERT(0 == dimension or 1 == dimension,
@@ -49,11 +50,10 @@ Direction<3>::Direction(const size_t dimension, const Side side) noexcept {
   }
   side_ = side;
 }
-/// \endcond
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const Direction<VolumeDim>& direction) {
+                         const Direction<VolumeDim>& direction) noexcept {
   if (-1.0 == direction.sign()) {
     os << "-";
   } else {
@@ -63,12 +63,15 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-template std::ostream& operator<<(std::ostream&, const Direction<1>&);
-template std::ostream& operator<<(std::ostream&, const Direction<2>&);
-template std::ostream& operator<<(std::ostream&, const Direction<3>&);
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-/// \cond
-template void Direction<1>::pup(PUP::er&) noexcept;
-template void Direction<2>::pup(PUP::er&) noexcept;
-template void Direction<3>::pup(PUP::er&) noexcept;
+#define INSTANTIATION(r, data)                                                 \
+  template std::ostream& operator<<(std::ostream&,                             \
+                                    const Direction<GET_DIM(data)>&) noexcept; \
+  template void Direction<GET_DIM(data)>::pup(PUP::er&) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef GET_DIM
+#undef INSTANTIATION
 /// \endcond

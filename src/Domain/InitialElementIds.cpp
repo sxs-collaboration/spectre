@@ -8,6 +8,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
 template <>
@@ -78,12 +79,15 @@ std::vector<ElementId<VolumeDim>> initial_element_ids(
   return element_ids;
 }
 
-template std::vector<ElementId<1>> initial_element_ids<1>(
-    const std::vector<std::array<size_t, 1>>&
-        initial_refinement_levels) noexcept;
-template std::vector<ElementId<2>> initial_element_ids<2>(
-    const std::vector<std::array<size_t, 2>>&
-        initial_refinement_levels) noexcept;
-template std::vector<ElementId<3>> initial_element_ids<3>(
-    const std::vector<std::array<size_t, 3>>&
-        initial_refinement_levels) noexcept;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                              \
+  template std::vector<ElementId<GET_DIM(data)>>            \
+  initial_element_ids<GET_DIM(data)>(                       \
+      const std::vector<std::array<size_t, GET_DIM(data)>>& \
+          initial_refinement_levels) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+
+#undef GET_DIM
+#undef INSTANTIATION

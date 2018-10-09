@@ -7,6 +7,7 @@
 #include <pup.h>  // IWYU pragma: keep
 
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 template <size_t VolumeDim>
@@ -63,18 +64,18 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-template class Element<1>;
-template class Element<2>;
-template class Element<3>;
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-template bool operator==(const Element<1>&, const Element<1>&) noexcept;
-template bool operator==(const Element<2>&, const Element<2>&) noexcept;
-template bool operator==(const Element<3>&, const Element<3>&) noexcept;
+#define INSTANTIATION(r, data)                                      \
+  template class Element<GET_DIM(data)>;                            \
+  template bool operator==(const Element<GET_DIM(data)>&,           \
+                           const Element<GET_DIM(data)>&) noexcept; \
+  template bool operator!=(const Element<GET_DIM(data)>&,           \
+                           const Element<GET_DIM(data)>&) noexcept; \
+  template std::ostream& operator<<(std::ostream&,                  \
+                                    const Element<GET_DIM(data)>&) noexcept;
 
-template bool operator!=(const Element<1>&, const Element<1>&) noexcept;
-template bool operator!=(const Element<2>&, const Element<2>&) noexcept;
-template bool operator!=(const Element<3>&, const Element<3>&) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
-template std::ostream& operator<<(std::ostream&, const Element<1>&) noexcept;
-template std::ostream& operator<<(std::ostream&, const Element<2>&) noexcept;
-template std::ostream& operator<<(std::ostream&, const Element<3>&) noexcept;
+#undef GET_DIM
+#undef INSTANTIATION
