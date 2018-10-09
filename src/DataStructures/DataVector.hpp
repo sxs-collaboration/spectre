@@ -144,6 +144,8 @@ class DataVector
   using BaseType::ElementType;
   using TransposeType = DataVector;
   using CompositeType = const DataVector&;
+  using iterator = BaseType::Iterator;
+  using const_iterator = BaseType::ConstIterator;
 
   using BaseType::operator[];
   using BaseType::begin;
