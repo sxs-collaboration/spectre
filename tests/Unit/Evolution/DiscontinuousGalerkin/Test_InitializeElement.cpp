@@ -263,9 +263,7 @@ void test_initialize_element(
   CHECK(db::get<Tags::TimeStep>(box).value() == dt);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time_runs_forward());
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() ==
-        (stepper.is_self_starting()
-             ? -static_cast<int64_t>(stepper.number_of_past_steps())
-             : 0));
+        -static_cast<int64_t>(stepper.number_of_past_steps()));
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time().value() == start_time);
   CHECK(
       db::get<Tags::Next<Tags::TimeId>>(box).time().slab().duration().value() ==
@@ -299,8 +297,7 @@ void test_initialize_element(
         typename system::variables_tag,
         db::add_tag_prefix<Tags::dt, typename system::variables_tag>>>(
         box);
-    CHECK(history.size() ==
-          (stepper.is_self_starting() ? 0 : stepper.number_of_past_steps()));
+    CHECK(history.size() == 0);
     const SystemAnalyticSolution solution{};
     double past_t = start_time;
     for (size_t i = history.size(); i > 0; --i) {
@@ -382,7 +379,7 @@ void test_mortar_orientation() noexcept {
                ActionTesting::MockDistributedObject<my_component>{});
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(4),
        SystemAnalyticSolution{}},
       std::move(dist_objects)};
 
@@ -403,7 +400,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<1, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<1, false, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<1>{0, {{SegmentId{2, 1}}}}, 3., 1., 1.,
       DomainCreators::Interval<Frame::Inertial>{
@@ -412,7 +409,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<1, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<1, false, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<1>{0, {{SegmentId{2, 0}}}}, 3., 1., 1.,
       DomainCreators::Interval<Frame::Inertial>{
@@ -421,7 +418,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<2, false, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 2}}}}, 3., 1., 1.,
       DomainCreators::Rectangle<Frame::Inertial>{
@@ -430,7 +427,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<2, false, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 7}}}}, 3., 1., 1.,
       DomainCreators::Rectangle<Frame::Inertial>{
@@ -440,7 +437,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<3, false, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<3>{0, {{SegmentId{2, 1}, SegmentId{3, 2}, SegmentId{1, 0}}}},
       3., 1., 1.,
@@ -453,7 +450,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<3, false, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
 
       ElementId<3>{0, {{SegmentId{0, 0}, SegmentId{0, 0}, SegmentId{1, 1}}}},
@@ -467,7 +464,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
   test_initialize_element<Metavariables<2, true, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<2, true, false, tmpl::list<>>>::CacheTuple{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
       DomainCreators::Rectangle<Frame::Inertial>{
@@ -479,7 +476,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
       ActionTesting::MockRuntimeSystem<Metavariables<
           2, false, true, tmpl::list<OptionTags::StepController>>>::CacheTuple{
           std::make_unique<StepControllers::SplitRemaining>(),
-          std::make_unique<TimeSteppers::AdamsBashforthN>(4, true),
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 1.5, 0.25, 0.5,
       DomainCreators::Rectangle<Frame::Inertial>{

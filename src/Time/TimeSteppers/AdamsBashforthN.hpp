@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <iterator>
 #include <map>
-#include <ostream>
 #include <pup.h>
 #include <type_traits>
 #include <vector>
@@ -56,21 +55,13 @@ class AdamsBashforthN : public TimeStepper::Inherit {
     static type lower_bound() { return 1; }
     static type upper_bound() { return maximum_order; }
   };
-  struct SelfStart {
-    using type = bool;
-    static constexpr OptionString help = {
-        "Start at first order and increase."};
-    static type default_value() { return false; }
-  };
-  using options = tmpl::list<TargetOrder, SelfStart>;
+  using options = tmpl::list<TargetOrder>;
   static constexpr OptionString help = {
       "An Adams-Bashforth Nth order time-stepper. The target order is the\n"
-      "order of the method. If a self-starting approach is chosen then the\n"
-      "method starts at first order and increases the step-size until the\n"
-      "desired order is reached."};
+      "order of the method."};
 
   AdamsBashforthN() = default;
-  explicit AdamsBashforthN(size_t target_order, bool self_start = false,
+  explicit AdamsBashforthN(size_t target_order,
                            const OptionContext& context = {});
   AdamsBashforthN(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN& operator=(const AdamsBashforthN&) noexcept = default;
@@ -212,8 +203,6 @@ class AdamsBashforthN : public TimeStepper::Inherit {
 
   size_t number_of_past_steps() const noexcept override;
 
-  bool is_self_starting() const noexcept override;
-
   double stable_step() const noexcept override;
 
   TimeId next_time_id(const TimeId& current_id,
@@ -265,7 +254,6 @@ class AdamsBashforthN : public TimeStepper::Inherit {
   };
 
   size_t target_order_ = 3;
-  bool is_self_starting_ = true;
 };
 
 bool operator!=(const AdamsBashforthN& lhs,
@@ -276,9 +264,6 @@ void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
-  ASSERT(is_self_starting_ or target_order_ == history->size(),
-         "Length of history should be the order, so "
-         << target_order_ << ", but is: " << history->size());
   ASSERT(history->size() > 0, "No history provided");
   ASSERT(history->size() <= target_order_,
          "Length of history (" << history->size() << ") "
@@ -345,9 +330,6 @@ AdamsBashforthN::compute_boundary_delta(
       LocalVars, RemoteVars, Coupling>::remote_iterator::difference_type>(
       order);
 
-  ASSERT(is_self_starting_ or order == target_order_,
-         "Local history has wrong length (" << order
-         << " should be " << target_order_ << ")");
   ASSERT(order <= target_order_,
          "Local history is too long for target order (" << order
          << " should not exceed " << target_order_ << ")");

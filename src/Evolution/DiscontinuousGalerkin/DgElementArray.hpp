@@ -136,10 +136,6 @@ void DgElementArray<Metavariables, InitializeAction, ActionList>::initialize(
       std::abs(initial_dt) != initial_slab_size) {
     ERROR("Step and slab size must agree for global time-stepping.");
   }
-  if (Metavariables::local_time_stepping and
-      not Parallel::get<OptionTags::TimeStepper>(cache).is_self_starting()) {
-    ERROR("Local time stepping only supported with self-starting integrators.");
-  }
 
   auto domain = domain_creator->create_domain();
   for (const auto& block : domain.blocks()) {

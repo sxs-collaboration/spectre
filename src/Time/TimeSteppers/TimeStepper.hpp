@@ -100,9 +100,6 @@ class TimeStepper : public PUP::able {
   /// Number of past time steps needed for multi-step method
   virtual size_t number_of_past_steps() const noexcept = 0;
 
-  /// Whether or not the method is self-starting
-  virtual bool is_self_starting() const noexcept = 0;
-
   /// Rough estimate of the maximum step size this method can take
   /// stably as a multiple of the step for Euler's method.
   virtual double stable_step() const noexcept = 0;

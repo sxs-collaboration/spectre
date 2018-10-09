@@ -69,8 +69,6 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   size_t number_of_past_steps() const noexcept override;
 
-  bool is_self_starting() const noexcept override;
-
   double stable_step() const noexcept override;
 
   TimeId next_time_id(const TimeId& current_id,

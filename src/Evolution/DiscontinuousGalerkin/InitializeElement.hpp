@@ -330,13 +330,10 @@ struct InitializeElement {
         const Parallel::ConstGlobalCache<Metavariables>& cache,
         const double initial_time_value, const double initial_dt_value,
         const double initial_slab_size) noexcept {
-      using Vars = typename variables_tag::type;
       using DtVars = typename dt_variables_tag::type;
 
       const size_t num_grid_points =
           db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
-      const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Will be overwritten before use
       DtVars dt_vars{num_grid_points};
@@ -354,47 +351,18 @@ struct InitializeElement {
 
       const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
 
-      // This is stored as Next<TimeId> and will be used to update
-      // TimeId at the start of the algorithm.
-      TimeId time_id;
-
       typename Tags::HistoryEvolvedVariables<variables_tag,
                                              dt_variables_tag>::type history;
-      if (time_stepper.is_self_starting() or
-          time_stepper.number_of_past_steps() == 0) {
-        // The slab number is increased in the self-start phase each
-        // time one order of accuracy is obtained, and the evolution
-        // proper starts with slab 0.
-        time_id =
-            TimeId(time_runs_forward,
-                   -static_cast<int64_t>(time_stepper.number_of_past_steps()),
-                   initial_time);
-      } else {
-        ASSERT(initial_dt == initial_dt.slab().duration() or
-                   initial_dt == -initial_dt.slab().duration(),
-               "Trying to non-self-start with local time-stepping.");
-
-        time_id = TimeId(time_runs_forward, 0, initial_time);
-
-        const auto& solution =
-            Parallel::get<OptionTags::AnalyticSolutionBase>(cache);
-
-        // We currently just put initial points at past slab boundaries.
-        Time past_t = initial_time;
-        TimeDelta past_dt = initial_dt;
-        for (size_t i = time_stepper.number_of_past_steps(); i > 0; --i) {
-          past_dt = past_dt.with_slab(past_dt.slab().advance_towards(-past_dt));
-          past_t -= past_dt;
-          Vars hist_vars{num_grid_points};
-          DtVars dt_hist_vars{num_grid_points};
-          hist_vars.assign_subset(solution.variables(
-              inertial_coords, past_t.value(), typename Vars::tags_list{}));
-          dt_hist_vars.assign_subset(solution.variables(
-              inertial_coords, past_t.value(), typename DtVars::tags_list{}));
-          history.insert_initial(past_t, std::move(hist_vars),
-                                 std::move(dt_hist_vars));
-        }
-      }
+      // This is stored as Tags::Next<Tags::TimeId> and will be used
+      // to update Tags::TimeId at the start of the algorithm.
+      //
+      // The slab number is increased in the self-start phase each
+      // time one order of accuracy is obtained, and the evolution
+      // proper starts with slab 0.
+      const TimeId time_id =
+          TimeId(time_runs_forward,
+                 -static_cast<int64_t>(time_stepper.number_of_past_steps()),
+                 initial_time);
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), TimeId{}, time_id, initial_dt, std::move(dt_vars),

@@ -70,7 +70,6 @@ void check_multistep_properties(const Stepper& stepper) noexcept {
 
 template <typename Stepper>
 void check_substep_properties(const Stepper& stepper) noexcept {
-  CHECK(stepper.is_self_starting());
   CHECK(stepper.number_of_past_steps() == 0);
 }
 
