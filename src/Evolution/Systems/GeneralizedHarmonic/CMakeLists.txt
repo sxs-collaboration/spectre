@@ -4,6 +4,7 @@
 set(LIBRARY GeneralizedHarmonic)
 
 set(LIBRARY_SOURCES
+    Constraints.cpp
     Equations.cpp
     )
 
