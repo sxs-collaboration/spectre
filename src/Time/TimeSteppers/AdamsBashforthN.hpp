@@ -48,21 +48,18 @@ class AdamsBashforthN : public TimeStepper::Inherit {
  public:
   static constexpr const size_t maximum_order = 8;
 
-  struct TargetOrder {
+  struct Order {
     using type = size_t;
-    static constexpr OptionString help = {
-        "Target order of Adams-Bashforth method."};
+    static constexpr OptionString help = {"Convergence order"};
     static type lower_bound() { return 1; }
     static type upper_bound() { return maximum_order; }
   };
-  using options = tmpl::list<TargetOrder>;
+  using options = tmpl::list<Order>;
   static constexpr OptionString help = {
-      "An Adams-Bashforth Nth order time-stepper. The target order is the\n"
-      "order of the method."};
+      "An Adams-Bashforth Nth order time-stepper."};
 
   AdamsBashforthN() = default;
-  explicit AdamsBashforthN(size_t target_order,
-                           const OptionContext& context = {});
+  explicit AdamsBashforthN(size_t order) noexcept;
   AdamsBashforthN(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN& operator=(const AdamsBashforthN&) noexcept = default;
   AdamsBashforthN(AdamsBashforthN&&) noexcept = default;
@@ -253,7 +250,7 @@ class AdamsBashforthN : public TimeStepper::Inherit {
     bool forward_in_time_;
   };
 
-  size_t target_order_ = 3;
+  size_t order_ = 3;
 };
 
 bool operator!=(const AdamsBashforthN& lhs,
@@ -265,9 +262,9 @@ void AdamsBashforthN::update_u(
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
   ASSERT(history->size() > 0, "No history provided");
-  ASSERT(history->size() <= target_order_,
+  ASSERT(history->size() <= order_,
          "Length of history (" << history->size() << ") "
-         << "should not exceed target order (" << target_order_ << ")");
+         << "should not exceed target order (" << order_ << ")");
 
   const auto& coefficients =
       get_coefficients(history->begin(), history->end(), time_step);
@@ -323,19 +320,15 @@ AdamsBashforthN::compute_boundary_delta(
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
     const TimeDelta& time_step) const noexcept {
-  const auto order = history->local_size();
+  // Might be different from order_ during self-start.
+  const auto current_order = history->local_size();
 
-  // Avoid billions of casts
-  const auto order_s = static_cast<typename BoundaryHistoryType<
-      LocalVars, RemoteVars, Coupling>::remote_iterator::difference_type>(
-      order);
-
-  ASSERT(order <= target_order_,
-         "Local history is too long for target order (" << order
-         << " should not exceed " << target_order_ << ")");
-  ASSERT(history->remote_size() >= order,
+  ASSERT(current_order <= order_,
+         "Local history is too long for target order (" << current_order
+         << " should not exceed " << order_ << ")");
+  ASSERT(history->remote_size() >= current_order,
          "Remote history is too short (" << history->remote_size()
-         << " should be at least " << order << ")");
+         << " should be at least " << current_order << ")");
 
   // Start and end of the step we are trying to take
   const Time start_time = *(history->local_end() - 1);
@@ -346,8 +339,11 @@ AdamsBashforthN::compute_boundary_delta(
   // history cleanup at the end of the previous step we didn't know we
   // were going to get this point so we kept an extra remote history
   // value.
-  if (history->remote_size() > order and
-      *(history->remote_begin() + order_s) == start_time) {
+  if (history->remote_size() > current_order and
+      *(history->remote_begin() +
+        static_cast<typename decltype(
+            history->remote_begin())::difference_type>(current_order)) ==
+          start_time) {
     history->remote_mark_unneeded(history->remote_begin() + 1);
   }
 
@@ -387,8 +383,13 @@ AdamsBashforthN::compute_boundary_delta(
     return accumulated_change;
   }
 
-  ASSERT(order == target_order_,
+  ASSERT(current_order == order_,
          "Cannot perform local time-stepping while self-starting.");
+
+  // Avoid billions of casts
+  const auto order_s = static_cast<typename BoundaryHistoryType<
+      LocalVars, RemoteVars, Coupling>::remote_iterator::difference_type>(
+      order_);
 
   const SimulationLess simulation_less(time_step.is_positive());
 
