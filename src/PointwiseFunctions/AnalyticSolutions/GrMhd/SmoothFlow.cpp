@@ -11,12 +11,15 @@
 #include "DataStructures/DataBox/Prefixes.hpp"             // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+// IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
+
 /// \cond
 namespace grmhd {
 namespace Solutions {
@@ -34,7 +37,8 @@ SmoothFlow::SmoothFlow(MeanVelocity::type mean_velocity,
       adiabatic_exponent_(adiabatic_exponent),
       perturbation_size_(perturbation_size),
       k_dot_v_(std::inner_product(mean_velocity_.begin(), mean_velocity_.end(),
-                                  wavevector_.begin(), 0.0)) {}
+                                  wavevector_.begin(), 0.0)),
+      equation_of_state_{adiabatic_exponent_} {}
 
 void SmoothFlow::pup(PUP::er& p) noexcept {
   p | mean_velocity_;
@@ -43,6 +47,8 @@ void SmoothFlow::pup(PUP::er& p) noexcept {
   p | adiabatic_exponent_;
   p | perturbation_size_;
   p | k_dot_v_;
+  p | equation_of_state_;
+  p | background_spacetime_;
 }
 
 template <typename DataType>
@@ -56,13 +62,13 @@ DataType SmoothFlow::k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x,
 }
 
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<SmoothFlow::variables_t<DataType>>
+tuples::tagged_tuple_from_typelist<SmoothFlow::variables_tags<DataType>>
 SmoothFlow::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      SmoothFlow::variables_t<DataType> /*meta*/) const
+                      SmoothFlow::variables_tags<DataType> /*meta*/) const
     noexcept {
   // Explicitly set all variables to zero:
   auto result = make_with_value<
-      tuples::tagged_tuple_from_typelist<SmoothFlow::variables_t<DataType>>>(
+      tuples::tagged_tuple_from_typelist<SmoothFlow::variables_tags<DataType>>>(
       x, 0.0);
 
   const DataType phase = k_dot_x_minus_vt(x, t);
@@ -84,14 +90,13 @@ SmoothFlow::variables(const tnsr::I<DataType, 3>& x, const double t,
 }
 
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<SmoothFlow::dt_variables_t<DataType>>
+tuples::tagged_tuple_from_typelist<SmoothFlow::dt_variables_tags<DataType>>
 SmoothFlow::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      SmoothFlow::dt_variables_t<DataType> /*meta*/) const
+                      SmoothFlow::dt_variables_tags<DataType> /*meta*/) const
     noexcept {
   // Explicitly set all variables to zero:
-  auto result = make_with_value<
-      tuples::tagged_tuple_from_typelist<SmoothFlow::dt_variables_t<DataType>>>(
-      x, 0.0);
+  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
+      SmoothFlow::dt_variables_tags<DataType>>>(x, 0.0);
 
   const DataType phase = k_dot_x_minus_vt(x, t);
   get(get<Tags::dt<hydro::Tags::RestMassDensity<DataType>>>(result)) =
@@ -114,18 +119,18 @@ SmoothFlow::variables(const tnsr::I<DataType, 3>& x, const double t,
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                              \
-  template tuples::tagged_tuple_from_typelist<                            \
-      grmhd::Solutions::SmoothFlow::variables_t<DTYPE(data)>>             \
-  grmhd::Solutions::SmoothFlow::variables(                                \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                   \
-      grmhd::Solutions::SmoothFlow::variables_t<DTYPE(data)> /*meta*/)    \
-      const noexcept;                                                     \
-  template tuples::tagged_tuple_from_typelist<                            \
-      grmhd::Solutions::SmoothFlow::dt_variables_t<DTYPE(data)>>          \
-  grmhd::Solutions::SmoothFlow::variables(                                \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                   \
-      grmhd::Solutions::SmoothFlow::dt_variables_t<DTYPE(data)> /*meta*/) \
+#define INSTANTIATE(_, data)                                                 \
+  template tuples::tagged_tuple_from_typelist<                               \
+      grmhd::Solutions::SmoothFlow::variables_tags<DTYPE(data)>>             \
+  grmhd::Solutions::SmoothFlow::variables(                                   \
+      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
+      grmhd::Solutions::SmoothFlow::variables_tags<DTYPE(data)> /*meta*/)    \
+      const noexcept;                                                        \
+  template tuples::tagged_tuple_from_typelist<                               \
+      grmhd::Solutions::SmoothFlow::dt_variables_tags<DTYPE(data)>>          \
+  grmhd::Solutions::SmoothFlow::variables(                                   \
+      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
+      grmhd::Solutions::SmoothFlow::dt_variables_tags<DTYPE(data)> /*meta*/) \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

@@ -9,14 +9,18 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+// IWYU pragma:  no_include <pup.h>
+
 /// \cond
 namespace PUP {
-class er;
+class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
@@ -59,6 +63,9 @@ namespace Solutions {
  */
 class AlfvenWave {
  public:
+  using equation_of_state_type = EquationsOfState::IdealFluid<true>;
+  using background_spacetime_type = gr::Solutions::Minkowski<3>;
+
   /// The wave number of the profile.
   struct WaveNumber {
     using type = double;
@@ -125,7 +132,7 @@ class AlfvenWave {
              PerturbationSize::type perturbation_size) noexcept;
 
   template <typename DataType>
-  using variables_t =
+  using variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                  hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
@@ -133,20 +140,21 @@ class AlfvenWave {
                  hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
 
   template <typename DataType>
-  using dt_variables_t = db::wrap_tags_in<Tags::dt, variables_t<DataType>>;
+  using dt_variables_tags =
+      db::wrap_tags_in<Tags::dt, variables_tags<DataType>>;
 
   /// Retrieve the primitive variables at time `t` and spatial coordinates `x`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_t<DataType>> variables(
+  tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t,
-      variables_t<DataType> /*meta*/) const noexcept;
+      variables_tags<DataType> /*meta*/) const noexcept;
 
   /// Retrieve the time derivative of the primitive variables at time `t` and
   /// spatial coordinates `x`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_t<DataType>> variables(
+  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t,
-      dt_variables_t<DataType> /*meta*/) const noexcept;
+      dt_variables_tags<DataType> /*meta*/) const noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
@@ -167,6 +175,14 @@ class AlfvenWave {
   double alfven_speed() const noexcept { return alfven_speed_; }
   double fluid_speed() const noexcept { return fluid_speed_; }
 
+  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
+    return equation_of_state_;
+  }
+
+  const gr::Solutions::Minkowski<3>& background_spacetime() const noexcept {
+    return background_spacetime_;
+  }
+
  private:
   // Computes the phase.
   template <typename DataType>
@@ -184,6 +200,8 @@ class AlfvenWave {
       std::numeric_limits<double>::signaling_NaN();
   double alfven_speed_ = std::numeric_limits<double>::signaling_NaN();
   double fluid_speed_ = std::numeric_limits<double>::signaling_NaN();
+  EquationsOfState::IdealFluid<true> equation_of_state_{};
+  gr::Solutions::Minkowski<3> background_spacetime_{};
 };
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;

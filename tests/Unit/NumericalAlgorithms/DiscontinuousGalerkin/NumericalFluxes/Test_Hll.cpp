@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <limits>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -28,23 +27,38 @@ void test_hll_flux_tags() noexcept {
   using system = TestHelpers::NumericalFluxes::System<Dim>;
   using hll_flux = dg::NumericalFluxes::Hll<system>;
 
-  static_assert(
-      cpp17::is_same_v<typename hll_flux::argument_tags,
-                       tmpl::push_back<tmpl::append<
-                           TestHelpers::NumericalFluxes::n_dot_f_tags<Dim>,
-                           db::split_tag<typename system::variables_tag>,
-                           typename system::char_speeds_tag>>>,
-      "Failed testing dg::NumericalFluxes::Hll::argument_tags");
+  using expected_type_argument_tags = tmpl::list<
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable1>,
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable2<Dim>>,
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable3<Dim>>,
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable4<Dim>>,
+      TestHelpers::NumericalFluxes::Tags::Variable1,
+      TestHelpers::NumericalFluxes::Tags::Variable2<Dim>,
+      TestHelpers::NumericalFluxes::Tags::Variable3<Dim>,
+      TestHelpers::NumericalFluxes::Tags::Variable4<Dim>,
+      typename TestHelpers::NumericalFluxes::System<Dim>::char_speeds_tag>;
 
-  static_assert(
-      cpp17::is_same_v<
-          typename hll_flux::package_tags,
-          tmpl::push_back<
-              tmpl::append<TestHelpers::NumericalFluxes::n_dot_f_tags<Dim>,
-                           db::split_tag<typename system::variables_tag>>,
-              typename hll_flux::MinSignalSpeed,
-              typename hll_flux::MaxSignalSpeed>>,
-      "Failed testing dg::NumericalFluxes::Hll::package_tags");
+  static_assert(cpp17::is_same_v<typename hll_flux::argument_tags,
+                                 expected_type_argument_tags>,
+                "Failed testing dg::NumericalFluxes::Hll::argument_tags");
+
+  using expected_type_package_tags = tmpl::list<
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable1>,
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable2<Dim>>,
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable3<Dim>>,
+      Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable4<Dim>>,
+      TestHelpers::NumericalFluxes::Tags::Variable1,
+      TestHelpers::NumericalFluxes::Tags::Variable2<Dim>,
+      TestHelpers::NumericalFluxes::Tags::Variable3<Dim>,
+      TestHelpers::NumericalFluxes::Tags::Variable4<Dim>,
+      typename dg::NumericalFluxes::Hll<
+          TestHelpers::NumericalFluxes::System<Dim>>::MinSignalSpeed,
+      typename dg::NumericalFluxes::Hll<
+          TestHelpers::NumericalFluxes::System<Dim>>::MaxSignalSpeed>;
+
+  static_assert(cpp17::is_same_v<typename hll_flux::package_tags,
+                                 expected_type_package_tags>,
+                "Failed testing dg::NumericalFluxes::Hll::package_tags");
 }
 
 template <size_t Dim>

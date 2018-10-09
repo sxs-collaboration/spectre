@@ -13,6 +13,7 @@ class DataVector;
 namespace grmhd {
 namespace ValenciaDivClean {
 namespace Tags {
+struct CharacteristicSpeeds;
 struct TildeD;
 struct TildeTau;
 template <typename Fr = Frame::Inertial>

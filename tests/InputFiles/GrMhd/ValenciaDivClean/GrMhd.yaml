@@ -1,0 +1,43 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveValenciaDivClean
+# Check: execute
+
+InitialTime: 0.0
+InitialTimeStep: 0.001
+FinalTime: 0.1
+InitialSlabSize: 0.01
+
+DomainCreator:
+  Brick:
+    LowerBound: [0.0, 0.0, 0.0]
+    UpperBound: [6.283185307179586, 6.283185307179586, 6.283185307179586]
+    IsPeriodicIn: [true, true, true]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [5, 5, 5]
+
+AnalyticSolution:
+  WaveVector: [1.0, 1.0, 1.0]
+  MeanVelocity: [0.2, 0.2, 0.2]
+  Pressure: 1.0
+  AdiabaticExponent: 1.3333333333333333333
+  PerturbationSize: 0.5
+
+TimeStepper:
+  AdamsBashforthN:
+    TargetOrder: 3
+    SelfStart: true
+
+StepController: BinaryFraction
+
+StepChoosers:
+  - Constant: 0.05
+  - Increase:
+      Factor: 2
+  - Cfl:
+      SafetyFactor: 0.2
+
+VolumeFileName: "./GrMhd"
+
+NumericalFluxParams:

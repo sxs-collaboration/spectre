@@ -12,6 +12,7 @@
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
@@ -81,18 +82,15 @@ struct EvolutionMetavars {
 
   struct EvolvePhaseStart;
   using component_list = tmpl::list<DgElementArray<
-      EvolutionMetavars,
+      EvolutionMetavars, dg::Actions::InitializeElement<1>,
       tmpl::flatten<tmpl::list<
           SelfStart::self_start_procedure<compute_rhs, update_variables>,
-          Actions::Label<EvolvePhaseStart>,
-          Actions::AdvanceTime,
+          Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
           Actions::FinalTime,
           tmpl::conditional_t<local_time_stepping,
                               Actions::ChangeStepSize<step_choosers>,
                               tmpl::list<>>,
-          compute_rhs,
-          update_variables,
-          Actions::Goto<EvolvePhaseStart>>>>>;
+          compute_rhs, update_variables, Actions::Goto<EvolvePhaseStart>>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"
