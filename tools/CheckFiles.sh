@@ -47,6 +47,7 @@ if ! find \
      ! -path "./docs/*" \
      ! -path "./build*" \
      ! -path '*/__pycache__/*' \
+     ! -name '*.pyc' \
      ! -path "*.idea/*" \
      ! -name '*~' \
      ! -name "*.patch" \
