@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -55,6 +56,7 @@ struct EvolutionMetavars {
   static constexpr bool local_time_stepping = false;
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
+  using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
       OptionTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
@@ -78,6 +80,8 @@ struct EvolutionMetavars {
                      Actions::FinalTime, Actions::ComputeVolumeDuDt,
                      dg::Actions::ComputeNonconservativeBoundaryFluxes,
                      dg::Actions::SendDataForFluxes<EvolutionMetavars>,
+                     dg::Actions::ImposeDirichletBoundaryConditions<
+                                      EvolutionMetavars>,
                      dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
                      dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
                      Actions::RecordTimeStepperData, Actions::UpdateU>>>;

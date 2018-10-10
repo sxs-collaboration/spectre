@@ -68,6 +68,10 @@ class ElementId {
   /// Serialization for Charm++
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  /// Returns an ElementId meant for identifying data on external boundaries,
+  /// which should never correspond to the Id of an actual element.
+  static ElementId<VolumeDim> external_boundary_id() noexcept;
+
  private:
   size_t block_id_ = std::numeric_limits<size_t>::max();
   std::array<SegmentId, VolumeDim> segment_ids_ =

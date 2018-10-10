@@ -205,6 +205,25 @@ struct TestConservativeOrNonconservativeParts<true> {
   }
 };
 
+template <typename DirectionsTag, typename System, typename DataBox_t>
+void test_interface_tags() {
+  const auto dim = System::volume_dim;
+  CHECK(tag_is_retrievable_v<
+        Tags::Interface<DirectionsTag, Tags::UnnormalizedFaceNormal<dim>>,
+        DataBox_t>);
+  using magnitude_tag =
+      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<dim>>;
+  CHECK(tag_is_retrievable_v<Tags::Interface<DirectionsTag, magnitude_tag>,
+                             DataBox_t>);
+  CHECK(tag_is_retrievable_v<
+        Tags::Interface<DirectionsTag,
+                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
+        DataBox_t>);
+  CHECK(tag_is_retrievable_v<
+        Tags::Interface<DirectionsTag, typename System::variables_tag>,
+        DataBox_t>);
+}
+
 template <typename Metavariables, typename DomainCreatorType,
           typename CacheTuple>
 void test_initialize_element(
@@ -319,43 +338,20 @@ void test_initialize_element(
               Metavariables>::simple_mortar_data_tag>(box));
   }
   CHECK(db::get<Tags::VariablesBoundaryData>(box).size() ==
-        element.number_of_neighbors());
+        2 * dim);
   CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(box).size() ==
-        element.number_of_neighbors());
+        2 * dim);
   CHECK(db::get<Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(box).size() ==
-        element.number_of_neighbors());
+        2 * dim);
   CHECK(db::get<Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(box).size() ==
-        element.number_of_neighbors());
+        2 * dim);
 
   using databox_t = std::decay_t<decltype(box)>;
-  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::InternalDirections<dim>,
-                                             Tags::UnnormalizedFaceNormal<dim>>,
-                             databox_t>);
-  using magnitude_tag =
-      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<dim>>;
-  CHECK(tag_is_retrievable_v<
-        Tags::Interface<Tags::InternalDirections<dim>, magnitude_tag>,
-        databox_t>);
-  CHECK(tag_is_retrievable_v<
-        Tags::Interface<Tags::InternalDirections<dim>,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
-        databox_t>);
-  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::InternalDirections<dim>,
-                                             typename system::variables_tag>,
-                             databox_t>);
-  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                             Tags::UnnormalizedFaceNormal<dim>>,
-                             databox_t>);
-  CHECK(tag_is_retrievable_v<
-        Tags::Interface<Tags::BoundaryDirections<dim>, magnitude_tag>,
-        databox_t>);
-  CHECK(tag_is_retrievable_v<
-        Tags::Interface<Tags::BoundaryDirections<dim>,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
-        databox_t>);
-  CHECK(tag_is_retrievable_v<Tags::Interface<Tags::BoundaryDirections<dim>,
-                                             typename system::variables_tag>,
-                             databox_t>);
+  test_interface_tags<Tags::InternalDirections<dim>, system, databox_t>();
+  test_interface_tags<Tags::BoundaryDirectionsInterior<dim>, system,
+                      databox_t>();
+  test_interface_tags<Tags::BoundaryDirectionsExterior<dim>, system,
+                      databox_t>();
 
   TestConservativeOrNonconservativeParts<system::is_conservative>::
       template apply<Metavariables>(make_not_null(&box));
@@ -413,14 +409,33 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
       DomainCreators::Interval<Frame::Inertial>{
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
+  test_initialize_element<Metavariables<1, false, false, tmpl::list<>>>(
+      ActionTesting::MockRuntimeSystem<
+          Metavariables<1, false, false, tmpl::list<>>>::CacheTuple{
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          SystemAnalyticSolution{}},
+      ElementId<1>{0, {{SegmentId{2, 0}}}}, 3., 1., 1.,
+      DomainCreators::Interval<Frame::Inertial>{
+          {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
+
   test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
           Metavariables<2, false, false, tmpl::list<>>>::CacheTuple{
           std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
           SystemAnalyticSolution{}},
-      ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
+      ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 2}}}}, 3., 1., 1.,
       DomainCreators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
+
+  test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
+      ActionTesting::MockRuntimeSystem<
+          Metavariables<2, false, false, tmpl::list<>>>::CacheTuple{
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          SystemAnalyticSolution{}},
+      ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 7}}}}, 3., 1., 1.,
+      DomainCreators::Rectangle<Frame::Inertial>{
+          {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
+
 
   test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
@@ -433,6 +448,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
                                              {{1.5, 2.4, 1.2}},
                                              {{false, false, true}},
                                              {{2, 3, 1}},
+                                             {{4, 5, 3}}});
+
+  test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
+      ActionTesting::MockRuntimeSystem<
+          Metavariables<3, false, false, tmpl::list<>>>::CacheTuple{
+          std::make_unique<TimeSteppers::AdamsBashforthN>(4, false),
+          SystemAnalyticSolution{}},
+
+      ElementId<3>{0, {{SegmentId{0, 0}, SegmentId{0, 0}, SegmentId{1, 1}}}},
+      3., 1., 1.,
+      DomainCreators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
+                                             {{1.5, 2.4, 1.2}},
+                                             {{false, false, false}},
+                                             {{0, 0, 1}},
                                              {{4, 5, 3}}});
 
   test_initialize_element<Metavariables<2, true, false, tmpl::list<>>>(

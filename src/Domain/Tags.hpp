@@ -21,6 +21,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"
+#include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
 #include "Domain/Side.hpp"
 #include "Options/Options.hpp"
@@ -154,10 +155,26 @@ struct InternalDirections : db::ComputeTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The set of directions which correspond to external boundaries
+/// The set of directions which correspond to external boundaries.
+/// Used for representing data on the interior side of the external boundary
+/// faces.
 template <size_t VolumeDim>
-struct BoundaryDirections : db::ComputeTag {
-  static std::string name() noexcept { return "BoundaryDirections"; }
+struct BoundaryDirectionsInterior : db::ComputeTag {
+  static std::string name() noexcept { return "BoundaryDirectionsInterior"; }
+  using argument_tags = tmpl::list<Element<VolumeDim>>;
+  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
+    return element.external_boundaries();
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The set of directions which correspond to external boundaries. To be used
+/// to represent data which exists on the exterior side of the external boundary
+/// faces.
+template <size_t VolumeDim>
+struct BoundaryDirectionsExterior : db::ComputeTag {
+  static std::string name() noexcept { return "BoundaryDirectionsExterior"; }
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
     return element.external_boundaries();
@@ -319,6 +336,27 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
   using base = Tags::Mesh<VolumeDim - 1>;
   using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
   using volume_tags = tmpl::list<Mesh<VolumeDim>>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationDomainGroup
+/// Computes the coordinates in the frame `Frame` on the faces defined by
+/// `Direction`. Intended to be prefixed by a `Tags::InterfaceComputeItem` to
+/// define the directions on which to compute the coordinates.
+template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+struct BoundaryCoordinates : db::ComputeTag,
+                             Tags::Coordinates<VolumeDim, Frame> {
+  static constexpr auto function(
+      const ::Direction<VolumeDim> &direction,
+      const ::Mesh<VolumeDim - 1> &interface_mesh,
+      const ::ElementMap<VolumeDim, Frame> &map) noexcept {
+    return map(interface_logical_coordinates(interface_mesh, direction));
+  }
+  static std::string name() noexcept { return "BoundaryCoordinates"; }
+  using base = Tags::Coordinates<VolumeDim, Frame>;
+  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim - 1>,
+                                   ElementMap<VolumeDim, Frame>>;
+  using volume_tags = tmpl::list<ElementMap<VolumeDim, Frame>>;
 };
 
 // Virtual inheritance is used here to prevent a compiler warning: Derived class

@@ -4,8 +4,11 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <pup.h>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -18,9 +21,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
@@ -101,11 +108,13 @@ struct TemplatedDirections : db::SimpleTag {
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   constexpr size_t dim = 3;
   using internal_directions = Tags::InternalDirections<dim>;
-  using boundary_directions = Tags::BoundaryDirections<dim>;
+  using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
+  using boundary_directions_exterior = Tags::BoundaryDirectionsExterior<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
 
   CHECK(internal_directions::name() == "InternalDirections");
-  CHECK(boundary_directions::name() == "BoundaryDirections");
+  CHECK(boundary_directions_interior::name() == "BoundaryDirectionsInterior");
+  CHECK(boundary_directions_exterior::name() == "BoundaryDirectionsExterior");
 
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), {}},
@@ -124,10 +133,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
       db::AddSimpleTags<
           Tags::Element<dim>, TestTags::Int,
           Tags::Interface<internal_directions, TestTags::Double>,
-          Tags::Interface<boundary_directions, TestTags::Double>,
+          Tags::Interface<boundary_directions_interior, TestTags::Double>,
           TestTags::NoCopy<1>,
           Tags::Interface<internal_directions, TestTags::NoCopy<2>>,
-          Tags::Interface<boundary_directions, TestTags::NoCopy<2>>,
+          Tags::Interface<boundary_directions_interior, TestTags::NoCopy<2>>,
           templated_directions,
           Tags::Interface<templated_directions, TestTags::Double>>,
       db::AddComputeTags<
@@ -143,13 +152,16 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
                                      Tags::Direction<dim>>,
           Tags::InterfaceComputeItem<templated_directions,
                                      TestTags::Negate<TestTags::Double>>,
-          boundary_directions,
-          Tags::InterfaceComputeItem<boundary_directions, Tags::Direction<dim>>,
-          Tags::InterfaceComputeItem<boundary_directions, TestTags::AddThree>,
-          Tags::InterfaceComputeItem<boundary_directions,
+          boundary_directions_interior,
+          Tags::InterfaceComputeItem<boundary_directions_interior,
+                                     Tags::Direction<dim>>,
+          Tags::InterfaceComputeItem<boundary_directions_interior,
+                                     TestTags::AddThree>,
+          Tags::InterfaceComputeItem<boundary_directions_interior,
                                      TestTags::Negate<TestTags::Double>>,
-          Tags::InterfaceComputeItem<boundary_directions,
-                                     TestTags::ComplexComputeItem<dim>>>>(
+          Tags::InterfaceComputeItem<boundary_directions_interior,
+                                     TestTags::ComplexComputeItem<dim>>,
+          boundary_directions_exterior>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::lower_xi(), 1.5},
@@ -165,24 +177,20 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::upper_xi(), 4.5}});
 
-    CHECK(get<Tags::BoundaryDirections<dim>>(box) ==
+    CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
           std::unordered_set<Direction<dim>>{Direction<dim>::lower_eta(),
                                              Direction<dim>::upper_eta(),
                                              Direction<dim>::lower_zeta()});
 
-    CHECK(
-      (get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(box)) ==
-      (std::unordered_map<Direction<dim>, Direction<dim>>{
-            {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
-            {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
-            {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
+    CHECK((get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(
+              box)) ==
+          (std::unordered_map<Direction<dim>, Direction<dim>>{
+              {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
+              {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
+              {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
 
-      CHECK(
-      (get<Tags::Interface<boundary_directions, Tags::Direction<dim>>>(box)) ==
-      (std::unordered_map<Direction<dim>, Direction<dim>>{
-              {Direction<dim>::upper_eta(), Direction<dim>::upper_eta()},
-              {Direction<dim>::lower_eta(), Direction<dim>::lower_eta()},
-              {Direction<dim>::lower_zeta(), Direction<dim>::lower_zeta()}}));
+  CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
+        get<Tags::BoundaryDirectionsExterior<dim>>(box));
 
     CHECK(get<TestTags::Negate<TestTags::Int>>(box) == -5);
 
@@ -197,7 +205,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), -2.5},
               {Direction<dim>::upper_zeta(), -3.5}}));
 
-    CHECK((get<Tags::Interface<boundary_directions,
+    CHECK((get<Tags::Interface<boundary_directions_interior,
                                TestTags::Negate<TestTags::Double>>>(box)) ==
           (std::unordered_map<Direction<dim>, double>{
               {Direction<dim>::lower_eta(), -10.5},
@@ -210,20 +218,20 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), 8},
               {Direction<dim>::upper_zeta(), 8}}));
 
-    CHECK((get<Tags::Interface<boundary_directions, TestTags::Int>>(box)) ==
-          (std::unordered_map<Direction<dim>, int>{
-              {Direction<dim>::lower_eta(), 8},
-              {Direction<dim>::upper_eta(), 8},
-              {Direction<dim>::lower_zeta(), 8}}));
+    CHECK((get<Tags::Interface<boundary_directions_interior, TestTags::Int>>(
+              box)) == (std::unordered_map<Direction<dim>, int>{
+                           {Direction<dim>::lower_eta(), 8},
+                           {Direction<dim>::upper_eta(), 8},
+                           {Direction<dim>::lower_zeta(), 8}}));
 
-      CHECK((get<Tags::Interface<internal_directions,
-                                 TestTags::ComplexComputeItem<dim>>>(box)) ==
-            (std::unordered_map<Direction<dim>, std::pair<int, double>>{
-                {Direction<dim>::lower_xi(), {5, 1.5}},
-                {Direction<dim>::upper_xi(), {5, 2.5}},
-                {Direction<dim>::upper_zeta(), {5, 3.5}}}));
+    CHECK((get<Tags::Interface<internal_directions,
+                               TestTags::ComplexComputeItem<dim>>>(box)) ==
+          (std::unordered_map<Direction<dim>, std::pair<int, double>>{
+              {Direction<dim>::lower_xi(), {5, 1.5}},
+              {Direction<dim>::upper_xi(), {5, 2.5}},
+              {Direction<dim>::upper_zeta(), {5, 3.5}}}));
 
-    CHECK((get<Tags::Interface<boundary_directions,
+    CHECK((get<Tags::Interface<boundary_directions_interior,
                                TestTags::ComplexComputeItem<dim>>>(box)) ==
           (std::unordered_map<Direction<dim>, std::pair<int, double>>{
               {Direction<dim>::lower_eta(), {5, 10.5}},
@@ -373,29 +381,51 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
   const DataVector boundary_vars_xi{10., 11., 12.};
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::Mesh<dim>, sliced_simple_item_tag,
-                                   Tags::Interface<Dirs, simple_item_tag>>,
-                 db::AddComputeTags<
-                     Dirs, sliced_compute_item_tag,
-                     Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
-                     Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
-                     Tags::InterfaceComputeItem<Dirs, compute_item_tag>,
-                     Tags::Slice<Dirs, sliced_compute_item_tag>,
-                     Tags::Slice<Dirs, sliced_simple_item_tag>>>(
-          mesh, std::move(volume_vars),
-          make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+  ElementMap<2, Frame::Inertial> element_map(
+      ElementId<2>(0),
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          CoordinateMaps::Rotation<2>(atan2(4., 3.))));
+
+  const std::unordered_map<Direction<dim>, Mesh<dim - 1>>
+      expected_interface_mesh{
+          {Direction<dim>::lower_xi(),
+           Mesh<dim - 1>{3, Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto}},
+          {Direction<dim>::upper_eta(),
+           Mesh<dim - 1>{4, Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto}}};
+
+  const auto expected_boundary_coords = [&expected_interface_mesh,
+                                         &element_map]() {
+    std::unordered_map<Direction<dim>, tnsr::I<DataVector, dim>> coords{};
+    for (const auto& direction : Dirs::function()) {
+      coords[direction] = element_map(interface_logical_coordinates(
+          expected_interface_mesh.at(direction), direction));
+    }
+    return coords;
+  }();
+
+  auto box = db::create<
+      db::AddSimpleTags<Tags::Mesh<dim>, Tags::ElementMap<dim>,
+                        sliced_simple_item_tag,
+                        Tags::Interface<Dirs, simple_item_tag>>,
+      db::AddComputeTags<
+          Dirs, sliced_compute_item_tag,
+          Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
+          Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
+          Tags::InterfaceComputeItem<Dirs, compute_item_tag>,
+          Tags::InterfaceComputeItem<Dirs, Tags::BoundaryCoordinates<dim>>,
+          Tags::Slice<Dirs, sliced_compute_item_tag>,
+          Tags::Slice<Dirs, sliced_simple_item_tag>>>(
+      mesh, std::move(element_map), std::move(volume_vars),
+      make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
   CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
         make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
   CHECK((db::get<Tags::Interface<Dirs, Tags::Mesh<dim - 1>>>(box)) ==
-        (std::unordered_map<Direction<dim>, Mesh<dim - 1>>{
-            {Direction<dim>::lower_xi(),
-             Mesh<dim - 1>{3, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto}},
-            {Direction<dim>::upper_eta(),
-             Mesh<dim - 1>{4, Spectral::Basis::Legendre,
-                           Spectral::Quadrature::GaussLobatto}}}));
+        expected_interface_mesh);
+  CHECK(db::get<Tags::Interface<Dirs, Tags::Coordinates<dim, Frame::Inertial>>>(
+            box) == expected_boundary_coords);
   CHECK((db::get<Tags::Interface<Dirs, compute_item_tag>>(box)) ==
         (make_interface_variables<1, 10>({1., 1., 1.}, {5., 5., 5.},
                                          {1., 1., 1., 1.}, {5., 5., 5., 5.})));

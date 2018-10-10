@@ -10,10 +10,15 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace Tags {
+template<size_t Dim>
+struct Mesh;
+template <size_t, typename>
+struct Coordinates;
+}  // namespace Tags
 template <size_t Dim>
 class Mesh;
 class DataVector;
