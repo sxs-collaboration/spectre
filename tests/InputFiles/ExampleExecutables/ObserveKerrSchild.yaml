@@ -1,0 +1,10 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: ObserveKerrSchild
+# Check: execute
+
+AnalyticSolution:
+  Mass: 4.0
+  Spin: [0.0, 0.0, 0.0]
+  Center: [0.0, 0.0, 0.0]
