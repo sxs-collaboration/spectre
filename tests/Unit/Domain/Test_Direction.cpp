@@ -120,7 +120,7 @@ void test_helper_functions() {
   CHECK(lower_zeta_3.side() == Side::Lower);
 }
 
-void test_hash() {
+void test_std_hash() {
   size_t upper_xi_1_hash = std::hash<Direction<1>>{}(Direction<1>::upper_xi());
   size_t lower_xi_1_hash = std::hash<Direction<1>>{}(Direction<1>::lower_xi());
 
@@ -158,6 +158,23 @@ void test_hash() {
       CHECK(gsl::at(direction_3, i) != gsl::at(direction_3, j));
     }
   }
+}
+
+void test_direction_hash() {
+  CHECK(DirectionHash<1>{}(Direction<1>::lower_xi()) == 0);
+  CHECK(DirectionHash<1>{}(Direction<1>::upper_xi()) == 1);
+
+  CHECK(DirectionHash<2>{}(Direction<2>::lower_xi()) == 0);
+  CHECK(DirectionHash<2>{}(Direction<2>::upper_xi()) == 1);
+  CHECK(DirectionHash<2>{}(Direction<2>::lower_eta()) == 2);
+  CHECK(DirectionHash<2>{}(Direction<2>::upper_eta()) == 3);
+
+  CHECK(DirectionHash<3>{}(Direction<3>::lower_xi()) == 0);
+  CHECK(DirectionHash<3>{}(Direction<3>::upper_xi()) == 1);
+  CHECK(DirectionHash<3>{}(Direction<3>::lower_eta()) == 2);
+  CHECK(DirectionHash<3>{}(Direction<3>::upper_eta()) == 3);
+  CHECK(DirectionHash<3>{}(Direction<3>::lower_zeta()) == 4);
+  CHECK(DirectionHash<3>{}(Direction<3>::upper_zeta()) == 5);
 }
 
 void test_output() {
@@ -198,7 +215,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction", "[Domain][Unit]") {
   test_construction_2d();
   test_construction_3d();
   test_helper_functions();
-  test_hash();
+  test_std_hash();
+  test_direction_hash();
   test_output();
 }
 

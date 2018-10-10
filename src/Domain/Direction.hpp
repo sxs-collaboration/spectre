@@ -197,3 +197,16 @@ struct hash<Direction<VolumeDim>> {
   }
 };
 }  // namespace std
+
+/// \ingroup ComputationalDomainGroup
+/// Provides a perfect hash if the size of the hash table is `2 * Dim`. To take
+/// advantage of this, use the `FixedHashMap` class.
+template <size_t Dim>
+struct DirectionHash {
+  template <size_t MaxSize>
+  static constexpr bool is_perfect = MaxSize == 2 * Dim;
+
+  size_t operator()(const Direction<Dim>& t) noexcept {
+    return 2 * t.dimension() + (t.side() == Side::Upper ? 1 : 0);
+  }
+};
