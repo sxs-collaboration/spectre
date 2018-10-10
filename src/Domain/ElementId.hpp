@@ -12,13 +12,12 @@
 #include <iosfwd>
 #include <limits>
 
+#include "Domain/ElementIndex.hpp" // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
-template <size_t>
-class ElementIndex;
 namespace Parallel {
 template <class>
 class ArrayIndex;
