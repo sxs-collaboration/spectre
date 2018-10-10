@@ -160,7 +160,7 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
                             initial_time),
                      initial_time_step)});
   MockRuntimeSystem runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(order, true)},
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)},
       std::move(dist_objects)};
 
   {
@@ -261,7 +261,7 @@ double error_in_step(const size_t order, const double step) noexcept {
                             initial_time),
                      initial_time_step)});
   MockRuntimeSystem runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(order, true)},
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)},
       std::move(dist_objects)};
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,

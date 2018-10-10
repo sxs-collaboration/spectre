@@ -8,30 +8,41 @@
 
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
 #include "Domain/Tags.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
-#include "Evolution/Systems/ScalarWave/Actions.hpp"
+#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Actions.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "IO/Observer/Actions.hpp"
-#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
+#include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
 #include "Time/Actions/FinalTime.hpp"              // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
+#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/StepChoosers/Cfl.hpp"               // IWYU pragma: keep
+#include "Time/StepChoosers/Constant.hpp"          // IWYU pragma: keep
+#include "Time/StepChoosers/Increase.hpp"          // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Functional.hpp"
@@ -71,20 +82,41 @@ struct EvolutionMetavars {
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>>;
 
+  using step_choosers =
+      tmpl::list<StepChoosers::Register::Cfl<Dim, Frame::Inertial>,
+                 StepChoosers::Register::Constant,
+                 StepChoosers::Register::Increase>;
+
+  using compute_rhs = tmpl::flatten<tmpl::list<
+      dg::Actions::ComputeNonconservativeBoundaryFluxes,
+      dg::Actions::SendDataForFluxes<EvolutionMetavars>,
+      Actions::ComputeVolumeDuDt,
+      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+      dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
+      tmpl::conditional_t<local_time_stepping, tmpl::list<>,
+                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
+      Actions::RecordTimeStepperData>>;
+  using update_variables = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<local_time_stepping,
+                          dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
+                          tmpl::list<>>,
+      Actions::UpdateU>>;
+
+  struct EvolvePhaseStart;
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
           EvolutionMetavars, dg::Actions::InitializeElement<Dim>,
-          tmpl::list<Actions::AdvanceTime, ScalarWave::Actions::Observe,
-                     Actions::FinalTime, Actions::ComputeVolumeDuDt,
-                     dg::Actions::ComputeNonconservativeBoundaryFluxes,
-                     dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-                     dg::Actions::ImposeDirichletBoundaryConditions<
-                                      EvolutionMetavars>,
-                     dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-                     dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping,
-                     Actions::RecordTimeStepperData, Actions::UpdateU>>>;
+          tmpl::flatten<tmpl::list<
+              SelfStart::self_start_procedure<compute_rhs, update_variables>,
+              Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
+              ScalarWave::Actions::Observe, Actions::FinalTime,
+              tmpl::conditional_t<local_time_stepping,
+                                  Actions::ChangeStepSize<step_choosers>,
+                                  tmpl::list<>>,
+              compute_rhs, update_variables,
+              Actions::Goto<EvolvePhaseStart>>>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
@@ -124,6 +156,8 @@ struct EvolutionMetavars {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &DomainCreators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<MathFunction<1>>,
+    &Parallel::register_derived_classes_with_charm<
+        StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

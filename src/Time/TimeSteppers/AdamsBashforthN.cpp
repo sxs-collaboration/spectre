@@ -9,13 +9,10 @@
 
 namespace TimeSteppers {
 
-AdamsBashforthN::AdamsBashforthN(size_t target_order, bool self_start,
-                                 const OptionContext& context)
-    : target_order_(target_order), is_self_starting_(self_start) {
-  if (target_order_ < 1 or target_order_ > maximum_order) {
-    PARSE_ERROR(context,
-                "The order for Adams-Bashforth Nth order must be 1 <= order <= "
-                << maximum_order);
+AdamsBashforthN::AdamsBashforthN(const size_t order) noexcept : order_(order) {
+  if (order_ < 1 or order_ > maximum_order) {
+    ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
+          << maximum_order);
   }
 }
 
@@ -24,22 +21,18 @@ uint64_t AdamsBashforthN::number_of_substeps() const noexcept {
 }
 
 size_t AdamsBashforthN::number_of_past_steps() const noexcept {
-  return target_order_ - 1;
-}
-
-bool AdamsBashforthN::is_self_starting() const noexcept {
-  return is_self_starting_;
+  return order_ - 1;
 }
 
 double AdamsBashforthN::stable_step() const noexcept {
-  if (target_order_ == 1) {
+  if (order_ == 1) {
     return 1.;
   }
 
   // This is the condition that the characteristic polynomial of the
   // recurrence relation defined by the method has the correct sign at
   // -1.  It is not clear whether this is actually sufficient.
-  const auto& coefficients = constant_coefficients(target_order_);
+  const auto& coefficients = constant_coefficients(order_);
   double invstep = 0.;
   double sign = 1.;
   for (const auto coef : coefficients) {
@@ -168,14 +161,12 @@ std::vector<double> AdamsBashforthN::constant_coefficients(
 
 void AdamsBashforthN::pup(PUP::er& p) noexcept {
   TimeStepper::Inherit::pup(p);
-  p | target_order_;
-  p | is_self_starting_;
+  p | order_;
 }
 
 bool operator==(const AdamsBashforthN& lhs,
                 const AdamsBashforthN& rhs) noexcept {
-  return lhs.target_order_ == rhs.target_order_ and
-         lhs.is_self_starting_ == rhs.is_self_starting_;
+  return lhs.order_ == rhs.order_;
 }
 
 bool operator!=(const AdamsBashforthN& lhs,
