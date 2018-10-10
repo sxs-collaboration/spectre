@@ -27,7 +27,7 @@ namespace Actions {
 /// - Adds:
 ///   - `Tags::IndicesOfFilledInterpPoints`
 ///   - `Tags::TemporalIds<Metavariables>`
-///   - `::Tags::Domain<`VolumeDim`, Frame>`
+///   - `::Tags::Domain<VolumeDim, Frame>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 /// - Removes: nothing
