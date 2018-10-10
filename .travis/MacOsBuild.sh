@@ -54,7 +54,7 @@ cmake -D CHARM_ROOT=$DEP_CACHE/charm-${CHARM_VERSION} \
 make module_All
 
 if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build libraries" ]]; then
-    make libs -j2
+    make libs test-libs-stage1 -j2
 fi
 
 if [[ ${TRAVIS_BUILD_STAGE_NAME} = \

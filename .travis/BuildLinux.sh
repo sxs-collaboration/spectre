@@ -54,7 +54,7 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
     && [ -z "${BUILD_DOC}" ]; then
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build libraries" ]]; then
-        make libs -j2
+        make libs test-libs-stage1 -j2
     fi
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
