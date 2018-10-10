@@ -39,7 +39,7 @@ struct Variables;
  * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
  * \tparam Frame The frame of the derivative index
  *
- * \see Tags::ComputeDeriv
+ * \see Tags::DerivCompute
  */
 template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
 struct deriv;
@@ -147,7 +147,7 @@ namespace Tags {
  */
 template <typename VariablesTag, typename InverseJacobianTag,
           typename DerivTags = typename db::item_type<VariablesTag>::tags_list>
-struct ComputeDeriv
+struct DerivCompute
     : db::add_tag_prefix<
           deriv, db::variables_tag_with_tags_list<VariablesTag, DerivTags>,
           tmpl::size_t<tmpl::back<

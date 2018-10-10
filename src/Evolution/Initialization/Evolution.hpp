@@ -62,7 +62,7 @@ struct Evolution {
   struct ComputeTags {
     using type = db::AddComputeTags<
         Tags::Time,
-        Tags::ComputeDeriv<variables_tag,
+        Tags::DerivCompute<variables_tag,
                            Tags::InverseJacobian<Tags::ElementMap<dim>,
                                                  Tags::LogicalCoordinates<dim>>,
                            typename System::gradients_tags>>;

@@ -165,7 +165,7 @@ struct TestConservativeOrNonconservativeParts {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
 
-    CHECK(box_contains<Tags::ComputeDeriv<
+    CHECK(box_contains<Tags::DerivCompute<
               typename system::variables_tag,
               Tags::InverseJacobian<Tags::ElementMap<dim>,
                                     Tags::LogicalCoordinates<dim>>,
