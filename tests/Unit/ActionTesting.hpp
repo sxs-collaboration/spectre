@@ -325,6 +325,10 @@ class MockDistributedObject {
   SIMPLE_AND_THREADED_ACTIONS(0, threaded_action)
 #undef SIMPLE_AND_THREADED_ACTIONS
 
+  bool is_simple_action_queue_empty() noexcept {
+    return simple_action_queue_.empty();
+  }
+
   void invoke_queued_simple_action() noexcept {
     if (simple_action_queue_.empty()) {
       ERROR(
@@ -801,6 +805,16 @@ class MockRuntimeSystem {
         .template simple_action<Action>(true);
   }
   // @}
+
+  /// Return true if there are no queued simple actions on the
+  /// `Component` labeled by `array_index`.
+  template <typename Component>
+  bool is_simple_action_queue_empty(
+      const typename Component::array_index& array_index) noexcept {
+    return algorithms<Component>()
+        .at(array_index)
+        .is_simple_action_queue_empty();
+  }
 
   /// Invoke the next queued simple action on the `Component` labeled by
   /// `array_index`.
