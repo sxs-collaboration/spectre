@@ -1,0 +1,35 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveKerrSchild
+# Check: execute
+
+# Properties of a Kerr-Schild black hole
+AnalyticSolution:
+  Mass: 1.0
+  Spin: [0.0, 0.0, 0.0]
+  Center: [0.0, 0.0, 0.0]
+
+# Times to observe (fixed step size)
+InitialTime: 0.0
+FinalTime: 0.05
+InitialTimeStep: 0.01
+
+# Domain on which to observe the solution
+DomainCreator:
+  Shell:
+    InnerRadius: 1.9
+    OuterRadius: 4.9
+    InitialRefinement: 1
+    InitialGridPoints: [5, 5]
+    UseEquiangularMap: false
+    AspectRatio: 1.0
+    UseLogarithmicMap: false
+
+# Timestepper
+TimeStepper:
+  AdamsBashforthN:
+    Order: 3
+
+# Output filename
+VolumeFileName: "./KerrSchild"
