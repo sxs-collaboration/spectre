@@ -704,14 +704,15 @@ template <typename ParentTag, typename... Subtags>
 SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
     tmpl::list<Subtags...> /*meta*/) noexcept {
-  const auto helper = [lazy_function =
-                           get_deferred<ParentTag>()](auto tag) noexcept {
+  const auto helper = [lazy_function = get_deferred<ParentTag>()](
+                          auto tag) noexcept->decltype(auto) {
     return Subitems<tmpl::list<Tags...>, ParentTag>::
         template create_compute_item<decltype(tag)>(lazy_function.get());
   };
   EXPAND_PACK_LEFT_TO_RIGHT(
       (get_deferred<Subtags>() =
-           make_deferred<db::item_type<Subtags>>(helper, Subtags{})));
+           make_deferred_for_subitem<decltype(helper(Subtags{}))>(helper,
+                                                                  Subtags{})));
 }
 
 namespace DataBox_detail {

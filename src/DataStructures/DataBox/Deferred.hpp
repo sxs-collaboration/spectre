@@ -18,17 +18,18 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-template <typename Rt>
+template <typename Rt, typename MakeConstReference = std::false_type>
 class Deferred;
 
 namespace Deferred_detail {
 template <typename T>
-decltype(auto) retrieve_from_deferred(const T& t) {
+decltype(auto) retrieve_from_deferred(const T& t) noexcept {
   return t;
 }
 
-template <typename T>
-decltype(auto) retrieve_from_deferred(const Deferred<T>& t) {
+template <typename T, typename MakeConstReference>
+decltype(auto) retrieve_from_deferred(
+    const Deferred<T, MakeConstReference>& t) noexcept {
   return t.get();
 }
 
@@ -37,8 +38,8 @@ struct remove_deferred {
   using type = T;
 };
 
-template <typename T>
-struct remove_deferred<Deferred<T>> {
+template <typename T, typename MakeConstReference>
+struct remove_deferred<Deferred<T, MakeConstReference>> {
   using type = T;
 };
 
@@ -53,8 +54,8 @@ class assoc_state {
   assoc_state& operator=(const assoc_state& /*rhs*/) = delete;
   assoc_state(assoc_state&& /*rhs*/) = delete;
   assoc_state& operator=(assoc_state&& /*rhs*/) = delete;
-  virtual const Rt& get() const = 0;
-  virtual Rt& mutate() = 0;
+  virtual const Rt& get() const noexcept = 0;
+  virtual Rt& mutate() noexcept = 0;
   virtual void reset() noexcept = 0;
   // clang-tidy: no non-const references
   virtual void pack_unpack_lazy_function(PUP::er& p) noexcept = 0;  // NOLINT
@@ -66,11 +67,11 @@ class assoc_state {
 template <typename Rt>
 class simple_assoc_state : public assoc_state<Rt> {
  public:
-  explicit simple_assoc_state(Rt t) : t_(std::move(t)) {}
+  explicit simple_assoc_state(Rt t) noexcept;
 
-  const Rt& get() const override { return t_; }
+  const Rt& get() const noexcept override { return t_; }
 
-  Rt& mutate() override { return t_; }
+  Rt& mutate() noexcept override { return t_; }
 
   void reset() noexcept override { ERROR("Cannot reset a simple_assoc_state"); }
 
@@ -79,9 +80,7 @@ class simple_assoc_state : public assoc_state<Rt> {
     ERROR("Cannot send a Deferred that's not a lazily evaluated function");
   }
 
-  bool evaluated() const noexcept override {
-    return true;
-  }
+  bool evaluated() const noexcept override { return true; }
 
   boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
     return deep_copy_impl();
@@ -101,24 +100,25 @@ class simple_assoc_state : public assoc_state<Rt> {
         "Cannot create a copy of a DataBox (e.g. using db::create_copy) that "
         "holds a non-copyable simple item. The item type is '"
         << pretty_type::get_name<T>() << "'.");
-    return nullptr;
   }
 
   Rt t_;
 };
 
+template <typename Rt>
+simple_assoc_state<Rt>::simple_assoc_state(Rt t) noexcept : t_(std::move(t)) {}
+
 template <typename Rt, typename Fp, typename... Args>
 class deferred_assoc_state : public assoc_state<Rt> {
  public:
-  explicit deferred_assoc_state(Fp f, Args... args)
-      : func_(std::move(f)), args_(std::make_tuple(std::move(args)...)) {}
+  explicit deferred_assoc_state(Fp f, Args... args) noexcept;
   deferred_assoc_state(const deferred_assoc_state& /*rhs*/) = delete;
   deferred_assoc_state& operator=(const deferred_assoc_state& /*rhs*/) = delete;
   deferred_assoc_state(deferred_assoc_state&& /*rhs*/) = delete;
   deferred_assoc_state& operator=(deferred_assoc_state&& /*rhs*/) = delete;
   ~deferred_assoc_state() override = default;
 
-  const Rt& get() const override {
+  const Rt& get() const noexcept override {
     if (not evaluated_) {
       apply(std::make_index_sequence<sizeof...(Args)>{});
       evaluated_ = true;
@@ -126,10 +126,7 @@ class deferred_assoc_state : public assoc_state<Rt> {
     return t_;
   }
 
-  Rt& mutate() override {
-    ERROR("Cannot mutate a computed Deferred");
-    return t_;
-  }
+  Rt& mutate() noexcept override { ERROR("Cannot mutate a computed Deferred"); }
 
   void reset() noexcept override { evaluated_ = false; }
 
@@ -146,16 +143,13 @@ class deferred_assoc_state : public assoc_state<Rt> {
     }
   }
 
-  bool evaluated() const noexcept override {
-    return evaluated_;
-  }
+  bool evaluated() const noexcept override { return evaluated_; }
 
   boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
     ERROR(
         "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
         "not at all clear if this is even possible because it is incorrect to "
         "assume that the args_ have not changed.");
-    return nullptr;
   }
 
  private:
@@ -170,7 +164,7 @@ class deferred_assoc_state : public assoc_state<Rt> {
                 tt::is_callable_v<std::decay_t<Fp>,
                                   remove_deferred_t<std::decay_t<Args>>...>)> =
           nullptr>
-  void apply(std::integer_sequence<size_t, Is...> /*meta*/) const {
+  void apply(std::integer_sequence<size_t, Is...> /*meta*/) const noexcept {
     t_ = std::move(func_(retrieve_from_deferred(std::get<Is>(args_))...));
   }
 
@@ -180,10 +174,15 @@ class deferred_assoc_state : public assoc_state<Rt> {
                 tt::is_callable_v<
                     std::decay_t<Fp>, gsl::not_null<std::add_pointer_t<Rt>>,
                     remove_deferred_t<std::decay_t<Args>>...>)> = nullptr>
-  void apply(std::integer_sequence<size_t, Is...> /*meta*/) const {
+  void apply(std::integer_sequence<size_t, Is...> /*meta*/) const noexcept {
     func_(make_not_null(&t_), retrieve_from_deferred(std::get<Is>(args_))...);
   }
 };
+
+template <typename Rt, typename Fp, typename... Args>
+deferred_assoc_state<Rt, Fp, Args...>::deferred_assoc_state(
+    Fp f, Args... args) noexcept
+    : func_(std::move(f)), args_(std::make_tuple(std::move(args)...)) {}
 
 // Specialization to handle functions that return a `const Rt&`. We treat the
 // return value as pointer to the data we actually want to have visible to us
@@ -199,24 +198,21 @@ class deferred_assoc_state : public assoc_state<Rt> {
 template <typename Rt, typename Fp, typename... Args>
 class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
  public:
-  explicit deferred_assoc_state(Fp f, Args... args) noexcept
-      : func_(std::move(f)), args_(std::make_tuple(std::move(args)...)) {}
+  explicit deferred_assoc_state(Fp f, Args... args) noexcept;
   deferred_assoc_state(const deferred_assoc_state& /*rhs*/) = delete;
   deferred_assoc_state& operator=(const deferred_assoc_state& /*rhs*/) = delete;
   deferred_assoc_state(deferred_assoc_state&& /*rhs*/) = delete;
   deferred_assoc_state& operator=(deferred_assoc_state&& /*rhs*/) = delete;
   ~deferred_assoc_state() override = default;
 
-  const Rt& get() const override {
+  const Rt& get() const noexcept override {
     if (not t_) {
       apply(std::make_index_sequence<sizeof...(Args)>{});
     }
     return *t_;
   }
 
-  Rt& mutate() override {
-    ERROR("Cannot mutate a compute tag.");
-  }
+  Rt& mutate() noexcept override { ERROR("Cannot mutate a compute tag."); }
 
   void reset() noexcept override { t_ = nullptr; }
 
@@ -235,7 +231,6 @@ class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
         "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
         "not at all clear if this is even possible because it is incorrect to "
         "assume that the args_ have not changed.");
-    return nullptr;
   }
 
  private:
@@ -248,6 +243,11 @@ class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
     t_ = &(func_(retrieve_from_deferred(std::get<Is>(args_))...));
   }
 };
+
+template <typename Rt, typename Fp, typename... Args>
+deferred_assoc_state<const Rt&, Fp, Args...>::deferred_assoc_state(
+    Fp f, Args... args) noexcept
+    : func_(std::move(f)), args_(std::make_tuple(std::move(args)...)) {}
 }  // namespace Deferred_detail
 
 /*!
@@ -284,7 +284,7 @@ class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
  *
  * @tparam Rt the type being stored
  */
-template <typename Rt>
+template <typename Rt, typename MakeConstReference>
 class Deferred {
  public:
   using value_type = std::remove_const_t<std::remove_reference_t<Rt>>;
@@ -301,9 +301,9 @@ class Deferred {
   Deferred& operator=(Deferred&&) = default;
   ~Deferred() = default;
 
-  constexpr const value_type& get() const { return state_->get(); }
+  constexpr const value_type& get() const noexcept { return state_->get(); }
 
-  constexpr value_type& mutate() { return state_->mutate(); }
+  constexpr value_type& mutate() noexcept { return state_->mutate(); }
 
   // clang-tidy: no non-const references
   void pack_unpack_lazy_function(PUP::er& p) noexcept {  // NOLINT
@@ -314,32 +314,36 @@ class Deferred {
 
   void reset() noexcept { state_->reset(); }
 
-  Deferred deep_copy() const noexcept {
-    return Deferred{state_->deep_copy()};
-  }
-
- private:
-  boost::shared_ptr<Deferred_detail::assoc_state<value_type>> state_{nullptr};
+  Deferred deep_copy() const noexcept { return Deferred{state_->deep_copy()}; }
 
   explicit Deferred(
-      boost::shared_ptr<Deferred_detail::assoc_state<value_type>>&& state)
-      : state_(std::move(state)) {}
+      boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
+          MakeConstReference::value, const value_type&, value_type>>>&&
+          state) noexcept;
 
-  // clang-tidy: redundant declaration
-  template <typename Rt1, typename Fp, typename... Args>
-  friend Deferred<Rt1> make_deferred(Fp f, Args&&... args);  // NOLINT
+ private:
+  boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
+      MakeConstReference::value, const value_type&, value_type>>>
+      state_{nullptr};
 
   // clang-tidy: redundant declaration
   template <typename Rt1, typename Fp, typename... Args>
   friend void update_deferred_args(  // NOLINT
       gsl::not_null<Deferred<Rt1>*> deferred, Fp /*f used for type deduction*/,
-      Args&&... args);
+      Args&&... args) noexcept;
 
   // clang-tidy: redundant declaration
   template <typename Rt1, typename Fp, typename... Args>
   friend void update_deferred_args(  // NOLINT
-      gsl::not_null<Deferred<Rt1>*> deferred, Args&&... args);
+      gsl::not_null<Deferred<Rt1>*> deferred, Args&&... args) noexcept;
 };
+
+template <typename Rt, typename MakeConstReference>
+Deferred<Rt, MakeConstReference>::Deferred(
+    boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
+        MakeConstReference::value, const value_type&, value_type>>>&&
+        state) noexcept
+    : state_(std::move(state)) {}
 
 /*!
  * \ingroup DataBoxGroup
@@ -374,10 +378,37 @@ class Deferred {
  * @return Deferred object that will lazily evaluate the function
  */
 template <typename Rt, typename Fp, typename... Args>
-Deferred<Rt> make_deferred(Fp f, Args&&... args) {
+Deferred<Rt> make_deferred(Fp f, Args&&... args) noexcept {
   return Deferred<Rt>(boost::make_shared<Deferred_detail::deferred_assoc_state<
                           Rt, std::decay_t<Fp>, std::decay_t<Args>...>>(
       f, std::forward<Args>(args)...));
+}
+
+namespace Deferred_detail {
+template <class Rt>
+struct MakeDeferredForSubitemImpl {
+  template <typename Fp, typename... Args>
+  static Deferred<Rt> apply(Fp f, Args&&... args) noexcept {
+    return make_deferred<Rt>(f, std::forward<Args>(args)...);
+  }
+};
+
+template <class Rt>
+struct MakeDeferredForSubitemImpl<const Rt&> {
+  template <typename Fp, typename... Args>
+  static Deferred<Rt> apply(Fp f, Args&&... args) noexcept {
+    return Deferred<Rt>(
+        boost::make_shared<Deferred_detail::deferred_assoc_state<
+            const Rt&, std::decay_t<Fp>, std::decay_t<Args>...>>(
+            f, std::forward<Args>(args)...));
+  }
+};
+}  // namespace Deferred_detail
+
+template <typename Rt, typename Fp, typename... Args>
+auto make_deferred_for_subitem(Fp&& f, Args&&... args) noexcept {
+  return Deferred_detail::MakeDeferredForSubitemImpl<Rt>::apply(
+      std::forward<Fp>(f), std::forward<Args>(args)...);
 }
 
 // @{
@@ -402,13 +433,14 @@ Deferred<Rt> make_deferred(Fp f, Args&&... args) {
  */
 template <typename Rt, typename Fp, typename... Args>
 void update_deferred_args(const gsl::not_null<Deferred<Rt>*> deferred,
-                          Fp /*f used for type deduction*/, Args&&... args) {
+                          Fp /*f used for type deduction*/,
+                          Args&&... args) noexcept {
   update_deferred_args<Rt, Fp>(deferred, std::forward<Args>(args)...);
 }
 
 template <typename Rt, typename Fp, typename... Args>
 void update_deferred_args(const gsl::not_null<Deferred<Rt>*> deferred,
-                          Args&&... args) {
+                          Args&&... args) noexcept {
   auto* ptr = dynamic_cast<Deferred_detail::deferred_assoc_state<
       Rt, std::decay_t<Fp>, std::decay_t<Args>...>*>(deferred->state_.get());
   if (ptr == nullptr) {

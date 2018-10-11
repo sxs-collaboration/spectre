@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -70,6 +71,19 @@ class Variables;
  * Prefix tags can also be stored and their format is:
  *
  * \snippet Test_Variables.cpp prefix_variables_tag
+ *
+ * #### Design Decisions
+ *
+ * The `Variables` class is designed to hold several different `Tensor`s
+ * performing one memory allocation for all the `Tensor`s. The advantage is that
+ * memory allocations are quite expensive, especially in a parallel environment.
+ *
+ * `Variables` stores the data it owns in a `std::unique_ptr<double[],
+ * decltype(&free)>` instead of a `std::vector` because allocating the
+ * `unique_ptr` with `malloc` allows us to avoid initializing the memory
+ * completely in release mode when no value is passed to the constructor.
+ * Additionally, if the macro `SPECTRE_NAN_INIT` is defined, initialization with
+ * `NaN`s is done even in release mode.
  */
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {
@@ -78,6 +92,10 @@ class Variables<tmpl::list<Tags...>> {
   using allocator_type = std::allocator<value_type>;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
+  static constexpr auto transpose_flag = blaze::defaultTransposeFlag;
+  using pointer_type =
+      PointerVector<double, blaze::unaligned, blaze::unpadded, transpose_flag,
+                    blaze::DynamicVector<double, transpose_flag>>;
 
   /// A typelist of the Tags whose variables are held
   using tags_list = tmpl::list<Tags...>;
@@ -110,9 +128,9 @@ class Variables<tmpl::list<Tags...>> {
   /// Default construct an empty Variables class, Charm++ needs this
   Variables() noexcept;
 
-  explicit Variables(
-      size_t number_of_grid_points,
-      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
+  explicit Variables(size_t number_of_grid_points) noexcept;
+
+  Variables(size_t number_of_grid_points, double value) noexcept;
 
   Variables(Variables&& rhs) noexcept = default;
   Variables& operator=(Variables&& rhs) noexcept;
@@ -150,11 +168,12 @@ class Variables<tmpl::list<Tags...>> {
   ~Variables() noexcept = default;
   /// \endcond
 
+  // @{
   /// Initialize a Variables to the state it would have after calling
   /// the constructor with the same arguments.
-  void initialize(
-      size_t number_of_grid_points,
-      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
+  void initialize(size_t number_of_grid_points) noexcept;
+  void initialize(size_t number_of_grid_points, double value) noexcept;
+  // @}
 
   constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
       noexcept {
@@ -365,14 +384,13 @@ class Variables<tmpl::list<Tags...>> {
   template <class FriendTags>
   friend class Variables;
 
-  std::vector<double, allocator_type> variable_data_impl_;
-  // variable_data_ is only used to plug into the Blaze expression templates
-  PointerVector<double, blaze::unaligned, blaze::unpadded,
-                blaze::defaultTransposeFlag,
-                blaze::DynamicVector<double, blaze::defaultTransposeFlag>>
-      variable_data_;
+  std::unique_ptr<double[], decltype(&free)> variable_data_impl_{nullptr,
+                                                                 &free};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
+
+  // variable_data_ is only used to plug into the Blaze expression templates
+  pointer_type variable_data_;
   tuples::TaggedTuple<Tags...> reference_variable_data_;
 };
 
@@ -391,6 +409,12 @@ Variables<tmpl::list<Tags...>>::Variables() noexcept {
 }
 
 template <typename... Tags>
+Variables<tmpl::list<Tags...>>::Variables(
+    const size_t number_of_grid_points) noexcept {
+  initialize(number_of_grid_points);
+}
+
+template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
                                           const double value) noexcept {
   initialize(number_of_grid_points, value);
@@ -398,24 +422,55 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
-    const size_t number_of_grid_points, const double value) noexcept {
-  variable_data_impl_.assign(
-      number_of_grid_points * number_of_independent_components, value);
-  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
+    const size_t number_of_grid_points) noexcept {
   size_ = number_of_grid_points * number_of_independent_components;
-  number_of_grid_points_ = number_of_grid_points;
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  if (size_ > 0) {
+    // clang-tidy: cppcoreguidelines-no-malloc
+    variable_data_impl_.reset(static_cast<double*>(
+        malloc(number_of_grid_points *  // NOLINT
+               number_of_independent_components * sizeof(double))));
+    number_of_grid_points_ = number_of_grid_points;
+#if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
+    std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
+              std::numeric_limits<double>::signaling_NaN());
+#endif  // SPECTRE_DEBUG
+    variable_data_.reset(variable_data_impl_.get(), size_);
+    add_reference_variable_data(tmpl::list<Tags...>{});
+  }
+}
+
+template <typename... Tags>
+void Variables<tmpl::list<Tags...>>::initialize(
+    const size_t number_of_grid_points, const double value) noexcept {
+  size_ = number_of_grid_points * number_of_independent_components;
+  if (size_ > 0) {
+    // clang-tidy: cppcoreguidelines-no-malloc
+    variable_data_impl_.reset(static_cast<double*>(
+        malloc(number_of_grid_points *  // NOLINT
+               number_of_independent_components * sizeof(double))));
+    number_of_grid_points_ = number_of_grid_points;
+    std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
+              value);
+    variable_data_.reset(variable_data_impl_.get(), size_);
+    add_reference_variable_data(tmpl::list<Tags...>{});
+  }
 }
 
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(
     const Variables<tmpl::list<Tags...>>& rhs) noexcept
-    : variable_data_impl_(rhs.variable_data_impl_),
-      variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
-      size_(rhs.size_),
-      number_of_grid_points_(rhs.number_of_grid_points()) {
-  add_reference_variable_data(tmpl::list<Tags...>{});
+    : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
+  if (size_ > 0) {
+    // clang-tidy: cppcoreguidelines-no-malloc
+    variable_data_impl_.reset(
+        static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+    variable_data_.reset(variable_data_impl_.get(), size_);
+    add_reference_variable_data(tmpl::list<Tags...>{});
+    variable_data_ =
+        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+            rhs.variable_data_);
+  }
 }
 
 template <typename... Tags>
@@ -424,11 +479,22 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   if (&rhs == this) {
     return *this;
   }
-  variable_data_impl_ = rhs.variable_data_impl_;
-  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
-  number_of_grid_points_ = rhs.number_of_grid_points();
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  if (number_of_grid_points_ != rhs.number_of_grid_points()) {
+    number_of_grid_points_ = rhs.number_of_grid_points();
+    if (size_ > 0) {
+      // clang-tidy: cppcoreguidelines-no-malloc
+      variable_data_impl_.reset(
+          static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+      variable_data_.reset(variable_data_impl_.get(), size_);
+      add_reference_variable_data(tmpl::list<Tags...>{});
+    }
+  }
+  if (size_ > 0) {
+    variable_data_ =
+        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+            rhs.variable_data_);
+  }
   return *this;
 }
 
@@ -439,9 +505,9 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     return *this;
   }
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
-  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  variable_data_.reset(variable_data_impl_.get(), size());
   add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
@@ -452,11 +518,17 @@ template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
                                        db::remove_all_prefixes<Tags>>...>>>
 Variables<tmpl::list<Tags...>>::Variables(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
-    : variable_data_impl_(rhs.variable_data_impl_),
-      variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
-      size_(rhs.size_),
-      number_of_grid_points_(rhs.number_of_grid_points()) {
-  add_reference_variable_data(tmpl::list<Tags...>{});
+    : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
+  if (size_ > 0) {
+    // clang-tidy: cppcoreguidelines-no-malloc
+    variable_data_impl_.reset(
+        static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+    variable_data_.reset(variable_data_impl_.get(), size_);
+    variable_data_ =
+        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+            rhs.variable_data_);
+    add_reference_variable_data(tmpl::list<Tags...>{});
+  }
 }
 
 template <typename... Tags>
@@ -465,11 +537,20 @@ template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
                                        db::remove_all_prefixes<Tags>>...>>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
-  variable_data_impl_ = rhs.variable_data_impl_;
-  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
-  number_of_grid_points_ = rhs.number_of_grid_points();
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  if (number_of_grid_points_ != rhs.number_of_grid_points()) {
+    number_of_grid_points_ = rhs.number_of_grid_points();
+    if (size_ > 0) {
+      // clang-tidy: cppcoreguidelines-no-malloc
+      variable_data_impl_.reset(
+          static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+      variable_data_.reset(variable_data_impl_.get(), size_);
+      add_reference_variable_data(tmpl::list<Tags...>{});
+    }
+  }
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
   return *this;
 }
 
@@ -481,9 +562,9 @@ template <typename... WrappedTags,
 Variables<tmpl::list<Tags...>>::Variables(
     Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept
     : variable_data_impl_(std::move(rhs.variable_data_impl_)),
-      variable_data_(std::move(rhs.variable_data_)),
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
+      variable_data_(variable_data_impl_.get(), size_),
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {}
 
 template <typename... Tags>
@@ -493,23 +574,26 @@ template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept {
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
-  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
+  variable_data_.reset(variable_data_impl_.get(), size());
   add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
-  p | variable_data_impl_;
   p | size_;
   p | number_of_grid_points_;
   if (p.isUnpacking()) {
-    variable_data_.reset(variable_data_impl_.data(),
-                         variable_data_impl_.size());
+    // clang-tidy: cppcoreguidelines-no-malloc
+    variable_data_impl_.reset(static_cast<double*>(
+        malloc(number_of_grid_points_ *  // NOLINT
+               number_of_independent_components * sizeof(double))));
+    variable_data_.reset(variable_data_impl_.get(), size());
     add_reference_variable_data(tmpl::list<Tags...>{});
   }
+  PUParray(p, variable_data_impl_.get(), size_);
 }
 /// \endcond
 
@@ -544,12 +628,10 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
     const blaze::Vector<VT, VF>& expression) noexcept
-    : variable_data_impl_((~expression).size()),
-      variable_data_(variable_data_impl_.data(), variable_data_impl_.size()),
-      size_((~expression).size()),
+    : size_((~expression).size()),
       number_of_grid_points_(size_ / number_of_independent_components) {
+  initialize(number_of_grid_points_);
   variable_data_ = expression;
-  add_reference_variable_data(tmpl::list<Tags...>{});
 }
 
 /// \cond
@@ -557,12 +639,12 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const blaze::Vector<VT, VF>& expression) noexcept {
-  size_ = (~expression).size();
-  number_of_grid_points_ = size_ / number_of_independent_components;
-  variable_data_impl_.resize(size_);
-  variable_data_.reset(variable_data_impl_.data(), variable_data_impl_.size());
+  if (size_ != (~expression).size()) {
+    size_ = (~expression).size();
+    number_of_grid_points_ = size_ / number_of_independent_components;
+    initialize(number_of_grid_points_);
+  }
   variable_data_ = expression;
-  add_reference_variable_data(tmpl::list<Tags...>{});
   return *this;
 }
 /// \endcond
@@ -741,7 +823,7 @@ struct Subitems<TagList, Tag,
   }
 
   template <typename Subtag>
-  static item_type<Subtag> create_compute_item(
+  static const item_type<Subtag>& create_compute_item(
       const item_type<Tag>& parent_value) noexcept {
     return get<Subtag>(parent_value);
   }

@@ -35,7 +35,7 @@ struct Mesh;
 ///
 /// \snippet Test_Divergence.cpp divergence_name
 ///
-/// \see Tags::ComputeDiv
+/// \see Tags::DivCompute
 template <typename Tag, typename = std::nullptr_t>
 struct div;
 
@@ -77,7 +77,7 @@ namespace Tags {
 ///
 /// This tag inherits from `db::add_prefix_tag<Tags::div, Tag>`.
 template <typename Tag, typename InverseJacobianTag>
-struct ComputeDiv : db::add_tag_prefix<div, Tag>, db::ComputeTag {
+struct DivCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  private:
   using inv_jac_indices =
       typename db::item_type<InverseJacobianTag>::index_list;

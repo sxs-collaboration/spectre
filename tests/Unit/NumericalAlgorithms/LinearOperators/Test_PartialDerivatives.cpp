@@ -32,6 +32,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 // IWYU pragma: no_forward_declare Tags::deriv
+// IWYU pragma: no_forward_declare Variables
 
 namespace {
 
@@ -127,17 +128,21 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
       }
     }
 
-    const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
-
-    for (size_t n = 0;
-         n < Variables<GradientTags>::number_of_independent_components; ++n) {
-      for (size_t s = 0; s < number_of_grid_points; ++s) {
-        const double expected =
-            (0 == a ? 0.0 : a * (n + 1) * pow(xi[s], a - 1));
-        CHECK(du[0].data()[s + n * number_of_grid_points]  // NOLINT
-              == approx(expected));
+    const auto helper = [&](const auto& du) noexcept {
+      for (size_t n = 0;
+           n < Variables<GradientTags>::number_of_independent_components; ++n) {
+        for (size_t s = 0; s < number_of_grid_points; ++s) {
+          const double expected =
+              (0 == a ? 0.0 : a * (n + 1) * pow(xi[s], a - 1));
+          CHECK(du[0].data()[s + n * number_of_grid_points]  // NOLINT
+                == approx(expected));
+        }
       }
-    }
+    };
+    helper(logical_partial_derivatives<GradientTags>(u, mesh));
+    std::array<Variables<GradientTags>, 1> du{};
+    logical_partial_derivatives(make_not_null(&du), u, mesh);
+    helper(du);
   }
 }
 
@@ -156,27 +161,32 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
     }
   }
 
-  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
-
-  for (size_t n = 0;
-       n < Variables<GradientTags>::number_of_independent_components; ++n) {
-    for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
-      const double expected_dxi =
-          (0 == a
-               ? 0.0
-               : a * (n + 1) * pow(xi[ii()[0]], a - 1) * pow(eta[ii()[1]], b));
-      const double expected_deta = (0 == b ? 0.0
-                                           : b * (n + 1) * pow(xi[ii()[0]], a) *
-                                                 pow(eta[ii()[1]], b - 1));
-      // clang-tidy: pointer arithmetic
-      CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
-                         n * number_of_grid_points] ==  // NOLINT
-            approx(expected_dxi));
-      CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
-                         n * number_of_grid_points] ==  // NOLINT
-            approx(expected_deta));
+  const auto helper = [&](const auto& du) noexcept {
+    for (size_t n = 0;
+         n < Variables<GradientTags>::number_of_independent_components; ++n) {
+      for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
+        const double expected_dxi =
+            (0 == a ? 0.0
+                    : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
+                          pow(eta[ii()[1]], b));
+        const double expected_deta =
+            (0 == b ? 0.0
+                    : b * (n + 1) * pow(xi[ii()[0]], a) *
+                          pow(eta[ii()[1]], b - 1));
+        // clang-tidy: pointer arithmetic
+        CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
+                           n * number_of_grid_points] ==  // NOLINT
+              approx(expected_dxi));
+        CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
+                           n * number_of_grid_points] ==  // NOLINT
+              approx(expected_deta));
+      }
     }
-  }
+  };
+  helper(logical_partial_derivatives<GradientTags>(u, mesh));
+  std::array<Variables<GradientTags>, 2> du{};
+  logical_partial_derivatives(make_not_null(&du), u, mesh);
+  helper(du);
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
@@ -197,35 +207,39 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
     }
   }
 
-  const auto du = logical_partial_derivatives<GradientTags>(u, mesh);
-
-  for (size_t n = 0;
-       n < Variables<GradientTags>::number_of_independent_components; ++n) {
-    for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
-      const double expected_dxi =
-          (0 == a ? 0.0
-                  : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
-                        pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
-      const double expected_deta =
-          (0 == b ? 0.0
-                  : b * (n + 1) * pow(xi[ii()[0]], a) *
-                        pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
-      const double expected_dzeta =
-          (0 == c ? 0.0
-                  : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
-                        pow(zeta[ii()[2]], c - 1));
-      // clang-tidy: pointer arithmetic
-      CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
-                         n * number_of_grid_points] ==  // NOLINT
-            approx(expected_dxi));
-      CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
-                         n * number_of_grid_points] ==  // NOLINT
-            approx(expected_deta));
-      CHECK(du[2].data()[ii.collapsed_index() +         // NOLINT
-                         n * number_of_grid_points] ==  // NOLINT
-            approx(expected_dzeta));
+  const auto helper = [&](const auto& du) noexcept {
+    for (size_t n = 0;
+         n < Variables<GradientTags>::number_of_independent_components; ++n) {
+      for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
+        const double expected_dxi =
+            (0 == a ? 0.0
+                    : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
+                          pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
+        const double expected_deta =
+            (0 == b ? 0.0
+                    : b * (n + 1) * pow(xi[ii()[0]], a) *
+                          pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
+        const double expected_dzeta =
+            (0 == c ? 0.0
+                    : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
+                          pow(zeta[ii()[2]], c - 1));
+        // clang-tidy: pointer arithmetic
+        CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
+                           n * number_of_grid_points] ==  // NOLINT
+              approx(expected_dxi));
+        CHECK(du[1].data()[ii.collapsed_index() +         // NOLINT
+                           n * number_of_grid_points] ==  // NOLINT
+              approx(expected_deta));
+        CHECK(du[2].data()[ii.collapsed_index() +         // NOLINT
+                           n * number_of_grid_points] ==  // NOLINT
+              approx(expected_dzeta));
+      }
     }
-  }
+  };
+  helper(logical_partial_derivatives<GradientTags>(u, mesh));
+  std::array<Variables<GradientTags>, 3> du{};
+  logical_partial_derivatives(make_not_null(&du), u, mesh);
+  helper(du);
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
@@ -253,13 +267,25 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
       get<DerivativeTag>(expected_du) = Tag::df({{a}}, x);
     });
 
-    const auto du =
-        partial_derivatives<GradientTags>(u, mesh, inverse_jacobian);
+    const auto helper = [&](const auto& du) noexcept {
+      for (size_t n = 0; n < du.size(); ++n) {
+        CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
+        CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
+      }
+    };
+    helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+    using vars_type =
+        decltype(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+    vars_type du{};
+    partial_derivatives<GradientTags>(make_not_null(&du), u, mesh,
+                                      inverse_jacobian);
+    helper(du);
 
-    for (size_t n = 0; n < du.size(); ++n) {
-      CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
-      CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
-    }
+    vars_type du_with_logical{};
+    partial_derivatives<GradientTags>(
+        make_not_null(&du_with_logical),
+        logical_partial_derivatives<GradientTags>(u, mesh), inverse_jacobian);
+    helper(du_with_logical);
   }
 }
 
@@ -294,14 +320,26 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
         get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
       });
 
-      const auto du =
-          partial_derivatives<GradientTags>(u, mesh, inverse_jacobian);
+      const auto helper = [&](const auto& du) noexcept {
+        for (size_t n = 0; n < du.size(); ++n) {
+          CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
+          CHECK(du.data()[n] ==                                   // NOLINT
+                approx(expected_du.data()[n]).epsilon(1.e-13));   // NOLINT
+        }
+      };
+      helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+      using vars_type = decltype(
+          partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+      vars_type du{};
+      partial_derivatives<GradientTags>(make_not_null(&du), u, mesh,
+                                        inverse_jacobian);
+      helper(du);
 
-      for (size_t n = 0; n < du.size(); ++n) {
-        CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
-        CHECK(du.data()[n] ==                                   // NOLINT
-              approx(expected_du.data()[n]).epsilon(1.e-13));   // NOLINT
-      }
+      vars_type du_with_logical{};
+      partial_derivatives<GradientTags>(
+          make_not_null(&du_with_logical),
+          logical_partial_derivatives<GradientTags>(u, mesh), inverse_jacobian);
+      helper(du_with_logical);
     }
   }
 }
@@ -342,14 +380,27 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
-        const auto du =
-            partial_derivatives<GradientTags>(u, mesh, inverse_jacobian);
+        const auto helper = [&](const auto& du) noexcept {
+          for (size_t n = 0; n < du.size(); ++n) {
+            CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
+            CHECK(du.data()[n] ==                                   // NOLINT
+                  approx(expected_du.data()[n]).epsilon(1.e-11));
+          }
+        };
+        helper(partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+        using vars_type = decltype(
+            partial_derivatives<GradientTags>(u, mesh, inverse_jacobian));
+        vars_type du{};
+        partial_derivatives<GradientTags>(make_not_null(&du), u, mesh,
+                                          inverse_jacobian);
+        helper(du);
 
-        for (size_t n = 0; n < du.size(); ++n) {
-          CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
-          CHECK(du.data()[n] ==                                   // NOLINT
-                approx(expected_du.data()[n]).epsilon(1.e-11));
-        }
+        vars_type du_with_logical{};
+        partial_derivatives<GradientTags>(
+            make_not_null(&du_with_logical),
+            logical_partial_derivatives<GradientTags>(u, mesh),
+            inverse_jacobian);
+        helper(du_with_logical);
       }
     }
   }
@@ -438,12 +489,11 @@ void test_partial_derivatives_compute_item(
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag =
       Tags::InverseJacobian<map_tag, Tags::LogicalCoordinates<Dim>>;
-  using deriv_tag = Tags::ComputeDeriv<Tags::Variables<vars_tags>,
-                                      inv_jac_tag>;
+  using deriv_tag = Tags::DerivCompute<Tags::Variables<vars_tags>, inv_jac_tag>;
   using prefixed_variables_tag =
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
   using deriv_prefixed_tag =
-      Tags::ComputeDeriv<prefixed_variables_tag, inv_jac_tag,
+      Tags::DerivCompute<prefixed_variables_tag, inv_jac_tag,
                          tmpl::list<SomePrefix<Var1<Dim>>>>;
 
   const std::array<size_t, Dim> array_to_functions{extents_array -

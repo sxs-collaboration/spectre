@@ -165,7 +165,7 @@ struct TestConservativeOrNonconservativeParts {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
 
-    CHECK(box_contains<Tags::ComputeDeriv<
+    CHECK(box_contains<Tags::DerivCompute<
               typename system::variables_tag,
               Tags::InverseJacobian<Tags::ElementMap<dim>,
                                     Tags::LogicalCoordinates<dim>>,
@@ -191,7 +191,7 @@ struct TestConservativeOrNonconservativeParts<true> {
     CHECK(db::get<db::add_tag_prefix<Tags::Source, variables_tag>>(*box)
               .number_of_grid_points() == number_of_grid_points);
 
-    CHECK(box_contains<Tags::ComputeDiv<
+    CHECK(box_contains<Tags::DivCompute<
               db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<dim>,
                                  Frame::Inertial>,
               Tags::InverseJacobian<Tags::ElementMap<dim>,

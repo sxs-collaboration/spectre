@@ -284,7 +284,7 @@ struct InitializeElement {
               bool IsConservative = LocalSystem::is_conservative>
     struct ComputeTags {
       using type = db::AddComputeTags<
-          Tags::Time, Tags::ComputeDeriv<
+          Tags::Time, Tags::DerivCompute<
                           variables_tag,
                           Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                                 Tags::LogicalCoordinates<Dim>>,
@@ -295,7 +295,7 @@ struct InitializeElement {
     struct ComputeTags<LocalSystem, true> {
       using type = db::AddComputeTags<
           Tags::Time,
-          Tags::ComputeDiv<
+          Tags::DivCompute<
               db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<Dim>,
                                  Frame::Inertial>,
               Tags::InverseJacobian<Tags::ElementMap<Dim>,
