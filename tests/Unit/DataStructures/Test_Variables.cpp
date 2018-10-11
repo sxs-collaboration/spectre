@@ -160,14 +160,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   CHECK(get_output(empty_vars) == "Variables is empty!");
 
   // Check self-assignment
+#ifndef __APPLE__
 #if defined(__clang__) && __clang_major__ > 6
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
 #endif  // defined(__clang__) && __clang_major__ > 6
+#endif  // ! __APPLE__
   v = v;
+#ifndef __APPLE__
 #if defined(__clang__) && __clang_major__ > 6
 #pragma GCC diagnostic pop
 #endif  // defined(__clang__) && __clang_major__ > 6
+#endif  // ! __APPLE__
   CHECK(v == v2);
 
   CHECK(
