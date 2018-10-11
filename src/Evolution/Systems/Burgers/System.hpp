@@ -16,6 +16,9 @@
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to evolving the %Burgers equation
 /// \f$0 = \partial_t U + \partial_x\left(U^2/2\right)\f$.
+///
+/// \note For this definition (i.e., with the factor of one half in the flux)
+/// of the Burgers system, the local characteristic speed is \f$U\f$.
 namespace Burgers {
 struct System {
   static constexpr bool is_conservative = true;
