@@ -69,19 +69,21 @@ char pup_helper(int& index, PUP::er& p, boost::variant<Ts...>& var,  // NOLINT
 }
 }  // namespace BoostVariant_detail
 
+namespace PUP {
 template <class... Ts>
-void pup(PUP::er& p, boost::variant<Ts...>& var) {  // NOLINT
+void pup(er& p, boost::variant<Ts...>& var) noexcept {  // NOLINT
   int index = 0;
   int send_index = var.which();
   p | send_index;
   (void)std::initializer_list<char>{
-      BoostVariant_detail::pup_helper<Ts>(index, p, var, send_index)...};
+      ::BoostVariant_detail::pup_helper<Ts>(index, p, var, send_index)...};
 }
 
 template <typename... Ts>
-inline void operator|(PUP::er& p, boost::variant<Ts...>& d) {  // NOLINT
+inline void operator|(er& p, boost::variant<Ts...>& d) noexcept {  // NOLINT
   pup(p, d);
 }
+}  // namespace PUP
 
 /*!
  * \ingroup UtilitiesGroup
@@ -98,8 +100,9 @@ std::string type_of_current_state(
   // clang-format on
 }
 
+namespace PUP {
 template <class T>
-void pup(PUP::er& p, boost::optional<T>& var) {  // NOLINT
+void pup(er& p, boost::optional<T>& var) noexcept {  // NOLINT
   bool has_data = var != boost::none;
   p | has_data;
   if (has_data) {
@@ -113,6 +116,7 @@ void pup(PUP::er& p, boost::optional<T>& var) {  // NOLINT
 }
 
 template <typename T>
-inline void operator|(PUP::er& p, boost::optional<T>& var) {  // NOLINT
+inline void operator|(er& p, boost::optional<T>& var) noexcept {  // NOLINT
   pup(p, var);
 }
+}  // namespace PUP
