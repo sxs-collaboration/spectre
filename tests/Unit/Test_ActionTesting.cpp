@@ -183,9 +183,14 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   CHECK(db::get<ValueTag>(box) == 14);
   runner.simple_action<component_for_simple_action_mock<metavars>,
                        simple_action_b>(0, 3);
+
+  CHECK_FALSE(runner.is_simple_action_queue_empty<
+              component_for_simple_action_mock<metavars>>(0));
   runner
       .invoke_queued_simple_action<component_for_simple_action_mock<metavars>>(
           0);
+  CHECK(runner.is_simple_action_queue_empty<
+        component_for_simple_action_mock<metavars>>(0));
   CHECK(db::get<PassedToB>(box) == 3);
   CHECK(db::get<ValueTag>(box) == 25);
 }
