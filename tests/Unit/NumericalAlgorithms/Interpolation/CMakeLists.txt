@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_BarycentricRational.cpp
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
+  Test_InterpolationTargetLineSegment.cpp
   Test_InterpolatorRegisterElement.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
