@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -127,7 +128,9 @@ void PrimitiveFromConservative<PrimitiveRecoveryScheme, ThermodynamicDim>::
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
-    (grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin), (1, 2))
+    (grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
+     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl),
+    (1, 2))
 
 #undef INSTANTIATION
 #undef THERMODIM

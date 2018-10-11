@@ -116,7 +116,6 @@ MAKE_UNARY_TEST(Cos, cos);
 MAKE_UNARY_TEST(Cosh, cosh);
 MAKE_UNARY_TEST(Erf, erf);
 MAKE_UNARY_TEST(Exp, exp);
-MAKE_UNARY_TEST(Exp10, exp10);
 MAKE_UNARY_TEST(Exp2, exp2);
 MAKE_UNARY_TEST(Fabs, fabs);
 MAKE_UNARY_TEST(Imag, imag);
@@ -275,8 +274,10 @@ void test_generic_unaries(Gen& gen) noexcept {
   tmpl::for_each<AllTypeList>([&gen, &generic_unaries ](auto x) noexcept {
     using DistType =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
-    tmpl::for_each<tmpl::make_sequence<std::integral_constant<size_t, 0>, 20,
-                                       tmpl::next<tmpl::_1>>>([
+    tmpl::for_each<
+        tmpl::make_sequence<std::integral_constant<size_t, 0>,
+                            std::tuple_size<decltype(generic_unaries)>::value,
+                            tmpl::next<tmpl::_1>>>([
       &gen, &x, &generic_unaries
     ](auto index) noexcept {
       auto& tup = std::get<decltype(index)::type::value>(generic_unaries);
@@ -316,8 +317,10 @@ void test_floating_point_functions(Gen& gen) noexcept {
                              &floating_binaries ](auto x) noexcept {
     using DistType1 =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
-    tmpl::for_each<tmpl::make_sequence<std::integral_constant<size_t, 0>, 1,
-                                       tmpl::next<tmpl::_1>>>([
+    tmpl::for_each<
+        tmpl::make_sequence<std::integral_constant<size_t, 0>,
+                            std::tuple_size<decltype(floating_unaries)>::value,
+                            tmpl::next<tmpl::_1>>>([
       &gen, &x, &floating_unaries
     ](auto index) noexcept {
       auto& tup = std::get<decltype(index)::type::value>(floating_unaries);
@@ -327,10 +330,11 @@ void test_floating_point_functions(Gen& gen) noexcept {
     tmpl::for_each<DoubleSet>([&gen, &floating_binaries, &x ](auto y) noexcept {
       using DistType2 =
           typename tt::get_fundamental_type_t<typename decltype(y)::type>;
-      tmpl::for_each<tmpl::make_sequence<std::integral_constant<size_t, 0>, 9,
-                                         tmpl::next<tmpl::_1>>>([
-        &gen, &x, &y, &floating_binaries
-      ](auto index) noexcept {
+      tmpl::for_each<tmpl::make_sequence<
+          std::integral_constant<size_t, 0>,
+          std::tuple_size<decltype(floating_binaries)>::value,
+          tmpl::next<tmpl::_1>>>([&gen, &x, &y,
+                                  &floating_binaries ](auto index) noexcept {
         auto& tup = std::get<decltype(index)::type::value>(floating_binaries);
         std::get<0>(tup)(
             gen, UniformCustomDistribution<DistType1>{std::get<Bound>(tup)},
@@ -364,7 +368,6 @@ void test_real_functions(Gen& gen) noexcept {
   auto real_unaries =
       std::make_tuple(std::make_tuple(TestFuncEvalCbrt{}, positive),
                       std::make_tuple(TestFuncEvalErf{}, generic),
-                      std::make_tuple(TestFuncEvalExp10{}, small),
                       std::make_tuple(TestFuncEvalExp2{}, small),
                       std::make_tuple(TestFuncEvalFabs{}, generic),
                       std::make_tuple(TestFuncEvalInvCbrt{}, gt_one),
@@ -377,8 +380,9 @@ void test_real_functions(Gen& gen) noexcept {
                                 &real_unaries ](auto x) noexcept {
     using DistType1 =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
-    tmpl::for_each<tmpl::make_sequence<std::integral_constant<size_t, 0>, 8,
-                                       tmpl::next<tmpl::_1>>>(
+    tmpl::for_each<tmpl::make_sequence<
+        std::integral_constant<size_t, 0>,
+        std::tuple_size<decltype(real_unaries)>::value, tmpl::next<tmpl::_1>>>(
         [&gen, &x, &real_unaries ](auto index) noexcept {
           auto& tup = std::get<decltype(index)::type::value>(real_unaries);
           std::get<0>(tup)(
@@ -389,8 +393,10 @@ void test_real_functions(Gen& gen) noexcept {
     tmpl::for_each<RealTypeList>([&gen, &real_binaries, &x ](auto y) noexcept {
       using DistType2 =
           typename tt::get_fundamental_type_t<typename decltype(y)::type>;
-      tmpl::for_each<tmpl::make_sequence<std::integral_constant<size_t, 0>, 10,
-                                         tmpl::next<tmpl::_1>>>([
+      tmpl::for_each<
+          tmpl::make_sequence<std::integral_constant<size_t, 0>,
+                              std::tuple_size<decltype(real_binaries)>::value,
+                              tmpl::next<tmpl::_1>>>([
         &gen, &x, &y, &real_binaries
       ](auto index) noexcept {
         auto& tup = std::get<decltype(index)::type::value>(real_binaries);
