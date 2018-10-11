@@ -16,10 +16,6 @@ AdamsBashforthN::AdamsBashforthN(const size_t order) noexcept : order_(order) {
   }
 }
 
-uint64_t AdamsBashforthN::number_of_substeps() const noexcept {
-  return 1;
-}
-
 size_t AdamsBashforthN::number_of_past_steps() const noexcept {
   return order_ - 1;
 }
@@ -160,7 +156,7 @@ std::vector<double> AdamsBashforthN::constant_coefficients(
 }
 
 void AdamsBashforthN::pup(PUP::er& p) noexcept {
-  TimeStepper::Inherit::pup(p);
+  LtsTimeStepper::Inherit::pup(p);
   p | order_;
 }
 

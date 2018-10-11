@@ -22,7 +22,6 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
@@ -49,7 +48,8 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>>;
   using action_list = tmpl::list<change_step_size>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
                                         Tags::TimeStep, history_tag>;
@@ -64,7 +64,7 @@ struct Metavariables {
 };
 
 void check(const bool time_runs_forward,
-           std::unique_ptr<TimeStepper> time_stepper, const Time& time,
+           std::unique_ptr<LtsTimeStepper> time_stepper, const Time& time,
            const double request, const TimeDelta& expected_step) noexcept {
   CAPTURE(time);
   CAPTURE(request);
@@ -86,14 +86,14 @@ void check(const bool time_runs_forward,
                                      initial_step_size),
                           initial_step_size, db::item_type<history_tag>{})});
   MockRuntimeSystem runner{
-      {std::move(time_stepper),
-       make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
+      {make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
                                                                    request),
            std::make_unique<StepChoosers::Constant<step_choosers>>(request),
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
                                                                    request)),
-       std::make_unique<StepControllers::BinaryFraction>()},
+       std::make_unique<StepControllers::BinaryFraction>(),
+       std::move(time_stepper)},
       std::move(dist_objects)};
 
   runner.next_action<component>(0);
@@ -120,11 +120,4 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
         -slab.duration() / 8);
   check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
         slab.end() - slab.duration() / 4, slab_length, -slab.duration() / 4);
-  // The current step size used in the test function is the entire
-  // slab.  RK3 does not support local time-stepping, so this action
-  // should do nothing.
-  check(true, std::make_unique<TimeSteppers::RungeKutta3>(), slab.start(),
-        slab_length / 5., slab.duration());
-  check(false, std::make_unique<TimeSteppers::RungeKutta3>(), slab.end(),
-        slab_length / 5., -slab.duration());
 }

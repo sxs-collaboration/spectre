@@ -72,7 +72,10 @@ struct EvolutionMetavars {
       OptionTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tag_list =
+      tmpl::list<analytic_solution_tag,
+                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,

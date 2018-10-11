@@ -24,6 +24,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+class TimeStepper;
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
@@ -32,7 +33,8 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<OptionTags::TimeStepper>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
   using action_list = tmpl::list<Actions::AdvanceTime>;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;

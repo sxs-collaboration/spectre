@@ -138,6 +138,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Factory",
                   "[Unit][Time]") {
   test_factory_creation<TimeStepper>("  AdamsBashforthN:\n"
                                      "    Order: 3");
+  test_factory_creation<LtsTimeStepper>("  AdamsBashforthN:\n"
+                                        "    Order: 3");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.Time.TimeSteppers.AdamsBashforthN.Factory does not need to
   // check anything
@@ -425,6 +427,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
   TimeSteppers::AdamsBashforthN ab(4);
   test_serialization(ab);
   test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforthN>(4_st);
+  test_serialization_via_base<LtsTimeStepper, TimeSteppers::AdamsBashforthN>(
+      4_st);
   // test operator !=
   TimeSteppers::AdamsBashforthN ab2(2);
   CHECK(ab != ab2);

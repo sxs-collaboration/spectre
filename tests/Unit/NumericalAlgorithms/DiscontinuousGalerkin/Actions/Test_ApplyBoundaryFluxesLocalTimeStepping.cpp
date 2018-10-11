@@ -40,6 +40,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+class LtsTimeStepper;
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 namespace PUP {
@@ -82,7 +83,8 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TimeStepper, NumericalFluxTag>;
+      tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>,
+                 NumericalFluxTag>;
   using action_list =
       tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>;
   using simple_tags =

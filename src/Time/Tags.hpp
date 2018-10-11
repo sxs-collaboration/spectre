@@ -97,9 +97,17 @@ struct FinalTime {
 /// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 /// \brief The ::TimeStepper
-struct TimeStepper {
-  using type = std::unique_ptr<::TimeStepper>;
+struct TimeStepper {};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+/// \brief The ::TimeStepper, specifying a (base) type.  Can be
+/// retrieved through OptionTags::TimeStepper.
+template <typename StepperType>
+struct TypedTimeStepper : TimeStepper {
+  static std::string name() noexcept { return "TimeStepper"; }
   static constexpr OptionString help{"The time stepper"};
+  using type = std::unique_ptr<StepperType>;
 };
 
 /// \ingroup OptionTagsGroup

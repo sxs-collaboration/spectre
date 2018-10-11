@@ -112,7 +112,10 @@ struct EvolutionMetavars {
               compute_rhs, update_variables,
               Actions::Goto<EvolvePhaseStart>>>>>;
 
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tag_list =
+      tmpl::list<analytic_solution_tag,
+                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
 
   using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
 

@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::Mortars<...>>
 #include "Time/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::TimeStep>
+#include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 // IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -92,7 +93,8 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
           ]() noexcept {
             const auto& normal_dot_numerical_flux_computer =
                 get<typename Metavariables::normal_dot_numerical_flux>(cache);
-            const auto& time_stepper = get<OptionTags::TimeStepper>(cache);
+            const LtsTimeStepper& time_stepper =
+                get<OptionTags::TimeStepper>(cache);
 
             for (auto& mortar_id_and_data : *mortar_data) {
               const auto& mortar_id = mortar_id_and_data.first;

@@ -9,9 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <pup.h>
-#include <type_traits>
 
-#include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -23,8 +21,6 @@
 /// \cond
 struct TimeId;
 namespace TimeSteppers {
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-class BoundaryHistory;
 template <typename Vars, typename DerivVars>
 class History;
 }  // namespace TimeSteppers
@@ -55,16 +51,6 @@ class RungeKutta3 : public TimeStepper::Inherit {
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
 
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  compute_boundary_delta(
-      const Coupling& coupling,
-      gsl::not_null<BoundaryHistory<
-          LocalVars, RemoteVars,
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
-          history,
-      const TimeDelta& time_step) const noexcept;
-
   uint64_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
@@ -73,14 +59,6 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   TimeId next_time_id(const TimeId& current_id,
                       const TimeDelta& time_step) const noexcept override;
-
-  template <typename Vars, typename DerivVars>
-  bool can_change_step_size(const TimeId& /*time_id*/,
-                            const TimeSteppers::History<Vars, DerivVars>&
-                                /*history*/) const noexcept {
-    // This integrator does not support local time-stepping.
-    return false;
-  }
 
   WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
 
@@ -148,46 +126,5 @@ void RungeKutta3::update_u(
   if (history->size() == number_of_substeps()) {
     history->mark_unneeded(history->end());
   }
-}
-
-template <typename LocalVars, typename RemoteVars, typename Coupling>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-RungeKutta3::compute_boundary_delta(
-    const Coupling& coupling,
-    const gsl::not_null<BoundaryHistory<
-        LocalVars, RemoteVars,
-        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
-        history,
-    const TimeDelta& time_step) const noexcept {
-  ASSERT(history->local_size() == history->remote_size(),
-         "Inconsistent history sizes for global time step method");
-  const size_t substep = history->local_size() - 1;
-  auto dt_vars = history->coupling(
-      coupling, history->local_end() - 1, history->remote_end() - 1);
-
-  // These are the coefficients of the dt_vars terms in the volume
-  // algorithm.
-  double prefactor;
-  switch (substep) {
-    case 0:
-      prefactor = 1.0;
-      break;
-    case 1:
-      prefactor = 0.25;
-      break;
-    case 2:
-      prefactor = 2.0 / 3.0;
-      break;
-    default:
-      ERROR("Bad substep value in RK3: " << substep);
-  }
-
-  // Clean up old history
-  if (history->local_size() == number_of_substeps()) {
-    history->local_mark_unneeded(history->local_end());
-    history->remote_mark_unneeded(history->remote_end());
-  }
-
-  return prefactor * time_step.value() * dt_vars;
 }
 }  // namespace TimeSteppers
