@@ -70,6 +70,7 @@ include(SetupLapack)
 include(SetupNumPy)
 include(SetupPapi)
 include(SetupSciPy)
+include(SetupLibsharp)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)

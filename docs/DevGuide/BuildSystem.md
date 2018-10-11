@@ -12,13 +12,14 @@ executables.
 
 To add a dependency first add a `SetupDEPENDENCY.cmake` file to the `cmake`
 directory. You should model this after one of the existing ones for Catch or
-Brigand if you're adding a header-only library and yaml-cpp if the library
-is not header-only. If CMake does not already support `find_package` for the
+Brigand if you're adding a header-only library and yaml-cpp if the library is
+not header-only. If CMake does not already support `find_package` for the
 library you're adding you can write your own. These should be modeled after
-`FindBrigand` or `FindCatch` for header-only libraries, and `FindYAMLCPP`
-for compiled libraries. Be sure to test both that setting `LIBRARY_ROOT`
-works correctly for your library, and also that if the library is required
-that CMake fails if the library is not found.
+`FindBrigand` or `FindCatch` for header-only libraries, and `FindYAMLCPP` for
+compiled libraries. The `SetupDEPENDENCY.cmake` file must then be included in
+the root `spectre/CMakeLists.txt`. Be sure to test both that setting
+`LIBRARY_ROOT` works correctly for your library, and also that if the library is
+required that CMake fails if the library is not found.
 
 ## Adding Unit Tests
 
@@ -36,7 +37,7 @@ the `Data` directory. Please see other unit tests and the
 writing tests. There will also be a section in the dev guide on how to write
 effective tests.  Unit tests should take as short a time as possible, with a
 goal of less than two seconds.
- 
+
 You can check the unit test coverage of your code by installing all the optional
 components and then running `make unit-test-coverage` (after re-running CMake).
 This will create the
