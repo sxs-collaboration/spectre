@@ -126,7 +126,8 @@ using std::abs;  // NOLINT
  * - tanh
  */
 /// DataVector class
-MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(DataVector)
+MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(DataVector, double,
+    MAKE_EXPRESSION_MATH_ASSIGN_ADD_SUB_MUL_DIV(DataVector))
 
 /// Declare shift and (in)equivalence operators for DataVector with itself
 MAKE_EXPRESSION_VECMATH_OP_COMP_SELF(DataVector)
@@ -138,7 +139,8 @@ MAKE_EXPRESSION_VECMATH_OP_COMP_DV(DataVector)
 /// \endcond
 
 // Specialize the Blaze type traits to correctly handle DataVector
-MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS(DataVector)
+MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS_0(DataVector)
+MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS_1(DataVector)
 
 // Specialize the Blaze {Unary,Binary}Map traits to correctly handle DataVector
 MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_MAP_TRAITS(DataVector)

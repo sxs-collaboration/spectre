@@ -90,7 +90,8 @@ using std::abs;  // NOLINT
  *
  */
 /// ModalVector class
-MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(ModalVector)
+MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(ModalVector, double,
+    MAKE_EXPRESSION_MATH_ASSIGN_ADD_SUB(ModalVector))
 
 /// Declare shift and (in)equivalence operators for ModalVector with itself
 MAKE_EXPRESSION_VECMATH_OP_COMP_SELF(ModalVector)
@@ -102,7 +103,7 @@ MAKE_EXPRESSION_VECMATH_OP_COMP_DV(ModalVector)
 /// \endcond
 
 // Specialize Blaze type traits to correctly handle ModalVector
-MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS(ModalVector)
+MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS_0(ModalVector)
 
 // Specialize the Blaze {Unary,Binary}Map traits to correctly handle ModalVector
 namespace blaze {

@@ -28,9 +28,9 @@
  * owning, meaning the array is deleted when the VECTYPE goes out of scope, or
  * non-owning, meaning it just has a pointer to an array.
  */
-#define MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(VECTYPE)                     \
+#define MAKE_EXPRESSION_DATA_MODAL_VECTOR_CLASSES(VECTYPE, VALTYPE, CUSTOMACRO)\
 class VECTYPE /* NOLINT */                                                     \
-    : public PointerVector<double, blaze::unaligned, blaze::unpadded,          \
+    : public PointerVector<VALTYPE, blaze::unaligned, blaze::unpadded,         \
                            blaze::defaultTransposeFlag, VECTYPE> { /* NOLINT */\
   /** \cond HIDDEN_SYMBOLS */                                                  \
   static constexpr void private_asserts() noexcept { /* NOLINTNEXTLINE */      \
@@ -39,11 +39,11 @@ class VECTYPE /* NOLINT */                                                     \
   }                                                                            \
   /** \endcond */                                                              \
  public:                                                                       \
-  using value_type = double;                                                   \
+  using value_type = VALTYPE;                                                  \
   using allocator_type = std::allocator<value_type>;                           \
   using size_type = size_t;                                                    \
   using difference_type = std::ptrdiff_t;                                      \
-  using BaseType = PointerVector<double, blaze::unaligned, blaze::unpadded,    \
+  using BaseType = PointerVector<VALTYPE, blaze::unaligned, blaze::unpadded,   \
                                  blaze::defaultTransposeFlag,                  \
                                  VECTYPE>; /* NOLINT */                        \
   static constexpr bool transpose_flag = blaze::defaultTransposeFlag;          \
@@ -74,14 +74,14 @@ class VECTYPE /* NOLINT */                                                     \
   /** \param value the value to initialize each element. */                    \
   explicit VECTYPE( /* NOLINT */                                               \
       size_t size,                                                             \
-      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;   \
+      VALTYPE value = std::numeric_limits<VALTYPE>::signaling_NaN()) noexcept; \
                                                                                \
   /** Create a non-owning VECTYPE that points to `start` */                    \
-  VECTYPE(double* start, size_t size) noexcept; /* NOLINT */                   \
+  VECTYPE(VALTYPE* start, size_t size) noexcept; /* NOLINT */                  \
                                                                                \
-  /** Create from an initializer list of doubles. All elements in the */       \
+  /** Create from an initializer list of VALTYPEs. All elements in the */      \
   /** `std::initializer_list` must have decimal points */                      \
-  template <class T, Requires<cpp17::is_same_v<T, double>> = nullptr>          \
+  template <class T, Requires<cpp17::is_same_v<T, VALTYPE>> = nullptr>         \
   VECTYPE(std::initializer_list<T> list) noexcept; /* NOLINT */                \
                                                                                \
   /** Empty VECTYPE */                                                         \
@@ -104,12 +104,10 @@ class VECTYPE /* NOLINT */                                                     \
   VECTYPE& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;   \
   /** \endcond */                                                              \
                                                                                \
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, VECTYPE) /* NOLINT */                     \
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, VECTYPE) /* NOLINT */                     \
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, VECTYPE) /* NOLINT */                     \
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, VECTYPE) /* NOLINT */                     \
+  /* Add Custom Macro */                                                       \
+  CUSTOMACRO                                                                   \
                                                                                \
-  VECTYPE& operator=(const double& rhs) noexcept { /* NOLINT */                \
+  VECTYPE& operator=(const VALTYPE& rhs) noexcept { /* NOLINT */               \
     ~*this = rhs;                                                              \
     return *this;                                                              \
   }                                                                            \
@@ -119,7 +117,7 @@ class VECTYPE /* NOLINT */                                                     \
   void set_data_ref(gsl::not_null<VECTYPE*> rhs) noexcept { /* NOLINT */       \
     set_data_ref(rhs->data(), rhs->size());                                    \
   }                                                                            \
-  void set_data_ref(double* start, size_t size) noexcept {                     \
+  void set_data_ref(VALTYPE* start, size_t size) noexcept {                    \
     owned_data_ = decltype(owned_data_){};                                     \
     (~*this).reset(start, size);                                               \
     owning_ = false;                                                           \
@@ -139,7 +137,7 @@ class VECTYPE /* NOLINT */                                                     \
   }                                                                            \
                                                                                \
   /** \cond HIDDEN_SYMBOLS */                                                  \
-  std::vector<double, allocator_type> owned_data_;                             \
+  std::vector<VALTYPE, allocator_type> owned_data_;                            \
   bool owning_{true};                                                          \
   /** \endcond */                                                              \
 };
@@ -196,7 +194,7 @@ bool operator!=(const blaze::DenseVector<VT, VF>& lhs,            \
  * Specialize the Blaze type traits (Add,Sub,Mult,Div) to handle VECTYPE
  * correctly.
  */
-#define MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS(VECTYPE) \
+#define MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS_0(VECTYPE)\
 namespace blaze {                                                           \
 template <>                                                                 \
 struct IsVector<VECTYPE> : std::true_type {}; /* NOLINT */                  \
@@ -236,11 +234,6 @@ struct SubTrait<double, VECTYPE> { /* NOLINT */                             \
 };                                                                          \
                                                                             \
 template <>                                                                 \
-struct MultTrait<VECTYPE, VECTYPE> { /* NOLINT */                           \
-  using Type = VECTYPE; /* NOLINT */                                        \
-};                                                                          \
-                                                                            \
-template <>                                                                 \
 struct MultTrait<VECTYPE, double> { /* NOLINT */                            \
   using Type = VECTYPE; /* NOLINT */                                        \
 };                                                                          \
@@ -251,16 +244,37 @@ struct MultTrait<double, VECTYPE> { /* NOLINT */                            \
 };                                                                          \
                                                                             \
 template <>                                                                 \
-struct DivTrait<VECTYPE, VECTYPE> { /* NOLINT */                            \
-  using Type = VECTYPE; /* NOLINT */                                        \
-};                                                                          \
-                                                                            \
-template <>                                                                 \
 struct DivTrait<VECTYPE, double> { /* NOLINT */                             \
   using Type = VECTYPE; /* NOLINT */                                        \
 };                                                                          \
 } /* namespace blaze*/
 
+#define MAKE_EXPRESSION_VECMATH_SPECIALIZE_BLAZE_ARITHMETIC_TRAITS_1(VECTYPE)\
+namespace blaze {                                                           \
+template <>                                                                 \
+struct MultTrait<VECTYPE, VECTYPE> { /* NOLINT */                           \
+  using Type = VECTYPE; /* NOLINT */                                        \
+};                                                                          \
+                                                                            \
+template <>                                                                 \
+struct DivTrait<VECTYPE, VECTYPE> { /* NOLINT */                            \
+  using Type = VECTYPE; /* NOLINT */                                        \
+};                                                                          \
+} /* namespace blaze*/
+
+
+/**
+ * Assignment operators
+ */
+#define MAKE_EXPRESSION_MATH_ASSIGN_ADD_SUB_MUL_DIV(VECTYPE)   \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, VECTYPE) /* NOLINT */     \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, VECTYPE) /* NOLINT */     \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, VECTYPE) /* NOLINT */     \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, VECTYPE) /* NOLINT */
+
+#define MAKE_EXPRESSION_MATH_ASSIGN_ADD_SUB(VECTYPE)       \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, VECTYPE) /* NOLINT */ \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, VECTYPE) /* NOLINT */
 
 /**
  * Specialize the Blaze Map traits to correctly handle VECTYPE
