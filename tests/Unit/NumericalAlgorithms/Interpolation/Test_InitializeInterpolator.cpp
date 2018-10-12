@@ -84,7 +84,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",
   const auto& holder =
       get<intrp::Vars::HolderTag<metavars::InterpolatorTargetA, metavars, 3>>(
           holders);
-  CHECK(holder.info.empty());
+  CHECK(holder.infos.empty());
   // Check that 'holders' has only one tag.
   CHECK(holders.size() == 1);
 
