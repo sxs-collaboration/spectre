@@ -55,6 +55,7 @@
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_forward_declare ElementIndex
+class TimeStepper;
 // IWYU pragma: no_forward_declare Variables
 namespace PUP {
 class er;  // IWYU pragma: keep
@@ -123,7 +124,7 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TimeStepper,
+      tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>,
                  OptionTags::AnalyticSolution<SystemAnalyticSolution>>;
   using action_list = tmpl::list<>;
   using initial_databox =

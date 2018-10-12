@@ -27,6 +27,8 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+class TimeStepper;
+
 namespace {
 constexpr size_t dim = 1;
 using frame = Frame::Grid;
@@ -40,7 +42,8 @@ struct CharacteristicSpeed : db::SimpleTag {
 
 struct Metavariables {
   using component_list = tmpl::list<>;
-  using const_global_cache_tag_list = tmpl::list<OptionTags::TimeStepper>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
   struct system {
     struct compute_largest_characteristic_speed {
       using argument_tags = tmpl::list<CharacteristicSpeed>;

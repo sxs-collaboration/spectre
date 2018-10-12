@@ -34,6 +34,8 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+class TimeStepper;
+
 namespace {
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
@@ -64,7 +66,8 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<OptionTags::TimeStepper>;
+  using const_global_cache_tag_list =
+      tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
   using action_list = tmpl::append<
       SelfStart::self_start_procedure<
           tmpl::list<Actions::ComputeVolumeDuDt,

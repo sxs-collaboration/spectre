@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -44,8 +45,7 @@ template <typename StepChooserRegistrars>
 struct ChangeStepSize {
   using step_choosers_tag = OptionTags::StepChoosers<StepChooserRegistrars>;
   using const_global_cache_tags =
-      tmpl::list<OptionTags::TimeStepper, step_choosers_tag,
-                 OptionTags::StepController>;
+      tmpl::list<step_choosers_tag, OptionTags::StepController>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -62,7 +62,8 @@ struct ChangeStepSize {
     using variables_tag = typename Metavariables::system::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
-    const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
+    const LtsTimeStepper& time_stepper =
+        Parallel::get<OptionTags::TimeStepper>(cache);
     const auto& step_choosers = Parallel::get<step_choosers_tag>(cache);
     const auto& step_controller =
         Parallel::get<OptionTags::StepController>(cache);

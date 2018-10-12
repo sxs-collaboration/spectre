@@ -5,6 +5,7 @@
 
 #include <cmath>
 
+#include "ErrorHandling/Assert.hpp"
 #include "Time/TimeId.hpp"
 
 namespace TimeSteppers {

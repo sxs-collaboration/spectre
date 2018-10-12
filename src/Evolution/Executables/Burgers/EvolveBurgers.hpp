@@ -60,7 +60,10 @@ struct EvolutionMetavars {
   using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
       OptionTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tag_list =
+      tmpl::list<analytic_solution_tag,
+                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
   using step_choosers =

@@ -32,14 +32,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
     INFO(order);
     const TimeSteppers::AdamsBashforthN stepper(order);
     TimeStepperTestUtils::check_multistep_properties(stepper);
-    const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    TimeStepperTestUtils::integrate_test(stepper, order - 1, 1., epsilon);
-  }
-
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    const TimeSteppers::AdamsBashforthN stepper(order);
-    TimeStepperTestUtils::check_multistep_properties(stepper);
     for (size_t start_points = 0; start_points < order; ++start_points) {
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
@@ -71,13 +63,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
                   "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
-    const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    TimeStepperTestUtils::integrate_variable_test(
-        TimeSteppers::AdamsBashforthN(order), order - 1, epsilon);
-  }
-
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
     for (size_t start_points = 0; start_points < order; ++start_points) {
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
@@ -89,13 +74,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
                   "[Unit][Time]") {
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    TimeStepperTestUtils::integrate_test(
-        TimeSteppers::AdamsBashforthN(order), order - 1, -1., epsilon);
-  }
-
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     for (size_t start_points = 0; start_points < order; ++start_points) {
@@ -138,6 +116,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Factory",
                   "[Unit][Time]") {
   test_factory_creation<TimeStepper>("  AdamsBashforthN:\n"
                                      "    Order: 3");
+  test_factory_creation<LtsTimeStepper>("  AdamsBashforthN:\n"
+                                        "    Order: 3");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.Time.TimeSteppers.AdamsBashforthN.Factory does not need to
   // check anything
@@ -425,6 +405,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
   TimeSteppers::AdamsBashforthN ab(4);
   test_serialization(ab);
   test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforthN>(4_st);
+  test_serialization_via_base<LtsTimeStepper, TimeSteppers::AdamsBashforthN>(
+      4_st);
   // test operator !=
   TimeSteppers::AdamsBashforthN ab2(2);
   CHECK(ab != ab2);

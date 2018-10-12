@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
-#include <cstdint>
 #include <iterator>
 #include <map>
 #include <pup.h>
@@ -44,7 +43,7 @@ namespace TimeSteppers {
 /// \ingroup TimeSteppersGroup
 ///
 /// An Nth Adams-Bashforth time stepper.
-class AdamsBashforthN : public TimeStepper::Inherit {
+class AdamsBashforthN : public LtsTimeStepper::Inherit {
  public:
   static constexpr const size_t maximum_order = 8;
 
@@ -195,8 +194,6 @@ class AdamsBashforthN : public TimeStepper::Inherit {
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
       const TimeDelta& time_step) const noexcept;
-
-  uint64_t number_of_substeps() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
 
