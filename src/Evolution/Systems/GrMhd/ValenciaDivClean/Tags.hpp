@@ -9,8 +9,18 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "Options/Options.hpp"
 
 class DataVector;
+
+namespace OptionTags {
+/// \brief The constraint damping parameter
+struct DampingParameter {
+  using type = double;
+  static constexpr OptionString help{
+      "constraint damping parameter for divergence cleaning"};
+};
+}  // namespace OptionTags
 
 namespace grmhd {
 namespace ValenciaDivClean {
@@ -22,6 +32,12 @@ namespace Tags {
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 9>;
   static std::string name() noexcept { return "CharacteristicSpeeds"; }
+};
+
+/// The constraint damping parameter for divergence cleaning
+struct ConstraintDampingParameter : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "ConstraintDampingParameter"; }
 };
 
 /// The densitized rest-mass density \f${\tilde D}\f$

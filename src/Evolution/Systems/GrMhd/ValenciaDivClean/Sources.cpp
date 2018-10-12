@@ -9,8 +9,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -71,8 +74,7 @@ tnsr::II<DataVector, 3, Frame::Inertial> densitized_stress(
 namespace grmhd {
 namespace ValenciaDivClean {
 
-void compute_source_terms_of_u(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_d,
+void ComputeSources::apply(
     gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
     gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
     gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_b,
@@ -95,8 +97,6 @@ void compute_source_terms_of_u(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) noexcept {
-  get(*source_tilde_d) = 0.0;
-
   const auto tilde_s_M = raise_or_lower_index(tilde_s, inv_spatial_metric);
   const auto tilde_s_MN =
       densitized_stress(rest_mass_density, specific_enthalpy, lorentz_factor,
