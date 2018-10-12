@@ -32,6 +32,8 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t>
 class Mesh;
+template <size_t>
+class OrientationMap;
 
 namespace PUP {
 class er;
@@ -164,8 +166,10 @@ namespace SlopeLimiters {
 ///    some (untested) tweaks that try to reduce spurious limiter activations
 ///    near these fake kinks.
 ///
-/// The limiter as implemented expects an element to have one neighbor in each
-/// direction, and therefore does not support h-refinement.
+/// When an element has multiple neighbors in any direction, an effective mean
+/// and neighbor size in this direction are computed by averaging over the
+/// multiple neighbors. This simple generalization of the minmod limiter enables
+/// it to operate on h-refined grids.
 ///
 /// \tparam VolumeDim The number of spatial dimensions.
 /// \tparam Tags A typelist of tags specifying the tensors to limit.
