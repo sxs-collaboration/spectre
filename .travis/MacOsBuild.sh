@@ -37,6 +37,9 @@ if [ ! -d $SPECTRE_BUILD_DIR ]; then
 fi
 cd $SPECTRE_BUILD_DIR
 ccache -z
+
+# We don't need debug symbols during CI and we are able to reduce memory
+# usage by 1.5x during compilation.
 cmake -D CHARM_ROOT=$DEP_CACHE/charm-${CHARM_VERSION} \
       -D BLAZE_ROOT=$DEP_CACHE/blaze-${BLAZE_VERSION}/ \
       -D BRIGAND_ROOT=$DEP_CACHE/brigand\
@@ -48,6 +51,7 @@ cmake -D CHARM_ROOT=$DEP_CACHE/charm-${CHARM_VERSION} \
       -D LAPACK_openblas_LIBRARY=/usr/local/opt/openblas/lib/libopenblas.dylib\
       -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -D USE_PCH=${USE_PCH} \
+      -D DEBUG_SYMBOLS=OFF \
       ${SPECTRE_SOURCE_DIR}
 
 # Build all Charm++ modules

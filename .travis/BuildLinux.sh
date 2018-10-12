@@ -19,6 +19,8 @@ export PATH=$PATH:/work/texlive/bin/x86_64-linux
 
 ccache -z
 
+# We don't need debug symbols during CI and we are able to reduce memory
+# usage by 1.5x during compilation.
 cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -D CMAKE_C_COMPILER=${CC} \
       -D CMAKE_CXX_COMPILER=${CXX} \
@@ -27,6 +29,7 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC} \
       -D USE_CCACHE=ON \
       -D USE_PCH=${USE_PCH} \
+      -D DEBUG_SYMBOLS=OFF \
       -D COVERAGE=${COVERAGE} \
       ../spectre/
 
