@@ -43,6 +43,7 @@
 #include "Time/StepChoosers/Constant.hpp"          // IWYU pragma: keep
 #include "Time/StepChoosers/Increase.hpp"          // IWYU pragma: keep
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Functional.hpp"
@@ -64,7 +65,7 @@ struct EvolutionMetavars {
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
   using temporal_id = Tags::TimeId;
-  static constexpr bool local_time_stepping = false;
+  static constexpr bool local_time_stepping = true;
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using boundary_condition_tag = analytic_solution_tag;
@@ -161,6 +162,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<MathFunction<1>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
+    &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

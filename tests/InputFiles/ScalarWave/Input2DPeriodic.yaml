@@ -14,8 +14,9 @@ AnalyticSolution:
       Phase: 0.0
 
 InitialTime: 0.0
-FinalTime: 0.1
-InitialTimeStep: 0.01
+FinalTime: 0.05
+InitialTimeStep: 0.001
+InitialSlabSize: 0.01
 
 DomainCreator:
   Rectangle:
@@ -28,6 +29,15 @@ DomainCreator:
 TimeStepper:
   AdamsBashforthN:
     Order: 3
+
+StepController: BinaryFraction
+
+StepChoosers:
+  - Constant: 0.05
+  - Increase:
+      Factor: 2
+  - Cfl:
+      SafetyFactor: 0.2
 
 NumericalFluxParams:
 
