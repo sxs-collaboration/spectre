@@ -5,8 +5,6 @@
 
 #include <limits>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -139,22 +137,11 @@ class AlfvenWave {
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
 
-  template <typename DataType>
-  using dt_variables_tags =
-      db::wrap_tags_in<Tags::dt, variables_tags<DataType>>;
-
   /// Retrieve the primitive variables at time `t` and spatial coordinates `x`
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t,
       variables_tags<DataType> /*meta*/) const noexcept;
-
-  /// Retrieve the time derivative of the primitive variables at time `t` and
-  /// spatial coordinates `x`
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>> variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      dt_variables_tags<DataType> /*meta*/) const noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT

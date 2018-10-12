@@ -6,9 +6,7 @@
 #include <cmath>
 #include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"             // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
-#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -93,48 +91,6 @@ AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
   return result;
 }
 
-template <typename DataType>
-tuples::tagged_tuple_from_typelist<AlfvenWave::dt_variables_tags<DataType>>
-AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      AlfvenWave::dt_variables_tags<DataType> /*meta*/) const
-    noexcept {
-  // Explicitly set all variables to zero:
-  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
-      AlfvenWave::dt_variables_tags<DataType>>>(x, 0.0);
-
-  const DataType phase = k_dot_x_minus_vt(x, t);
-
-  // Angular frequency:
-  const double omega = alfven_speed_ * wavenumber_;
-
-  get<Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(0) = fluid_speed_ * omega * sin(phase);
-  get<Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(1) = -fluid_speed_ * omega * cos(phase);
-  get<Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(2) = 0.0;
-
-  get<Tags::dt<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(0) = perturbation_size_ * omega * sin(phase);
-  get<Tags::dt<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(1) = -perturbation_size_ * omega * cos(phase);
-  get<Tags::dt<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(2) = 0.0;
-
-  // The time derivatives of the rest mass density, pressure, and specific
-  // internal energy are not set because they are identically zero, and
-  // `result` is initialized with all time derivatives of primitive variables
-  // equal to zero.
-
-  return result;
-}
-
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
   // the adiabatic_exponents are compared
@@ -164,12 +120,6 @@ bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
   grmhd::Solutions::AlfvenWave::variables(                                   \
       const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
       grmhd::Solutions::AlfvenWave::variables_tags<DTYPE(data)> /*meta*/)    \
-      const noexcept;                                                        \
-  template tuples::tagged_tuple_from_typelist<                               \
-      grmhd::Solutions::AlfvenWave::dt_variables_tags<DTYPE(data)>>          \
-  grmhd::Solutions::AlfvenWave::variables(                                   \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
-      grmhd::Solutions::AlfvenWave::dt_variables_tags<DTYPE(data)> /*meta*/) \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

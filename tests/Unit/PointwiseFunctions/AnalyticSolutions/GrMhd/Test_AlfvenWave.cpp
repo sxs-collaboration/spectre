@@ -32,13 +32,6 @@ struct AlfvenWaveProxy : grmhd::Solutions::AlfvenWave {
   primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
     return variables(x, t, variables_tags<DataType>{});
   }
-
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>>
-  dt_primitive_variables(const tnsr::I<DataType, 3>& x, double t) const
-      noexcept {
-    return variables(x, t, dt_variables_tags<DataType>{});
-  }
 };
 
 void test_create_from_options() noexcept {
@@ -96,27 +89,6 @@ void test_variables(const DataType& used_for_size) {
                       adiabatic_exponent, background_mag_field,
                       perturbation_size),
       used_for_size);
-
-    pypp::check_with_random_values<
-        1,
-        tmpl::list<
-            Tags::dt<hydro::Tags::RestMassDensity<DataType>>,
-            Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3,
-    Frame::Inertial>>, Tags::dt<hydro::Tags::SpecificInternalEnergy<DataType>>,
-            Tags::dt<hydro::Tags::Pressure<DataType>>,
-            Tags::dt<hydro::Tags::MagneticField<DataType, 3,
-    Frame::Inertial>>>>( &AlfvenWaveProxy::dt_primitive_variables<DataType>,
-        AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
-    adiabatic_exponent, background_mag_field, perturbation_size),
-        "TestFunctions",
-        {"alfven_dt_rest_mass_density", "alfven_dt_spatial_velocity",
-         "alfven_dt_specific_internal_energy",
-         "alfven_dt_pressure", "alfven_dt_magnetic_field"},
-        {{{-15., 15.}}},
-        std::make_tuple(wavenumber, pressure, rest_mass_density,
-                        adiabatic_exponent, background_mag_field,
-                        perturbation_size),
-        used_for_size);
 }
 }  // namespace
 
