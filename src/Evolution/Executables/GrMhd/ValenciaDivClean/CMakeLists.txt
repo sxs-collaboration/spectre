@@ -12,6 +12,7 @@ set(LIBS_TO_LINK
   Informer
   LinearOperators
   MathFunctions
+  SlopeLimiters
   Time
   Utilities
   ValenciaDivClean

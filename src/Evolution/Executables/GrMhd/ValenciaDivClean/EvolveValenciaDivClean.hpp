@@ -13,6 +13,9 @@
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Observe.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -60,7 +63,7 @@ class CProxy_ConstGlobalCache;
 struct EvolutionMetavars {
   using system = grmhd::ValenciaDivClean::System;
   using temporal_id = Tags::TimeId;
-  static constexpr bool local_time_stepping = true;
+  static constexpr bool local_time_stepping = false;
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<grmhd::Solutions::SmoothFlow>;
   using analytic_variables_tags =
@@ -69,6 +72,8 @@ struct EvolutionMetavars {
       typename analytic_solution_tag::type::equation_of_state_type>;
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+  using limiter = OptionTags::SlopeLimiterParams<
+      SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
 
   using step_choosers =
       tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
@@ -96,7 +101,9 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, Actions::UpdatePrimitives>>;
+      Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
+      SlopeLimiters::Actions::Limit<EvolutionMetavars>,
+      Actions::UpdatePrimitives>>;
 
   struct EvolvePhaseStart;
   using component_list = tmpl::list<

@@ -20,6 +20,7 @@
 #include "Evolution/Initialization/Domain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Interface.hpp"
+#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -144,6 +145,7 @@ struct Initialize {
           typename Metavariables::system>::simple_tags,
       typename Initialization::DiscontinuousGalerkin<
           Metavariables>::simple_tags,
+      typename Initialization::MinMod<Dim>::simple_tags,
       typename Initialization::Domain<Dim>::compute_tags,
       typename GrTags<typename Metavariables::system>::compute_tags,
       typename PrimitiveTags<Metavariables>::compute_tags,
@@ -154,7 +156,8 @@ struct Initialize {
       typename Initialization::Evolution<
           typename Metavariables::system>::compute_tags,
       typename Initialization::DiscontinuousGalerkin<
-          Metavariables>::compute_tags>;
+          Metavariables>::compute_tags,
+      typename Initialization::MinMod<Dim>::compute_tags>;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent>
@@ -188,8 +191,9 @@ struct Initialize {
     auto dg_box =
         Initialization::DiscontinuousGalerkin<Metavariables>::initialize(
             std::move(evolution_box), initial_extents);
-    // Note, no support for non-self-starting yet as the history is empty
-    return std::make_tuple(std::move(dg_box));
+    auto limiter_box =
+        Initialization::MinMod<Dim>::initialize(std::move(dg_box));
+    return std::make_tuple(std::move(limiter_box));
   }
 };
 }  // namespace Actions
