@@ -5,9 +5,11 @@
 # Check: execute
 
 InitialTime: 0.0
-InitialTimeStep: 0.001
+InitialTimeStep: 0.01
 FinalTime: 0.1
-InitialSlabSize: 0.01
+
+# InitialSlabSize is only needed for local time stepping
+# InitialSlabSize: 0.01
 
 DomainCreator:
   Brick:
@@ -28,17 +30,21 @@ TimeStepper:
   AdamsBashforthN:
     Order: 3
 
-StepController: BinaryFraction
+# StepController and StepChoosers are needed only for local time stepping
+# StepController: BinaryFraction
 
-StepChoosers:
-  - Constant: 0.05
-  - Increase:
-      Factor: 2
-  - Cfl:
-      SafetyFactor: 0.2
+# StepChoosers:
+#   - Constant: 0.05
+#   - Increase:
+#       Factor: 2
+#   - Cfl:
+#       SafetyFactor: 0.2
 
 VolumeFileName: "./GrMhd"
 
 NumericalFluxParams:
 
 DampingParameter: 0.0
+
+SlopeLimiterParams:
+  Type: LambdaPi1
