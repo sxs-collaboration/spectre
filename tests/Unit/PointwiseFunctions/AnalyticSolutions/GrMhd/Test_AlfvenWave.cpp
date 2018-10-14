@@ -28,9 +28,30 @@ struct AlfvenWaveProxy : grmhd::Solutions::AlfvenWave {
   using grmhd::Solutions::AlfvenWave::AlfvenWave;
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
-    return variables(x, t, variables_tags<DataType>{});
+  using hydro_variables_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::LorentzFactor<DataType>,
+                 hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  using grmhd_variables_tags =
+      tmpl::push_back<hydro_variables_tags<DataType>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
+  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, hydro_variables_tags<DataType>{});
+  }
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
+  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
@@ -71,19 +92,32 @@ void test_variables(const DataType& used_for_size) {
   const double perturbation_size = 0.78;
 
   pypp::check_with_random_values<
-      1, tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                    hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-                    hydro::Tags::SpecificInternalEnergy<DataType>,
-                    hydro::Tags::Pressure<DataType>,
-                    hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      &AlfvenWaveProxy::primitive_variables<DataType>,
+      1, AlfvenWaveProxy::hydro_variables_tags<DataType>>(
+      &AlfvenWaveProxy::hydro_variables<DataType>,
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
                       adiabatic_exponent, background_mag_field,
                       perturbation_size),
       "TestFunctions",
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
-       "alfven_magnetic_field"},
+       "alfven_lorentz_factor", "alfven_specific_enthalpy"},
+      {{{-15., 15.}}},
+      std::make_tuple(wavenumber, pressure, rest_mass_density,
+                      adiabatic_exponent, background_mag_field,
+                      perturbation_size),
+      used_for_size);
+
+  pypp::check_with_random_values<
+      1, AlfvenWaveProxy::grmhd_variables_tags<DataType>>(
+      &AlfvenWaveProxy::grmhd_variables<DataType>,
+      AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
+                      adiabatic_exponent, background_mag_field,
+                      perturbation_size),
+      "TestFunctions",
+      {"alfven_rest_mass_density", "alfven_spatial_velocity",
+       "alfven_specific_internal_energy", "alfven_pressure",
+       "alfven_lorentz_factor", "alfven_specific_enthalpy",
+       "alfven_magnetic_field", "alfven_divergence_cleaning_field"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density,
                       adiabatic_exponent, background_mag_field,

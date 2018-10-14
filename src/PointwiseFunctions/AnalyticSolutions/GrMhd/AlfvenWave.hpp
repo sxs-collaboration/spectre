@@ -137,11 +137,71 @@ class AlfvenWave {
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
 
-  /// Retrieve the primitive variables at time `t` and spatial coordinates `x`
+  // @{
+  /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
+  auto variables(
       const tnsr::I<DataType, 3>& x, double t,
-      variables_tags<DataType> /*meta*/) const noexcept;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double t,
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::SpatialVelocity<
+                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::MagneticField<
+                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double t,
+      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  // @}
+
+  /// Retrieve a collection of hydro variables at `(x, t)`
+  template <typename DataType, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         double t,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
+    static_assert(sizeof...(Tags) > 1,
+                  "The generic template will recurse infinitely if only one "
+                  "tag is being retrieved.");
+    return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
+  }
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
