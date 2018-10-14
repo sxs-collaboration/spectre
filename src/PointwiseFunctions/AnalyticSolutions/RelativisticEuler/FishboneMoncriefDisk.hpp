@@ -5,10 +5,11 @@
 
 #include <limits>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -16,9 +17,11 @@
 
 /// \cond
 namespace PUP {
-class er;
+class er; // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
+
+// IWYU pragma: no_include <pup.h>
 
 namespace RelativisticEuler {
 namespace Solutions {
@@ -267,6 +270,15 @@ class FishboneMoncriefDisk {
   double polytropic_constant() const noexcept { return polytropic_constant_; }
   double polytropic_exponent() const noexcept { return polytropic_exponent_; }
 
+  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
+      noexcept {
+    return equation_of_state_;
+  }
+
+  const gr::Solutions::KerrSchild& background_spacetime() const noexcept {
+    return background_spacetime_;
+  }
+
  private:
   double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
   double black_hole_spin_ = std::numeric_limits<double>::signaling_NaN();
@@ -274,6 +286,8 @@ class FishboneMoncriefDisk {
   double max_pressure_radius_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
+  EquationsOfState::PolytropicFluid<true> equation_of_state_{};
+  gr::Solutions::KerrSchild background_spacetime_{};
 };
 
 bool operator==(const FishboneMoncriefDisk& lhs,

@@ -6,12 +6,10 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <ostream>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -36,20 +34,10 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(
       inner_edge_radius_(inner_edge_radius),
       max_pressure_radius_(max_pressure_radius),
       polytropic_constant_(polytropic_constant),
-      polytropic_exponent_(polytropic_exponent) {
-  ASSERT(black_hole_mass_ > 0.0,
-         "The black hole mass must be positive. The value given was "
-             << black_hole_mass_ << ".");
-  ASSERT(black_hole_spin_ >= 0.0 and black_hole_spin_ < 1.0,
-         "The black hole spin magnitude must be in the range [0, 1). "
-         "The value given was "
-             << black_hole_spin_ << ".");
-  ASSERT(polytropic_constant_ > 0.0,
-         "The polytropic constant must be positive. The value given was "
-             << polytropic_constant_ << ".");
-  ASSERT(polytropic_exponent_ > 1.0,
-         "The polytropic exponent must be greater than 1. The value given was "
-             << polytropic_exponent_ << ".");
+      polytropic_exponent_(polytropic_exponent),
+      equation_of_state_{polytropic_constant_, polytropic_exponent_},
+      background_spacetime_{
+          black_hole_mass_, {{0.0, 0.0, black_hole_spin_}}, {{0.0, 0.0, 0.0}}} {
 }
 
 void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
@@ -59,6 +47,8 @@ void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
   p | max_pressure_radius_;
   p | polytropic_constant_;
   p | polytropic_exponent_;
+  p | equation_of_state_;
+  p | background_spacetime_;
 }
 
 template <typename DataType>
@@ -150,14 +140,8 @@ FishboneMoncriefDisk::variables(
   }
   ();
 
-  const auto kerr_schild_metric = gr::Solutions::KerrSchild{
-      black_hole_mass_,
-      {{0.0, 0.0, black_hole_spin_}},
-      {{0.0, 0.0,
-        0.0}}}.variables(x, t, gr::Solutions::KerrSchild::tags<DataType>{});
-
-  EquationsOfState::PolytropicFluid<true> polytrope(polytropic_constant_,
-                                                    polytropic_exponent_);
+  const auto kerr_schild_metric = background_spacetime_.variables(
+      x, t, gr::Solutions::KerrSchild::tags<DataType>{});
 
   auto result = make_with_value<tuples::tagged_tuple_from_typelist<
       FishboneMoncriefDisk::variables_tags<DataType>>>(x, 0.0);
@@ -185,19 +169,19 @@ FishboneMoncriefDisk::variables(
 
         get_element(get(get<hydro::Tags::RestMassDensity<DataType>>(result)),
                     s) =
-            get(polytrope.rest_mass_density_from_enthalpy(
+            get(equation_of_state_.rest_mass_density_from_enthalpy(
                 Scalar<double>{get_element(
                     get(get<hydro::Tags::SpecificEnthalpy<DataType>>(result)),
                     s)}));
 
-        get_element(get(get<hydro::Tags::Pressure<DataType>>(result)), s) =
-            get(polytrope.pressure_from_density(Scalar<double>{get_element(
+        get_element(get(get<hydro::Tags::Pressure<DataType>>(result)), s) = get(
+            equation_of_state_.pressure_from_density(Scalar<double>{get_element(
                 get(get<hydro::Tags::RestMassDensity<DataType>>(result)), s)}));
 
         get_element(
             get(get<hydro::Tags::SpecificInternalEnergy<DataType>>(result)),
             s) =
-            get(polytrope.specific_internal_energy_from_density(
+            get(equation_of_state_.specific_internal_energy_from_density(
                 Scalar<double>{get_element(
                     get(get<hydro::Tags::RestMassDensity<DataType>>(result)),
                     s)}));
