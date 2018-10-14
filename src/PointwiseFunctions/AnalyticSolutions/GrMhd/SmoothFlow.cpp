@@ -151,6 +151,22 @@ SmoothFlow::variables(
   return {std::move(specific_internal_energy)};
 }
 
+bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
+  // there is no comparison operator for the EoS, but should be okay as
+  // the adiabatic_exponents are compared
+  return lhs.mean_velocity() == rhs.mean_velocity() and
+         lhs.wavevector() == rhs.wavevector() and
+         lhs.pressure() == rhs.pressure() and
+         lhs.adiabatic_exponent() == rhs.adiabatic_exponent() and
+         lhs.perturbation_size() == rhs.perturbation_size() and
+         lhs.k_dot_v() == rhs.k_dot_v() and
+         lhs.background_spacetime() == rhs.background_spacetime();
+}
+
+bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
