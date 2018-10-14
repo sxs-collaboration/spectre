@@ -8,7 +8,6 @@
 #include <string>
 #include <tuple>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -23,10 +22,7 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_forward_declare Tags::dt
-
 namespace {
-
 struct FishboneMoncriefDiskProxy
     : RelativisticEuler::Solutions::FishboneMoncriefDisk {
   using RelativisticEuler::Solutions::FishboneMoncriefDisk::
@@ -36,13 +32,6 @@ struct FishboneMoncriefDiskProxy
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
   primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
     return variables(x, t, variables_tags<DataType>{});
-  }
-
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>>
-  dt_primitive_variables(const tnsr::I<DataType, 3>& x, double t) const
-      noexcept {
-    return dt_variables(x, t, dt_variables_tags<DataType>{});
   }
 };
 
@@ -100,20 +89,7 @@ void test_variables(const DataType& used_for_size) noexcept {
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "specific_enthalpy"},
       {{{-15., 15.}}}, member_variables, used_for_size);
-
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::dt<hydro::Tags::RestMassDensity<DataType>>,
-                    Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3>>,
-                    Tags::dt<hydro::Tags::SpecificInternalEnergy<DataType>>,
-                    Tags::dt<hydro::Tags::Pressure<DataType>>,
-                    Tags::dt<hydro::Tags::SpecificEnthalpy<DataType>>>>(
-      &FishboneMoncriefDiskProxy::dt_primitive_variables<DataType>, disk,
-      "TestFunctions",
-      {"dt_rest_mass_density", "dt_spatial_velocity",
-       "dt_specific_internal_energy", "dt_pressure", "dt_specific_enthalpy"},
-      {{{-15., 15.}}}, member_variables, used_for_size);
 }
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",

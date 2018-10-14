@@ -234,17 +234,6 @@ FishboneMoncriefDisk::variables(
 
   return result;
 }
-
-template <typename DataType>
-tuples::tagged_tuple_from_typelist<
-    FishboneMoncriefDisk::dt_variables_tags<DataType>>
-FishboneMoncriefDisk::dt_variables(
-    const tnsr::I<DataType, 3>& x, const double /*t*/,
-    FishboneMoncriefDisk::dt_variables_tags<DataType> /*meta*/) const noexcept {
-  return make_with_value<tuples::tagged_tuple_from_typelist<
-      FishboneMoncriefDisk::dt_variables_tags<DataType>>>(x, 0.0);
-}
-
 }  // namespace Solutions
 }  // namespace RelativisticEuler
 
@@ -257,13 +246,6 @@ FishboneMoncriefDisk::dt_variables(
   RelativisticEuler::Solutions::FishboneMoncriefDisk::variables(             \
       const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
       RelativisticEuler::Solutions::FishboneMoncriefDisk::variables_tags<    \
-          DTYPE(data)> /*meta*/) const noexcept;                             \
-  template tuples::tagged_tuple_from_typelist<                               \
-      RelativisticEuler::Solutions::FishboneMoncriefDisk::dt_variables_tags< \
-          DTYPE(data)>>                                                      \
-  RelativisticEuler::Solutions::FishboneMoncriefDisk::dt_variables(          \
-      const tnsr::I<DTYPE(data), 3>& x, const double /*t*/,                  \
-      RelativisticEuler::Solutions::FishboneMoncriefDisk::dt_variables_tags< \
           DTYPE(data)> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

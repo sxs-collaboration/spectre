@@ -251,22 +251,11 @@ class FishboneMoncriefDisk {
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::SpecificEnthalpy<DataType>>;
 
-  template <typename DataType>
-  using dt_variables_tags =
-      db::wrap_tags_in<Tags::dt, variables_tags<DataType>>;
-
   /// The fluid variables in Cartesian Kerr-Schild coordinates.
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
       const tnsr::I<DataType, 3>& x, double t,
       variables_tags<DataType> /*meta*/) const noexcept;
-
-  /// The time derivative of the fluid variables in Cartesian
-  /// Kerr-Schild coordinates.
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>> dt_variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      dt_variables_tags<DataType> /*meta*/) const noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
