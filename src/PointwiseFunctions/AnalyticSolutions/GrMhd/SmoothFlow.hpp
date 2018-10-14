@@ -62,11 +62,11 @@ class SmoothFlow {
     static type lower_bound() { return 0.0; }
   };
 
-  /// The adiabatic exponent for the polytropic fluid.
-  struct AdiabaticExponent {
+  /// The adiabatic index for the ideal fluid.
+  struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {
-        "The adiabatic exponent for the polytropic fluid."};
+        "The adiabatic index for the ideal fluid."};
     static type lower_bound() { return 1.0; }
   };
 
@@ -79,8 +79,8 @@ class SmoothFlow {
     static type upper_bound() { return 1.0; }
   };
 
-  using options = tmpl::list<MeanVelocity, WaveVector, Pressure,
-                             AdiabaticExponent, PerturbationSize>;
+  using options = tmpl::list<MeanVelocity, WaveVector, Pressure, AdiabaticIndex,
+                             PerturbationSize>;
   static constexpr OptionString help = {
       "Periodic smooth flow in Minkowski spacetime with zero magnetic field."};
 
@@ -92,8 +92,7 @@ class SmoothFlow {
   ~SmoothFlow() = default;
 
   SmoothFlow(MeanVelocity::type mean_velocity, WaveVector::type wavevector,
-             Pressure::type pressure,
-             AdiabaticExponent::type adiabatic_exponent,
+             Pressure::type pressure, AdiabaticIndex::type adiabatic_index,
              PerturbationSize::type perturbation_size) noexcept;
 
   explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept {}
@@ -177,8 +176,8 @@ class SmoothFlow {
   MeanVelocity::type mean_velocity() const noexcept { return mean_velocity_; }
   WaveVector::type wavevector() const noexcept { return wavevector_; }
   Pressure::type pressure() const noexcept { return pressure_; }
-  AdiabaticExponent::type adiabatic_exponent() const noexcept {
-    return adiabatic_exponent_;
+  AdiabaticIndex::type adiabatic_index() const noexcept {
+    return adiabatic_index_;
   }
   PerturbationSize::type perturbation_size() const noexcept {
     return perturbation_size_;
@@ -203,7 +202,7 @@ class SmoothFlow {
   WaveVector::type wavevector_ =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
   Pressure::type pressure_ = std::numeric_limits<double>::signaling_NaN();
-  AdiabaticExponent::type adiabatic_exponent_ =
+  AdiabaticIndex::type adiabatic_index_ =
       std::numeric_limits<double>::signaling_NaN();
   PerturbationSize::type perturbation_size_ =
       std::numeric_limits<double>::signaling_NaN();

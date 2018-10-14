@@ -27,24 +27,24 @@ namespace Solutions {
 SmoothFlow::SmoothFlow(MeanVelocity::type mean_velocity,
                        WaveVector::type wavevector,
                        const Pressure::type pressure,
-                       const AdiabaticExponent::type adiabatic_exponent,
+                       const AdiabaticIndex::type adiabatic_index,
                        const PerturbationSize::type perturbation_size) noexcept
     :  // clang-tidy: do not std::move trivial types.
       mean_velocity_(std::move(mean_velocity)),  // NOLINT
       // clang-tidy: do not std::move trivial types.
       wavevector_(std::move(wavevector)),  // NOLINT
       pressure_(pressure),
-      adiabatic_exponent_(adiabatic_exponent),
+      adiabatic_index_(adiabatic_index),
       perturbation_size_(perturbation_size),
       k_dot_v_(std::inner_product(mean_velocity_.begin(), mean_velocity_.end(),
                                   wavevector_.begin(), 0.0)),
-      equation_of_state_{adiabatic_exponent_} {}
+      equation_of_state_{adiabatic_index_} {}
 
 void SmoothFlow::pup(PUP::er& p) noexcept {
   p | mean_velocity_;
   p | wavevector_;
   p | pressure_;
-  p | adiabatic_exponent_;
+  p | adiabatic_index_;
   p | perturbation_size_;
   p | k_dot_v_;
   p | equation_of_state_;
@@ -80,7 +80,7 @@ SmoothFlow::variables(
     noexcept {
   const DataType phase = k_dot_x_minus_vt(x, t);
   return {
-      Scalar<DataType>{pressure_ / ((adiabatic_exponent_ - 1.0) *
+      Scalar<DataType>{pressure_ / ((adiabatic_index_ - 1.0) *
                                     (1.0 + perturbation_size_ * sin(phase)))}};
 }
 
@@ -146,18 +146,18 @@ SmoothFlow::variables(
   Scalar<DataType> specific_internal_energy = std::move(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables<DataType>(
           x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
-  get(specific_internal_energy) *= adiabatic_exponent_;
+  get(specific_internal_energy) *= adiabatic_index_;
   get(specific_internal_energy) += 1.0;
   return {std::move(specific_internal_energy)};
 }
 
 bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
-  // the adiabatic_exponents are compared
+  // the adiabatic_indexs are compared
   return lhs.mean_velocity() == rhs.mean_velocity() and
          lhs.wavevector() == rhs.wavevector() and
          lhs.pressure() == rhs.pressure() and
-         lhs.adiabatic_exponent() == rhs.adiabatic_exponent() and
+         lhs.adiabatic_index() == rhs.adiabatic_index() and
          lhs.perturbation_size() == rhs.perturbation_size() and
          lhs.k_dot_v() == rhs.k_dot_v() and
          lhs.background_spacetime() == rhs.background_spacetime();

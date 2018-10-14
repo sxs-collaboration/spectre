@@ -22,19 +22,19 @@ namespace Solutions {
 AlfvenWave::AlfvenWave(const WaveNumber::type wavenumber,
                        const Pressure::type pressure,
                        const RestMassDensity::type rest_mass_density,
-                       const AdiabaticExponent::type adiabatic_exponent,
+                       const AdiabaticIndex::type adiabatic_index,
                        const BackgroundMagField::type background_mag_field,
                        const PerturbationSize::type perturbation_size) noexcept
     : wavenumber_(wavenumber),
       pressure_(pressure),
       rest_mass_density_(rest_mass_density),
-      adiabatic_exponent_(adiabatic_exponent),
+      adiabatic_index_(adiabatic_index),
       background_mag_field_(background_mag_field),
       perturbation_size_(perturbation_size),
-      equation_of_state_{adiabatic_exponent_} {
+      equation_of_state_{adiabatic_index_} {
   alfven_speed_ = background_mag_field /
-                  sqrt((rest_mass_density_ + pressure_ * adiabatic_exponent_ /
-                                                 (adiabatic_exponent_ - 1.0)) +
+                  sqrt((rest_mass_density_ + pressure_ * adiabatic_index_ /
+                                                 (adiabatic_index_ - 1.0)) +
                        square(background_mag_field));
   fluid_speed_ = -perturbation_size * alfven_speed_ / background_mag_field;
 }
@@ -43,7 +43,7 @@ void AlfvenWave::pup(PUP::er& p) noexcept {
   p | wavenumber_;
   p | pressure_;
   p | rest_mass_density_;
-  p | adiabatic_exponent_;
+  p | adiabatic_index_;
   p | background_mag_field_;
   p | perturbation_size_;
   p | alfven_speed_;
@@ -78,7 +78,7 @@ AlfvenWave::variables(
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<Scalar<DataType>>(
-      x, pressure_ / ((adiabatic_exponent_ - 1.0) * rest_mass_density_))};
+      x, pressure_ / ((adiabatic_index_ - 1.0) * rest_mass_density_))};
 }
 
 template <typename DataType>
@@ -144,18 +144,18 @@ AlfvenWave::variables(
   Scalar<DataType> specific_internal_energy = std::move(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables<DataType>(
           x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
-  get(specific_internal_energy) *= adiabatic_exponent_;
+  get(specific_internal_energy) *= adiabatic_index_;
   get(specific_internal_energy) += 1.0;
   return {std::move(specific_internal_energy)};
 }
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
-  // the adiabatic_exponents are compared
+  // the adiabatic_indexs are compared
   return lhs.wavenumber() == rhs.wavenumber() and
          lhs.pressure() == rhs.pressure() and
          lhs.rest_mass_density() == rhs.rest_mass_density() and
-         lhs.adiabatic_exponent() == rhs.adiabatic_exponent() and
+         lhs.adiabatic_index() == rhs.adiabatic_index() and
          lhs.background_mag_field() == rhs.background_mag_field() and
          lhs.perturbation_size() == rhs.perturbation_size() and
          lhs.alfven_speed() == rhs.alfven_speed() and

@@ -60,13 +60,13 @@ void test_create_from_options() noexcept {
       "  WaveNumber: 2.2\n"
       "  Pressure: 1.23\n"
       "  RestMassDensity: 0.2\n"
-      "  AdiabaticExponent: 1.4\n"
+      "  AdiabaticIndex: 1.4\n"
       "  BackgroundMagField: 2.0\n"
       "  PerturbationSize: 0.75");
   CHECK(wave.wavenumber() == 2.2);
   CHECK(wave.pressure() == 1.23);
   CHECK(wave.rest_mass_density() == 0.2);
-  CHECK(wave.adiabatic_exponent() == 1.4);
+  CHECK(wave.adiabatic_index() == 1.4);
   CHECK(wave.background_mag_field() == 2.0);
   CHECK(wave.perturbation_size() == 0.75);
 }
@@ -87,41 +87,37 @@ void test_variables(const DataType& used_for_size) {
   const double wavenumber = 2.1;
   const double pressure = 1.3;
   const double rest_mass_density = 0.4;
-  const double adiabatic_exponent = 4. / 3.;
+  const double adiabatic_index = 4. / 3.;
   const double background_mag_field = 2.3;
   const double perturbation_size = 0.78;
 
   pypp::check_with_random_values<
       1, AlfvenWaveProxy::hydro_variables_tags<DataType>>(
       &AlfvenWaveProxy::hydro_variables<DataType>,
-      AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
-                      adiabatic_exponent, background_mag_field,
-                      perturbation_size),
+      AlfvenWaveProxy(wavenumber, pressure, rest_mass_density, adiabatic_index,
+                      background_mag_field, perturbation_size),
       "TestFunctions",
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
        "alfven_lorentz_factor", "alfven_specific_enthalpy"},
       {{{-15., 15.}}},
-      std::make_tuple(wavenumber, pressure, rest_mass_density,
-                      adiabatic_exponent, background_mag_field,
-                      perturbation_size),
+      std::make_tuple(wavenumber, pressure, rest_mass_density, adiabatic_index,
+                      background_mag_field, perturbation_size),
       used_for_size);
 
   pypp::check_with_random_values<
       1, AlfvenWaveProxy::grmhd_variables_tags<DataType>>(
       &AlfvenWaveProxy::grmhd_variables<DataType>,
-      AlfvenWaveProxy(wavenumber, pressure, rest_mass_density,
-                      adiabatic_exponent, background_mag_field,
-                      perturbation_size),
+      AlfvenWaveProxy(wavenumber, pressure, rest_mass_density, adiabatic_index,
+                      background_mag_field, perturbation_size),
       "TestFunctions",
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
        "alfven_lorentz_factor", "alfven_specific_enthalpy",
        "alfven_magnetic_field", "alfven_divergence_cleaning_field"},
       {{{-15., 15.}}},
-      std::make_tuple(wavenumber, pressure, rest_mass_density,
-                      adiabatic_exponent, background_mag_field,
-                      perturbation_size),
+      std::make_tuple(wavenumber, pressure, rest_mass_density, adiabatic_index,
+                      background_mag_field, perturbation_size),
       used_for_size);
 }
 }  // namespace

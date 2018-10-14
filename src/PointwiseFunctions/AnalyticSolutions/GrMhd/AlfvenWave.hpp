@@ -32,7 +32,7 @@ namespace Solutions {
  * An analytic solution to the 3-D GrMhd system. The user specifies the
  * wavenumber \f$k_z\f$ of the Alfv&eacute;n wave, the constant pressure
  * throughout the fluid \f$P\f$, the constant rest mass density throughout the
- * fluid \f$\rho_0\f$, the adiabatic exponent for the ideal fluid equation of
+ * fluid \f$\rho_0\f$, the adiabatic index for the ideal fluid equation of
  * state \f$\gamma\f$, the background magnetic field strength \f$B_0\f$,
  * and the strength of the perturbation of the magnetic field \f$B_1\f$.
  * The Alfv&eacute;n wave phase speed is then given by:
@@ -86,11 +86,11 @@ class AlfvenWave {
     static type lower_bound() { return 0.0; }
   };
 
-  /// The adiabatic exponent for the polytropic fluid.
-  struct AdiabaticExponent {
+  /// The adiabatic index for the ideal fluid.
+  struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {
-        "The adiabatic exponent for the polytropic fluid."};
+        "The adiabatic index for the ideal fluid."};
     static type lower_bound() { return 1.0; }
   };
 
@@ -111,7 +111,7 @@ class AlfvenWave {
   };
 
   using options =
-      tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticExponent,
+      tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticIndex,
                  BackgroundMagField, PerturbationSize>;
   static constexpr OptionString help = {
       "Circularly polarized Alfven wave in Minkowski spacetime."};
@@ -125,7 +125,7 @@ class AlfvenWave {
 
   AlfvenWave(WaveNumber::type wavenumber, Pressure::type pressure,
              RestMassDensity::type rest_mass_density,
-             AdiabaticExponent::type adiabatic_exponent,
+             AdiabaticIndex::type adiabatic_index,
              BackgroundMagField::type background_mag_field,
              PerturbationSize::type perturbation_size) noexcept;
 
@@ -210,8 +210,8 @@ class AlfvenWave {
   RestMassDensity::type rest_mass_density() const noexcept {
     return rest_mass_density_;
   }
-  AdiabaticExponent::type adiabatic_exponent() const noexcept {
-    return adiabatic_exponent_;
+  AdiabaticIndex::type adiabatic_index() const noexcept {
+    return adiabatic_index_;
   }
   BackgroundMagField::type background_mag_field() const noexcept {
     return background_mag_field_;
@@ -239,7 +239,7 @@ class AlfvenWave {
   Pressure::type pressure_ = std::numeric_limits<double>::signaling_NaN();
   RestMassDensity::type rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();
-  AdiabaticExponent::type adiabatic_exponent_ =
+  AdiabaticIndex::type adiabatic_index_ =
       std::numeric_limits<double>::signaling_NaN();
   BackgroundMagField::type background_mag_field_ =
       std::numeric_limits<double>::signaling_NaN();
