@@ -71,27 +71,6 @@ struct Initialize {
           inertial_coords, initial_time,
           typename Metavariables::analytic_variables_tags{}));
 
-      get<hydro::Tags::SpecificEnthalpy<DataVector>>(primitive_vars) =
-          hydro::specific_enthalpy(
-              get<hydro::Tags::RestMassDensity<DataVector>>(primitive_vars),
-              get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
-                  primitive_vars),
-              get<hydro::Tags::Pressure<DataVector>>(primitive_vars));
-
-      get(get<hydro::Tags::DivergenceCleaningField<DataVector>>(
-          primitive_vars)) = 0.0;
-
-      const auto& spatial_velocity =
-          get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
-              primitive_vars);
-
-      const auto spatial_velocity_oneform = raise_or_lower_index(
-          spatial_velocity,
-          get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(box));
-
-      get<hydro::Tags::LorentzFactor<DataVector>>(primitive_vars) =
-          hydro::lorentz_factor(spatial_velocity, spatial_velocity_oneform);
-
       auto equation_of_state =
           Parallel::get<solution_tag>(cache).equation_of_state();
 

@@ -97,14 +97,6 @@ class SmoothFlow {
 
   explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept {}
 
-  template <typename DataType>
-  using variables_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
-
   // @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>

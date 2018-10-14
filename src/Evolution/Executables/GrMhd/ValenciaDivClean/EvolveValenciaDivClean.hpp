@@ -67,7 +67,7 @@ struct EvolutionMetavars {
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<grmhd::Solutions::SmoothFlow>;
   using analytic_variables_tags =
-      typename analytic_solution_tag::type::variables_tags<DataVector>;
+      typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag = hydro::Tags::EquationOfState<
       typename analytic_solution_tag::type::equation_of_state_type>;
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
