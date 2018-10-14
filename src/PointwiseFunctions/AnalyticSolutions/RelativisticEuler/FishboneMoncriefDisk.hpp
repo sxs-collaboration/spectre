@@ -260,20 +260,12 @@ class FishboneMoncriefDisk {
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
-  constexpr double black_hole_mass() const noexcept { return black_hole_mass_; }
-  constexpr double black_hole_spin() const noexcept { return black_hole_spin_; }
-  constexpr double inner_edge_radius() const noexcept {
-    return inner_edge_radius_;
-  }
-  constexpr double max_pressure_radius() const noexcept {
-    return max_pressure_radius_;
-  }
-  constexpr double polytropic_constant() const noexcept {
-    return polytropic_constant_;
-  }
-  constexpr double polytropic_exponent() const noexcept {
-    return polytropic_exponent_;
-  }
+  double black_hole_mass() const noexcept { return black_hole_mass_; }
+  double black_hole_spin() const noexcept { return black_hole_spin_; }
+  double inner_edge_radius() const noexcept { return inner_edge_radius_; }
+  double max_pressure_radius() const noexcept { return max_pressure_radius_; }
+  double polytropic_constant() const noexcept { return polytropic_constant_; }
+  double polytropic_exponent() const noexcept { return polytropic_exponent_; }
 
  private:
   double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
@@ -284,20 +276,9 @@ class FishboneMoncriefDisk {
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-inline constexpr bool operator==(const FishboneMoncriefDisk& lhs,
-                                 const FishboneMoncriefDisk& rhs) noexcept {
-  return lhs.black_hole_mass() == rhs.black_hole_mass() and
-         lhs.black_hole_spin() == rhs.black_hole_spin() and
-         lhs.inner_edge_radius() == rhs.inner_edge_radius() and
-         lhs.max_pressure_radius() == rhs.max_pressure_radius() and
-         lhs.polytropic_constant() == rhs.polytropic_constant() and
-         lhs.polytropic_exponent() == rhs.polytropic_exponent();
-}
-
-inline constexpr bool operator!=(const FishboneMoncriefDisk& lhs,
-                                 const FishboneMoncriefDisk& rhs) noexcept {
-  return not(lhs == rhs);
-}
-
+bool operator==(const FishboneMoncriefDisk& lhs,
+                const FishboneMoncriefDisk& rhs) noexcept;
+bool operator!=(const FishboneMoncriefDisk& lhs,
+                const FishboneMoncriefDisk& rhs) noexcept;
 }  // namespace Solutions
 }  // namespace RelativisticEuler

@@ -234,6 +234,21 @@ FishboneMoncriefDisk::variables(
 
   return result;
 }
+
+bool operator==(const FishboneMoncriefDisk& lhs,
+                const FishboneMoncriefDisk& rhs) noexcept {
+  return lhs.black_hole_mass() == rhs.black_hole_mass() and
+         lhs.black_hole_spin() == rhs.black_hole_spin() and
+         lhs.inner_edge_radius() == rhs.inner_edge_radius() and
+         lhs.max_pressure_radius() == rhs.max_pressure_radius() and
+         lhs.polytropic_constant() == rhs.polytropic_constant() and
+         lhs.polytropic_exponent() == rhs.polytropic_exponent();
+}
+
+bool operator!=(const FishboneMoncriefDisk& lhs,
+                const FishboneMoncriefDisk& rhs) noexcept {
+  return not(lhs == rhs);
+}
 }  // namespace Solutions
 }  // namespace RelativisticEuler
 
