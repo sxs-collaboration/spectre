@@ -8,12 +8,15 @@
 #include <cstddef>
 #include <numeric>
 
-#include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Numeric.hpp"
 
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
 
@@ -58,47 +61,126 @@ DataType SmoothFlow::k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x,
   return result;
 }
 
+// Primitive variables.
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<SmoothFlow::variables_tags<DataType>>
-SmoothFlow::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      SmoothFlow::variables_tags<DataType> /*meta*/) const
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double t,
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
-  // Explicitly set all variables to zero:
-  auto result = make_with_value<
-      tuples::tagged_tuple_from_typelist<SmoothFlow::variables_tags<DataType>>>(
-      x, 0.0);
-
   const DataType phase = k_dot_x_minus_vt(x, t);
-  get(get<hydro::Tags::RestMassDensity<DataType>>(result)) =
-      1.0 + perturbation_size_ * sin(phase);
-  get(get<hydro::Tags::SpecificInternalEnergy<DataType>>(result)) =
-      pressure_ / ((adiabatic_exponent_ - 1.0) *
-                   get(get<hydro::Tags::RestMassDensity<DataType>>(result)));
-  for (size_t i = 0; i < 3; ++i) {
-    get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(result).get(
-        i) = gsl::at(mean_velocity_, i);
-  }
+  return {Scalar<DataType>{DataType{1.0 + perturbation_size_ * sin(phase)}}};
+}
 
-  // Magnetic field is not set because it is identically zero,
-  // and `result` is initialized with all primitive variables equal to zero.
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
+SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double t,
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
+    noexcept {
+  const DataType phase = k_dot_x_minus_vt(x, t);
+  return {
+      Scalar<DataType>{pressure_ / ((adiabatic_exponent_ - 1.0) *
+                                    (1.0 + perturbation_size_ * sin(phase)))}};
+}
 
-  get(get<hydro::Tags::Pressure<DataType>>(result)) = pressure_;
-  return result;
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<Scalar<DataType>>(x, pressure_)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+SmoothFlow::variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                      tmpl::list<hydro::Tags::SpatialVelocity<
+                          DataType, 3, Frame::Inertial>> /*meta*/) const
+    noexcept {
+  auto result = make_with_value<db::item_type<
+      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
+      x, mean_velocity_[0]);
+  get<1>(result) = mean_velocity_[1];
+  get<2>(result) = mean_velocity_[2];
+  return {std::move(result)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+SmoothFlow::variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                      tmpl::list<hydro::Tags::MagneticField<
+                          DataType, 3, Frame::Inertial>> /*meta*/) const
+    noexcept {
+  return {make_with_value<
+      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
+      x, 0.0)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
+SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
+    noexcept {
+  return {make_with_value<
+      db::item_type<hydro::Tags::DivergenceCleaningField<DataType>>>(x, 0.0)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>> SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<db::item_type<hydro::Tags::LorentzFactor<DataType>>>(
+      x,
+      1.0 / sqrt(1.0 - alg::accumulate(
+                           mean_velocity_, 0.0,
+                           funcl::Plus<funcl::Identity, funcl::Square<>>{})))};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
+SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double t,
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
+    noexcept {
+  Scalar<DataType> specific_internal_energy = std::move(
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables<DataType>(
+          x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
+  get(specific_internal_energy) *= adiabatic_exponent_;
+  get(specific_internal_energy) += 1.0;
+  return {std::move(specific_internal_energy)};
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                              \
-  template tuples::tagged_tuple_from_typelist<                            \
-      SmoothFlow::variables_tags<DTYPE(data)>>                            \
-  SmoothFlow::variables(const tnsr::I<DTYPE(data), 3>& x, const double t, \
-                        SmoothFlow::variables_tags<DTYPE(data)> /*meta*/) \
-      const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                                       \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                   \
+      SmoothFlow::variables(const tnsr::I<DTYPE(data), 3>& x, double t,    \
+                            tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
+          const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE_SCALARS, (double, DataVector),
+    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
+     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
+     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+
+#define INSTANTIATE_VECTORS(_, data)                                         \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \
+      SmoothFlow::variables(                                                 \
+          const tnsr::I<DTYPE(data), 3>& x, double t,                        \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          const noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
+                        (hydro::Tags::SpatialVelocity,
+                         hydro::Tags::MagneticField))
 
 #undef DTYPE
-#undef INSTANTIATE
+#undef TAG
+#undef INSTANTIATE_SCALARS
+#undef INSTANTIATE_VECTORS
 }  // namespace Solutions
 }  // namespace grmhd
 /// \endcond

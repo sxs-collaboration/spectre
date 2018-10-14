@@ -29,9 +29,30 @@ struct SmoothFlowProxy : grmhd::Solutions::SmoothFlow {
   using grmhd::Solutions::SmoothFlow::SmoothFlow;
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
-    return variables(x, t, variables_tags<DataType>{});
+  using hydro_variables_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::LorentzFactor<DataType>,
+                 hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  using grmhd_variables_tags =
+      tmpl::push_back<hydro_variables_tags<DataType>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
+  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, hydro_variables_tags<DataType>{});
+  }
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
+  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
@@ -72,18 +93,29 @@ void test_variables(const DataType& used_for_size) {
   const double perturbation_size = 0.78;
 
   pypp::check_with_random_values<
-      1, tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                    hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-                    hydro::Tags::SpecificInternalEnergy<DataType>,
-                    hydro::Tags::Pressure<DataType>,
-                    hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      &SmoothFlowProxy::primitive_variables<DataType>,
+      1, SmoothFlowProxy::hydro_variables_tags<DataType>>(
+      &SmoothFlowProxy::hydro_variables<DataType>,
       SmoothFlowProxy(mean_velocity, wave_vector, pressure, adiabatic_exponent,
                       perturbation_size),
       "TestFunctions",
       {"smooth_flow_rest_mass_density", "smooth_flow_spatial_velocity",
        "smooth_flow_specific_internal_energy", "smooth_flow_pressure",
-       "smooth_flow_magnetic_field"},
+       "smooth_flow_lorentz_factor", "smooth_flow_specific_enthalpy"},
+      {{{-15., 15.}}},
+      std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_exponent,
+                      perturbation_size),
+      used_for_size);
+
+  pypp::check_with_random_values<
+      1, SmoothFlowProxy::grmhd_variables_tags<DataType>>(
+      &SmoothFlowProxy::grmhd_variables<DataType>,
+      SmoothFlowProxy(mean_velocity, wave_vector, pressure, adiabatic_exponent,
+                      perturbation_size),
+      "TestFunctions",
+      {"smooth_flow_rest_mass_density", "smooth_flow_spatial_velocity",
+       "smooth_flow_specific_internal_energy", "smooth_flow_pressure",
+       "smooth_flow_lorentz_factor", "smooth_flow_specific_enthalpy",
+       "smooth_flow_magnetic_field", "smooth_flow_divergence_cleaning_field"},
       {{{-15., 15.}}},
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_exponent,
                       perturbation_size),

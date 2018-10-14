@@ -32,9 +32,27 @@ def smooth_flow_pressure(x, t, mean_velocity, wave_vector, pressure,
     return pressure
 
 
+def smooth_flow_specific_enthalpy(x, t, mean_velocity, wave_vector, pressure,
+                                  adiabatic_exponent, density_amplitude):
+    return 1.0 + adiabatic_exponent * smooth_flow_specific_internal_energy(
+        x, t, mean_velocity, wave_vector, pressure, adiabatic_exponent,
+        density_amplitude)
+
+
+def smooth_flow_lorentz_factor(x, t, mean_velocity, wave_vector, pressure,
+                               adiabatic_exponent, density_amplitude):
+    return 1.0 / np.sqrt(1.0 - np.linalg.norm(np.asarray(mean_velocity))**2)
+
+
 def smooth_flow_magnetic_field(x, t, mean_velocity, wave_vector, pressure,
                                adiabatic_exponent, density_amplitude):
     return np.array([0.0, 0.0, 0.0])
+
+
+def smooth_flow_divergence_cleaning_field(x, t, mean_velocity, wave_vector,
+                                          pressure, adiabatic_exponent,
+                                          density_amplitude):
+    return 0.0
 
 
 # End functions for testing SmoothFlow.cpp
