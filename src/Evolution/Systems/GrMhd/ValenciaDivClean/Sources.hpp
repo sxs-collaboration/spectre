@@ -3,17 +3,28 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  //  IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
+// IWYU pragma: no_include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare Tags::deriv
 
 /// \cond
-namespace gsl {
-template <typename T>
-class not_null;
-}  // namespace gsl
-
 class DataVector;
+
+namespace Tags {
+template <typename>
+struct Source;
+}  // namespace Tags
 /// \endcond
 
 namespace grmhd {
@@ -70,29 +81,59 @@ namespace ValenciaDivClean {
  * of the divergence-free (no-monopole) condition \f$\Phi = \partial_i {\tilde
  * B}^i = 0\f$ .
  */
-void compute_source_terms_of_u(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_d,
-    gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_b,
-    gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
-    const Scalar<DataVector>& rest_mass_density,
-    const Scalar<DataVector>& specific_enthalpy,
-    const Scalar<DataVector>& lorentz_factor,
-    const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    double constraint_damping_parameter) noexcept;
+struct ComputeSources {
+  using return_tags =
+      tmpl::list<::Tags::Source<grmhd::ValenciaDivClean::Tags::TildeTau>,
+                 ::Tags::Source<grmhd::ValenciaDivClean::Tags::TildeS<>>,
+                 ::Tags::Source<grmhd::ValenciaDivClean::Tags::TildeB<>>,
+                 ::Tags::Source<grmhd::ValenciaDivClean::Tags::TildePhi>>;
+
+  using argument_tags = tmpl::list<
+      grmhd::ValenciaDivClean::Tags::TildeD,
+      grmhd::ValenciaDivClean::Tags::TildeTau,
+      grmhd::ValenciaDivClean::Tags::TildeS<>,
+      grmhd::ValenciaDivClean::Tags::TildeB<>,
+      grmhd::ValenciaDivClean::Tags::TildePhi,
+      hydro::Tags::SpatialVelocity<DataVector, 3>,
+      hydro::Tags::MagneticField<DataVector, 3>,
+      hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::SpecificEnthalpy<DataVector>,
+      hydro::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
+      gr::Tags::Lapse<>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+      gr::Tags::SpatialMetric<3>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+      gr::Tags::InverseSpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
+      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_b,
+      gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+      const Scalar<DataVector>& tilde_phi,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& specific_enthalpy,
+      const Scalar<DataVector>& lorentz_factor,
+      const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
+      const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
+      double constraint_damping_parameter) noexcept;
+};
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

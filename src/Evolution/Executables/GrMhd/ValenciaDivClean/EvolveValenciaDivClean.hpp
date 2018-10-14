@@ -10,11 +10,13 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
+#include "Evolution/Actions/ComputeVolumeSources.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Observe.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
@@ -84,7 +86,7 @@ struct EvolutionMetavars {
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeVolumeDuDt,
+      Actions::ComputeVolumeSources, Actions::ComputeVolumeDuDt,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
@@ -115,7 +117,8 @@ struct EvolutionMetavars {
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
-                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>,
+                 OptionTags::DampingParameter>;
 
   using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
 

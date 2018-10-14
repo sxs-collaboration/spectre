@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
@@ -20,11 +21,6 @@ class not_null;
 }  // namespace gsl
 
 class DataVector;
-
-namespace Tags {
-template <typename>
-struct Fluxes;
-}  // namespace Tags
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
@@ -60,11 +56,16 @@ namespace ValenciaDivClean {
  */
 struct ComputeFluxes {
   using return_tags =
-      tmpl::list<::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeD>,
-                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeTau>,
-                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeS<>>,
-                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildeB<>>,
-                 ::Tags::Fluxes<grmhd::ValenciaDivClean::Tags::TildePhi>>;
+      tmpl::list<::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
+                              tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
+                              tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeS<>,
+                              tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeB<>,
+                              tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildePhi,
+                              tmpl::size_t<3>, Frame::Inertial>>;
 
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,

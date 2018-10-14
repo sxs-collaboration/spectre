@@ -20,6 +20,7 @@
 #include "Evolution/Initialization/Domain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Interface.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -44,9 +45,9 @@ struct Initialize {
   struct PrimitiveTags {
     using system = typename Metavariables::system;
     using primitives_tag = typename system::primitive_variables_tag;
-    using simple_tags =
-        db::AddSimpleTags<primitives_tag,
-                          typename Metavariables::equation_of_state_tag>;
+    using simple_tags = db::AddSimpleTags<
+        primitives_tag, typename Metavariables::equation_of_state_tag,
+        grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
     using compute_tags = db::AddComputeTags<>;
 
     template <typename TagsList>
@@ -57,10 +58,10 @@ struct Initialize {
       using PrimitiveVars = typename primitives_tag::type;
 
       const size_t num_grid_points =
-          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+          db::get<::Tags::Mesh<Dim>>(box).number_of_grid_points();
 
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
+          db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
       using solution_tag = OptionTags::AnalyticSolutionBase;
@@ -95,7 +96,8 @@ struct Initialize {
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(primitive_vars),
-          std::move(equation_of_state));
+          std::move(equation_of_state),
+          Parallel::get<OptionTags::DampingParameter>(cache));
     }
   };
 
@@ -113,9 +115,9 @@ struct Initialize {
       using GrVars = typename gr_tag::type;
 
       const size_t num_grid_points =
-          db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+          db::get<::Tags::Mesh<Dim>>(box).number_of_grid_points();
       const auto& inertial_coords =
-          db::get<Tags::Coordinates<Dim, Frame::Inertial>>(box);
+          db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
       using solution_tag = OptionTags::AnalyticSolutionBase;

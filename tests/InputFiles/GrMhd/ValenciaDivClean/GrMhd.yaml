@@ -40,3 +40,5 @@ StepChoosers:
 VolumeFileName: "./GrMhd"
 
 NumericalFluxParams:
+
+DampingParameter: 0.0

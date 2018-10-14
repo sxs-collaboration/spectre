@@ -173,15 +173,6 @@ def tilde_phi_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
 
 
 # Functions for testing Sources.cpp
-def source_tilde_d(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
-                   spatial_velocity, magnetic_field, rest_mass_density,
-                   specific_enthalpy, lorentz_factor, pressure,
-                   lapse, d_lapse, d_shift, spatial_metric, d_spatial_metric,
-                   inv_spatial_metric, sqrt_det_spatial_metric,
-                   extrinsic_curvature, constraint_damping_parameter):
-    return 0.0
-
-
 def source_tilde_tau(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
                      spatial_velocity, magnetic_field, rest_mass_density,
                      specific_enthalpy, lorentz_factor, pressure,
