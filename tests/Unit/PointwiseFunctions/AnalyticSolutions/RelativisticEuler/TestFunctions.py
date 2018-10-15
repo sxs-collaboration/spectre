@@ -100,8 +100,9 @@ def potential(angular_momentum, r_sqrd, sin_theta_sqrd, m, a):
             u_t(angular_momentum, r_sqrd, sin_theta_sqrd, m, a)))
 
 
-def specific_enthalpy(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                      polytropic_constant, polytropic_exponent):
+def fishbone_specific_enthalpy(x, t, black_hole_mass, black_hole_spin, r_in,
+                               r_max, polytropic_constant,
+                               polytropic_exponent):
     l = angular_momentum(black_hole_mass, black_hole_spin, r_max)
     Win = potential(l, r_in * r_in, 1.0, black_hole_mass, black_hole_spin)
     r_sqrd = boyer_lindquist_r_sqrd(x, black_hole_spin)
@@ -116,34 +117,36 @@ def specific_enthalpy(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
     return result
 
 
-def rest_mass_density(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                      polytropic_constant, polytropic_exponent):
-    return np.power(
-        (polytropic_exponent - 1.0) *
-        (specific_enthalpy(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                           polytropic_constant, polytropic_exponent) - 1.0) /
-        (polytropic_exponent * polytropic_constant),
-        1.0 / (polytropic_exponent - 1.0))
+def fishbone_rest_mass_density(x, t, black_hole_mass, black_hole_spin, r_in,
+                               r_max, polytropic_constant,
+                               polytropic_exponent):
+    return np.power((polytropic_exponent - 1.0) * (fishbone_specific_enthalpy(
+        x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+        polytropic_constant, polytropic_exponent) - 1.0) /
+                    (polytropic_exponent * polytropic_constant),
+                    1.0 / (polytropic_exponent - 1.0))
 
 
-def specific_internal_energy(x, t, black_hole_mass, black_hole_spin, r_in,
-                             r_max, polytropic_constant, polytropic_exponent):
+def fishbone_specific_internal_energy(x, t, black_hole_mass, black_hole_spin,
+                                      r_in, r_max, polytropic_constant,
+                                      polytropic_exponent):
     return (polytropic_constant * np.power(
-        rest_mass_density(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                          polytropic_constant, polytropic_exponent),
+        fishbone_rest_mass_density(x, t, black_hole_mass, black_hole_spin,
+                                   r_in, r_max, polytropic_constant,
+                                   polytropic_exponent),
         polytropic_exponent - 1.0) / (polytropic_exponent - 1.0))
 
 
-def pressure(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-             polytropic_constant, polytropic_exponent):
+def fishbone_pressure(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+                      polytropic_constant, polytropic_exponent):
     return (polytropic_constant * np.power(
-        rest_mass_density(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                          polytropic_constant, polytropic_exponent),
-        polytropic_exponent))
+        fishbone_rest_mass_density(x, t, black_hole_mass, black_hole_spin,
+                                   r_in, r_max, polytropic_constant,
+                                   polytropic_exponent), polytropic_exponent))
 
 
-def spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                     polytropic_constant, polytropic_exponent):
+def fishbone_spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in,
+                              r_max, polytropic_constant, polytropic_exponent):
     l = angular_momentum(black_hole_mass, black_hole_spin, r_max)
     Win = potential(l, r_in * r_in, 1.0, black_hole_mass, black_hole_spin)
     r_sqrd = boyer_lindquist_r_sqrd(x, black_hole_spin)
@@ -162,13 +165,13 @@ def spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
     return result
 
 
-def lorentz_factor(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
-                   polytropic_constant, polytropic_exponent):
+def fishbone_lorentz_factor(x, t, black_hole_mass, black_hole_spin, r_in,
+                            r_max, polytropic_constant, polytropic_exponent):
     spatial_metric = kerr_schild_spatial_metric(x, black_hole_mass,
                                                 black_hole_spin)
-    velocity = spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in,
-                                r_max, polytropic_constant,
-                                polytropic_exponent)
+    velocity = fishbone_spatial_velocity(
+        x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+        polytropic_constant, polytropic_exponent)
     return 1.0 / np.sqrt(
         1.0 - np.einsum("i,j,ij", velocity, velocity, spatial_metric))
 
