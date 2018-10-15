@@ -5,6 +5,7 @@
 
 #include <limits>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -157,6 +158,9 @@ respectively.
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
  */
 class FishboneMoncriefDisk {
+  template <typename DataType, bool NeedSpacetime>
+  struct IntermediateVariables;
+
  public:
   /// The mass of the black hole.
   struct BlackHoleMass {
@@ -244,21 +248,34 @@ class FishboneMoncriefDisk {
   DataType potential(const DataType& r_sqrd, const DataType& sin_theta_sqrd,
                      double angular_momentum) const noexcept;
 
-  // In this solution the specific enthalpy is the first thermodynamic variable
-  // to be obtained, so it's passed along with the primitive variables.
-  template <typename DataType>
-  using variables_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>>;
+  // @{
+  /// The fluid variables in Cartesian Kerr-Schild coordinates at `(x, t)`
+  template <typename DataType, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         const double t,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
+    IntermediateVariables<
+        DataType, tmpl2::flat_any_v<cpp17::is_same_v<
+                      Tags, hydro::Tags::SpatialVelocity<DataType, 3>>...>>
+        vars(black_hole_mass_, black_hole_spin_, max_pressure_radius_,
+             background_spacetime_, x, t);
+    return {std::move(get<Tags>(variables(x, tmpl::list<Tags>{}, vars)))...};
+  }
 
-  /// The fluid variables in Cartesian Kerr-Schild coordinates.
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
-      const tnsr::I<DataType, 3>& x, double t,
-      variables_tags<DataType> /*meta*/) const noexcept;
+  template <typename DataType, typename Tag>
+  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
+                                     const double t,  // NOLINT
+                                     tmpl::list<Tag> /*meta*/) const noexcept {
+    return variables(
+        x, tmpl::list<Tag>{},
+        IntermediateVariables<
+            DataType,
+            cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>>>(
+            black_hole_mass_, black_hole_spin_, max_pressure_radius_,
+            background_spacetime_, x, t));
+  }
+  // @}
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
@@ -280,6 +297,84 @@ class FishboneMoncriefDisk {
   }
 
  private:
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
+      const IntermediateVariables<DataType, NeedSpacetime>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
+      const IntermediateVariables<DataType, NeedSpacetime>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType, NeedSpacetime>& vars)
+      const noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+      const IntermediateVariables<DataType, NeedSpacetime>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
+                 const IntermediateVariables<DataType, true>& vars) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType, true>& vars) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<
+          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+      const IntermediateVariables<DataType, NeedSpacetime>& vars) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
+      const IntermediateVariables<DataType, NeedSpacetime>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime, typename Func>
+  void variables_impl(
+      const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const
+      noexcept;
+
+  // Intermediate variables needed to set several of the Fishbone-Moncrief
+  // solution's variables.
+  template <typename DataType, bool NeedSpacetime>
+  struct IntermediateVariables {
+    IntermediateVariables(double black_hole_mass, double black_hole_spin,
+                          double max_pressure_radius,
+                          const gr::Solutions::KerrSchild& background_spacetime,
+                          const tnsr::I<DataType, 3>& x, double t) noexcept;
+
+    DataType r_squared{};
+    DataType sin_theta_squared{};
+    double angular_momentum{};
+    Scalar<DataType> inv_lapse{};
+    tnsr::I<DataType, 3, Frame::Inertial> shift{};
+    tnsr::ii<DataType, 3, Frame::Inertial> spatial_metric{};
+  };
+
   double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
   double black_hole_spin_ = std::numeric_limits<double>::signaling_NaN();
   double inner_edge_radius_ = std::numeric_limits<double>::signaling_NaN();

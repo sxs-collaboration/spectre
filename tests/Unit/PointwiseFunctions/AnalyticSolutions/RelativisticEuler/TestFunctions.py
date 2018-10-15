@@ -162,4 +162,30 @@ def spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
     return result
 
 
+def lorentz_factor(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+                   polytropic_constant, polytropic_exponent):
+    spatial_metric = kerr_schild_spatial_metric(x, black_hole_mass,
+                                                black_hole_spin)
+    velocity = spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in,
+                                r_max, polytropic_constant,
+                                polytropic_exponent)
+    return 1.0 / np.sqrt(
+        1.0 - np.einsum("i,j,ij", velocity, velocity, spatial_metric))
+
+
 # End functions for testing FishboneMoncriefDisk.cpp
+
+# Functions for testing the zero magnetic field components of
+# relativistic Euler solutions
+
+
+def magnetic_field(*args):
+    return np.array([0.0, 0.0, 0.0])
+
+
+def divergence_cleaning_field(*args):
+    return 0.0
+
+
+# End functions for testing the zero magnetic field components of
+# relativistic Euler solutions

@@ -28,9 +28,30 @@ struct FishboneMoncriefDiskProxy
       FishboneMoncriefDisk;
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
-    return variables(x, t, variables_tags<DataType>{});
+  using hydro_variables_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::LorentzFactor<DataType>,
+                 hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  using grmhd_variables_tags =
+      tmpl::push_back<hydro_variables_tags<DataType>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
+  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, hydro_variables_tags<DataType>{});
+  }
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
+  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
@@ -78,15 +99,20 @@ void test_variables(const DataType& used_for_size) noexcept {
       polytropic_constant, polytropic_exponent);
 
   pypp::check_with_random_values<
-      1, tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                    hydro::Tags::SpatialVelocity<DataType, 3>,
-                    hydro::Tags::SpecificInternalEnergy<DataType>,
-                    hydro::Tags::Pressure<DataType>,
-                    hydro::Tags::SpecificEnthalpy<DataType>>>(
-      &FishboneMoncriefDiskProxy::primitive_variables<DataType>, disk,
+      1, FishboneMoncriefDiskProxy::hydro_variables_tags<DataType>>(
+      &FishboneMoncriefDiskProxy::hydro_variables<DataType>, disk,
       "TestFunctions",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "specific_enthalpy"},
+       "pressure", "lorentz_factor", "specific_enthalpy"},
+      {{{-15., 15.}}}, member_variables, used_for_size);
+
+  pypp::check_with_random_values<
+      1, FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>>(
+      &FishboneMoncriefDiskProxy::grmhd_variables<DataType>, disk,
+      "TestFunctions",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
+       "divergence_cleaning_field"},
       {{{-15., 15.}}}, member_variables, used_for_size);
 }
 }  // namespace
