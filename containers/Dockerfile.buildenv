@@ -81,6 +81,7 @@ RUN echo "export PATH=\$PATH:/work/spack/bin" >> /root/.bashrc && \
     /root/.spack/linux/compilers.yaml
 RUN /work/spack/bin/spack install --no-checksum catch@2.1.0 && \
     /work/spack/bin/spack install brigand@master && \
+    /work/spack/bin/spack install fftw && \
     /work/spack/bin/spack install blaze && \
     /work/spack/bin/spack install gsl%gcc@6.4.0
 RUN /work/spack/bin/spack install libxsmm%gcc@6.4.0
@@ -132,9 +133,23 @@ RUN echo 'spack load catch' >> /root/.bashrc && \
     echo 'spack load brigand' >> /root/.bashrc && \
     echo 'spack load blaze' >> /root/.bashrc && \
     echo 'spack load gsl' >> /root/.bashrc && \
+    echo 'spack load fftw' >> /root/.bashrc && \
     echo 'spack load libxsmm' >> /root/.bashrc && \
     echo 'spack load yaml-cpp' >> /root/.bashrc && \
     echo 'spack load benchmark' >> /root/.bashrc
+
+# Download and build SSHT, install to /usr
+# commands in `spack load` to work in the container build
+RUN /bin/bash -c 'git clone https://github.com/astro-informatics/ssht.git && \
+                  cd /work/ssht && \
+                  /etc/profile.d/lmod.sh && \
+                  source /etc/profile && \
+                  source /work/spack/share/spack/setup-env.sh && \
+                  cd /work/ssht/ && \
+                  spack load fftw && \
+                  make default && \
+                  cp /work/ssht/lib/c/libssht.a /usr/lib/ && \
+                  cp /work/ssht/include/c/ssht.h /usr/include'
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)
