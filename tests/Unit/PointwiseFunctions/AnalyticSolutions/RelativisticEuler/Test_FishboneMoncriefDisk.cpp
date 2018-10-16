@@ -12,8 +12,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -116,6 +119,32 @@ void test_variables(const DataType& used_for_size) noexcept {
        "fishbone_lorentz_factor", "fishbone_specific_enthalpy",
        "magnetic_field", "divergence_cleaning_field"},
       {{{-15., 15.}}}, member_variables, used_for_size);
+
+  // Test a few of the GR components to make sure that the implementation
+  // correctly forwards to the background solution. Not meant to be extensive.
+  const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 1.0);
+  const gr::Solutions::KerrSchild ks_soln{
+      black_hole_mass, {{0.0, 0.0, black_hole_spin}}, {{0.0, 0.0, 0.0}}};
+  CHECK_ITERABLE_APPROX(
+      get<gr::Tags::Lapse<DataType>>(ks_soln.variables(
+          coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{})),
+      get<gr::Tags::Lapse<DataType>>(disk.variables(
+          coords, 0.0, tmpl::list<gr::Tags::Lapse<DataType>>{})));
+  CHECK_ITERABLE_APPROX(
+      get<gr::Tags::SqrtDetSpatialMetric<DataType>>(ks_soln.variables(
+          coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{})),
+      get<gr::Tags::SqrtDetSpatialMetric<DataType>>(disk.variables(
+          coords, 0.0,
+          tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
+  const auto expected_spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(
+          ks_soln.variables(coords, 0.0,
+                            gr::Solutions::KerrSchild::tags<DataType>{}));
+  const auto spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(disk.variables(
+          coords, 0.0,
+          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+  CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 }  // namespace
 

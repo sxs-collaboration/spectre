@@ -163,6 +163,13 @@ class SmoothFlow {
     return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
+  /// Retrieve the metric variables
+  template <typename DataType, typename Tag>
+  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x, double t,
+                                     tmpl::list<Tag> /*meta*/) const noexcept {
+    return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
+  }
+
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
   MeanVelocity::type mean_velocity() const noexcept { return mean_velocity_; }
