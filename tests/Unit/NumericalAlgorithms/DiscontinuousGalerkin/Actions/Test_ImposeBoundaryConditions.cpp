@@ -16,7 +16,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -46,7 +46,6 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -65,6 +64,11 @@ using TemporalId = Tags::TimeId;
 
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
+  using type = Scalar<DataVector>;
+};
+
+struct PrimitiveVar : db::SimpleTag {
+  static std::string name() noexcept { return "PrimitiveVar"; }
   using type = Scalar<DataVector>;
 };
 
@@ -112,6 +116,13 @@ struct BoundaryCondition {
                                      tmpl::list<Var> /*meta*/) const noexcept {
     return tuples::TaggedTuple<Var>{Scalar<DataVector>{{{{30., 40., 50.}}}}};
   }
+
+  tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& /*x*/,
+                                     double /*t*/,
+                                     tmpl::list<PrimitiveVar> /*meta*/) const
+      noexcept {
+    return tuples::TaggedTuple<Var>{Scalar<DataVector>{{{{15., 20., 25.}}}}};
+  }
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
@@ -120,15 +131,27 @@ struct BoundaryConditionTag {
   using type = BoundaryCondition;
 };
 
+template <bool HasPrimitiveAndConservativeVars>
 struct System {
   static constexpr const size_t volume_dim = Dim;
   static constexpr bool is_in_flux_conservative_form = true;
-  static constexpr bool has_primitive_and_conservative_vars = false;
+  static constexpr bool has_primitive_and_conservative_vars =
+      HasPrimitiveAndConservativeVars;
 
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
 
   template <typename Tag>
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
+
+  struct conservative_from_primitive {
+    using return_tags = tmpl::list<Var>;
+    using argument_tags = tmpl::list<PrimitiveVar>;
+
+    static void apply(const gsl::not_null<Scalar<DataVector>*> var,
+                      const Scalar<DataVector>& primitive_var) {
+      get(*var) = 2.0 * get(primitive_var);
+    }
+  };
 };
 
 template <typename Tag>
@@ -225,8 +248,9 @@ struct component {
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
 
+template <bool HasPrimitiveAndConservativeVars>
 struct Metavariables {
-  using system = System;
+  using system = System<HasPrimitiveAndConservativeVars>;
   using component_list = tmpl::list<component<Metavariables>>;
   using temporal_id = TemporalId;
   using const_global_cache_tag_list = tmpl::list<>;
@@ -239,12 +263,10 @@ struct Metavariables {
 template <typename Component>
 using compute_items = typename Component::compute_tags;
 
-using flux_comm_types = typename component<Metavariables>::flux_comm_types;
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
-                  "[Unit][NumericalAlgorithms][Actions]") {
-  using metavariables = Metavariables;
+template <bool HasConservativeAndPrimitiveVars>
+void run_test() {
+  using metavariables = Metavariables<HasConservativeAndPrimitiveVars>;
+  using flux_comm_types = typename component<metavariables>::flux_comm_types;
   using my_component = component<metavariables>;
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -386,12 +408,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          my_component>;
+  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id, std::move(start_box));
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
       {NumericalFlux{}, BoundaryCondition{}}, std::move(dist_objects)};
 
   using initial_databox_type = db::compute_databox_type<tmpl::append<
@@ -405,15 +428,15 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
           mortar_meshes_tag, mortar_sizes_tag>,
       compute_items<my_component>>>;
 
-  runner.next_action<my_component>(self_id);
+  runner.template next_action<my_component>(self_id);
 
-  CHECK(runner.is_ready<my_component>(self_id));
+  CHECK(runner.template is_ready<my_component>(self_id));
 
   // Check that BC's were indeed applied.
-  const auto& external_vars =
-      db::get<external_bdry_vars_tag>(runner.algorithms<my_component>()
-                                          .at(self_id)
-                                          .get_databox<initial_databox_type>());
+  const auto& external_vars = db::get<external_bdry_vars_tag>(
+      runner.template algorithms<my_component>()
+          .at(self_id)
+          .template get_databox<initial_databox_type>());
 
   db::item_type<external_bdry_vars_tag> expected_vars{};
   for (const auto& direction : external_directions) {
@@ -426,10 +449,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
   CHECK(external_vars == expected_vars);
 
   // ReceiveDataForFluxes
-  runner.next_action<my_component>(self_id);
-  const auto& self_box = runner.algorithms<my_component>()
+  runner.template next_action<my_component>(self_id);
+  const auto& self_box = runner.template algorithms<my_component>()
                              .at(self_id)
-                             .get_databox<initial_databox_type>();
+                             .template get_databox<initial_databox_type>();
 
   auto mortar_history = serialize_and_deserialize(
       db::get<mortar_data_tag<flux_comm_types>>(self_box));
@@ -489,4 +512,12 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
       data.external_bdry_other_data.at(Direction<2>::upper_xi()),
       tnsr::i<DataVector, 2>{{{DataVector{3, 2.0}, DataVector{3, 0.0}}}},
       tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}});
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
+                  "[Unit][NumericalAlgorithms][Actions]") {
+  run_test<false>();
+  run_test<true>();
 }

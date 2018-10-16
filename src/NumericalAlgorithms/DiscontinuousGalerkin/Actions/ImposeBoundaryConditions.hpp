@@ -196,6 +196,71 @@ struct ImposeDirichletBoundaryConditions {
     contribute_data_to_mortar(make_not_null(&box), cache);
     return std::forward_as_tuple(std::move(box));
   }
+
+  template <typename TagsList, typename... ReturnTags, typename... ArgumentTags,
+            typename System>
+  static void apply_impl_helper_conservative_from_primitive(
+      const gsl::not_null<Variables<TagsList>*> conservative_vars,
+      const tuples::TaggedTuple<ArgumentTags...>& argument_vars,
+      tmpl::list<ReturnTags...> /*meta*/, tmpl::list<System> /*meta*/
+      ) noexcept {
+    System::conservative_from_primitive::apply(
+        make_not_null(&get<ReturnTags>(*conservative_vars))...,
+        get<ArgumentTags>(argument_vars)...);
+  }
+
+  template <size_t VolumeDim, typename DbTags>
+  static std::tuple<db::DataBox<DbTags>&&> apply_impl(
+      db::DataBox<DbTags>& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      std::integral_constant<
+          BoundaryConditionMethod,
+          BoundaryConditionMethod::
+              AnalyticBcFluxConservativeWithPrimitives> /*meta*/) noexcept {
+    using system = typename Metavariables::system;
+
+    static_assert(
+        system::is_in_flux_conservative_form and
+            system::has_primitive_and_conservative_vars and
+            cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
+                             typename Metavariables::boundary_condition_tag>,
+        "Only analytic boundary conditions, or dirichlet boundary conditions "
+        "for conservative systems are implemented");
+
+    // Apply the boundary condition
+    db::mutate_apply<
+        tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                   typename system::variables_tag>>,
+        tmpl::list<>>(
+        [](const gsl::not_null<db::item_type<
+               Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                               typename system::variables_tag>>*>
+               external_bdry_vars,
+           const double time, const auto& boundary_condition,
+           const auto& boundary_coords) noexcept {
+          for (auto& external_direction_and_vars : *external_bdry_vars) {
+            auto& direction = external_direction_and_vars.first;
+            auto& vars = external_direction_and_vars.second;
+
+            apply_impl_helper_conservative_from_primitive(
+                make_not_null(&vars),
+                boundary_condition.variables(
+                    boundary_coords.at(direction), time,
+                    typename system::conservative_from_primitive::
+                        argument_tags{}),
+                typename system::conservative_from_primitive::return_tags{},
+                tmpl::list<system>{});
+          }
+        },
+        make_not_null(&box), db::get<Tags::Time>(box).value(),
+        get<typename Metavariables::boundary_condition_tag>(cache),
+        db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                Tags::Coordinates<VolumeDim, Frame::Inertial>>>(
+            box));
+
+    contribute_data_to_mortar(make_not_null(&box), cache);
+    return std::forward_as_tuple(std::move(box));
+  }
 };
 }  // namespace Actions
 }  // namespace dg
