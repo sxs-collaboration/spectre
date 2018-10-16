@@ -24,12 +24,16 @@
 namespace {
 
 void test_create_from_options() noexcept {
-  test_creation<NewtonianEuler::Solutions::IsentropicVortex>(
-      "  AdiabaticIndex: 1.43\n"
-      "  Center: [2.3, -1.3, -0.6]\n"
-      "  MeanVelocity: [-0.3, 0.1, 0.7]\n"
-      "  PerturbAmplitude: 0.5\n"
-      "  Strength: 3.76");
+  const auto created_solution =
+      test_creation<NewtonianEuler::Solutions::IsentropicVortex>(
+          "  AdiabaticIndex: 1.43\n"
+          "  Center: [2.3, -1.3, -0.6]\n"
+          "  MeanVelocity: [-0.3, 0.1, 0.7]\n"
+          "  PerturbAmplitude: 0.5\n"
+          "  Strength: 3.76");
+  CHECK(created_solution ==
+        NewtonianEuler::Solutions::IsentropicVortex(
+            1.43, {{2.3, -1.3, -0.6}}, {{-0.3, 0.1, 0.7}}, 0.5, 3.76));
 }
 
 void test_move() noexcept {

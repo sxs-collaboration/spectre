@@ -157,12 +157,20 @@ void test_1d() {
       std::array<DataVector, 2>{{-6.0 * omega * kx * u, 6.0 * square(kx) * u}},
       deserialized_pw, x, t);
 
-  test_creation<ScalarWave::Solutions::PlaneWave<1>>(
-      "  WaveVector: [3.5]\n"
-      "  Center: [3.5]\n"
-      "  Profile:\n"
-      "    PowX:\n"
-      "      Power: 4");
+  const auto created_solution =
+      test_creation<ScalarWave::Solutions::PlaneWave<1>>(
+          "  WaveVector: [-1.5]\n"
+          "  Center: [2.4]\n"
+          "  Profile:\n"
+          "    PowX:\n"
+          "      Power: 3");
+  CHECK(
+      created_solution.variables(
+          x, t,
+          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<1>, ScalarWave::Psi>{}) ==
+      pw.variables(
+          x, t,
+          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<1>, ScalarWave::Psi>{}));
 }
 
 void test_2d() {
@@ -209,12 +217,20 @@ void test_2d() {
           {-6.0 * omega * ky * u, 6.0 * kx * ky * u, 6.0 * square(ky) * u}},
       deserialized_pw, x, t);
 
-  test_creation<ScalarWave::Solutions::PlaneWave<2>>(
-      "  WaveVector: [-2, 3.5]\n"
-      "  Center: [-2, 3.5]\n"
-      "  Profile:\n"
-      "    PowX:\n"
-      "      Power: 4");
+  const auto created_solution =
+      test_creation<ScalarWave::Solutions::PlaneWave<2>>(
+          "  WaveVector: [1.5, -7.2]\n"
+          "  Center: [2.4, -4.8]\n"
+          "  Profile:\n"
+          "    PowX:\n"
+          "      Power: 3");
+  CHECK(
+      created_solution.variables(
+          x, t,
+          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<2>, ScalarWave::Psi>{}) ==
+      pw.variables(
+          x, t,
+          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<2>, ScalarWave::Psi>{}));
 }
 
 void test_3d() {
@@ -279,12 +295,20 @@ void test_3d() {
                                  6.0 * ky * kz * u, 6.0 * square(kz) * u}},
       deserialized_pw, x, t);
 
-  test_creation<ScalarWave::Solutions::PlaneWave<3>>(
-      "  WaveVector: [-1, -2, 3.5]\n"
-      "  Center: [-1, -2, 3.5]\n"
-      "  Profile:\n"
-      "    PowX:\n"
-      "      Power: 4");
+  const auto created_solution =
+      test_creation<ScalarWave::Solutions::PlaneWave<3>>(
+          "  WaveVector: [1.5, -7.2, 2.7]\n"
+          "  Center: [2.4, -4.8, 8.4]\n"
+          "  Profile:\n"
+          "    PowX:\n"
+          "      Power: 3");
+  CHECK(
+      created_solution.variables(
+          x, t,
+          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>{}) ==
+      pw.variables(
+          x, t,
+          tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>{}));
 }
 }  // namespace
 
