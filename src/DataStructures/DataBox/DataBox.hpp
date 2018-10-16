@@ -1568,7 +1568,8 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<is_apply_callable_v<
               F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-              const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+              const std::add_lvalue_reference_t<
+                  db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
 inline constexpr auto mutate_apply(
     F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
@@ -1583,12 +1584,12 @@ inline constexpr auto mutate_apply(
   ::db::mutate<ReturnTags...>(
       box,
       [](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
-         const db::item_type<ArgumentTags>&... args_items,
+         const db::item_type<ArgumentTags, BoxTags>&... args_items,
          decltype(std::forward<Args>(args))... l_args)
       // clang-format off
       noexcept(noexcept(F::apply(
           std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
-          std::declval<const db::item_type<ArgumentTags>&>()...,
+          std::declval<const db::item_type<ArgumentTags, BoxTags>&>()...,
           std::forward<Args>(args)...))) {
         // clang-format on
         return F::apply(mutated_items..., args_items...,
@@ -1601,7 +1602,8 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<::tt::is_callable_v<
               F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-              const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
+              const std::add_lvalue_reference_t<
+                  db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
 inline constexpr auto mutate_apply(
     F f, const gsl::not_null<db::DataBox<BoxTags>*> box,
@@ -1610,7 +1612,7 @@ inline constexpr auto mutate_apply(
     // clang-format off
     noexcept(noexcept(f(
         std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
-        std::declval<const db::item_type<ArgumentTags>&>()...,
+        std::declval<const db::item_type<ArgumentTags, BoxTags>&>()...,
         std::forward<Args>(args)...))) {
   // clang-format on
   static_assert(
@@ -1622,7 +1624,7 @@ inline constexpr auto mutate_apply(
   ::db::mutate<ReturnTags...>(
       box,
       [&f](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
-           const db::item_type<ArgumentTags>&... args_items,
+           const db::item_type<ArgumentTags, BoxTags>&... args_items,
            decltype(std::forward<Args>(args))... l_args)
       // clang-format off
       noexcept(noexcept(f(mutated_items...,
@@ -1648,22 +1650,23 @@ constexpr void error_mutate_apply_not_callable() noexcept {
 template <
     typename... ReturnTags, typename... ArgumentTags, typename F,
     typename BoxTags, typename... Args,
-    Requires<not(
-        is_apply_callable_v<
-            F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-            const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
-            Args...> or
-        ::tt::is_callable_v<
-            F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-            const std::add_lvalue_reference_t<db::item_type<ArgumentTags>>...,
-            Args...>)> = nullptr>
+    Requires<not(is_apply_callable_v<
+                     F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+                     const std::add_lvalue_reference_t<
+                         db::item_type<ArgumentTags, BoxTags>>...,
+                     Args...> or
+                 ::tt::is_callable_v<
+                     F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+                     const std::add_lvalue_reference_t<
+                         db::item_type<ArgumentTags, BoxTags>>...,
+                     Args...>)> = nullptr>
 inline constexpr auto mutate_apply(
     F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> /*box*/,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... /*args*/) noexcept {
   error_mutate_apply_not_callable<
       F, gsl::not_null<db::item_type<ReturnTags>*>...,
-      const db::item_type<ArgumentTags>&..., Args&&...>();
+      const db::item_type<ArgumentTags, BoxTags>&..., Args&&...>();
 }
 
 template <typename Tag, typename BoxTags>
