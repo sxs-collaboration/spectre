@@ -12,6 +12,7 @@
 class DataVector;
 
 namespace GeneralizedHarmonic {
+namespace Tags {
 /*!
  * \brief Conjugate momentum to the spacetime metric.
  *
@@ -60,4 +61,5 @@ struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "SpacetimeDerivGaugeH"; }
 };
+}  // namespace Tags
 }  // namespace GeneralizedHarmonic

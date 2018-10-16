@@ -55,9 +55,9 @@ void verify_time_independent_einstein_solution(
     const double error_tolerance) noexcept {
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using Pi = ::GeneralizedHarmonic::Pi<3, Frame::Inertial>;
-  using Phi = ::GeneralizedHarmonic::Phi<3, Frame::Inertial>;
-  using GaugeH = ::GeneralizedHarmonic::GaugeH<3, Frame::Inertial>;
+  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
+  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
+  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Set up grid

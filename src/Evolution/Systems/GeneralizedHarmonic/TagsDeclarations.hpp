@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 
 namespace GeneralizedHarmonic {
+namespace Tags {
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct Pi;
 template <size_t Dim, typename Frame = Frame::Inertial>
@@ -20,4 +21,5 @@ template <size_t Dim, typename Frame = Frame::Inertial>
 struct GaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivGaugeH;
+}  // namespace Tags
 }  // namespace GeneralizedHarmonic
