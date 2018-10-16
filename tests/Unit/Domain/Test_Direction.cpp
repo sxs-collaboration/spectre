@@ -15,7 +15,8 @@
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
+namespace {
+void test_construction_1d() {
   auto upper_xi_1 = Direction<1>::upper_xi();
   CHECK(upper_xi_1.opposite() == Direction<1>::lower_xi());
   CHECK(upper_xi_1.opposite().sign() == -1.0);
@@ -29,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction1D", "[Domain][Unit]") {
   test_serialization(lower_xi_1);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
+void test_construction_2d() {
   auto upper_xi_2 = Direction<2>(0, Side::Upper);
   CHECK(upper_xi_2 == Direction<2>::upper_xi());
   CHECK(upper_xi_2.axis() == Direction<2>::Axis::Xi);
@@ -55,7 +56,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction2D", "[Domain][Unit]") {
   test_serialization(lower_eta_2);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
+void test_construction_3d() {
   auto upper_xi = Direction<3>(0, Side::Upper);
   CHECK(upper_xi == Direction<3>::upper_xi());
   CHECK(upper_xi.axis() == Direction<3>::Axis::Xi);
@@ -93,7 +94,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Construction3D", "[Domain][Unit]") {
   test_serialization(lower_zeta);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction.HelperFunctions", "[Domain][Unit]") {
+void test_helper_functions() {
   auto upper_xi_3 = Direction<3>::upper_xi();
   CHECK(upper_xi_3.axis() == Direction<3>::Axis::Xi);
   CHECK(upper_xi_3.side() == Side::Upper);
@@ -119,7 +120,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.HelperFunctions", "[Domain][Unit]") {
   CHECK(lower_zeta_3.side() == Side::Lower);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
+void test_std_hash() {
   size_t upper_xi_1_hash = std::hash<Direction<1>>{}(Direction<1>::upper_xi());
   size_t lower_xi_1_hash = std::hash<Direction<1>>{}(Direction<1>::lower_xi());
 
@@ -159,7 +160,24 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Hash", "[Domain][Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
+void test_direction_hash() {
+  CHECK(DirectionHash<1>{}(Direction<1>::lower_xi()) == 0);
+  CHECK(DirectionHash<1>{}(Direction<1>::upper_xi()) == 1);
+
+  CHECK(DirectionHash<2>{}(Direction<2>::lower_xi()) == 0);
+  CHECK(DirectionHash<2>{}(Direction<2>::upper_xi()) == 1);
+  CHECK(DirectionHash<2>{}(Direction<2>::lower_eta()) == 2);
+  CHECK(DirectionHash<2>{}(Direction<2>::upper_eta()) == 3);
+
+  CHECK(DirectionHash<3>{}(Direction<3>::lower_xi()) == 0);
+  CHECK(DirectionHash<3>{}(Direction<3>::upper_xi()) == 1);
+  CHECK(DirectionHash<3>{}(Direction<3>::lower_eta()) == 2);
+  CHECK(DirectionHash<3>{}(Direction<3>::upper_eta()) == 3);
+  CHECK(DirectionHash<3>{}(Direction<3>::lower_zeta()) == 4);
+  CHECK(DirectionHash<3>{}(Direction<3>::upper_zeta()) == 5);
+}
+
+void test_output() {
   auto upper_xi = Direction<1>(0, Side::Upper);
   CHECK(get_output(upper_xi) == "+0");
 
@@ -189,6 +207,17 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction.Output", "[Domain][Unit]") {
 
   auto lower_zeta_3 = Direction<3>(2, Side::Lower);
   CHECK(get_output(lower_zeta_3) == "-2");
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Direction", "[Domain][Unit]") {
+  test_construction_1d();
+  test_construction_2d();
+  test_construction_3d();
+  test_helper_functions();
+  test_std_hash();
+  test_direction_hash();
+  test_output();
 }
 
 // [[OutputRegex, dim = 1, for Direction<1> only dim = 0 is allowed.]]
