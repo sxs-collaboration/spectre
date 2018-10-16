@@ -14,4 +14,5 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE Hydro
   )
