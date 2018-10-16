@@ -152,15 +152,15 @@ AlfvenWave::variables(
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
   // the adiabatic_indexs are compared
-  return lhs.wavenumber() == rhs.wavenumber() and
-         lhs.pressure() == rhs.pressure() and
-         lhs.rest_mass_density() == rhs.rest_mass_density() and
-         lhs.adiabatic_index() == rhs.adiabatic_index() and
-         lhs.background_mag_field() == rhs.background_mag_field() and
-         lhs.perturbation_size() == rhs.perturbation_size() and
-         lhs.alfven_speed() == rhs.alfven_speed() and
-         lhs.fluid_speed() == rhs.fluid_speed() and
-         lhs.background_spacetime() == rhs.background_spacetime();
+  return lhs.wavenumber_ == rhs.wavenumber_ and
+         lhs.pressure_ == rhs.pressure_ and
+         lhs.rest_mass_density_ == rhs.rest_mass_density_ and
+         lhs.adiabatic_index_ == rhs.adiabatic_index_ and
+         lhs.background_mag_field_ == rhs.background_mag_field_ and
+         lhs.perturbation_size_ == rhs.perturbation_size_ and
+         lhs.alfven_speed_ == rhs.alfven_speed_ and
+         lhs.fluid_speed_ == rhs.fluid_speed_ and
+         lhs.background_spacetime_ == rhs.background_spacetime_;
 }
 
 bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {

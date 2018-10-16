@@ -66,12 +66,7 @@ void test_create_from_options() noexcept {
       "  AdiabaticIndex: 1.4\n"
       "  BackgroundMagField: 2.0\n"
       "  PerturbationSize: 0.75");
-  CHECK(wave.wavenumber() == 2.2);
-  CHECK(wave.pressure() == 1.23);
-  CHECK(wave.rest_mass_density() == 0.2);
-  CHECK(wave.adiabatic_index() == 1.4);
-  CHECK(wave.background_mag_field() == 2.0);
-  CHECK(wave.perturbation_size() == 0.75);
+  CHECK(wave == grmhd::Solutions::AlfvenWave(2.2, 1.23, 0.2, 1.4, 2.0, 0.75));
 }
 
 void test_move() noexcept {

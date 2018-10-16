@@ -5,7 +5,6 @@
 
 #include <limits>
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
@@ -14,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -282,20 +282,9 @@ class FishboneMoncriefDisk {
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
-  double black_hole_mass() const noexcept { return black_hole_mass_; }
-  double black_hole_spin() const noexcept { return black_hole_spin_; }
-  double inner_edge_radius() const noexcept { return inner_edge_radius_; }
-  double max_pressure_radius() const noexcept { return max_pressure_radius_; }
-  double polytropic_constant() const noexcept { return polytropic_constant_; }
-  double polytropic_exponent() const noexcept { return polytropic_exponent_; }
-
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
       noexcept {
     return equation_of_state_;
-  }
-
-  const gr::Solutions::KerrSchild& background_spacetime() const noexcept {
-    return background_spacetime_;
   }
 
  private:
@@ -400,6 +389,9 @@ class FishboneMoncriefDisk {
     tnsr::ii<DataType, 3, Frame::Inertial> spatial_metric{};
   };
 
+  friend bool operator==(const FishboneMoncriefDisk& lhs,
+                         const FishboneMoncriefDisk& rhs) noexcept;
+
   double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
   double black_hole_spin_ = std::numeric_limits<double>::signaling_NaN();
   double inner_edge_radius_ = std::numeric_limits<double>::signaling_NaN();
@@ -410,8 +402,6 @@ class FishboneMoncriefDisk {
   gr::Solutions::KerrSchild background_spacetime_{};
 };
 
-bool operator==(const FishboneMoncriefDisk& lhs,
-                const FishboneMoncriefDisk& rhs) noexcept;
 bool operator!=(const FishboneMoncriefDisk& lhs,
                 const FishboneMoncriefDisk& rhs) noexcept;
 }  // namespace Solutions

@@ -102,9 +102,8 @@ struct Initialize {
       // Set initial data from analytic solution
       using solution_tag = OptionTags::AnalyticSolutionBase;
       GrVars gr_vars{num_grid_points};
-      gr_vars.assign_subset(
-          Parallel::get<solution_tag>(cache).background_spacetime().variables(
-              inertial_coords, initial_time, typename GrVars::tags_list{}));
+      gr_vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
+          inertial_coords, initial_time, typename GrVars::tags_list{}));
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(gr_vars));

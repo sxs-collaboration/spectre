@@ -66,11 +66,9 @@ void test_create_from_options() noexcept {
       "  Pressure: 1.23\n"
       "  AdiabaticIndex: 1.4\n"
       "  PerturbationSize: 0.75");
-  CHECK(flow.mean_velocity() == std::array<double, 3>{{0.1, -0.2, 0.3}});
-  CHECK(flow.wavevector() == std::array<double, 3>{{-0.13, -0.54, 0.04}});
-  CHECK(flow.pressure() == 1.23);
-  CHECK(flow.adiabatic_index() == 1.4);
-  CHECK(flow.perturbation_size() == 0.75);
+  CHECK(flow == grmhd::Solutions::SmoothFlow({{0.1, -0.2, 0.3}},
+                                             {{-0.13, -0.54, 0.04}}, 1.23, 1.4,
+                                             0.75));
 }
 
 void test_move() noexcept {
