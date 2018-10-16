@@ -31,6 +31,13 @@ void test_compute_inverse_spacetime_metric(const DataType& used_for_size) {
       used_for_size);
 }
 template <size_t Dim, typename DataType>
+void test_compute_inverse_spatial_metric(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      &gr::inverse_spatial_metric<Dim, Frame::Inertial, DataType>,
+      "TestFunctions", "inverse_spatial_metric", {{{-10., 10.}}},
+      used_for_size);
+}
+template <size_t Dim, typename DataType>
 void test_compute_derivatives_of_spacetime_metric(
     const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
@@ -124,6 +131,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_spacetime_metric, (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_inverse_spacetime_metric,
+                                    (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_inverse_spatial_metric,
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_compute_derivatives_of_spacetime_metric, (1, 2, 3));
