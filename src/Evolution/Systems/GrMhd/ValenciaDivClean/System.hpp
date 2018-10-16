@@ -38,7 +38,8 @@ namespace grmhd {
 namespace ValenciaDivClean {
 
 struct System {
-  static constexpr bool is_conservative = true;
+  static constexpr bool is_in_flux_conservative_form = true;
+  static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
 
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<

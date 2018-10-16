@@ -21,7 +21,8 @@
 /// of the Burgers system, the local characteristic speed is \f$U\f$.
 namespace Burgers {
 struct System {
-  static constexpr bool is_conservative = true;
+  static constexpr bool is_in_flux_conservative_form = true;
+  static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = 1;
 
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;

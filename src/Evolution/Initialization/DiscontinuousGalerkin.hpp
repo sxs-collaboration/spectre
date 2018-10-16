@@ -109,8 +109,8 @@ struct DiscontinuousGalerkin {
         std::move(mortar_sizes));
   }
 
-  template <typename LocalSystem,
-            bool IsConservative = LocalSystem::is_conservative>
+  template <typename LocalSystem, bool IsInFluxConservativeForm =
+                                      LocalSystem::is_in_flux_conservative_form>
   struct Impl {
     using simple_tags = db::AddSimpleTags<
         mortar_data_tag, Tags::Mortars<Tags::Next<temporal_id_tag>, dim>,

@@ -42,7 +42,8 @@ namespace Initialization {
 /// variables are initialized.
 template <typename System>
 struct ConservativeSystem {
-  static_assert(System::is_conservative, "System is not conservative");
+  static_assert(System::is_in_flux_conservative_form,
+                "System is not in flux conservative form");
   static constexpr size_t dim = System::volume_dim;
   using variables_tag = typename System::variables_tag;
   using fluxes_tag = db::add_tag_prefix<Tags::Flux, variables_tag,

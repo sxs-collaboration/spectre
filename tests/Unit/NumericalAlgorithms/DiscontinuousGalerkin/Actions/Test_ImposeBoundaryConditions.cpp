@@ -122,7 +122,8 @@ struct BoundaryConditionTag {
 
 struct System {
   static constexpr const size_t volume_dim = Dim;
-  static constexpr bool is_conservative = true;
+  static constexpr bool is_in_flux_conservative_form = true;
+  static constexpr bool has_primitive_and_conservative_vars = false;
 
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
 

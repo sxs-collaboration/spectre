@@ -25,6 +25,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace Tags {
@@ -90,9 +91,11 @@ struct ImposeDirichletBoundaryConditions {
     using system = typename Metavariables::system;
 
     static_assert(
-        system::is_conservative or
-            cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
-                             typename Metavariables::boundary_condition_tag>,
+        (system::is_in_flux_conservative_form or
+         cpp17::is_same_v<
+             typename Metavariables::analytic_solution_tag,
+             typename Metavariables::boundary_condition_tag>)and not system::
+            has_primitive_and_conservative_vars,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
 

@@ -104,9 +104,10 @@ struct SystemAnalyticSolution {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-template <size_t Dim, bool IsConservative>
+template <size_t Dim, bool IsInFluxConservativeForm>
 struct System {
-  static constexpr bool is_conservative = IsConservative;
+  static constexpr bool is_in_flux_conservative_form = IsInFluxConservativeForm;
+  static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
   using gradients_tags = tmpl::list<Var>;
@@ -351,7 +352,7 @@ void test_initialize_element(
   test_interface_tags<Tags::BoundaryDirectionsExterior<dim>, system,
                       databox_t>();
 
-  TestConservativeOrNonconservativeParts<system::is_conservative>::
+  TestConservativeOrNonconservativeParts<system::is_in_flux_conservative_form>::
       template apply<Metavariables>(make_not_null(&box));
 }
 
