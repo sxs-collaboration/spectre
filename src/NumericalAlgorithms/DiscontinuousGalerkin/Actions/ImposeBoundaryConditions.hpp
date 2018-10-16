@@ -76,26 +76,57 @@ namespace Actions {
 /// \see ReceiveDataForFluxes
 template <typename Metavariables>
 struct ImposeDirichletBoundaryConditions {
+ private:
+  // BoundaryConditionMethod and BcSelector are used to select exactly how to
+  // apply the Dirichlet boundary condition depending on properties of the
+  // system. An overloaded `apply_impl` method is used that implements the
+  // boundary condition calculation for the different types.
+  enum class BoundaryConditionMethod {
+    AnalyticBcNoPrimitives,
+    AnalyticBcFluxConservativeWithPrimitives,
+    Unknown
+  };
+  template <BoundaryConditionMethod Method>
+  using BcSelector = std::integral_constant<BoundaryConditionMethod, Method>;
+
+ public:
   using const_global_cache_tags =
       tmpl::list<typename Metavariables::normal_dot_numerical_flux,
                  typename Metavariables::boundary_condition_tag>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    using system = typename Metavariables::system;
+    return apply_impl(
+        box, cache,
+        BcSelector<(not system::has_primitive_and_conservative_vars
+                        ? BoundaryConditionMethod::AnalyticBcNoPrimitives
+                        : (system::has_primitive_and_conservative_vars and
+                                   system::is_in_flux_conservative_form
+                               ? BoundaryConditionMethod::
+                                     AnalyticBcFluxConservativeWithPrimitives
+                               : BoundaryConditionMethod::Unknown))>{});
+  }
+
+ private:
+  template <typename DbTags>
+  static std::tuple<db::DataBox<DbTags>&&> apply_impl(
+      db::DataBox<DbTags>& box,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      std::integral_constant<
+          BoundaryConditionMethod,
+          BoundaryConditionMethod::AnalyticBcNoPrimitives> /*meta*/) noexcept {
     using system = typename Metavariables::system;
 
     static_assert(
-        (system::is_in_flux_conservative_form or
-         cpp17::is_same_v<
-             typename Metavariables::analytic_solution_tag,
-             typename Metavariables::boundary_condition_tag>)and not system::
-            has_primitive_and_conservative_vars,
+        system::is_in_flux_conservative_form or
+            cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
+                             typename Metavariables::boundary_condition_tag>,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
 
