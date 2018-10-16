@@ -79,6 +79,22 @@ tnsr::AA<DataType, Dim, Frame> inverse_spacetime_metric(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::II<DataType, SpatialDim, Frame> inverse_spatial_metric(
+    const tnsr::AA<DataType, SpatialDim, Frame>&
+        inverse_spacetime_metric) noexcept {
+  auto inverse_spatial_metric =
+      make_with_value<tnsr::II<DataType, SpatialDim, Frame>>(
+          inverse_spacetime_metric, 0.);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = i; j < SpatialDim; ++j) {
+      inverse_spatial_metric.get(i, j) =
+          inverse_spacetime_metric.get(i + 1, j + 1);
+    }
+  }
+  return inverse_spatial_metric;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::I<DataType, SpatialDim, Frame> shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>&
@@ -245,6 +261,10 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
           inverse_spatial_metric) noexcept;                                    \
+  template tnsr::II<DTYPE(data), DIM(data), FRAME(data)>                       \
+  gr::inverse_spatial_metric(                                                  \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric) noexcept;                                  \
   template tnsr::I<DTYPE(data), DIM(data), FRAME(data)> gr::shift(             \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric,   \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \

@@ -65,6 +65,16 @@ tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
 
 /*!
  * \ingroup GeneralRelativityGroup
+ * \brief Compute inverse spatial metric from inverse spacetime metric.
+ * \details Simply pull out the spatial components.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::II<DataType, SpatialDim, Frame> inverse_spatial_metric(
+    const tnsr::AA<DataType, SpatialDim, Frame>&
+        inverse_spacetime_metric) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
  * \brief Compute shift from spacetime metric and inverse spatial metric.
  *
  * \details Computes

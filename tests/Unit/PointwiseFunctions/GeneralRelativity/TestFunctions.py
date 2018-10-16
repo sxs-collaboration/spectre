@@ -63,6 +63,12 @@ def inverse_spacetime_metric(lapse, shift, inverse_spatial_metric):
             1:] = inverse_spatial_metric - np.outer(shift, shift) / lapse**2
     return inv_psi
 
+def inverse_spatial_metric(inverse_spacetime_metric):
+    spatial_dim = inverse_spacetime_metric.shape[0] - 1
+    inverse_spatial_metric = np.zeros([spatial_dim, spatial_dim])
+    inverse_spatial_metric[0:,0:] = inverse_spacetime_metric[1:,1:]
+    return inverse_spatial_metric
+
 
 def derivatives_of_spacetime_metric(lapse, dt_lapse, deriv_lapse, shift,
                                     dt_shift, deriv_shift, spatial_metric,
