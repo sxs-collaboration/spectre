@@ -205,6 +205,10 @@ class MockDistributedObject {
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() { return terminate_; }
 
+  // Actions may call this, but since tests step through actions manually it has
+  // no effect.
+  void perform_algorithm() noexcept {}
+
   template <typename BoxType>
   BoxType& get_databox() noexcept {
     return boost::get<BoxType>(box_);
@@ -592,6 +596,12 @@ class MockArrayElementProxy {
   void threaded_action() noexcept {
     local_algorithm_.template threaded_action<Action>();
   }
+
+  void set_terminate(bool t) noexcept { local_algorithm_.set_terminate(t); }
+
+  // Actions may call this, but since tests step through actions manually it has
+  // no effect.
+  void perform_algorithm() noexcept {}
 
   MockDistributedObject<Component>* ckLocal() { return &local_algorithm_; }
 

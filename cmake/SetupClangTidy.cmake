@@ -34,6 +34,7 @@ elseif(CMAKE_CXX_CLANG_TIDY)
 endif()
 
 if (CLANG_TIDY_BIN)
+  message(STATUS "clang-tidy: ${CLANG_TIDY_BIN}")
   set(MODULES_TO_DEPEND_ON
     module_RunTests
     module_ConstGlobalCache
@@ -92,4 +93,6 @@ if (CLANG_TIDY_BIN)
     clang-tidy-hash
     ${MODULES_TO_DEPEND_ON}
   )
+else()
+  message(STATUS "clang-tidy: Not using clang or couldn't find clang-tidy.")
 endif()
