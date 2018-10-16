@@ -7,6 +7,7 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <string>
 #include <unordered_map>
@@ -179,15 +180,21 @@ auto make_neighbor_packaged_data(const double left, const double right,
               Scalar<double>(right), make_array<1>(right_size)})};
 }
 
+// Test that the limiter activates in the x-direction only. Domain quantities
+// and input scalar<DataVector> may be of higher dimension VolumeDim.
+template <size_t VolumeDim>
 void test_limiter_activates_work(
-    const SlopeLimiters::Minmod<1, tmpl::list<scalar>>& minmod,
-    const scalar::type& input, const Element<1>& element, const Mesh<1>& mesh,
-    const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
-    const std::array<double, 1>& element_size,
+    const SlopeLimiters::Minmod<VolumeDim, tmpl::list<scalar>>& minmod,
+    const scalar::type& input, const Element<VolumeDim>& element,
+    const Mesh<VolumeDim>& mesh,
+    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
-        std::pair<Direction<1>, ElementId<1>>,
-        SlopeLimiters::Minmod<1, tmpl::list<scalar>>::PackagedData,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        typename SlopeLimiters::Minmod<VolumeDim,
+                                       tmpl::list<scalar>>::PackagedData,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_data,
     const double expected_slope) noexcept {
   auto input_to_limit = input;
   const bool limiter_activated =
@@ -735,6 +742,156 @@ SPECTRE_TEST_CASE(
 
   // This test only makes sense on higher-than-linear order meshes
   test_limiter_action_on_quadratic_function(4, minmod);
+}
+
+namespace {
+// Make a 2D element with two neighbors in lower_xi, one neighbor in upper_xi.
+// Check that lower_xi data from two neighbors is correctly combined in the
+// limiting operation.
+void test_limiter_action_two_lower_xi_neighbors() noexcept {
+  const auto element = Element<2>{
+      ElementId<2>{0},
+      Element<2>::Neighbors_t{
+          {Direction<2>::lower_xi(),
+           {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
+            OrientationMap<2>{}}},
+          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)}}};
+  const auto mesh =
+      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto logical_coords = logical_coordinates(mesh);
+  const double dx = 1.0;
+  const auto element_size = make_array<2>(dx);
+
+  const auto mean = 2.0;
+  const auto func = [&mean](
+      const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    return mean + 1.2 * get<0>(coords);
+  };
+  const auto input = scalar::type(func(logical_coords));
+
+  const auto make_neighbors = [&dx](const double left1, const double left2,
+                                    const double right, const double left1_size,
+                                    const double left2_size) noexcept {
+    using Pack = SlopeLimiters::Minmod<2, tmpl::list<scalar>>::PackagedData;
+    return std::unordered_map<
+        std::pair<Direction<2>, ElementId<2>>, Pack,
+        boost::hash<std::pair<Direction<2>, ElementId<2>>>>{
+        std::make_pair(
+            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
+            Pack{Scalar<double>(left1), make_array(left1_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(7)),
+            Pack{Scalar<double>(left2), make_array(left2_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2)),
+            Pack{Scalar<double>(right), make_array<2>(dx)}),
+    };
+  };
+
+  const SlopeLimiters::Minmod<2, tmpl::list<scalar>> minmod(
+      SlopeLimiters::MinmodType::LambdaPi1);
+
+  // Make two left neighbors with different mean values
+  const auto neighbor_data_two_means =
+      make_neighbors(mean - 1.1, mean - 1.0, mean + 1.4, dx, dx);
+  // Effective neighbor mean (1.1 + 1.0) / 2.0 => 1.05
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_means, 1.05);
+
+  // Make two left neighbors with different means and sizes
+  const auto neighbor_data_two_sizes =
+      make_neighbors(mean - 1.1, mean - 1.0, mean + 1.4, dx, 0.5 * dx);
+  // Effective neighbor mean (1.1 + 1.0) / 2.0 => 1.05
+  // Average neighbor size (1.0 + 0.5) / 2.0 => 0.75
+  // Effective distance (0.75 + 1.0) / 2.0 => 0.875
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_sizes,
+                              1.05 / 0.875);
+}
+
+// See above, but with 4 upper_xi neighbors. Note that in 2D we are unlikely to
+// want domains that have more than 2 neighbors across a face; however, because
+// the multi-neighbor averaging is dimension-agnostic, this also can represent a
+// 3D test.
+void test_limiter_action_four_upper_xi_neighbors() noexcept {
+  const auto element = Element<2>{
+      ElementId<2>{0},
+      Element<2>::Neighbors_t{
+          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
+          {Direction<2>::upper_xi(),
+           {std::unordered_set<ElementId<2>>{ElementId<2>(2), ElementId<2>(7),
+                                             ElementId<2>(8), ElementId<2>(9)},
+            OrientationMap<2>{}}},
+      }};
+  const auto mesh =
+      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto logical_coords = logical_coordinates(mesh);
+  const double dx = 1.0;
+  const auto element_size = make_array<2>(dx);
+
+  const auto mean = 2.0;
+  const auto func = [&mean](
+      const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    return mean + 1.2 * get<0>(coords);
+  };
+  const auto input = scalar::type(func(logical_coords));
+
+  const auto make_neighbors = [&dx](
+      const double left, const double right1, const double right2,
+      const double right3, const double right4, const double right1_size,
+      const double right2_size, const double right3_size,
+      const double right4_size) noexcept {
+    using Pack = SlopeLimiters::Minmod<2, tmpl::list<scalar>>::PackagedData;
+    return std::unordered_map<
+        std::pair<Direction<2>, ElementId<2>>, Pack,
+        boost::hash<std::pair<Direction<2>, ElementId<2>>>>{
+        std::make_pair(
+            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
+            Pack{Scalar<double>(left), make_array<2>(dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2)),
+            Pack{Scalar<double>(right1), make_array(right1_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(7)),
+            Pack{Scalar<double>(right2), make_array(right2_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(8)),
+            Pack{Scalar<double>(right3), make_array(right3_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(9)),
+            Pack{Scalar<double>(right4), make_array(right4_size, dx)}),
+    };
+  };
+
+  const SlopeLimiters::Minmod<2, tmpl::list<scalar>> minmod(
+      SlopeLimiters::MinmodType::LambdaPi1);
+
+  // Make four right neighbors with different mean values
+  const auto neighbor_data_two_means =
+      make_neighbors(mean - 1.4, mean + 1.0, mean + 1.1, mean - 0.2, mean + 1.8,
+                     dx, dx, dx, dx);
+  // Effective neighbor mean (1.0 + 1.1 - 0.2 + 1.8) / 4.0 => 0.925
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_means, 0.925);
+
+  // Make four right neighbors with different means and sizes
+  const auto neighbor_data_two_sizes =
+      make_neighbors(mean - 1.4, mean + 1.0, mean + 1.1, mean - 0.2, mean + 1.8,
+                     dx, 0.5 * dx, 0.5 * dx, 0.5 * dx);
+  // Effective neighbor mean (1.0 + 1.1 - 0.2 + 1.8) / 4.0 => 0.925
+  // Average neighbor size (1.0 + 0.5 + 0.5 + 0.5) / 4.0 => 0.625
+  // Effective distance (0.625 + 1.0) / 2.0 => 0.8125
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_sizes,
+                              0.925 / 0.8125);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.h_refinement_boundary",
+    "[SlopeLimiters][Unit]") {
+  test_limiter_action_two_lower_xi_neighbors();
+  test_limiter_action_four_upper_xi_neighbors();
 }
 
 namespace {

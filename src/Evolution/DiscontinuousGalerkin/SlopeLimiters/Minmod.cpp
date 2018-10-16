@@ -95,10 +95,38 @@ bool limit_one_tensor(
       const bool has_neighbors = (externals.find(dir) == externals.end());
       if (has_neighbors) {
         const auto& neighbor_ids = element.neighbors().at(dir).ids();
-        ASSERT(neighbor_ids.size() == 1,
-               "Minmod does not yet support h-refinment");
-        // We've checked for a single neighbor, so just read first element:
-        const auto dir_key = std::make_pair(dir, *(neighbor_ids.cbegin()));
+
+        // Average neighbor_size over the different neighbors on the opposite
+        // side of the face. Note that only the component of neighbor_size that
+        // is normal to the face is needed (and, therefore, computed).
+        // This average is independent of the tensor component `u`, so could be
+        // precomputed outside the loop over tensors. Changing the code to
+        // precompute the average may or may not be an optimization.
+        const double neighbor_size =
+            [&dim, &dir, &neighbor_ids, &neighbor_sizes ]() noexcept {
+          double size_cumul = 0.0;
+          for (const auto& id : neighbor_ids) {
+            size_cumul +=
+                gsl::at(neighbor_sizes.at(std::make_pair(dir, id)), dim);
+          }
+          return size_cumul / neighbor_ids.size();
+        }();
+
+        // Average the neighbor_tensor means over the different neighbors on the
+        // opposite side of the face.
+        const double neighbor_mean = [
+          &dir, &neighbor_ids, &neighbor_tensor_begin, &iter_offset
+        ]() noexcept {
+          double u_cumul = 0.0;
+          for (const auto& id : neighbor_ids) {
+            // clang-tidy: do not use pointer arithmetic
+            u_cumul +=
+                *(neighbor_tensor_begin.at(std::make_pair(dir, id)).get() +
+                  iter_offset);  // NOLINT
+          }
+          return u_cumul / neighbor_ids.size();
+        }();
+
         // Compute an effective element-center-to-neighbor-center distance
         // that accounts for the possibility of different refinement levels
         // or discontinuous maps (e.g., at Block boundaries). Treated naively,
@@ -111,11 +139,7 @@ bool limit_one_tensor(
         // Note that this is not "by the book" Minmod, but an attempt to
         // generalize Minmod to work on non-uniform grids.
         const double distance_factor =
-            0.5 * (1.0 + gsl::at(neighbor_sizes.at(dir_key), dim) /
-                             gsl::at(element_size, dim));
-        const double neighbor_mean =
-            // clang-tidy: do not use pointer arithmetic
-            *(neighbor_tensor_begin.at(dir_key).get() + iter_offset);  // NOLINT
+            0.5 * (1.0 + neighbor_size / gsl::at(element_size, dim));
         return (side == Side::Lower ? -1.0 : 1.0) * (neighbor_mean - u_mean) /
                distance_factor;
       } else {
