@@ -22,15 +22,25 @@ Header::Header(const bool exists, detail::OpenGroup&& group,
   if (exists) {
     header_info_ =
         h5::read_rank1_attribute<std::string>(location, name + extension())[0];
-    const auto printenv_location =
-        header_info_.find(printenv_delimiter_) + printenv_delimiter_.size();
-    const auto library_versions_location =
-        header_info_.find(library_versions_delimiter_);
-    environment_variables_ = header_info_.substr(
-        printenv_location, library_versions_location - printenv_location);
-    library_versions_ = header_info_.substr(library_versions_location +
-                                            library_versions_delimiter_.size());
-    header_info_.erase(printenv_location - printenv_delimiter_.size());
+    if (header_info_.find(printenv_delimiter_) != std::string::npos) {
+      const auto printenv_location =
+          header_info_.find(printenv_delimiter_) + printenv_delimiter_.size();
+      const auto library_versions_location =
+          header_info_.find(library_versions_delimiter_);
+      environment_variables_ = header_info_.substr(
+          printenv_location, library_versions_location - printenv_location);
+      library_versions_ = header_info_.substr(
+          library_versions_location + library_versions_delimiter_.size());
+      header_info_.erase(printenv_location - printenv_delimiter_.size());
+    }
+
+    else {
+      //If we cannot find the Formaline delimiter in the file then the file
+      //was written without Formaline support and so we fill in fake info.
+      environment_variables_ =
+          "Formaline was not supported when file was written";
+      library_versions_ = "Formaline was not supported when file was written";
+    }
   } else {
     auto build_info = info_from_build();
     environment_variables_ = formaline::get_environment_variables();
