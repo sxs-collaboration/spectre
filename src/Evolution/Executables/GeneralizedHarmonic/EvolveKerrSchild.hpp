@@ -83,8 +83,8 @@ struct Initialize {
   template <typename System>
   struct GrTags {
     using gr_variables_tag = ::Tags::Variables<
-          tmpl::list<gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Pi<3>,
-                     GeneralizedHarmonic::Phi<3>>>;
+        tmpl::list<gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Pi<3>,
+                   GeneralizedHarmonic::Phi<3>>>;
     using GrVars = gr_variables_tag::type;
     using simple_tags = db::AddSimpleTags<gr_variables_tag>;
     using compute_tags = db::AddComputeTags<>;
@@ -94,7 +94,6 @@ struct Initialize {
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
         const double initial_time) noexcept {
-
       const size_t num_grid_points =
           db::get<Tags::Mesh<3>>(box).number_of_grid_points();
       const auto& inertial_coords =
@@ -200,7 +199,8 @@ struct Initialize {
       const TimeDelta initial_dt =
           get_initial_time_step(initial_time, initial_dt_value, cache);
 
-      const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
+      const auto& time_stepper =
+          Parallel::get<OptionTags::TypedTimeStepper<TimeStepper>>(cache);
       const TimeId time_id(
           time_runs_forward,
           -static_cast<int64_t>(time_stepper.number_of_past_steps()),
@@ -367,7 +367,8 @@ struct EvolutionMetavars {
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
   using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag, OptionTags::TimeStepper>;
+      tmpl::list<analytic_solution_tag,
+                 OptionTags::TypedTimeStepper<TimeStepper>>;
 
   // Set up observers
   using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
