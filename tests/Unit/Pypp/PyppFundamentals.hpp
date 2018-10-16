@@ -221,7 +221,8 @@ struct FromPyObject<long, std::nullptr_t> {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
 #elif PY_MAJOR_VERSION == 3
-    } else if (not PyLong_Check(t)) {
+      // clang-tidy: hicpp-signed-bitwise
+    } else if (not PyLong_Check(t)) { // NOLINT
 #else
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x")
@@ -240,7 +241,8 @@ struct FromPyObject<unsigned long, std::nullptr_t> {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
 #elif PY_MAJOR_VERSION == 3
-    } else if (not PyLong_Check(t)) {
+      // clang-tidy: hicpp-signed-bitwise
+    } else if (not PyLong_Check(t)) { // NOLINT
 #else
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x");
