@@ -100,4 +100,17 @@ struct Next : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   static std::string name() noexcept { return "Next(" + Tag::name() + ")"; }
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Prefix corresponding to the characteristic speed of the
+/// characteristic field given by `Tag`. Its `type` is always a
+/// `Scalar<DataVector>`.
+template<typename Tag>
+struct CharSpeed : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<DataVector>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "CharSpeed(" + Tag::name() + ")";
+  }
+};
 }  // namespace Tags
