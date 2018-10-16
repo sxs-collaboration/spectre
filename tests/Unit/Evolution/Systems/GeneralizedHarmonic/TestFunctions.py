@@ -26,6 +26,7 @@ def phi_dot_flux(spacetime_metric, pi, phi, gamma1, gamma2, lapse, shift,
            - gamma2 * lapse * np.einsum("i,ab->iab", unit_normal,
                                         spacetime_metric)
 
+
 def gauge_constraint(gauge_function, spacetime_normal_one_form,
                      spacetime_normal_vector, inverse_spatial_metric,
                      inverse_spacetime_metric, pi, phi):
@@ -43,3 +44,20 @@ def gauge_constraint(gauge_function, spacetime_normal_one_form,
       - 0.5 * np.einsum("a,bc,bc->a", spacetime_normal_one_form, \
                         inverse_spacetime_metric, pi)
     return constraint
+
+
+# Test functions for characteristics
+def char_speed_upsi(gamma1, lapse, shift, unit_normal):
+    return - (1. + gamma1) * np.dot(shift, unit_normal)
+
+
+def char_speed_uzero(gamma1, lapse, shift, unit_normal):
+    return - np.dot(shift, unit_normal)
+
+
+def char_speed_uplus(gamma1, lapse, shift, unit_normal):
+    return - np.dot(shift, unit_normal) + lapse
+
+
+def char_speed_uminus(gamma1, lapse, shift, unit_normal):
+    return - np.dot(shift, unit_normal) - lapse

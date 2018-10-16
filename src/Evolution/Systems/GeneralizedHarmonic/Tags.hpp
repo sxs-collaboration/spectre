@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 
@@ -60,6 +61,43 @@ template <size_t Dim, typename Frame>
 struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "SpacetimeDerivGaugeH"; }
+};
+
+// {@
+/// \ingroup GeneralizedHarmonicGroup
+/// \brief Tags corresponding to the characteristic fields of the generalized
+/// system.
+///
+/// \details For details on how these are defined and computed, see
+/// ComputeCharacteristicSpeeds
+template<size_t Dim, typename Frame>
+struct UPsi {
+  using type = tnsr::aa<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "UPsi"; }
+};
+template<size_t Dim, typename Frame>
+struct UZero {
+  using type = tnsr::iaa<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "UZero"; }
+};
+template<size_t Dim, typename Frame>
+struct UPlus {
+  using type = tnsr::aa<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "UPlus"; }
+};
+template<size_t Dim, typename Frame>
+struct UMinus {
+  using type = tnsr::aa<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "UMinus"; }
+};
+// @}
+
+template<size_t Dim, typename Frame>
+struct CharacteristicSpeeds : db::SimpleTag {
+  using type = Variables<db::wrap_tags_in<
+      ::Tags::CharSpeed, tmpl::list<UPsi<Dim, Frame>, UZero<Dim, Frame>,
+                                    UPlus<Dim, Frame>, UMinus<Dim, Frame>>>>;
+  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic

@@ -21,5 +21,17 @@ template <size_t Dim, typename Frame = Frame::Inertial>
 struct GaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivGaugeH;
+
+template<size_t Dim, typename>
+struct UPsi;
+template<size_t Dim, typename>
+struct UZero;
+template<size_t Dim, typename>
+struct UPlus;
+template<size_t Dim, typename>
+struct UMinus;
+
+template<size_t Dim, typename>
+struct CharacteristicSpeeds;
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic
