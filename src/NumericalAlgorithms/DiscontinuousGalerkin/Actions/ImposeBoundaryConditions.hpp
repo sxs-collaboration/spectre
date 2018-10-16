@@ -102,7 +102,7 @@ struct ImposeDirichletBoundaryConditions {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
-    return apply_impl(
+    return apply_impl<Metavariables::system::volume_dim>(
         box, cache,
         BcSelector<(not system::has_primitive_and_conservative_vars
                         ? BoundaryConditionMethod::AnalyticBcNoPrimitives
@@ -114,7 +114,7 @@ struct ImposeDirichletBoundaryConditions {
   }
 
  private:
-  template <typename DbTags>
+  template <size_t VolumeDim, typename DbTags>
   static std::tuple<db::DataBox<DbTags>&&> apply_impl(
       db::DataBox<DbTags>& box,
       Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -130,33 +130,17 @@ struct ImposeDirichletBoundaryConditions {
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
 
-    constexpr size_t volume_dim = system::volume_dim;
-
-    const auto& normal_dot_numerical_flux_computer =
-        get<typename Metavariables::normal_dot_numerical_flux>(cache);
-
-    const auto& element = db::get<Tags::Element<volume_dim>>(box);
-    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
-
-    const double time = db::get<Tags::Time>(box).value();
-
-    const auto& boundary_coords = db::get<
-        Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                        Tags::Coordinates<volume_dim, Frame::Inertial>>>(box);
-
-    const auto& boundary_condition =
-        get<typename Metavariables::boundary_condition_tag>(cache);
-
     // Apply the boundary condition
     db::mutate_apply<
-        tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
+        tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
                                    typename system::variables_tag>>,
         tmpl::list<>>(
-        [&boundary_condition, &time, &boundary_coords](
-            const gsl::not_null<db::item_type<
-                Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                                typename system::variables_tag>>*>
-                external_bdry_vars) noexcept {
+        [](const gsl::not_null<db::item_type<
+               Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                               typename system::variables_tag>>*>
+               external_bdry_vars,
+           const double time, const auto& boundary_condition,
+           const auto& boundary_coords) noexcept {
           for (auto& external_direction_and_vars : *external_bdry_vars) {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
@@ -165,30 +149,39 @@ struct ImposeDirichletBoundaryConditions {
                 typename system::variables_tag::type::tags_list{}));
           }
         },
-        make_not_null(&box));
+        make_not_null(&box), db::get<Tags::Time>(box).value(),
+        get<typename Metavariables::boundary_condition_tag>(cache),
+        db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                Tags::Coordinates<VolumeDim, Frame::Inertial>>>(
+            box));
+
+    const auto& element = db::get<Tags::Element<VolumeDim>>(box);
+    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
+    const auto& normal_dot_numerical_flux_computer =
+        get<typename Metavariables::normal_dot_numerical_flux>(cache);
 
     for (const auto& direction : element.external_boundaries()) {
       const auto mortar_id = std::make_pair(
-          direction, ElementId<volume_dim>::external_boundary_id());
+          direction, ElementId<VolumeDim>::external_boundary_id());
 
       auto interior_data = DgActions_detail::compute_local_mortar_data(
           box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
+          Tags::BoundaryDirectionsInterior<VolumeDim>{}, Metavariables{});
 
       auto exterior_data = DgActions_detail::compute_packaged_data(
           box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
+          Tags::BoundaryDirectionsExterior<VolumeDim>{}, Metavariables{});
 
       db::mutate<Tags::VariablesBoundaryData>(
           make_not_null(&box),
-          [&mortar_id, &temporal_id, &interior_data, &exterior_data ](
-              const gsl::not_null<
-                  db::item_type<Tags::VariablesBoundaryData, DbTags>*>
-                  mortar_data) noexcept {
+          [&mortar_id, &temporal_id, &interior_data, &
+           exterior_data ](const gsl::not_null<
+                           db::item_type<Tags::VariablesBoundaryData, DbTags>*>
+                               mortar_data) noexcept {
             mortar_data->at(mortar_id).local_insert(temporal_id,
                                                     std::move(interior_data));
-            mortar_data->at(mortar_id).remote_insert(
-                temporal_id, std::move(exterior_data));
+            mortar_data->at(mortar_id).remote_insert(temporal_id,
+                                                     std::move(exterior_data));
           });
     }
     return std::forward_as_tuple(std::move(box));
