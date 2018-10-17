@@ -6,9 +6,8 @@
 #include <cmath>
 #include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"             // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
-#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -23,19 +22,19 @@ namespace Solutions {
 AlfvenWave::AlfvenWave(const WaveNumber::type wavenumber,
                        const Pressure::type pressure,
                        const RestMassDensity::type rest_mass_density,
-                       const AdiabaticExponent::type adiabatic_exponent,
+                       const AdiabaticIndex::type adiabatic_index,
                        const BackgroundMagField::type background_mag_field,
                        const PerturbationSize::type perturbation_size) noexcept
     : wavenumber_(wavenumber),
       pressure_(pressure),
       rest_mass_density_(rest_mass_density),
-      adiabatic_exponent_(adiabatic_exponent),
+      adiabatic_index_(adiabatic_index),
       background_mag_field_(background_mag_field),
       perturbation_size_(perturbation_size),
-      equation_of_state_{adiabatic_exponent_} {
+      equation_of_state_{adiabatic_index_} {
   alfven_speed_ = background_mag_field /
-                  sqrt((rest_mass_density_ + pressure_ * adiabatic_exponent_ /
-                                                 (adiabatic_exponent_ - 1.0)) +
+                  sqrt((rest_mass_density_ + pressure_ * adiabatic_index_ /
+                                                 (adiabatic_index_ - 1.0)) +
                        square(background_mag_field));
   fluid_speed_ = -perturbation_size * alfven_speed_ / background_mag_field;
 }
@@ -44,7 +43,7 @@ void AlfvenWave::pup(PUP::er& p) noexcept {
   p | wavenumber_;
   p | pressure_;
   p | rest_mass_density_;
-  p | adiabatic_exponent_;
+  p | adiabatic_index_;
   p | background_mag_field_;
   p | perturbation_size_;
   p | alfven_speed_;
@@ -62,86 +61,101 @@ DataType AlfvenWave::k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x,
 }
 
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<AlfvenWave::variables_tags<DataType>>
-AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      AlfvenWave::variables_tags<DataType> /*meta*/) const
+tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
+AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
-  // Explicitly set all variables to zero:
-  auto result = make_with_value<
-      tuples::tagged_tuple_from_typelist<AlfvenWave::variables_tags<DataType>>>(
-      x, 0.0);
-
-  const DataType phase = k_dot_x_minus_vt(x, t);
-  get(get<hydro::Tags::RestMassDensity<DataType>>(result)) = rest_mass_density_;
-  get(get<hydro::Tags::SpecificInternalEnergy<DataType>>(result)) =
-      pressure_ / ((adiabatic_exponent_ - 1.0) * rest_mass_density_);
-  get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(result).get(
-      0) = fluid_speed_ * cos(phase);
-  get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(result).get(
-      1) = fluid_speed_ * sin(phase);
-  get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(result).get(
-      2) = 0.0;
-
-  get<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>(result).get(0) =
-      perturbation_size_ * cos(phase);
-  get<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>(result).get(1) =
-      perturbation_size_ * sin(phase);
-  get<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>(result).get(2) =
-      background_mag_field_;
-
-  get(get<hydro::Tags::Pressure<DataType>>(result)) = pressure_;
-  return result;
+  return {
+      make_with_value<db::item_type<hydro::Tags::RestMassDensity<DataType>>>(
+          x, rest_mass_density_)};
 }
 
 template <typename DataType>
-tuples::tagged_tuple_from_typelist<AlfvenWave::dt_variables_tags<DataType>>
-AlfvenWave::variables(const tnsr::I<DataType, 3>& x, const double t,
-                      AlfvenWave::dt_variables_tags<DataType> /*meta*/) const
+tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
+AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
-  // Explicitly set all variables to zero:
-  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
-      AlfvenWave::dt_variables_tags<DataType>>>(x, 0.0);
+  return {make_with_value<Scalar<DataType>>(
+      x, pressure_ / ((adiabatic_index_ - 1.0) * rest_mass_density_))};
+}
 
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<Scalar<DataType>>(x, pressure_)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+AlfvenWave::variables(const tnsr::I<DataType, 3>& x, double t,
+                      tmpl::list<hydro::Tags::SpatialVelocity<
+                          DataType, 3, Frame::Inertial>> /*meta*/) const
+    noexcept {
   const DataType phase = k_dot_x_minus_vt(x, t);
+  auto result = make_with_value<db::item_type<
+      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(x, 0.0);
+  get<0>(result) = fluid_speed_ * cos(phase);
+  get<1>(result) = fluid_speed_ * sin(phase);
+  return {std::move(result)};
+}
 
-  // Angular frequency:
-  const double omega = alfven_speed_ * wavenumber_;
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+AlfvenWave::variables(const tnsr::I<DataType, 3>& x, double t,
+                      tmpl::list<hydro::Tags::MagneticField<
+                          DataType, 3, Frame::Inertial>> /*meta*/) const
+    noexcept {
+  const DataType phase = k_dot_x_minus_vt(x, t);
+  auto result = make_with_value<
+      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
+      x, background_mag_field_);
+  get<0>(result) = perturbation_size_ * cos(phase);
+  get<1>(result) = perturbation_size_ * sin(phase);
+  return {std::move(result)};
+}
 
-  get<Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(0) = fluid_speed_ * omega * sin(phase);
-  get<Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(1) = -fluid_speed_ * omega * cos(phase);
-  get<Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(2) = 0.0;
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
+AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
+    noexcept {
+  return {make_with_value<
+      db::item_type<hydro::Tags::DivergenceCleaningField<DataType>>>(x, 0.0)};
+}
 
-  get<Tags::dt<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(0) = perturbation_size_ * omega * sin(phase);
-  get<Tags::dt<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(1) = -perturbation_size_ * omega * cos(phase);
-  get<Tags::dt<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      result)
-      .get(2) = 0.0;
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>> AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<db::item_type<hydro::Tags::LorentzFactor<DataType>>>(
+      x, 1.0 / sqrt(1.0 - square(fluid_speed_)))};
+}
 
-  // The time derivatives of the rest mass density, pressure, and specific
-  // internal energy are not set because they are identically zero, and
-  // `result` is initialized with all time derivatives of primitive variables
-  // equal to zero.
-
-  return result;
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
+AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double t,
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
+    noexcept {
+  Scalar<DataType> specific_internal_energy = std::move(
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables<DataType>(
+          x, t, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
+  get(specific_internal_energy) *= adiabatic_index_;
+  get(specific_internal_energy) += 1.0;
+  return {std::move(specific_internal_energy)};
 }
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
-  // the adiabatic_exponents are compared
+  // the adiabatic_indexs are compared
   return lhs.wavenumber() == rhs.wavenumber() and
          lhs.pressure() == rhs.pressure() and
          lhs.rest_mass_density() == rhs.rest_mass_density() and
-         lhs.adiabatic_exponent() == rhs.adiabatic_exponent() and
+         lhs.adiabatic_index() == rhs.adiabatic_index() and
          lhs.background_mag_field() == rhs.background_mag_field() and
          lhs.perturbation_size() == rhs.perturbation_size() and
          lhs.alfven_speed() == rhs.alfven_speed() and
@@ -153,27 +167,36 @@ bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-}  // namespace Solutions
-}  // namespace grmhd
-
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template tuples::tagged_tuple_from_typelist<                               \
-      grmhd::Solutions::AlfvenWave::variables_tags<DTYPE(data)>>             \
-  grmhd::Solutions::AlfvenWave::variables(                                   \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
-      grmhd::Solutions::AlfvenWave::variables_tags<DTYPE(data)> /*meta*/)    \
-      const noexcept;                                                        \
-  template tuples::tagged_tuple_from_typelist<                               \
-      grmhd::Solutions::AlfvenWave::dt_variables_tags<DTYPE(data)>>          \
-  grmhd::Solutions::AlfvenWave::variables(                                   \
-      const tnsr::I<DTYPE(data), 3>& x, const double t,                      \
-      grmhd::Solutions::AlfvenWave::dt_variables_tags<DTYPE(data)> /*meta*/) \
-      const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                                       \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                   \
+      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,    \
+                            tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
+          const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE_SCALARS, (double, DataVector),
+    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
+     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
+     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+
+#define INSTANTIATE_VECTORS(_, data)                                         \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \
+      AlfvenWave::variables(                                                 \
+          const tnsr::I<DTYPE(data), 3>& x, double t,                        \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          const noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
+                        (hydro::Tags::SpatialVelocity,
+                         hydro::Tags::MagneticField))
 
 #undef DTYPE
-#undef INSTANTIATE
+#undef TAG
+#undef INSTANTIATE_SCALARS
+#undef INSTANTIATE_VECTORS
+}  // namespace Solutions
+}  // namespace grmhd
 /// \endcond

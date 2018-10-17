@@ -8,10 +8,8 @@
 #include <string>
 #include <tuple>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
@@ -23,26 +21,37 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_forward_declare Tags::dt
-
 namespace {
-
 struct FishboneMoncriefDiskProxy
     : RelativisticEuler::Solutions::FishboneMoncriefDisk {
   using RelativisticEuler::Solutions::FishboneMoncriefDisk::
       FishboneMoncriefDisk;
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
-    return variables(x, t, variables_tags<DataType>{});
+  using hydro_variables_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::LorentzFactor<DataType>,
+                 hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  using grmhd_variables_tags =
+      tmpl::push_back<hydro_variables_tags<DataType>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
+  hydro_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>>
-  dt_primitive_variables(const tnsr::I<DataType, 3>& x, double t) const
-      noexcept {
-    return dt_variables(x, t, dt_variables_tags<DataType>{});
+  tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
+  grmhd_variables(const tnsr::I<DataType, 3>& x, double t) const noexcept {
+    return variables(x, t, grmhd_variables_tags<DataType>{});
   }
 };
 
@@ -90,30 +99,24 @@ void test_variables(const DataType& used_for_size) noexcept {
       polytropic_constant, polytropic_exponent);
 
   pypp::check_with_random_values<
-      1, tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                    hydro::Tags::SpatialVelocity<DataType, 3>,
-                    hydro::Tags::SpecificInternalEnergy<DataType>,
-                    hydro::Tags::Pressure<DataType>,
-                    hydro::Tags::SpecificEnthalpy<DataType>>>(
-      &FishboneMoncriefDiskProxy::primitive_variables<DataType>, disk,
+      1, FishboneMoncriefDiskProxy::hydro_variables_tags<DataType>>(
+      &FishboneMoncriefDiskProxy::hydro_variables<DataType>, disk,
       "TestFunctions",
-      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "specific_enthalpy"},
+      {"fishbone_rest_mass_density", "fishbone_spatial_velocity",
+       "fishbone_specific_internal_energy", "fishbone_pressure",
+       "fishbone_lorentz_factor", "fishbone_specific_enthalpy"},
       {{{-15., 15.}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<
-      1, tmpl::list<Tags::dt<hydro::Tags::RestMassDensity<DataType>>,
-                    Tags::dt<hydro::Tags::SpatialVelocity<DataType, 3>>,
-                    Tags::dt<hydro::Tags::SpecificInternalEnergy<DataType>>,
-                    Tags::dt<hydro::Tags::Pressure<DataType>>,
-                    Tags::dt<hydro::Tags::SpecificEnthalpy<DataType>>>>(
-      &FishboneMoncriefDiskProxy::dt_primitive_variables<DataType>, disk,
+      1, FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>>(
+      &FishboneMoncriefDiskProxy::grmhd_variables<DataType>, disk,
       "TestFunctions",
-      {"dt_rest_mass_density", "dt_spatial_velocity",
-       "dt_specific_internal_energy", "dt_pressure", "dt_specific_enthalpy"},
+      {"fishbone_rest_mass_density", "fishbone_spatial_velocity",
+       "fishbone_specific_internal_energy", "fishbone_pressure",
+       "fishbone_lorentz_factor", "fishbone_specific_enthalpy",
+       "magnetic_field", "divergence_cleaning_field"},
       {{{-15., 15.}}}, member_variables, used_for_size);
 }
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
@@ -127,56 +130,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
-}
-
-// [[OutputRegex, The black hole mass must be positive]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHMass",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  RelativisticEuler::Solutions::FishboneMoncriefDisk test_disk(
-      -0.1, 0.456, 5.0, 13.0, 0.024, 1.53);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The black hole spin magnitude must be in the range \[0, 1\)]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHSpin",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  RelativisticEuler::Solutions::FishboneMoncriefDisk test_disk(
-      2.78, -0.1, 6.5, 12.7, 0.014, 1.32);
-  RelativisticEuler::Solutions::FishboneMoncriefDisk another_test_disk(
-      2.2, 2.34, 7.5, 13.2, 100.0, 1.78);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The polytropic constant must be positive]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskPolytConst",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  RelativisticEuler::Solutions::FishboneMoncriefDisk test_disk(
-      0.1, 0.456, 5.0, 13.0, -2.43, 1.53);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The polytropic exponent must be greater than 1]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskPolytExp",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  RelativisticEuler::Solutions::FishboneMoncriefDisk test_disk(
-      2.4, 0.222, 8.51, 16.3, 4.21, -0.34);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
 }
 
 struct Disk {

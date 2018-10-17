@@ -23,7 +23,7 @@ AnalyticSolution:
   WaveVector: [1.0, 1.0, 1.0]
   MeanVelocity: [0.2, 0.2, 0.2]
   Pressure: 1.0
-  AdiabaticExponent: 1.3333333333333333333
+  AdiabaticIndex: 1.3333333333333333333
   PerturbationSize: 0.5
 
 TimeStepper:

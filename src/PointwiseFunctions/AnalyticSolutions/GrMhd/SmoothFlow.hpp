@@ -7,8 +7,6 @@
 #include <limits>
 #include <pup.h>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -64,11 +62,11 @@ class SmoothFlow {
     static type lower_bound() { return 0.0; }
   };
 
-  /// The adiabatic exponent for the polytropic fluid.
-  struct AdiabaticExponent {
+  /// The adiabatic index for the ideal fluid.
+  struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {
-        "The adiabatic exponent for the polytropic fluid."};
+        "The adiabatic index for the ideal fluid."};
     static type lower_bound() { return 1.0; }
   };
 
@@ -81,8 +79,8 @@ class SmoothFlow {
     static type upper_bound() { return 1.0; }
   };
 
-  using options = tmpl::list<MeanVelocity, WaveVector, Pressure,
-                             AdiabaticExponent, PerturbationSize>;
+  using options = tmpl::list<MeanVelocity, WaveVector, Pressure, AdiabaticIndex,
+                             PerturbationSize>;
   static constexpr OptionString help = {
       "Periodic smooth flow in Minkowski spacetime with zero magnetic field."};
 
@@ -94,44 +92,84 @@ class SmoothFlow {
   ~SmoothFlow() = default;
 
   SmoothFlow(MeanVelocity::type mean_velocity, WaveVector::type wavevector,
-             Pressure::type pressure,
-             AdiabaticExponent::type adiabatic_exponent,
+             Pressure::type pressure, AdiabaticIndex::type adiabatic_index,
              PerturbationSize::type perturbation_size) noexcept;
 
   explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept {}
 
+  // @{
+  /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  using variables_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
-
-  template <typename DataType>
-  using dt_variables_tags =
-      db::wrap_tags_in<Tags::dt, variables_tags<DataType>>;
-
-  /// Retrieve the primitive variables at time `t` and spatial coordinates `x`
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
+  auto variables(
       const tnsr::I<DataType, 3>& x, double t,
-      variables_tags<DataType> /*meta*/) const noexcept;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
-  /// Retrieve the time derivative of the primitive variables at time `t` and
-  /// spatial coordinates `x`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>> variables(
+  auto variables(
       const tnsr::I<DataType, 3>& x, double t,
-      dt_variables_tags<DataType> /*meta*/) const noexcept;
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::SpatialVelocity<
+                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::MagneticField<
+                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double t,
+      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  // @}
+
+  /// Retrieve a collection of hydro variables at `(x, t)`
+  template <typename DataType, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         double t,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
+    static_assert(sizeof...(Tags) > 1,
+                  "The generic template will recurse infinitely if only one "
+                  "tag is being retrieved.");
+    return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
+  }
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
   MeanVelocity::type mean_velocity() const noexcept { return mean_velocity_; }
   WaveVector::type wavevector() const noexcept { return wavevector_; }
   Pressure::type pressure() const noexcept { return pressure_; }
-  AdiabaticExponent::type adiabatic_exponent() const noexcept {
-    return adiabatic_exponent_;
+  AdiabaticIndex::type adiabatic_index() const noexcept {
+    return adiabatic_index_;
   }
   PerturbationSize::type perturbation_size() const noexcept {
     return perturbation_size_;
@@ -156,7 +194,7 @@ class SmoothFlow {
   WaveVector::type wavevector_ =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
   Pressure::type pressure_ = std::numeric_limits<double>::signaling_NaN();
-  AdiabaticExponent::type adiabatic_exponent_ =
+  AdiabaticIndex::type adiabatic_index_ =
       std::numeric_limits<double>::signaling_NaN();
   PerturbationSize::type perturbation_size_ =
       std::numeric_limits<double>::signaling_NaN();
@@ -166,21 +204,7 @@ class SmoothFlow {
   gr::Solutions::Minkowski<3> background_spacetime_{};
 };
 
-inline bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
-  // there is no comparison operator for the EoS, but should be okay as
-  // the adiabatic_exponents are compared
-  return lhs.mean_velocity() == rhs.mean_velocity() and
-         lhs.wavevector() == rhs.wavevector() and
-         lhs.pressure() == rhs.pressure() and
-         lhs.adiabatic_exponent() == rhs.adiabatic_exponent() and
-         lhs.perturbation_size() == rhs.perturbation_size() and
-         lhs.k_dot_v() == rhs.k_dot_v() and
-         lhs.background_spacetime() == rhs.background_spacetime();
-}
-
-inline bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
-  return not(lhs == rhs);
-}
-
+bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept;
+bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept;
 }  // namespace Solutions
 }  // namespace grmhd

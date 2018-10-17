@@ -5,8 +5,6 @@
 
 #include <limits>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -34,7 +32,7 @@ namespace Solutions {
  * An analytic solution to the 3-D GrMhd system. The user specifies the
  * wavenumber \f$k_z\f$ of the Alfv&eacute;n wave, the constant pressure
  * throughout the fluid \f$P\f$, the constant rest mass density throughout the
- * fluid \f$\rho_0\f$, the adiabatic exponent for the ideal fluid equation of
+ * fluid \f$\rho_0\f$, the adiabatic index for the ideal fluid equation of
  * state \f$\gamma\f$, the background magnetic field strength \f$B_0\f$,
  * and the strength of the perturbation of the magnetic field \f$B_1\f$.
  * The Alfv&eacute;n wave phase speed is then given by:
@@ -88,11 +86,11 @@ class AlfvenWave {
     static type lower_bound() { return 0.0; }
   };
 
-  /// The adiabatic exponent for the polytropic fluid.
-  struct AdiabaticExponent {
+  /// The adiabatic index for the ideal fluid.
+  struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {
-        "The adiabatic exponent for the polytropic fluid."};
+        "The adiabatic index for the ideal fluid."};
     static type lower_bound() { return 1.0; }
   };
 
@@ -113,7 +111,7 @@ class AlfvenWave {
   };
 
   using options =
-      tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticExponent,
+      tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticIndex,
                  BackgroundMagField, PerturbationSize>;
   static constexpr OptionString help = {
       "Circularly polarized Alfven wave in Minkowski spacetime."};
@@ -127,34 +125,75 @@ class AlfvenWave {
 
   AlfvenWave(WaveNumber::type wavenumber, Pressure::type pressure,
              RestMassDensity::type rest_mass_density,
-             AdiabaticExponent::type adiabatic_exponent,
+             AdiabaticIndex::type adiabatic_index,
              BackgroundMagField::type background_mag_field,
              PerturbationSize::type perturbation_size) noexcept;
 
+  // @{
+  /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  using variables_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
-
-  template <typename DataType>
-  using dt_variables_tags =
-      db::wrap_tags_in<Tags::dt, variables_tags<DataType>>;
-
-  /// Retrieve the primitive variables at time `t` and spatial coordinates `x`
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<variables_tags<DataType>> variables(
+  auto variables(
       const tnsr::I<DataType, 3>& x, double t,
-      variables_tags<DataType> /*meta*/) const noexcept;
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
-  /// Retrieve the time derivative of the primitive variables at time `t` and
-  /// spatial coordinates `x`
   template <typename DataType>
-  tuples::tagged_tuple_from_typelist<dt_variables_tags<DataType>> variables(
+  auto variables(
       const tnsr::I<DataType, 3>& x, double t,
-      dt_variables_tags<DataType> /*meta*/) const noexcept;
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::SpatialVelocity<
+                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::MagneticField<
+                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double t,
+      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+  // @}
+
+  /// Retrieve a collection of hydro variables at `(x, t)`
+  template <typename DataType, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         double t,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
+    static_assert(sizeof...(Tags) > 1,
+                  "The generic template will recurse infinitely if only one "
+                  "tag is being retrieved.");
+    return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
+  }
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
@@ -163,8 +202,8 @@ class AlfvenWave {
   RestMassDensity::type rest_mass_density() const noexcept {
     return rest_mass_density_;
   }
-  AdiabaticExponent::type adiabatic_exponent() const noexcept {
-    return adiabatic_exponent_;
+  AdiabaticIndex::type adiabatic_index() const noexcept {
+    return adiabatic_index_;
   }
   BackgroundMagField::type background_mag_field() const noexcept {
     return background_mag_field_;
@@ -192,7 +231,7 @@ class AlfvenWave {
   Pressure::type pressure_ = std::numeric_limits<double>::signaling_NaN();
   RestMassDensity::type rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();
-  AdiabaticExponent::type adiabatic_exponent_ =
+  AdiabaticIndex::type adiabatic_index_ =
       std::numeric_limits<double>::signaling_NaN();
   BackgroundMagField::type background_mag_field_ =
       std::numeric_limits<double>::signaling_NaN();
