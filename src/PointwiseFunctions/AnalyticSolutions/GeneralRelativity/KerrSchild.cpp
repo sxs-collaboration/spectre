@@ -12,8 +12,10 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -181,14 +183,9 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   const constexpr double null_vector_0 = -1.0;
   const DataType lapse_squared = 1.0 / (1.0 + 2.0 * H * square(null_vector_0));
 
-  auto result = make_with_value<tuples::TaggedTuple<
-      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
-      DerivShift<DataType>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>>>(x, 0.0);
+  auto result =
+      make_with_value<tuples::tagged_tuple_from_typelist<tags<DataType>>>(x,
+                                                                          0.0);
 
   get(get<gr::Tags::Lapse<DataType>>(result)) = sqrt(lapse_squared);
 
@@ -239,6 +236,25 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
       }
     }
   }
+
+  auto det_and_inverse = determinant_and_inverse(
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result));
+
+  get(get<gr::Tags::SqrtDetSpatialMetric<DataType>>(result)) =
+      sqrt(get(det_and_inverse.first));
+
+  get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>(result) =
+      det_and_inverse.second;
+
+  get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>>(result) =
+      gr::extrinsic_curvature(
+          get<gr::Tags::Lapse<DataType>>(result),
+          get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(result),
+          get<DerivShift<DataType>>(result),
+          get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result),
+          get<::Tags::dt<
+              gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>(result),
+          get<DerivSpatialMetric<DataType>>(result));
 
   return result;
 }

@@ -260,7 +260,9 @@ class KerrSchild {
       DerivShift<DataType>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
       ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>>;
+      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<tags<DataType>> variables(
