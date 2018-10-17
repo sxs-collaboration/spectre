@@ -163,6 +163,8 @@ class FishboneMoncriefDisk {
   struct IntermediateVariables;
 
  public:
+  using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
+
   /// The mass of the black hole.
   struct BlackHoleMass {
     using type = double;
