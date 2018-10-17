@@ -31,3 +31,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.VectorImplHelpers.ApplyTupleCombinations",
           {{{true, true, true}}, {{true, true, true}}, {{true, true, true}}}});
   /// [tuple_combos_lambda]
 }
+
+SPECTRE_TEST_CASE("Unit.DataStructures.VectorImplHelpers.TupleHelpers",
+                  "[Utilities][Unit]") {
+  const auto addr_test_tup =
+      TestHelpers::VectorImpl::addressof(make_not_null(&test_tup));
+  CHECK(addr_test_tup == std::make_tuple(&std::get<0>(test_tup),
+                                         &std::get<1>(test_tup),
+                                         &std::get<2>(test_tup)));
+}

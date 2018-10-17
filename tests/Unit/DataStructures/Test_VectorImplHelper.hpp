@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>  // IWYU pragma: keep
 #include <tuple>
 #include <utility>
 
@@ -60,5 +61,23 @@ constexpr inline void apply_tuple_combinations(
   });
 }
 // @}
+
+namespace detail {
+template <typename... ValueTypes, size_t... Is>
+auto addressof_impl(gsl::not_null<std::tuple<ValueTypes...>*> preset,
+                    std::index_sequence<Is...> /*meta*/) noexcept {
+  return std::make_tuple(std::addressof(std::get<Is>(*preset))...);
+}
+}  // namespace detail
+
+/*!
+ * \brief given a pointer to a tuple, returns a tuple filled with pointers to
+ * the given tuple's elements
+ */
+template <typename... ValueTypes>
+auto addressof(gsl::not_null<std::tuple<ValueTypes...>*> preset) noexcept {
+  return detail::addressof_impl(
+      preset, std::make_index_sequence<sizeof...(ValueTypes)>());
+}
 }  // namespace VectorImpl
 }  // namespace TestHelpers
