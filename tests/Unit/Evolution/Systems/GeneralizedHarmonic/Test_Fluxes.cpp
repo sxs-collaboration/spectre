@@ -20,7 +20,7 @@ void test_gh_fluxes(const DataType& used_for_size) {
       &GeneralizedHarmonic::ComputeNormalDotFluxes<Dim>::apply, "TestFunctions",
       {"spacetime_metric_normal_dot_flux", "pi_normal_dot_flux",
        "phi_dot_flux"},
-      {{{1.0, 10.0}}}, used_for_size);
+      {{{-1.0, 1.0}}}, used_for_size);
 }
 }  // namespace
 
