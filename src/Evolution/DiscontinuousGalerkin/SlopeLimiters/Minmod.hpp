@@ -180,10 +180,17 @@ namespace SlopeLimiters {
 template <size_t VolumeDim, typename... Tags>
 class Minmod<VolumeDim, tmpl::list<Tags...>> {
  public:
+  /// \brief The MinmodType
+  ///
+  /// One of `SlopeLimiters::MinmodType`. See `SlopeLimiters::Minmod`
+  /// documentation for details.
   struct Type {
     using type = MinmodType;
     static constexpr OptionString help = {"Type of minmod"};
   };
+  /// \brief The TVBM constant
+  ///
+  /// See `SlopeLimiters::Minmod` documentation for details.
   struct TvbmConstant {
     using type = double;
     static type default_value() { return 0.0; }
