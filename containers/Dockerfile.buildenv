@@ -54,12 +54,12 @@ RUN apt-get update -y && apt-get install -y curl lmod && \
 
 # Install Spack to get remaining dependencies
 WORKDIR /work
-RUN git clone https://github.com/moxcodes/spack.git
+RUN git clone https://github.com/spack/spack.git
 WORKDIR /work/spack
 # Since spack/develop is rather unstable, we check out a commit we
 # know is stable. This should be updated periodically to update
 # installed packages.
-RUN git checkout package/libsharp
+RUN git checkout 470a45c51659156e7d154ea890e798ce32b8767d
 WORKDIR /work
 
 # Spack needs to be pointed to the system OpenSSL to work properly, we add this
