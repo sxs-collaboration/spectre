@@ -70,7 +70,7 @@ template <typename Metavariables, size_t VolumeDim,
 struct Holder {
   std::unordered_map<typename Metavariables::temporal_id,
                      Info<VolumeDim, TagList>>
-      info;
+      infos;
   std::unordered_set<typename Metavariables::temporal_id>
       temporal_ids_when_data_has_been_interpolated;
 };

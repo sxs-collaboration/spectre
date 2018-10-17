@@ -4,17 +4,10 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace intrp {
-namespace Actions {
-struct InitializeInterpolator;
-}  // namespace Actions
-}  // namespace intrp
-/// \endcond
 
 namespace intrp {
 
@@ -29,8 +22,8 @@ struct Interpolator {
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox =
-      db::compute_databox_type<typename Actions::InitializeInterpolator::
-                                   return_tag_list<Metavariables, VolumeDim>>;
+      db::compute_databox_type<typename Actions::InitializeInterpolator<
+          VolumeDim>:: template return_tag_list<Metavariables>>;
   using options = tmpl::list<>;
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache);
