@@ -253,4 +253,29 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   CHECK(boundary_history.remote_size() < 20);
 }
 
+void check_convergence_order(const TimeStepper& stepper,
+                             const int expected_order) noexcept {
+  const auto do_integral = [&stepper](const int32_t num_steps) noexcept {
+    const Slab slab(0., 1.);
+    const TimeDelta step_size = slab.duration() / num_steps;
+
+    Time time = slab.start();
+    double y = 1.;
+    TimeSteppers::History<double, double> history;
+    initialize_history(time, &history, [](double t) { return exp(t); },
+                       [](double v) { return v; }, step_size,
+                       stepper.number_of_past_steps());
+    while (time < slab.end()) {
+      take_step(&time, &y, &history, stepper, [](double v) { return v; },
+                step_size);
+    }
+    return abs(y - exp(1.));
+  };
+  const int32_t large_steps = 10;
+  // The high-order solvers have round-off error around here
+  const int32_t small_steps = 40;
+  CHECK((log(do_integral(large_steps)) - log(do_integral(small_steps))) /
+            (log(small_steps) - log(large_steps)) ==
+        approx(expected_order).margin(0.4));
+}
 }  // namespace TimeStepperTestUtils
