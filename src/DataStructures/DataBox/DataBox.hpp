@@ -1625,13 +1625,7 @@ inline constexpr auto mutate_apply(
       box,
       [&f](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
            const db::item_type<ArgumentTags, BoxTags>&... args_items,
-           decltype(std::forward<Args>(args))... l_args)
-      // clang-format off
-      noexcept(noexcept(f(mutated_items...,
-                          args_items..., std::forward<Args>(
-                              l_args)...)))
-      // clang-format on
-      {
+           decltype(std::forward<Args>(args))... l_args) noexcept {
         return f(mutated_items..., args_items...,
                  std::forward<Args>(l_args)...);
       },
