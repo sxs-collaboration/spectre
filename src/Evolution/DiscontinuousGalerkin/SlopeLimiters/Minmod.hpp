@@ -30,9 +30,9 @@ template <size_t VolumeDim>
 class Direction;
 template <size_t VolumeDim>
 class ElementId;
-template <size_t>
+template <size_t VolumeDim>
 class Mesh;
-template <size_t>
+template <size_t VolumeDim>
 class OrientationMap;
 
 namespace PUP {
