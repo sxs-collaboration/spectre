@@ -68,6 +68,13 @@ auto addressof_impl(gsl::not_null<std::tuple<ValueTypes...>*> preset,
                     std::index_sequence<Is...> /*meta*/) noexcept {
   return std::make_tuple(std::addressof(std::get<Is>(*preset))...);
 }
+
+template <size_t N, typename... ValueTypes, size_t... Is1, size_t... Is2>
+auto remove_nth_impl(const std::tuple<ValueTypes...>& tup,
+                     std::index_sequence<Is1...> /*meta*/,
+                     std::index_sequence<Is2...> /*meta*/) noexcept {
+  return std::make_tuple(std::get<Is1>(tup)..., std::get<N + Is2 + 1>(tup)...);
+}
 }  // namespace detail
 
 /*!
@@ -78,6 +85,20 @@ template <typename... ValueTypes>
 auto addressof(gsl::not_null<std::tuple<ValueTypes...>*> preset) noexcept {
   return detail::addressof_impl(
       preset, std::make_index_sequence<sizeof...(ValueTypes)>());
+}
+
+/*!
+ * \brief given a tuple, returns a tuple with the specified element removed
+ *
+ * \tparam N the element to remove
+ *
+ * \param tup the tuple from which to remove the element
+ */
+template <size_t N, typename... ValueTypes>
+auto remove_nth(const std::tuple<ValueTypes...>& tup) noexcept {
+  return detail::remove_nth_impl<N>(
+      tup, std::make_index_sequence<N>(),
+      std::make_index_sequence<sizeof...(ValueTypes) - N - 1>());
 }
 }  // namespace VectorImpl
 }  // namespace TestHelpers

@@ -34,6 +34,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.VectorImplHelpers.ApplyTupleCombinations",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.VectorImplHelpers.TupleHelpers",
                   "[Utilities][Unit]") {
+  auto test_tup = std::make_tuple(5.5, std::complex<int>{2, 3}, 'c');
+  CHECK(TestHelpers::VectorImpl::remove_nth<0>(test_tup) ==
+        std::make_tuple(std::complex<int>{2, 3}, 'c'));
+  CHECK(TestHelpers::VectorImpl::remove_nth<1>(test_tup) ==
+        std::make_tuple(5.5, 'c'));
+  CHECK(TestHelpers::VectorImpl::remove_nth<2>(test_tup) ==
+        std::make_tuple(5.5, std::complex<int>{2, 3}));
   const auto addr_test_tup =
       TestHelpers::VectorImpl::addressof(make_not_null(&test_tup));
   CHECK(addr_test_tup == std::make_tuple(&std::get<0>(test_tup),
