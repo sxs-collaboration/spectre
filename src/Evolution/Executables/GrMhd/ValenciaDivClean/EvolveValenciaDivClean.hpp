@@ -62,11 +62,16 @@ class CProxy_ConstGlobalCache;
 /// \endcond
 
 struct EvolutionMetavars {
-  using system = grmhd::ValenciaDivClean::System;
+  // To switch which analytic solution is evolved you only need to change the
+  // line `using analytic_solution = ...;` and include the header file for the
+  // solution.
+  using analytic_solution = grmhd::Solutions::SmoothFlow;
+
+  using system = grmhd::ValenciaDivClean::System<
+      typename analytic_solution::equation_of_state_type>;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
-  using analytic_solution_tag =
-      OptionTags::AnalyticSolution<grmhd::Solutions::SmoothFlow>;
+  using analytic_solution_tag = OptionTags::AnalyticSolution<analytic_solution>;
   using boundary_condition_tag = analytic_solution_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;

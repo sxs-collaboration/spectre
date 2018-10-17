@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Overloader.hpp"
@@ -116,9 +117,27 @@ std::array<DataVector, 9> characteristic_speeds(
       lapse, shift, spatial_velocity, spatial_velocity_squared,
       sound_speed_squared, alfven_speed_squared, unit_normal);
 }
+
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                                              \
+  template std::array<DataVector, 9> characteristic_speeds<GET_DIM(data)>(  \
+      const Scalar<DataVector>& rest_mass_density,                          \
+      const Scalar<DataVector>& specific_internal_energy,                   \
+      const Scalar<DataVector>& specific_enthalpy,                          \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
+      const Scalar<DataVector>& lorentz_factor,                             \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
+      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
+      const tnsr::i<DataVector, 3>& unit_normal,                            \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
+          equation_of_state) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+
+#undef GET_DIM
+#undef INSTANTIATION
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
-
-template struct grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<1>;
-template struct grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<2>;
 /// \endcond
