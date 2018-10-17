@@ -53,14 +53,15 @@ struct PrimitiveFromConservative {
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>>;
 
-  using argument_tags = tmpl::list<
-      grmhd::ValenciaDivClean::Tags::TildeD,
-      grmhd::ValenciaDivClean::Tags::TildeTau,
-      grmhd::ValenciaDivClean::Tags::TildeS<>,
-      grmhd::ValenciaDivClean::Tags::TildeB<>,
-      grmhd::ValenciaDivClean::Tags::TildePhi, gr::Tags::SpatialMetric<3>,
-      gr::Tags::InverseSpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>,
-      hydro::Tags::EquationOfState<EquationsOfState::IdealFluid<true>>>;
+  using argument_tags =
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeTau,
+                 grmhd::ValenciaDivClean::Tags::TildeS<>,
+                 grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 grmhd::ValenciaDivClean::Tags::TildePhi,
+                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
+                 gr::Tags::SqrtDetSpatialMetric<>,
+                 hydro::Tags::EquationOfStateBase>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
