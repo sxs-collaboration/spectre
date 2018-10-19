@@ -5,11 +5,22 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseVector.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+namespace {
+struct DenseVectorOption {
+  static constexpr OptionString help = {"A vector"};
+  using type = DenseVector<double>;
+};
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DenseVector", "[DataStructures][Unit]") {
   // Since `DenseVector` is just a thin wrapper around `blaze::DynamicVector` we
@@ -39,4 +50,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DenseVector", "[DataStructures][Unit]") {
   test_copy_semantics(vec);
   auto vec_copy = vec;
   test_move_semantics(std::move(vec), vec_copy);
+
+  Options<tmpl::list<DenseVectorOption>> opts("");
+  opts.parse("DenseVectorOption: [1, 2, 3]");
+  DenseVector<double> expected{{1., 2., 3.}};
+  CHECK(opts.get<DenseVectorOption>() == expected);
 }

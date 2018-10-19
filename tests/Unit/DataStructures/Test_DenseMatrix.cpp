@@ -4,12 +4,27 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <algorithm>
+#include <string>
 
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DenseMatrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+namespace {
+struct RowMajorMatrix {
+  static constexpr OptionString help = {"A row-major matrix"};
+  using type = DenseMatrix<double, blaze::rowMajor>;
+};
+struct ColumnMajorMatrix {
+  static constexpr OptionString help = {"A column-major matrix"};
+  using type = DenseMatrix<double, blaze::columnMajor>;
+};
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix", "[DataStructures][Unit]") {
   // Since `DenseMatrix` is just a thin wrapper around `blaze::DynamicMatrix` we
@@ -45,4 +60,32 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix", "[DataStructures][Unit]") {
   test_copy_semantics(A);
   auto matrix_copy = A;
   test_move_semantics(std::move(A), matrix_copy);
+
+  {
+    Options<tmpl::list<RowMajorMatrix, ColumnMajorMatrix>> opts("");
+    opts.parse("RowMajorMatrix: [[1, 2], [3, 4]]");
+    opts.parse("ColumnMajorMatrix: [[1, 2], [3, 4]]");
+    DenseMatrix<double> expected{{1., 2.}, {3., 4.}};
+    CHECK(opts.get<RowMajorMatrix>() == expected);
+    CHECK(opts.get<ColumnMajorMatrix>() == expected);
+  }
+  {
+    Options<tmpl::list<RowMajorMatrix>> opts("");
+    opts.parse("RowMajorMatrix: []");
+    CHECK(opts.get<RowMajorMatrix>() == DenseMatrix<double>(0, 0));
+  }
+  {
+    Options<tmpl::list<RowMajorMatrix>> opts("");
+    opts.parse("RowMajorMatrix: [[], [], []]");
+    CHECK(opts.get<RowMajorMatrix>() == DenseMatrix<double>(3, 0));
+  }
+}
+
+// [[OutputRegex, All matrix columns must have the same size.]]
+SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix.InvalidOptions",
+                  "[DataStructures][Unit]") {
+  ERROR_TEST();
+  Options<tmpl::list<RowMajorMatrix>> opts("");
+  opts.parse("RowMajorMatrix: [[1], [1, 2], [1, 2]]");
+  opts.get<RowMajorMatrix>();
 }
