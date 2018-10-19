@@ -6,6 +6,7 @@ set(LIBRARY "Test_NumericalInterpolation")
 set(LIBRARY_SOURCES
   Test_AddTemporalIdsToInterpolationTarget.cpp
   Test_BarycentricRational.cpp
+  Test_CleanUpInterpolator.cpp
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
   Test_InterpolationTargetLineSegment.cpp
