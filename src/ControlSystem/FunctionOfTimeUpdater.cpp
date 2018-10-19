@@ -30,7 +30,7 @@ void FunctionOfTimeUpdater<DerivOrder>::modify(
   if (averager_(time)) {
     std::array<DataVector, DerivOrder + 1> q_and_derivs = averager_(time).get();
     // get the time offset due to averaging
-    const double t_offset_of_qdot = time - averager_.average_time(time)[0];
+    const double t_offset_of_qdot = time - averager_.average_time(time);
     const double t_offset_of_q =
         (averager_.using_average_0th_deriv_of_q() ? t_offset_of_qdot : 0.0);
 

@@ -16,7 +16,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
   double t = 0.0;
   const double dt = 0.6;
   const double final_time = 4.0;
-  const constexpr size_t deriv_order = 3;
+  constexpr size_t deriv_order = 3;
 
   // test two component system (x**3 and x**2)
   const std::array<DataVector, deriv_order + 1> init_func{
@@ -59,7 +59,7 @@ SPECTRE_TEST_CASE(
   double t = 0.0;
   const double dt = 0.6;
   const double final_time = 4.0;
-  const constexpr size_t deriv_order = 2;
+  constexpr size_t deriv_order = 2;
 
   // initally x**2, but update with non-constant 2nd deriv
   const std::array<DataVector, deriv_order + 1> init_func{
@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE(
 SPECTRE_TEST_CASE(
     "Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial.WithinRoundoff",
     "[ControlSystem][Unit]") {
-  const constexpr size_t deriv_order = 3;
+  constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);
@@ -120,7 +120,7 @@ SPECTRE_TEST_CASE(
     "[ControlSystem][Unit]") {
   ERROR_TEST();
   // two component system (x**3 and x**2)
-  const constexpr size_t deriv_order = 3;
+  constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func);
@@ -135,7 +135,7 @@ SPECTRE_TEST_CASE(
     "[ControlSystem][Unit]") {
   ERROR_TEST();
   // two component system (x**3 and x**2)
-  const constexpr size_t deriv_order = 3;
+  constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func);
@@ -148,7 +148,7 @@ SPECTRE_TEST_CASE(
     "[ControlSystem][Unit]") {
   ERROR_TEST();
   // two component system (x**3 and x**2)
-  const constexpr size_t deriv_order = 3;
+  constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);

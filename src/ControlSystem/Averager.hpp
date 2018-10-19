@@ -80,7 +80,7 @@ class Averager {
   /// averaged along side \f$Q\f$ to determine the effective time at which
   /// the average value is computed. The effective time is retarded, due to the
   /// weighting of past times.
-  DataVector average_time(double time) const noexcept;
+  double average_time(double time) const noexcept;
   /// Returns a bool corresponding to whether `average_0th_deriv_of_q`
   /// is `true`/`false`.
   bool using_average_0th_deriv_of_q() const noexcept {
@@ -108,6 +108,6 @@ class Averager {
       boost::none;
   std::deque<double> times_;
   std::deque<DataVector> raw_qs_;
-  DataVector weight_k_{0.0};
-  DataVector tau_k_{0.0};
+  double weight_k_ = 0.0;
+  double tau_k_ = 0.0;
 };

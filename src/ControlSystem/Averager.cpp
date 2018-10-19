@@ -63,15 +63,15 @@ void Averager<DerivOrder>::clear() noexcept {
   averaged_values_ = boost::none;
   times_.clear();
   raw_qs_.clear();
-  weight_k_ = {0.0};
-  tau_k_ = {0.0};
+  weight_k_ = 0.0;
+  tau_k_ = 0.0;
 }
 
 template <size_t DerivOrder>
 void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
                                   const DataVector& timescales) noexcept {
   if (not raw_qs_.empty()) {
-    if (raw_q.size() != raw_qs_[0].size()) {
+    if (UNLIKELY(raw_q.size() != raw_qs_[0].size())) {
       ERROR("The number of components in the raw_q provided ("
             << raw_q.size()
             << ") does not match the size of previously supplied raw_q ("
@@ -82,12 +82,22 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
     // effective time (with proper number of components)
     averaged_values_ =
         make_array<DerivOrder + 1>(DataVector(raw_q.size(), 0.0));
-    weight_k_ = averaged_values_.get()[0];
-    tau_k_ = averaged_values_.get()[0];
+    weight_k_ = 0.0;
+    tau_k_ = 0.0;
   }
 
+  // Ensure that the number of timescales matches the number of components
+  if (UNLIKELY(timescales.size() != raw_q.size())) {
+    ERROR("The number of supplied timescales ("
+          << timescales.size() << ") does not match the number of components ("
+          << raw_q.size() << ").");
+  }
+  // Get the minimum damping time from all component timescales. This will be
+  // used to determine the averaging timescale for ALL components.
+  const double min_timescale = min(timescales);
+
   // Do not allow updates at or before last update time
-  if (not times_.empty() and time <= last_time_updated()) {
+  if (UNLIKELY(not times_.empty() and time <= last_time_updated())) {
     ERROR("The specified time t=" << time << " is at or before the last time "
                                              "updated, t_update="
                                   << last_time_updated() << ".");
@@ -104,11 +114,11 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
 
   if (times_.size() > DerivOrder) {
     // we now have enough data points to begin averaging
-    const DataVector tau_avg = timescales * avg_tscale_frac_;
+    const double tau_avg = min_timescale * avg_tscale_frac_;
     const double tau_m = times_[0] - times_[1];
 
     // update the weights and effective time
-    const DataVector old_weight{std::move(weight_k_)};
+    const double old_weight = weight_k_;
     weight_k_ = (tau_m + old_weight) * tau_avg / (tau_m + tau_avg);
     tau_k_ = (time * tau_m + tau_k_ * old_weight) * tau_avg /
              (weight_k_ * (tau_m + tau_avg));
@@ -132,16 +142,15 @@ void Averager<DerivOrder>::update(const double time, const DataVector& raw_q,
 
 template <size_t DerivOrder>
 double Averager<DerivOrder>::last_time_updated() const noexcept {
-  if (times_.empty()) {
+  if (UNLIKELY(times_.empty())) {
     ERROR("The time history has not been updated yet.");
   }
   return times_[0];
 }
 
 template <size_t DerivOrder>
-DataVector Averager<DerivOrder>::average_time(const double time) const
-    noexcept {
-  if (times_.size() > DerivOrder and time == times_[0]) {
+double Averager<DerivOrder>::average_time(const double time) const noexcept {
+  if (LIKELY(times_.size() > DerivOrder and time == times_[0])) {
     return tau_k_;
   }
   ERROR(
