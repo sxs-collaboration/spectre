@@ -36,3 +36,7 @@ spectre_add_python_test(
   "Unit.DataStructures.Python.DataVector"
   Test_DataVector.py
   "unit;datastructures;python")
+spectre_add_python_test(
+  "Unit.DataStructures.Python.Matrix"
+  Test_Matrix.py
+  "unit;datastructures;python")
