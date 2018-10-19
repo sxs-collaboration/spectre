@@ -62,7 +62,6 @@ const std::array<DataVector, number_of_elements> sources{
 const std::array<DataVector, number_of_elements> expected_results{
     {DataVector{-0.03634825103978584, 0.7235793356729763, 0.9928055333486299},
      DataVector{0.9928055333486298, 0.7235793356729763, -0.03634825103978584}}};
-constexpr double source_magnitude_square = 1.233700550136170;
 
 struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;

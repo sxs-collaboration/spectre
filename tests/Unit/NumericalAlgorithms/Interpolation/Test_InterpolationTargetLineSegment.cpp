@@ -24,7 +24,6 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetLineSegment.hpp"
 #include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
@@ -145,10 +144,7 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points =
         intrp::Actions::LineSegment<InterpolationTargetA, 3, Frame::Inertial>;
-    // This tag is also an OptionsTag. The type and help string below
-    // refer to the options that are read from the input file.
     using type = typename compute_target_points::options_type;
-    static constexpr OptionString help = {"Options for InterpolateeA"};
   };
   using temporal_id = Time;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
