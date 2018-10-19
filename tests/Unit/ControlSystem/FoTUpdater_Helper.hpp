@@ -23,7 +23,7 @@ class not_null;
 
 namespace TestHelpers {
 namespace ControlErrors {
-// This is a simple 1-d case of a ControlError for testing purposes only
+// This is a simple case of a ControlError for testing purposes only
 template <size_t DerivOrder>
 class Translation {
  public:
