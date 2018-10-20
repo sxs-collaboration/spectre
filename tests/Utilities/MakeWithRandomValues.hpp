@@ -11,6 +11,7 @@
 #include <limits>
 #include <random>
 
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -50,6 +51,18 @@ struct FillWithRandomValuesImpl<std::complex<T>> {
         "Mismatch between data type and random number type.");
     data->real((*distribution)(*generator));
     data->imag((*distribution)(*generator));
+  }
+};
+
+template <typename T, int Spin>
+struct FillWithRandomValuesImpl<SpinWeighted<T, Spin>> {
+  template <typename UniformRandomBitGenerator,
+            typename RandomNumberDistribution>
+  static void apply(
+      const gsl::not_null<SpinWeighted<T, Spin>*> data,
+      const gsl::not_null<UniformRandomBitGenerator*> generator,
+      const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
+    FillWithRandomValuesImpl<T>::apply(&(data->data), generator, distribution);
   }
 };
 
