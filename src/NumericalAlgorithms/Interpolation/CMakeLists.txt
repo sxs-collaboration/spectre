@@ -5,6 +5,7 @@ set(LIBRARY Interpolation)
 
 set(LIBRARY_SOURCES
   BarycentricRational.cpp
+  InterpolationTargetWedgeSectionTorus.cpp
   IrregularInterpolant.cpp
   )
 
