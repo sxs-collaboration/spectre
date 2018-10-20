@@ -5,9 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -15,7 +12,6 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Shell.hpp"
@@ -44,20 +40,24 @@ struct ReceivePoints;
 template <typename IdType, typename DataType>
 class IdPair;
 namespace Parallel {
-template <typename Metavariables> class ConstGlobalCache;
-} // namespace Parallel
+template <typename Metavariables>
+class ConstGlobalCache;
+}  // namespace Parallel
 namespace db {
 template <typename TagsList>
 class DataBox;
-} // namespace db
+}  // namespace db
 namespace intrp {
 namespace Tags {
 struct IndicesOfFilledInterpPoints;
 template <typename Metavariables, size_t VolumeDim>
 struct InterpolatedVarsHolders;
 struct NumberOfElements;
-} // namespace Tags
-} // namespace intrp
+}  // namespace Tags
+}  // namespace intrp
+namespace domain {
+class BlockId;
+}  // namespace domain
 /// \endcond
 
 namespace {
@@ -67,11 +67,10 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using component_being_mocked = void; // not needed.
+  using component_being_mocked = void;  // not needed.
   using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags<
-          tmpl::list<intrp::Actions::LineSegment<InterpolationTargetTag, 3,
-                                                 Frame::Inertial>>>;
+      Parallel::get_const_global_cache_tags<tmpl::list<
+          typename Metavariables::InterpolationTargetA::compute_target_points>>;
 
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
@@ -142,8 +141,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points =
-        intrp::Actions::LineSegment<InterpolationTargetA, 3, Frame::Inertial>;
-    using type = typename compute_target_points::options_type;
+        ::intrp::Actions::LineSegment<InterpolationTargetA, 3, Frame::Inertial>;
+    using type = compute_target_points::options_type;
   };
   using temporal_id = Time;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -156,53 +155,55 @@ struct MockMetavariables {
   enum class Phase { Initialize, Exit };
 };
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
-                  "[Unit]") {
-  using metavars = MockMetavariables;
+template <typename MetaVariables, typename DomainCreator,
+          typename InterpolationTargetOption, typename BlockCoordHolder>
+void test_interpolation_target(
+    const DomainCreator& domain_creator,
+    const InterpolationTargetOption& options,
+    const BlockCoordHolder& expected_block_coord_holders) noexcept {
+  using metavars = MetaVariables;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using TupleOfMockDistributedObjects =
-      MockRuntimeSystem::TupleOfMockDistributedObjects;
+      typename MockRuntimeSystem::TupleOfMockDistributedObjects;
   TupleOfMockDistributedObjects dist_objects{};
   using MockDistributedObjectsTagTarget =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolation_target<metavars, metavars::InterpolationTargetA>>;
+          mock_interpolation_target<metavars,
+                                    typename metavars::InterpolationTargetA>>;
   using MockDistributedObjectsTagInterpolator =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           mock_interpolator<metavars, 3>>;
   tuples::get<MockDistributedObjectsTagTarget>(dist_objects)
       .emplace(0,
                ActionTesting::MockDistributedObject<mock_interpolation_target<
-                   metavars, metavars::InterpolationTargetA>>{});
+                   metavars, typename metavars::InterpolationTargetA>>{});
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<
                       mock_interpolator<metavars, 3>>{});
 
-  // Options for LineSegment
-  intrp::OptionHolders::LineSegment<3> line_segment_opts({{1.0, 1.0, 1.0}},
-                                                         {{2.4, 2.4, 2.4}}, 15);
-  tuples::TaggedTuple<metavars::InterpolationTargetA> tuple_of_opts(
-      line_segment_opts);
+  tuples::TaggedTuple<typename metavars::InterpolationTargetA> tuple_of_opts(
+      options);
 
   MockRuntimeSystem runner{tuple_of_opts, std::move(dist_objects)};
 
-  const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
-
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
+  runner.template simple_action<
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>,
       ::intrp::Actions::InitializeInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, domain_creator.create_domain());
+          typename metavars::InterpolationTargetA>>(
+      0, domain_creator.create_domain());
 
-  runner.simple_action<mock_interpolator<metavars, 3>,
-                       ::intrp::Actions::InitializeInterpolator<3>>(0);
+  runner.template simple_action<mock_interpolator<metavars, 3>,
+                                ::intrp::Actions::InitializeInterpolator<3>>(0);
 
   const auto& box_target =
       runner
           .template algorithms<mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>>()
+              metavars, typename metavars::InterpolationTargetA>>()
           .at(0)
           .template get_databox<typename mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>::initial_databox>();
+              metavars,
+              typename metavars::InterpolationTargetA>::initial_databox>();
 
   const auto& box_interpolator =
       runner.template algorithms<mock_interpolator<metavars, 3>>()
@@ -213,42 +214,83 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
   Slab slab(0.0, 1.0);
   Time temporal_id(slab, 0);
 
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::LineSegment<metavars::InterpolationTargetA, 3,
-                                    Frame::Inertial>>(0, temporal_id);
+  runner.template simple_action<
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>,
+      typename metavars::InterpolationTargetA::compute_target_points>(
+      0, temporal_id);
 
   // This should not have changed.
   CHECK(
       db::get<::intrp::Tags::IndicesOfFilledInterpPoints>(box_target).empty());
 
   // Should be no queued actions in mock_interpolation_target
-  CHECK(runner.is_simple_action_queue_empty<
-        mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(
-      0));
+  CHECK(runner.template is_simple_action_queue_empty<mock_interpolation_target<
+            metavars, typename metavars::InterpolationTargetA>>(0));
 
   // But there should be one in mock_interpolator
-  runner.invoke_queued_simple_action<mock_interpolator<metavars, 3>>(0);
+  runner.template invoke_queued_simple_action<mock_interpolator<metavars, 3>>(
+      0);
 
   // Should be no more queued actions in mock_interpolator
-  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars, 3>>(0));
+  CHECK(runner.template is_simple_action_queue_empty<
+        mock_interpolator<metavars, 3>>(0));
 
   const auto& vars_holders =
       db::get<intrp::Tags::InterpolatedVarsHolders<metavars, 3>>(
           box_interpolator);
   const auto& vars_infos =
-      get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars, 3>>(
-          vars_holders)
+      get<intrp::Vars::HolderTag<typename metavars::InterpolationTargetA,
+                                 metavars, 3>>(vars_holders)
           .infos;
   // Should be one entry in the vars_infos
   CHECK(vars_infos.size() == 1);
   const auto& info = vars_infos.at(temporal_id);
   const auto& block_coord_holders = info.block_coord_holders;
 
-  // Should be 15 points.
-  CHECK(block_coord_holders.size() == 15);
+  // Check number of points
+  const size_t number_of_points = expected_block_coord_holders.size();
+  CHECK(block_coord_holders.size() == number_of_points);
 
-  const auto expected_block_coord_holders = [&domain_creator]() {
+  for (size_t i = 0; i < number_of_points; ++i) {
+    CHECK(block_coord_holders[i].id == expected_block_coord_holders[i].id);
+    CHECK_ITERABLE_APPROX(block_coord_holders[i].data,
+                          expected_block_coord_holders[i].data);
+  }
+
+  // Call again at a different temporal_id
+  Time new_temporal_id(slab, 1);
+  runner.template simple_action<
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>,
+      typename metavars::InterpolationTargetA::compute_target_points>(
+      0, new_temporal_id);
+  runner.template invoke_queued_simple_action<mock_interpolator<metavars, 3>>(
+      0);
+
+  // Should be two entries in the vars_infos
+  CHECK(vars_infos.size() == 2);
+  const auto& new_block_coord_holders =
+      vars_infos.at(new_temporal_id).block_coord_holders;
+  for (size_t i = 0; i < number_of_points; ++i) {
+    CHECK(new_block_coord_holders[i].id == expected_block_coord_holders[i].id);
+    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].data,
+                          expected_block_coord_holders[i].data);
+  }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
+                  "[Unit]") {
+  // Options for LineSegment
+  intrp::OptionHolders::LineSegment<3> line_segment_opts({{1.0, 1.0, 1.0}},
+                                                         {{2.4, 2.4, 2.4}}, 15);
+
+  const auto domain_creator =
+      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+
+  const auto expected_block_coord_holders = [&domain_creator]() noexcept {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -257,30 +299,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
       }
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
-  }();
-  for (size_t i = 0; i < 15; ++i) {
-    CHECK(block_coord_holders[i].id == expected_block_coord_holders[i].id);
-    CHECK_ITERABLE_APPROX(block_coord_holders[i].data,
-                          expected_block_coord_holders[i].data);
   }
+  ();
 
-  // Call again at a different temporal_id
-  Time new_temporal_id(slab, 1);
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::LineSegment<metavars::InterpolationTargetA, 3,
-                                    Frame::Inertial>>(0, new_temporal_id);
-  runner.invoke_queued_simple_action<mock_interpolator<metavars, 3>>(0);
-
-  // Should be two entries in the vars_infos
-  CHECK(vars_infos.size() == 2);
-  const auto& new_block_coord_holders =
-      vars_infos.at(new_temporal_id).block_coord_holders;
-  for (size_t i = 0; i < 15; ++i) {
-    CHECK(new_block_coord_holders[i].id == expected_block_coord_holders[i].id);
-    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].data,
-                          expected_block_coord_holders[i].data);
-  }
+  test_interpolation_target<MockMetavariables>(
+      domain_creator, line_segment_opts, expected_block_coord_holders);
 }
-
-}  // namespace
