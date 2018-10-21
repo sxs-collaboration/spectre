@@ -119,6 +119,6 @@ std::array<DataVector, 9> characteristic_speeds(
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
 
-template struct grmhd::ValenciaDivClean::ComputeCharacteristicSpeeds<1>;
-template struct grmhd::ValenciaDivClean::ComputeCharacteristicSpeeds<2>;
+template struct grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<1>;
+template struct grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<2>;
 /// \endcond
