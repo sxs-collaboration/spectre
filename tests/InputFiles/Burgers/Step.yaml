@@ -5,12 +5,13 @@
 # Check: execute
 
 AnalyticSolution:
-  ShockTime: -1.
+  LeftValue: 2.
+  RightValue: 1.
+  InitialPosition: -0.5
 
 InitialTime: 0.0
 FinalTime: 0.1
 InitialTimeStep: 0.001
-InitialSlabSize: 0.01
 
 DomainCreator:
   Interval:
@@ -24,13 +25,7 @@ TimeStepper:
   AdamsBashforthN:
     Order: 3
 
-StepController: BinaryFraction
-
-StepChoosers:
-  - Constant: 0.05
-  - Increase:
-      Factor: 2
-  - Cfl:
-      SafetyFactor: 0.2
-
 NumericalFluxParams:
+
+SlopeLimiterParams:
+  Type: LambdaPi1
