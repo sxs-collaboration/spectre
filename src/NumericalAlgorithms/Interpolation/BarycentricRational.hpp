@@ -11,10 +11,6 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-/*!
- * \ingroup NumericalAlgorithmsGroup
- * \brief Contains classes and functions for interpolation
- */
 namespace intrp {
 /*!
  * \ingroup NumericalAlgorithmsGroup
