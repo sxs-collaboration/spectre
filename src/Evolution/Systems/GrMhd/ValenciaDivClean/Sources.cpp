@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VectorImpl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -43,7 +44,7 @@ void densitized_stress(
 
   Scalar<DataVector> magnetic_field_dot_spatial_velocity{};
   get(magnetic_field_dot_spatial_velocity)
-      .set_data_ref(&get<2>(*temp_buffer_for_3_scalars));
+      .set_data_ref(make_not_null(&get<2>(*temp_buffer_for_3_scalars)));
   dot_product(make_not_null(&magnetic_field_dot_spatial_velocity),
               magnetic_field_oneform, spatial_velocity);
   // not const to save an allocation below

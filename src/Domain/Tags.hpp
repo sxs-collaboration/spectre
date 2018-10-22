@@ -543,7 +543,7 @@ struct InterfaceSubitemsImpl {
       auto& sub_var = (*sub_value)[direction];
       for (auto vars_it = parent_vars.begin(), sub_var_it = sub_var.begin();
            vars_it != parent_vars.end(); ++vars_it, ++sub_var_it) {
-        sub_var_it->set_data_ref(&*vars_it);
+        sub_var_it->set_data_ref(make_not_null(&*vars_it));
       }
     }
   }
@@ -573,7 +573,8 @@ struct InterfaceSubitemsImpl {
         // allow only allow const access to the contained DataVectors,
         // so no modification through the pointer cast here is
         // possible.
-        sub_var_it->set_data_ref(const_cast<DataVector*>(&*vars_it));  // NOLINT
+        sub_var_it->set_data_ref(
+            make_not_null(const_cast<DataVector*>(&*vars_it)));  // NOLINT
       }
     }
   }

@@ -819,7 +819,7 @@ struct Subitems<TagList, Tag,
     if (vars.begin()->data() != sub_value->begin()->data()) {
       for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
            vars_it != vars.end(); ++vars_it, ++sub_var_it) {
-        sub_var_it->set_data_ref(&*vars_it);
+        sub_var_it->set_data_ref(make_not_null(&*vars_it));
       }
     }
   }

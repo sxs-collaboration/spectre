@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -115,7 +116,7 @@ std::array<DataVector, 9> characteristic_speeds(
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds(
-    gsl::not_null<std::array<DataVector, 9>*> result,
+    gsl::not_null<std::array<DataVector, 9>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,

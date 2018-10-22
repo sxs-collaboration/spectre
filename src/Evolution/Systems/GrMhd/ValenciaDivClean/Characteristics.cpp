@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VectorImpl.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
@@ -63,12 +64,12 @@ void compute_characteristic_speeds(
       gsl::at(char_speeds, i + 1) = DataVector(num_grid_points);
     }
     gsl::at(rel_euler_char_speeds, i)
-        .set_data_ref(&gsl::at(char_speeds, i + 1));
+        .set_data_ref(make_not_null(&gsl::at(char_speeds, i + 1)));
   }
   if (gsl::at(char_speeds, 7).size() != num_grid_points) {
     gsl::at(char_speeds, 7) = DataVector(num_grid_points);
   }
-  rel_euler_char_speeds[4].set_data_ref(&(char_speeds[7]));
+  rel_euler_char_speeds[4].set_data_ref(make_not_null(&(char_speeds[7])));
 
   RelativisticEuler::Valencia::characteristic_speeds(
       make_not_null(&rel_euler_char_speeds), lapse, shift, spatial_velocity,
