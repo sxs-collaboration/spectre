@@ -52,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
 
   Variables<tmpl::list<Tags::NormalDotNumericalFlux<Var>>> flux(
       boundary_mesh.number_of_grid_points());
-  get(get<Tags::NormalDotNumericalFlux<Var>>(flux)) = {2., 3., 5.};
+  get(get<Tags::NormalDotNumericalFlux<Var>>(flux)) = DataVector({2., 3., 5.});
 
   const Variables<tmpl::list<Var>> expected =
       -2. / (element_length * weight) * flux;

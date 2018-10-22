@@ -71,6 +71,9 @@
   { include: ["\"DataStructures/FixedHashMap.hpp\"", public,
               "\"Domain/DirectionMap.hpp\"", public]},
 
+  { include: ["\"DataStructures/VectorImpl.hpp\"", public,
+              "\"DataStructures/DataVector.hpp\"", public]},
+
   { include: ["\"NumericalAlgorithms/LinearOperators/Divergence.hpp\"",
               public,
               "\"NumericalAlgorithms/LinearOperators/Divergence.tpp\"",
