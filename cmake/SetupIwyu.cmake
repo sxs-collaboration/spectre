@@ -19,6 +19,7 @@ function(add_iwyu_tool_targets IWYU_TOOL)
     -p ${CMAKE_BINARY_DIR}
     \${FILE}
     --
+    --check_also=\${CHECK_ALSO}
     --mapping_file=${CMAKE_SOURCE_DIR}/tools/Iwyu/iwyu.imp
     )
   add_dependencies(
