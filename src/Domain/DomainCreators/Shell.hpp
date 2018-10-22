@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Domain/Domain.hpp"
+#include "Domain/DomainHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -72,9 +73,16 @@ class Shell : public DomainCreator<3, TargetFrame> {
     static constexpr type default_value() noexcept { return false; }
   };
 
-  using options =
-      tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, AspectRatio, UseLogarithmicMap>;
+  struct WhichWedges {
+    using type = ShellWedges;
+    static constexpr OptionString help = {
+        "Which wedges to include in the shell."};
+    static constexpr type default_value() noexcept { return ShellWedges::All; }
+  };
+
+  using options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
+                             InitialGridPoints, UseEquiangularMap, AspectRatio,
+                             UseLogarithmicMap, WhichWedges>;
 
   static constexpr OptionString help{
       "Creates a 3D spherical shell with 6 Blocks. `UseEquiangularMap` has\n"
@@ -91,7 +99,8 @@ class Shell : public DomainCreator<3, TargetFrame> {
         typename InitialGridPoints::type initial_number_of_grid_points,
         typename UseEquiangularMap::type use_equiangular_map,
         typename AspectRatio::type aspect_ratio = 1.0,
-        typename UseLogarithmicMap::type use_logarithmic_map = false) noexcept;
+        typename UseLogarithmicMap::type use_logarithmic_map = false,
+        typename WhichWedges::type which_wedges = ShellWedges::All) noexcept;
 
   Shell() = default;
   Shell(const Shell&) = delete;
@@ -115,5 +124,6 @@ class Shell : public DomainCreator<3, TargetFrame> {
   typename UseEquiangularMap::type use_equiangular_map_ = true;
   typename AspectRatio::type aspect_ratio_ = 1.0;
   typename UseLogarithmicMap::type use_logarithmic_map_ = false;
+  typename WhichWedges::type which_wedges_ = ShellWedges::All;
 };
 }  // namespace DomainCreators
