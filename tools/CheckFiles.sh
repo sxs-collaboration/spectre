@@ -9,6 +9,14 @@
 top_level=$(git rev-parse --show-cdup) || exit 1
 . "${top_level}tools/FileTestDefs.sh"
 
+# redefine grep functions to run on the working directory
+staged_grep() {
+    grep "$@";
+}
+pretty_grep() {
+    GREP_COLOR='1;37;41' grep --with-filename -n $color_option "$@"
+}
+
 # Check for iostream header
 iostream() {
     is_c++ "$1" && grep -q '#include <iostream>' "$1"
