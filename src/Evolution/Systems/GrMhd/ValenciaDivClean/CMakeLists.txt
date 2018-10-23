@@ -6,6 +6,7 @@ set(LIBRARY ValenciaDivClean)
 set(LIBRARY_SOURCES
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
+  FixConservatives.cpp
   Fluxes.cpp
   NewmanHamlin.cpp
   PalenzuelaEtAl.cpp
