@@ -4,6 +4,7 @@
 set(LIBRARY VariableFixing)
 
 set(LIBRARY_SOURCES
+  FixToAtmosphere.cpp
   RadiallyFallingFloor.cpp
   )
 

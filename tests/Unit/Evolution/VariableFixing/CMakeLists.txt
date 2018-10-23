@@ -5,6 +5,7 @@ set(LIBRARY "Test_VariableFixing")
 
 set(LIBRARY_SOURCES
   Test_Actions.cpp
+  Test_FixToAtmosphere.cpp
   Test_RadiallyFallingFloor.cpp
   )
 
