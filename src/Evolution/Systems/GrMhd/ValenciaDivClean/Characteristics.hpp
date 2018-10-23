@@ -112,12 +112,13 @@ std::array<DataVector, 9> characteristic_speeds(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept;
 
+namespace Tags {
 /// \brief Compute the characteristic speeds for the Valencia formulation of
 /// GRMHD with divergence cleaning.
 ///
 /// \details see grmhd::ValenciaDivClean::characteristic_speeds
 template <size_t ThermodynamicDim>
-struct ComputeCharacteristicSpeeds : Tags::CharacteristicSpeeds,
+struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                                      db::ComputeTag {
   using argument_tags = tmpl::list<
       hydro::Tags::RestMassDensity<DataVector>,
@@ -151,6 +152,7 @@ struct ComputeCharacteristicSpeeds : Tags::CharacteristicSpeeds,
         spatial_metric, unit_normal, equation_of_state);
   }
 };
+}  // namespace Tags
 
 struct ComputeLargestCharacteristicSpeed {
   using argument_tags = tmpl::list<>;
