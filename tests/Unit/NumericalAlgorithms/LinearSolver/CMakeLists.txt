@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(ConjugateGradient)
+add_subdirectory(Gmres)
 
 add_test_library(
   ${LIBRARY}

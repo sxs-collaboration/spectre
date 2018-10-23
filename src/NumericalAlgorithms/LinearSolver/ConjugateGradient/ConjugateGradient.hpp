@@ -52,6 +52,9 @@ namespace LinearSolver {
  * `equal_within_roundoff`.
  * 5. `UpdateOperand` (on elements): Update \f$p\f$. Stop if termination flag
  * was received.
+ *
+ * \see Gmres for a linear solver that can invert nonsymmetric operators
+ * \f$A\f$.
  */
 template <typename Metavariables>
 struct ConjugateGradient {
