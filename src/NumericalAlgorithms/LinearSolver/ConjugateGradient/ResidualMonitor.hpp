@@ -36,7 +36,7 @@ struct ResidualMonitor {
   struct Verbosity {
     using type = ::Verbosity;
     static constexpr OptionString help = {"Verbosity"};
-    static type default_value() { return ::Verbosity::Quiet; }
+    static type default_value() noexcept { return ::Verbosity::Quiet; }
   };
 
   using chare_type = Parallel::Algorithms::Singleton;

@@ -83,8 +83,8 @@ class IsentropicVortex {
     using type = double;
     static constexpr OptionString help = {"The adiabatic index of the fluid."};
     // Note: bounds only valid for an ideal gas.
-    static type lower_bound() { return 1.0; }
-    static type upper_bound() { return 2.0; }
+    static type lower_bound() noexcept { return 1.0; }
+    static type upper_bound() noexcept { return 2.0; }
   };
 
   /// The position of the center of the vortex at \f$t = 0\f$
@@ -92,7 +92,7 @@ class IsentropicVortex {
     using type = std::array<double, 3>;
     static constexpr OptionString help = {
         "The coordinates of the center of the vortex at t = 0."};
-    static type default_value() { return {{0.0, 0.0, 0.0}}; }
+    static type default_value() noexcept { return {{0.0, 0.0, 0.0}}; }
   };
 
   /// The mean flow velocity.
@@ -112,7 +112,7 @@ class IsentropicVortex {
   struct Strength {
     using type = double;
     static constexpr OptionString help = {"The strength of the vortex."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   using options = tmpl::list<AdiabaticIndex, Center, MeanVelocity,

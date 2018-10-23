@@ -59,7 +59,7 @@ class SmoothFlow {
     using type = double;
     static constexpr OptionString help = {
         "The constant pressure throughout the fluid."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The adiabatic index for the ideal fluid.
@@ -67,7 +67,7 @@ class SmoothFlow {
     using type = double;
     static constexpr OptionString help = {
         "The adiabatic index for the ideal fluid."};
-    static type lower_bound() { return 1.0; }
+    static type lower_bound() noexcept { return 1.0; }
   };
 
   /// The perturbation amplitude of the rest mass density of the fluid.
@@ -75,8 +75,8 @@ class SmoothFlow {
     using type = double;
     static constexpr OptionString help = {
         "The perturbation size of the rest mass density."};
-    static type lower_bound() { return -1.0; }
-    static type upper_bound() { return 1.0; }
+    static type lower_bound() noexcept { return -1.0; }
+    static type upper_bound() noexcept { return 1.0; }
   };
 
   using options = tmpl::list<MeanVelocity, WaveVector, Pressure, AdiabaticIndex,

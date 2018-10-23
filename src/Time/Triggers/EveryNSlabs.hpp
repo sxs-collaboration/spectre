@@ -35,12 +35,12 @@ class EveryNSlabs : public Trigger<KnownTriggers> {
   struct N {
     using type = uint64_t;
     static constexpr OptionString help{"How frequently to trigger."};
-    static type lower_bound() { return 1; }
+    static type lower_bound() noexcept { return 1; }
   };
   struct Offset {
     using type = uint64_t;
     static constexpr OptionString help{"First slab to trigger on."};
-    static type default_value() { return 0; }
+    static type default_value() noexcept { return 0; }
   };
 
   using options = tmpl::list<N, Offset>;

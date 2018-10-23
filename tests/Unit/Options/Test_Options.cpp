@@ -155,9 +155,9 @@ struct Bounded {
   static constexpr OptionString help = {
     "Option with bounds and a default value"};
   // These are optional
-  static type default_value() { return 3; }
-  static type lower_bound() { return 2; }
-  static type upper_bound() { return 10; }
+  static type default_value() noexcept { return 3; }
+  static type lower_bound() noexcept { return 2; }
+  static type upper_bound() noexcept { return 10; }
 };
 /// [options_example_scalar_struct]
 }  // namespace
@@ -210,15 +210,15 @@ namespace {
 struct BadDefault {
   using type = int;
   static constexpr OptionString help = {"halp"};
-  static type default_value() { return 3; }
-  static type lower_bound() { return 4; }
+  static type default_value() noexcept { return 3; }
+  static type lower_bound() noexcept { return 4; }
 };
 struct NamedBadDefault {
   using type = int;
   static std::string name() noexcept { return "SomeName"; }
   static constexpr OptionString help = {"halp"};
-  static type default_value() { return 3; }
-  static type lower_bound() { return 4; }
+  static type default_value() noexcept { return 3; }
+  static type lower_bound() noexcept { return 4; }
 };
 }  // namespace
 

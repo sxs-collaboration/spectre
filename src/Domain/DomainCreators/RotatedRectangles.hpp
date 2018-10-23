@@ -56,7 +56,7 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
     using type = std::array<bool, 2>;
     static constexpr OptionString help = {
         "Sequence for [x], true if periodic."};
-    static type default_value() { return {{false, false}}; }
+    static type default_value() noexcept { return {{false, false}}; }
   };
 
   struct InitialRefinement {

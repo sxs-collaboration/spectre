@@ -41,7 +41,9 @@ class AlignedLattice : public DomainCreator<VolumeDim, TargetFrame> {
     using type = std::array<bool, VolumeDim>;
     static constexpr OptionString help = {
         "Whether the domain is periodic in each dimension."};
-    static type default_value() { return make_array<VolumeDim>(false); }
+    static type default_value() noexcept {
+      return make_array<VolumeDim>(false);
+    }
   };
 
   struct InitialRefinement {

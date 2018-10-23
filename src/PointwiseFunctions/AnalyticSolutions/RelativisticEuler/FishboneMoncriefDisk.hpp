@@ -170,15 +170,15 @@ class FishboneMoncriefDisk {
   struct BlackHoleMass {
     using type = double;
     static constexpr OptionString help = {"The mass of the black hole."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
   /// The black hole spin magnitude in units of the black hole mass.
   struct BlackHoleSpin {
     using type = double;
     static constexpr OptionString help = {
         "The dimensionless black hole spin magnitude."};
-    static type lower_bound() { return 0.0; }
-    static type upper_bound() { return 1.0; }
+    static type lower_bound() noexcept { return 0.0; }
+    static type upper_bound() noexcept { return 1.0; }
   };
   /// The radial coordinate of the inner edge of the disk.
   struct InnerEdgeRadius {
@@ -197,14 +197,14 @@ class FishboneMoncriefDisk {
     using type = double;
     static constexpr OptionString help = {
         "The polytropic constant of the fluid."};
-    static type lower_bound() { return 0.; }
+    static type lower_bound() noexcept { return 0.; }
   };
   /// The polytropic exponent of the fluid.
   struct PolytropicExponent {
     using type = double;
     static constexpr OptionString help = {
         "The polytropic exponent of the fluid."};
-    static type lower_bound() { return 1.; }
+    static type lower_bound() noexcept { return 1.; }
   };
 
   using options =

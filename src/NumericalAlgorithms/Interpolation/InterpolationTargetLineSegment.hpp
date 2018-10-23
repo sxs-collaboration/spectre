@@ -36,7 +36,7 @@ struct LineSegment {
     using type = size_t;
     static constexpr OptionString help = {
         "Number of points including endpoints"};
-    static type lower_bound() { return 2; }
+    static type lower_bound() noexcept { return 2; }
   };
   using options = tmpl::list<Begin, End, NumberOfPoints>;
   static constexpr OptionString help = {
