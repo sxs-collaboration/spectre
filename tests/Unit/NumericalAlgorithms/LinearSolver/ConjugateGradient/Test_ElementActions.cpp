@@ -26,14 +26,17 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
+using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, VectorTag>;
+using residual_tag =
+    db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>;
+
 using simple_tags =
     db::AddSimpleTags<VectorTag, LinearSolver::Tags::IterationId,
                       ::Tags::Next<LinearSolver::Tags::IterationId>,
-                      LinearSolver::Tags::Operand<VectorTag>,
-                      LinearSolver::Tags::Residual<VectorTag>>;
+                      operand_tag, residual_tag>;
 
 template <typename Metavariables>
-struct ArrayParallelComponent {
+struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
@@ -47,7 +50,7 @@ struct System {
 };
 
 struct Metavariables {
-  using component_list = tmpl::list<ArrayParallelComponent<Metavariables>>;
+  using component_list = tmpl::list<ElementArray<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -59,8 +62,7 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][LinearSolver][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<
-          ArrayParallelComponent<Metavariables>>;
+      MockRuntimeSystem::MockDistributedObjectsTag<ElementArray<Metavariables>>;
 
   const int self_id{0};
 
@@ -73,9 +75,9 @@ SPECTRE_TEST_CASE(
                                                 DenseVector<double>(3, 1.)));
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
-    return runner.algorithms<ArrayParallelComponent<Metavariables>>()
+    return runner.algorithms<ElementArray<Metavariables>>()
         .at(self_id)
-        .get_databox<db::compute_databox_type<simple_tags>>();
+        .get_databox<ElementArray<Metavariables>::initial_databox>();
   };
   {
     const auto& box = get_box();
@@ -87,25 +89,25 @@ SPECTRE_TEST_CASE(
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in
   // `Test_ConjugateGradientAlgorithm.cpp` and
-  // `Test_DistributedConjugateGradientAlgorithm.cpp` though.
+  // `Test_DistributedConjugateGradientAlgorithm.cpp`.
 
   SECTION("UpdateOperand") {
-    runner.simple_action<ArrayParallelComponent<Metavariables>,
+    runner.simple_action<ElementArray<Metavariables>,
                          LinearSolver::cg_detail::UpdateOperand>(self_id, 2.,
                                                                  false);
     const auto& box = get_box();
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     CHECK(db::get<LinearSolver::Tags::Operand<VectorTag>>(box) ==
           DenseVector<double>(3, 5.));
-    CHECK_FALSE(runner.algorithms<ArrayParallelComponent<Metavariables>>()
-              .at(self_id)
-              .get_terminate());
+    CHECK_FALSE(runner.algorithms<ElementArray<Metavariables>>()
+                    .at(self_id)
+                    .get_terminate());
   }
   SECTION("UpdateOperandAndTerminate") {
-    runner.simple_action<ArrayParallelComponent<Metavariables>,
+    runner.simple_action<ElementArray<Metavariables>,
                          LinearSolver::cg_detail::UpdateOperand>(self_id, 2.,
                                                                  true);
-    CHECK(runner.algorithms<ArrayParallelComponent<Metavariables>>()
+    CHECK(runner.algorithms<ElementArray<Metavariables>>()
               .at(self_id)
               .get_terminate());
   }
