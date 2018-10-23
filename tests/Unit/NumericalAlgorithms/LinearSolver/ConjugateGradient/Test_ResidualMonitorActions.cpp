@@ -182,8 +182,9 @@ SPECTRE_TEST_CASE(
             db::AddSimpleTags<CheckValueTag, CheckTerminateTag>>>();
   };
 
-  using residual_square_tag =
-      LinearSolver::Tags::ResidualMagnitudeSquare<VectorTag>;
+  using residual_square_tag = db::add_tag_prefix<
+      LinearSolver::Tags::MagnitudeSquare,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>>;
 
   SECTION("InitializeResidual") {
     runner.simple_action<MockResidualMonitor<Metavariables>,

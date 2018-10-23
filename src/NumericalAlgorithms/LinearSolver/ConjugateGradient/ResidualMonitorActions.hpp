@@ -33,13 +33,15 @@ namespace LinearSolver {
 namespace cg_detail {
 
 struct InitializeResidual {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+  template <
+      typename... DbTags, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+          db::add_tag_prefix<
+              LinearSolver::Tags::MagnitudeSquare,
+              db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                 typename Metavariables::system::fields_tag>>,
+          DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -48,9 +50,9 @@ struct InitializeResidual {
                     const ParallelComponent* const /*meta*/,
                     const double res_new) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_square_tag =
-        db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                           fields_tag>;
+    using residual_square_tag = db::add_tag_prefix<
+        LinearSolver::Tags::MagnitudeSquare,
+        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
     db::mutate<residual_square_tag>(
         make_not_null(&box), [res_new](const gsl::not_null<double*>
@@ -62,13 +64,15 @@ struct InitializeResidual {
 
 template <typename BroadcastTarget>
 struct ComputeAlpha {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+  template <
+      typename... DbTags, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+          db::add_tag_prefix<
+              LinearSolver::Tags::MagnitudeSquare,
+              db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                 typename Metavariables::system::fields_tag>>,
+          DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -77,9 +81,9 @@ struct ComputeAlpha {
                     const ParallelComponent* const /*meta*/,
                     const double conj_grad_inner_product) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_square_tag =
-        db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                           fields_tag>;
+    using residual_square_tag = db::add_tag_prefix<
+        LinearSolver::Tags::MagnitudeSquare,
+        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
     Parallel::simple_action<UpdateFieldValues>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
@@ -89,13 +93,15 @@ struct ComputeAlpha {
 
 template <typename BroadcastTarget>
 struct UpdateResidual {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+  template <
+      typename... DbTags, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+          db::add_tag_prefix<
+              LinearSolver::Tags::MagnitudeSquare,
+              db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                 typename Metavariables::system::fields_tag>>,
+          DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -104,9 +110,9 @@ struct UpdateResidual {
                     const ParallelComponent* const /*meta*/,
                     const double res_new) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_square_tag =
-        db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                           fields_tag>;
+    using residual_square_tag = db::add_tag_prefix<
+        LinearSolver::Tags::MagnitudeSquare,
+        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
     const double residual = sqrt(res_new);
     const double res_ratio = res_new / get<residual_square_tag>(box);

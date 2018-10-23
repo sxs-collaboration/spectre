@@ -67,9 +67,9 @@ template <typename Metavariables>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = typename Metavariables::system::fields_tag;
-  using residual_square_tag =
-      db::add_tag_prefix<LinearSolver::Tags::ResidualMagnitudeSquare,
-                         fields_tag>;
+  using residual_square_tag = db::add_tag_prefix<
+      LinearSolver::Tags::MagnitudeSquare,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
  public:
   using simple_tags =
