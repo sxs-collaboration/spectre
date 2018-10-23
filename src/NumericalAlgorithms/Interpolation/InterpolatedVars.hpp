@@ -3,18 +3,21 @@
 
 #pragma once
 
+#include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/IdPair.hpp"
+#include "DataStructures/IdPair.hpp" // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Domain/BlockId.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Mesh.hpp"
-#include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
+#include "Domain/BlockId.hpp" // IWYU pragma: keep
+
+/// \cond
+template <size_t VolumeDim>
+class ElementId;
+template <typename TagsList>
+class Variables;
+/// \endcond
 
 namespace intrp {
 

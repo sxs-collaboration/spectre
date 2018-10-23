@@ -3,13 +3,32 @@
 
 #pragma once
 
+#include <cstddef>
+#include <tuple>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Domain/Tags.hpp" // IWYU pragma: keep
+#include "Utilities/Literals.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+// IWYU pragma: no_forward_declare db::DataBox
+namespace Parallel {
+template <typename Metavariables>
+class ConstGlobalCache;
+}  // namespace Parallel
+namespace intrp {
+namespace Tags {
+struct NumberOfElements;
+template <typename Metavariables, size_t VolumeDim>
+struct InterpolatedVarsHolders;
+template <typename Metavariables, size_t VolumeDim>
+struct VolumeVarsInfo;
+}  // namespace Tags
+}  // namespace intrp
+/// \endcond
 
 namespace intrp {
 namespace Actions {

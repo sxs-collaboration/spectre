@@ -7,18 +7,18 @@
 #include <deque>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-namespace intrp {
-namespace Vars {
-template <typename InterpolationTargetTag, typename Metavariables,
-          size_t VolumeDim>
-struct HolderTag;
-}  // namespace Vars
-}  // namespace intrp
+template <size_t VolumeDim>
+class ElementId;
 /// \endcond
 
 namespace intrp {
