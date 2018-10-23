@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/VariableFixing/"
   "${LIBRARY_SOURCES}"
-  "DataStructures"
+  "DataStructures;VariableFixing"
   )

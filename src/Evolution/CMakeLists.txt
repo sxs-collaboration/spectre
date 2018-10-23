@@ -4,3 +4,4 @@
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Executables)
 add_subdirectory(Systems)
+add_subdirectory(VariableFixing)
