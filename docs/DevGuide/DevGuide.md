@@ -19,4 +19,6 @@ See LICENSE.txt for details.
 - \ref travis_guide "Travis CI"
 - \ref writing_good_dox "Writing good documentation" is key for long term
   maintainability of the project
+- \ref spectre_writing_python_bindings "Writing Python Bindings" to use
+  SpECTRE C++ classes and functions from within python.
 - \ref writing_unit_tests "Writing Unit Tests"

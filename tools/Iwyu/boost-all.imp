@@ -5658,4 +5658,5 @@
                 "<boost/preprocessor/facilities/apply.hpp>", public]},
     { include: ["<boost/preprocessor/detail/check.hpp>", private,
                 "<boost/parameter/preprocessor.hpp>", public]},
+    { include: ["@<boost/python/.*>", public, "<boost/python.hpp>", public]},
 ]

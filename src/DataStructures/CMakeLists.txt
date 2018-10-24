@@ -21,3 +21,5 @@ target_link_libraries(
   INTERFACE Domain
   INTERFACE ErrorHandling
   )
+
+add_subdirectory(Python)

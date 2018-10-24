@@ -1061,6 +1061,14 @@ then typically look as follows:
  */
 
 /*!
+ * \defgroup PythonBindingsGroup Python Bindings
+ * \brief Classes and functions useful when writing python bindings.
+ *
+ * See the \ref spectre_writing_python_bindings "Writing Python Bindings"
+ * section of the dev guide for details on how to write python bindings.
+ */
+
+/*!
  * \defgroup SlopeLimitersGroup Slope Limiters
  * \brief Slope limiters to control shocks and surfaces in the solution.
  */

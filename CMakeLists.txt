@@ -27,6 +27,7 @@ include(SetupNinjaColors)
 include(SetOutputDirectory)
 include(SetupGitHooks)
 include(SetBuildType)
+include(SetupPic)
 include(SetCxxStandard)
 include(SetupBuildInfo)
 include(SetupCCache)
@@ -48,8 +49,12 @@ include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
 include(AddSpectreExecutable)
+include(SpectreSetupPython)
 
 include(CheckBrokenArray0)
+
+# Need to load python libs before boost.python.
+include(SetupPythonLibs)
 
 include(SetupBlas)
 include(SetupBlaze)
@@ -64,7 +69,6 @@ include(SetupLIBXSMM)
 include(SetupLapack)
 include(SetupNumPy)
 include(SetupPapi)
-include(SetupPythonLibs)
 include(SetupSciPy)
 include(SetupYamlCpp)
 
