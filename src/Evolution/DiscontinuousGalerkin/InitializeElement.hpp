@@ -139,7 +139,8 @@ struct InitializeElement {
   };
 
   // Tags related only to the system
-  template <typename System, bool IsConservative = System::is_conservative>
+  template <typename System, bool IsInFluxConservativeForm =
+                                 System::is_in_flux_conservative_form>
   struct SystemTags {
     using simple_tags = db::AddSimpleTags<typename System::variables_tag>;
 
@@ -282,7 +283,8 @@ struct InitializeElement {
         Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>;
 
     template <typename LocalSystem,
-              bool IsConservative = LocalSystem::is_conservative>
+              bool IsInFluxConservativeForm =
+                  LocalSystem::is_in_flux_conservative_form>
     struct ComputeTags {
       using type = db::AddComputeTags<
           Tags::Time, Tags::DerivCompute<
@@ -470,7 +472,8 @@ struct InitializeElement {
     }
 
     template <typename LocalSystem,
-              bool IsConservative = LocalSystem::is_conservative>
+              bool IsInFluxConservativeForm =
+                  LocalSystem::is_in_flux_conservative_form>
     struct Impl {
       using simple_tags = db::AddSimpleTags<
           mortar_data_tag,

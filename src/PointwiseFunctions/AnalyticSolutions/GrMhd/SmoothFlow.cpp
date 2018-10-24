@@ -154,13 +154,13 @@ SmoothFlow::variables(
 bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
   // the adiabatic_indexs are compared
-  return lhs.mean_velocity() == rhs.mean_velocity() and
-         lhs.wavevector() == rhs.wavevector() and
-         lhs.pressure() == rhs.pressure() and
-         lhs.adiabatic_index() == rhs.adiabatic_index() and
-         lhs.perturbation_size() == rhs.perturbation_size() and
-         lhs.k_dot_v() == rhs.k_dot_v() and
-         lhs.background_spacetime() == rhs.background_spacetime();
+  return lhs.mean_velocity_ == rhs.mean_velocity_ and
+         lhs.wavevector_ == rhs.wavevector_ and
+         lhs.pressure_ == rhs.pressure_ and
+         lhs.adiabatic_index_ == rhs.adiabatic_index_ and
+         lhs.perturbation_size_ == rhs.perturbation_size_ and
+         lhs.k_dot_v_ == rhs.k_dot_v_ and
+         lhs.background_spacetime_ == rhs.background_spacetime_;
 }
 
 bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {

@@ -57,8 +57,8 @@ struct Evolution {
       Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep, dt_variables_tag,
       Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>;
 
-  template <typename LocalSystem,
-            bool IsConservative = LocalSystem::is_conservative>
+  template <typename LocalSystem, bool IsInFluxConservativeForm =
+                                      LocalSystem::is_in_flux_conservative_form>
   struct ComputeTags {
     using type = db::AddComputeTags<
         Tags::Time,

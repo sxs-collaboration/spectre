@@ -25,6 +25,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace Tags {
@@ -75,54 +76,109 @@ namespace Actions {
 /// \see ReceiveDataForFluxes
 template <typename Metavariables>
 struct ImposeDirichletBoundaryConditions {
+ private:
+  // BoundaryConditionMethod and BcSelector are used to select exactly how to
+  // apply the Dirichlet boundary condition depending on properties of the
+  // system. An overloaded `apply_impl` method is used that implements the
+  // boundary condition calculation for the different types.
+  enum class BoundaryConditionMethod {
+    AnalyticBcNoPrimitives,
+    AnalyticBcFluxConservativeWithPrimitives,
+    Unknown
+  };
+  template <BoundaryConditionMethod Method>
+  using BcSelector = std::integral_constant<BoundaryConditionMethod, Method>;
+
+ public:
   using const_global_cache_tags =
       tmpl::list<typename Metavariables::normal_dot_numerical_flux,
                  typename Metavariables::boundary_condition_tag>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    using system = typename Metavariables::system;
+    return apply_impl<Metavariables::system::volume_dim>(
+        box, cache,
+        BcSelector<(not system::has_primitive_and_conservative_vars
+                        ? BoundaryConditionMethod::AnalyticBcNoPrimitives
+                        : (system::has_primitive_and_conservative_vars and
+                                   system::is_in_flux_conservative_form
+                               ? BoundaryConditionMethod::
+                                     AnalyticBcFluxConservativeWithPrimitives
+                               : BoundaryConditionMethod::Unknown))>{});
+  }
+
+ private:
+  template <typename DbTags>
+  static void contribute_data_to_mortar(
+      const gsl::not_null<db::DataBox<DbTags>*> box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    using system = typename Metavariables::system;
+    constexpr size_t volume_dim = system::volume_dim;
+
+    const auto& element = db::get<Tags::Element<volume_dim>>(*box);
+    const auto& temporal_id =
+        db::get<typename Metavariables::temporal_id>(*box);
+    const auto& normal_dot_numerical_flux_computer =
+        get<typename Metavariables::normal_dot_numerical_flux>(cache);
+
+    for (const auto& direction : element.external_boundaries()) {
+      const auto mortar_id = std::make_pair(
+          direction, ElementId<volume_dim>::external_boundary_id());
+
+      auto interior_data = DgActions_detail::compute_local_mortar_data(
+          *box, direction, normal_dot_numerical_flux_computer,
+          Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
+
+      auto exterior_data = DgActions_detail::compute_packaged_data(
+          *box, direction, normal_dot_numerical_flux_computer,
+          Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
+
+      db::mutate<Tags::VariablesBoundaryData>(
+          box, [&mortar_id, &temporal_id, &interior_data, &exterior_data ](
+                   const gsl::not_null<
+                       db::item_type<Tags::VariablesBoundaryData, DbTags>*>
+                       mortar_data) noexcept {
+            mortar_data->at(mortar_id).local_insert(temporal_id,
+                                                    std::move(interior_data));
+            mortar_data->at(mortar_id).remote_insert(temporal_id,
+                                                     std::move(exterior_data));
+          });
+    }
+  }
+
+  template <size_t VolumeDim, typename DbTags>
+  static std::tuple<db::DataBox<DbTags>&&> apply_impl(
+      db::DataBox<DbTags>& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      std::integral_constant<
+          BoundaryConditionMethod,
+          BoundaryConditionMethod::AnalyticBcNoPrimitives> /*meta*/) noexcept {
     using system = typename Metavariables::system;
 
     static_assert(
-        system::is_conservative or
+        system::is_in_flux_conservative_form or
             cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
                              typename Metavariables::boundary_condition_tag>,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
 
-    constexpr size_t volume_dim = system::volume_dim;
-
-    const auto& normal_dot_numerical_flux_computer =
-        get<typename Metavariables::normal_dot_numerical_flux>(cache);
-
-    const auto& element = db::get<Tags::Element<volume_dim>>(box);
-    const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
-
-    const double time = db::get<Tags::Time>(box).value();
-
-    const auto& boundary_coords = db::get<
-        Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                        Tags::Coordinates<volume_dim, Frame::Inertial>>>(box);
-
-    const auto& boundary_condition =
-        get<typename Metavariables::boundary_condition_tag>(cache);
-
     // Apply the boundary condition
     db::mutate_apply<
-        tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
+        tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
                                    typename system::variables_tag>>,
         tmpl::list<>>(
-        [&boundary_condition, &time, &boundary_coords](
-            const gsl::not_null<db::item_type<
-                Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                                typename system::variables_tag>>*>
-                external_bdry_vars) noexcept {
+        [](const gsl::not_null<db::item_type<
+               Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                               typename system::variables_tag>>*>
+               external_bdry_vars,
+           const double time, const auto& boundary_condition,
+           const auto& boundary_coords) noexcept {
           for (auto& external_direction_and_vars : *external_bdry_vars) {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
@@ -131,32 +187,78 @@ struct ImposeDirichletBoundaryConditions {
                 typename system::variables_tag::type::tags_list{}));
           }
         },
-        make_not_null(&box));
+        make_not_null(&box), db::get<Tags::Time>(box).value(),
+        get<typename Metavariables::boundary_condition_tag>(cache),
+        db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                Tags::Coordinates<VolumeDim, Frame::Inertial>>>(
+            box));
 
-    for (const auto& direction : element.external_boundaries()) {
-      const auto mortar_id = std::make_pair(
-          direction, ElementId<volume_dim>::external_boundary_id());
+    contribute_data_to_mortar(make_not_null(&box), cache);
+    return std::forward_as_tuple(std::move(box));
+  }
 
-      auto interior_data = DgActions_detail::compute_local_mortar_data(
-          box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
+  template <typename TagsList, typename... ReturnTags, typename... ArgumentTags,
+            typename System>
+  static void apply_impl_helper_conservative_from_primitive(
+      const gsl::not_null<Variables<TagsList>*> conservative_vars,
+      const tuples::TaggedTuple<ArgumentTags...>& argument_vars,
+      tmpl::list<ReturnTags...> /*meta*/, tmpl::list<System> /*meta*/
+      ) noexcept {
+    System::conservative_from_primitive::apply(
+        make_not_null(&get<ReturnTags>(*conservative_vars))...,
+        get<ArgumentTags>(argument_vars)...);
+  }
 
-      auto exterior_data = DgActions_detail::compute_packaged_data(
-          box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
+  template <size_t VolumeDim, typename DbTags>
+  static std::tuple<db::DataBox<DbTags>&&> apply_impl(
+      db::DataBox<DbTags>& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      std::integral_constant<
+          BoundaryConditionMethod,
+          BoundaryConditionMethod::
+              AnalyticBcFluxConservativeWithPrimitives> /*meta*/) noexcept {
+    using system = typename Metavariables::system;
 
-      db::mutate<Tags::VariablesBoundaryData>(
-          make_not_null(&box),
-          [&mortar_id, &temporal_id, &interior_data, &exterior_data ](
-              const gsl::not_null<
-                  db::item_type<Tags::VariablesBoundaryData, DbTags>*>
-                  mortar_data) noexcept {
-            mortar_data->at(mortar_id).local_insert(temporal_id,
-                                                    std::move(interior_data));
-            mortar_data->at(mortar_id).remote_insert(
-                temporal_id, std::move(exterior_data));
-          });
-    }
+    static_assert(
+        system::is_in_flux_conservative_form and
+            system::has_primitive_and_conservative_vars and
+            cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
+                             typename Metavariables::boundary_condition_tag>,
+        "Only analytic boundary conditions, or dirichlet boundary conditions "
+        "for conservative systems are implemented");
+
+    // Apply the boundary condition
+    db::mutate_apply<
+        tmpl::list<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                   typename system::variables_tag>>,
+        tmpl::list<>>(
+        [](const gsl::not_null<db::item_type<
+               Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                               typename system::variables_tag>>*>
+               external_bdry_vars,
+           const double time, const auto& boundary_condition,
+           const auto& boundary_coords) noexcept {
+          for (auto& external_direction_and_vars : *external_bdry_vars) {
+            auto& direction = external_direction_and_vars.first;
+            auto& vars = external_direction_and_vars.second;
+
+            apply_impl_helper_conservative_from_primitive(
+                make_not_null(&vars),
+                boundary_condition.variables(
+                    boundary_coords.at(direction), time,
+                    typename system::conservative_from_primitive::
+                        argument_tags{}),
+                typename system::conservative_from_primitive::return_tags{},
+                tmpl::list<system>{});
+          }
+        },
+        make_not_null(&box), db::get<Tags::Time>(box).value(),
+        get<typename Metavariables::boundary_condition_tag>(cache),
+        db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                                Tags::Coordinates<VolumeDim, Frame::Inertial>>>(
+            box));
+
+    contribute_data_to_mortar(make_not_null(&box), cache);
     return std::forward_as_tuple(std::move(box));
   }
 };

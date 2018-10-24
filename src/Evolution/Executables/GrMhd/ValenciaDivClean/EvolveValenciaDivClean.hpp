@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -61,11 +62,17 @@ class CProxy_ConstGlobalCache;
 /// \endcond
 
 struct EvolutionMetavars {
-  using system = grmhd::ValenciaDivClean::System;
+  // To switch which analytic solution is evolved you only need to change the
+  // line `using analytic_solution = ...;` and include the header file for the
+  // solution.
+  using analytic_solution = grmhd::Solutions::SmoothFlow;
+
+  using system = grmhd::ValenciaDivClean::System<
+      typename analytic_solution::equation_of_state_type>;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
-  using analytic_solution_tag =
-      OptionTags::AnalyticSolution<grmhd::Solutions::SmoothFlow>;
+  using analytic_solution_tag = OptionTags::AnalyticSolution<analytic_solution>;
+  using boundary_condition_tag = analytic_solution_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag = hydro::Tags::EquationOfState<
@@ -92,6 +99,7 @@ struct EvolutionMetavars {
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeVolumeSources, Actions::ComputeVolumeDuDt,
+      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,

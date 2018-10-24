@@ -37,8 +37,10 @@ namespace grmhd {
 /// (http://iopscience.iop.org/article/10.1088/0264-9381/31/1/015005)
 namespace ValenciaDivClean {
 
+template <typename EquationOfStateType>
 struct System {
-  static constexpr bool is_conservative = true;
+  static constexpr bool is_in_flux_conservative_form = true;
+  static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
 
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
@@ -72,13 +74,15 @@ struct System {
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 
-  using char_speeds_tag = Tags::CharacteristicSpeedsCompute<2>;
+  using char_speeds_tag =
+      Tags::CharacteristicSpeedsCompute<EquationOfStateType>;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
 
   using conservative_from_primitive = ConservativeFromPrimitive;
   using primitive_from_conservative =
-      PrimitiveFromConservative<PrimitiveRecoverySchemes::NewmanHamlin, 2>;
+      PrimitiveFromConservative<PrimitiveRecoverySchemes::NewmanHamlin,
+                                EquationOfStateType::thermodynamic_dim>;
 
   using volume_fluxes = ComputeFluxes;
 

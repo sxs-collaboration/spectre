@@ -195,34 +195,23 @@ class AlfvenWave {
     return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
+  /// Retrieve the metric variables
+  template <typename DataType, typename Tag>
+  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x, double t,
+                                     tmpl::list<Tag> /*meta*/) const noexcept {
+    return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
+  }
+
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
-  WaveNumber::type wavenumber() const noexcept { return wavenumber_; }
-  Pressure::type pressure() const noexcept { return pressure_; }
-  RestMassDensity::type rest_mass_density() const noexcept {
-    return rest_mass_density_;
-  }
-  AdiabaticIndex::type adiabatic_index() const noexcept {
-    return adiabatic_index_;
-  }
-  BackgroundMagField::type background_mag_field() const noexcept {
-    return background_mag_field_;
-  }
-  PerturbationSize::type perturbation_size() const noexcept {
-    return perturbation_size_;
-  }
-  double alfven_speed() const noexcept { return alfven_speed_; }
-  double fluid_speed() const noexcept { return fluid_speed_; }
 
   const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
     return equation_of_state_;
   }
 
-  const gr::Solutions::Minkowski<3>& background_spacetime() const noexcept {
-    return background_spacetime_;
-  }
-
  private:
+  friend bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;
+
   // Computes the phase.
   template <typename DataType>
   DataType k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x, double t) const
@@ -242,8 +231,6 @@ class AlfvenWave {
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 };
-
-bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;
 
 bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) noexcept;
 

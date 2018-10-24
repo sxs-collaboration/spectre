@@ -21,7 +21,10 @@
 #include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+// NOLINTNEXTLINE(misc-forward-declaration-namespace)
 class TimeStepper;
+/// \endcond
 
 namespace Tags {
 

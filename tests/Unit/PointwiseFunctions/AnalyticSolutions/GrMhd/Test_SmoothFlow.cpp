@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <limits>
 #include <tuple>
 
@@ -12,7 +13,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -63,11 +66,9 @@ void test_create_from_options() noexcept {
       "  Pressure: 1.23\n"
       "  AdiabaticIndex: 1.4\n"
       "  PerturbationSize: 0.75");
-  CHECK(flow.mean_velocity() == std::array<double, 3>{{0.1, -0.2, 0.3}});
-  CHECK(flow.wavevector() == std::array<double, 3>{{-0.13, -0.54, 0.04}});
-  CHECK(flow.pressure() == 1.23);
-  CHECK(flow.adiabatic_index() == 1.4);
-  CHECK(flow.perturbation_size() == 0.75);
+  CHECK(flow == grmhd::Solutions::SmoothFlow({{0.1, -0.2, 0.3}},
+                                             {{-0.13, -0.54, 0.04}}, 1.23, 1.4,
+                                             0.75));
 }
 
 void test_move() noexcept {
@@ -120,6 +121,32 @@ void test_variables(const DataType& used_for_size) {
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
       used_for_size);
+
+  // Test a few of the GR components to make sure that the implementation
+  // correctly forwards to the background solution. Not meant to be extensive.
+  grmhd::Solutions::SmoothFlow soln(mean_velocity, wave_vector, pressure,
+                                    adiabatic_index, perturbation_size);
+  const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 1.0);
+  CHECK_ITERABLE_APPROX(
+      make_with_value<Scalar<DataType>>(used_for_size, 1.0),
+      get<gr::Tags::Lapse<DataType>>(soln.variables(
+          coords, 0.0, tmpl::list<gr::Tags::Lapse<DataType>>{})));
+  CHECK_ITERABLE_APPROX(
+      make_with_value<Scalar<DataType>>(used_for_size, 1.0),
+      get<gr::Tags::SqrtDetSpatialMetric<DataType>>(soln.variables(
+          coords, 0.0,
+          tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
+  auto expected_spatial_metric =
+      make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(used_for_size,
+                                                              0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    expected_spatial_metric.get(i, i) = 1.0;
+  }
+  const auto spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(soln.variables(
+          coords, 0.0,
+          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+  CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 }  // namespace
 

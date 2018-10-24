@@ -117,22 +117,22 @@ namespace Tags {
 /// GRMHD with divergence cleaning.
 ///
 /// \details see grmhd::ValenciaDivClean::characteristic_speeds
-template <size_t ThermodynamicDim>
+template <typename EquationOfStateType>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                                      db::ComputeTag {
-  using argument_tags = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpecificInternalEnergy<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, 3>,
-      hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::MagneticField<DataVector, 3>, gr::Tags::Lapse<>,
-      gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<3>>,
-      hydro::Tags::EquationOfState<EquationsOfState::IdealFluid<true>>>;
+  using argument_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>, gr::Tags::Lapse<>,
+                 gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<3>>,
+                 hydro::Tags::EquationOfState<EquationOfStateType>>;
 
-  using volume_tags = tmpl::list<
-      hydro::Tags::EquationOfState<EquationsOfState::IdealFluid<true>>>;
+  using volume_tags =
+      tmpl::list<hydro::Tags::EquationOfState<EquationOfStateType>>;
 
   static constexpr auto function(
       const Scalar<DataVector>& rest_mass_density,
@@ -144,9 +144,10 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::i<DataVector, 3>& unit_normal,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+      const EquationsOfState::EquationOfState<
+          true, EquationOfStateType::thermodynamic_dim>&
           equation_of_state) noexcept {
-    return characteristic_speeds<ThermodynamicDim>(
+    return characteristic_speeds<EquationOfStateType::thermodynamic_dim>(
         rest_mass_density, specific_internal_energy, specific_enthalpy,
         spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
         spatial_metric, unit_normal, equation_of_state);

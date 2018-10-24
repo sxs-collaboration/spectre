@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -162,6 +163,8 @@ class FishboneMoncriefDisk {
   struct IntermediateVariables;
 
  public:
+  using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
+
   /// The mass of the black hole.
   struct BlackHoleMass {
     using type = double;
@@ -251,13 +254,15 @@ class FishboneMoncriefDisk {
   // @{
   /// The fluid variables in Cartesian Kerr-Schild coordinates at `(x, t)`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
-                                         const double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, 3>& x,
+      const double t,  // NOLINT(readability-avoid-const-params-in-decls)
+      tmpl::list<Tags...> /*meta*/) const noexcept {
     IntermediateVariables<
-        DataType, tmpl2::flat_any_v<cpp17::is_same_v<
-                      Tags, hydro::Tags::SpatialVelocity<DataType, 3>>...>>
+        DataType,
+        tmpl2::flat_any_v<(
+            cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
+            not tmpl::list_contains_v<grmhd_tags<DataType>, Tags>)...>>
         vars(black_hole_mass_, black_hole_spin_, max_pressure_radius_,
              background_spacetime_, x, t);
     return {std::move(get<Tags>(variables(x, tmpl::list<Tags>{}, vars)))...};
@@ -268,35 +273,34 @@ class FishboneMoncriefDisk {
                                      const double t,  // NOLINT
                                      tmpl::list<Tag> /*meta*/) const noexcept {
     return variables(
-        x, tmpl::list<Tag>{},
-        IntermediateVariables<
-            DataType,
-            cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>>>(
-            black_hole_mass_, black_hole_spin_, max_pressure_radius_,
-            background_spacetime_, x, t));
+        x, tmpl::list<Tag>{}, IntermediateVariables<DataType,
+        cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
+            not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>>
+                (black_hole_mass_, black_hole_spin_, max_pressure_radius_,
+                 background_spacetime_, x, t));
   }
   // @}
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
-  double black_hole_mass() const noexcept { return black_hole_mass_; }
-  double black_hole_spin() const noexcept { return black_hole_spin_; }
-  double inner_edge_radius() const noexcept { return inner_edge_radius_; }
-  double max_pressure_radius() const noexcept { return max_pressure_radius_; }
-  double polytropic_constant() const noexcept { return polytropic_constant_; }
-  double polytropic_exponent() const noexcept { return polytropic_exponent_; }
-
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const
       noexcept {
     return equation_of_state_;
   }
 
-  const gr::Solutions::KerrSchild& background_spacetime() const noexcept {
-    return background_spacetime_;
-  }
-
  private:
+  template <typename DataType>
+  using grmhd_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpecificEnthalpy<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, 3>,
+                 hydro::Tags::LorentzFactor<DataType>,
+                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::DivergenceCleaningField<DataType>>;
+
   template <typename DataType, bool NeedSpacetime>
   auto variables(
       const tnsr::I<DataType, 3>& x,
@@ -353,6 +357,18 @@ class FishboneMoncriefDisk {
       const IntermediateVariables<DataType, NeedSpacetime>& vars) const noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
+  // Grab the metric variables
+  template <
+      typename DataType, typename Tag,
+      Requires<not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>> = nullptr>
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataType, 3>& x, tmpl::list<Tag> /*meta*/,
+      const IntermediateVariables<DataType, true>& /*vars*/) const noexcept {
+    constexpr double dummy_time = 0.0;
+    return {std::move(get<Tag>(background_spacetime_.variables(
+        x, dummy_time, gr::Solutions::KerrSchild::tags<DataType>{})))};
+  }
+
   template <typename DataType, bool NeedSpacetime, typename Func>
   void variables_impl(
       const IntermediateVariables<DataType, NeedSpacetime>& vars, Func f) const
@@ -375,6 +391,9 @@ class FishboneMoncriefDisk {
     tnsr::ii<DataType, 3, Frame::Inertial> spatial_metric{};
   };
 
+  friend bool operator==(const FishboneMoncriefDisk& lhs,
+                         const FishboneMoncriefDisk& rhs) noexcept;
+
   double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
   double black_hole_spin_ = std::numeric_limits<double>::signaling_NaN();
   double inner_edge_radius_ = std::numeric_limits<double>::signaling_NaN();
@@ -385,8 +404,6 @@ class FishboneMoncriefDisk {
   gr::Solutions::KerrSchild background_spacetime_{};
 };
 
-bool operator==(const FishboneMoncriefDisk& lhs,
-                const FishboneMoncriefDisk& rhs) noexcept;
 bool operator!=(const FishboneMoncriefDisk& lhs,
                 const FishboneMoncriefDisk& rhs) noexcept;
 }  // namespace Solutions
