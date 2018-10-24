@@ -54,9 +54,10 @@ struct Info {
   /// The size of `global_offsets` changes as more `Element`s
   /// send data to this `Interpolator`.
   std::vector<std::vector<size_t>> global_offsets{};
-  /// Holds the `ElementId`s of `Element`s that have already sent their data
-  /// to this `Interpolator`.
-  std::unordered_set<ElementId<VolumeDim>> element_has_communicated{};
+  /// Holds the `ElementId`s of `Element`s for which interpolation has
+  /// already been done for this `Info`.
+  std::unordered_set<ElementId<VolumeDim>>
+      interpolation_is_done_for_these_elements{};
 };
 
 /// Holds `Info`s at all `temporal_id`s for a given

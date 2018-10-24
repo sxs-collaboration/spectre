@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
   Test_InterpolationTargetLineSegment.cpp
+  Test_InterpolatorReceiveVolumeData.cpp
   Test_InterpolatorRegisterElement.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
