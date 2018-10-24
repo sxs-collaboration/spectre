@@ -26,7 +26,6 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -72,7 +71,6 @@ void test_gauge_constraint_analytic(
     const std::array<double, 3>& upper_bound) noexcept {
   // Check vs. time-independent analytic solution
   // Set up grid
-  const size_t data_size = pow<3>(grid_size_each_dimension);
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 
@@ -120,8 +118,6 @@ void test_gauge_constraint_analytic(
             inverse_spatial_metric),
       trace_last_indices(gr::christoffel_first_kind(d_spatial_metric),
                          inverse_spatial_metric));
-  const auto& spacetime_metric =
-      gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto& phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                              spatial_metric, d_spatial_metric);
   const auto& pi = GeneralizedHarmonic::pi(
