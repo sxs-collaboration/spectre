@@ -27,7 +27,7 @@ template <typename Metavariables, typename InterpolationTargetTag,
           size_t VolumeDim, typename Frame>
 class InterpolationTarget;
 namespace Actions {
-template <typename InterpolationTargetTag>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct CleanUpInterpolator;
 }  // namespace Actions
 namespace Tags {
@@ -79,7 +79,8 @@ void callback_and_cleanup(
   auto& interpolator_proxy =
       Parallel::get_parallel_component<Interpolator<Metavariables, VolumeDim>>(
           *cache);
-  Parallel::simple_action<Actions::CleanUpInterpolator<InterpolationTargetTag>>(
+  Parallel::simple_action<
+      Actions::CleanUpInterpolator<InterpolationTargetTag, VolumeDim>>(
       interpolator_proxy, temporal_id);
 
   // If there are further temporal_ids, begin interpolation for
@@ -104,7 +105,8 @@ namespace Actions {
 /// If interpolated variables for all target points have been received, then
 /// - Calls `InterpolationTargetTag::post_interpolation_callback`
 /// - Tells `Interpolator`s that the interpolation is complete
-///  (by calling `Actions::CleanUpInterpolator<InterpolationTargetTag>`)
+///  (by calling
+///  `Actions::CleanUpInterpolator<InterpolationTargetTag,VolumeDim>`)
 /// - Removes the first `temporal_id` from `Tags::TemporalIds<Metavariables>`
 /// - If there are more `temporal_id`s, begins interpolation at the next
 ///  `temporal_id` (by calling `InterpolationTargetTag::compute_target_points`)
