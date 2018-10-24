@@ -31,7 +31,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
   double t = 0.1;
   const double dt = 1.0e-3;
   const double final_time = 5.0;
-  const constexpr size_t deriv_order = 2;
+  constexpr size_t deriv_order = 2;
   const double freq = 3.0;
 
   // properly initialize the function of time to match our target function
@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
   double t = 0.1;
   const double dt = 1.0e-3;
   const double final_time = 5.0;
-  const constexpr size_t deriv_order = 2;
+  constexpr size_t deriv_order = 2;
   const double freq = 3.0;
 
   // some vars for a rough averaging procedure
@@ -167,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
   double t = 0.1;
   const double dt = 1.0e-3;
   const double final_time = 5.0;
-  const constexpr size_t deriv_order = 2;
+  constexpr size_t deriv_order = 2;
   const double freq = 3.0;
 
   // some vars for a rough averaging procedure

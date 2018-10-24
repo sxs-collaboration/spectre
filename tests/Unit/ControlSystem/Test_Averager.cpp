@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Linear",
     if (averager_t(t)) {
       const auto result_t = averager_t(t).get();
       // check function value, which should agree with the effective time
-      CHECK(approx(result_t[0][0]) == averager_t.average_time(t)[0]);
+      CHECK(approx(result_t[0][0]) == averager_t.average_time(t));
       // check first derivative
       CHECK(approx(result_t[1][0]) == analytic_func[1]);
       // check second derivative
@@ -119,7 +119,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.SemiAnalytic",
       auto result = averager(t).get();
 
       // check that the effective times agree with the averaged time
-      CHECK(approx(averager.average_time(t)[0]) == avg_time);
+      CHECK(approx(averager.average_time(t)) == avg_time);
       // check function value
       CHECK(approx(result[0][0]) == avg_values[0][0]);
       // check first derivative
@@ -197,6 +197,18 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.BadUpdatePast",
 
   averager.update(0.5, {0.0}, {0.1});
   averager.update(0.3, {0.0}, {0.1});
+}
+
+// [[OutputRegex, The number of supplied timescales \(1\) does not match]]
+SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.WrongSizeTimescales",
+                  "[ControlSystem][Unit]") {
+  ERROR_TEST();
+
+  double t = 0.0;
+  constexpr size_t deriv_order = 2;
+
+  Averager<deriv_order> averager(1.0, false);
+  averager.update(t, {{0.2, 0.3}}, {0.1});
 }
 
 // [[OutputRegex, The number of components in the raw_q provided \(2\) does]]
