@@ -8,13 +8,16 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <ostream>
 #include <pup.h>
 
+#include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -50,6 +53,10 @@ class RungeKutta3 : public TimeStepper::Inherit {
   void update_u(gsl::not_null<Vars*> u,
                 gsl::not_null<History<Vars, DerivVars>*> history,
                 const TimeDelta& time_step) const noexcept;
+
+  template <typename Vars, typename DerivVars>
+  Vars dense_output(const History<Vars, DerivVars>& history,
+                    double time) const noexcept;
 
   uint64_t number_of_substeps() const noexcept override;
 
@@ -126,5 +133,29 @@ void RungeKutta3::update_u(
   if (history->size() == number_of_substeps()) {
     history->mark_unneeded(history->end());
   }
+}
+
+template <typename Vars, typename DerivVars>
+Vars RungeKutta3::dense_output(const History<Vars, DerivVars>& history,
+                               const double time) const noexcept {
+  ASSERT(history.size() == 3, "Can only dense output on last substep");
+  const double step_start = history[0].value();
+  const double step_end = history[1].value();
+  const double time_step = step_end - step_start;
+  const double output_fraction = (time - step_start) / time_step;
+  ASSERT(output_fraction >= 0, "Attempting dense output at time " << time
+         << ", but already progressed past " << step_start);
+  ASSERT(output_fraction <= 1,
+         "Requested time (" << time << " not within step [" << step_start
+         << ", " << step_end << "]");
+
+  // arXiv:1605.02429
+  return (1 - output_fraction * (1 - output_fraction / 3.0)) *
+             history.begin().value() +
+         output_fraction * (1.0 - output_fraction) *
+             (history.begin() + 1).value() +
+         2.0 / 3.0 * square(output_fraction) *
+             ((history.begin() + 2).value() +
+              time_step * (history.begin() + 2).derivative());
 }
 }  // namespace TimeSteppers

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <type_traits>
 
 #include "ErrorHandling/Assert.hpp"
@@ -253,4 +254,88 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   CHECK(boundary_history.remote_size() < 20);
 }
 
+void check_convergence_order(const TimeStepper& stepper,
+                             const int expected_order) noexcept {
+  const auto do_integral = [&stepper](const int32_t num_steps) noexcept {
+    const Slab slab(0., 1.);
+    const TimeDelta step_size = slab.duration() / num_steps;
+
+    Time time = slab.start();
+    double y = 1.;
+    TimeSteppers::History<double, double> history;
+    initialize_history(time, &history, [](double t) { return exp(t); },
+                       [](double v) { return v; }, step_size,
+                       stepper.number_of_past_steps());
+    while (time < slab.end()) {
+      take_step(&time, &y, &history, stepper, [](double v) { return v; },
+                step_size);
+    }
+    return abs(y - exp(1.));
+  };
+  const int32_t large_steps = 10;
+  // The high-order solvers have round-off error around here
+  const int32_t small_steps = 40;
+  CHECK((log(do_integral(large_steps)) - log(do_integral(small_steps))) /
+            (log(small_steps) - log(large_steps)) ==
+        approx(expected_order).margin(0.4));
+}
+
+void check_dense_output(const TimeStepper& stepper,
+                        const int expected_order) noexcept {
+  const auto get_dense = [&stepper](TimeDelta step_size,
+                                    const double time) noexcept {
+    TimeId time_id(true, 0, step_size.slab().start());
+    double y = 1.;
+    TimeSteppers::History<double, double> history;
+    initialize_history(time_id.time(), &history,
+                       [](double t) { return exp(t); },
+                       [](double v) { return v; }, step_size,
+                       stepper.number_of_past_steps());
+    for (;;) {
+      // Dense output is done after the last substep
+      const auto next_time_id = stepper.next_time_id(time_id, step_size);
+      history.insert(time_id.time(), y, static_cast<double>(y));
+      if (next_time_id.substep() == 0 and time < next_time_id.time().value()) {
+        return stepper.dense_output(history, time);
+      }
+      stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
+      time_id = next_time_id;
+      step_size = step_size.with_slab(time_id.time().slab());
+    }
+  };
+
+  // Check that the dense output is continuous
+  {
+    const Slab slab(0., 1.);
+    Time time = slab.start();
+    double y = 1.;
+    TimeSteppers::History<double, double> history;
+    initialize_history(time, &history, [](double t) { return exp(t); },
+                       [](double v) { return v; }, slab.duration(),
+                       stepper.number_of_past_steps());
+    take_step(&time, &y, &history, stepper, [](double v) { return v; },
+              slab.duration());
+
+    CHECK(get_dense(slab.duration(), std::numeric_limits<double>::epsilon()) ==
+          approx(1.));
+    CHECK(get_dense(slab.duration(),
+                    1. - std::numeric_limits<double>::epsilon()) == approx(y));
+  }
+
+  // Test convergence
+  {
+    const int32_t large_steps = 10;
+    // The high-order solvers have round-off error around here
+    const int32_t small_steps = 40;
+
+    const auto error = [&get_dense](const int32_t steps) noexcept {
+      const Slab slab(0., 1.);
+      return abs(get_dense(slab.duration() / steps, 0.25 * M_PI) -
+                 exp(0.25 * M_PI));
+    };
+    CHECK((log(error(large_steps)) - log(error(small_steps))) /
+              (log(small_steps) - log(large_steps)) ==
+          approx(expected_order).margin(0.4));
+  }
+}
 }  // namespace TimeStepperTestUtils
