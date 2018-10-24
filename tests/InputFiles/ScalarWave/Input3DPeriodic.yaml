@@ -42,3 +42,6 @@ StepChoosers:
 NumericalFluxParams:
 
 VolumeFileName: "./ScalarWave3DPeriodic"
+
+ObserveNSlabs: 10
+ObserveAtT0: false
