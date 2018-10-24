@@ -19,6 +19,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -200,30 +201,9 @@ void verify_time_independent_einstein_solution(
   }
 
   // Test 1-index constraint
-  auto C_1 = make_with_value<tnsr::a<DataVector, 3>>(x, 0.0);
-  for (size_t a = 0; a < 4; ++a) {
-    C_1.get(a) = gauge_function.get(a);
-    for (size_t i = 0; i < 3; ++i) {
-      for (size_t j = 0; j < 3; ++j) {
-        C_1.get(a) += upper_spatial_metric.get(i, j) * phi.get(i, j + 1, a);
-      }
-    }
-    for (size_t b = 0; b < 4; ++b) {
-      C_1.get(a) += normal_vector.get(b) * pi.get(b, a);
-      for (size_t c = 0; c < 4; ++c) {
-        C_1.get(a) -=
-            0.5 * normal_one_form.get(a) * pi.get(b, c) * upper_psi.get(b, c);
-        if (a > 0) {
-          C_1.get(a) -= 0.5 * phi.get(a - 1, b, c) * upper_psi.get(b, c);
-        }
-        for (size_t i = 0; i < 3; ++i) {
-          C_1.get(a) -= 0.5 * normal_one_form.get(a) *
-                        normal_vector.get(i + 1) * phi.get(i, b, c) *
-                        upper_psi.get(b, c);
-        }
-      }
-    }
-  }
+  auto C_1 = GeneralizedHarmonic::gauge_constraint(
+      gauge_function, normal_one_form, normal_vector, upper_spatial_metric,
+      upper_psi, pi, phi);
   CHECK_ITERABLE_CUSTOM_APPROX(C_1, make_with_value<decltype(C_1)>(x, 0.0),
                                numerical_approx);
 
