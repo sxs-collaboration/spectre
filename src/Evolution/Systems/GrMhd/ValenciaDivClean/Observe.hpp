@@ -34,6 +34,17 @@ namespace Actions {
  *   Look for `time_by_timestep_value` to update.
  */
 struct Observe {
+  struct ObserveNSlabs {
+    using type = size_t;
+    static constexpr OptionString help = {"Observe every Nth slab"};
+  };
+  struct ObserveAtT0 {
+    using type = bool;
+    static constexpr OptionString help = {"If true observe at t=0"};
+  };
+
+  using const_global_cache_tags = tmpl::list<ObserveNSlabs, ObserveAtT0>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
@@ -42,16 +53,21 @@ struct Observe {
                     const ElementIndex<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& time = db::get<::Tags::Time>(box);
-    // Note: this currently assumes a constant time step that is a power of ten.
-    const size_t time_by_timestep_value = static_cast<size_t>(
-        std::round(time.value() / db::get<::Tags::TimeStep>(box).value()));
+    const auto& time_id = db::get<::Tags::TimeId>(box);
+    if (time_id.substep() != 0 or (time_id.slab_number() == 0 and
+                                   not Parallel::get<ObserveAtT0>(cache))) {
+      return std::forward_as_tuple(std::move(box));
+    }
 
+    const auto& time = time_id.time();
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
     // We hard-code the writing frequency to large time values to avoid breaking
     // the tests.
-    if (time_by_timestep_value % 1000 == 0 and time_by_timestep_value > 0) {
+    if (time_id.slab_number() >= 0 and time_id.time().is_at_slab_start() and
+        static_cast<size_t>(time_id.slab_number()) %
+                Parallel::get<ObserveNSlabs>(cache) ==
+            0) {
       const auto& extents = db::get<::Tags::Mesh<Dim>>(box).extents();
       // Retrieve the tensors and compute the solution error.
       const auto& tilde_d = db::get<Tags::TildeD>(box);

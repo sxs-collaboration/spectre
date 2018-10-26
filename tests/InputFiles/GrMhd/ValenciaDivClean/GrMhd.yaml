@@ -48,3 +48,7 @@ DampingParameter: 0.0
 
 SlopeLimiterParams:
   Type: LambdaPi1
+
+
+ObserveNSlabs: 1000
+ObserveAtT0: false
