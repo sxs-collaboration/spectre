@@ -5,6 +5,7 @@ set(LIBRARY GrMhdSolutions)
 
 set(LIBRARY_SOURCES
     AlfvenWave.cpp
+    BondiMichel.cpp
     SmoothFlow.cpp
     )
 
