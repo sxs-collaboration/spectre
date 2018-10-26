@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <ostream>
+#include <string>
 #include <utility>
 
 #include "DataStructures/IndexIterator.hpp"
@@ -27,6 +29,8 @@
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -472,6 +476,23 @@ std::array<OrientationMap<3>, 6> orientations_for_wrappings() noexcept {
   }};
 }
 
+namespace {
+size_t which_wedge_index(const ShellWedges& which_wedges) {
+  switch (which_wedges) {
+    case ShellWedges::All:
+      return 0;
+    case ShellWedges::FourOnEquator:
+      return 2;
+    case ShellWedges::OneAlongMinusX:
+      return 5;
+    default:  // LCOV_EXCL_LINE
+      // LCOV_EXCL_START
+      ERROR("Unknown ShellWedges type");
+      // LCOV_EXCL_STOP
+  }
+}
+}  // namespace
+
 template <typename TargetFrame>
 std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
@@ -480,13 +501,15 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
                       const bool use_half_wedges, const double aspect_ratio,
-                      const bool use_logarithmic_map) noexcept {
+                      const bool use_logarithmic_map,
+                      const ShellWedges which_wedges) noexcept {
   const auto wedge_orientations = orientations_for_wrappings();
 
   using Wedge3DMap = CoordinateMaps::Wedge3D;
   using Halves = Wedge3DMap::WedgeHalves;
   std::vector<Wedge3DMap> wedges{};
-  for (size_t i = 0; i < 6; i++) {
+
+  for (size_t i = which_wedge_index(which_wedges); i < 6; i++) {
     wedges.emplace_back(inner_radius, outer_radius,
                         gsl::at(wedge_orientations, i), inner_sphericity,
                         outer_sphericity, use_equiangular_map, Halves::Both,
@@ -629,7 +652,8 @@ void identify_corners_with_each_other(
 
 std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
     const size_t number_of_layers, const bool include_central_block,
-    const std::array<size_t, 8>& central_block_corners) noexcept {
+    const std::array<size_t, 8>& central_block_corners,
+    ShellWedges which_wedges) noexcept {
   const std::array<size_t, 8>& c = central_block_corners;
   std::array<std::array<size_t, 4>, 6> faces_layer_zero{
       {{{c[4], c[5], c[6], c[7]}},    // Upper z
@@ -646,7 +670,8 @@ std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
   }
   std::vector<std::array<size_t, 8>> corners{};
   for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
-    for (size_t face_j = 0; face_j < 6; face_j++) {
+    for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
+         face_j++) {
       corners.push_back(concatenate_faces(
           gsl::at(gsl::at(faces_in_each_layer, layer_i), face_j),
           gsl::at(gsl::at(faces_in_each_layer, layer_i + 1), face_j)));
@@ -945,6 +970,35 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
   return Domain<VolumeDim, TargetFrame>(std::move(blocks));
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const ShellWedges& which_wedges) noexcept {
+  switch (which_wedges) {
+    case ShellWedges::All:
+      return os << "All";
+    case ShellWedges::FourOnEquator:
+      return os << "FourOnEquator";
+    case ShellWedges::OneAlongMinusX:
+      return os << "OneAlongMinusX";
+    default:  // LCOV_EXCL_LINE
+      // LCOV_EXCL_START
+      ERROR("Unknown ShellWedges type");
+      // LCOV_EXCL_STOP
+  }
+}
+
+ShellWedges create_from_yaml<ShellWedges>::create(const Option& options) {
+  const std::string which_wedges = options.parse_as<std::string>();
+  if (which_wedges == "All") {
+    return ShellWedges::All;
+  } else if (which_wedges == "FourOnEquator") {
+    return ShellWedges::FourOnEquator;
+  } else if (which_wedges == "OneAlongMinusX") {
+    return ShellWedges::OneAlongMinusX;
+  }
+  PARSE_ERROR(options.context(),
+              "WhichWedges must be 'All', 'FourOnEquator' or 'OneAlongMinusX'");
+}
+
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
     gsl::not_null<
@@ -1005,7 +1059,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
                       const bool use_wedge_halves, const double aspect_ratio,
-                      const bool use_logarithmic_map) noexcept;
+                      const bool use_logarithmic_map,
+                      const ShellWedges which_wedges) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
@@ -1014,7 +1069,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const bool use_equiangular_map,
                       const double x_coord_of_shell_center,
                       const bool use_wedge_halves, const double aspect_ratio,
-                      const bool use_logarithmic_map) noexcept;
+                      const bool use_logarithmic_map,
+                      const ShellWedges which_wedges) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,

@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <iosfwd>
 #include <limits>
 #include <memory>
 #include <unordered_map>
@@ -30,6 +31,9 @@ template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
+class Option;
+template <typename T>
+struct create_from_yaml;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
@@ -82,6 +86,17 @@ corners_for_rectilinear_domains(const Index<VolumeDim>& domain_extents,
                                     block_indices_to_exclude = {}) noexcept;
 
 /// \ingroup ComputationalDomainGroup
+/// The number of wedges to include in the Shell domain.
+enum class ShellWedges {
+  /// Use the entire shell
+  All,
+  /// Use only the four equatorial wedges
+  FourOnEquator,
+  /// Use only the single wedge along -x
+  OneAlongMinusX
+};
+
+/// \ingroup ComputationalDomainGroup
 /// These are the CoordinateMaps of the Wedge3Ds used in the Sphere, Shell, and
 /// binary compact object DomainCreators. This function can also be used to
 /// wrap the Sphere or Shell in a cube made of six Wedge3Ds.
@@ -103,7 +118,8 @@ wedge_coordinate_maps(double inner_radius, double outer_radius,
                       bool use_equiangular_map,
                       double x_coord_of_shell_center = 0.0,
                       bool use_half_wedges = false, double aspect_ratio = 1.0,
-                      bool use_logarithmic_map = false) noexcept;
+                      bool use_logarithmic_map = false,
+                      ShellWedges which_wedges = ShellWedges::All) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
@@ -129,8 +145,9 @@ frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
 /// for the surrounding Blocks.
 std::vector<std::array<size_t, 8>> corners_for_radially_layered_domains(
     size_t number_of_layers, bool include_central_block,
-    const std::array<size_t, 8>& central_block_corners = {
-        {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
+    const std::array<size_t, 8>& central_block_corners = {{1, 2, 3, 4, 5, 6, 7,
+                                                           8}},
+    ShellWedges which_wedges = ShellWedges::All) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with biradial layers.
@@ -349,3 +366,11 @@ FaceCornerIterator<VolumeDim>::FaceCornerIterator(
     corner_[i] = 2 * static_cast<int>(get_nth_bit(index_, i)) - 1;
   }
 }
+
+std::ostream& operator<<(std::ostream& os,
+                         const ShellWedges& which_wedges) noexcept;
+
+template <>
+struct create_from_yaml<ShellWedges> {
+  static ShellWedges create(const Option& options);
+};

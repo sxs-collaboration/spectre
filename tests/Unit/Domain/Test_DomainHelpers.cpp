@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -28,6 +29,7 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -1384,4 +1386,10 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
     INFO(i);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.WhichWedges", "[Domain][Unit]") {
+  CHECK(get_output(ShellWedges::All) == "All");
+  CHECK(get_output(ShellWedges::FourOnEquator) == "FourOnEquator");
+  CHECK(get_output(ShellWedges::OneAlongMinusX) == "OneAlongMinusX");
 }
