@@ -5,6 +5,7 @@ set(LIBRARY "Test_GrMhdAnalyticData")
 
 set(LIBRARY_SOURCES
   Test_BondiHoyleAccretion.cpp
+  Test_CylindricalBlastWave.cpp
   )
 
 add_test_library(
