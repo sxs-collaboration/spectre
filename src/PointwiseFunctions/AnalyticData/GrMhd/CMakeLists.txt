@@ -6,6 +6,7 @@ set(LIBRARY GrMhdAnalyticData)
 set(LIBRARY_SOURCES
   BondiHoyleAccretion.cpp
   CylindricalBlastWave.cpp
+  MagnetizedFmDisk.cpp
   OrszagTangVortex.cpp
   )
 
@@ -16,4 +17,5 @@ target_link_libraries(
   INTERFACE DataStructures
   INTERFACE ErrorHandling
   INTERFACE Hydro
+  INTERFACE RelativisticEulerSolutions
   )
