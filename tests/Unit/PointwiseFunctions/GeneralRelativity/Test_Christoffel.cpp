@@ -14,10 +14,12 @@
 namespace {
 template <size_t Dim, IndexType Index, typename DataType>
 void test_christoffel(const DataType& used_for_size) {
-  pypp::check_with_random_values<1>(
-      &gr::christoffel_first_kind<Dim, Frame::Inertial, Index, DataType>,
-      "TestFunctions", "christoffel_first_kind", {{{-10.0, 10.0}}},
-      used_for_size);
+  tnsr::abb<DataType, Dim, Frame::Inertial, Index> (*f)(
+      const tnsr::abb<DataType, Dim, Frame::Inertial, Index>&) =
+      &gr::christoffel_first_kind<Dim, Frame::Inertial, Index, DataType>;
+  pypp::check_with_random_values<1>(f, "TestFunctions",
+                                    "christoffel_first_kind", {{{-10.0, 10.0}}},
+                                    used_for_size);
 }
 }  // namespace
 
