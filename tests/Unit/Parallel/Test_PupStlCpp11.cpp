@@ -5,11 +5,11 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <deque>
 #include <memory>
 #include <pup.h>
 #include <pup_stl.h>
-#include <stddef.h>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"

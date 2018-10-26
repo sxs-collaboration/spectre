@@ -8,6 +8,7 @@
 #include <cmath>
 #include <limits>
 #include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
@@ -15,7 +16,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"           // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"               // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 // IWYU pragma: no_forward_declare Tensor

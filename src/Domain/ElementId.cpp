@@ -6,10 +6,10 @@
 #include <boost/functional/hash.hpp>
 #include <limits>
 #include <ostream>
+#include <pup.h>  // IWYU pragma: keep
 
 #include "Domain/ElementIndex.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

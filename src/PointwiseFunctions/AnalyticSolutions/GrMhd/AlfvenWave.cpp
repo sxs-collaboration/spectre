@@ -5,6 +5,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
@@ -13,14 +15,15 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
+// IWYU wants <complex> for cos and sin, but we have <cmath>...
+// IWYU pragma: no_include <complex>
+// IWYU pragma: no_include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
 namespace grmhd {

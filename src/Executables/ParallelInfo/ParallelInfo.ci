@@ -8,9 +8,9 @@ mainmodule ParallelInfo {
     entry void end_report();
   };
   group PeGroupReporter {
-    entry PeGroupReporter(CkCallback&);
+    entry PeGroupReporter(CkCallback);
   };
   nodegroup NodeGroupReporter {
-    entry NodeGroupReporter(CkCallback&);
+    entry NodeGroupReporter(CkCallback);
   };
 };

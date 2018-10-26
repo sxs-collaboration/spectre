@@ -4,9 +4,9 @@
 #include "Domain/Direction.hpp"
 
 #include <ostream>
+#include <pup.h>  // IWYU pragma: keep
 
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
 /// \cond

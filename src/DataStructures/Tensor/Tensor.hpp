@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstddef>
+#include <pup.h>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -19,7 +20,6 @@
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

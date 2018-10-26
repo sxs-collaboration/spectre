@@ -23,7 +23,6 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"

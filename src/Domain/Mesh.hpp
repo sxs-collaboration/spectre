@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <iosfwd>
 
 #include "DataStructures/Index.hpp"
 #include "Utilities/Gsl.hpp"

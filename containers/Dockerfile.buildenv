@@ -142,6 +142,18 @@ RUN git clone https://charm.cs.illinois.edu/gerrit/charm \
 
 WORKDIR /work
 
+# Charm++ requires autoconf and automake as of v6.9
+RUN apt-get update -y && \
+    apt-get install -y autoconf automake
+
+RUN git clone https://charm.cs.illinois.edu/gerrit/charm charm_69 && \
+    cd /work/charm_69 && \
+    git checkout v6.9.0  && \
+    ./build charm++ multicore-linux-x86_64 gcc ${PARALLEL_MAKE_ARG} -g -O0  && \
+    ./build charm++ multicore-linux-x86_64 clang ${PARALLEL_MAKE_ARG} -g -O0
+
+WORKDIR /work
+
 # Load Spack dependencies at container load
 RUN echo 'spack load catch' >> /root/.bashrc \
     && echo 'spack load brigand' >> /root/.bashrc \

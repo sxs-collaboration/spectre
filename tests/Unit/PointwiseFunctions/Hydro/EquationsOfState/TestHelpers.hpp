@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"

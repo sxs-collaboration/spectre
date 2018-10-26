@@ -3,9 +3,11 @@
 
 #include "Domain/ElementMap.hpp"
 
+#include <pup.h>      // IWYU pragma: keep
+#include <pup_stl.h>  // IWYU pragma: keep
+
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
 /// \cond

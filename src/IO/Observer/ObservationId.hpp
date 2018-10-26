@@ -42,6 +42,7 @@ namespace observers {
  */
 class ObservationId {
  public:
+  ObservationId(const PUP::reconstruct& /*unused*/) noexcept {}
   ObservationId() = default;
 
   /*!

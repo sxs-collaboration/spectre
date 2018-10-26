@@ -3,11 +3,12 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 
-#include <cmath> // IWYU pragma: keep
+#include <cmath>  // IWYU pragma: keep
 #include <cstdlib>
 #include <numeric>
 #include <ostream>
 #include <pup.h>
+#include <pup_stl.h>
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
@@ -17,7 +18,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"

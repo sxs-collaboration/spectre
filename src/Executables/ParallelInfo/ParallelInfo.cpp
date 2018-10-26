@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
+#include "Executables/ParallelInfo/ParallelInfo.decl.h"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/Info.hpp"
@@ -87,15 +88,12 @@ void print_info() {
       Parallel::local_rank_of(Parallel::my_proc()));
 }
 
-// clang-tidy: google-runtime-references
-PeGroupReporter::PeGroupReporter(
-    CkCallback& cb_start_node_group_check) {  // NOLINT
+PeGroupReporter::PeGroupReporter(const CkCallback& cb_start_node_group_check) {
   print_info();
   this->contribute(cb_start_node_group_check);
 }
 
-// clang-tidy: google-runtime-references
-NodeGroupReporter::NodeGroupReporter(CkCallback& cb_end_report) {  // NOLINT
+NodeGroupReporter::NodeGroupReporter(const CkCallback& cb_end_report) {
   print_info();
   this->contribute(cb_end_report);
 }

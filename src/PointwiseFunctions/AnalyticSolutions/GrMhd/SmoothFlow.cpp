@@ -7,11 +7,12 @@
 #include <cmath>
 #include <cstddef>
 #include <numeric>
+#include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -19,6 +20,7 @@
 #include "Utilities/Numeric.hpp"
 
 // IWYU pragma:  no_include "DataStructures/Tensor/TypeAliases.hpp"
+// IWYU pragma: no_include <complex>
 
 /// \cond
 namespace grmhd {

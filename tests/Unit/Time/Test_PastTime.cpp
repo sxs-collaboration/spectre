@@ -8,7 +8,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

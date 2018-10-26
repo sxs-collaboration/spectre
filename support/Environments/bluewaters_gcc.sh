@@ -206,9 +206,8 @@ EOF
         load_gcc
         git clone https://charm.cs.illinois.edu/gerrit/charm
         cd $dep_dir/charm
-        git checkout v6.8.2
+        git checkout v6.9.0
         ./build charm++ gni-crayxe smp -j4 --with-production
-        git apply $SPECTRE_HOME/support/Charm/v6.8.patch
         cd $dep_dir
         rm charm.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
@@ -218,7 +217,7 @@ prepend-path LIBRARY_PATH "$dep_dir/charm/lib"
 prepend-path LD_LIBRARY_PATH "$dep_dir/charm/lib"
 prepend-path CPATH "$dep_dir/charm/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/"
-setenv CHARM_VERSION 6.8.2
+setenv CHARM_VERSION 6.9.0
 setenv CHARM_HOME $dep_dir/charm/gni-crayxe-smp
 setenv CHARM_ROOT $dep_dir/charm/gni-crayxe-smp
 EOF

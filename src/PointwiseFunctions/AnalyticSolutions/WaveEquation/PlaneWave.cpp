@@ -4,11 +4,11 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 
 #include <algorithm>
+#include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"           // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"               // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

@@ -6,15 +6,18 @@
 #include <cmath>
 #include <ostream>
 #include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Math.hpp" // IWYU pragma: keep
+
+// <complex> is requested for exp, sqrt
+// IWYU pragma: no_include <complex>
 
 namespace {
 template <typename DataType>
