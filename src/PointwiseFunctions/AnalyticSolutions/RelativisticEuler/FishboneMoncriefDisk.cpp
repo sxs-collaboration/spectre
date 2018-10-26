@@ -33,23 +33,22 @@ namespace RelativisticEuler {
 namespace Solutions {
 
 FishboneMoncriefDisk::FishboneMoncriefDisk(
-    const double black_hole_mass, const double black_hole_spin,
+    const double bh_mass, const double bh_dimless_spin,
     const double inner_edge_radius, const double max_pressure_radius,
     const double polytropic_constant, const double polytropic_exponent) noexcept
-    : black_hole_mass_(black_hole_mass),
-      black_hole_spin_(black_hole_spin),
-      inner_edge_radius_(inner_edge_radius),
-      max_pressure_radius_(max_pressure_radius),
+    : bh_mass_(bh_mass),
+      bh_spin_a_(bh_mass * bh_dimless_spin),
+      inner_edge_radius_(bh_mass * inner_edge_radius),
+      max_pressure_radius_(bh_mass * max_pressure_radius),
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_(polytropic_exponent),
       equation_of_state_{polytropic_constant_, polytropic_exponent_},
       background_spacetime_{
-          black_hole_mass_, {{0.0, 0.0, black_hole_spin_}}, {{0.0, 0.0, 0.0}}} {
-}
+          bh_mass_, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}} {}
 
 void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
-  p | black_hole_mass_;
-  p | black_hole_spin_;
+  p | bh_mass_;
+  p | bh_spin_a_;
   p | inner_edge_radius_;
   p | max_pressure_radius_;
   p | polytropic_constant_;
@@ -62,7 +61,7 @@ template <typename DataType>
 DataType FishboneMoncriefDisk::sigma(const DataType& r_sqrd,
                                      const DataType& sin_theta_sqrd) const
     noexcept {
-  return r_sqrd + square(black_hole_spin_) * (1.0 - sin_theta_sqrd);
+  return r_sqrd + square(bh_spin_a_) * (1.0 - sin_theta_sqrd);
 }
 
 template <typename DataType>
@@ -70,7 +69,7 @@ DataType FishboneMoncriefDisk::inv_ucase_a(const DataType& r_sqrd,
                                            const DataType& sin_theta_sqrd,
                                            const DataType& delta) const
     noexcept {
-  const double a_sqrd = square(black_hole_spin_);
+  const double a_sqrd = square(bh_spin_a_);
   const DataType r_sqrd_plus_a_sqrd = r_sqrd + a_sqrd;
   return 1.0 / (square(r_sqrd_plus_a_sqrd) - delta * a_sqrd * sin_theta_sqrd);
 }
@@ -80,7 +79,7 @@ DataType FishboneMoncriefDisk::four_velocity_t_sqrd(
     const DataType& r_sqrd, const DataType& sin_theta_sqrd,
     const double angular_momentum) const noexcept {
   const DataType delta =
-      r_sqrd - 2.0 * black_hole_mass_ * sqrt(r_sqrd) + square(black_hole_spin_);
+      r_sqrd - 2.0 * bh_mass_ * sqrt(r_sqrd) + square(bh_spin_a_);
   const DataType prefactor = 0.5 / (inv_ucase_a(r_sqrd, sin_theta_sqrd, delta) *
                                     sigma(r_sqrd, sin_theta_sqrd));
   return prefactor * (1.0 + sqrt(1.0 +
@@ -94,13 +93,13 @@ DataType FishboneMoncriefDisk::angular_velocity(
     const DataType& r_sqrd, const DataType& sin_theta_sqrd,
     const double angular_momentum) const noexcept {
   const DataType r = sqrt(r_sqrd);
-  return inv_ucase_a(r_sqrd, sin_theta_sqrd,
-                     DataType{r_sqrd - 2.0 * black_hole_mass_ * r +
-                              square(black_hole_spin_)}) *
+  return inv_ucase_a(
+             r_sqrd, sin_theta_sqrd,
+             DataType{r_sqrd - 2.0 * bh_mass_ * r + square(bh_spin_a_)}) *
          (angular_momentum * sigma(r_sqrd, sin_theta_sqrd) /
               (four_velocity_t_sqrd(r_sqrd, sin_theta_sqrd, angular_momentum) *
                sin_theta_sqrd) +
-          2.0 * black_hole_mass_ * r * black_hole_spin_);
+          2.0 * bh_mass_ * r * bh_spin_a_);
 }
 
 template <typename DataType>
@@ -116,8 +115,7 @@ DataType FishboneMoncriefDisk::potential(const DataType& r_sqrd,
 
 template <typename DataType, bool NeedSpacetime>
 FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
-    IntermediateVariables(const double black_hole_mass,
-                          const double black_hole_spin,
+    IntermediateVariables(const double bh_mass, const double bh_spin_a,
                           const double max_pressure_radius,
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, const double t,
@@ -125,7 +123,7 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
                           size_t in_lorentz_factor_index) noexcept
     : spatial_velocity_index(in_spatial_velocity_index),
       lorentz_factor_index(in_lorentz_factor_index) {
-  const double a_squared = black_hole_spin * black_hole_spin;
+  const double a_squared = bh_spin_a * bh_spin_a;
 
   DataType z_squared = square(x.get(2));
   r_squared = [&x, &z_squared, &a_squared ]() noexcept {
@@ -142,12 +140,10 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
   // roundoff. This is a fix for that for now.
   sin_theta_squared = abs(sin_theta_squared);
 
-  angular_momentum = [
-    a_squared, black_hole_mass, black_hole_spin,
-    max_pressure_radius
-  ]() noexcept {
-    const double sqrt_m = sqrt(black_hole_mass);
-    const double a_sqrt_m = black_hole_spin * sqrt_m;
+  angular_momentum =
+      [ a_squared, bh_mass, bh_spin_a, max_pressure_radius ]() noexcept {
+    const double sqrt_m = sqrt(bh_mass);
+    const double a_sqrt_m = bh_spin_a * sqrt_m;
     const double& rmax = max_pressure_radius;
     const double sqrt_rmax = sqrt(rmax);
     const double rmax_sqrt_rmax = rmax * sqrt_rmax;
@@ -155,7 +151,7 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
     return sqrt_m * (rmax_sqrt_rmax + a_sqrt_m) *
            (a_squared - 2.0 * a_sqrt_m * sqrt_rmax + rmax_sqrd) /
            (2.0 * a_sqrt_m * rmax_sqrt_rmax +
-            (rmax - 3.0 * black_hole_mass) * rmax_sqrd);
+            (rmax - 3.0 * bh_mass) * rmax_sqrd);
   }
   ();
 
@@ -177,8 +173,8 @@ FishboneMoncriefDisk::variables(
                 index));
   auto rest_mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
   variables_impl(
-      vars, [&rest_mass_density, &specific_enthalpy,
-             this ](const size_t s, const double /*potential_at_s*/) noexcept {
+      vars, [&rest_mass_density, &specific_enthalpy, this ](
+                const size_t s, const double /*potential_at_s*/) noexcept {
         get_element(get(rest_mass_density), s) =
             get(equation_of_state_.rest_mass_density_from_enthalpy(
                 Scalar<double>{get_element(get(specific_enthalpy), s)}));
@@ -217,8 +213,8 @@ FishboneMoncriefDisk::variables(
                 index));
   auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
   variables_impl(
-      vars, [&pressure, &rest_mass_density,
-             this ](const size_t s, const double /*potential_at_s*/) noexcept {
+      vars, [&pressure, &rest_mass_density, this ](
+                const size_t s, const double /*potential_at_s*/) noexcept {
         get_element(get(pressure), s) =
             get(equation_of_state_.pressure_from_density(
                 Scalar<double>{get_element(get(rest_mass_density), s)}));
@@ -238,8 +234,8 @@ FishboneMoncriefDisk::variables(
                 index));
   auto specific_internal_energy = make_with_value<Scalar<DataType>>(x, 0.0);
   variables_impl(
-      vars, [&specific_internal_energy, &rest_mass_density,
-             this ](const size_t s, const double /*potential_at_s*/) noexcept {
+      vars, [&specific_internal_energy, &rest_mass_density, this ](
+                const size_t s, const double /*potential_at_s*/) noexcept {
         get_element(get(specific_internal_energy), s) =
             get(equation_of_state_.specific_internal_energy_from_density(
                 Scalar<double>{get_element(get(rest_mass_density), s)}));
@@ -353,8 +349,7 @@ void FishboneMoncriefDisk::variables_impl(
 
 bool operator==(const FishboneMoncriefDisk& lhs,
                 const FishboneMoncriefDisk& rhs) noexcept {
-  return lhs.black_hole_mass_ == rhs.black_hole_mass_ and
-         lhs.black_hole_spin_ == rhs.black_hole_spin_ and
+  return lhs.bh_mass_ == rhs.bh_mass_ and lhs.bh_spin_a_ == rhs.bh_spin_a_ and
          lhs.inner_edge_radius_ == rhs.inner_edge_radius_ and
          lhs.max_pressure_radius_ == rhs.max_pressure_radius_ and
          lhs.polytropic_constant_ == rhs.polytropic_constant_ and

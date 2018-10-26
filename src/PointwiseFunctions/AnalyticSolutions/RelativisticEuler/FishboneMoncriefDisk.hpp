@@ -20,7 +20,7 @@
 
 /// \cond
 namespace PUP {
-class er; // IWYU pragma: keep
+class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
@@ -166,27 +166,26 @@ class FishboneMoncriefDisk {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
 
-  /// The mass of the black hole.
-  struct BlackHoleMass {
+  /// The mass of the black hole, \f$M\f$.
+  struct BhMass {
     using type = double;
     static constexpr OptionString help = {"The mass of the black hole."};
     static type lower_bound() noexcept { return 0.0; }
   };
-  /// The dimensionless black hole spin magnitude.
-  struct BlackHoleSpin {
+  /// The dimensionless black hole spin, \f$\chi = a/M\f$.
+  struct BhDimlessSpin {
     using type = double;
-    static constexpr OptionString help = {
-        "The dimensionless black hole spin magnitude."};
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static constexpr OptionString help = {"The dimensionless black hole spin."};
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
   };
-  /// The radial coordinate of the inner edge of the disk.
+  /// The radial coordinate of the inner edge of the disk, in units of \f$M\f$.
   struct InnerEdgeRadius {
     using type = double;
     static constexpr OptionString help = {
         "The radial coordinate of the inner edge of the disk."};
   };
-  /// The radial coordinate at which the pressure reaches its maximum.
+  /// The radial coordinate of the maximum pressure, in units of \f$M\f$.
   struct MaxPressureRadius {
     using type = double;
     static constexpr OptionString help = {
@@ -208,8 +207,8 @@ class FishboneMoncriefDisk {
   };
 
   using options =
-      tmpl::list<BlackHoleMass, BlackHoleSpin, InnerEdgeRadius,
-                 MaxPressureRadius, PolytropicConstant, PolytropicExponent>;
+      tmpl::list<BhMass, BhDimlessSpin, InnerEdgeRadius, MaxPressureRadius,
+                 PolytropicConstant, PolytropicExponent>;
   static constexpr OptionString help = {
       "Fluid disk orbiting a Kerr black hole."};
 
@@ -221,7 +220,7 @@ class FishboneMoncriefDisk {
       default;
   ~FishboneMoncriefDisk() = default;
 
-  FishboneMoncriefDisk(double black_hole_mass, double black_hole_spin,
+  FishboneMoncriefDisk(double bh_mass, double bh_dimless_spin,
                        double inner_edge_radius, double max_pressure_radius,
                        double polytropic_constant,
                        double polytropic_exponent) noexcept;
@@ -279,8 +278,8 @@ class FishboneMoncriefDisk {
             cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
             cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
-        vars(black_hole_mass_, black_hole_spin_, max_pressure_radius_,
-             background_spacetime_, x, t,
+        vars(bh_mass_, bh_spin_a_, max_pressure_radius_, background_spacetime_,
+             x, t,
              index_helper(
                  tmpl::index_of<tmpl::list<Tags...>,
                                 hydro::Tags::SpatialVelocity<DataType, 3>>{}),
@@ -302,8 +301,8 @@ class FishboneMoncriefDisk {
         DataType,
         cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
-        intermediate_vars(black_hole_mass_, black_hole_spin_,
-                          max_pressure_radius_, background_spacetime_, x, t,
+        intermediate_vars(bh_mass_, bh_spin_a_, max_pressure_radius_,
+                          background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),
                           std::numeric_limits<size_t>::max());
     return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
@@ -413,7 +412,7 @@ class FishboneMoncriefDisk {
   // solution's variables.
   template <typename DataType, bool NeedSpacetime>
   struct IntermediateVariables {
-    IntermediateVariables(double black_hole_mass, double black_hole_spin,
+    IntermediateVariables(double bh_mass, double bh_spin_a,
                           double max_pressure_radius,
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, double t,
@@ -433,8 +432,8 @@ class FishboneMoncriefDisk {
   friend bool operator==(const FishboneMoncriefDisk& lhs,
                          const FishboneMoncriefDisk& rhs) noexcept;
 
-  double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
-  double black_hole_spin_ = std::numeric_limits<double>::signaling_NaN();
+  double bh_mass_ = std::numeric_limits<double>::signaling_NaN();
+  double bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
   double inner_edge_radius_ = std::numeric_limits<double>::signaling_NaN();
   double max_pressure_radius_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
