@@ -14,7 +14,7 @@ list(GET SPECTRE_PYTHON_VERS_LIST 1 PYTHON_LIBS_MINOR_VERSION)
 list(GET SPECTRE_PYTHON_VERS_LIST 2 PYTHON_LIBS_PATCH_VERSION)
 
 # Do first find to get version.
-find_package(Boost 1.56.0 REQUIRED)
+find_package(Boost 1.60.0 REQUIRED)
 
 set(SPECTRE_BOOST_PYTHON_COMPONENT "python")
 
@@ -26,7 +26,7 @@ endif()
 
 find_package(
   Boost
-  1.56.0
+  1.60.0
   REQUIRED
   COMPONENTS
   program_options
