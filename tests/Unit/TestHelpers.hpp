@@ -15,6 +15,7 @@
 #include <iterator>
 #include <memory>
 #include <ostream>
+#include <random>
 #include <string>
 
 #include "ErrorHandling/Assert.hpp"
@@ -336,3 +337,16 @@ void test_throw_exception(const ThrowingFunctor& func,
     CHECK(false);
   }
 }
+
+/// \ingroup TestingFrameworkGroup
+/// \brief Make a generator of type `std::mt19937`, stores it in a declared
+/// variable of name `NAME`
+///
+/// \details As the generator is made, `INFO` is called to make sure failed
+/// tests provide seed information.
+#define MAKE_GENERATOR(NAME)                    \
+    std::random_device r;                       \
+    const auto seed = r();                      \
+    INFO("Seed is: " << seed);                  \
+    auto (NAME) = std::mt19937{seed};           \
+
