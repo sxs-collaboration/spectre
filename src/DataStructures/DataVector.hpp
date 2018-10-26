@@ -9,12 +9,12 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <functional>  // for std::reference_wrapper
 #include <initializer_list>
-#include <limits>
+#include <memory>
 #include <ostream>
 #include <type_traits>
-#include <vector>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -134,7 +134,6 @@ class DataVector
   /// \endcond
  public:
   using value_type = double;
-  using allocator_type = std::allocator<value_type>;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
   using BaseType = PointerVector<double, blaze::unaligned, blaze::unpadded,
@@ -161,13 +160,16 @@ class DataVector
   BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
   // @}
 
-  /// Create with the given size and value.
+  // @{
+  /// Create with the given size and value. In debug mode, the vector is
+  /// initialized to `NaN` by default.
   ///
-  /// \param size number of values
-  /// \param value the value to initialize each element.
-  explicit DataVector(
-      size_t size,
-      double value = std::numeric_limits<double>::signaling_NaN()) noexcept;
+  /// - `size` number of values
+  /// - `value` the value to initialize each element.
+  explicit DataVector(size_t size) noexcept;
+
+  DataVector(size_t size, double value) noexcept;
+  // @}
 
   /// Create a non-owning DataVector that points to `start`
   DataVector(double* start, size_t size) noexcept;
@@ -178,7 +180,7 @@ class DataVector
   DataVector(std::initializer_list<T> list) noexcept;
 
   /// Empty DataVector
-  DataVector() noexcept = default;
+  DataVector() = default;
   /// \cond HIDDEN_SYMBOLS
   ~DataVector() = default;
 
@@ -213,7 +215,7 @@ class DataVector
     set_data_ref(rhs->data(), rhs->size());
   }
   void set_data_ref(double* start, size_t size) noexcept {
-    owned_data_ = decltype(owned_data_){};
+    owned_data_.reset();
     (~*this).reset(start, size);
     owning_ = false;
   }
@@ -227,12 +229,12 @@ class DataVector
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  SPECTRE_ALWAYS_INLINE void reset_pointer_vector() noexcept {
-    reset(owned_data_.data(), owned_data_.size());
+  SPECTRE_ALWAYS_INLINE void reset_pointer_vector(const size_t size) noexcept {
+    reset(owned_data_.get(), size);
   }
 
   /// \cond HIDDEN_SYMBOLS
-  std::vector<double, allocator_type> owned_data_;
+  std::unique_ptr<double[], decltype(&free)> owned_data_{nullptr, &free};
   bool owning_{true};
   /// \endcond
 };
@@ -427,11 +429,13 @@ std::array<DataVector, Dim>& operator-=(
 /// \cond HIDDEN_SYMBOLS
 template <typename VT, bool VF>
 DataVector::DataVector(const blaze::DenseVector<VT, VF>& expression) noexcept
-    : owned_data_((~expression).size()) {
+    : owned_data_(
+          static_cast<double*>(malloc((~expression).size() * sizeof(double))),
+          &free) {
   static_assert(cpp17::is_same_v<typename VT::ResultType, DataVector>,
                 "You are attempting to assign the result of an expression that "
                 "is not a DataVector to a DataVector.");
-  reset_pointer_vector();
+  reset_pointer_vector((~expression).size());
   ~*this = expression;
 }
 
@@ -442,8 +446,9 @@ DataVector& DataVector::operator=(
                 "You are attempting to assign the result of an expression that "
                 "is not a DataVector to a DataVector.");
   if (owning_ and (~expression).size() != size()) {
-    owned_data_.resize((~expression).size());
-    reset_pointer_vector();
+    owned_data_.reset(
+        static_cast<double*>(malloc((~expression).size() * sizeof(double))));
+    reset_pointer_vector((~expression).size());
   } else if (not owning_) {
     ASSERT((~expression).size() == size(), "Must copy into same size, not "
                                                << (~expression).size()
