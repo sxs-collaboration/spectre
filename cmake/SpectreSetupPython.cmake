@@ -207,6 +207,9 @@ endfunction()
 # - TAGS         A semicolon separated list of labels for the test,
 #                e.g. "unit;DataStructures;python"
 function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
+  if(NOT BUILD_PYTHON_BINDINGS)
+    return()
+  endif()
   get_filename_component(FILE "${FILE}" ABSOLUTE)
   string(TOLOWER "${TAGS}" TAGS)
 
