@@ -1,0 +1,188 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <pup.h>  // IWYU pragma: keep
+
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "Utilities/ConstantExpressions.hpp"
+
+// IWYU pragma: no_include <array>
+// IWYU pragma: no_forward_declare Tensor
+
+namespace {
+
+class FunctionOfLorentzFactor {
+ public:
+  FunctionOfLorentzFactor(const double b_squared_over_d,
+                          const double tau_over_d,
+                          const double normalized_s_dot_b) noexcept
+      : b_squared_over_d_(b_squared_over_d),
+        tau_over_d_(tau_over_d),
+        normalized_s_dot_b_(normalized_s_dot_b) {}
+
+  // This function codes Eq. (B.34)
+  double operator()(const double lorentz_factor) const noexcept {
+    return (lorentz_factor + b_squared_over_d_ - tau_over_d_ - 1.0) *
+               (square(lorentz_factor) +
+                b_squared_over_d_ * square(normalized_s_dot_b_) *
+                    (b_squared_over_d_ + 2.0 * lorentz_factor)) -
+           0.5 * b_squared_over_d_ -
+           0.5 * b_squared_over_d_ * square(normalized_s_dot_b_) *
+               (square(lorentz_factor) - 1.0 +
+                2.0 * lorentz_factor * b_squared_over_d_ +
+                square(b_squared_over_d_));
+  }
+
+ private:
+  const double b_squared_over_d_;
+  const double tau_over_d_;
+  const double normalized_s_dot_b_;
+};
+}  // namespace
+
+namespace VariableFixing {
+FixConservatives::FixConservatives(
+    const double minimum_rest_mass_density_times_lorentz_factor,
+    const double safety_factor_for_magnetic_field,
+    const double safety_factor_for_momentum_density) noexcept
+    : minimum_rest_mass_density_times_lorentz_factor_(
+          minimum_rest_mass_density_times_lorentz_factor),
+      one_minus_safety_factor_for_magnetic_field_(
+          1.0 - safety_factor_for_magnetic_field),
+      one_minus_safety_factor_for_momentum_density_(
+          1.0 - safety_factor_for_momentum_density) {}
+
+// clang-tidy: google-runtime-references
+void FixConservatives::pup(PUP::er& p) noexcept {  // NOLINT
+  p | minimum_rest_mass_density_times_lorentz_factor_;
+  p | one_minus_safety_factor_for_magnetic_field_;
+  p | one_minus_safety_factor_for_momentum_density_;
+}
+
+// WARNING!
+// Notation of Foucart is not that of SpECTRE
+// SpECTRE           Foucart
+// {\tilde D}        \rho_*
+// {\tilde \tau}     \tau
+// {\tilde S}_k      S_k
+// {\tilde B}^k      B^k \sqrt{g}
+// \rho              \rho_0
+// \gamma_{mn}       g_{mn}
+void FixConservatives::operator()(
+    const gsl::not_null<Scalar<DataVector>*> tilde_d,
+    const gsl::not_null<Scalar<DataVector>*> tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept {
+  const DataVector rest_mass_density_times_lorentz_factor =
+      get(*tilde_d) / get(sqrt_det_spatial_metric);
+
+  const DataVector tilde_b_squared =
+      get(dot_product(tilde_b, tilde_b, spatial_metric));
+
+  const DataVector tilde_s_squared =
+      get(dot_product(*tilde_s, *tilde_s, inv_spatial_metric));
+
+  const DataVector tilde_s_dot_tilde_b = get(dot_product(*tilde_s, tilde_b));
+
+  for (size_t s = 0; s < tilde_b_squared.size(); s++) {
+    // Increase density if necessary
+    double& d_tilde = get(*tilde_d)[s];
+    const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
+    if (rest_mass_density_times_lorentz_factor[s] <
+        minimum_rest_mass_density_times_lorentz_factor_) {
+      d_tilde = minimum_rest_mass_density_times_lorentz_factor_ * sqrt_det_g;
+    }
+
+    // Increase internal energy if necessary
+    double& tau_tilde = get(*tilde_tau)[s];
+    const double b_tilde_squared = tilde_b_squared[s];
+    // Equation B.39 of Foucart
+    if (b_tilde_squared > one_minus_safety_factor_for_magnetic_field_ * 2. *
+                              tau_tilde * sqrt_det_g) {
+      tau_tilde = 0.5 * b_tilde_squared /
+                  one_minus_safety_factor_for_magnetic_field_ / sqrt_det_g;
+    }
+
+    // Decrease momentum density if necessary
+    const double s_tilde_squared = tilde_s_squared[s];
+    // Equation B.24 of Foucart
+    const double tau_over_d = tau_tilde / d_tilde;
+    // Equation B.23 of Foucart
+    const double b_squared_over_d = b_tilde_squared / sqrt_det_g / d_tilde;
+    // Equation B.27 of Foucart
+    const double normalized_s_dot_b =
+        (b_tilde_squared > 1.e-16 * d_tilde and
+         s_tilde_squared > 1.e-16 * square(d_tilde))
+            ? tilde_s_dot_tilde_b[s] / sqrt(b_tilde_squared * s_tilde_squared)
+            : 0.;
+
+    // Equation B.40 of Foucart
+    const double lower_bound_of_lorentz_factor =
+        std::max(1. + tau_over_d - b_squared_over_d, 1.);
+    // Equation B.31 of Foucart evaluated at lower bound of lorentz factor
+    const double simple_upper_bound_for_s_tilde_squared =
+        square(lower_bound_of_lorentz_factor + b_squared_over_d) *
+        (square(lower_bound_of_lorentz_factor) - 1.) /
+        (square(lower_bound_of_lorentz_factor) +
+         square(normalized_s_dot_b) * b_squared_over_d *
+             (b_squared_over_d + 2. * lower_bound_of_lorentz_factor)) *
+        square(d_tilde);
+
+    // If s_tilde_squared is small enough, no fix is needed. Otherwise, we need
+    // to do some real work.
+    if (s_tilde_squared > one_minus_safety_factor_for_momentum_density_ *
+                              simple_upper_bound_for_s_tilde_squared) {
+      // Find root of Equation B.34 of Foucart
+      // Bounds on root are given by Equation  B.40 of Foucart
+      const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
+          b_squared_over_d, tau_over_d, normalized_s_dot_b};
+      const double lorentz_factor =
+          // NOLINTNEXTLINE(clang-analyzer-core)
+          RootFinder::toms748(f_of_lorentz_factor,
+                              lower_bound_of_lorentz_factor, 1.0 + tau_over_d,
+                              1.e-14, 1.e-14, 50);
+
+      const double upper_bound_for_s_tilde_squared =
+          square(lorentz_factor + b_squared_over_d) *
+          (square(lorentz_factor) - 1.) /
+          (square(lorentz_factor) +
+           square(normalized_s_dot_b) * b_squared_over_d *
+               (b_squared_over_d + 2. * lorentz_factor)) *
+          square(d_tilde);
+      const double rescaling_factor =
+          sqrt(one_minus_safety_factor_for_momentum_density_ *
+               upper_bound_for_s_tilde_squared /
+               (s_tilde_squared + 1.e-16 * square(d_tilde)));
+      if (rescaling_factor < 1.) {
+        for (size_t i = 0; i < 3; i++) {
+          tilde_s->get(i)[s] *= rescaling_factor;
+        }
+      }
+    }
+  }
+}
+
+bool operator==(const FixConservatives& lhs,
+                const FixConservatives& rhs) noexcept {
+  return lhs.minimum_rest_mass_density_times_lorentz_factor_ ==
+             rhs.minimum_rest_mass_density_times_lorentz_factor_ and
+         lhs.one_minus_safety_factor_for_magnetic_field_ ==
+             rhs.one_minus_safety_factor_for_magnetic_field_ and
+         lhs.one_minus_safety_factor_for_momentum_density_ ==
+             rhs.one_minus_safety_factor_for_momentum_density_;
+}
+
+bool operator!=(const FixConservatives& lhs,
+                const FixConservatives& rhs) noexcept {
+  return not(lhs == rhs);
+}
+}  // namespace VariableFixing

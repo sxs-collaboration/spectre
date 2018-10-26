@@ -15,25 +15,26 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
-// IWYU pragma: no_forward_declare Actions::ApplyVariableFixer
+// IWYU pragma: no_forward_declare VariableFixing::Actions::FixVariables
 
 namespace {
-using VariableFixer = VariableFixing::RadiallyFallingFloor<
-    3, hydro::Tags::RestMassDensity<DataVector>,
-    hydro::Tags::Pressure<DataVector>>;
 
 template <typename Metavariables>
 struct mock_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<::Actions::ApplyVariableFixer<VariableFixer>>;
+  using action_list =
+      tmpl::list<VariableFixing::Actions::FixVariables<Metavariables>>;
+  using const_global_cache_tag_list =
+      Parallel::get_const_global_cache_tags<action_list>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
@@ -42,8 +43,9 @@ struct mock_component {
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
-  using const_global_cache_tag_list =
-      tmpl::list<VariableFixing::OptionTags::MaskRadius>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using variable_fixer =
+      OptionTags::VariableFixerParams<VariableFixing::RadiallyFallingFloor<3>>;
   enum class Phase { Initialize, Exit };
 };
 }  // namespace
@@ -72,8 +74,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                    Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
                    tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
   const double radius_at_which_to_begin_applying_floor = 1.e-4;
+
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {radius_at_which_to_begin_applying_floor}, std::move(dist_objects)};
+      VariableFixing::RadiallyFallingFloor<3>(1.e-4, 1.e-5, -1.5, 1.e-7 / 3.0,
+                                              -2.5),
+      std::move(dist_objects)};
   auto& box = runner.template algorithms<component>()
                   .at(0)
                   .template get_databox<typename component::initial_databox>();
