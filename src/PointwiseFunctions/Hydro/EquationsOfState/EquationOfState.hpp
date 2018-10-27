@@ -59,8 +59,7 @@ struct DerivedClasses<false, 2> {
  * The template parameter `IsRelativistic` is `true` for relativistic equations
  * of state and `false` for non-relativistic equations of state.
  */
-template <bool IsRelativistic, size_t ThermodynamicDim,
-          typename = std::make_index_sequence<ThermodynamicDim>>
+template <bool IsRelativistic, size_t ThermodynamicDim>
 class EquationOfState;
 
 /*!
@@ -71,8 +70,8 @@ class EquationOfState;
  * The template parameter `IsRelativistic` is `true` for relativistic equations
  * of state and `false` for non-relativistic equations of state.
  */
-template <bool IsRelativistic, size_t Is>
-class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
+template <bool IsRelativistic>
+class EquationOfState<IsRelativistic, 1>
     : public PUP::able {
  public:
   static constexpr bool is_relativistic = IsRelativistic;
@@ -168,8 +167,8 @@ class EquationOfState<IsRelativistic, 1, std::index_sequence<Is>>
  * The template parameter `IsRelativistic` is `true` for relativistic equations
  * of state and `false` for non-relativistic equations of state.
  */
-template <bool IsRelativistic, size_t Is, size_t Js>
-class EquationOfState<IsRelativistic, 2, std::index_sequence<Is, Js>>
+template <bool IsRelativistic>
+class EquationOfState<IsRelativistic, 2>
     : public PUP::able {
  public:
   static constexpr bool is_relativistic = IsRelativistic;
