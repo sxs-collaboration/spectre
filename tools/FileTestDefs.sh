@@ -27,9 +27,18 @@ if grep --help 2>&1 | grep -q -e --color ; then
   color_option='--color=auto'
 fi
 
+# Utility that uses grep on the staged version of the file specified by the last argument
+# does not work with multiple files as argument
+staged_grep() {
+    # git show ":./path/to/file" shows the content of the file as it appears in the staging area
+    git show ":./${@: -1}" | grep "${@:1:$(($#-1))}"
+}
+
 # Utility function for reporters that enables lots of decorators in grep
+# Works like staged_grep
 pretty_grep() {
-    GREP_COLOR='1;37;41' grep --with-filename -n $color_option "$@"
+    echo -n -e "\033[0;35m${@: -1}\033[0m:"
+    git show ":./${@: -1}" | GREP_COLOR='1;37;41' grep -n $color_option "${@:1:$(($#-1))}"
 }
 
 # Utility functions for checks classifying a file based on its name
@@ -109,6 +118,7 @@ test_check() {
         fi
     fi
     rm -rf "${tempdir}"
+    popd >/dev/null
     trap - EXIT
     return 0
 }
@@ -131,7 +141,7 @@ standard_checks=()
 
 # Check for lines longer than 80 characters
 long_lines() {
-    is_c++ "$1" && grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
+    is_c++ "$1" && staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
         grep -v '// IWYU pragma:' >/dev/null
 }
 long_lines_report() {
@@ -159,7 +169,7 @@ standard_checks+=(long_lines)
 # Check for files containing tabs
 tabs() {
     whitelist "$1" '.png' &&
-    grep -q -F $'\t' "$1"
+    staged_grep -q -F $'\t' "$1"
 }
 tabs_report() {
     echo "Found tabs in the following files:"
@@ -174,7 +184,7 @@ standard_checks+=(tabs)
 # Check for end-of-line spaces
 trailing_space() {
     whitelist "$1" '.png' &&
-    grep -q -E ' +$' "$1"
+    staged_grep -q -E ' +$' "$1"
 }
 trailing_space_report() {
     echo "Found white space at end of line in the following files:"
@@ -189,7 +199,7 @@ standard_checks+=(trailing_space)
 # Check for carriage returns
 carriage_returns() {
     whitelist "$1" '.png' &&
-    grep -q -F $'\r' "$1"
+    staged_grep -q -F $'\r' "$1"
 }
 carriage_returns_report() {
     echo "Found carriage returns in the following files:"
@@ -225,7 +235,7 @@ license() {
               '.png' \
               '.svg' \
               '.clang-format$' && \
-        ! grep -q "Distributed under the MIT License" "$1"
+        ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {
     echo "Did not find a license in these files:"
@@ -240,7 +250,7 @@ standard_checks+=(license)
 
 # Check for tests using Catch's TEST_CASE instead of SPECTRE_TEST_CASE
 test_case() {
-    is_c++ "$1" && grep -q "^TEST_CASE" "$1"
+    is_c++ "$1" && staged_grep -q "^TEST_CASE" "$1"
 }
 test_case_reoprt() {
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
@@ -256,7 +266,7 @@ standard_checks+=(test_case)
 
 # Check for tests using Catch's Approx, which has a very loose tolerance
 catch_approx() {
-    is_c++ "$1" && grep -q "Approx(" "$1"
+    is_c++ "$1" && staged_grep -q "Approx(" "$1"
 }
 catch_approx_report() {
     echo "Found occurrences of Approx, must use approx from"
@@ -273,7 +283,7 @@ standard_checks+=(catch_approx)
 
 # Check for Doxygen comments on the same line as a /*!
 doxygen_start_line() {
-    is_c++ "$1" && grep -q '/\*\![^\n]' "$1"
+    is_c++ "$1" && staged_grep -q '/\*\![^\n]' "$1"
 }
 doxygen_start_line_report() {
     echo "Found occurrences of bad Doxygen syntax: /*! STUFF:"
@@ -289,7 +299,7 @@ standard_checks+=(doxygen_start_line)
 
 # Check for Ls because of a preference not to use it as short form for List
 ls_list() {
-    is_c++ "$1" && grep -q Ls "$1"
+    is_c++ "$1" && staged_grep -q Ls "$1"
 }
 ls_list_report() {
     echo "Found occurrences of 'Ls', which is usually short for List:"
@@ -308,7 +318,7 @@ pragma_once() {
     is_includible "$1" && \
         whitelist "$1" \
                   'tools/SpectrePch.hpp$' && \
-        ! grep -q -x '#pragma once' "$1"
+        ! staged_grep -q -x '#pragma once' "$1"
 }
 pragma_once_report() {
     echo "Did not find '#pragma once' in these header files:"
@@ -353,7 +363,7 @@ enable_if() {
                   'src/Utilities/TMPL.hpp$' \
                   'src/Utilities/TaggedTuple.hpp$' \
                   'tests/Unit/Utilities/Test_TypeTraits.cpp$' && \
-        grep -q std::enable_if "$1"
+        staged_grep -q std::enable_if "$1"
 }
 enable_if_report() {
     echo "Found occurrences of 'std::enable_if', prefer 'Requires':"
@@ -369,7 +379,7 @@ standard_checks+=(enable_if)
 
 # Check for struct TD and class TD asking to remove it
 struct_td() {
-    is_c++ "$1" && grep -q "\(struct TD;\|class TD;\)" "$1"
+    is_c++ "$1" && staged_grep -q "\(struct TD;\|class TD;\)" "$1"
 }
 struct_td_report() {
     echo "Found 'struct TD;' or 'class TD;' which should be removed"
@@ -384,7 +394,7 @@ standard_checks+=(struct_td)
 
 # Check for _details and details namespaces, request replacement with detail
 namespace_details() {
-    is_c++ "$1" && grep -q "\(_details\|namespace[[:space:]]\+details\)" "$1"
+    is_c++ "$1" && staged_grep -q "\(_details\|namespace[[:space:]]\+details\)" "$1"
 }
 namespace_details_report() {
     echo "Found '_details' namespace, please replace with '_detail'"
@@ -401,7 +411,8 @@ namespace_details_test() {
 }
 standard_checks+=(namespace_details)
 
-[ "$1" = --test ] && run_tests "${standard_checks[@]}"
+# if test is enabled: redefines staged_grep to run tests on files that are not in git
+[ "$1" = --test ] && staged_grep() { grep "$@"; } && run_tests "${standard_checks[@]}"
 
 # True result for sourcing
 :

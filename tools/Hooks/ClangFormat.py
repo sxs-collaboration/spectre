@@ -11,6 +11,7 @@ import re
 # List of all the clang-format versions we are willing to use
 # The general case is needed on a Mac
 clang_format_list = ["git-clang-format",
+                     "git-clang-format-6.0",
                      "git-clang-format-4.0",
                      "git-clang-format-3.9",
                      "git-clang-format-3.8"]
@@ -78,5 +79,6 @@ if output not in ['\n', '', 'no modified files to format\n',
           "then staging the modified files and amending your original "
           "commit.\n" %
           (output_file_name, output_file_name))
+    sys.exit(1)
 
 sys.exit(0)
