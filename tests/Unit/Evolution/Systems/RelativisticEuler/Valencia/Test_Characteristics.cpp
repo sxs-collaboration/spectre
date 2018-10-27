@@ -29,16 +29,21 @@ void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
   //  Arbitrary random numbers can produce a negative radicand in Lambda^\pm.
   //  This bound helps to prevent that situation.
   const double max_value = 1.0 / sqrt(Dim);
-  pypp::check_with_random_values<6>(
-      &RelativisticEuler::Valencia::characteristic_speeds<Dim>, "TestFunctions",
-      "characteristic_speeds",
-      {{{0.0, 1.0},
-        {-1.0, 1.0},
-        {-max_value, max_value},
-        {0.0, 1.0},
-        {0.0, 1.0},
-        {-max_value, max_value}}},
-      used_for_size);
+  std::array<DataVector, Dim + 2> (*f)(
+      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
+      const tnsr::I<DataVector, Dim>& spatial_velocity,
+      const Scalar<DataVector>& spatial_velocity_squared,
+      const Scalar<DataVector>& sound_speed_squared,
+      const tnsr::i<DataVector, Dim>& normal) =
+      &RelativisticEuler::Valencia::characteristic_speeds<Dim>;
+  pypp::check_with_random_values<6>(f, "TestFunctions", "characteristic_speeds",
+                                    {{{0.0, 1.0},
+                                      {-1.0, 1.0},
+                                      {-max_value, max_value},
+                                      {0.0, 1.0},
+                                      {0.0, 1.0},
+                                      {-max_value, max_value}}},
+                                    used_for_size);
 }
 
 template <size_t Dim>
