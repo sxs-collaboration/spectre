@@ -21,6 +21,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   CHECK(hydro::Tags::ComovingMagneticField<DataVector, 3,
                                            Frame::Logical>::name() ==
         "Logical_ComovingMagneticField");
+  CHECK(hydro::Tags::ComovingMagneticFieldSquared<DataVector>::name() ==
+        "ComovingMagneticFieldSquared");
   CHECK(hydro::Tags::DivergenceCleaningField<DataVector>::name() ==
         "DivergenceCleaningField");
   CHECK(hydro::Tags::EquationOfState<IdealFluid<true>>::name() ==
@@ -30,6 +32,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
         "MagneticField");
   CHECK(hydro::Tags::MagneticField<DataVector, 3, Frame::Distorted>::name() ==
         "Distorted_MagneticField");
+  CHECK(hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>::name() ==
+        "MagneticFieldDotSpatialVelocity");
+  CHECK(hydro::Tags::MagneticFieldOneForm<DataVector, 3,
+                                          Frame::Inertial>::name() ==
+        "MagneticFieldOneForm");
+  CHECK(hydro::Tags::MagneticFieldSquared<DataVector>::name() ==
+        "MagneticFieldSquared");
   CHECK(hydro::Tags::MagneticPressure<DataVector>::name() ==
         "MagneticPressure");
   CHECK(hydro::Tags::Pressure<DataVector>::name() == "Pressure");
