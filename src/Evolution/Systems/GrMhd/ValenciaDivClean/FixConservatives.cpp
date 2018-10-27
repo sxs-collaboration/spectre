@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <pup.h>  // IWYU pragma: keep
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"

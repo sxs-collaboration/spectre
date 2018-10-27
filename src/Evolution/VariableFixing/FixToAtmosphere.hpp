@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -18,23 +19,6 @@ class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
-namespace hydro {
-namespace Tags {
-struct EquationOfStateBase;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
-struct SpatialVelocity;
-template <typename DataType>
-struct LorentzFactor;
-template <typename DataType>
-struct Pressure;
-template <typename DataType>
-struct RestMassDensity;
-template <typename DataType>
-struct SpecificEnthalpy;
-template <typename DataType>
-struct SpecificInternalEnergy;
-}  // namespace Tags
-}  // namespace hydro
 /// \endcond
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
