@@ -31,6 +31,7 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -D USE_PCH=${USE_PCH} \
       -D DEBUG_SYMBOLS=OFF \
       -D COVERAGE=${COVERAGE} \
+      -D BUILD_PYTHON_BINDINGS=ON \
       ../spectre/
 
 # Build all Charm++ modules

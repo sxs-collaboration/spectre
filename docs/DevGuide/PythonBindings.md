@@ -15,7 +15,8 @@ to aid with generating the bindings. The C++ code for the bindings should
 generally go in a `Python` subdirectory. For example, the bindings for the
 DataStructures library would go in `src/DataStructures/Python/`. SpECTRE
 provides the `spectre_python_add_module` CMake function to make adding a new
-python module, be it with or without bindings, easy.
+python module, be it with or without bindings, easy.  The python bindings are
+built only if `-D BUILD_PYTHON_BINDINGS=ON` is passed when invoking cmake.
 
 The function `spectre_python_add_module` takes as its first argument the module,
 in our case
