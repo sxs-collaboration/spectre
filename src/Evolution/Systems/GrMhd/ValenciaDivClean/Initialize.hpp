@@ -22,6 +22,7 @@
 #include "Evolution/Initialization/Interface.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -73,6 +74,16 @@ struct Initialize {
 
       auto equation_of_state =
           Parallel::get<solution_tag>(cache).equation_of_state();
+
+      VariableFixing::FixToAtmosphere<1> fixer{1.e-12};
+      fixer(
+          &get<hydro::Tags::RestMassDensity<DataVector>>(primitive_vars),
+          &get<hydro::Tags::SpecificInternalEnergy<DataVector>>(primitive_vars),
+          &get<hydro::Tags::SpatialVelocity<DataVector, 3>>(primitive_vars),
+          &get<hydro::Tags::LorentzFactor<DataVector>>(primitive_vars),
+          &get<hydro::Tags::Pressure<DataVector>>(primitive_vars),
+          &get<hydro::Tags::SpecificEnthalpy<DataVector>>(primitive_vars),
+          equation_of_state);
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(primitive_vars),
