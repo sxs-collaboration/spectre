@@ -12,13 +12,17 @@
 
 /// \cond
 namespace hydro {
+template <typename DataType>
+Scalar<DataType> lorentz_factor(
+    const Scalar<DataType>& spatial_velocity_squared) noexcept {
+  return Scalar<DataType>{1.0 / sqrt(1.0 - get(spatial_velocity_squared))};
+}
+
 template <typename DataType, size_t Dim, typename Frame>
 Scalar<DataType> lorentz_factor(
     const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
     const tnsr::i<DataType, Dim, Frame>& spatial_velocity_form) noexcept {
-  return Scalar<DataType>{
-      1.0 /
-      sqrt(1.0 - get(dot_product(spatial_velocity, spatial_velocity_form)))};
+  return lorentz_factor(dot_product(spatial_velocity, spatial_velocity_form));
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -33,6 +37,11 @@ Scalar<DataType> lorentz_factor(
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))
+
+template Scalar<DataVector> lorentz_factor(
+    const Scalar<DataVector>& spatial_velocity_squared) noexcept;
+template Scalar<double> lorentz_factor(
+    const Scalar<double>& spatial_velocity_squared) noexcept;
 
 #undef DIM
 #undef DTYPE
