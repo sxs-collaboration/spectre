@@ -12,14 +12,14 @@
 
 template <>
 double mean_value_on_boundary(const DataVector& f, const Mesh<1>& mesh,
-                              size_t d, Side side) {
+                              size_t d, Side side) noexcept {
   ASSERT(d == 0, "d = " << d);
   return Side::Lower == side ? f[0] : f[mesh.extents(0) - 1];
 }
 
 template <size_t Dim>
 double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
-                              size_t d, Side side) {
+                              size_t d, Side side) noexcept {
   ASSERT(d < Dim, "d = " << d << ", Dim = " << Dim);
   const size_t N = mesh.extents(d);
   const Mesh<Dim - 1> mesh_on_boundary = mesh.slice_away(d);
@@ -33,6 +33,6 @@ double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
 }
 
 template double mean_value_on_boundary(const DataVector&, const Mesh<2>&,
-                                       size_t, Side);
+                                       size_t, Side) noexcept;
 template double mean_value_on_boundary(const DataVector&, const Mesh<3>&,
-                                       size_t, Side);
+                                       size_t, Side) noexcept;
