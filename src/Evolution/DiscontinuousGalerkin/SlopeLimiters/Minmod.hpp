@@ -13,8 +13,10 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
+#include "Domain/MaxNumberOfNeighbors.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Options/Options.hpp"
@@ -93,12 +95,14 @@ bool limit_one_tensor(
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<
+    const FixedHashMap<
+        maximum_number_of_neighbors(VolumeDim),
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         gsl::not_null<const double*>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_tensor_begin,
-    const std::unordered_map<
+    const FixedHashMap<
+        maximum_number_of_neighbors(VolumeDim),
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         std::array<double, VolumeDim>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -339,7 +343,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const auto tensor_begin = make_not_null(tensor->begin());
       const auto tensor_end = make_not_null(tensor->end());
       const auto neighbor_tensor_begin = [&neighbor_data]() noexcept {
-        std::unordered_map<
+        FixedHashMap<
+            maximum_number_of_neighbors(VolumeDim),
             std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
             gsl::not_null<const double*>,
             boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
@@ -355,7 +360,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       }
       ();
       const auto neighbor_sizes = [&neighbor_data]() noexcept {
-        std::unordered_map<
+        FixedHashMap<
+            maximum_number_of_neighbors(VolumeDim),
             std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
             std::array<double, VolumeDim>,
             boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>

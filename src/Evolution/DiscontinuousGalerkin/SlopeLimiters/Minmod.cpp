@@ -52,12 +52,14 @@ bool limit_one_tensor(
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<
+    const FixedHashMap<
+        maximum_number_of_neighbors(VolumeDim),
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         gsl::not_null<const double*>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_tensor_begin,
-    const std::unordered_map<
+    const FixedHashMap<
+        maximum_number_of_neighbors(VolumeDim),
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         std::array<double, VolumeDim>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -231,33 +233,33 @@ template bool limit_one_tensor<1>(
     const SlopeLimiters::MinmodType&, const double, const Element<1>&,
     const Mesh<1>&, const tnsr::I<DataVector, 1, Frame::Logical>&,
     const std::array<double, 1>&,
-    const std::unordered_map<
-        std::pair<Direction<1>, ElementId<1>>, gsl::not_null<const double*>,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>&,
-    const std::unordered_map<
-        std::pair<Direction<1>, ElementId<1>>, std::array<double, 1>,
+    const FixedHashMap<2, std::pair<Direction<1>, ElementId<1>>,
+                       gsl::not_null<const double*>,
+                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&,
+    const FixedHashMap<
+        2, std::pair<Direction<1>, ElementId<1>>, std::array<double, 1>,
         boost::hash<std::pair<Direction<1>, ElementId<1>>>>&) noexcept;
 template bool limit_one_tensor<2>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
     const SlopeLimiters::MinmodType&, const double, const Element<2>&,
     const Mesh<2>&, const tnsr::I<DataVector, 2, Frame::Logical>&,
     const std::array<double, 2>&,
-    const std::unordered_map<
-        std::pair<Direction<2>, ElementId<2>>, gsl::not_null<const double*>,
-        boost::hash<std::pair<Direction<2>, ElementId<2>>>>&,
-    const std::unordered_map<
-        std::pair<Direction<2>, ElementId<2>>, std::array<double, 2>,
+    const FixedHashMap<8, std::pair<Direction<2>, ElementId<2>>,
+                       gsl::not_null<const double*>,
+                       boost::hash<std::pair<Direction<2>, ElementId<2>>>>&,
+    const FixedHashMap<
+        8, std::pair<Direction<2>, ElementId<2>>, std::array<double, 2>,
         boost::hash<std::pair<Direction<2>, ElementId<2>>>>&) noexcept;
 template bool limit_one_tensor<3>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
     const SlopeLimiters::MinmodType&, const double, const Element<3>&,
     const Mesh<3>&, const tnsr::I<DataVector, 3, Frame::Logical>&,
     const std::array<double, 3>&,
-    const std::unordered_map<
-        std::pair<Direction<3>, ElementId<3>>, gsl::not_null<const double*>,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>&,
-    const std::unordered_map<
-        std::pair<Direction<3>, ElementId<3>>, std::array<double, 3>,
+    const FixedHashMap<24, std::pair<Direction<3>, ElementId<3>>,
+                       gsl::not_null<const double*>,
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&,
+    const FixedHashMap<
+        24, std::pair<Direction<3>, ElementId<3>>, std::array<double, 3>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&) noexcept;
 }  // namespace Minmod_detail
 
