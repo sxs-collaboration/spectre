@@ -13,6 +13,7 @@
 #include <limits>
 #include <map>
 #include <pup.h>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -447,13 +448,12 @@ AdamsBashforthN::compute_boundary_delta(
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
-  const auto union_times = [&end_time, &history, &simulation_less]() noexcept {
+  const auto union_times = [&history, &simulation_less]() noexcept {
     std::vector<Time> ret;
-    ret.reserve(history->local_size() + history->remote_size() + 1);
+    ret.reserve(history->local_size() + history->remote_size());
     std::set_union(history->local_begin(), history->local_end(),
                    history->remote_begin(), history->remote_end(),
                    std::back_inserter(ret), simulation_less);
-    ret.push_back(end_time);
     return ret;
   }();
 
@@ -466,32 +466,45 @@ AdamsBashforthN::compute_boundary_delta(
                             simulation_less);
   };
 
-  // The union time index for the step start and end.
+  // The union time index for the step start.
   const auto union_step_start = union_step(start_time);
-  const auto union_step_end = union_times.cend() - 1;
 
-  // min(union_step_end, it + order_s) except being careful not
+  // min(union_times.end(), it + order_s) except being careful not
   // to create out-of-range iterators.
   const auto advance_within_step =
-      [order_s, union_step_end](const UnionIter& it) noexcept {
-    return union_step_end - it >
+      [order_s, &union_times](const UnionIter& it) noexcept {
+    return union_times.end() - it >
                    static_cast<typename decltype(union_times)::difference_type>(
                        order_s)
                ? it + static_cast<typename decltype(
                           union_times)::difference_type>(order_s)
-               : union_step_end;
+               : union_times.end();
   };
 
   // Calculating the Adams-Bashforth coefficients is somewhat
-  // expensive, so we cache them.  ab_coefs(it) returns the
-  // coefficients used to step from it to *(it + 1).
-  auto ab_coefs = make_cached_function<UnionIter, std::map>([order_s](
-      const UnionIter& times_end) noexcept {
+  // expensive, so we cache them.  ab_coefs(it, step) returns the
+  // coefficients used to step from *it to *it + step.
+  auto ab_coefs = make_cached_function<std::tuple<UnionIter, TimeDelta>,
+                                       std::map>([order_s](
+      const std::tuple<UnionIter, TimeDelta>& args) noexcept {
     return get_coefficients(
-        times_end -
+        std::get<0>(args) -
             static_cast<typename UnionIter::difference_type>(order_s - 1),
-        times_end + 1, *(times_end + 1) - *times_end);
+        std::get<0>(args) + 1, std::get<1>(args));
   });
+
+  // The value of the coefficient of `evaluation_step` when doing
+  // a standard Adams-Bashforth integration over the union times
+  // from `step` to `step + 1`.
+  const auto base_summand = [&ab_coefs, &end_time, &union_times](
+      const UnionIter& step, const UnionIter& evaluation_step) noexcept {
+    const Time step_end =
+        step + 1 != union_times.end() ? *(step + 1) : end_time;
+    const TimeDelta step_size = step_end - *step;
+    return step_size.value() *
+           ab_coefs(std::make_tuple(
+               step, step_size))[static_cast<size_t>(step - evaluation_step)];
+  };
 
   for (auto local_evaluation_step = history->local_begin();
        local_evaluation_step != history->local_end();
@@ -501,15 +514,6 @@ AdamsBashforthN::compute_boundary_delta(
          remote_evaluation_step != history->remote_end();
          ++remote_evaluation_step) {
       double deriv_coef = 0.;
-
-      // The value of the coefficient of `evaluation_step` when doing
-      // a standard Adams-Bashforth integration over the union times
-      // from `step` to `step + 1`.
-      const auto base_summand = [&ab_coefs](
-          const UnionIter& step, const UnionIter& evaluation_step) noexcept {
-        return ((step + 1)->value() - step->value()) *
-               ab_coefs(step)[static_cast<size_t>(step - evaluation_step)];
-      };
 
       if (*local_evaluation_step == *remote_evaluation_step) {
         // The two elements stepped at the same time.  This gives a
