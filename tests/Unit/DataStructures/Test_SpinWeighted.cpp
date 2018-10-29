@@ -16,7 +16,7 @@ namespace {
 template <typename T>
 void test_spinweights() {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<T> dist{static_cast<T>(-100.0),
+  UniformCustomDistribution<T> dist{static_cast<T>(1.0), // avoid divide by 0
                                     static_cast<T>(100.0)};
 
   const auto v1 = make_with_random_values<SpinWeighted<T, 0>>(
