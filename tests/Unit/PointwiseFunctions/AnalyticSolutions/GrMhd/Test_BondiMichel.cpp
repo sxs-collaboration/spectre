@@ -77,7 +77,7 @@ void test_serialize() noexcept {
 template <typename DataType>
 void test_variables(const DataType& used_for_size) {
   const double mass = 1.6;
-  const double sonic_radius = 400.0;
+  const double sonic_radius = 4.0;
   const double sonic_density = 0.4;
   const double polytropic_exponent = 4. / 3.;
   const double mag_field_strength = 2.3;
@@ -91,7 +91,7 @@ void test_variables(const DataType& used_for_size) {
       {"bondi_michel_rest_mass_density", "bondi_michel_spatial_velocity",
        "bondi_michel_specific_internal_energy", "bondi_michel_pressure",
        "bondi_michel_lorentz_factor", "bondi_michel_specific_enthalpy"},
-      {{{1.0, 4.0}}},
+      {{{1.0, 20.0}}},
       std::make_tuple(mass, sonic_radius, sonic_density, polytropic_exponent,
                       mag_field_strength),
       used_for_size);
@@ -106,7 +106,7 @@ void test_variables(const DataType& used_for_size) {
        "bondi_michel_specific_internal_energy", "bondi_michel_pressure",
        "bondi_michel_lorentz_factor", "bondi_michel_specific_enthalpy",
        "bondi_michel_magnetic_field", "bondi_michel_divergence_cleaning_field"},
-      {{{1.0, 4.0}}},
+      {{{1.0, 20.0}}},
       std::make_tuple(mass, sonic_radius, sonic_density, polytropic_exponent,
                       mag_field_strength),
       used_for_size);

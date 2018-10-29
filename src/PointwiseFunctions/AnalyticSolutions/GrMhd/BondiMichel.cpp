@@ -95,6 +95,7 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
     const double in_mass_accretion_rate_over_four_pi, const double in_mass,
     const double in_polytropic_constant, const double in_polytropic_exponent,
     const double in_bernoulli_constant_squared_minus_one,
+    const double in_sonic_radius, const double in_sonic_density,
     const tnsr::I<DataType, 3>& x) noexcept
     : radius((magnitude(x)).get()),
       rest_mass_density(make_with_value<DataType>(x, 0.0)),
@@ -103,25 +104,31 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
       polytropic_constant(in_polytropic_constant),
       polytropic_exponent(in_polytropic_exponent),
       bernoulli_constant_squared_minus_one(
-          in_bernoulli_constant_squared_minus_one) {
+          in_bernoulli_constant_squared_minus_one),
+      sonic_radius(in_sonic_radius),
+      sonic_density(in_sonic_density) {
   // NOLINTNEXTLINE(clang-analyzer-core)
   for (size_t i = 0; i < get_size(rest_mass_density); i++) {
     const double current_radius = get_element(radius, i);
     // Near the sonic radius, a second root to the Bernoulli
-    // root function appears. The upper bound of
-    // `mass_accretion_rate_over_four_pi_ *
-    // sqrt(2.0 / (mass_* cube(current_radius)))`
-    // selects the correct one of two possible roots.
+    // root function appears. Within the sonic radius, the
+    // upper bound of
+    // `mass_accretion_rate_over_four_pi_ * sqrt(2.0 /
+    // (mass_* cube(current_radius)))` selects the correct one
+    // of two possible roots. Beyond the sonic radius, this
+    // becomes the lower bound provided to the root finder.
+    const double sonic_bound = mass_accretion_rate_over_four_pi *
+                               sqrt(2.0 / (mass * cube(current_radius)));
     get_element(rest_mass_density, i) =
         // NOLINTNEXTLINE(clang-analyzer-core)
         RootFinder::toms748(
             [&current_radius, this ](const double guess_for_rho) noexcept {
               return bernoulli_root_function(guess_for_rho, current_radius);
             },
-            rest_mass_density_at_infinity,
-            mass_accretion_rate_over_four_pi *
-                sqrt(2.0 / (mass * cube(current_radius))),
-            1.e-15, 1.e-15);
+            current_radius < sonic_radius ? rest_mass_density_at_infinity
+                                          : sonic_bound,
+            current_radius < sonic_radius ? sonic_bound : sonic_density, 1.e-15,
+            1.e-15);
   }
 }
 

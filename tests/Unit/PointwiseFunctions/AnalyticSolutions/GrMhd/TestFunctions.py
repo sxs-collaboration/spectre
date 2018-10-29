@@ -225,11 +225,14 @@ def bondi_michel_rest_mass_density(x, mass, sonic_radius,
                             sonic_density, adiabatic_exponent, magnetic_field):
     variables = bondi_michel_intermediate_variables(mass, sonic_radius, sonic_density, adiabatic_exponent)
     radius = np.sqrt(x[0]**2 + x[1]**2 + x[2]**2)
-    upper_bound = 2.0 * variables["rest_mass_density_at_horizon"]
-    lower_bound = 1.e-3 * variables["rest_mass_density_at_infinity"]
-    if radius > 0.9 * sonic_radius:
+    if radius < sonic_radius:
       upper_bound = variables["mass_accretion_rate_over_four_pi"] * \
-      np.sqrt(2.0 / (mass * radius**3))
+        np.sqrt(2.0 / (mass * radius**3))
+      lower_bound = variables["rest_mass_density_at_infinity"]
+    if radius >= sonic_radius:
+      upper_bound = sonic_density
+      lower_bound = variables["mass_accretion_rate_over_four_pi"] * \
+        np.sqrt(2.0 / (mass * radius**3))
     return opt.brentq( \
       bondi_michel_bernoulli_root_function, \
       lower_bound, upper_bound, xtol = 1.e-15, rtol = 1.e-15, args = ( \
