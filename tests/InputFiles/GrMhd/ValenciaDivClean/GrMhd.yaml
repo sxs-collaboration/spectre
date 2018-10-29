@@ -13,18 +13,19 @@ FinalTime: 0.1
 
 DomainCreator:
   Brick:
-    LowerBound: [0.0, 0.0, 0.0]
-    UpperBound: [6.283185307179586, 6.283185307179586, 6.283185307179586]
-    IsPeriodicIn: [true, true, true]
-    InitialRefinement: [1, 1, 1]
+    LowerBound: [10.5, 0.0, 0.0]
+    UpperBound: [11.5, 1.0, 1.0]
+    IsPeriodicIn: [false, false, false]
+    InitialRefinement: [0, 0, 0]
     InitialGridPoints: [5, 5, 5]
 
 AnalyticSolution:
-  WaveVector: [1.0, 1.0, 1.0]
-  MeanVelocity: [0.2, 0.2, 0.2]
-  Pressure: 1.0
-  AdiabaticIndex: 1.3333333333333333333
-  PerturbationSize: 0.5
+  BlackHoleMass: 1.0
+  BlackHoleSpin: 0.9375
+  InnerEdgeRadius: 6.0
+  MaxPressureRadius: 12.0
+  PolytropicConstant: 0.001
+  PolytropicExponent: 1.3333333333333333333333
 
 TimeStepper:
   AdamsBashforthN:
@@ -47,8 +48,13 @@ NumericalFluxParams:
 DampingParameter: 0.0
 
 SlopeLimiterParams:
-  Type: LambdaPi1
+  Type: LambdaPiN
+  TvbmConstant: 1000
 
+VariableFixerParams:
+  MinimumValueOfD: 1.0e-12
+  SafetyFactorForB: 1.0e-12
+  SafetyFactorForS: 1.0e-12
 
 ObserveNSlabs: 1000
 ObserveAtT0: false

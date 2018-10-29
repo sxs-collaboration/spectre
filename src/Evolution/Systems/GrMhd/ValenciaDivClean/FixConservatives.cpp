@@ -5,12 +5,15 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <pup.h>  // IWYU pragma: keep
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 
 // IWYU pragma: no_include <array>
 // IWYU pragma: no_forward_declare Tensor
@@ -145,11 +148,16 @@ void FixConservatives::operator()(
       // Bounds on root are given by Equation  B.40 of Foucart
       const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
           b_squared_over_d, tau_over_d, normalized_s_dot_b};
+      const double upper_bound_of_lorentz_factor = 1.0 + tau_over_d;
       const double lorentz_factor =
-          // NOLINTNEXTLINE(clang-analyzer-core)
-          RootFinder::toms748(f_of_lorentz_factor,
-                              lower_bound_of_lorentz_factor, 1.0 + tau_over_d,
-                              1.e-14, 1.e-14, 50);
+          (equal_within_roundoff(lower_bound_of_lorentz_factor,
+                                 upper_bound_of_lorentz_factor)
+               ? lower_bound_of_lorentz_factor
+               :
+               // NOLINTNEXTLINE(clang-analyzer-core)
+               RootFinder::toms748(
+                   f_of_lorentz_factor, lower_bound_of_lorentz_factor,
+                   upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
 
       const double upper_bound_for_s_tilde_squared =
           square(lorentz_factor + b_squared_over_d) *

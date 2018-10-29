@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include <cstddef>
 #include <limits>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -16,34 +16,18 @@
 namespace PUP {
 class er;
 }  // namespace PUP
-namespace gr {
-namespace Tags {
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct InverseSpatialMetric;
-template <size_t Dim, typename Frame = Frame::Inertial,
-          typename DataType = DataVector>
-struct SpatialMetric;
-template <typename DataType = DataVector>
-struct SqrtDetSpatialMetric;
-}  // namespace Tags
-}  // namespace gr
-namespace grmhd {
-namespace ValenciaDivClean {
-namespace Tags {
-struct TildeD;
-struct TildeTau;
-template <typename Fr = Frame::Inertial>
-struct TildeB;
-template <typename Fr = Frame::Inertial>
-struct TildeS;
-}  // namespace Tags
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+class DataVector;
 /// \endcond
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare grmhd::ValenciaDivClean::Tags::TildeD
+// IWYU pragma: no_forward_declare grmhd::ValenciaDivClean::Tags::TildeTau
+// IWYU pragma: no_forward_declare grmhd::ValenciaDivClean::Tags::TildeS
+// IWYU pragma: no_forward_declare grmhd::ValenciaDivClean::Tags::TildeB
+// IWYU pragma: no_forward_declare gr::Tags::SpatialMetric
+// IWYU pragma: no_forward_declare gr::Tags::InverseSpatialMetric
+// IWYU pragma: no_forward_declare gr::Tags::SqrtDetSpatialMetric
 
 namespace VariableFixing {
 

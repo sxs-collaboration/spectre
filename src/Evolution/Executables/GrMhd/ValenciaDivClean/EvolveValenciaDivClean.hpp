@@ -16,10 +16,13 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Observe.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/Actions.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
@@ -33,6 +36,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -65,7 +69,8 @@ struct EvolutionMetavars {
   // To switch which analytic solution is evolved you only need to change the
   // line `using analytic_solution = ...;` and include the header file for the
   // solution.
-  using analytic_solution = grmhd::Solutions::SmoothFlow;
+  //  using analytic_solution = grmhd::Solutions::SmoothFlow;
+  using analytic_solution = RelativisticEuler::Solutions::FishboneMoncriefDisk;
 
   using system = grmhd::ValenciaDivClean::System<
       typename analytic_solution::equation_of_state_type>;
@@ -81,7 +86,8 @@ struct EvolutionMetavars {
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   using limiter = OptionTags::SlopeLimiterParams<
       SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
-
+  using variable_fixer =
+      OptionTags::VariableFixerParams<VariableFixing::FixConservatives>;
   using step_choosers =
       tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
                  StepChoosers::Register::Constant,
@@ -111,6 +117,7 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
       SlopeLimiters::Actions::Limit<EvolutionMetavars>,
+      VariableFixing::Actions::FixVariables<EvolutionMetavars>,
       Actions::UpdatePrimitives>>;
 
   struct EvolvePhaseStart;
