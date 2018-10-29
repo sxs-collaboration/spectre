@@ -35,10 +35,10 @@ auto compute_packaged_data(
       db::get<Tags::Interface<DirectionsTag, Tags::Mesh<volume_dim - 1>>>(box)
           .at(direction);
 
-  const auto packaged_data = db::apply<tmpl::transform<
+  return db::apply<tmpl::transform<
       package_arguments, tmpl::bind<Tags::Interface, DirectionsTag, tmpl::_1>>>(
       [&face_mesh, &direction,
-          &normal_dot_numerical_flux_computer](const auto &... args) noexcept {
+       &normal_dot_numerical_flux_computer ](const auto&... args) noexcept {
         typename flux_comm_types::PackagedData ret(
             face_mesh.number_of_grid_points(), 0.0);
         normal_dot_numerical_flux_computer.package_data(make_not_null(&ret),
@@ -46,8 +46,6 @@ auto compute_packaged_data(
         return ret;
       },
       box);
-
-  return packaged_data;
 }
 
 template <typename Metavariables, typename DataBoxType, typename DirectionsTag,
