@@ -43,13 +43,13 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
   hydro_variables(const tnsr::I<DataType, 3>& x) const noexcept {
-    return variables(x, hydro_variables_tags<DataType>{});
+    return variables(x, 0.0, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
   grmhd_variables(const tnsr::I<DataType, 3>& x) const noexcept {
-    return variables(x, grmhd_variables_tags<DataType>{});
+    return variables(x, 0.0, grmhd_variables_tags<DataType>{});
   }
 };
 

@@ -125,6 +125,7 @@ class BondiMichel {
   /// Retrieve a collection of  hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         const double /*t*/,
                                          tmpl::list<Tags...> /*meta*/) const
       noexcept {
     const auto intermediate_vars =
@@ -142,6 +143,7 @@ class BondiMichel {
 
   template <typename DataType, typename Tag>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
+                                     const double /*t*/,  // NOLINT
                                      tmpl::list<Tag> /*meta*/) const noexcept {
     return variables(
         x, tmpl::list<Tag>{},
@@ -221,6 +223,27 @@ class BondiMichel {
  private:
   friend bool operator==(const BondiMichel& lhs,
                          const BondiMichel& rhs) noexcept;
+
+  template <typename DataType>
+  using grmhd_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::SpecificEnthalpy<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>,
+                 hydro::Tags::SpatialVelocity<DataType, 3>,
+                 hydro::Tags::LorentzFactor<DataType>,
+                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::DivergenceCleaningField<DataType>>;
+
+  template <
+      typename DataType, typename Tag,
+      Requires<not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>> = nullptr>
+  tuples::TaggedTuple<Tag> variables(
+      const tnsr::I<DataType, 3>& x, tmpl::list<Tag> /*meta*/,
+      const IntermediateVars<DataType>& /*vars*/) const noexcept {
+    return {std::move(get<Tag>(background_spacetime_.variables(
+        x, 0.0, gr::Solutions::KerrSchild::tags<DataType>{})))};
+  }
 
   template <typename DataType>
   struct IntermediateVars {
