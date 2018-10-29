@@ -10,6 +10,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <pup.h>
 #include <type_traits>
@@ -222,26 +223,22 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   friend bool operator==(const AdamsBashforthN& lhs,
                          const AdamsBashforthN& rhs) noexcept;
 
-  template <typename Vars, typename DerivVars>
+  // Some of the private methods take a parameter of type "Delta".
+  // Delta is expected to be a TimeDelta or an ApproximateTimeDelta.
+  // The former case will detect and optimize the constant-time-step
+  // case, while the latter is necessary for dense output.
+
+  template <typename Vars, typename DerivVars, typename Delta>
   void update_u_impl(gsl::not_null<Vars*> u,
                      const History<Vars, DerivVars>& history,
-                     const std::vector<double>& coefficients,
-                     double time_step) const noexcept;
+                     const Delta& time_step) const noexcept;
 
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
-  template <typename Iterator>
+  template <typename Iterator, typename Delta>
   static std::vector<double> get_coefficients(const Iterator& times_begin,
                                               const Iterator& times_end,
-                                              const TimeDelta& step) noexcept;
-  // This version is for dense output, where the output time cannot
-  // necessarily be represented as a Time.  Less likely to detect a
-  // constant step size "standard AB step" than the first version, but
-  // that should be very uncommon as a dense output pattern.
-  template <typename Iterator>
-  static std::vector<double> get_coefficients(const Iterator& times_begin,
-                                              const Iterator& times_end,
-                                              double step) noexcept;
+                                              const Delta& step) noexcept;
 
   static std::vector<double> get_coefficients_impl(
       const std::vector<double>& steps) noexcept;
@@ -250,6 +247,19 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
       const std::vector<double>& steps) noexcept;
 
   static std::vector<double> constant_coefficients(size_t order) noexcept;
+
+  // TimeDelta-like interface to a double used for dense output
+  struct ApproximateTimeDelta {
+    double delta = std::numeric_limits<double>::signaling_NaN();
+    double value() const noexcept { return delta; }
+
+    // Only the operators that are actually used are defined.
+    friend double operator/(
+        const TimeDelta& a,
+        const AdamsBashforthN::ApproximateTimeDelta& b) noexcept {
+      return a.value() / b.value();
+    }
+  };
 
   /// Comparator for ordering by "simulation time"
   class SimulationLess {
@@ -276,9 +286,7 @@ void AdamsBashforthN::update_u(
     const gsl::not_null<Vars*> u,
     const gsl::not_null<History<Vars, DerivVars>*> history,
     const TimeDelta& time_step) const noexcept {
-  update_u_impl(u, *history,
-                get_coefficients(history->begin(), history->end(), time_step),
-                time_step.value());
+  update_u_impl(u, *history, time_step);
   history->mark_unneeded(history->begin() + 1);
 }
 
@@ -286,25 +294,26 @@ template <typename Vars, typename DerivVars>
 Vars AdamsBashforthN::dense_output(const History<Vars, DerivVars>& history,
                                    const double time) const noexcept {
   auto result = (history.end() - 1).value();
-  const double time_step = time - history[history.size() - 1].value();
-  update_u_impl(make_not_null(&result), history,
-                get_coefficients(history.begin(), history.end(), time_step),
-                time_step);
+  const ApproximateTimeDelta time_step{
+      time - history[history.size() - 1].value()};
+  update_u_impl(make_not_null(&result), history, time_step);
   return result;
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars, typename DerivVars, typename Delta>
 void AdamsBashforthN::update_u_impl(const gsl::not_null<Vars*> u,
                                     const History<Vars, DerivVars>& history,
-                                    const std::vector<double>& coefficients,
-                                    const double time_step) const noexcept {
+                                    const Delta& time_step) const noexcept {
   ASSERT(history.size() <= order_,
          "Length of history (" << history.size() << ") "
          << "should not exceed target order (" << order_ << ")");
 
+  const auto& coefficients =
+      get_coefficients(history.begin(), history.end(), time_step);
+
   const auto do_update =
       [u, &time_step, &coefficients, &history](auto order) noexcept {
-    *u += time_step * constexpr_sum<order>(
+    *u += time_step.value() * constexpr_sum<order>(
         [order, &coefficients, &history](auto i) noexcept {
           return coefficients[order - 1 - i] *
               (history.begin() +
@@ -624,10 +633,10 @@ bool AdamsBashforthN::can_change_step_size(
           std::is_sorted(history.begin(), history.end(), less));
 }
 
-template <typename Iterator>
+template <typename Iterator, typename Delta>
 std::vector<double> AdamsBashforthN::get_coefficients(
     const Iterator& times_begin, const Iterator& times_end,
-    const TimeDelta& step) noexcept {
+    const Delta& step) noexcept {
   ASSERT(times_begin != times_end, "No history provided");
   std::vector<double> steps;
   // This may be slightly more space than we need, but we can't get
@@ -640,22 +649,4 @@ std::vector<double> AdamsBashforthN::get_coefficients(
   steps.push_back(1.);
   return get_coefficients_impl(steps);
 }
-
-template <typename Iterator>
-std::vector<double> AdamsBashforthN::get_coefficients(
-    const Iterator& times_begin, const Iterator& times_end,
-    const double step) noexcept {
-  ASSERT(times_begin != times_end, "No history provided");
-  std::vector<double> steps;
-  // This may be slightly more space than we need, but we can't get
-  // the exact amount without iterating through the iterators, which
-  // is not necessarily cheap depending on the iterator type.
-  steps.reserve(maximum_order);
-  for (auto t = times_begin; std::next(t) != times_end; ++t) {
-    steps.push_back((*std::next(t) - *t).value() / step);
-  }
-  steps.push_back(1.);
-  return get_coefficients_impl(steps);
-}
-
 }  // namespace TimeSteppers
