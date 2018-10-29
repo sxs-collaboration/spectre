@@ -134,6 +134,8 @@ class BondiMichel {
                                    polytropic_constant_,
                                    polytropic_exponent_,
                                    bernoulli_constant_squared_minus_one_,
+                                   sonic_radius_,
+                                   sonic_density_,
                                    x};
     return {get<Tags>(variables(x, tmpl::list<Tags>{}, intermediate_vars))...};
   }
@@ -146,7 +148,8 @@ class BondiMichel {
         IntermediateVars<DataType>{rest_mass_density_at_infinity_,
                                    mass_accretion_rate_over_four_pi_, mass_,
                                    polytropic_constant_, polytropic_exponent_,
-                                   bernoulli_constant_squared_minus_one_, x});
+                                   bernoulli_constant_squared_minus_one_,
+                                   sonic_radius_, sonic_density_, x});
   }
 
   // @{
@@ -226,6 +229,7 @@ class BondiMichel {
                      double in_polytropic_constant,
                      double in_polytropic_exponent,
                      double in_bernoulli_constant_squared_minus_one,
+                     double in_sonic_radius, double in_sonic_density,
                      const tnsr::I<DataType, 3>& x) noexcept;
     DataType radius{};
     DataType rest_mass_density{};
@@ -234,6 +238,8 @@ class BondiMichel {
     double polytropic_constant{};
     double polytropic_exponent{};
     double bernoulli_constant_squared_minus_one{};
+    double sonic_radius{};
+    double sonic_density{};
     double bernoulli_root_function(double rest_mass_density_guess,
                                    double current_radius) const noexcept;
   };
