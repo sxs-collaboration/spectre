@@ -27,6 +27,7 @@
 #include "Options/Options.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -496,14 +497,20 @@ struct InterfaceSubitemsImpl {
     }
   }
 
+  // The `return_type` can be anything for Subitems because the DataBox figures
+  // out the correct return type, we just use the `return_type` type alias to
+  // signal to the DataBox we want mutating behavior.
+  using return_type = NoSuchType;
+
   template <typename Subtag>
-  static auto create_compute_item(const item_type<tag>& parent_value) noexcept {
-    item_type<Subtag> sub_value;
+  static void create_compute_item(
+      const gsl::not_null<item_type<Subtag>*> sub_value,
+      const item_type<tag>& parent_value) noexcept {
     for (const auto& direction_vars : parent_value) {
       const auto& direction = direction_vars.first;
       const auto& parent_vars =
           get<typename Subtag::tag>(direction_vars.second);
-      auto& sub_var = sub_value[direction];
+      auto& sub_var = (*sub_value)[direction];
       auto sub_var_it = sub_var.begin();
       for (auto vars_it = parent_vars.begin();
            vars_it != parent_vars.end(); ++vars_it, ++sub_var_it) {
@@ -518,7 +525,6 @@ struct InterfaceSubitemsImpl {
         sub_var_it->set_data_ref(const_cast<DataVector*>(&*vars_it));  // NOLINT
       }
     }
-    return sub_value;
   }
 };
 }  // namespace detail
