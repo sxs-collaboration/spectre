@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Shell.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp" // IWYU pragma: keep
@@ -28,9 +29,6 @@
 
 /// \cond
 class DataVector;
-namespace Frame {
-struct Inertial;
-}  // namespace Frame
 namespace intrp {
 namespace Tags {
 struct IndicesOfFilledInterpPoints;
@@ -56,8 +54,7 @@ struct mock_interpolation_target {
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3,
-                                                            ::Frame::Inertial>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
 };
 
 struct MockComputeTargetPoints {
@@ -93,6 +90,7 @@ struct MockMetavariables {
     using compute_target_points = MockComputeTargetPoints;
   };
   using temporal_id = Time;
+  using domain_frame = Frame::Inertial;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;

@@ -151,16 +151,13 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using action_list = tmpl::list<>;
   using component_being_mocked =
-      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3,
-                                 Frame::Inertial>;
+      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3>;
   using initial_databox = db::compute_databox_type<
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3,
-                                                            ::Frame::Inertial>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
 
   using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<intrp::Actions::LineSegment<InterpolationTargetTag, 3,
-                                             Frame::Inertial>>>;
+      tmpl::list<intrp::Actions::LineSegment<InterpolationTargetTag, 3>>>;
 };
 
 template <typename Metavariables, size_t VolumeDim>
@@ -182,7 +179,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::Actions::LineSegment<InterpolationTargetA, 3, Frame::Inertial>;
+        intrp::Actions::LineSegment<InterpolationTargetA, 3>;
     using post_interpolation_callback =
         TestFunction<InterpolationTargetA, Tags::Square>;
     // This tag is also an OptionsTag. The type and help string below
@@ -195,7 +192,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<Tags::NegateComputeItem>;
     using compute_target_points =
-        intrp::Actions::LineSegment<InterpolationTargetB, 3, Frame::Inertial>;
+        intrp::Actions::LineSegment<InterpolationTargetB, 3>;
     using post_interpolation_callback =
         TestFunction<InterpolationTargetB, Tags::Negate>;
     // This tag is also an OptionsTag. The type and help string below
@@ -208,6 +205,7 @@ struct MockMetavariables {
   using interpolation_target_tags =
       tmpl::list<InterpolationTargetA, InterpolationTargetB>;
   using temporal_id = Time;
+  using domain_frame = Frame::Inertial;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
@@ -322,9 +320,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                          5.0 * get<2>(inertial_coords);
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
-    runner.simple_action<
-        mock_interpolator<metavars, 3>,
-        intrp::Actions::InterpolatorReceiveVolumeData<Frame::Inertial>>(
+    runner.simple_action<mock_interpolator<metavars, 3>,
+                         intrp::Actions::InterpolatorReceiveVolumeData>(
         0, temporal_id, element_id, mesh, std::move(output_vars));
   }
 

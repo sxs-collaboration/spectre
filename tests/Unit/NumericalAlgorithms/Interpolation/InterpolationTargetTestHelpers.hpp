@@ -35,7 +35,7 @@
 /// \cond
 namespace intrp {
 namespace Actions {
-template <typename InterpolationTargetTag, typename Frame>
+template <typename InterpolationTargetTag>
 struct ReceivePoints;
 }  // namespace Actions
 }  // namespace intrp
@@ -77,8 +77,7 @@ struct mock_interpolation_target {
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3,
-                                                            ::Frame::Inertial>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
 };
 
 template <typename InterpolationTargetTag>
@@ -133,7 +132,7 @@ struct mock_interpolator {
 
   using component_being_mocked = intrp::Interpolator<Metavariables, VolumeDim>;
   using replace_these_simple_actions = tmpl::list<intrp::Actions::ReceivePoints<
-      typename Metavariables::InterpolationTargetA, Frame::Inertial>>;
+      typename Metavariables::InterpolationTargetA>>;
   using with_these_simple_actions = tmpl::list<
       MockReceivePoints<typename Metavariables::InterpolationTargetA>>;
 };

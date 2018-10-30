@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Shell.hpp"
@@ -25,9 +26,6 @@
 
 /// \cond
 class DataVector;
-namespace Frame {
-struct Inertial;
-}  // namespace Frame
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct Domain;
@@ -45,8 +43,7 @@ struct mock_interpolation_target {
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3,
-                                                            ::Frame::Inertial>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
 };
 
 struct MockMetavariables {
@@ -55,6 +52,7 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
   using temporal_id = Time;
+  using domain_frame = Frame::Inertial;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;

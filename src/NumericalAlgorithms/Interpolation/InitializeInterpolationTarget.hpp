@@ -37,28 +37,30 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
   /// For requirements on Metavariables, see InterpolationTarget
-  template <typename Metavariables, size_t VolumeDim, typename Frame>
+  template <typename Metavariables, size_t VolumeDim>
   using return_tag_list = tmpl::list<
       Tags::IndicesOfFilledInterpPoints, Tags::TemporalIds<Metavariables>,
-      ::Tags::Domain<VolumeDim, Frame>,
+      ::Tags::Domain<VolumeDim, typename Metavariables::domain_frame>,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent, size_t VolumeDim,
-            typename Frame>
+            typename ActionList, typename ParallelComponent, size_t VolumeDim>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    Domain<VolumeDim, Frame>&& domain) noexcept {
-    return std::make_tuple(db::create<db::get_items<return_tag_list<
-                               Metavariables, VolumeDim, Frame>>>(
-        db::item_type<Tags::IndicesOfFilledInterpPoints>{},
-        db::item_type<Tags::TemporalIds<Metavariables>>{}, std::move(domain),
-        db::item_type<::Tags::Variables<typename InterpolationTargetTag::
-                                            vars_to_interpolate_to_target>>{}));
+                    Domain<VolumeDim, typename Metavariables::domain_frame>&&
+                        domain) noexcept {
+    return std::make_tuple(
+        db::create<db::get_items<return_tag_list<Metavariables, VolumeDim>>>(
+            db::item_type<Tags::IndicesOfFilledInterpPoints>{},
+            db::item_type<Tags::TemporalIds<Metavariables>>{},
+            std::move(domain),
+            db::item_type<
+                ::Tags::Variables<typename InterpolationTargetTag::
+                                      vars_to_interpolate_to_target>>{}));
   }
 };
 

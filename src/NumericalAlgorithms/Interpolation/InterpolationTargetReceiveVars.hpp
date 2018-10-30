@@ -24,7 +24,7 @@ namespace intrp {
 template <class Metavariables, size_t VolumeDim>
 struct Interpolator;
 template <typename Metavariables, typename InterpolationTargetTag,
-          size_t VolumeDim, typename Frame>
+          size_t VolumeDim>
 class InterpolationTarget;
 namespace Actions {
 template <typename InterpolationTargetTag, size_t VolumeDim>
@@ -48,7 +48,7 @@ namespace InterpolationTarget_detail {
 /// Calls the callback function, tells interpolators to clean up the current
 /// temporal_id, and then if there are more temporal_ids to be interpolated,
 /// starts the next one.
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame,
+template <typename InterpolationTargetTag, size_t VolumeDim,
           typename DbTags, typename Metavariables>
 void callback_and_cleanup(
     const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -88,7 +88,7 @@ void callback_and_cleanup(
   const auto& temporal_ids = db::get<Tags::TemporalIds<Metavariables>>(*box);
   if (not temporal_ids.empty()) {
     auto& my_proxy = Parallel::get_parallel_component<InterpolationTarget<
-        Metavariables, InterpolationTargetTag, VolumeDim, Frame>>(*cache);
+        Metavariables, InterpolationTargetTag, VolumeDim>>(*cache);
     Parallel::simple_action<
         typename InterpolationTargetTag::compute_target_points>(
         my_proxy, temporal_ids.front());
@@ -128,7 +128,7 @@ namespace Actions {
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct InterpolationTargetReceiveVars {
   /// For requirements on Metavariables, see InterpolationTarget
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -193,7 +193,7 @@ struct InterpolationTargetReceiveVars {
             .number_of_grid_points()) {
       // All the points have been interpolated.
       InterpolationTarget_detail::callback_and_cleanup<InterpolationTargetTag,
-                                                       VolumeDim, Frame>(
+                                                       VolumeDim>(
           make_not_null(&box), make_not_null(&cache));
     }
   }
