@@ -4,7 +4,21 @@
 import numpy as np
 
 
+# Functions for testing AlfvenSpeedSquared.cpp
+
+
+def alfven_speed_squared(comoving_magnetic_field_squared, rest_mass_density,
+                         specific_enthalpy):
+    return (comoving_magnetic_field_squared /
+            (comoving_magnetic_field_squared +
+             rest_mass_density * specific_enthalpy))
+
+
+# End functions for testing AlfvenSpeedSquared.cpp
+
 # Functions for testing ComovingMagneticField.cpp
+
+
 def comoving_magnetic_field(eulerian_b_field, transport_velocity,
                             spatial_velocity_oneform, lorentz_factor, lapse):
     result = np.zeros(transport_velocity.size + 1)

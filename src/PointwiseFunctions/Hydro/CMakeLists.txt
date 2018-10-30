@@ -4,6 +4,7 @@
 set(LIBRARY Hydro)
 
 set(LIBRARY_SOURCES
+  AlfvenSpeedSquared.cpp
   ComovingMagneticField.cpp
   EquationsOfState/DarkEnergyFluid.cpp
   EquationsOfState/IdealFluid.cpp
