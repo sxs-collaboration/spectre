@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   EquationsOfState/Test_DarkEnergyFluid.cpp
   EquationsOfState/Test_IdealFluid.cpp
   EquationsOfState/Test_PolytropicFluid.cpp
+  Test_ComovingMagneticField.cpp
   Test_LorentzFactor.cpp
   Test_SpecificEnthalpy.cpp
   Test_Tags.cpp
