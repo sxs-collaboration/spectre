@@ -3,7 +3,7 @@
 
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 
-#include <pup.h>
+#include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -15,14 +15,18 @@
 
 namespace VariableFixing {
 
-FixToAtmosphere<1>::FixToAtmosphere(const double density_of_atmosphere) noexcept
+template <size_t ThermodynamicDim>
+FixToAtmosphere<ThermodynamicDim>::FixToAtmosphere(
+    const double density_of_atmosphere) noexcept
     : density_of_atmosphere_(density_of_atmosphere) {}
 
 // clang-tidy: google-runtime-references
-void FixToAtmosphere<1>::pup(PUP::er& p) noexcept {  // NOLINT
+template <size_t ThermodynamicDim>
+void FixToAtmosphere<ThermodynamicDim>::pup(PUP::er& p) noexcept {  // NOLINT
   p | density_of_atmosphere_;
 }
 
+template <>
 void FixToAtmosphere<1>::operator()(
     gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
@@ -51,8 +55,39 @@ void FixToAtmosphere<1>::operator()(
   }
 }
 
-bool operator==(const FixToAtmosphere<1>& lhs,
-                const FixToAtmosphere<1>& rhs) noexcept {
+template <>
+void FixToAtmosphere<2>::operator()(
+    gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
+    gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+    gsl::not_null<Scalar<DataVector>*> pressure,
+    gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const EquationsOfState::EquationOfState<true, 2>& equation_of_state) const
+    noexcept {
+  for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
+    if (UNLIKELY(rest_mass_density->get()[i] < density_of_atmosphere_)) {
+      rest_mass_density->get()[i] = density_of_atmosphere_;
+      specific_internal_energy->get()[i] = 0.0;
+      for (size_t d = 0; d < 3; ++d) {
+        spatial_velocity->get(d)[i] = 0.0;
+      }
+      lorentz_factor->get()[i] = 1.0;
+      Scalar<double> atmosphere_density{density_of_atmosphere_};
+      Scalar<double> atmosphere_energy{0.0};
+      pressure->get()[i] =
+          get(equation_of_state.pressure_from_density_and_energy(
+              atmosphere_density, atmosphere_energy));
+      specific_enthalpy->get()[i] =
+          get(equation_of_state.specific_enthalpy_from_density_and_energy(
+              atmosphere_density, atmosphere_energy));
+    }
+  }
+}
+
+template <size_t LocalThermodynamicDim>
+bool operator==(const FixToAtmosphere<LocalThermodynamicDim>& lhs,
+                const FixToAtmosphere<LocalThermodynamicDim>& rhs) noexcept {
   return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_;
 }
 
@@ -64,12 +99,16 @@ bool operator!=(const FixToAtmosphere<ThermodynamicDim>& lhs,
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                   \
-  template bool operator!=(                      \
-      const FixToAtmosphere<GET_DIM(data)>& lhs, \
+#define INSTANTIATION(r, data)                             \
+  template class FixToAtmosphere<GET_DIM(data)>;           \
+  template bool operator==(                                \
+      const FixToAtmosphere<GET_DIM(data)>& lhs,           \
+      const FixToAtmosphere<GET_DIM(data)>& rhs) noexcept; \
+  template bool operator!=(                                \
+      const FixToAtmosphere<GET_DIM(data)>& lhs,           \
       const FixToAtmosphere<GET_DIM(data)>& rhs) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
 #undef GET_DIM
 #undef INSTANTIATION
