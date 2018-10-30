@@ -292,7 +292,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
 
   // Tell the interpolator how many elements there are by registering
   // each one.
-  for (const auto& element_id : element_ids) {
+  for (size_t i = 0; i < element_ids.size(); ++i) {
     runner.simple_action<mock_interpolator<metavars, 3>,
                          intrp::Actions::RegisterElement>(0);
   }
