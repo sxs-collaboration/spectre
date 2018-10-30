@@ -21,3 +21,12 @@ def specific_enthalpy(rest_mass_density, specific_internal_energy, pressure):
 
 
 # End functions for testing SpecificEnthalpy.cpp
+
+# Functions for testing TransportVelocity.cpp
+
+
+def transport_velocity(spatial_velocity, lapse, shift):
+    return lapse * spatial_velocity[0:] - shift[0:]
+
+
+# End functions for testing TransportVelocity.cpp

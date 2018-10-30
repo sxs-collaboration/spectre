@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   EquationsOfState/PolytropicFluid.cpp
   LorentzFactor.cpp
   SpecificEnthalpy.cpp
+  TransportVelocity.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

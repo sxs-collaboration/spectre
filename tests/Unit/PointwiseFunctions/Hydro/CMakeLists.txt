@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_LorentzFactor.cpp
   Test_SpecificEnthalpy.cpp
   Test_Tags.cpp
+  Test_TransportVelocity.cpp
   )
 
 add_test_library(
