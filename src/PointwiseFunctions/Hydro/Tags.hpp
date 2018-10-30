@@ -24,9 +24,9 @@ struct AlfvenSpeedSquared : db::SimpleTag {
   static std::string name() noexcept { return "AlfvenSpeedSquared"; }
 };
 
-/// The magnetic field \f$b^\mu = u_\nu F^{\mu \nu}\f$ measured by an observer
-/// comoving with the fluid with 4-velocity \f$u_\nu\f$ where \f$F^{\mu \nu}\f$
-/// is the Faraday tensor.
+/// The magnetic field \f$b^\mu = \overset{*}{F^{\mu \nu}}u_\nu\f$ measured by
+/// an observer comoving with the fluid with 4-velocity \f$u_\nu\f$ where
+/// \f$\overset{*}{F^{\mu \nu}}\f$ is the dual of the Faraday tensor.
 template <typename DataType, size_t Dim, typename Fr>
 struct ComovingMagneticField : db::SimpleTag {
   using type = tnsr::A<DataType, Dim, Fr>;
@@ -59,9 +59,10 @@ struct LorentzFactor : db::SimpleTag {
   static std::string name() noexcept { return "LorentzFactor"; }
 };
 
-/// The magnetic field \f$B^i = n_\mu F^{i \mu}\f$ measured by an Eulerian
-/// observer, where \f$n_\mu\f$ is the normal to the spatial hypersurface and
-/// \f$F^{\mu \nu}\f$ is the Faraday tensor.
+/// The magnetic field \f$B^i = \overset{*}{F^{i\nu}}n_\nu\f$ measured by an
+/// Eulerian observer, where \f$n_\mu\f$ is the normal to the spatial
+/// hypersurface and \f$\overset{*}{F^{\mu\nu}}\f$ is the dual of the Faraday
+/// tensor.
 template <typename DataType, size_t Dim, typename Fr>
 struct MagneticField : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
