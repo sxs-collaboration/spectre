@@ -32,10 +32,10 @@ namespace Solutions {
 /*!
  * \brief Fluid disk orbiting a Kerr black hole
  *
- * The Fishbone-Moncrief solution to the 3D relativistic Euler system,
- * representing the isentropic flow of a thick fluid disk orbiting a Kerr black
- * hole. In Boyer-Lindquist coordinates \f$(t, r, \theta, \phi)\f$, the flow is
- * assumed to be purely toroidal,
+ * The Fishbone-Moncrief solution to the 3D relativistic Euler system
+ * \cite fishbone1976apj, representing the isentropic flow of a thick fluid disk
+ * orbiting a Kerr black hole. In Boyer-Lindquist coordinates
+ * \f$(t, r, \theta, \phi)\f$, the flow is assumed to be purely toroidal,
  *
  * \f{align*}
  * u^\mu = (u^t, 0, 0, u^\phi),
@@ -44,10 +44,15 @@ namespace Solutions {
  * where \f$u^\mu\f$ is the 4-velocity. Then, all the fluid quantities are
  * assumed to share the same symmetries as those of the background spacetime,
  * namely they are stationary (independent of \f$t\f$), and axially symmetric
- * (independent of \f$\phi\f$). Self-gravity is neglected, so that the fluid
+ * (independent of \f$\phi\f$). Note that \f$r\f$ and \f$\theta\f$ can also be
+ * interpreted as Kerr (a.k.a. "spherical" Kerr-Schild) coordinates
+ * (see gr::KerrSchildCoords), and that the symmetries of the equilibrium ensure
+ * that \f$u^\mu\f$ as defined above is also the 4-velocity in Kerr coordinates.
+ *
+ * Self-gravity is neglected, so that the fluid
  * variables are determined as functions of the metric. Following the treatment
- * by Kozlowski et al. (1978) (but using signature +2) the solution is
- * expressed in terms of the quantities
+ * by Kozlowski et al. \cite Kozlowski1978aa (but using signature +2)
+ * the solution is expressed in terms of the quantities
  *
  * \f{align*}
  * \Omega &= \dfrac{u^\phi}{u^t},\\
@@ -119,35 +124,18 @@ namespace Solutions {
  * p = K\rho^\gamma.
  * \f}
  *
- * Once all the variables are known in Boyer-Lindquist coordinates, it is
- * straightforward to write them in Kerr-Schild coordinates. The coordinate
- * transformation
- *
- * \f{align*}
- * t_\text{KS} &= t\\
- * x &= \sqrt{r^2 + a^2}\sin\theta\cos\phi\\
- * y &= \sqrt{r^2 + a^2}\sin\theta\sin\phi\\
- * z &= r\cos\theta
- * \f}
- *
- * helps read the Jacobian matrix, which, applied to the azimuthal flow of the
- * disk, gives
+ * Once all the variables are known in Boyer-Lindquist (or Kerr) coordinates, it
+ * is straightforward to write them in Cartesian Kerr-Schild coordinates. The
+ * coordinate transformation in gr::KerrSchildCoords helps read the Jacobian
+ * matrix, which, applied to the azimuthal flow of the disk, gives
  *
  * \f{align*}
  * u_\text{KS}^\mu = u^t(1, -y\Omega, x\Omega, 0),
  * \f}
  *
  * where \f$u^t\f$ and \f$\Omega\f$ are now understood as functions of the
- * Kerr-Schild coordinates, for which the relations
- *
- * \f{align*}
- * r^2 &= \frac{1}{2}\left(x^2 + y^2 + z^2 - a^2 +
- * \sqrt{(x^2 + y^2 + z^2 - a^2)^2 + 4a^2z^2}\right)\\
- * \theta &= \cos^{-1}\left(\frac{z}{r}\right)
- * \f}
- *
- * are needed. Finally, the spatial velocity can be readily obtained from its
- * definition,
+ * Kerr-Schild coordinates. Finally, the spatial velocity can be readily
+ * obtained from its definition,
  *
  * \f{align*}
  * \alpha v^i = \frac{u^i}{u^t} + \beta^i,
@@ -156,7 +144,8 @@ namespace Solutions {
  * where \f$\alpha\f$ and \f$\beta^i\f$ are the lapse and the shift,
  * respectively.
  *
- * \note Kozlowski et al. (1978) denote \f$l_* = u_\phi u^t\f$ in order to
+ * \note Kozlowski et al. \cite Kozlowski1978aa denote
+ * \f$l_* = u_\phi u^t\f$ in order to
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
  */
 class FishboneMoncriefDisk {
