@@ -21,9 +21,14 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
+// IWYU pragma: no_include <algorithm>
+
 namespace funcl {
 using std::imag;
 using std::real;
+using std::max;
+using std::min;
+
 // clang-tidy : suppress warning from no-paren on macro parameter, macro doesn't
 // work when it's in parens. Same for all subsequent macros.
 #define MAKE_UNARY_TEST(STRUCTNAME, FUNC)                                  \
@@ -135,6 +140,8 @@ MAKE_UNARY_TEST(Tanh, tanh);
 
 MAKE_BINARY_TEST(Atan2, atan2);
 MAKE_BINARY_TEST(Hypot, hypot);
+MAKE_BINARY_TEST(Max, max);
+MAKE_BINARY_TEST(Min, min);
 MAKE_BINARY_TEST(Pow, pow);
 
 MAKE_BINARY_OP_TEST(Divides, /);
@@ -365,6 +372,10 @@ void test_real_functions(Gen& gen) noexcept {
       std::make_tuple(std::make_tuple(TestFuncEvalAtan2{}, generic),
                       std::make_tuple(TestFuncEvalHypot{}, generic));
 
+  auto same_just_real_binaries =
+      std::make_tuple(std::make_tuple(TestFuncEvalMax{}, generic),
+                      std::make_tuple(TestFuncEvalMin{}, generic));
+
   auto real_unaries =
       std::make_tuple(std::make_tuple(TestFuncEvalCbrt{}, positive),
                       std::make_tuple(TestFuncEvalErf{}, generic),
@@ -376,8 +387,9 @@ void test_real_functions(Gen& gen) noexcept {
 
   auto real_binaries = std::tuple_cat(just_real_binaries, generic_binaries);
 
-  tmpl::for_each<RealTypeList>([&gen, &real_binaries,
-                                &real_unaries ](auto x) noexcept {
+  tmpl::for_each<RealTypeList>([
+    &gen, &real_binaries, &same_just_real_binaries, &real_unaries
+  ](auto x) noexcept {
     using DistType1 =
         typename tt::get_fundamental_type_t<typename decltype(x)::type>;
     tmpl::for_each<tmpl::make_sequence<
@@ -388,6 +400,18 @@ void test_real_functions(Gen& gen) noexcept {
           std::get<0>(tup)(
               gen, UniformCustomDistribution<DistType1>{std::get<Bound>(tup)},
               x);
+        });
+
+    tmpl::for_each<tmpl::make_sequence<
+        std::integral_constant<size_t, 0>,
+        std::tuple_size<decltype(same_just_real_binaries)>::value,
+        tmpl::next<tmpl::_1>>>(
+        [&gen, &x, &same_just_real_binaries ](auto index) noexcept {
+          auto& tup =
+              std::get<decltype(index)::type::value>(same_just_real_binaries);
+          std::get<0>(tup)(
+              gen, UniformCustomDistribution<DistType1>{std::get<Bound>(tup)},
+              UniformCustomDistribution<DistType1>{std::get<Bound>(tup)}, x, x);
         });
 
     tmpl::for_each<RealTypeList>([&gen, &real_binaries, &x ](auto y) noexcept {
