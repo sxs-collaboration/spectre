@@ -6,6 +6,7 @@ set(LIBRARY "Test_Spectral")
 set(LIBRARY_SOURCES
   Test_ChebyshevGauss.cpp
   Test_ChebyshevGaussLobatto.cpp
+  Test_ComplexDataView.cpp
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
   Test_Projection.cpp
