@@ -80,9 +80,17 @@ class Shell : public DomainCreator<3, TargetFrame> {
     static constexpr type default_value() noexcept { return ShellWedges::All; }
   };
 
+  struct RadialBlockLayers {
+    using type = size_t;
+    static constexpr OptionString help = {
+        "The number of concentric layers of Blocks to have."};
+    static constexpr type default_value() noexcept { return 1; }
+    static type lower_bound() { return 1; }
+  };
+
   using options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
                              InitialGridPoints, UseEquiangularMap, AspectRatio,
-                             UseLogarithmicMap, WhichWedges>;
+                             UseLogarithmicMap, WhichWedges, RadialBlockLayers>;
 
   static constexpr OptionString help{
       "Creates a 3D spherical shell with 6 Blocks. `UseEquiangularMap` has\n"
@@ -95,7 +103,8 @@ class Shell : public DomainCreator<3, TargetFrame> {
       "the radial gridpoints will be spaced uniformly in \f$log(r)\f$. The\n"
       "user may also choose to use only a single wedge (along the -x\n"
       "direction), or four wedges along the x-y plane using the `WhichWedges`\n"
-      "option."};
+      "option. Using the RadialBlockLayers option, a user may increase the\n"
+      "number of Blocks in the radial direction."};
 
   Shell(typename InnerRadius::type inner_radius,
         typename OuterRadius::type outer_radius,
@@ -104,7 +113,8 @@ class Shell : public DomainCreator<3, TargetFrame> {
         typename UseEquiangularMap::type use_equiangular_map,
         typename AspectRatio::type aspect_ratio = 1.0,
         typename UseLogarithmicMap::type use_logarithmic_map = false,
-        typename WhichWedges::type which_wedges = ShellWedges::All) noexcept;
+        typename WhichWedges::type which_wedges = ShellWedges::All,
+        typename RadialBlockLayers::type number_of_layers = 1) noexcept;
 
   Shell() = default;
   Shell(const Shell&) = delete;
@@ -129,5 +139,6 @@ class Shell : public DomainCreator<3, TargetFrame> {
   typename AspectRatio::type aspect_ratio_ = 1.0;
   typename UseLogarithmicMap::type use_logarithmic_map_ = false;
   typename WhichWedges::type which_wedges_ = ShellWedges::All;
+  typename RadialBlockLayers::type number_of_layers_ = 1;
 };
 }  // namespace DomainCreators
