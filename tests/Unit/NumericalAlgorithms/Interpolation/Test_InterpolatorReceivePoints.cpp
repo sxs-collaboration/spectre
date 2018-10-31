@@ -37,7 +37,7 @@
 /// \cond
 namespace intrp {
 namespace Actions {
-template <typename InterpolationTargetTag, size_t VolumeDim>
+template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars;
 }  // namespace Actions
 }  // namespace intrp
@@ -51,7 +51,7 @@ class DataBox;
 }  // namespace db
 namespace intrp {
 namespace Tags {
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct InterpolatedVarsHolders;
 template <typename Metavariables>
 struct TemporalIds;
@@ -66,7 +66,7 @@ struct Variables;
 namespace {
 
 size_t num_calls_of_target_receive_vars = 0;
-template <typename InterpolationTargetTag, size_t VolumeDim>
+template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
   template <
       typename DbTags, typename... InboxTags, typename Metavariables,
@@ -104,21 +104,21 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using component_being_mocked =
-      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3>;
+      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
-          typename Metavariables::InterpolationTargetA, 3>>;
+          typename Metavariables::InterpolationTargetA>>;
   using with_these_simple_actions =
       tmpl::list<MockInterpolationTargetReceiveVars<
-          typename Metavariables::InterpolationTargetA, 3>>;
+          typename Metavariables::InterpolationTargetA>>;
 };
 
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -126,8 +126,8 @@ struct mock_interpolator {
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox =
-      db::compute_databox_type<typename intrp::Actions::InitializeInterpolator<
-          VolumeDim>::template return_tag_list<Metavariables>>;
+      db::compute_databox_type<typename intrp::Actions::InitializeInterpolator::
+                                   template return_tag_list<Metavariables>>;
   using component_being_mocked = void;  // not needed.
 };
 
@@ -141,9 +141,10 @@ struct MockMetavariables {
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using temporal_id = Time;
   using domain_frame = Frame::Inertial;
+  static constexpr size_t domain_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
-      mock_interpolator<MockMetavariables, 3>>;
+      mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialize, Exit };
 };
@@ -157,26 +158,26 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   TupleOfMockDistributedObjects dist_objects{};
   using MockDistributedObjectsTagInterpolator =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolator<metavars, 3>>;
+          mock_interpolator<metavars>>;
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars, 3>>{});
+                      mock_interpolator<metavars>>{});
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
-  runner.simple_action<mock_interpolator<metavars, 3>,
-                       ::intrp::Actions::InitializeInterpolator<3>>(0);
+  runner.simple_action<mock_interpolator<metavars>,
+                       ::intrp::Actions::InitializeInterpolator>(0);
 
   // Make sure that we have one Element registered,
   // or else ReceivePoints will (correctly) do nothing because it
   // thinks it will never have any Elements to interpolate onto.
-  runner.simple_action<mock_interpolator<metavars, 3>,
+  runner.simple_action<mock_interpolator<metavars>,
                        ::intrp::Actions::RegisterElement>(0);
 
   const auto& box =
-      runner.template algorithms<mock_interpolator<metavars, 3>>()
+      runner.template algorithms<mock_interpolator<metavars>>()
           .at(0)
           .template get_databox<
-              typename mock_interpolator<metavars, 3>::initial_databox>();
+              typename mock_interpolator<metavars>::initial_databox>();
 
   const auto domain_creator =
       DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
@@ -196,14 +197,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   Time temporal_id(slab, Rational(11, 15));
 
   runner.simple_action<
-      mock_interpolator<metavars, 3>,
+      mock_interpolator<metavars>,
       intrp::Actions::ReceivePoints<metavars::InterpolationTargetA>>(
       0, temporal_id, block_logical_coords);
 
   const auto& holders =
-      db::get<intrp::Tags::InterpolatedVarsHolders<metavars, 3>>(box);
+      db::get<intrp::Tags::InterpolatedVarsHolders<metavars>>(box);
   const auto& holder =
-      get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars, 3>>(
+      get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars>>(
           holders);
 
   // Should now be a single info in holder, indexed by temporal_id.
@@ -221,7 +222,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   CHECK(vars_info.block_coord_holders == block_logical_coords);
 
   // There should be no more queued actions; verify this.
-  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars, 3>>(0));
+  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars>>(0));
 
   // Make sure that the action was not called.
   CHECK(num_calls_of_target_receive_vars == 0);

@@ -69,11 +69,12 @@ struct Info {
 /// `Holder`s for all `InterpolationTargetTags` are held in a single
 /// `TaggedTuple` that is in the `Interpolator`'s `DataBox` with the
 /// tag `Tags::InterpolatedVarsHolders`.
-template <typename Metavariables, size_t VolumeDim,
+template <typename Metavariables,
           typename InterpolationTargetTag, typename TagList>
 struct Holder {
-  std::unordered_map<typename Metavariables::temporal_id,
-                     Info<VolumeDim, TagList>>
+  std::unordered_map<
+      typename Metavariables::temporal_id,
+      Info<Metavariables::domain_dim, TagList>>
       infos;
   std::unordered_set<typename Metavariables::temporal_id>
       temporal_ids_when_data_has_been_interpolated;
@@ -82,11 +83,10 @@ struct Holder {
 /// Indexes a particular `Holder` in the `TaggedTuple` that is
 /// accessed from the `Interpolator`'s `DataBox` with tag
 /// `Tags::InterpolatedVarsHolders`.
-template <typename InterpolationTargetTag, typename Metavariables,
-          size_t VolumeDim>
+template <typename InterpolationTargetTag, typename Metavariables>
 struct HolderTag {
   using type =
-      Holder<Metavariables, VolumeDim, InterpolationTargetTag,
+      Holder<Metavariables, InterpolationTargetTag,
              typename InterpolationTargetTag::vars_to_interpolate_to_target>;
 };
 

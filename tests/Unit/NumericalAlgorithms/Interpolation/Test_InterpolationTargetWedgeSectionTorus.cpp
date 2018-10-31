@@ -32,13 +32,14 @@ struct MockMetavariables {
   };
   using temporal_id = Time;
   using domain_frame = Frame::Inertial;
+  static constexpr size_t domain_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
   using component_list = tmpl::list<
       InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables,
                                                          InterpolationTargetA>,
-      InterpTargetTestHelpers::mock_interpolator<MockMetavariables, 3>>;
+      InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialize, Exit };
 };

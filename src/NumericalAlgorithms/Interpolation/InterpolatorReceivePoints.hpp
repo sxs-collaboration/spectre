@@ -30,7 +30,7 @@ class IdPair;
 namespace intrp {
 namespace Tags {
 struct NumberOfElements;
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct InterpolatedVarsHolders;
 }  // namespace Tags
 }  // namespace intrp
@@ -48,14 +48,14 @@ namespace Actions {
 /// Uses:
 /// - Databox:
 ///   - `Tags::NumberOfElements`
-///   - `Tags::InterpolatedVarsHolders<Metavariables,VolumeDim>`
-///   - `Tags::VolumeVarsInfo<Metavariables,VolumeDim>`
+///   - `Tags::InterpolatedVarsHolders<Metavariables>`
+///   - `Tags::VolumeVarsInfo<Metavariables>`
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `Tags::InterpolatedVarsHolders<Metavariables,VolumeDim>`
+///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
@@ -75,16 +75,16 @@ struct ReceivePoints {
       std::vector<IdPair<domain::BlockId, tnsr::I<double, VolumeDim,
                                                   typename ::Frame::Logical>>>&&
           block_logical_coords) noexcept {
-    db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>(
+    db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
         [
           &temporal_id, &block_logical_coords
-        ](const gsl::not_null<db::item_type<
-              intrp::Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>*>
+        ](const gsl::not_null<
+            db::item_type<intrp::Tags::InterpolatedVarsHolders<Metavariables>>*>
               vars_holders) noexcept {
           auto& vars_infos =
-              get<intrp::Vars::HolderTag<InterpolationTargetTag, Metavariables,
-                                         VolumeDim>>(*vars_holders)
+              get<intrp::Vars::HolderTag<InterpolationTargetTag,
+                                         Metavariables>>(*vars_holders)
                   .infos;
 
           // Add the target interpolation points at this temporal_id.
@@ -95,7 +95,7 @@ struct ReceivePoints {
                   std::move(block_logical_coords)}));
         });
 
-    try_to_interpolate<InterpolationTargetTag, VolumeDim>(
+    try_to_interpolate<InterpolationTargetTag>(
         make_not_null(&box), make_not_null(&cache), temporal_id);
   }
 };

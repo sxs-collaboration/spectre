@@ -41,23 +41,22 @@ struct TemporalIds : db::SimpleTag {
 };
 
 /// Volume variables at all `temporal_id`s for all local `Element`s.
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct VolumeVarsInfo : db::SimpleTag {
   struct Info {
-    Mesh<VolumeDim> mesh;
+    Mesh<Metavariables::domain_dim> mesh;
     Variables<typename Metavariables::interpolator_source_vars> vars;
   };
-  using type =
-      std::unordered_map<typename Metavariables::temporal_id,
-                         std::unordered_map<ElementId<VolumeDim>, Info>>;
+  using type = std::unordered_map<
+      typename Metavariables::temporal_id,
+      std::unordered_map<
+          ElementId<Metavariables::domain_dim>, Info>>;
   static std::string name() noexcept { return "VolumeVarsInfo"; }
 };
 
 namespace holders_detail {
-template <typename InterpolationTargetTag, typename Metavariables,
-          typename VolumeDimWrapper>
-using WrappedHolderTag = Vars::HolderTag<InterpolationTargetTag, Metavariables,
-                                         VolumeDimWrapper::value>;
+template <typename InterpolationTargetTag, typename Metavariables>
+using WrappedHolderTag = Vars::HolderTag<InterpolationTargetTag, Metavariables>;
 }  // namespace holders_detail
 
 /// `TaggedTuple` containing all local `Vars::Holder`s for
@@ -67,12 +66,11 @@ using WrappedHolderTag = Vars::HolderTag<InterpolationTargetTag, Metavariables,
 /// `TaggedTuple` via a `Vars::HolderTag`.  An `Interpolator` uses the
 /// object in `InterpolatedVarsHolders` to iterate over all of the
 /// `InterpolationTarget`s.
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct InterpolatedVarsHolders : db::SimpleTag {
   using type = tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
       holders_detail::WrappedHolderTag,
-      typename Metavariables::interpolation_target_tags, Metavariables,
-      std::integral_constant<size_t, VolumeDim>>>;
+      typename Metavariables::interpolation_target_tags, Metavariables>>;
   static std::string name() noexcept { return "InterpolatedVarsHolders"; }
 };
 

@@ -18,11 +18,10 @@
 
 /// \cond
 namespace intrp {
-template <typename Metavariables, typename InterpolationTargetTag,
-          size_t VolumeDim>
+template <typename Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget;
 namespace Actions {
-template <typename InterpolationTargetTag, size_t VolumeDim>
+template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars;
 }  // namespace Actions
 }  // namespace intrp
@@ -34,22 +33,21 @@ namespace interpolator_detail {
 
 // Interpolates data onto a set of points desired by an InterpolationTarget.
 template <typename InterpolationTargetTag, typename Metavariables,
-          size_t VolumeDim, typename DbTags>
+          typename DbTags>
 void interpolate_data(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const typename Metavariables::temporal_id& temporal_id) noexcept {
-  db::mutate_apply<
-      tmpl::list<Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>,
-      tmpl::list<Tags::VolumeVarsInfo<Metavariables, VolumeDim>>>(
+  db::mutate_apply<tmpl::list<Tags::InterpolatedVarsHolders<Metavariables>>,
+                   tmpl::list<Tags::VolumeVarsInfo<Metavariables>>>(
       [&temporal_id](
-          const gsl::not_null<db::item_type<
-              Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>*>
+          const gsl::not_null<
+              db::item_type<Tags::InterpolatedVarsHolders<Metavariables>>*>
               holders,
-          const db::item_type<Tags::VolumeVarsInfo<Metavariables, VolumeDim>>&
+          const db::item_type<Tags::VolumeVarsInfo<Metavariables>>&
               volume_vars_info) noexcept {
         auto& interp_info =
-            get<Vars::HolderTag<InterpolationTargetTag, Metavariables,
-                                VolumeDim>>(*holders)
+            get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
+                *holders)
                 .infos.at(temporal_id);
 
         for (const auto& volume_info_outer : volume_vars_info) {
@@ -60,7 +58,9 @@ void interpolate_data(
 
           // Get list of ElementIds that have the correct temporal_id and that
           // have not yet been interpolated.
-          std::vector<ElementId<VolumeDim>> element_ids;
+          std::vector<
+              ElementId<Metavariables::domain_dim>>
+              element_ids;
 
           for (const auto& volume_info_inner : volume_info_outer.second) {
             // Have we interpolated this element before?
@@ -107,8 +107,9 @@ void interpolate_data(
                 });
 
             // Now interpolate.
-            intrp::Irregular<VolumeDim> interpolator(
-                volume_info.mesh, element_coord_holder.element_logical_coords);
+            intrp::Irregular<Metavariables::domain_dim>
+                interpolator(volume_info.mesh,
+                             element_coord_holder.element_logical_coords);
             interp_info.vars.emplace_back(interpolator.interpolate(local_vars));
             interp_info.global_offsets.emplace_back(
                 element_coord_holder.offsets);
@@ -121,17 +122,16 @@ void interpolate_data(
 
 /// Check if we have enough information to interpolate.  If so, do the
 /// interpolation and send data to the InterpolationTarget.
-template <typename InterpolationTargetTag, size_t VolumeDim,
-          typename Metavariables, typename DbTags>
+template <typename InterpolationTargetTag, typename Metavariables,
+          typename DbTags>
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
     const typename Metavariables::temporal_id& temporal_id) noexcept {
   const auto& holders =
-      db::get<Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>(*box);
+      db::get<Tags::InterpolatedVarsHolders<Metavariables>>(*box);
   const auto& vars_infos =
-      get<Vars::HolderTag<InterpolationTargetTag, Metavariables, VolumeDim>>(
-          holders)
+      get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(holders)
           .infos;
 
   // If we don't yet have any points for this InterpolationTarget at
@@ -140,8 +140,8 @@ void try_to_interpolate(
     return;
   }
 
-  interpolator_detail::interpolate_data<InterpolationTargetTag, Metavariables,
-                                        VolumeDim>(box, temporal_id);
+  interpolator_detail::interpolate_data<InterpolationTargetTag, Metavariables>(
+      box, temporal_id);
 
   // Send interpolated data only if interpolation has been done on all
   // of the local elements.
@@ -152,22 +152,20 @@ void try_to_interpolate(
     // non-empty.
     if (not vars_infos.at(temporal_id).global_offsets.empty()) {
       const auto& info = vars_infos.at(temporal_id);
-      auto& receiver_proxy =
-          Parallel::get_parallel_component<InterpolationTarget<
-              Metavariables, InterpolationTargetTag, VolumeDim>>(*cache);
-      Parallel::simple_action<Actions::InterpolationTargetReceiveVars<
-          InterpolationTargetTag, VolumeDim>>(receiver_proxy, info.vars,
-                                              info.global_offsets);
+      auto& receiver_proxy = Parallel::get_parallel_component<
+          InterpolationTarget<Metavariables, InterpolationTargetTag>>(*cache);
+      Parallel::simple_action<
+          Actions::InterpolationTargetReceiveVars<InterpolationTargetTag>>(
+          receiver_proxy, info.vars, info.global_offsets);
     }
 
     // Clear interpolated data, since we don't need it anymore.
-    db::mutate<Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>(
-        box, [&temporal_id](
-                 const gsl::not_null<db::item_type<
-                     Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>*>
-                     holders_l) noexcept {
-          get<Vars::HolderTag<InterpolationTargetTag, Metavariables,
-                              VolumeDim>>(*holders_l)
+    db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
+        box, [&temporal_id](const gsl::not_null<db::item_type<
+                                Tags::InterpolatedVarsHolders<Metavariables>>*>
+                                holders_l) noexcept {
+          get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
+              *holders_l)
               .infos.erase(temporal_id);
         });
   }

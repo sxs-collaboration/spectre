@@ -52,7 +52,7 @@ class DataBox;
 namespace intrp {
 namespace Tags {
 struct IndicesOfFilledInterpPoints;
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct InterpolatedVarsHolders;
 struct NumberOfElements;
 }  // namespace Tags
@@ -77,7 +77,7 @@ struct mock_interpolation_target {
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
 };
 
 template <typename InterpolationTargetTag>
@@ -97,16 +97,16 @@ struct MockReceivePoints {
       std::vector<IdPair<domain::BlockId,
                          tnsr::I<double, VolumeDim, typename Frame::Logical>>>&&
           block_coord_holders) noexcept {
-    db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>(
+    db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
         [
           &temporal_id, &block_coord_holders
-        ](const gsl::not_null<db::item_type<
-              intrp::Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>*>
+        ](const gsl::not_null<
+            db::item_type<intrp::Tags::InterpolatedVarsHolders<Metavariables>>*>
               vars_holders) noexcept {
           auto& vars_infos =
-              get<intrp::Vars::HolderTag<InterpolationTargetTag, Metavariables,
-                                         VolumeDim>>(*vars_holders)
+              get<intrp::Vars::HolderTag<InterpolationTargetTag,
+                                         Metavariables>>(*vars_holders)
                   .infos;
 
           // Add the target interpolation points at this timestep.
@@ -119,7 +119,7 @@ struct MockReceivePoints {
   }
 };
 
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -127,10 +127,10 @@ struct mock_interpolator {
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolator<
-          VolumeDim>::template return_tag_list<Metavariables>>;
+      typename ::intrp::Actions::InitializeInterpolator::
+          template return_tag_list<Metavariables>>;
 
-  using component_being_mocked = intrp::Interpolator<Metavariables, VolumeDim>;
+  using component_being_mocked = intrp::Interpolator<Metavariables>;
   using replace_these_simple_actions = tmpl::list<intrp::Actions::ReceivePoints<
       typename Metavariables::InterpolationTargetA>>;
   using with_these_simple_actions = tmpl::list<
@@ -154,14 +154,14 @@ void test_interpolation_target(
                                     typename metavars::InterpolationTargetA>>;
   using MockDistributedObjectsTagInterpolator =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolator<metavars, 3>>;
+          mock_interpolator<metavars>>;
   tuples::get<MockDistributedObjectsTagTarget>(dist_objects)
       .emplace(0,
                ActionTesting::MockDistributedObject<mock_interpolation_target<
                    metavars, typename metavars::InterpolationTargetA>>{});
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars, 3>>{});
+                      mock_interpolator<metavars>>{});
 
   tuples::TaggedTuple<typename metavars::InterpolationTargetA> tuple_of_opts(
       options);
@@ -175,8 +175,8 @@ void test_interpolation_target(
           typename metavars::InterpolationTargetA>>(
       0, domain_creator.create_domain());
 
-  runner.template simple_action<mock_interpolator<metavars, 3>,
-                                ::intrp::Actions::InitializeInterpolator<3>>(0);
+  runner.template simple_action<mock_interpolator<metavars>,
+                                ::intrp::Actions::InitializeInterpolator>(0);
 
   const auto& box_target =
       runner
@@ -188,10 +188,10 @@ void test_interpolation_target(
               typename metavars::InterpolationTargetA>::initial_databox>();
 
   const auto& box_interpolator =
-      runner.template algorithms<mock_interpolator<metavars, 3>>()
+      runner.template algorithms<mock_interpolator<metavars>>()
           .at(0)
           .template get_databox<
-              typename mock_interpolator<metavars, 3>::initial_databox>();
+              typename mock_interpolator<metavars>::initial_databox>();
 
   Slab slab(0.0, 1.0);
   Time temporal_id(slab, 0);
@@ -211,19 +211,19 @@ void test_interpolation_target(
             metavars, typename metavars::InterpolationTargetA>>(0));
 
   // But there should be one in mock_interpolator
-  runner.template invoke_queued_simple_action<mock_interpolator<metavars, 3>>(
+  runner.template invoke_queued_simple_action<mock_interpolator<metavars>>(
       0);
 
   // Should be no more queued actions in mock_interpolator
   CHECK(runner.template is_simple_action_queue_empty<
-        mock_interpolator<metavars, 3>>(0));
+        mock_interpolator<metavars>>(0));
 
   const auto& vars_holders =
-      db::get<intrp::Tags::InterpolatedVarsHolders<metavars, 3>>(
+      db::get<intrp::Tags::InterpolatedVarsHolders<metavars>>(
           box_interpolator);
   const auto& vars_infos =
       get<intrp::Vars::HolderTag<typename metavars::InterpolationTargetA,
-                                 metavars, 3>>(vars_holders)
+                                 metavars>>(vars_holders)
           .infos;
   // Should be one entry in the vars_infos
   CHECK(vars_infos.size() == 1);
@@ -247,7 +247,7 @@ void test_interpolation_target(
                                 typename metavars::InterpolationTargetA>,
       typename metavars::InterpolationTargetA::compute_target_points>(
       0, new_temporal_id);
-  runner.template invoke_queued_simple_action<mock_interpolator<metavars, 3>>(
+  runner.template invoke_queued_simple_action<mock_interpolator<metavars>>(
       0);
 
   // Should be two entries in the vars_infos
