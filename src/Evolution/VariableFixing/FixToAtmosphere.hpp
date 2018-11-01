@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma:  keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -23,24 +23,28 @@ class er;
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare hydro::Tags::EquationOfStateBase
+// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
+// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
+// IWYU pragma: no_forward_declare hydro::Tags::Pressure
+// IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
+// IWYU pragma: no_forward_declare hydro::Tags::SpecificEnthalpy
+// IWYU pragma: no_forward_declare hydro::Tags::SpecificInternalEnergy
 
 namespace VariableFixing {
-
-/// \cond
-template <size_t ThermodynmaicDim>
-class FixToAtmosphere;
-/// \endcond
 
 /// \ingroup VariableFixingGroup
 /// \brief Fix the primitive variables to an atmosphere in low density regions
 ///
-/// If the rest mass density is below the specified value, it is raised
-/// to the specified value, and the pressure, specific internal energy,
-/// and specific enthalpy are adjusted to satisfy the equation of state.In
-/// addition, the spatial velocity is set to zero, and the Lorentz factor is set
-/// to one.
-template <>
-class FixToAtmosphere<1> {
+/// If the rest mass density is below the specified value, it is
+/// raised to the specified value, and the pressure, specific internal
+/// energy (for one-dimensional equations of state), and specific
+/// enthalpy are adjusted to satisfy the equation of state.  For a
+/// two-dimensional equation of state, the specific internal energy is
+/// set to zero. In addition, the spatial velocity is set to zero, and
+/// the Lorentz factor is set to one.
+template <size_t ThermodynamicDim>
+class FixToAtmosphere {
  public:
   /// \brief Rest mass density of the atmosphere
   struct DensityOfAtmosphere {
@@ -52,8 +56,10 @@ class FixToAtmosphere<1> {
   using options = tmpl::list<DensityOfAtmosphere>;
   static constexpr OptionString help = {
       "If the rest mass density is below the specified value, it is raised\n"
-      "to the specified value, and the pressure, specific internal energy,\n"
-      "and specific enthalpy are adjusted to satisfy the equation of state.\n"
+      "to the specified value, and the pressure, specific internal energy\n"
+      "(for one-dimensional equations of state), and specific enthalpy are\n"
+      "adjusted to satisfy the equation of state. For a two-dimensional\n"
+      "equation of state, the specific internal energy is set to zero.\n"
       "In addition, the spatial velocity is set to zero, and the Lorentz\n"
       "factor is set to one.\n"};
 
@@ -85,12 +91,15 @@ class FixToAtmosphere<1> {
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-      const EquationsOfState::EquationOfState<true, 1>& equation_of_state) const
-      noexcept;
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) const noexcept;
 
  private:
-  friend bool operator==(const FixToAtmosphere& lhs,
-                         const FixToAtmosphere& rhs) noexcept;
+  template <size_t LocalThermodynamicDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(
+      const FixToAtmosphere<LocalThermodynamicDim>& lhs,
+      const FixToAtmosphere<LocalThermodynamicDim>& rhs) noexcept;
 
   double density_of_atmosphere_{std::numeric_limits<double>::signaling_NaN()};
 };
