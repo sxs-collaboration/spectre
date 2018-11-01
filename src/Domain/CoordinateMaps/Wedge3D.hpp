@@ -148,7 +148,7 @@ namespace CoordinateMaps {
  *  F_1 &= \partial_{\zeta} F = \frac{1}{2} \big\{ (1-s_{outer})R_{outer} -
  * (1-s_{inner})R_{inner}\big\}\\
  *  S_0 &= \frac{1}{2} \big\{ s_{outer}R_{outer} + s_{inner}R_{inner}\big\}\\
- *  S_1 &= \partial_{\zeta} F = \frac{1}{2} \big\{ s_{outer}R_{outer} -
+ *  S_1 &= \partial_{\zeta} S = \frac{1}{2} \big\{ s_{outer}R_{outer} -
  * s_{inner}R_{inner}\big\}\f}
  *
  *  The map can then be rewritten as:
@@ -187,15 +187,21 @@ namespace CoordinateMaps {
  *
  *  ### Changing the radial distribution of the gridpoints
  *  By default, Wedge3D linearly distributes its gridpoints in the radial
- *  direction. An exponential map can be applied to the sphere factor
- *  \f$S(\zeta)\f$ in order to obtain a relatively higher resolution at smaller
- *  radii. Since this is a radial rescaling of Wedge3D, this option is only
- *  supported for fully spherical wedges with
- *  `sphericity_inner` = `sphericity_outer` = 1.
+ *  direction. An exponential distribution of gridpoints can be obtained by
+ *  linearly interpolating in the logarithm of the radius, in order to obtain
+ *  a relatively higher resolution at smaller radii. Since this is a radial
+ *  rescaling of Wedge3D, this option is only supported for fully spherical
+ *  wedges with `sphericity_inner` = `sphericity_outer` = 1.
+ *
+ *  The linear interpolation done is:
+ *  \f[
+ *  \log r = \frac{1-\zeta}{2}\log R_{inner} +
+ *  \frac{1+\zeta}{2}\log R_{outer}
+ *  \f]
  *
  *  The map then is:
  *  \f[\vec{x}(\xi,\eta,\zeta) =
- *  \frac{e^{S(\zeta)}}{\rho}\begin{bmatrix}
+ *  \frac{\sqrt{R_{inner}^{1-\zeta}R_{outer}^{1+\zeta}}}{\rho}\begin{bmatrix}
  *  \Xi\\
  *  \mathrm{H}\\
  *  1\\
