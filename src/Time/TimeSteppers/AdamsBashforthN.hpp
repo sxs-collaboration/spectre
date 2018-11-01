@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
+#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <map>
@@ -29,6 +30,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -201,6 +203,13 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
           history,
       const TimeDelta& time_step) const noexcept;
 
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
+  boundary_dense_output(
+      const Coupling& coupling,
+      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
+      double time) const noexcept;
+
   size_t number_of_past_steps() const noexcept override;
 
   double stable_step() const noexcept override;
@@ -224,15 +233,24 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   friend bool operator==(const AdamsBashforthN& lhs,
                          const AdamsBashforthN& rhs) noexcept;
 
-  // Some of the private methods take a parameter of type "Delta".
-  // Delta is expected to be a TimeDelta or an ApproximateTimeDelta.
-  // The former case will detect and optimize the constant-time-step
-  // case, while the latter is necessary for dense output.
+  // Some of the private methods take a parameter of type "Delta" or
+  // "TimeType".  Delta is expected to be a TimeDelta or an
+  // ApproximateTimeDelta, and TimeType is expected to be a Time or an
+  // ApproximateTime.  The former cases will detect and optimize the
+  // constant-time-step case, while the latter are necessary for dense
+  // output.
 
   template <typename Vars, typename DerivVars, typename Delta>
   void update_u_impl(gsl::not_null<Vars*> u,
                      const History<Vars, DerivVars>& history,
                      const Delta& time_step) const noexcept;
+
+  template <typename LocalVars, typename RemoteVars, typename Coupling,
+            typename TimeType>
+  std::result_of_t<const Coupling&(LocalVars, RemoteVars)> boundary_impl(
+      const Coupling& coupling,
+      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
+      const TimeType& end_time) const noexcept;
 
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
@@ -249,12 +267,37 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
 
   static std::vector<double> constant_coefficients(size_t order) noexcept;
 
+  struct ApproximateTimeDelta;
+
+  // Time-like interface to a double used for dense output
+  struct ApproximateTime {
+    double time = std::numeric_limits<double>::signaling_NaN();
+    double value() const noexcept { return time; }
+
+    // Only the operators that are actually used are defined.
+    friend ApproximateTimeDelta operator-(const ApproximateTime& a,
+                                          const Time& b) noexcept {
+      return {a.value() - b.value()};
+    }
+
+    friend std::ostream& operator<<(std::ostream& s,
+                                    const ApproximateTime& t) noexcept {
+      return s << t.value();
+    }
+  };
+
   // TimeDelta-like interface to a double used for dense output
   struct ApproximateTimeDelta {
     double delta = std::numeric_limits<double>::signaling_NaN();
     double value() const noexcept { return delta; }
+    bool is_positive() const noexcept { return delta > 0.; }
 
     // Only the operators that are actually used are defined.
+    friend bool operator<(const ApproximateTimeDelta& a,
+                          const ApproximateTimeDelta& b) noexcept {
+      return a.value() < b.value();
+    }
+
     friend double operator/(
         const TimeDelta& a,
         const AdamsBashforthN::ApproximateTimeDelta& b) noexcept {
@@ -270,6 +313,10 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
 
     bool operator()(const Time& a, const Time& b) const noexcept {
       return forward_in_time_ ? a < b : b < a;
+    }
+
+    bool operator()(const Time& a, const ApproximateTime& b) const noexcept {
+      return forward_in_time_ ? a.value() < b.value() : b.value() < a.value();
     }
 
    private:
@@ -361,19 +408,54 @@ AdamsBashforthN::compute_boundary_delta(
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
     const TimeDelta& time_step) const noexcept {
+  auto result = boundary_impl(coupling, *history,
+                              *(history->local_end() - 1) + time_step);
+
+  // We know that the local side will step at end_time, so the step
+  // containing that time will be the next step, which is not
+  // currently in the history.  We therefore know we won't need the
+  // oldest value for the next step.
+  history->local_mark_unneeded(history->local_begin() + 1);
+  // We don't know whether the remote side will step at end_time, so
+  // we have to be conservative and assume it will not.  If it does we
+  // will ignore the first value in the next call to this function.
+  history->remote_mark_unneeded(
+      history->remote_end() -
+      static_cast<typename decltype(history->remote_begin())::difference_type>(
+          history->local_size() + 1));
+
+  return result;
+}
+
+template <typename LocalVars, typename RemoteVars, typename Coupling>
+std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
+AdamsBashforthN::boundary_dense_output(
+    const Coupling& coupling,
+    const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
+    const double time) const noexcept {
+  return boundary_impl(coupling, history, ApproximateTime{time});
+}
+
+template <typename LocalVars, typename RemoteVars, typename Coupling,
+          typename TimeType>
+std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
+AdamsBashforthN::boundary_impl(
+    const Coupling& coupling,
+    const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
+    const TimeType& end_time) const noexcept {
   // Might be different from order_ during self-start.
-  const auto current_order = history->local_size();
+  const auto current_order = history.local_size();
 
   ASSERT(current_order <= order_,
          "Local history is too long for target order (" << current_order
          << " should not exceed " << order_ << ")");
-  ASSERT(history->remote_size() >= current_order,
-         "Remote history is too short (" << history->remote_size()
+  ASSERT(history.remote_size() >= current_order,
+         "Remote history is too short (" << history.remote_size()
          << " should be at least " << current_order << ")");
 
   // Start and end of the step we are trying to take
-  const Time start_time = *(history->local_end() - 1);
-  const Time end_time = start_time + time_step;
+  const Time start_time = *(history.local_end() - 1);
+  const auto time_step = end_time - start_time;
 
   // If a remote evaluation is done at the start of the step then that
   // is part of the history for the first union step.  When we did
@@ -381,13 +463,12 @@ AdamsBashforthN::compute_boundary_delta(
   // were going to get this point so we kept an extra remote history
   // value.
   const bool remote_aligned_at_step_start =
-      history->remote_size() > current_order and
-      *(history->remote_begin() +
-        static_cast<typename decltype(
-            history->remote_begin())::difference_type>(current_order)) ==
-          start_time;
+      history.remote_size() > current_order and
+      *(history.remote_begin() +
+        static_cast<typename decltype(history.remote_begin())::difference_type>(
+            current_order)) == start_time;
   const auto remote_begin =
-      history->remote_begin() + (remote_aligned_at_step_start ? 1 : 0);
+      history.remote_begin() + (remote_aligned_at_step_start ? 1 : 0);
 
   // Result variable.  We evaluate the coupling only for the
   // structure.  This evaluation may be expensive, but by choosing the
@@ -396,35 +477,26 @@ AdamsBashforthN::compute_boundary_delta(
   // coupling cache so we don't have to compute it when we actually use it.
   auto accumulated_change =
       make_with_value<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>(
-          history->coupling(coupling, history->local_end() - 1,
-                            history->remote_end() - 1),
+          history.coupling(coupling, history.local_end() - 1,
+                           history.remote_end() - 1),
           0.);
 
-  if (history->local_size() ==
-          static_cast<size_t>(history->remote_end() - remote_begin) and
-      std::equal(history->local_begin(), history->local_end(), remote_begin)) {
+  if (history.local_size() ==
+          static_cast<size_t>(history.remote_end() - remote_begin) and
+      std::equal(history.local_begin(), history.local_end(), remote_begin)) {
     // No local time-stepping going on.
-    const auto coefficients = get_coefficients(history->local_begin(),
-                                               history->local_end(), time_step);
+    const auto coefficients =
+        get_coefficients(history.local_begin(), history.local_end(), time_step);
 
-    auto local_it = history->local_begin();
+    auto local_it = history.local_begin();
     auto remote_it = remote_begin;
     for (auto coefficients_it = coefficients.rbegin();
          coefficients_it != coefficients.rend();
          ++coefficients_it, ++local_it, ++remote_it) {
       accumulated_change +=
-          *coefficients_it * history->coupling(coupling, local_it, remote_it);
+          *coefficients_it * history.coupling(coupling, local_it, remote_it);
     }
     accumulated_change *= time_step.value();
-
-    history->local_mark_unneeded(history->local_begin() + 1);
-    // The remote-side values we used will all be needed if the remote
-    // step is larger than our local one.  If not, they will be
-    // cleaned up next time.
-    history->remote_mark_unneeded(
-        history->remote_end() - static_cast<typename decltype(
-                                    history->remote_begin())::difference_type>(
-                                    history->local_size() + 1));
 
     return accumulated_change;
   }
@@ -439,24 +511,24 @@ AdamsBashforthN::compute_boundary_delta(
 
   const SimulationLess simulation_less(time_step.is_positive());
 
-  ASSERT(std::is_sorted(history->local_begin(), history->local_end(),
+  ASSERT(std::is_sorted(history.local_begin(), history.local_end(),
                         simulation_less),
          "Local history not in order");
-  ASSERT(std::is_sorted(remote_begin, history->remote_end(), simulation_less),
+  ASSERT(std::is_sorted(remote_begin, history.remote_end(), simulation_less),
          "Remote history not in order");
   ASSERT(not simulation_less(start_time, *(remote_begin + (order_s - 1))),
          "Remote history does not extend far enough back");
-  ASSERT(simulation_less(*(history->remote_end() - 1), end_time),
-         "Please supply only older data: " << *(history->remote_end() - 1)
+  ASSERT(simulation_less(*(history.remote_end() - 1), end_time),
+         "Please supply only older data: " << *(history.remote_end() - 1)
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
   const auto union_times =
       [&history, &remote_begin, &simulation_less]() noexcept {
     std::vector<Time> ret;
-    ret.reserve(history->local_size() + history->remote_size());
-    std::set_union(history->local_begin(), history->local_end(), remote_begin,
-                   history->remote_end(), std::back_inserter(ret),
+    ret.reserve(history.local_size() + history.remote_size());
+    std::set_union(history.local_begin(), history.local_end(), remote_begin,
+                   history.remote_end(), std::back_inserter(ret),
                    simulation_less);
     return ret;
   }();
@@ -488,34 +560,48 @@ AdamsBashforthN::compute_boundary_delta(
   // Calculating the Adams-Bashforth coefficients is somewhat
   // expensive, so we cache them.  ab_coefs(it, step) returns the
   // coefficients used to step from *it to *it + step.
-  auto ab_coefs = make_cached_function<std::tuple<UnionIter, TimeDelta>,
-                                       std::map>([order_s](
-      const std::tuple<UnionIter, TimeDelta>& args) noexcept {
-    return get_coefficients(
-        std::get<0>(args) -
-            static_cast<typename UnionIter::difference_type>(order_s - 1),
-        std::get<0>(args) + 1, std::get<1>(args));
-  });
+  auto ab_coefs = make_overloader(
+      make_cached_function<std::tuple<UnionIter, TimeDelta>,
+                           std::map>([order_s](
+          const std::tuple<UnionIter, TimeDelta>& args) noexcept {
+        return get_coefficients(
+            std::get<0>(args) -
+                static_cast<typename UnionIter::difference_type>(order_s - 1),
+            std::get<0>(args) + 1, std::get<1>(args));
+      }),
+      make_cached_function<std::tuple<UnionIter, ApproximateTimeDelta>,
+                           std::map>([order_s](
+          const std::tuple<UnionIter, ApproximateTimeDelta>& args) noexcept {
+        return get_coefficients(
+            std::get<0>(args) -
+                static_cast<typename UnionIter::difference_type>(order_s - 1),
+            std::get<0>(args) + 1, std::get<1>(args));
+      }));
 
   // The value of the coefficient of `evaluation_step` when doing
   // a standard Adams-Bashforth integration over the union times
   // from `step` to `step + 1`.
   const auto base_summand = [&ab_coefs, &end_time, &union_times](
       const UnionIter& step, const UnionIter& evaluation_step) noexcept {
-    const Time step_end =
-        step + 1 != union_times.end() ? *(step + 1) : end_time;
-    const TimeDelta step_size = step_end - *step;
-    return step_size.value() *
-           ab_coefs(std::make_tuple(
-               step, step_size))[static_cast<size_t>(step - evaluation_step)];
+    if (step + 1 != union_times.end()) {
+      const TimeDelta step_size = *(step + 1) - *step;
+      return step_size.value() *
+             ab_coefs(std::make_tuple(
+                 step, step_size))[static_cast<size_t>(step - evaluation_step)];
+    } else {
+      const auto step_size = end_time - *step;
+      return step_size.value() *
+             ab_coefs(std::make_tuple(
+                 step, step_size))[static_cast<size_t>(step - evaluation_step)];
+    }
   };
 
-  for (auto local_evaluation_step = history->local_begin();
-       local_evaluation_step != history->local_end();
+  for (auto local_evaluation_step = history.local_begin();
+       local_evaluation_step != history.local_end();
        ++local_evaluation_step) {
     const auto union_local_evaluation_step = union_step(*local_evaluation_step);
     for (auto remote_evaluation_step = remote_begin;
-         remote_evaluation_step != history->remote_end();
+         remote_evaluation_step != history.remote_end();
          ++remote_evaluation_step) {
       double deriv_coef = 0.;
 
@@ -550,7 +636,7 @@ AdamsBashforthN::compute_boundary_delta(
         // use as the coupling value for that time.  If there is an
         // actual evaluation at that time then skip this because the
         // Lagrange polynomial will be zero.
-        if (not std::binary_search(history->local_begin(), history->local_end(),
+        if (not std::binary_search(history.local_begin(), history.local_end(),
                                    *remote_evaluation_step, simulation_less)) {
           const auto union_step_upper_bound =
               advance_within_step(union_remote_evaluation_step);
@@ -559,22 +645,22 @@ AdamsBashforthN::compute_boundary_delta(
                ++step) {
             deriv_coef += base_summand(step, union_remote_evaluation_step);
           }
-          deriv_coef *= lagrange_polynomial(
-              make_lagrange_iterator(local_evaluation_step),
-              remote_evaluation_step->value(),
-              make_lagrange_iterator(history->local_begin()),
-              make_lagrange_iterator(history->local_end()));
+          deriv_coef *=
+              lagrange_polynomial(make_lagrange_iterator(local_evaluation_step),
+                                  remote_evaluation_step->value(),
+                                  make_lagrange_iterator(history.local_begin()),
+                                  make_lagrange_iterator(history.local_end()));
         }
 
         // Same qualitative calculation as the previous block, but
         // interpolating over the remote times.  This case is somewhat
         // more complicated because the latest remote time that can be
         // used varies for the different segments making up the step.
-        if (not std::binary_search(remote_begin, history->remote_end(),
+        if (not std::binary_search(remote_begin, history.remote_end(),
                                    *local_evaluation_step, simulation_less)) {
           auto union_step_upper_bound =
               advance_within_step(union_local_evaluation_step);
-          if (history->remote_end() - remote_evaluation_step > order_s) {
+          if (history.remote_end() - remote_evaluation_step > order_s) {
             union_step_upper_bound = std::min(
                 union_step_upper_bound,
                 union_step(*(remote_evaluation_step + order_s)));
@@ -603,26 +689,11 @@ AdamsBashforthN::compute_boundary_delta(
         // Skip the (potentially expensive) coupling calculation if
         // the coefficient is zero.
         accumulated_change +=
-            deriv_coef * history->coupling(coupling, local_evaluation_step,
-                                           remote_evaluation_step);
+            deriv_coef * history.coupling(coupling, local_evaluation_step,
+                                          remote_evaluation_step);
       }
     }  // for remote_evaluation_step
   }  // for local_evaluation_step
-
-  // Clean up old history
-
-  // We know that the local side will step at end_time, so the step
-  // containing that time will be the next step, which is not
-  // currently in the history.  We therefore know we won't need the
-  // oldest value for the next step.
-  history->local_mark_unneeded(history->local_begin() + 1);
-  // We don't know whether the remote side will step at end_time, so
-  // we have to be conservative and assume it will not.  If it does we
-  // will ignore the first value in the next call to this function.
-  history->remote_mark_unneeded(
-      history->remote_end() -
-      static_cast<typename decltype(history->remote_begin())::difference_type>(
-          history->local_size() + 1));
 
   return accumulated_change;
 }

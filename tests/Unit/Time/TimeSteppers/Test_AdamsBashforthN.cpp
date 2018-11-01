@@ -357,6 +357,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary",
 
   // Local stepping with varying time steps
   check_lts_vts();
+
+  // Dense output
+  for (size_t order = 1; order < 9; ++order) {
+    INFO(order);
+    TimeStepperTestUtils::check_boundary_dense_output(
+        TimeSteppers::AdamsBashforthN(order));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
