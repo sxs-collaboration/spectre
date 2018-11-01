@@ -73,8 +73,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                    Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
                    Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
                    tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
-  const double radius_at_which_to_begin_applying_floor = 1.e-4;
-
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       VariableFixing::RadiallyFallingFloor<3>(1.e-4, 1.e-5, -1.5, 1.e-7 / 3.0,
                                               -2.5),
