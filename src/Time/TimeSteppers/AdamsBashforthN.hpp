@@ -380,13 +380,14 @@ AdamsBashforthN::compute_boundary_delta(
   // history cleanup at the end of the previous step we didn't know we
   // were going to get this point so we kept an extra remote history
   // value.
-  if (history->remote_size() > current_order and
+  const bool remote_aligned_at_step_start =
+      history->remote_size() > current_order and
       *(history->remote_begin() +
         static_cast<typename decltype(
             history->remote_begin())::difference_type>(current_order)) ==
-          start_time) {
-    history->remote_mark_unneeded(history->remote_begin() + 1);
-  }
+          start_time;
+  const auto remote_begin =
+      history->remote_begin() + (remote_aligned_at_step_start ? 1 : 0);
 
   // Result variable.  We evaluate the coupling only for the
   // structure.  This evaluation may be expensive, but by choosing the
@@ -399,15 +400,15 @@ AdamsBashforthN::compute_boundary_delta(
                             history->remote_end() - 1),
           0.);
 
-  if (history->local_size() == history->remote_size() and
-      std::equal(history->local_begin(), history->local_end(),
-                 history->remote_begin())) {
+  if (history->local_size() ==
+          static_cast<size_t>(history->remote_end() - remote_begin) and
+      std::equal(history->local_begin(), history->local_end(), remote_begin)) {
     // No local time-stepping going on.
     const auto coefficients = get_coefficients(history->local_begin(),
                                                history->local_end(), time_step);
 
     auto local_it = history->local_begin();
-    auto remote_it = history->remote_begin();
+    auto remote_it = remote_begin;
     for (auto coefficients_it = coefficients.rbegin();
          coefficients_it != coefficients.rend();
          ++coefficients_it, ++local_it, ++remote_it) {
@@ -416,10 +417,14 @@ AdamsBashforthN::compute_boundary_delta(
     }
     accumulated_change *= time_step.value();
 
-    // The remote-side values will all be needed if the remote step is
-    // larger than our local one.  If not, they will be cleaned up
-    // next time.
     history->local_mark_unneeded(history->local_begin() + 1);
+    // The remote-side values we used will all be needed if the remote
+    // step is larger than our local one.  If not, they will be
+    // cleaned up next time.
+    history->remote_mark_unneeded(
+        history->remote_end() - static_cast<typename decltype(
+                                    history->remote_begin())::difference_type>(
+                                    history->local_size() + 1));
 
     return accumulated_change;
   }
@@ -437,23 +442,22 @@ AdamsBashforthN::compute_boundary_delta(
   ASSERT(std::is_sorted(history->local_begin(), history->local_end(),
                         simulation_less),
          "Local history not in order");
-  ASSERT(std::is_sorted(history->remote_begin(), history->remote_end(),
-                        simulation_less),
+  ASSERT(std::is_sorted(remote_begin, history->remote_end(), simulation_less),
          "Remote history not in order");
-  ASSERT(not simulation_less(start_time,
-                             *(history->remote_begin() + (order_s - 1))),
+  ASSERT(not simulation_less(start_time, *(remote_begin + (order_s - 1))),
          "Remote history does not extend far enough back");
   ASSERT(simulation_less(*(history->remote_end() - 1), end_time),
          "Please supply only older data: " << *(history->remote_end() - 1)
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
-  const auto union_times = [&history, &simulation_less]() noexcept {
+  const auto union_times =
+      [&history, &remote_begin, &simulation_less]() noexcept {
     std::vector<Time> ret;
     ret.reserve(history->local_size() + history->remote_size());
-    std::set_union(history->local_begin(), history->local_end(),
-                   history->remote_begin(), history->remote_end(),
-                   std::back_inserter(ret), simulation_less);
+    std::set_union(history->local_begin(), history->local_end(), remote_begin,
+                   history->remote_end(), std::back_inserter(ret),
+                   simulation_less);
     return ret;
   }();
 
@@ -510,7 +514,7 @@ AdamsBashforthN::compute_boundary_delta(
        local_evaluation_step != history->local_end();
        ++local_evaluation_step) {
     const auto union_local_evaluation_step = union_step(*local_evaluation_step);
-    for (auto remote_evaluation_step = history->remote_begin();
+    for (auto remote_evaluation_step = remote_begin;
          remote_evaluation_step != history->remote_end();
          ++remote_evaluation_step) {
       double deriv_coef = 0.;
@@ -566,8 +570,7 @@ AdamsBashforthN::compute_boundary_delta(
         // interpolating over the remote times.  This case is somewhat
         // more complicated because the latest remote time that can be
         // used varies for the different segments making up the step.
-        if (not std::binary_search(history->remote_begin(),
-                                   history->remote_end(),
+        if (not std::binary_search(remote_begin, history->remote_end(),
                                    *local_evaluation_step, simulation_less)) {
           auto union_step_upper_bound =
               advance_within_step(union_local_evaluation_step);
@@ -578,9 +581,9 @@ AdamsBashforthN::compute_boundary_delta(
           }
 
           auto control_points = make_lagrange_iterator(
-              remote_evaluation_step - history->remote_begin() >= order_s
+              remote_evaluation_step - remote_begin >= order_s
                   ? remote_evaluation_step - (order_s - 1)
-                  : history->remote_begin());
+                  : remote_begin);
           for (auto step = union_step_lower_bound;
                step < union_step_upper_bound;
                ++step, ++control_points) {
@@ -614,10 +617,12 @@ AdamsBashforthN::compute_boundary_delta(
   // oldest value for the next step.
   history->local_mark_unneeded(history->local_begin() + 1);
   // We don't know whether the remote side will step at end_time, so
-  // we have to be conservative and assume they will not.  If it does
-  // we will remove the first value at the start of the next call to
-  // this function.
-  history->remote_mark_unneeded(history->remote_end() - order_s);
+  // we have to be conservative and assume it will not.  If it does we
+  // will ignore the first value in the next call to this function.
+  history->remote_mark_unneeded(
+      history->remote_end() -
+      static_cast<typename decltype(history->remote_begin())::difference_type>(
+          history->local_size() + 1));
 
   return accumulated_change;
 }
