@@ -108,7 +108,7 @@ class BoundaryHistory {
   /// functions provided on separate calls produce the same result.
   template <typename Coupling>
   const CouplingResult& coupling(Coupling&& c, const local_iterator& local,
-                                 const remote_iterator& remote) noexcept;
+                                 const remote_iterator& remote) const noexcept;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
@@ -123,7 +123,8 @@ class BoundaryHistory {
   // We use pointers instead of iterators because deque invalidates
   // iterators when elements are inserted or removed at the ends, but
   // not pointers.
-  std::map<std::pair<const Time*, const Time*>, CouplingResult> coupling_cache_;
+  mutable std::map<std::pair<const Time*, const Time*>, CouplingResult>
+      coupling_cache_;
 };
 
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
@@ -149,7 +150,7 @@ template <typename Coupling>
 const CouplingResult&
 BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::coupling(
     Coupling&& c, const local_iterator& local,
-    const remote_iterator& remote) noexcept {
+    const remote_iterator& remote) const noexcept {
   const auto insert_result = coupling_cache_.insert(
       std::make_pair(std::make_pair(&*local, &*remote), CouplingResult{}));
   CouplingResult& inserted_value = insert_result.first->second;
