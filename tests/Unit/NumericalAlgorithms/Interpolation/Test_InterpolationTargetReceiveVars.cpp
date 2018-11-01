@@ -40,7 +40,7 @@
 // IWYU pragma: no_forward_declare Variables
 namespace intrp {
 namespace Actions {
-template <typename InterpolationTargetTag>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct CleanUpInterpolator;
 }  // namespace Actions
 }  // namespace intrp
@@ -80,7 +80,7 @@ struct mock_interpolation_target {
                                                             ::Frame::Inertial>>;
 };
 
-template <typename InterpolationTargetTag>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct MockCleanUpInterpolator {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -181,9 +181,9 @@ struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables, VolumeDim>;
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::CleanUpInterpolator<
-          typename Metavariables::InterpolationTargetA>>;
+          typename Metavariables::InterpolationTargetA, 3>>;
   using with_these_simple_actions = tmpl::list<
-      MockCleanUpInterpolator<typename Metavariables::InterpolationTargetA>>;
+      MockCleanUpInterpolator<typename Metavariables::InterpolationTargetA, 3>>;
 };
 
 struct MockMetavariables {

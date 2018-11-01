@@ -19,8 +19,8 @@ namespace intrp {
 template <typename Metavariables, size_t VolumeDim>
 struct Interpolator;
 namespace Actions {
-template <typename InterpolationTargetTag>
-struct ReceiveInterpolationPoints;
+template <typename InterpolationTargetTag, typename Frame>
+struct ReceivePoints;
 }  // namespace Actions
 }  // namespace intrp
 /// \endcond
@@ -74,7 +74,7 @@ void send_points_to_interpolator(
       Parallel::get_parallel_component<Interpolator<Metavariables, VolumeDim>>(
           cache);
   Parallel::simple_action<
-      Actions::ReceiveInterpolationPoints<InterpolationTargetTag>>(
+      Actions::ReceivePoints<InterpolationTargetTag, Frame>>(
       receiver_proxy, temporal_id, std::move(coords));
 }
 
