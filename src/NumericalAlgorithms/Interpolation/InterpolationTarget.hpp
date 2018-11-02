@@ -42,7 +42,21 @@ namespace intrp {
 ///                                  that computes the target points and
 ///                                  sends them to `Interpolators`.
 ///                                  It takes a `temporal_id` as an extra
-///                                  argument.
+///                                  argument.  `compute_target_points` can
+///                                  (optionally) have an additional function
+///```
+///   static auto initialize(db::DataBox<DbTags>&&,
+///                          const Parallel::ConstGlobalCache<Metavariables>&)
+///                          noexcept;
+///```
+///                                  that adds arbitrary tags to the `DataBox`
+///                                  when the `InterpolationTarget` is
+///                                  initialized.  If `compute_target_points`
+///                                  has an `initialize` function, it
+///                                  must also have a type alias
+///                                  `initialization_tags`
+///                                  which is a `tmpl::list` of the tags that
+///                                  are added by `initialize`.
 /// - post_interpolation_callback:   a struct with a function
 ///```
 ///       static void apply(const DataBox<DbTags>&,

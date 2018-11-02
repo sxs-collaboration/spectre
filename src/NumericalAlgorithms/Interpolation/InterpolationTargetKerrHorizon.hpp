@@ -121,6 +121,30 @@ template <typename InterpolationTargetTag, typename Frame>
 struct KerrHorizon {
   using options_type = OptionHolders::KerrHorizon;
   using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
+  using initialization_tags =
+      tmpl::append<StrahlkorperTags::items_tags<Frame>,
+                   StrahlkorperTags::compute_items_tags<Frame>>;
+  template <typename DbTags, typename Metavariables>
+  static auto initialize(
+      db::DataBox<DbTags>&& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
+
+    // Make a Strahlkorper with the correct shape.
+    ::Strahlkorper<Frame> strahlkorper(
+        options.l_max, options.l_max,
+        get(gr::Solutions::kerr_horizon_radius(
+            ::YlmSpherepack(options.l_max, options.l_max).theta_phi_points(),
+            options.mass, options.dimensionless_spin)),
+        options.center);
+
+    // Put Strahlkorper and its ComputeItems into a new DataBox.
+    return db::create_from<
+        db::RemoveTags<>,
+        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
+        db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
+        std::move(box), std::move(strahlkorper));
+  }
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -133,25 +157,14 @@ struct KerrHorizon {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
       const typename Metavariables::temporal_id& temporal_id) noexcept {
-    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
-
-    // Make a Strahlkorper with the correct shape.
-    ::Strahlkorper<Frame> strahlkorper(
-        options.l_max, options.l_max,
-        get(gr::Solutions::kerr_horizon_radius(
-            ::YlmSpherepack(options.l_max, options.l_max).theta_phi_points(),
-            options.mass, options.dimensionless_spin)),
-        options.center);
-
-    // Make a DataBox so we can get coords from strahlkorper.
-    auto strahlkorper_box = db::create<
-        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
-        db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
-        std::move(strahlkorper));
-
+    // In the future, when we add support for multiple Frames,
+    // the code that transforms coordinates from the Strahlkorper Frame
+    // to `Metavariables::domain_frame` will go here.  That transformation
+    // may depend on `temporal_id`.
     send_points_to_interpolator<InterpolationTargetTag>(
         box, cache,
-        db::get<StrahlkorperTags::CartesianCoords<Frame>>(strahlkorper_box),
+        db::get<StrahlkorperTags::CartesianCoords<
+            typename Metavariables::domain_frame>>(box),
         temporal_id);
   }
 };
