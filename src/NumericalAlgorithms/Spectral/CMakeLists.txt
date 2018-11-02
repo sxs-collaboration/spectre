@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
     Legendre.cpp
     Projection.cpp
     Spectral.cpp
+    SwshCollocation.cpp
     )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
