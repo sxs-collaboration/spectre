@@ -233,14 +233,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
   /// \brief Data to send to neighbor elements.
   struct PackagedData {
-    tuples::TaggedTuple<Minmod_detail::to_tensor_double<Tags>...> means_;
-    std::array<double, VolumeDim> element_size_ =
+    tuples::TaggedTuple<Minmod_detail::to_tensor_double<Tags>...> means;
+    std::array<double, VolumeDim> element_size =
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
 
     // clang-tidy: google-runtime-references
     void pup(PUP::er& p) noexcept {  // NOLINT
-      p | means_;
-      p | element_size_;
+      p | means;
+      p | element_size;
     }
   };
 
@@ -273,12 +273,12 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
         // this avoids the work of reorienting the tensor while giving the same
         // result.
         get<Minmod_detail::to_tensor_double<decltype(tag)>>(
-            packaged_data->means_)[i] = mean_value(tensor[i], mesh);
+            packaged_data->means)[i] = mean_value(tensor[i], mesh);
       }
       return '0';
     };
     expand_pack(wrap_compute_means(Tags{}, tensors)...);
-    packaged_data->element_size_ =
+    packaged_data->element_size =
         orientation_map.permute_from_neighbor(element_size);
   }
 
@@ -348,7 +348,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
           result.insert(std::make_pair(
               neighbor_and_data.first,
               make_not_null(get<Minmod_detail::to_tensor_double<decltype(tag)>>(
-                                neighbor_and_data.second.means_)
+                                neighbor_and_data.second.means)
                                 .cbegin())));
         }
         return result;
@@ -362,7 +362,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
             result;
         for (const auto& neighbor_and_data : neighbor_data) {
           result.insert(std::make_pair(neighbor_and_data.first,
-                                       neighbor_and_data.second.element_size_));
+                                       neighbor_and_data.second.element_size));
         }
         return result;
       }
