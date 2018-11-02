@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_InterpolatorRegisterElement.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
+  Test_ParallelInterpolator.cpp
   )
 
 add_test_library(
