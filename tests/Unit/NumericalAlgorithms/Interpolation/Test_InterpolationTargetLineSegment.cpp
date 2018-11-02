@@ -17,6 +17,7 @@
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
+#include "tests/Unit/TestCreation.hpp"
 
 namespace {
 struct MockMetavariables {
@@ -40,11 +41,28 @@ struct MockMetavariables {
 };
 }  // namespace
 
+// operator== for testing creation:
+namespace intrp {
+namespace OptionHolders {
+bool operator==(const LineSegment<3>& lhs, const LineSegment<3>& rhs) noexcept {
+  return lhs.begin == rhs.begin and lhs.end == rhs.end and
+         lhs.number_of_points == rhs.number_of_points;
+}
+}  // namespace OptionHolders
+}  // namespace intrp
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
                   "[Unit]") {
   // Options for LineSegment
   intrp::OptionHolders::LineSegment<3> line_segment_opts({{1.0, 1.0, 1.0}},
                                                          {{2.4, 2.4, 2.4}}, 15);
+
+  // Test creation of options
+  const auto created_opts = test_creation<intrp::OptionHolders::LineSegment<3>>(
+      "  Begin: [1.0, 1.0, 1.0]\n"
+      "  End: [2.4, 2.4, 2.4]\n"
+      "  NumberOfPoints: 15");
+  CHECK(created_opts == line_segment_opts);
 
   const auto domain_creator =
       DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
