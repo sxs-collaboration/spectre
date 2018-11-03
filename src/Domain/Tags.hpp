@@ -252,15 +252,21 @@ struct unmap_interface_args;
 
 template <>
 struct unmap_interface_args<true> {
+  template <typename T>
+  using f = T;
+
   template <size_t VolumeDim, typename T>
-  static constexpr decltype(auto) apply(
-      const ::Direction<VolumeDim>& /*direction*/, const T& arg) noexcept {
+  static constexpr const T& apply(const ::Direction<VolumeDim>& /*direction*/,
+                                  const T& arg) noexcept {
     return arg;
   }
 };
 
 template <>
 struct unmap_interface_args<false> {
+  template <typename T>
+  using f = typename T::mapped_type;
+
   template <size_t VolumeDim, typename T>
   static constexpr decltype(auto) apply(const ::Direction<VolumeDim>& direction,
                                         const T& arg) noexcept {
@@ -282,22 +288,22 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
           volume_tags, typename BaseComputeItem::argument_tags>>::value == 0,
       "volume_tags contains tags not in argument_tags");
 
-  static constexpr auto apply(
+  using return_type = std::unordered_map<
+      typename db::item_type<DirectionsTag>::value_type,
+      std::decay_t<decltype(BaseComputeItem::function(
+          std::declval<typename unmap_interface_args<
+              tmpl::list_contains_v<volume_tags, ArgumentTags>>::
+                           template f<db::item_type<ArgumentTags>>>()...))>>;
+
+  static constexpr void apply(
+      const gsl::not_null<return_type*> result,
       const db::item_type<DirectionsTag>& directions,
       const db::item_type<ArgumentTags>&... args) noexcept {
-    std::unordered_map<
-        typename db::item_type<DirectionsTag>::value_type,
-        std::decay_t<decltype(BaseComputeItem::function(
-            unmap_interface_args<tmpl::list_contains_v<
-                volume_tags, ArgumentTags>>::apply(*directions.begin(),
-                                                   args)...))>>
-        result;
     for (const auto& direction : directions) {
-      result[direction] = BaseComputeItem::function(
+      (*result)[direction] = BaseComputeItem::function(
           unmap_interface_args<tmpl::list_contains_v<
               volume_tags, ArgumentTags>>::apply(direction, args)...);
     }
-    return result;
   }
 };
 
@@ -409,6 +415,9 @@ struct InterfaceComputeItem
                                                              Tag>;
   using argument_tags =
       tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
+
+  using return_type = typename Interface_detail::evaluate_compute_item<
+      DirectionsTag, Tag, forwarded_argument_tags>::return_type;
   static constexpr auto function =
       Interface_detail::evaluate_compute_item<DirectionsTag, Tag,
                                               forwarded_argument_tags>::apply;
