@@ -71,7 +71,7 @@ struct LocalLaxFriedrichs {
   template <typename... VariablesTags, typename... NormalDotFluxTags>
   struct package_data_helper<tmpl::list<VariablesTags...>,
                              tmpl::list<NormalDotFluxTags...>> {
-    static void function(
+    static void apply(
         const gsl::not_null<Variables<package_tags>*> packaged_data,
         const db::item_type<NormalDotFluxTags>&... n_dot_f_to_package,
         const db::item_type<VariablesTags>&... u_to_package,
@@ -79,23 +79,19 @@ struct LocalLaxFriedrichs {
       expand_pack((get<VariablesTags>(*packaged_data) = u_to_package)...);
       expand_pack(
           (get<NormalDotFluxTags>(*packaged_data) = n_dot_f_to_package)...);
-      get<MaxAbsCharSpeed>(
-          *packaged_data) = [&characteristic_speeds]() noexcept {
-        auto result = make_with_value<Scalar<DataVector>>(
-            characteristic_speeds[0],
-            std::numeric_limits<double>::signaling_NaN());
-        for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
-          double local_max_speed = 0.0;
-          for (size_t u = 0; u < characteristic_speeds.size(); ++u) {
-            local_max_speed =
-                std::max(local_max_speed,
-                         std::abs(gsl::at(characteristic_speeds, u)[s]));
-          }
-          get(result)[s] = local_max_speed;
-        }
-        return result;
+      Scalar<DataVector>& char_speed = get<MaxAbsCharSpeed>(*packaged_data);
+      if (get(char_speed).size() != characteristic_speeds[0].size()) {
+        get(char_speed) = DataVector(characteristic_speeds[0].size());
       }
-      ();
+
+      for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
+        double local_max_speed = 0.0;
+        for (size_t u = 0; u < characteristic_speeds.size(); ++u) {
+          local_max_speed = std::max(
+              local_max_speed, std::abs(gsl::at(characteristic_speeds, u)[s]));
+        }
+        get(char_speed)[s] = local_max_speed;
+      }
     }
   };
 
@@ -108,7 +104,7 @@ struct LocalLaxFriedrichs {
   struct call_operator_helper<tmpl::list<NormalDotNumericalFluxTags...>,
                               tmpl::list<VariablesTags...>,
                               tmpl::list<NormalDotFluxTags...>> {
-    static void function(
+    static void apply(
         const gsl::not_null<
             db::item_type<NormalDotNumericalFluxTags>*>... n_dot_numerical_f,
         const db::item_type<NormalDotFluxTags>&... n_dot_f_interior,
@@ -117,18 +113,8 @@ struct LocalLaxFriedrichs {
         const db::item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
         const db::item_type<VariablesTags>&... u_exterior,
         const db::item_type<MaxAbsCharSpeed>& max_abs_speed_exterior) noexcept {
-      const auto max_abs_speed =
-          [&max_abs_speed_interior, &max_abs_speed_exterior ]() noexcept {
-        auto result = make_with_value<db::item_type<MaxAbsCharSpeed>>(
-            max_abs_speed_interior,
-            std::numeric_limits<double>::signaling_NaN());
-        for (size_t s = 0; s < result.begin()->size(); ++s) {
-          get(result)[s] = std::max(get(max_abs_speed_interior)[s],
-                                    get(max_abs_speed_exterior)[s]);
-        }
-        return result;
-      }
-      ();
+      const Scalar<DataVector> max_abs_speed(DataVector(
+          max(get(max_abs_speed_interior), get(max_abs_speed_exterior))));
       const auto assemble_numerical_flux = [&max_abs_speed](
           const auto n_dot_num_f, const auto& n_dot_f_in, const auto& u_in,
           const auto& minus_n_dot_f_ex, const auto& u_ex) noexcept {
@@ -157,7 +143,7 @@ struct LocalLaxFriedrichs {
     package_data_helper<
         db::split_tag<variables_tag>,
         db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tag>>>::function(args...);
+                                         variables_tag>>>::apply(args...);
   }
 
   template <class... Args>
@@ -167,7 +153,7 @@ struct LocalLaxFriedrichs {
             db::add_tag_prefix<::Tags::NormalDotNumericalFlux, variables_tag>>,
         db::split_tag<variables_tag>,
         db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tag>>>::function(args...);
+                                         variables_tag>>>::apply(args...);
   }
 };
 
