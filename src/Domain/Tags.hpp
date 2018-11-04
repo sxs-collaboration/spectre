@@ -479,18 +479,22 @@ template <typename DirectionsTag, typename VarsTag>
 struct Slice : Interface<DirectionsTag, VarsTag>, db::ComputeTag {
   static constexpr size_t volume_dim =
       db::item_type<DirectionsTag>::value_type::volume_dim;
-  static constexpr auto function(
+
+  using return_type =
+      std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>;
+
+  static constexpr void function(
+      const gsl::not_null<
+          std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>*>
+          sliced_vars,
       const ::Mesh<volume_dim>& mesh,
       const std::unordered_set<::Direction<volume_dim>>& directions,
       const db::item_type<VarsTag>& variables) noexcept {
-    std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>
-        sliced_vars{};
     for (const auto& direction : directions) {
-      sliced_vars[direction] =
-          data_on_slice(variables, mesh.extents(), direction.dimension(),
-                        index_to_slice_at(mesh.extents(), direction));
+      data_on_slice(make_not_null(&((*sliced_vars)[direction])), variables,
+                    mesh.extents(), direction.dimension(),
+                    index_to_slice_at(mesh.extents(), direction));
     }
-    return sliced_vars;
   }
   static std::string name() { return "Interface<" + VarsTag::name() + ">"; };
   using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, VarsTag>;
