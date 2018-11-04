@@ -684,9 +684,9 @@ struct compute_item_function_pointer_type_impl<true> {
 template <typename FullTagList, typename ComputeItem,
           typename... ComputeItemArgumentsTags>
 using compute_item_function_pointer_type =
-    typename compute_item_function_pointer_type_impl<
-        DataBox_detail::has_return_type_member_v<ComputeItem>>::
-        template f<FullTagList, ComputeItem, ComputeItemArgumentsTags...>;
+    typename compute_item_function_pointer_type_impl<has_return_type_member_v<
+        ComputeItem>>::template f<FullTagList, ComputeItem,
+                                  ComputeItemArgumentsTags...>;
 
 template <bool IsComputeTag>
 struct get_argument_list_impl {
@@ -796,7 +796,7 @@ db::DataBox<tmpl::list<Tags...>>::add_compute_item_to_box() noexcept {
                                  tmpl::pin<tmpl::list<Tags...>>, tmpl::_1>>{});
   add_sub_compute_item_tags_to_box<Tag>(
       typename Subitems<tmpl::list<Tags...>, Tag>::type{},
-      typename DataBox_detail::has_return_type_member<
+      typename has_return_type_member<
           Subitems<tmpl::list<Tags...>, Tag>>::type{});
 }
 // End adding compute items
@@ -1009,7 +1009,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     if (p.isUnpacking()) {
       add_sub_compute_item_tags_to_box<tag>(
           typename Subitems<tmpl::list<Tags...>, tag>::type{},
-          typename DataBox_detail::has_return_type_member<
+          typename has_return_type_member<
               Subitems<tmpl::list<Tags...>, tag>>::type{});
     }
   };

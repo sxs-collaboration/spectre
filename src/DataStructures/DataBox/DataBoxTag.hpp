@@ -282,7 +282,6 @@ template <typename Tag>
 constexpr bool is_base_tag_v = is_base_tag<Tag>::value;
 // @}
 
-namespace DataBox_detail {
 template <class T, class = void>
 struct has_return_type_member : std::false_type {};
 template <class T>
@@ -295,6 +294,7 @@ struct has_return_type_member<T, cpp17::void_t<typename T::return_type>>
 template <class T>
 constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
+namespace DataBox_detail {
 template <typename TagList, typename Tag>
 struct item_type_impl;
 
