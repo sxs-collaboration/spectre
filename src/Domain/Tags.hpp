@@ -288,19 +288,57 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
           volume_tags, typename BaseComputeItem::argument_tags>>::value == 0,
       "volume_tags contains tags not in argument_tags");
 
-  using return_type = std::unordered_map<
-      typename db::item_type<DirectionsTag>::value_type,
-      std::decay_t<decltype(BaseComputeItem::function(
-          std::declval<typename unmap_interface_args<
-              tmpl::list_contains_v<volume_tags, ArgumentTags>>::
-                           template f<db::item_type<ArgumentTags>>>()...))>>;
+ private:
+  // Order matters so we mix public/private
+  template <class ComputeItem, bool = db::has_return_type_member_v<ComputeItem>>
+  struct ComputeItemType {
+    using type = std::decay_t<decltype(BaseComputeItem::function(
+        std::declval<typename unmap_interface_args<
+            tmpl::list_contains_v<volume_tags, ArgumentTags>>::
+                         template f<db::item_type<ArgumentTags>>>()...))>;
+  };
+
+  template <class ComputeItem>
+  struct ComputeItemType<ComputeItem, true> {
+    using type = typename BaseComputeItem::return_type;
+  };
+
+ public:
+  using return_type =
+      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
+                         typename ComputeItemType<BaseComputeItem>::type>;
 
   static constexpr void apply(
       const gsl::not_null<return_type*> result,
       const db::item_type<DirectionsTag>& directions,
       const db::item_type<ArgumentTags>&... args) noexcept {
+    apply_helper(
+        std::integral_constant<bool,
+                               db::has_return_type_member_v<BaseComputeItem>>{},
+        result, directions, args...);
+  }
+
+ private:
+  static constexpr void apply_helper(
+      std::false_type /*has_return_type_member*/,
+      const gsl::not_null<return_type*> result,
+      const db::item_type<DirectionsTag>& directions,
+      const db::item_type<ArgumentTags>&... args) noexcept {
     for (const auto& direction : directions) {
       (*result)[direction] = BaseComputeItem::function(
+          unmap_interface_args<tmpl::list_contains_v<
+              volume_tags, ArgumentTags>>::apply(direction, args)...);
+    }
+  }
+
+  static constexpr void apply_helper(
+      std::true_type /*has_return_type_member*/,
+      const gsl::not_null<return_type*> result,
+      const db::item_type<DirectionsTag>& directions,
+      const db::item_type<ArgumentTags>&... args) noexcept {
+    for (const auto& direction : directions) {
+      BaseComputeItem::function(
+          make_not_null(&(*result)[direction]),
           unmap_interface_args<tmpl::list_contains_v<
               volume_tags, ArgumentTags>>::apply(direction, args)...);
     }
