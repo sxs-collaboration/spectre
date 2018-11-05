@@ -19,6 +19,9 @@ namespace intrp {
 namespace OptionHolders {
 /// A line segment extending from `Begin` to `End`,
 /// containing `NumberOfPoints` uniformly-spaced points including the endpoints.
+///
+/// \note Input coordinates are interpreted in the frame given by the `Frame`
+/// by the `Frame` template parameter of the `Actions::LineSegment`.
 template <size_t VolumeDim>
 struct LineSegment {
   struct Begin {
