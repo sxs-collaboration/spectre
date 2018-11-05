@@ -281,6 +281,42 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
 }
 
 template <typename Solution, typename Fr>
+void test_surface_integral_of_scalar(const Solution& solution,
+                                     const Strahlkorper<Fr>& strahlkorper,
+                                     const double expected) noexcept {
+  const auto box =
+      db::create<db::AddSimpleTags<StrahlkorperTags::items_tags<Fr>>,
+                 db::AddComputeTags<StrahlkorperTags::compute_items_tags<Fr>>>(
+          strahlkorper);
+
+  const double t = 0.0;
+  const auto& cart_coords = db::get<StrahlkorperTags::CartesianCoords<Fr>>(box);
+
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Fr, DataVector>>(vars);
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Fr>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Fr>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Fr>>(box);
+  const auto& jacobian = db::get<StrahlkorperTags::Jacobian<Fr>>(box);
+
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+
+  auto scalar = make_with_value<Scalar<DataVector>>(radius, 0.0);
+  get(scalar) = square(get<0>(cart_coords));
+
+  const double integral = StrahlkorperGr::surface_integral_of_scalar(
+      area_element, scalar, strahlkorper);
+
+  CHECK_ITERABLE_APPROX(integral, expected);
+}
+
+template <typename Solution, typename Fr>
 void test_spin_function(const Solution& solution,
                         const Strahlkorper<Fr>& strahlkorper,
                         const double expected) noexcept {
@@ -606,6 +642,28 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
 
   test_area(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
             expected_area);
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SurfaceInteralOfScalar",
+                  "[ApparentHorizons][Unit]") {
+  // Check the surface integral of a Schwarzschild horizon, using the radius
+  // as the scalar
+  constexpr int l_max = 20;
+  const double mass = 4.444;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+
+  const double radius = 2.0 * mass;
+
+  // The test will integrate x^2 on a Schwarzschild horizon.
+  // This is the analytic result.
+  const double expected_integral = 4.0 * M_PI * square(square(radius)) / 3.0;
+
+  const auto horizon =
+      Strahlkorper<Frame::Inertial>(l_max, l_max, radius, center);
+
+  test_surface_integral_of_scalar(gr::Solutions::KerrSchild{mass, spin, center},
+                                  horizon, expected_integral);
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinFunction",
