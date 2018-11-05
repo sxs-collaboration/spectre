@@ -140,6 +140,19 @@ static_assert(
     "Failed testing variables_tag_with_tags_list");
 /// [variables_tag_with_tags_list]
 
+static_assert(
+    cpp17::is_same_v<db::get_variables_tags_list<
+                         Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
+                     tmpl::list<Prefix<Var>>>,
+    "Failed testing get_variables_tags_list");
+
+static_assert(
+    cpp17::is_same_v<
+        db::get_variables_tags_list<
+            Prefix<Tags::Variables<tmpl::list<Prefix<Var>, Prefix<Var2>>>>>,
+        tmpl::list<Prefix<Var>, Prefix<Var2>>>,
+    "Failed testing get_variables_tags_list");
+
 static_assert(cpp17::is_same_v<db::split_tag<Var>, tmpl::list<Var>>,
               "Failed testing split_tag");
 static_assert(
