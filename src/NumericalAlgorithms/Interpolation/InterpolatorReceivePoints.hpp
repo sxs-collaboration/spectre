@@ -58,7 +58,7 @@ namespace Actions {
 ///   - `Tags::InterpolatedVarsHolders<Metavariables,VolumeDim>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
-template <typename InterpolationTargetTag, typename Frame>
+template <typename InterpolationTargetTag>
 struct ReceivePoints {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -95,7 +95,7 @@ struct ReceivePoints {
                   std::move(block_logical_coords)}));
         });
 
-    try_to_interpolate<InterpolationTargetTag, VolumeDim, Frame>(
+    try_to_interpolate<InterpolationTargetTag, VolumeDim>(
         make_not_null(&box), make_not_null(&cache), temporal_id);
   }
 };

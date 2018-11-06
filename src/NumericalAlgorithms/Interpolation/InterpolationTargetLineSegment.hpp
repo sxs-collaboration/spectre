@@ -20,8 +20,8 @@ namespace OptionHolders {
 /// A line segment extending from `Begin` to `End`,
 /// containing `NumberOfPoints` uniformly-spaced points including the endpoints.
 ///
-/// \note Input coordinates are interpreted in the frame given by the `Frame`
-/// by the `Frame` template parameter of the `Actions::LineSegment`.
+/// \note Input coordinates are interpreted in the frame given by
+/// `Metavariables::domain_frame`
 template <size_t VolumeDim>
 struct LineSegment {
   struct Begin {
@@ -90,7 +90,7 @@ namespace Actions {
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct LineSegment {
   using options_type = OptionHolders::LineSegment<VolumeDim>;
   using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
@@ -110,8 +110,8 @@ struct LineSegment {
 
     // Fill points on a line segment
     const double fractional_distance = 1.0 / (options.number_of_points - 1);
-    tnsr::I<DataVector, VolumeDim, Frame> target_points(
-        options.number_of_points);
+    tnsr::I<DataVector, VolumeDim, typename Metavariables::domain_frame>
+        target_points(options.number_of_points);
     for (size_t n = 0; n < options.number_of_points; ++n) {
       for (size_t d = 0; d < VolumeDim; ++d) {
         target_points.get(d)[n] =

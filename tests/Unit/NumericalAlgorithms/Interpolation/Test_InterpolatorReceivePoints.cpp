@@ -37,7 +37,7 @@
 /// \cond
 namespace intrp {
 namespace Actions {
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct InterpolationTargetReceiveVars;
 }  // namespace Actions
 }  // namespace intrp
@@ -66,7 +66,7 @@ struct Variables;
 namespace {
 
 size_t num_calls_of_target_receive_vars = 0;
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct MockInterpolationTargetReceiveVars {
   template <
       typename DbTags, typename... InboxTags, typename Metavariables,
@@ -104,20 +104,18 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using component_being_mocked =
-      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3,
-                                 Frame::Inertial>;
+      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3>;
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3,
-                                                            ::Frame::Inertial>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
-          typename Metavariables::InterpolationTargetA, 3, ::Frame::Inertial>>;
+          typename Metavariables::InterpolationTargetA, 3>>;
   using with_these_simple_actions =
       tmpl::list<MockInterpolationTargetReceiveVars<
-          typename Metavariables::InterpolationTargetA, 3, ::Frame::Inertial>>;
+          typename Metavariables::InterpolationTargetA, 3>>;
 };
 
 template <typename Metavariables, size_t VolumeDim>
@@ -142,6 +140,7 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using temporal_id = Time;
+  using domain_frame = Frame::Inertial;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolator<MockMetavariables, 3>>;
@@ -196,9 +195,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   Slab slab(0.0, 1.0);
   Time temporal_id(slab, Rational(11, 15));
 
-  runner.simple_action<mock_interpolator<metavars, 3>,
-                       intrp::Actions::ReceivePoints<
-                           metavars::InterpolationTargetA, Frame::Inertial>>(
+  runner.simple_action<
+      mock_interpolator<metavars, 3>,
+      intrp::Actions::ReceivePoints<metavars::InterpolationTargetA>>(
       0, temporal_id, block_logical_coords);
 
   const auto& holders =

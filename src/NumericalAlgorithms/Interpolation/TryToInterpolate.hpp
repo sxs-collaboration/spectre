@@ -19,10 +19,10 @@
 /// \cond
 namespace intrp {
 template <typename Metavariables, typename InterpolationTargetTag,
-          size_t VolumeDim, typename Frame>
+          size_t VolumeDim>
 struct InterpolationTarget;
 namespace Actions {
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame>
+template <typename InterpolationTargetTag, size_t VolumeDim>
 struct InterpolationTargetReceiveVars;
 }  // namespace Actions
 }  // namespace intrp
@@ -121,7 +121,7 @@ void interpolate_data(
 
 /// Check if we have enough information to interpolate.  If so, do the
 /// interpolation and send data to the InterpolationTarget.
-template <typename InterpolationTargetTag, size_t VolumeDim, typename Frame,
+template <typename InterpolationTargetTag, size_t VolumeDim,
           typename Metavariables, typename DbTags>
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -154,10 +154,10 @@ void try_to_interpolate(
       const auto& info = vars_infos.at(temporal_id);
       auto& receiver_proxy =
           Parallel::get_parallel_component<InterpolationTarget<
-              Metavariables, InterpolationTargetTag, VolumeDim, Frame>>(*cache);
+              Metavariables, InterpolationTargetTag, VolumeDim>>(*cache);
       Parallel::simple_action<Actions::InterpolationTargetReceiveVars<
-          InterpolationTargetTag, VolumeDim, Frame>>(receiver_proxy, info.vars,
-                                                     info.global_offsets);
+          InterpolationTargetTag, VolumeDim>>(receiver_proxy, info.vars,
+                                              info.global_offsets);
     }
 
     // Clear interpolated data, since we don't need it anymore.

@@ -27,11 +27,11 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points =
-        ::intrp::Actions::WedgeSectionTorus<InterpolationTargetA,
-                                            Frame::Inertial>;
+        ::intrp::Actions::WedgeSectionTorus<InterpolationTargetA>;
     using type = compute_target_points::options_type;
   };
   using temporal_id = Time;
+  using domain_frame = Frame::Inertial;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 

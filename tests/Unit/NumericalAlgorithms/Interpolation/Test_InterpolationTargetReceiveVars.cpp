@@ -70,14 +70,12 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using component_being_mocked =
-      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3,
-                                 Frame::Inertial>;
+      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag, 3>;
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3,
-                                                            ::Frame::Inertial>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
 };
 
 template <typename InterpolationTargetTag, size_t VolumeDim>
@@ -197,6 +195,7 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using temporal_id = Time;
+  using domain_frame = Frame::Inertial;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
@@ -227,21 +226,22 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
   // Set databox to contain two temporal_ids and a vars of num_points points.
   tuples::get<MockDistributedObjectsTagTarget>(dist_objects)
       .emplace(
-          0, ActionTesting::MockDistributedObject<mock_interpolation_target<
-                 metavars, metavars::InterpolationTargetA>>{
-                 db::create<db::get_items<
-                     intrp::Actions::InitializeInterpolationTarget<
-                         metavars::InterpolationTargetA>::
-                         return_tag_list<metavars, 3, Frame::Inertial>>>(
-                     db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
-                     db::item_type<intrp::Tags::TemporalIds<metavars>>{
-                         Time(slab, Rational(13, 15)),
-                         Time(slab, Rational(14, 15))},
-                     domain_creator.create_domain(),
-                     db::item_type<
-                         ::Tags::Variables<metavars::InterpolationTargetA::
-                                               vars_to_interpolate_to_target>>{
-                         num_points})});
+          0,
+          ActionTesting::MockDistributedObject<mock_interpolation_target<
+              metavars, metavars::InterpolationTargetA>>{
+              db::create<
+                  db::get_items<intrp::Actions::InitializeInterpolationTarget<
+                      metavars::InterpolationTargetA>::return_tag_list<metavars,
+                                                                       3>>>(
+                  db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
+                  db::item_type<intrp::Tags::TemporalIds<metavars>>{
+                      Time(slab, Rational(13, 15)),
+                      Time(slab, Rational(14, 15))},
+                  domain_creator.create_domain(),
+                  db::item_type<
+                      ::Tags::Variables<metavars::InterpolationTargetA::
+                                            vars_to_interpolate_to_target>>{
+                      num_points})});
 
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<
@@ -293,8 +293,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
       intrp::Actions::InterpolationTargetReceiveVars<
-          metavars::InterpolationTargetA, 3, Frame::Inertial>>(0, vars_src,
-                                                               global_offsets);
+          metavars::InterpolationTargetA, 3>>(0, vars_src, global_offsets);
 
   // It should have interpolated 4 points by now.
   CHECK(db::get<intrp::Tags::IndicesOfFilledInterpPoints>(box_target).size() ==
@@ -316,8 +315,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
       intrp::Actions::InterpolationTargetReceiveVars<
-          metavars::InterpolationTargetA, 3, Frame::Inertial>>(0, vars_src,
-                                                               global_offsets);
+          metavars::InterpolationTargetA, 3>>(0, vars_src, global_offsets);
 
   // It should have interpolated 8 points by now. (The ninth point had
   // a repeated global_offsets so it should be ignored)
@@ -339,8 +337,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
       intrp::Actions::InterpolationTargetReceiveVars<
-          metavars::InterpolationTargetA, 3, Frame::Inertial>>(0, vars_src,
-                                                               global_offsets);
+          metavars::InterpolationTargetA, 3>>(0, vars_src, global_offsets);
 
   // It should have interpolated all the points by now.
   CHECK(db::get<intrp::Tags::IndicesOfFilledInterpPoints>(box_target).size() ==

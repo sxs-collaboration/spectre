@@ -37,7 +37,6 @@ namespace Actions {
 /// - Modifies:
 ///   - `Tags::VolumeVarsInfo<Metavariables,VolumeDim>`
 ///   - `Tags::InterpolatedVarsHolders<Metavariables,VolumeDim>`
-template <typename Frame>
 struct InterpolatorReceiveVolumeData {
   template <
       typename DbTags, typename... InboxTags, typename Metavariables,
@@ -79,9 +78,8 @@ struct InterpolatorReceiveVolumeData {
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
         [&box, &cache, &temporal_id](auto x) noexcept {
           using tag = typename decltype(x)::type;
-          try_to_interpolate<tag, VolumeDim, Frame>(make_not_null(&box),
-                                                    make_not_null(&cache),
-                                                    temporal_id);
+          try_to_interpolate<tag, VolumeDim>(
+              make_not_null(&box), make_not_null(&cache), temporal_id);
         });
   }
 };

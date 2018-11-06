@@ -57,7 +57,7 @@ namespace OptionHolders {
 /// then \f$\theta\f$, and finally \f$\phi\f$ varying slowest.
 ///
 /// \note Input coordinates (radii, angles) are interpreted in the frame given
-/// by the `Frame` template parameter of the `Actions::WedgeSectionTorus`.
+/// by `Metavariables::domain_frame`
 struct WedgeSectionTorus {
   struct MinRadius {
     using type = double;
@@ -169,7 +169,7 @@ namespace Actions {
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
-template <typename InterpolationTargetTag, typename Frame>
+template <typename InterpolationTargetTag>
 struct WedgeSectionTorus {
   using options_type = OptionHolders::WedgeSectionTorus;
   using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
@@ -261,7 +261,8 @@ struct WedgeSectionTorus {
 
     // Compute x/y/z coordinates
     // Note: theta measured from +z axis, phi measured from +x axis
-    tnsr::I<DataVector, 3, Frame> target_points(num_total);
+    tnsr::I<DataVector, 3, typename Metavariables::domain_frame> target_points(
+        num_total);
     get<0>(target_points) = radii * sin(thetas) * cos(phis);
     get<1>(target_points) = radii * sin(thetas) * sin(phis);
     get<2>(target_points) = radii * cos(thetas);
