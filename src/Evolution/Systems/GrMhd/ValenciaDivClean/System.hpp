@@ -80,8 +80,10 @@ struct System {
       ComputeLargestCharacteristicSpeed;
 
   using conservative_from_primitive = ConservativeFromPrimitive;
+
+  template <typename OrderedListOfPrimitiveRecoverySchemes>
   using primitive_from_conservative =
-      PrimitiveFromConservative<PrimitiveRecoverySchemes::NewmanHamlin,
+      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
                                 EquationOfStateType::thermodynamic_dim>;
 
   using volume_fluxes = ComputeFluxes;

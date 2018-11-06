@@ -17,10 +17,10 @@ namespace PrimitiveRecoverySchemes {
  * density, \f$h\f$ is the specific enthalpy, and \f$W\f$ is the Lorentz factor.
  */
 struct PrimitiveRecoveryData {
-  const double rest_mass_density;
-  const double lorentz_factor;
-  const double pressure;
-  const double rho_h_w_squared;
+  double rest_mass_density;
+  double lorentz_factor;
+  double pressure;
+  double rho_h_w_squared;
 };
 }  // namespace PrimitiveRecoverySchemes
 }  // namespace ValenciaDivClean

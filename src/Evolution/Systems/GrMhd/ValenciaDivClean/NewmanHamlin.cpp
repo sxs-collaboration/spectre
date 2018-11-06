@@ -10,8 +10,6 @@
 #include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -35,20 +33,29 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         equation_of_state) noexcept {
   // constant in cubic equation  f(eps) = eps^3 - a eps^2 + d
   // whose root is being found at each point in the iteration below
-  const double d_in_cubic =
-      0.5 * (momentum_density_squared * magnetic_field_squared -
-             square(momentum_density_dot_magnetic_field));
+  const double d_in_cubic = [
+    momentum_density_squared, magnetic_field_squared,
+    momentum_density_dot_magnetic_field
+  ]() noexcept {
+    const double local_d_in_cubic =
+        0.5 * (momentum_density_squared * magnetic_field_squared -
+               square(momentum_density_dot_magnetic_field));
+    if (UNLIKELY(-1e-12 * square(momentum_density_dot_magnetic_field) >
+                 local_d_in_cubic)) {
+      return local_d_in_cubic;  // will fail returning boost::none
+    }
+    return std::max(0.0, local_d_in_cubic);
+  }
+  ();
   if (UNLIKELY(0.0 > d_in_cubic)) {
-    // May need to allow small negative values, Francois Foucart suggests
-    // -1e-12*momentum_density_dot_magnetic_field
-    ERROR("Newman Hamlin inversion: unphysical d.");
+    return boost::none;
   }
 
   const double initial_guess_for_pressure{0.0};
   // bound needed so cubic equation has a positive root
-  const double minimum_pressure = cbrt(6.75 * d_in_cubic) -
-                                  total_energy_density -
-                                  0.5 * magnetic_field_squared;
+  const double minimum_pressure =
+      std::max(0.0, cbrt(6.75 * d_in_cubic) - total_energy_density -
+                        0.5 * magnetic_field_squared);
   double current_pressure =
       std::max(minimum_pressure, initial_guess_for_pressure);
   double previous_pressure{std::numeric_limits<double>::signaling_NaN()};
@@ -59,8 +66,9 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
   size_t valid_entries_in_aitken_pressure = 1;
   bool converged = false;
 
-  while (true) {  // will break when relative pressure change is < 1e-10
-    if (max_iterations_ == iteration_step and not converged) {
+  while (true) {  // will break when relative pressure change is <
+                  // relative_tolernance_
+    if (UNLIKELY(max_iterations_ == iteration_step and not converged)) {
       return boost::none;
     }
 
@@ -71,8 +79,9 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double a_in_cubic =
         total_energy_density + current_pressure + 0.5 * magnetic_field_squared;
 
-    ASSERT(a_in_cubic >= 0.0,
-           "Newman Hamlin inversion:  unphysical a = " << a_in_cubic);
+    if (UNLIKELY(a_in_cubic < 0.0)) {
+      return boost::none;
+    }
 
     // NH Eq. (5.10): d = (4/27) a^3 cos^2(phi)
     const double phi = acos(sqrt(6.75 * d_in_cubic / cube(a_in_cubic)));
@@ -84,9 +93,10 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     // and w is the lorentz factor
     const double rho_h_w_squared = root_of_cubic - magnetic_field_squared;
 
-    ASSERT(rho_h_w_squared > 0.0,
-           "Newman Hamlin inversion:  unphysical rho_h_w_squared = "
-               << rho_h_w_squared);
+    if (UNLIKELY(rho_h_w_squared <= 0.0)) {
+      return boost::none;
+    }
+
     // NH Eq. (5.2) with (5.5) substituted in denominator
     const double v_squared =
         (momentum_density_squared * square(rho_h_w_squared) +
@@ -97,8 +107,9 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     // If this fails, there was code in the Bitbucket version that adjusted
     // the pressure to get the maximum allowed velocity in atmosphere.
     // Instead, we could return boost::none and try the next inversion method.
-    ASSERT(0.0 <= v_squared and v_squared < 1.0,
-           "Newman Hamlin inversion:  unphysical v_squared = " << v_squared);
+    if (UNLIKELY(v_squared < 0.0 or v_squared >= 1.0)) {
+      return boost::none;
+    }
 
     const double current_lorentz_factor = sqrt(1.0 / (1.0 - v_squared));
     const double current_rest_mass_density =
@@ -110,9 +121,22 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
                                    rho_h_w_squared};
     }
 
-    const double current_specific_enthalpy =
-        rho_h_w_squared /
-        (current_rest_mass_density * square(current_lorentz_factor));
+    const double current_specific_enthalpy = [
+      rho_h_w_squared, current_rest_mass_density, current_lorentz_factor
+    ]() noexcept {
+      const double specific_enthalpy =
+          rho_h_w_squared /
+          (current_rest_mass_density * square(current_lorentz_factor));
+      if (UNLIKELY(1.0 - 1.0e-12 > specific_enthalpy)) {
+        return specific_enthalpy;  // will fail returning boost::none
+      }
+      return std::max(1.0, specific_enthalpy);
+    }
+    ();
+    if (UNLIKELY(1.0 > current_specific_enthalpy)) {
+      return boost::none;
+    }
+
     current_pressure = get(make_overloader(
         [&current_rest_mass_density](
             const EquationsOfState::EquationOfState<true, 1>&

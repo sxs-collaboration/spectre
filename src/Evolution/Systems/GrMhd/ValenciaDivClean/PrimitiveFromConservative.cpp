@@ -3,7 +3,11 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 
+#include <boost/none.hpp>
 #include <boost/optional/optional.hpp>
+#include <iomanip>
+#include <limits>
+#include <ostream>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -21,6 +25,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
@@ -30,8 +35,10 @@
 namespace grmhd {
 namespace ValenciaDivClean {
 
-template <typename PrimitiveRecoveryScheme, size_t ThermodynamicDim>
-void PrimitiveFromConservative<PrimitiveRecoveryScheme, ThermodynamicDim>::
+template <typename OrderedListOfPrimitiveRecoverySchemes,
+          size_t ThermodynamicDim>
+void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
+                               ThermodynamicDim>::
     apply(
         gsl::not_null<Scalar<DataVector>*> rest_mass_density,
         gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
@@ -70,13 +77,24 @@ void PrimitiveFromConservative<PrimitiveRecoveryScheme, ThermodynamicDim>::
       get(tilde_d) / get(sqrt_det_spatial_metric);
 
   for (size_t s = 0; s < total_energy_density.size(); ++s) {
-    const boost::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
-        primitive_data =
-            PrimitiveRecoveryScheme::template apply<ThermodynamicDim>(
-                total_energy_density[s], momentum_density_squared[s],
-                momentum_density_dot_magnetic_field[s],
-                magnetic_field_squared[s],
-                rest_mass_density_times_lorentz_factor[s], equation_of_state);
+    boost::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
+        primitive_data = boost::none;
+    tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(
+        [&primitive_data, &total_energy_density, &momentum_density_squared,
+         &momentum_density_dot_magnetic_field, &magnetic_field_squared,
+         &rest_mass_density_times_lorentz_factor,
+         &equation_of_state, &s](auto scheme) noexcept {
+          using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
+          if (not primitive_data) {
+            primitive_data =
+                primitive_recovery_scheme::template apply<ThermodynamicDim>(
+                    total_energy_density[s], momentum_density_squared[s],
+                    momentum_density_dot_magnetic_field[s],
+                    magnetic_field_squared[s],
+                    rest_mass_density_times_lorentz_factor[s],
+                    equation_of_state);
+          }
+        });
 
     if (primitive_data) {
       get(*rest_mass_density)[s] = primitive_data.get().rest_mass_density;
@@ -96,8 +114,21 @@ void PrimitiveFromConservative<PrimitiveRecoveryScheme, ThermodynamicDim>::
       get(*lorentz_factor)[s] = primitive_data.get().lorentz_factor;
       get(*pressure)[s] = primitive_data.get().pressure;
     } else {
-      ERROR(PrimitiveRecoveryScheme::name()
-            << " primitive inversion scheme failed.");
+      ERROR("All primitive inversion schemes failed at s = "
+            << s << ".\n"
+            << std::setprecision(std::numeric_limits<double>::digits10 + 1)
+            << "total_energy_density = " << total_energy_density[s] << "\n"
+            << "momentum_density_squared = " << momentum_density_squared[s]
+            << "\n"
+            << "momentum_density_dot_magnetic_field = "
+            << momentum_density_dot_magnetic_field[s] << "\n"
+            << "magnetic_field_squared = " << magnetic_field_squared[s] << "\n"
+            << "rest_mass_density_times_lorentz_factor = "
+            << rest_mass_density_times_lorentz_factor[s] << "\n"
+            << "previous_rest_mass_density = " << get(*rest_mass_density)[s]
+            << "\n"
+            << "previous_pressure = " << get(*pressure)[s] << "\n"
+            << "previous_lorentz_factor = " << get(*lorentz_factor)[s] << "\n");
     }
   }
   *specific_internal_energy = make_overloader(
@@ -126,10 +157,17 @@ void PrimitiveFromConservative<PrimitiveRecoveryScheme, ThermodynamicDim>::
   template struct grmhd::ValenciaDivClean::PrimitiveFromConservative< \
       RECOVERY(data), THERMODIM(data)>;
 
+using NewmanHamlinThenPalenzuelaEtAl = tmpl::list<
+    grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
+    grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
+
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
-    (grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
-     grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl),
+    (tmpl::list<
+         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+     tmpl::list<
+         grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+     NewmanHamlinThenPalenzuelaEtAl),
     (1, 2))
 
 #undef INSTANTIATION
