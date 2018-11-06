@@ -59,6 +59,20 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   CHECK_FALSE(can_change(mid, end, start));
   CHECK_FALSE(can_change(end, start, mid));
   CHECK_FALSE(can_change(end, mid, start));
+
+  test_factory_creation<TimeStepper>("  AdamsBashforthN:\n"
+                                     "    Order: 3");
+  test_factory_creation<LtsTimeStepper>("  AdamsBashforthN:\n"
+                                        "    Order: 3");
+
+  TimeSteppers::AdamsBashforthN ab4(4);
+  test_serialization(ab4);
+  test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforthN>(4_st);
+  test_serialization_via_base<LtsTimeStepper, TimeSteppers::AdamsBashforthN>(
+      4_st);
+  // test operator !=
+  TimeSteppers::AdamsBashforthN ab2(2);
+  CHECK(ab4 != ab2);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
@@ -111,60 +125,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability",
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     TimeStepperTestUtils::stability_test(TimeSteppers::AdamsBashforthN(order));
-  }
-}
-
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Factory",
-                  "[Unit][Time]") {
-  test_factory_creation<TimeStepper>("  AdamsBashforthN:\n"
-                                     "    Order: 3");
-  test_factory_creation<LtsTimeStepper>("  AdamsBashforthN:\n"
-                                        "    Order: 3");
-  // Catch requires us to have at least one CHECK in each test
-  // The Unit.Time.TimeSteppers.AdamsBashforthN.Factory does not need to
-  // check anything
-  CHECK(true);
-}
-
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Equal",
-                  "[Unit][Time]") {
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    TimeStepperTestUtils::equal_rate_boundary(
-        TimeSteppers::AdamsBashforthN(order), order - 1, epsilon, true);
-  }
-
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    for (size_t start_points = 0; start_points < order; ++start_points) {
-      INFO(start_points);
-      const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
-      TimeStepperTestUtils::equal_rate_boundary(
-          TimeSteppers::AdamsBashforthN(order), start_points, epsilon,
-          true);
-    }
-  }
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Equal.Backwards",
-    "[Unit][Time]") {
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    const double epsilon = std::max(std::pow(1e-3, order), 1e-14);
-    TimeStepperTestUtils::equal_rate_boundary(
-        TimeSteppers::AdamsBashforthN(order), order - 1, epsilon, false);
-  }
-
-  for (size_t order = 1; order < 9; ++order) {
-    INFO(order);
-    for (size_t start_points = 0; start_points < order; ++start_points) {
-      INFO(start_points);
-      const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
-      TimeStepperTestUtils::equal_rate_boundary(
-          TimeSteppers::AdamsBashforthN(order), start_points, epsilon, false);
-    }
   }
 }
 
@@ -294,50 +254,8 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
     }
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.LocalStepping",
-    "[Unit][Time]") {
-  const Slab slab(0., 1.);
-  const TimeDelta full = slab.duration();
-  do_lts_test({{full / 4, full / 4}});
-  do_lts_test({{full / 4, full / 8}});
-  do_lts_test({{full / 8, full / 4}});
-  do_lts_test({{full / 16, full / 4}});
-  do_lts_test({{full / 4, full / 16}});
-
-  // Non-nesting cases
-  do_lts_test({{full / 4, full / 6}});
-  do_lts_test({{full / 6, full / 4}});
-  do_lts_test({{full / 5, full / 7}});
-  do_lts_test({{full / 7, full / 5}});
-  do_lts_test({{full / 5, full / 13}});
-  do_lts_test({{full / 13, full / 5}});
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.LocalSteppingBackward",
-    "[Unit][Time]") {
-  const Slab slab(0., 1.);
-  const TimeDelta full = -slab.duration();
-  do_lts_test({{full / 4, full / 4}});
-  do_lts_test({{full / 4, full / 8}});
-  do_lts_test({{full / 8, full / 4}});
-  do_lts_test({{full / 16, full / 4}});
-  do_lts_test({{full / 4, full / 16}});
-
-  // Non-nesting cases
-  do_lts_test({{full / 4, full / 6}});
-  do_lts_test({{full / 6, full / 4}});
-  do_lts_test({{full / 5, full / 7}});
-  do_lts_test({{full / 7, full / 5}});
-  do_lts_test({{full / 5, full / 13}});
-  do_lts_test({{full / 13, full / 5}});
-}
-
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
-                  "[Unit][Time]") {
+void check_lts_vts() noexcept {
   const Slab slab(0., 1.);
 
   const auto make_time_id = [](const Time& t) noexcept {
@@ -401,17 +319,51 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Variable",
     }
   }
 }
+}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Serialization",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary",
                   "[Unit][Time]") {
-  TimeSteppers::AdamsBashforthN ab(4);
-  test_serialization(ab);
-  test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforthN>(4_st);
-  test_serialization_via_base<LtsTimeStepper, TimeSteppers::AdamsBashforthN>(
-      4_st);
-  // test operator !=
-  TimeSteppers::AdamsBashforthN ab2(2);
-  CHECK(ab != ab2);
+  // No local stepping
+  for (size_t order = 1; order < 9; ++order) {
+    INFO(order);
+    const TimeSteppers::AdamsBashforthN stepper(order);
+    for (size_t start_points = 0; start_points < order; ++start_points) {
+      INFO(start_points);
+      const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
+      TimeStepperTestUtils::equal_rate_boundary(stepper, start_points, epsilon,
+                                                true);
+      TimeStepperTestUtils::equal_rate_boundary(stepper, start_points, epsilon,
+                                                false);
+    }
+  }
+
+  // Local stepping with constant step sizes
+  const Slab slab(0., 1.);
+  for (const auto full : {slab.duration(), -slab.duration()}) {
+    do_lts_test({{full / 4, full / 4}});
+    do_lts_test({{full / 4, full / 8}});
+    do_lts_test({{full / 8, full / 4}});
+    do_lts_test({{full / 16, full / 4}});
+    do_lts_test({{full / 4, full / 16}});
+
+    // Non-nesting cases
+    do_lts_test({{full / 4, full / 6}});
+    do_lts_test({{full / 6, full / 4}});
+    do_lts_test({{full / 5, full / 7}});
+    do_lts_test({{full / 7, full / 5}});
+    do_lts_test({{full / 5, full / 13}});
+    do_lts_test({{full / 13, full / 5}});
+  }
+
+  // Local stepping with varying time steps
+  check_lts_vts();
+
+  // Dense output
+  for (size_t order = 1; order < 9; ++order) {
+    INFO(order);
+    TimeStepperTestUtils::check_boundary_dense_output(
+        TimeSteppers::AdamsBashforthN(order));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",

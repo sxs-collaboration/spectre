@@ -91,6 +91,7 @@ class TimeStepper : public PUP::able {
 // include loop causes AdamsBashforthN to be defined before its base
 // class if LtsTimeStepper is included first.
 namespace LtsTimeStepper_detail {
+DEFINE_FAKE_VIRTUAL(boundary_dense_output)
 DEFINE_FAKE_VIRTUAL(can_change_step_size)
 DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
 }  // namespace LtsTimeStepper_detail
@@ -102,9 +103,10 @@ DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
 class LtsTimeStepper : public TimeStepper::Inherit {
  public:
   using Inherit =
-      LtsTimeStepper_detail::FakeVirtualInherit_can_change_step_size<
-          LtsTimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
-              LtsTimeStepper>>;
+      LtsTimeStepper_detail::FakeVirtualInherit_boundary_dense_output<
+          LtsTimeStepper_detail::FakeVirtualInherit_can_change_step_size<
+              LtsTimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
+                  LtsTimeStepper>>>;
   // When you add a class here, remember to add it to TimeStepper as well.
   using creatable_classes = tmpl::list<TimeSteppers::AdamsBashforthN>;
 
@@ -129,6 +131,18 @@ class LtsTimeStepper : public TimeStepper::Inherit {
       const TimeDelta& time_step) const noexcept {
     return LtsTimeStepper_detail::fake_virtual_compute_boundary_delta<
         creatable_classes>(this, coupling, history, time_step);
+  }
+
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
+  boundary_dense_output(
+      const Coupling& coupling,
+      const TimeSteppers::BoundaryHistory<
+          LocalVars, RemoteVars,
+          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>& history,
+      const double time) const noexcept {
+    return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
+        creatable_classes>(this, coupling, history, time);
   }
 
   /// Substep LTS integrators are not supported, so this is always 1.

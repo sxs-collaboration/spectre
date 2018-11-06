@@ -37,4 +37,6 @@ void check_convergence_order(const TimeStepper& stepper,
 
 void check_dense_output(const TimeStepper& stepper,
                         int expected_order) noexcept;
+
+void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept;
 }  // namespace TimeStepperTestUtils

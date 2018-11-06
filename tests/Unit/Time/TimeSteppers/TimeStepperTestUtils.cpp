@@ -3,9 +3,12 @@
 
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <deque>
 #include <limits>
 #include <type_traits>
 
@@ -336,6 +339,79 @@ void check_dense_output(const TimeStepper& stepper,
     CHECK((log(error(large_steps)) - log(error(small_steps))) /
               (log(small_steps) - log(large_steps)) ==
           approx(expected_order).margin(0.4));
+  }
+}
+
+void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
+  // We only support variable time-step, multistep LTS integration.
+  // Any multistep, variable time-step integrator must give the same
+  // results from dense output as from just taking a short step
+  // because we require dense output to be continuous.  A sufficient
+  // test is therefore to run with an LTS pattern and check that the
+  // dense output predicts the actual step result.
+  const Slab slab(0., 1.);
+
+  // We don't use any meaningful values.  We only care that the dense
+  // output gives the same result as normal output.
+  auto get_value = [value = 1.]() mutable noexcept { return value *= 1.1; };
+
+  const auto coupling = [](const double a, const double b) noexcept {
+    return a * b;
+  };
+
+  const auto make_time_id = [](const Time& t) noexcept {
+    return TimeId(true, 0, t);
+  };
+
+  TimeSteppers::BoundaryHistory<double, double, double> history;
+  {
+    const Slab init_slab = slab.retreat();
+    for (size_t i = 0; i < stepper.number_of_past_steps(); ++i) {
+      const Time init_time =
+          init_slab.end() -
+          init_slab.duration() * (i + 1) / stepper.number_of_past_steps();
+      history.local_insert_initial(make_time_id(init_time), get_value());
+      history.remote_insert_initial(make_time_id(init_time), get_value());
+    }
+  }
+
+  std::array<std::deque<TimeDelta>, 2> dt{
+      {{slab.duration() / 2, slab.duration() / 4, slab.duration() / 4},
+       {slab.duration() / 6, slab.duration() / 6, slab.duration() * 2 / 9,
+        slab.duration() * 4 / 9}}};
+
+  Time t = slab.start();
+  double y = 0.;
+  Time next_check = t + dt[0][0];
+  std::array<Time, 2> next{{t, t}};
+  for (;;) {
+    const auto side = static_cast<size_t>(
+        std::min_element(next.cbegin(), next.cend()) - next.cbegin());
+
+    if (side == 0) {
+      history.local_insert(make_time_id(next[0]), get_value());
+    } else {
+      history.remote_insert(make_time_id(next[1]), get_value());
+    }
+
+    const TimeDelta this_dt = gsl::at(dt, side).front();
+    gsl::at(dt, side).pop_front();
+
+    gsl::at(next, side) += this_dt;
+
+    if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
+      const double dense_result =
+          stepper.boundary_dense_output(coupling, history, next_check.value());
+      const double delta = stepper.compute_boundary_delta(
+          coupling, make_not_null(&history), next_check - t);
+      CHECK(dense_result == approx(delta));
+      y += delta;
+      if (next_check.is_at_slab_boundary()) {
+        break;
+      }
+      t = next_check;
+      next_check += dt[0].front();
+    }
   }
 }
 }  // namespace TimeStepperTestUtils
