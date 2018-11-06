@@ -44,7 +44,19 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(
       polytropic_exponent_(polytropic_exponent),
       equation_of_state_{polytropic_constant_, polytropic_exponent_},
       background_spacetime_{
-          bh_mass_, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}} {}
+          bh_mass_, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}} {
+  const double sqrt_m = sqrt(bh_mass_);
+  const double a_sqrt_m = bh_spin_a_ * sqrt_m;
+  const double& rmax = max_pressure_radius_;
+  const double sqrt_rmax = sqrt(rmax);
+  const double rmax_sqrt_rmax = rmax * sqrt_rmax;
+  const double rmax_squared = square(rmax);
+  angular_momentum_ =
+      sqrt_m * (rmax_sqrt_rmax + a_sqrt_m) *
+      (square(bh_spin_a_) - 2.0 * a_sqrt_m * sqrt_rmax + rmax_squared) /
+      (2.0 * a_sqrt_m * rmax_sqrt_rmax +
+       (rmax - 3.0 * bh_mass_) * rmax_squared);
+}
 
 void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
   p | bh_mass_;
@@ -53,6 +65,7 @@ void FishboneMoncriefDisk::pup(PUP::er& p) noexcept {
   p | max_pressure_radius_;
   p | polytropic_constant_;
   p | polytropic_exponent_;
+  p | angular_momentum_;
   p | equation_of_state_;
   p | background_spacetime_;
 }
@@ -76,47 +89,40 @@ DataType FishboneMoncriefDisk::inv_ucase_a(const DataType& r_sqrd,
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::four_velocity_t_sqrd(
-    const DataType& r_sqrd, const DataType& sin_theta_sqrd,
-    const double angular_momentum) const noexcept {
+    const DataType& r_sqrd, const DataType& sin_theta_sqrd) const noexcept {
   const DataType delta =
       r_sqrd - 2.0 * bh_mass_ * sqrt(r_sqrd) + square(bh_spin_a_);
   const DataType prefactor = 0.5 / (inv_ucase_a(r_sqrd, sin_theta_sqrd, delta) *
                                     sigma(r_sqrd, sin_theta_sqrd));
-  return prefactor * (1.0 + sqrt(1.0 +
-                                 square(angular_momentum) * delta /
-                                     (square(prefactor) * sin_theta_sqrd))) /
+  return prefactor *
+         (1.0 + sqrt(1.0 + square(angular_momentum_) * delta /
+                               (square(prefactor) * sin_theta_sqrd))) /
          delta;
 }
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::angular_velocity(
-    const DataType& r_sqrd, const DataType& sin_theta_sqrd,
-    const double angular_momentum) const noexcept {
+    const DataType& r_sqrd, const DataType& sin_theta_sqrd) const noexcept {
   const DataType r = sqrt(r_sqrd);
   return inv_ucase_a(
              r_sqrd, sin_theta_sqrd,
              DataType{r_sqrd - 2.0 * bh_mass_ * r + square(bh_spin_a_)}) *
-         (angular_momentum * sigma(r_sqrd, sin_theta_sqrd) /
-              (four_velocity_t_sqrd(r_sqrd, sin_theta_sqrd, angular_momentum) *
-               sin_theta_sqrd) +
+         (angular_momentum_ * sigma(r_sqrd, sin_theta_sqrd) /
+              (four_velocity_t_sqrd(r_sqrd, sin_theta_sqrd) * sin_theta_sqrd) +
           2.0 * bh_mass_ * r * bh_spin_a_);
 }
 
 template <typename DataType>
 DataType FishboneMoncriefDisk::potential(const DataType& r_sqrd,
-                                         const DataType& sin_theta_sqrd,
-                                         const double angular_momentum) const
+                                         const DataType& sin_theta_sqrd) const
     noexcept {
-  return angular_momentum *
-             angular_velocity(r_sqrd, sin_theta_sqrd, angular_momentum) -
-         log(sqrt(
-             four_velocity_t_sqrd(r_sqrd, sin_theta_sqrd, angular_momentum)));
+  return angular_momentum_ * angular_velocity(r_sqrd, sin_theta_sqrd) -
+         log(sqrt(four_velocity_t_sqrd(r_sqrd, sin_theta_sqrd)));
 }
 
 template <typename DataType, bool NeedSpacetime>
 FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
-    IntermediateVariables(const double bh_mass, const double bh_spin_a,
-                          const double max_pressure_radius,
+    IntermediateVariables(const double bh_spin_a,
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, const double t,
                           size_t in_spatial_velocity_index,
@@ -139,21 +145,6 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
   // Because of the subtraction done to compute sin^2(theta) can be negative by
   // roundoff. This is a fix for that for now.
   sin_theta_squared = abs(sin_theta_squared);
-
-  angular_momentum =
-      [ a_squared, bh_mass, bh_spin_a, max_pressure_radius ]() noexcept {
-    const double sqrt_m = sqrt(bh_mass);
-    const double a_sqrt_m = bh_spin_a * sqrt_m;
-    const double& rmax = max_pressure_radius;
-    const double sqrt_rmax = sqrt(rmax);
-    const double rmax_sqrt_rmax = rmax * sqrt_rmax;
-    const double rmax_sqrd = rmax * rmax;
-    return sqrt_m * (rmax_sqrt_rmax + a_sqrt_m) *
-           (a_squared - 2.0 * a_sqrt_m * sqrt_rmax + rmax_sqrd) /
-           (2.0 * a_sqrt_m * rmax_sqrt_rmax +
-            (rmax - 3.0 * bh_mass) * rmax_sqrd);
-  }
-  ();
 
   if (NeedSpacetime) {
     kerr_schild_soln = background_spacetime.variables(
@@ -190,7 +181,7 @@ FishboneMoncriefDisk::variables(
     const IntermediateVariables<DataType, NeedSpacetime>& vars,
     const size_t /*index*/) const noexcept {
   const double inner_edge_potential =
-      potential(square(inner_edge_radius_), 1.0, vars.angular_momentum);
+      potential(square(inner_edge_radius_), 1.0);
   auto specific_enthalpy = make_with_value<Scalar<DataType>>(x, 1.0);
   variables_impl(vars,
                  [&specific_enthalpy, inner_edge_potential ](
@@ -251,12 +242,11 @@ FishboneMoncriefDisk::variables(
     const IntermediateVariables<DataType, true>& vars,
     const size_t /*index*/) const noexcept {
   auto spatial_velocity = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
-  variables_impl(vars, [&spatial_velocity, &vars, &x,
-                        this ](const size_t s,
-                               const double /*potential_at_s*/) noexcept {
+  variables_impl(vars, [
+    &spatial_velocity, &vars, &x, this
+  ](const size_t s, const double /*potential_at_s*/) noexcept {
     const double ang_velocity = angular_velocity(
-        get_element(vars.r_squared, s), get_element(vars.sin_theta_squared, s),
-        vars.angular_momentum);
+        get_element(vars.r_squared, s), get_element(vars.sin_theta_squared, s));
 
     auto transport_velocity = make_array<3>(0.0);
     transport_velocity[0] -= ang_velocity * get_element(x.get(1), s);
@@ -325,9 +315,8 @@ void FishboneMoncriefDisk::variables_impl(
     noexcept {
   const DataType& r_squared = vars.r_squared;
   const DataType& sin_theta_squared = vars.sin_theta_squared;
-  const double angular_momentum = vars.angular_momentum;
   const double inner_edge_potential =
-      potential(square(inner_edge_radius_), 1.0, angular_momentum);
+      potential(square(inner_edge_radius_), 1.0);
 
   // fill the disk with matter
   for (size_t s = 0; s < get_size(r_squared); ++s) {
@@ -337,8 +326,7 @@ void FishboneMoncriefDisk::variables_impl(
     // the disk won't extend closer to the axis than r sin theta = rin
     // so no need to evaluate the potential there
     if (sqrt(r_squared_s * sin_theta_squared_s) >= inner_edge_radius_) {
-      const double potential_s =
-          potential(r_squared_s, sin_theta_squared_s, angular_momentum);
+      const double potential_s = potential(r_squared_s, sin_theta_squared_s);
       // the fluid can only be where W(r, theta) < W_in
       if (potential_s < inner_edge_potential) {
         f(s, potential_s);

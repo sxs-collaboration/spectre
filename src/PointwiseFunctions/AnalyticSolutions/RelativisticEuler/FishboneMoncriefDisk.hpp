@@ -228,17 +228,15 @@ class FishboneMoncriefDisk {
 
   template <typename DataType>
   DataType four_velocity_t_sqrd(const DataType& r_sqrd,
-                                const DataType& sin_theta_sqrd,
-                                double angular_momentum) const noexcept;
+                                const DataType& sin_theta_sqrd) const noexcept;
 
   template <typename DataType>
   DataType angular_velocity(const DataType& r_sqrd,
-                            const DataType& sin_theta_sqrd,
-                            double angular_momentum) const noexcept;
+                            const DataType& sin_theta_sqrd) const noexcept;
 
   template <typename DataType>
-  DataType potential(const DataType& r_sqrd, const DataType& sin_theta_sqrd,
-                     double angular_momentum) const noexcept;
+  DataType potential(const DataType& r_sqrd,
+                     const DataType& sin_theta_sqrd) const noexcept;
 
   SPECTRE_ALWAYS_INLINE size_t index_helper(tmpl::no_such_type_ /*meta*/) const
       noexcept {
@@ -267,8 +265,7 @@ class FishboneMoncriefDisk {
             cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
             cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
-        vars(bh_mass_, bh_spin_a_, max_pressure_radius_, background_spacetime_,
-             x, t,
+        vars(bh_spin_a_, background_spacetime_, x, t,
              index_helper(
                  tmpl::index_of<tmpl::list<Tags...>,
                                 hydro::Tags::SpatialVelocity<DataType, 3>>{}),
@@ -290,8 +287,7 @@ class FishboneMoncriefDisk {
         DataType,
         cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
-        intermediate_vars(bh_mass_, bh_spin_a_, max_pressure_radius_,
-                          background_spacetime_, x, t,
+        intermediate_vars(bh_spin_a_, background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),
                           std::numeric_limits<size_t>::max());
     return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
@@ -401,8 +397,7 @@ class FishboneMoncriefDisk {
   // solution's variables.
   template <typename DataType, bool NeedSpacetime>
   struct IntermediateVariables {
-    IntermediateVariables(double bh_mass, double bh_spin_a,
-                          double max_pressure_radius,
+    IntermediateVariables(double bh_spin_a,
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, double t,
                           size_t in_spatial_velocity_index,
@@ -410,7 +405,6 @@ class FishboneMoncriefDisk {
 
     DataType r_squared{};
     DataType sin_theta_squared{};
-    double angular_momentum{};
     tuples::tagged_tuple_from_typelist<
         typename gr::Solutions::KerrSchild::tags<DataType>>
         kerr_schild_soln{};
@@ -427,6 +421,7 @@ class FishboneMoncriefDisk {
   double max_pressure_radius_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
+  double angular_momentum_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
   gr::Solutions::KerrSchild background_spacetime_{};
 };
