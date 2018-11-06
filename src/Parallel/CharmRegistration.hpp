@@ -13,6 +13,12 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/TypeTraits.hpp"
 
+/// \cond
+template <size_t MaxSize, class Key, class ValueType, class Hash,
+          class KeyEqual>
+class FixedHashMap;
+/// \endcond
+
 namespace Parallel {
 namespace charmxx {
 /*!
@@ -349,10 +355,25 @@ struct get_value_type;
 template <class Key, class Mapped, class Hash, class KeyEqual, class Allocator>
 struct get_value_type<
     std::unordered_map<Key, Mapped, Hash, KeyEqual, Allocator>> {
-  // When sending data it is typical to use `std:make_pair(a, b)` which results
+  // When sending data it is typical to use `std::make_pair(a, b)` which results
   // in a non-const Key type, which is different from what
-  // `unordered_map::value_type` is. This difference leads to issues with
-  // function registration with Charm++.
+  // `unordered_map::value_type` is (e.g. `std::pair<const Key, Mapped>`). This
+  // difference leads to issues with function registration with Charm++ because
+  // when registering `receive_data` methods we register the `inbox_type`'s
+  // `value_type` (`std::pair<const Key, Mapped>` in this case), not the type
+  // passed to `receive_data`.
+  using type = std::pair<Key, Mapped>;
+};
+
+template <size_t Size, class Key, class Mapped, class Hash, class KeyEqual>
+struct get_value_type<FixedHashMap<Size, Key, Mapped, Hash, KeyEqual>> {
+  // When sending data it is typical to use `std::make_pair(a, b)` which results
+  // in a non-const Key type, which is different from what
+  // `FixedHashMap::value_type` is (e.g. `std::pair<const Key, Mapped>`). This
+  // difference leads to issues with function registration with Charm++ because
+  // when registering `receive_data` methods we register the `inbox_type`'s
+  // `value_type` (`std::pair<const Key, Mapped>` in this case), not the type
+  // passed to `receive_data`.
   using type = std::pair<Key, Mapped>;
 };
 
