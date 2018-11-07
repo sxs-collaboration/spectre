@@ -92,6 +92,8 @@ struct EvolutionMetavars {
       tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
                  StepChoosers::Register::Constant,
                  StepChoosers::Register::Increase>;
+  using ordered_list_of_primitive_recovery_schemes = tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>;
 
   // hack this has to be synchronized with the Observe action :(
   using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,

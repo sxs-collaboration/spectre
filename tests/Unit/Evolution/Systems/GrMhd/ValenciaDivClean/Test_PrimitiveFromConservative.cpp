@@ -19,6 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 #include "tests/Utilities/RandomUnitNormal.hpp"
 
@@ -139,7 +140,8 @@ Scalar<DataVector> specific_enthalpy(
                             get(pressure) / get(rest_mass_density)};
 }
 
-template <typename PrimitiveRecoveryScheme, size_t ThermodynamicDim>
+template <typename OrderedListOfPrimitiveRecoverySchemes,
+          size_t ThermodynamicDim>
 void test_primitive_from_conservative_random(
     const gsl::not_null<std::mt19937*> generator,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -218,7 +220,7 @@ void test_primitive_from_conservative_random(
   Scalar<DataVector> pressure(number_of_points);
   Scalar<DataVector> specific_enthalpy(number_of_points);
   grmhd::ValenciaDivClean::PrimitiveFromConservative<
-      PrimitiveRecoveryScheme,
+      OrderedListOfPrimitiveRecoverySchemes,
       ThermodynamicDim>::apply(make_not_null(&rest_mass_density),
                                make_not_null(&specific_internal_energy),
                                make_not_null(&spatial_velocity),
@@ -250,7 +252,7 @@ void test_primitive_from_conservative_random(
                                divergence_cleaning_field, larger_approx);
 }
 
-template <typename PrimitiveRecoveryScheme>
+template <typename OrderedListOfPrimitiveRecoverySchemes>
 void test_primitive_from_conservative_known(
     const DataVector& used_for_size) noexcept {
   const auto expected_rest_mass_density =
@@ -259,14 +261,14 @@ void test_primitive_from_conservative_known(
       make_with_value<Scalar<DataVector>>(used_for_size, 1.25);
   auto spatial_metric =
       make_with_value<tnsr::ii<DataVector, 3>>(used_for_size, 0.0);
-  get<0,0>(spatial_metric) = 1.0;
-  get<1,1>(spatial_metric) = 4.0;
-  get<2,2>(spatial_metric) = 16.0;
+  get<0, 0>(spatial_metric) = 1.0;
+  get<1, 1>(spatial_metric) = 4.0;
+  get<2, 2>(spatial_metric) = 16.0;
   auto expected_spatial_velocity =
       make_with_value<tnsr::I<DataVector, 3>>(used_for_size, 0.0);
-  get<0>(expected_spatial_velocity) = 9.0/65.0;
-  get<1>(expected_spatial_velocity) = 6.0/65.0;
-  get<2>(expected_spatial_velocity) = 9.0/65.0;
+  get<0>(expected_spatial_velocity) = 9.0 / 65.0;
+  get<1>(expected_spatial_velocity) = 6.0 / 65.0;
+  get<2>(expected_spatial_velocity) = 9.0 / 65.0;
   const auto expected_specific_internal_energy =
       make_with_value<Scalar<DataVector>>(used_for_size, 3.0);
   const auto expected_pressure =
@@ -275,9 +277,9 @@ void test_primitive_from_conservative_known(
       make_with_value<Scalar<DataVector>>(used_for_size, 5.0);
   auto expected_magnetic_field =
       make_with_value<tnsr::I<DataVector, 3>>(used_for_size, 0.0);
-  get<0>(expected_magnetic_field) = 36.0/13.0;
-  get<1>(expected_magnetic_field) = 9.0/26.0;
-  get<2>(expected_magnetic_field) = 3.0/13.0;
+  get<0>(expected_magnetic_field) = 36.0 / 13.0;
+  get<1>(expected_magnetic_field) = 9.0 / 26.0;
+  get<2>(expected_magnetic_field) = 3.0 / 13.0;
   const auto expected_divergence_cleaning_field =
       make_with_value<Scalar<DataVector>>(used_for_size, 0.5);
 
@@ -311,16 +313,17 @@ void test_primitive_from_conservative_known(
   Scalar<DataVector> pressure(number_of_points);
   Scalar<DataVector> specific_enthalpy(number_of_points);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
-  grmhd::ValenciaDivClean::
-      PrimitiveFromConservative<PrimitiveRecoveryScheme, 2>::apply(
-          make_not_null(&rest_mass_density),
-          make_not_null(&specific_internal_energy),
-          make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
-          make_not_null(&divergence_cleaning_field),
-          make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
-          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
-          sqrt_det_spatial_metric, ideal_fluid);
+  grmhd::ValenciaDivClean::PrimitiveFromConservative<
+      OrderedListOfPrimitiveRecoverySchemes,
+      2>::apply(make_not_null(&rest_mass_density),
+                make_not_null(&specific_internal_energy),
+                make_not_null(&spatial_velocity),
+                make_not_null(&magnetic_field),
+                make_not_null(&divergence_cleaning_field),
+                make_not_null(&lorentz_factor), make_not_null(&pressure),
+                make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
+                tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+                sqrt_det_spatial_metric, ideal_fluid);
 
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
   CHECK_ITERABLE_APPROX(expected_specific_internal_energy,
@@ -346,20 +349,24 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
   EquationsOfState::PolytropicFluid<true> polytropic_fluid(100.0, 2.0);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
   const DataVector dv(5);
-  test_primitive_from_conservative_known<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>(dv);
-  test_primitive_from_conservative_known<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>(dv);
+  test_primitive_from_conservative_known<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>>(dv);
+  test_primitive_from_conservative_known<tmpl::list<
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(dv);
   test_primitive_from_conservative_random<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin, 1>(
-      &generator, polytropic_fluid, dv);
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+      1>(&generator, polytropic_fluid, dv);
   test_primitive_from_conservative_random<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin, 2>(
-      &generator, ideal_fluid, dv);
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
+      2>(&generator, ideal_fluid, dv);
   test_primitive_from_conservative_random<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl, 1>(
-      &generator, polytropic_fluid, dv);
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+      1>(&generator, polytropic_fluid, dv);
   test_primitive_from_conservative_random<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl, 2>(
-      &generator, ideal_fluid, dv);
+      tmpl::list<
+          grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
+      2>(&generator, ideal_fluid, dv);
 }

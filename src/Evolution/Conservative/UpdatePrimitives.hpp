@@ -22,6 +22,9 @@ namespace Actions {
 /// \ingroup ActionsGroup
 /// \brief Compute the primitive variables from the conservative variables
 ///
+/// \note `Metavariables` must specify an
+/// `ordered_list_of_primitive_recovery_schemes`.
+///
 /// Uses:
 /// - DataBox: Items in system::volume_sources::argument_tags
 ///
@@ -40,11 +43,12 @@ struct UpdatePrimitives {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    db::mutate_apply<
-        typename system::primitive_from_conservative::return_tags,
-        typename system::primitive_from_conservative::argument_tags>(
-        typename system::primitive_from_conservative{}, make_not_null(&box));
+    using PrimFromCon =
+        typename Metavariables::system::template primitive_from_conservative<
+            typename Metavariables::ordered_list_of_primitive_recovery_schemes>;
+    db::mutate_apply<typename PrimFromCon::return_tags,
+                     typename PrimFromCon::argument_tags>(PrimFromCon{},
+                                                          make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
